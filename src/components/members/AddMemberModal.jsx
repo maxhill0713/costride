@@ -21,46 +21,46 @@ export default function AddMemberModal({ open, onClose, onSave, isLoading }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md">
+      <DialogContent className="bg-white text-gray-900 max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-lime-400" />
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <UserPlus className="w-6 h-6 text-green-500" />
             Add New Member
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div className="space-y-2">
-            <Label className="text-zinc-300">Full Name *</Label>
+            <Label className="text-gray-700 font-semibold">Full Name *</Label>
             <Input
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="John Smith"
               required
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+              className="bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl h-12"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-zinc-300">Gym Nickname</Label>
+            <Label className="text-gray-700 font-semibold">Gym Nickname</Label>
             <Input
               value={formData.nickname}
               onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
               placeholder="The Beast"
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+              className="bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl h-12"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-zinc-300">Weight Class</Label>
+            <Label className="text-gray-700 font-semibold">Weight Class</Label>
             <Select
               value={formData.weight_class}
               onValueChange={(value) => setFormData({ ...formData, weight_class: value })}
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700">
+              <SelectContent className="bg-white border-2 border-gray-200">
                 <SelectItem value="lightweight">Lightweight</SelectItem>
                 <SelectItem value="middleweight">Middleweight</SelectItem>
                 <SelectItem value="heavyweight">Heavyweight</SelectItem>
@@ -72,7 +72,7 @@ export default function AddMemberModal({ open, onClose, onSave, isLoading }) {
           <Button
             type="submit"
             disabled={isLoading || !formData.name}
-            className="w-full bg-lime-400 hover:bg-lime-500 text-zinc-900 font-semibold h-12"
+            className="w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold h-14 rounded-2xl shadow-md text-base"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

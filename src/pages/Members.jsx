@@ -68,20 +68,22 @@ export default function Members() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-blue-50 to-purple-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Users className="w-8 h-8 text-lime-400" />
+            <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
               Members
             </h1>
-            <p className="text-zinc-400 mt-1">{members.length} gym warriors</p>
+            <p className="text-gray-600 mt-1 font-medium">{members.length} gym warriors 💪</p>
           </div>
           <Button
             onClick={() => setShowAddMember(true)}
-            className="bg-lime-400 hover:bg-lime-500 text-zinc-900 font-semibold"
+            className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold shadow-md rounded-2xl"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Member
@@ -91,13 +93,13 @@ export default function Members() {
         {/* Members Grid */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="w-8 h-8 border-2 border-lime-400 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : members.length === 0 ? (
-          <div className="text-center py-16 text-zinc-500">
-            <Users className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg">No members yet</p>
-            <p className="text-sm">Add your first gym member to get started!</p>
+          <div className="text-center py-16 bg-white rounded-3xl shadow-sm border-2 border-gray-100">
+            <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <p className="text-lg font-bold text-gray-700">No members yet</p>
+            <p className="text-sm text-gray-500 mt-1">Add your first gym member to get started!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,35 +112,33 @@ export default function Members() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="bg-zinc-900 border-zinc-800 p-5 hover:border-zinc-700 transition-colors">
+                  <Card className="bg-white border-2 border-gray-100 p-5 hover:border-gray-200 hover:shadow-md transition-all">
                     <div className="flex items-start gap-4">
                       {/* Avatar */}
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-500 p-0.5 flex-shrink-0">
-                        <div className="w-full h-full rounded-2xl bg-zinc-900 flex items-center justify-center overflow-hidden">
-                          {member.avatar_url ? (
-                            <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-2xl font-bold text-lime-400">
-                              {member.name?.charAt(0)?.toUpperCase()}
-                            </span>
-                          )}
-                        </div>
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center overflow-hidden shadow-md flex-shrink-0">
+                        {member.avatar_url ? (
+                          <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-2xl font-bold text-white">
+                            {member.name?.charAt(0)?.toUpperCase()}
+                          </span>
+                        )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-bold text-lg text-white truncate">{member.name}</h3>
+                            <h3 className="font-bold text-lg text-gray-900 truncate">{member.name}</h3>
                             {member.nickname && (
-                              <p className="text-zinc-400 text-sm">"{member.nickname}"</p>
+                              <p className="text-gray-500 text-sm font-medium">"{member.nickname}"</p>
                             )}
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => setDeleteMember(member)}
-                            className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+                            className="text-gray-400 hover:text-red-500 hover:bg-red-50"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -146,12 +146,12 @@ export default function Members() {
 
                         <div className="flex gap-2 mt-3 flex-wrap">
                           {member.weight_class && (
-                            <Badge className={`${weightClassColors[member.weight_class]} border capitalize`}>
+                            <Badge className={`${weightClassColors[member.weight_class]} border capitalize font-semibold`}>
                               {member.weight_class.replace('_', ' ')}
                             </Badge>
                           )}
                           {member.join_date && (
-                            <Badge variant="outline" className="border-zinc-700 text-zinc-400">
+                            <Badge variant="outline" className="border-gray-200 text-gray-600 font-medium">
                               <Calendar className="w-3 h-3 mr-1" />
                               {format(new Date(member.join_date), 'MMM yyyy')}
                             </Badge>
@@ -159,21 +159,21 @@ export default function Members() {
                         </div>
 
                         {/* Stats */}
-                        <div className="flex gap-4 mt-4 pt-4 border-t border-zinc-800">
+                        <div className="flex gap-4 mt-4 pt-4 border-t border-gray-100">
                           <div className="flex items-center gap-1.5 text-sm">
-                            <Dumbbell className="w-4 h-4 text-zinc-500" />
-                            <span className="text-white font-medium">{stats.totalLifts}</span>
-                            <span className="text-zinc-500">lifts</span>
+                            <Dumbbell className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-900 font-bold">{stats.totalLifts}</span>
+                            <span className="text-gray-500">lifts</span>
                           </div>
                           <div className="flex items-center gap-1.5 text-sm">
-                            <Trophy className="w-4 h-4 text-orange-400" />
-                            <span className="text-white font-medium">{stats.prs}</span>
-                            <span className="text-zinc-500">PRs</span>
+                            <Trophy className="w-4 h-4 text-orange-500" />
+                            <span className="text-gray-900 font-bold">{stats.prs}</span>
+                            <span className="text-gray-500">PRs</span>
                           </div>
                           {stats.bestLift > 0 && (
                             <div className="flex items-center gap-1.5 text-sm ml-auto">
-                              <span className="text-zinc-500">Best:</span>
-                              <span className="text-lime-400 font-bold">{stats.bestLift}lb</span>
+                              <span className="text-gray-500">Best:</span>
+                              <span className="bg-gradient-to-r from-green-500 to-blue-600 bg-clip-text text-transparent font-black">{stats.bestLift}lb</span>
                             </div>
                           )}
                         </div>
@@ -196,20 +196,20 @@ export default function Members() {
       />
 
       <AlertDialog open={!!deleteMember} onOpenChange={() => setDeleteMember(null)}>
-        <AlertDialogContent className="bg-zinc-900 border-zinc-800">
+        <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Member</AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-400">
+            <AlertDialogTitle className="text-gray-900 text-xl font-bold">Delete Member</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
               Are you sure you want to remove {deleteMember?.name} from the gym? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+            <AlertDialogCancel className="bg-gray-100 border-2 border-gray-200 text-gray-700 hover:bg-gray-200 rounded-2xl font-semibold">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMemberMutation.mutate(deleteMember?.id)}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 rounded-2xl font-semibold"
             >
               Delete
             </AlertDialogAction>

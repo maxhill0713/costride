@@ -49,22 +49,22 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md">
+      <DialogContent className="bg-white text-gray-900 max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Dumbbell className="w-5 h-5 text-orange-400" />
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <Dumbbell className="w-6 h-6 text-orange-500" />
             Log New Lift
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div className="space-y-2">
-            <Label className="text-zinc-300">Member *</Label>
+            <Label className="text-gray-700 font-semibold">Member *</Label>
             <Select value={formData.member_id} onValueChange={handleMemberChange}>
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12">
                 <SelectValue placeholder="Select member" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700">
+              <SelectContent className="bg-white border-2 border-gray-200">
                 {members.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.nickname || member.name}
@@ -75,15 +75,15 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
           </div>
 
           <div className="space-y-2">
-            <Label className="text-zinc-300">Exercise *</Label>
+            <Label className="text-gray-700 font-semibold">Exercise *</Label>
             <Select
               value={formData.exercise}
               onValueChange={(value) => setFormData({ ...formData, exercise: value })}
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700">
+              <SelectContent className="bg-white border-2 border-gray-200">
                 {exercises.map((ex) => (
                   <SelectItem key={ex.id} value={ex.id}>{ex.label}</SelectItem>
                 ))}
@@ -93,7 +93,7 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-zinc-300">Weight (lbs) *</Label>
+              <Label className="text-gray-700 font-semibold">Weight (lbs) *</Label>
               <Input
                 type="number"
                 value={formData.weight_lbs}
@@ -101,41 +101,41 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
                 placeholder="225"
                 required
                 min="1"
-                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                className="bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-2xl h-12"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-300">Reps</Label>
+              <Label className="text-gray-700 font-semibold">Reps</Label>
               <Input
                 type="number"
                 value={formData.reps}
                 onChange={(e) => setFormData({ ...formData, reps: e.target.value })}
                 min="1"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-50 border-2 border-orange-200">
             <Checkbox
               id="is_pr"
               checked={formData.is_pr}
               onCheckedChange={(checked) => setFormData({ ...formData, is_pr: checked })}
               className="border-orange-400 data-[state=checked]:bg-orange-500"
             />
-            <Label htmlFor="is_pr" className="text-orange-400 flex items-center gap-2 cursor-pointer">
-              <Flame className="w-4 h-4" />
+            <Label htmlFor="is_pr" className="text-orange-600 font-semibold flex items-center gap-2 cursor-pointer">
+              <Flame className="w-5 h-5" />
               This is a Personal Record!
             </Label>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-zinc-300">Notes</Label>
+            <Label className="text-gray-700 font-semibold">Notes</Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Felt strong today..."
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 resize-none"
+              className="bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 resize-none rounded-2xl"
               rows={2}
             />
           </div>
@@ -143,7 +143,7 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
           <Button
             type="submit"
             disabled={isLoading || !formData.member_id || !formData.weight_lbs}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold h-12"
+            className="w-full bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white font-bold h-14 rounded-2xl shadow-md text-base"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

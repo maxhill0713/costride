@@ -75,11 +75,10 @@ export default function Home() {
   const isLoading = loadingMembers || loadingLifts;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-blue-50 to-purple-50">
       {/* Header */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-lime-400/10 via-transparent to-orange-500/10" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-lime-400/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-green-100/50 via-blue-100/50 to-purple-100/50" />
         
         <div className="relative max-w-4xl mx-auto px-4 pt-12 pb-8">
           <motion.div
@@ -88,10 +87,10 @@ export default function Home() {
             className="text-center mb-8"
           >
             <h1 className="text-5xl md:text-6xl font-black mb-2">
-              <span className="text-lime-400">Hello</span>{' '}
-              <span className="text-orange-400">Fattie</span>
+              <span className="bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent">Hello</span>{' '}
+              <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Fattie</span>
             </h1>
-            <p className="text-zinc-400 text-lg">Track. Compete. Dominate. 💪</p>
+            <p className="text-gray-600 text-lg font-medium">Track. Compete. Dominate. 💪</p>
           </motion.div>
 
           {/* Stats */}
@@ -106,14 +105,14 @@ export default function Home() {
           <div className="flex gap-3 justify-center mb-8">
             <Button
               onClick={() => setShowAddMember(true)}
-              className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700"
+              className="bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 shadow-sm font-semibold rounded-2xl h-12"
             >
               <Users className="w-4 h-4 mr-2" />
               Add Member
             </Button>
             <Button
               onClick={() => setShowLogLift(true)}
-              className="bg-lime-400 hover:bg-lime-500 text-zinc-900 font-semibold"
+              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold shadow-md rounded-2xl h-12"
             >
               <Plus className="w-4 h-4 mr-2" />
               Log Lift
@@ -125,8 +124,10 @@ export default function Home() {
       {/* Leaderboard Section */}
       <div className="max-w-4xl mx-auto px-4 pb-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-lime-400" />
+          <h2 className="text-3xl font-black text-gray-900 flex items-center gap-2">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
             Leaderboard
           </h2>
         </div>
@@ -140,17 +141,17 @@ export default function Home() {
         <div className="space-y-3">
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-2 border-lime-400 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : leaderboard.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-16 text-zinc-500"
+              className="text-center py-16 bg-white rounded-3xl shadow-sm border-2 border-gray-100"
             >
-              <Dumbbell className="w-16 h-16 mx-auto mb-4 opacity-30" />
-              <p className="text-lg">No lifts recorded yet</p>
-              <p className="text-sm">Add members and start logging lifts!</p>
+              <Dumbbell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-bold text-gray-700">No lifts recorded yet</p>
+              <p className="text-sm text-gray-500 mt-1">Add members and start logging lifts!</p>
             </motion.div>
           ) : (
             <AnimatePresence>

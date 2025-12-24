@@ -20,14 +20,14 @@ export default function ExerciseFilter({ selected, onSelect }) {
           whileTap={{ scale: 0.95 }}
           onClick={() => onSelect(exercise.id)}
           className={`
-            flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm whitespace-nowrap
-            transition-all duration-200
+            flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm whitespace-nowrap
+            transition-all duration-200 shadow-sm
             ${selected === exercise.id
-              ? 'bg-lime-400 text-zinc-900'
-              : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}
+              ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-md scale-105'
+              : 'bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-100'}
           `}
         >
-          <span>{exercise.emoji}</span>
+          <span className="text-lg">{exercise.emoji}</span>
           <span>{exercise.label}</span>
         </motion.button>
       ))}
