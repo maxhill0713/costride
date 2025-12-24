@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Home, Users, Dumbbell } from 'lucide-react';
+import { Home, Trophy, Calendar, Crown } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
   const navItems = [
-    { name: 'Home', icon: Home, page: 'Home' },
-    { name: 'Members', icon: Users, page: 'Members' },
+    { name: 'Feed', icon: Home, page: 'Feed' },
+    { name: 'Routines', icon: Calendar, page: 'Routines' },
+    { name: 'Leaderboard', icon: Trophy, page: 'Leaderboard' },
+    { name: 'Plus', icon: Crown, page: 'Plus' },
   ];
 
   return (
@@ -37,11 +39,11 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Side Navigation for Desktop */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-white/95 backdrop-blur-lg border-r-2 border-gray-200 flex-col items-center py-8 z-50 shadow-lg">
-        <div className="mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center shadow-md">
-            <Dumbbell className="w-6 h-6 text-white" />
+        <Link to={createPageUrl('Feed')} className="mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md hover:scale-105 transition-transform">
+            <span className="text-xl font-black text-white">F</span>
           </div>
-        </div>
+        </Link>
         
         <div className="flex flex-col gap-4">
           {navItems.map((item) => {
