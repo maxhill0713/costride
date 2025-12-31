@@ -6,6 +6,8 @@ import Plus from './pages/Plus';
 import Routines from './pages/Routines';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
+import Search from './pages/Search';
+import Gyms from './pages/Gyms';
 import __Layout from './Layout.jsx';
 
 
@@ -18,6 +20,8 @@ export const PAGES = {
     "Routines": Routines,
     "Profile": Profile,
     "Notifications": Notifications,
+    "Search": Search,
+    "Gyms": Gyms,
 }
 
 export const pagesConfig = {

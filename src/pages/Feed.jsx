@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dumbbell, Search, Bell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from './utils';
 import PostCard from '@/components/feed/PostCard';
 import CreatePostButton from '@/components/feed/CreatePostButton';
 import StoriesBar from '@/components/feed/StoriesBar';
 import LogLiftModal from '@/components/lifts/LogLiftModal';
 
 export default function Feed() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showLogLift, setShowLogLift] = useState(false);
 
@@ -66,10 +69,16 @@ export default function Feed() {
             <h1 className="text-xl font-bold text-gray-900">Fattie</h1>
           </div>
           <div className="flex items-center gap-4">
-            <button className="hover:opacity-70">
+            <button 
+              onClick={() => navigate(createPageUrl('Search'))}
+              className="hover:opacity-70 transition-opacity"
+            >
               <Search className="w-6 h-6 text-gray-900" />
             </button>
-            <button className="hover:opacity-70 relative">
+            <button 
+              onClick={() => navigate(createPageUrl('Notifications'))}
+              className="hover:opacity-70 relative transition-opacity"
+            >
               <Bell className="w-6 h-6 text-gray-900" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
             </button>

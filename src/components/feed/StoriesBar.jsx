@@ -10,11 +10,23 @@ const stories = [
 ];
 
 export default function StoriesBar() {
+  const handleStoryClick = (story) => {
+    if (story.isOwn) {
+      alert('Create your story!');
+    } else {
+      alert(`Viewing ${story.name}'s story`);
+    }
+  };
+
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-3 overflow-x-auto scrollbar-hide">
       <div className="flex gap-4">
         {stories.map((story) => (
-          <button key={story.id} className="flex flex-col items-center gap-1 flex-shrink-0">
+          <button 
+            key={story.id} 
+            onClick={() => handleStoryClick(story)}
+            className="flex flex-col items-center gap-1 flex-shrink-0 hover:scale-105 transition-transform"
+          >
             <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
               story.hasNew 
                 ? 'bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-400 p-0.5' 
