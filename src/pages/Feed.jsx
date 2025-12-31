@@ -59,6 +59,24 @@ export default function Feed() {
     }
   });
 
+  const addCommentMutation = useMutation({
+    mutationFn: async ({ postId, commentText }) => {
+      const post = posts.find(p => p.id === postId);
+      const newComment = {
+        user: 'Current User',
+        text: commentText,
+        timestamp: new Date().toISOString()
+      };
+      const updatedComments = [...(post.comments || []), newComment];
+      return base44.entities.Post.update(postId, {
+        comments: updatedComments
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    }
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -108,6 +126,7 @@ export default function Feed() {
                 key={post.id}
                 post={post}
                 onLike={(postId, liked) => updateLikeMutation.mutate({ postId, liked })}
+                onComment={(postId, commentText) => addCommentMutation.mutate({ postId, commentText })}
               />
             ))}
           </div>

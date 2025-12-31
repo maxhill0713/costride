@@ -2,13 +2,27 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
+import CommentModal from './CommentModal';
+import ShareModal from './ShareModal';
 
-export default function PostCard({ post, onLike }) {
+export default function PostCard({ post, onLike, onComment, onSave }) {
   const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   const handleLike = () => {
     setLiked(!liked);
     onLike(post.id, !liked);
+  };
+
+  const handleSave = () => {
+    setSaved(!saved);
+    if (onSave) onSave(post.id, !saved);
+  };
+
+  const handleAddComment = (commentText) => {
+    onComment(post.id, commentText);
   };
 
   return (
@@ -52,18 +66,18 @@ export default function PostCard({ post, onLike }) {
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <button onClick={handleLike} className="hover:opacity-70 transition-opacity">
+            <button onClick={handleLike} className="hover:scale-110 transition-transform active:scale-95">
               <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-900'}`} />
             </button>
-            <button className="hover:opacity-70 transition-opacity">
+            <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
               <MessageCircle className="w-6 h-6 text-gray-900" />
             </button>
-            <button className="hover:opacity-70 transition-opacity">
+            <button onClick={() => setShowShare(true)} className="hover:scale-110 transition-transform active:scale-95">
               <Send className="w-6 h-6 text-gray-900" />
             </button>
           </div>
-          <button className="hover:opacity-70 transition-opacity">
-            <Bookmark className="w-6 h-6 text-gray-900" />
+          <button onClick={handleSave} className="hover:scale-110 transition-transform active:scale-95">
+            <Bookmark className={`w-6 h-6 ${saved ? 'fill-gray-900 text-gray-900' : 'text-gray-900'}`} />
           </button>
         </div>
 
@@ -83,11 +97,34 @@ export default function PostCard({ post, onLike }) {
           )}
         </div>
 
+        {/* View Comments */}
+        {post.comments && post.comments.length > 0 && (
+          <button 
+            onClick={() => setShowComments(true)}
+            className="text-sm text-gray-500 mt-2 hover:text-gray-700"
+          >
+            View all {post.comments.length} comments
+          </button>
+        )}
+
         {/* Timestamp */}
         <p className="text-xs text-gray-400 mt-2 uppercase">
           {format(new Date(post.created_date), 'MMM d, yyyy')}
         </p>
       </div>
+
+      {/* Modals */}
+      <CommentModal 
+        open={showComments}
+        onClose={() => setShowComments(false)}
+        post={post}
+        onAddComment={handleAddComment}
+      />
+      <ShareModal
+        open={showShare}
+        onClose={() => setShowShare(false)}
+        post={post}
+      />
     </motion.div>
   );
 }
