@@ -26,8 +26,25 @@ export default function Feed() {
 
   const addLiftMutation = useMutation({
     mutationFn: async (data) => {
+      // Upload video if provided
+      let videoUrl = null;
+      if (data.video) {
+        const uploadResult = await base44.integrations.Core.UploadFile({ file: data.video });
+        videoUrl = uploadResult.file_url;
+      }
+
       // Create lift record
-      await base44.entities.Lift.create(data);
+      await base44.entities.Lift.create({
+        member_id: data.member_id,
+        member_name: data.member_name,
+        exercise: data.exercise,
+        weight_lbs: data.weight_lbs,
+        reps: data.reps,
+        is_pr: data.is_pr,
+        lift_date: data.lift_date,
+        notes: data.notes
+      });
+
       // Create post from lift
       const member = members.find(m => m.id === data.member_id);
       return base44.entities.Post.create({
@@ -37,6 +54,7 @@ export default function Feed() {
         content: data.notes || `Just lifted ${data.weight_lbs} lbs on ${data.exercise.replace(/_/g, ' ')}! ${data.is_pr ? '🔥 NEW PR!' : ''}`,
         exercise: data.exercise,
         weight: data.weight_lbs,
+        video_url: videoUrl,
         likes: 0
       });
     },

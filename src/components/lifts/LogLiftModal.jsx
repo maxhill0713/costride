@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Dumbbell, Loader2, Flame } from 'lucide-react';
+import { Dumbbell, Loader2, Flame, Video } from 'lucide-react';
 
 const exercises = [
   { id: 'bench_press', label: 'Bench Press' },
@@ -26,7 +26,8 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
     reps: 1,
     is_pr: false,
     lift_date: new Date().toISOString().split('T')[0],
-    notes: ''
+    notes: '',
+    video: null
   });
 
   const handleMemberChange = (memberId) => {
@@ -127,6 +128,24 @@ export default function LogLiftModal({ open, onClose, onSave, members, isLoading
               <Flame className="w-5 h-5" />
               This is a Personal Record!
             </Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-gray-700 font-semibold">Video (Optional)</Label>
+            <div className="relative">
+              <Input
+                type="file"
+                accept="video/*"
+                onChange={(e) => setFormData({ ...formData, video: e.target.files[0] })}
+                className="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              />
+              {formData.video && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                  <Video className="w-4 h-4 text-purple-600" />
+                  <span>{formData.video.name}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
