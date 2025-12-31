@@ -55,12 +55,22 @@ export default function PostCard({ post, onLike, onComment, onSave }) {
         </button>
       </div>
 
-      {/* Image */}
-      {post.image_url && (
+      {/* Video or Image */}
+      {post.video_url ? (
+        <div className="w-full aspect-square bg-black">
+          <video 
+            src={post.video_url} 
+            className="w-full h-full object-cover"
+            controls
+            playsInline
+            preload="metadata"
+          />
+        </div>
+      ) : post.image_url ? (
         <div className="w-full aspect-square bg-gray-100">
           <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
         </div>
-      )}
+      ) : null}
 
       {/* Actions */}
       <div className="p-4">
