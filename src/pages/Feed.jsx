@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Dumbbell, Search, Bell } from 'lucide-react';
 import PostCard from '@/components/feed/PostCard';
 import CreatePostButton from '@/components/feed/CreatePostButton';
+import StoriesBar from '@/components/feed/StoriesBar';
 import LogLiftModal from '@/components/lifts/LogLiftModal';
 
 export default function Feed() {
@@ -68,12 +69,16 @@ export default function Feed() {
             <button className="hover:opacity-70">
               <Search className="w-6 h-6 text-gray-900" />
             </button>
-            <button className="hover:opacity-70">
+            <button className="hover:opacity-70 relative">
               <Bell className="w-6 h-6 text-gray-900" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
             </button>
           </div>
         </div>
       </div>
+
+      {/* Stories */}
+      <StoriesBar />
 
       {/* Feed */}
       <div className="max-w-2xl mx-auto px-0 md:px-4 py-4">

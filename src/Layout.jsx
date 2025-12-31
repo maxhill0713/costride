@@ -5,32 +5,38 @@ import { Home, Trophy, Calendar, Crown } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
   const navItems = [
-    { name: 'Feed', icon: Home, page: 'Feed' },
-    { name: 'Routines', icon: Calendar, page: 'Routines' },
-    { name: 'Leaderboard', icon: Trophy, page: 'Leaderboard' },
-    { name: 'Plus', icon: Crown, page: 'Plus' },
+    { name: 'Feed', icon: Home, page: 'Feed', color: 'text-purple-500' },
+    { name: 'Routines', icon: Calendar, page: 'Routines', color: 'text-blue-500' },
+    { name: 'Leaderboard', icon: Trophy, page: 'Leaderboard', color: 'text-orange-500' },
+    { name: 'Plus', icon: Crown, page: 'Plus', color: 'text-pink-500' },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-blue-50 to-purple-50">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t-2 border-gray-200 z-50 md:hidden shadow-lg">
-        <div className="flex justify-around items-center h-16">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden shadow-2xl">
+        <div className="flex justify-around items-center h-20 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
               <Link
                 key={item.page}
                 to={createPageUrl(item.page)}
+                aria-label={item.name}
                 className={`
-                  flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-2xl transition-all
+                  relative flex flex-col items-center justify-center gap-1.5 px-3 py-2 rounded-2xl transition-all
                   ${isActive 
-                    ? 'text-green-500' 
+                    ? `${item.color} scale-105` 
                     : 'text-gray-400 hover:text-gray-600'}
                 `}
               >
-                <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
-                <span className="text-xs font-bold">{item.name}</span>
+                {isActive && (
+                  <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-12 h-1 ${item.color.replace('text-', 'bg-')} rounded-full`} />
+                )}
+                <div className={`${isActive ? 'bg-current bg-opacity-10 p-2 rounded-xl' : ''}`}>
+                  <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} strokeWidth={isActive ? 2.5 : 2} />
+                </div>
+                <span className={`text-xs font-bold ${isActive ? 'text-gray-900' : ''}`}>{item.name}</span>
               </Link>
             );
           })}
@@ -70,7 +76,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Main Content */}
-      <main className="pb-20 md:pb-0 md:pl-20">
+      <main className="pb-24 md:pb-0 md:pl-20">
         {children}
       </main>
     </div>
