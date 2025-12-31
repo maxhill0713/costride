@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dumbbell, Search, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from '../utils';
 import PostCard from '@/components/feed/PostCard';
 import CreatePostButton from '@/components/feed/CreatePostButton';
 import StoriesBar from '@/components/feed/StoriesBar';
