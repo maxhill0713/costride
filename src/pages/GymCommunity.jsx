@@ -160,46 +160,47 @@ export default function GymCommunity() {
           </Card>
         )}
 
-        {/* Details */}
-        <Card className="p-6 mb-6 bg-white">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">About</h3>
-          
-          {gym.type && (
-            <div className="mb-4">
-              <Badge className="capitalize text-sm">{gym.type}</Badge>
+        {/* Leaderboard Rewards */}
+        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-white" />
             </div>
-          )}
-
-          {gym.equipment && gym.equipment.length > 0 && (
-            <div className="mb-4">
-              <p className="text-sm font-bold text-gray-500 uppercase mb-2">Equipment</p>
-              <div className="flex flex-wrap gap-2">
-                {gym.equipment.map((item, idx) => (
-                  <Badge key={idx} variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                    {item}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {gym.amenities && gym.amenities.length > 0 && (
             <div>
-              <p className="text-sm font-bold text-gray-500 uppercase mb-2">Amenities</p>
-              <div className="flex flex-wrap gap-2">
-                {gym.amenities.map((amenity, idx) => (
-                  <Badge key={idx} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {amenity}
-                  </Badge>
-                ))}
+              <h3 className="text-xl font-black text-purple-900">Leaderboard Rewards</h3>
+              <p className="text-sm text-purple-700">Compete and win exclusive rewards!</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-3 bg-yellow-50 border-2 border-yellow-300 rounded-2xl">
+              <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white">1</div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900">1st Place</p>
+                <p className="text-sm text-gray-600">Free month membership + £50 sports voucher</p>
               </div>
             </div>
-          )}
+            <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-gray-300 rounded-2xl">
+              <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center font-black text-white">2</div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900">2nd Place</p>
+                <p className="text-sm text-gray-600">50% off membership + £25 sports voucher</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-orange-50 border-2 border-orange-300 rounded-2xl">
+              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-black text-white">3</div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900">3rd Place</p>
+                <p className="text-sm text-gray-600">25% off membership + £10 sports voucher</p>
+              </div>
+            </div>
+          </div>
         </Card>
+
+
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Leaderboard
             </TabsTrigger>
@@ -208,6 +209,9 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger value="members" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Members
+            </TabsTrigger>
+            <TabsTrigger value="info" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Info
             </TabsTrigger>
           </TabsList>
 
@@ -279,6 +283,66 @@ export default function GymCommunity() {
                 </Card>
               ))
             )}
+          </TabsContent>
+
+          <TabsContent value="info">
+            <Card className="p-6 bg-white">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Gym Information</h3>
+              
+              {gym.type && (
+                <div className="mb-6">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-2">Type</p>
+                  <Badge className="capitalize text-sm">{gym.type}</Badge>
+                </div>
+              )}
+
+              {gym.equipment && gym.equipment.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-3">Equipment Available</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {gym.equipment.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-3 bg-purple-50 border-2 border-purple-200 rounded-2xl">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-purple-900">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {gym.amenities && gym.amenities.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-3">Amenities</p>
+                  <div className="flex flex-wrap gap-2">
+                    {gym.amenities.map((amenity, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        {amenity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {gym.address && (
+                <div className="mb-6">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-2">Location</p>
+                  <p className="text-gray-900 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    {gym.address}
+                  </p>
+                  {gym.postcode && (
+                    <p className="text-gray-600 text-sm mt-1 ml-6">{gym.postcode}</p>
+                  )}
+                </div>
+              )}
+
+              {gym.distance_km && (
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-2">Distance</p>
+                  <p className="text-gray-900">{gym.distance_km} km away</p>
+                </div>
+              )}
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
