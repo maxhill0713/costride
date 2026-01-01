@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Home, Trophy, Calendar, Crown } from 'lucide-react';
+import { Home, Trophy, Dumbbell, Crown } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
   const navItems = [
     { name: 'Feed', icon: Home, page: 'Feed', color: 'text-purple-500' },
-    { name: 'Routines', icon: Calendar, page: 'Routines', color: 'text-blue-500' },
+    { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Leaderboard', icon: Trophy, page: 'Leaderboard', color: 'text-orange-500' },
-    { name: 'Plus', icon: Crown, page: 'Plus', color: 'text-pink-500' },
+    { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ];
 
   return (
