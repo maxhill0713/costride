@@ -9,6 +9,7 @@ import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import GymSignup from './pages/GymSignup';
+import GymCommunity from './pages/GymCommunity';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "GymSignup": GymSignup,
+    "GymCommunity": GymCommunity,
 }
 
 export const pagesConfig = {

@@ -243,9 +243,11 @@ export default function Gyms() {
 
                 {/* CTA */}
                 <div className="flex gap-2">
-                  <Button className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl">
-                    View Details
-                  </Button>
+                  <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="flex-1">
+                    <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl">
+                      View Community
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="px-6 border-2 border-gray-200 rounded-2xl font-semibold">
                     Check In
                   </Button>
