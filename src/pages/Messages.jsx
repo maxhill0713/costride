@@ -140,43 +140,43 @@ export default function Messages() {
                   </button>
                 ))}
               </div>
-              conversationList.length === 0 ? (
-              <div className="text-center py-12">
-                <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No messages yet</p>
-                <p className="text-sm text-gray-400 mt-1">Search members to start chatting</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {conversationList.map(conv => (
-                  <button
-                    key={conv.userId}
-                    onClick={() => setSelectedChat(conv)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${
-                      selectedChat?.userId === conv.userId 
-                        ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center relative shadow-md">
-                      <span className="text-white font-bold text-lg">{conv.userName.charAt(0)}</span>
-                      {conv.unread && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
-                          <span className="text-xs text-white font-bold">!</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">{conv.userName}</p>
-                      <p className="text-sm text-gray-500 truncate">{conv.lastMessage}</p>
-                    </div>
-                    <span className="text-xs text-gray-400 self-start mt-1">
-                      {format(new Date(conv.lastMessageTime), 'h:mm a')}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}</div>
+                <div className="text-center py-12">
+                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-gray-500">No messages yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Search members to start chatting</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {conversationList.map(conv => (
+                    <button
+                      key={conv.userId}
+                      onClick={() => setSelectedChat(conv)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${
+                        selectedChat?.userId === conv.userId 
+                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center relative shadow-md">
+                        <span className="text-white font-bold text-lg">{conv.userName.charAt(0)}</span>
+                        {conv.unread && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                            <span className="text-xs text-white font-bold">!</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{conv.userName}</p>
+                        <p className="text-sm text-gray-500 truncate">{conv.lastMessage}</p>
+                      </div>
+                      <span className="text-xs text-gray-400 self-start mt-1">
+                        {format(new Date(conv.lastMessageTime), 'h:mm a')}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </Card>
 
           {/* Chat Window */}
