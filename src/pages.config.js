@@ -1,4 +1,6 @@
 import Feed from './pages/Feed';
+import GymCommunity from './pages/GymCommunity';
+import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import Home from './pages/Home';
 import Leaderboard from './pages/Leaderboard';
@@ -8,13 +10,13 @@ import Plus from './pages/Plus';
 import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
-import GymSignup from './pages/GymSignup';
-import GymCommunity from './pages/GymCommunity';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Feed": Feed,
+    "GymCommunity": GymCommunity,
+    "GymSignup": GymSignup,
     "Gyms": Gyms,
     "Home": Home,
     "Leaderboard": Leaderboard,
@@ -24,8 +26,6 @@ export const PAGES = {
     "Profile": Profile,
     "Routines": Routines,
     "Search": Search,
-    "GymSignup": GymSignup,
-    "GymCommunity": GymCommunity,
 }
 
 export const pagesConfig = {

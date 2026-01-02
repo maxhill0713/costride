@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,10 +10,14 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import PostCard from '../components/feed/PostCard';
 import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
+import EventCard from '../components/events/EventCard';
+import CreateEventModal from '../components/events/CreateEventModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
+  const queryClient = useQueryClient();
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
 
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
@@ -37,6 +41,38 @@ export default function GymCommunity() {
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
     queryFn: () => base44.entities.Lift.list('-weight_lbs')
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events', gymId],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.list('-event_date');
+      return allEvents.filter(e => e.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: (eventData) => base44.entities.Event.create({
+      ...eventData,
+      gym_id: gymId,
+      gym_name: gym?.name,
+      attendees: 0
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', gymId] });
+      setShowCreateEvent(false);
+    }
+  });
+
+  const rsvpMutation = useMutation({
+    mutationFn: ({ eventId, currentAttendees }) => 
+      base44.entities.Event.update(eventId, {
+        attendees: currentAttendees + 1
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', gymId] });
+    }
   });
 
   // Filter top lifts for this gym's members (simplified - in real app would link members to gyms)
@@ -200,9 +236,12 @@ export default function GymCommunity() {
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Leaderboard
+            </TabsTrigger>
+            <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Events
             </TabsTrigger>
             <TabsTrigger value="feed" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Feed
@@ -230,6 +269,46 @@ export default function GymCommunity() {
                   lift={lift}
                 />
               ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="events" className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
+              <Button
+                onClick={() => setShowCreateEvent(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Event
+              </Button>
+            </div>
+            
+            {events.length === 0 ? (
+              <Card className="p-12 text-center">
+                <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 mb-2">No upcoming events</p>
+                <Button
+                  onClick={() => setShowCreateEvent(true)}
+                  variant="outline"
+                  className="mt-2"
+                >
+                  Create First Event
+                </Button>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onRSVP={(eventId) => {
+                      const event = events.find(e => e.id === eventId);
+                      rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                    }}
+                  />
+                ))}
+              </div>
             )}
           </TabsContent>
 
@@ -345,6 +424,14 @@ export default function GymCommunity() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <CreateEventModal
+          open={showCreateEvent}
+          onClose={() => setShowCreateEvent(false)}
+          onSave={(data) => createEventMutation.mutate(data)}
+          gym={gym}
+          isLoading={createEventMutation.isPending}
+        />
       </div>
     </div>
   );
