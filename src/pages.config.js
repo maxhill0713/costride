@@ -1,4 +1,3 @@
-import Feed from './pages/Feed';
 import GymCommunity from './pages/GymCommunity';
 import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
@@ -16,7 +15,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Feed": Feed,
     "GymCommunity": GymCommunity,
     "GymSignup": GymSignup,
     "Gyms": Gyms,

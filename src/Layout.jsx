@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Home, Trophy, Dumbbell, Crown, MessageCircle, Users } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
   const navItems = [
-    { name: 'Feed', icon: Home, page: 'Feed', color: 'text-purple-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Groups', icon: Users, page: 'Groups', color: 'text-green-500' },
     { name: 'Messages', icon: MessageCircle, page: 'Messages', color: 'text-cyan-500' },
+    { name: 'Leaderboard', icon: Trophy, page: 'Leaderboard', color: 'text-orange-500' },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ];
 
@@ -46,9 +46,9 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Side Navigation for Desktop */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-white/95 backdrop-blur-lg border-r-2 border-gray-200 flex-col items-center py-8 z-50 shadow-lg">
-        <Link to={createPageUrl('Feed')} className="mb-8">
+        <Link to={createPageUrl('Gyms')} className="mb-8">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md hover:scale-105 transition-transform">
-            <span className="text-xl font-black text-white">F</span>
+            <span className="text-xl font-black text-white">G</span>
           </div>
         </Link>
         
