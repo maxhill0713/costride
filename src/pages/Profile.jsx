@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -93,6 +93,29 @@ export default function Profile() {
             <div className="text-xs text-gray-500 font-medium mt-1">Day Streak</div>
           </Card>
         </div>
+
+        {/* Share Weekly Summary */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 p-4 mt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 mb-1">Weekly Summary</h3>
+              <p className="text-sm text-gray-600">
+                {stats.totalLifts} workouts • {stats.personalRecords} PRs • {stats.weekStreak} day streak
+              </p>
+            </div>
+            <Button 
+              onClick={() => {
+                const summary = `💪 My Week in Fitness:\n✅ ${stats.totalLifts} workouts completed\n🔥 ${stats.personalRecords} personal records\n⚡ ${stats.weekStreak} day streak\n🏋️ ${stats.totalWeight.toLocaleString()} lbs total lifted`;
+                navigator.clipboard.writeText(summary);
+                alert('Weekly summary copied to clipboard!');
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+          </div>
+        </Card>
       </div>
 
       {/* Content */}
@@ -194,9 +217,23 @@ export default function Profile() {
                       <p className="text-sm text-gray-500">{new Date(lift.created_date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xl font-black text-gray-900">{lift.weight_lbs}</div>
-                    <div className="text-xs text-gray-500">lbs {lift.reps && `× ${lift.reps}`}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-xl font-black text-gray-900">{lift.weight_lbs}</div>
+                      <div className="text-xs text-gray-500">lbs {lift.reps && `× ${lift.reps}`}</div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => {
+                        const summary = `💪 Just completed ${lift.exercise.replace(/_/g, ' ')} - ${lift.weight_lbs} lbs${lift.reps ? ` × ${lift.reps} reps` : ''}! ${lift.is_pr ? '🔥 NEW PR!' : ''}`;
+                        navigator.clipboard.writeText(summary);
+                        alert('Workout summary copied! Share it with your friends.');
+                      }}
+                      className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </Button>
                   </div>
                 </div>
               </Card>
