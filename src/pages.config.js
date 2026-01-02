@@ -10,6 +10,8 @@ import Plus from './pages/Plus';
 import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
+import Messages from './pages/Messages';
+import Groups from './pages/Groups';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +28,8 @@ export const PAGES = {
     "Profile": Profile,
     "Routines": Routines,
     "Search": Search,
+    "Messages": Messages,
+    "Groups": Groups,
 }
 
 export const pagesConfig = {

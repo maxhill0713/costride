@@ -236,7 +236,7 @@ export default function GymCommunity() {
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Leaderboard
             </TabsTrigger>
@@ -245,9 +245,6 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger value="feed" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Feed
-            </TabsTrigger>
-            <TabsTrigger value="members" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-              Members
             </TabsTrigger>
             <TabsTrigger value="info" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               Info
@@ -326,40 +323,6 @@ export default function GymCommunity() {
                   onLike={() => {}}
                   onComment={() => {}}
                 />
-              ))
-            )}
-          </TabsContent>
-
-          <TabsContent value="members" className="space-y-3">
-            {members.length === 0 ? (
-              <Card className="p-12 text-center">
-                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No members yet</p>
-              </Card>
-            ) : (
-              members.slice(0, 20).map((member) => (
-                <Card key={member.id} className="p-4 bg-white hover:border-blue-200 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
-                        {member.avatar_url ? (
-                          <img src={member.avatar_url} alt={member.name} className="w-full h-full rounded-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold">{member.name.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-900">{member.name}</p>
-                        {member.nickname && (
-                          <p className="text-sm text-gray-500">{member.nickname}</p>
-                        )}
-                      </div>
-                    </div>
-                    <Button variant="outline" className="rounded-full">
-                      Follow
-                    </Button>
-                  </div>
-                </Card>
               ))
             )}
           </TabsContent>
