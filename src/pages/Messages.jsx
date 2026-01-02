@@ -118,28 +118,29 @@ export default function Messages() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-2">{searchQuery ? (
-
-              <div className="space-y-1">
-                {filteredMembers.map(member => (
-                  <button
-                    key={member.id}
-                    onClick={() => {
-                      setSelectedChat({ userId: member.id, userName: member.name });
-                      setSearchQuery('');
-                    }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 transition-all"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md">
-                      <span className="text-white font-bold text-lg">{member.name.charAt(0)}</span>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold text-gray-900">{member.name}</p>
-                      {member.nickname && <p className="text-sm text-gray-500">{member.nickname}</p>}
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <div className="flex-1 overflow-y-auto px-2">
+              {searchQuery ? (
+                <div className="space-y-1">
+                  {filteredMembers.map(member => (
+                    <button
+                      key={member.id}
+                      onClick={() => {
+                        setSelectedChat({ userId: member.id, userName: member.name });
+                        setSearchQuery('');
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 transition-all"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md">
+                        <span className="text-white font-bold text-lg">{member.name.charAt(0)}</span>
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-gray-900">{member.name}</p>
+                        {member.nickname && <p className="text-sm text-gray-500">{member.nickname}</p>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : conversationList.length === 0 ? (
                 <div className="text-center py-12">
                   <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-gray-500">No messages yet</p>
