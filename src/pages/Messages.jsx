@@ -11,16 +11,9 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -36,6 +29,16 @@ export default function Messages() {
     queryKey: ['members'],
     queryFn: () => base44.entities.GymMember.list()
   });
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (selectedChat && !isMinimized) {
+      scrollToBottom();
+    }
+  }, [messages, selectedChat, isMinimized]);
 
   const sendMessageMutation = useMutation({
     mutationFn: (messageData) => base44.entities.Message.create(messageData),
@@ -92,9 +95,52 @@ export default function Messages() {
     m.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const unreadCount = conversationList.filter(conv => conv.unread).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50">
-      <div className="max-w-7xl mx-auto p-4">
+      {/* Minimized Floating Chat */}
+      {isMinimized && selectedChat && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <button
+            onClick={() => setIsMinimized(false)}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full p-4 shadow-2xl hover:scale-110 transition-transform relative"
+          >
+            <MessageCircle className="w-6 h-6" />
+            {unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+                {unreadCount}
+              </div>
+            )}
+          </button>
+          <div className="absolute bottom-full right-0 mb-2 bg-white rounded-2xl shadow-xl p-3 w-72 max-h-96 overflow-hidden">
+            <div className="flex items-center justify-between mb-2 pb-2 border-b">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{selectedChat.userName.charAt(0)}</span>
+                </div>
+                <span className="font-semibold text-sm">{selectedChat.userName}</span>
+              </div>
+              <button onClick={() => setIsMinimized(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {chatMessages.slice(-3).map(msg => (
+                <div key={msg.id} className={`text-xs ${msg.sender_id === currentUser?.id ? 'text-right' : 'text-left'}`}>
+                  <div className={`inline-block px-2 py-1 rounded-lg ${msg.sender_id === currentUser?.id ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={`max-w-7xl mx-auto p-4 transition-all ${isMinimized ? 'hidden' : ''}`}>
         <div className="grid md:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-8rem)]">
           {/* Conversations List */}
           <Card className="bg-white/80 backdrop-blur-lg border-2 border-gray-200/50 shadow-xl overflow-hidden flex flex-col">
@@ -204,6 +250,16 @@ export default function Messages() {
                       <p className="text-xs text-gray-500">Active now</p>
                     </div>
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full hover:bg-gray-100"
+                    onClick={() => setIsMinimized(true)}
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </Button>
                   <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100">
                     <MoreVertical className="w-5 h-5 text-gray-600" />
                   </Button>
