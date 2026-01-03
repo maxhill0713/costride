@@ -236,17 +236,20 @@ export default function GymCommunity() {
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
-            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Leaderboard
             </TabsTrigger>
-            <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="challenges" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+              Challenges
+            </TabsTrigger>
+            <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Events
             </TabsTrigger>
-            <TabsTrigger value="feed" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="feed" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Feed
             </TabsTrigger>
-            <TabsTrigger value="info" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="info" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Info
             </TabsTrigger>
           </TabsList>
@@ -267,6 +270,25 @@ export default function GymCommunity() {
                 />
               ))
             )}
+          </TabsContent>
+
+          <TabsContent value="challenges">
+            <div className="space-y-4">
+              <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 p-6">
+                <h3 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-orange-600" />
+                  Gym Challenges
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Create challenges for your members or challenge other gyms to compete!
+                </p>
+                <Link to={createPageUrl('Challenges')}>
+                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl">
+                    View All Challenges
+                  </Button>
+                </Link>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="events" className="space-y-4">
