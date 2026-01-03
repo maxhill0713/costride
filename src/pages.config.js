@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Premium from './pages/Premium';
+import Challenges from './pages/Challenges';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "Premium": Premium,
+    "Challenges": Challenges,
 }
 
 export const pagesConfig = {

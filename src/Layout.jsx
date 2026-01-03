@@ -6,9 +6,9 @@ import { Trophy, Dumbbell, Crown, MessageCircle, Users } from 'lucide-react';
 export default function Layout({ children, currentPageName }) {
   const navItems = [
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
+    { name: 'Challenges', icon: Trophy, page: 'Challenges', color: 'text-orange-500' },
     { name: 'Groups', icon: Users, page: 'Groups', color: 'text-green-500' },
     { name: 'Messages', icon: MessageCircle, page: 'Messages', color: 'text-cyan-500' },
-    { name: 'Leaderboard', icon: Trophy, page: 'Leaderboard', color: 'text-orange-500' },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ];
 
