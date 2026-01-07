@@ -4,16 +4,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { Dumbbell, Loader2, CheckCircle2, Upload } from 'lucide-react';
+import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
 
 export default function GymSignup() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const queryClient = useQueryClient();
+
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -55,7 +59,6 @@ export default function GymSignup() {
   };
 
   const amenitiesOptions = ['WiFi', 'Parking', '24/7', 'Personal Training', 'Showers', 'Lockers', 'Sauna', 'Smoothie Bar'];
-  const equipmentOptions = ['Power Racks', 'Barbells', 'Dumbbells', 'Cable Machines', 'Cardio Equipment', 'Olympic Platforms', 'Kettlebells', 'Resistance Bands'];
 
   const toggleArrayItem = (field, item) => {
     setFormData(prev => ({
@@ -64,6 +67,11 @@ export default function GymSignup() {
         ? prev[field].filter(i => i !== item)
         : [...prev[field], item]
     }));
+  };
+
+  const handleSaveEquipment = (equipment) => {
+    setFormData({ ...formData, equipment });
+    setShowEquipmentModal(false);
   };
 
   if (submitted) {
@@ -211,20 +219,38 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold mb-2 block">Equipment</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {equipmentOptions.map((equipment) => (
-                      <Button
-                        key={equipment}
-                        type="button"
-                        onClick={() => toggleArrayItem('equipment', equipment)}
-                        variant={formData.equipment.includes(equipment) ? 'default' : 'outline'}
-                        className="rounded-2xl"
-                      >
-                        {equipment}
-                      </Button>
-                    ))}
+                  <Label className="text-gray-700 font-semibold mb-2 block">Specific Equipment</Label>
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mb-3">
+                    <p className="text-sm text-blue-900 font-medium mb-1">
+                      List your exact equipment with brands and models
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      e.g., "Hammer Strength Chest Supported Row", "Prime Lateral Raise Machine"
+                    </p>
                   </div>
+                  <Button
+                    type="button"
+                    onClick={() => setShowEquipmentModal(true)}
+                    variant="outline"
+                    className="w-full rounded-2xl border-2 border-dashed border-blue-300 hover:bg-blue-50 h-12"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    {formData.equipment.length > 0 ? `Manage Equipment (${formData.equipment.length})` : 'Add Equipment'}
+                  </Button>
+                  {formData.equipment.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {formData.equipment.slice(0, 5).map((item, idx) => (
+                        <Badge key={idx} variant="outline" className="bg-purple-50 text-purple-900 border-purple-200">
+                          {item}
+                        </Badge>
+                      ))}
+                      {formData.equipment.length > 5 && (
+                        <Badge variant="outline" className="bg-gray-50 text-gray-600">
+                          +{formData.equipment.length - 5} more
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -273,6 +299,13 @@ export default function GymSignup() {
             </div>
           </form>
         </Card>
+
+        <ManageEquipmentModal
+          open={showEquipmentModal}
+          onClose={() => setShowEquipmentModal(false)}
+          equipment={formData.equipment}
+          onSave={handleSaveEquipment}
+        />
       </div>
     </div>
   );
