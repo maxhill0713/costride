@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2 } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Profile() {
-  const [selectedMember, setSelectedMember] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
   });
 
   const { data: lifts = [] } = useQuery({
@@ -20,8 +23,22 @@ export default function Profile() {
     queryFn: () => base44.entities.Lift.list('-created_date')
   });
 
-  const currentMember = selectedMember || members[0];
-  const memberLifts = lifts.filter(l => l.member_id === currentMember?.id);
+  const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
+
+  React.useEffect(() => {
+    if (currentUser) {
+      setEditData({
+        bio: currentUser.bio || '',
+        gym_location: currentUser.gym_location || '',
+        avatar_url: currentUser.avatar_url || ''
+      });
+    }
+  }, [currentUser]);
+
+  const handleSave = async () => {
+    await base44.auth.updateMe(editData);
+    setIsEditing(false);
+  };
 
   const stats = {
     totalLifts: memberLifts.length,
@@ -43,10 +60,10 @@ export default function Profile() {
     return last30Days;
   };
 
-  if (!currentMember) {
+  if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">No member data available</p>
+        <p className="text-gray-500">Loading profile...</p>
       </div>
     );
   }
@@ -54,31 +71,105 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-500 to-pink-500 px-4 pt-8 pb-20">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-lg">
-              {currentMember.avatar_url ? (
-                <img src={currentMember.avatar_url} alt={currentMember.name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-3xl font-bold text-purple-500">
-                  {currentMember.name?.charAt(0)?.toUpperCase()}
-                </span>
+      <div className="bg-gradient-to-br from-purple-500 to-pink-500 px-4 pt-8 pb-24">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-lg">
+                {currentUser.avatar_url ? (
+                  <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-bold text-purple-500">
+                    {currentUser.full_name?.charAt(0)?.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="text-white">
+                <h1 className="text-3xl font-black">{currentUser.full_name}</h1>
+                <p className="text-purple-100 text-sm">{currentUser.email}</p>
+              </div>
+            </div>
+            {!isEditing ? (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-white hover:bg-white/20"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="w-5 h-5" />
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20"
+                  onClick={handleSave}
+                >
+                  <Save className="w-5 h-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20"
+                  onClick={() => setIsEditing(false)}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Bio & Location */}
+          {isEditing ? (
+            <div className="space-y-3">
+              <div>
+                <label className="text-white text-sm font-medium mb-1 block">Bio</label>
+                <Textarea
+                  value={editData.bio}
+                  onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="text-white text-sm font-medium mb-1 block">Gym Location</label>
+                <Input
+                  value={editData.gym_location}
+                  onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
+                  placeholder="e.g. Iron Paradise, Manchester"
+                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="text-white text-sm font-medium mb-1 block">Profile Photo URL</label>
+                <Input
+                  value={editData.avatar_url}
+                  onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
+                  placeholder="https://..."
+                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {currentUser.bio && (
+                <p className="text-white/90 text-sm leading-relaxed">{currentUser.bio}</p>
+              )}
+              {currentUser.gym_location && (
+                <div className="flex items-center gap-2 text-white/90">
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm">{currentUser.gym_location}</span>
+                </div>
               )}
             </div>
-            <div className="text-white">
-              <h1 className="text-2xl font-black">{currentMember.name}</h1>
-              <p className="text-purple-100">{currentMember.nickname}</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" className="text-white">
-            <Settings className="w-6 h-6" />
-          </Button>
+          )}
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="max-w-2xl mx-auto px-4 -mt-12 mb-6">
+      <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         <div className="grid grid-cols-3 gap-3">
           <Card className="bg-white border-2 border-gray-100 p-4 text-center shadow-md">
             <div className="text-2xl font-black text-gray-900">{stats.totalLifts}</div>
