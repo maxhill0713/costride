@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,12 +12,19 @@ import PostCard from '../components/feed/PostCard';
 import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
 import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
+import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showManageEquipment, setShowManageEquipment] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
 
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
@@ -74,6 +81,16 @@ export default function GymCommunity() {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
     }
   });
+
+  const updateEquipmentMutation = useMutation({
+    mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
+      setShowManageEquipment(false);
+    }
+  });
+
+  const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email;
 
   // Filter top lifts for this gym's members (simplified - in real app would link members to gyms)
   const topLifts = lifts.slice(0, 10).map(lift => {
@@ -360,19 +377,46 @@ export default function GymCommunity() {
                 </div>
               )}
 
-              {gym.equipment && gym.equipment.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-sm font-bold text-gray-500 uppercase mb-3">Equipment Available</p>
-                  <div className="grid grid-cols-2 gap-2">
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-bold text-gray-500 uppercase">Equipment Available</p>
+                  {isGymOwner && (
+                    <Button
+                      onClick={() => setShowManageEquipment(true)}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-2xl"
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+                {gym.equipment && gym.equipment.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-2">
                     {gym.equipment.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-3 bg-purple-50 border-2 border-purple-200 rounded-2xl">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-purple-900">{item}</span>
+                      <div key={idx} className="flex items-start gap-3 p-3 bg-purple-50 border-2 border-purple-200 rounded-2xl">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                        <span className="text-sm font-medium text-purple-900 leading-relaxed">{item}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+                    <p className="text-gray-500 text-sm">No equipment listed yet</p>
+                    {isGymOwner && (
+                      <Button
+                        onClick={() => setShowManageEquipment(true)}
+                        size="sm"
+                        variant="outline"
+                        className="mt-2"
+                      >
+                        Add Equipment
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {gym.amenities && gym.amenities.length > 0 && (
                 <div className="mb-6">
@@ -416,6 +460,14 @@ export default function GymCommunity() {
           onSave={(data) => createEventMutation.mutate(data)}
           gym={gym}
           isLoading={createEventMutation.isPending}
+        />
+
+        <ManageEquipmentModal
+          open={showManageEquipment}
+          onClose={() => setShowManageEquipment(false)}
+          equipment={gym?.equipment || []}
+          onSave={(equipment) => updateEquipmentMutation.mutate(equipment)}
+          isLoading={updateEquipmentMutation.isPending}
         />
       </div>
     </div>
