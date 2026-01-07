@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import AddGoalModal from '../components/goals/AddGoalModal';
+import GoalCard from '../components/goals/GoalCard';
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
+  const [showAddGoal, setShowAddGoal] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -21,6 +25,12 @@ export default function Profile() {
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
     queryFn: () => base44.entities.Lift.list('-created_date')
+  });
+
+  const { data: goals = [] } = useQuery({
+    queryKey: ['goals', currentUser?.id],
+    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser
   });
 
   const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
@@ -39,6 +49,44 @@ export default function Profile() {
     await base44.auth.updateMe(editData);
     setIsEditing(false);
   };
+
+  const createGoalMutation = useMutation({
+    mutationFn: (data) => base44.entities.Goal.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      setShowAddGoal(false);
+    }
+  });
+
+  const updateGoalMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    }
+  });
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: (id) => base44.entities.Goal.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    }
+  });
+
+  const handleUpdateGoal = (goal, newValue, status) => {
+    updateGoalMutation.mutate({
+      id: goal.id,
+      data: { current_value: newValue, status: status || goal.status }
+    });
+  };
+
+  const handleToggleReminder = (goal) => {
+    updateGoalMutation.mutate({
+      id: goal.id,
+      data: { reminder_enabled: !goal.reminder_enabled }
+    });
+  };
+
+  const activeGoals = goals.filter(g => g.status === 'active');
 
   const stats = {
     totalLifts: memberLifts.length,
@@ -241,32 +289,46 @@ export default function Profile() {
               </ResponsiveContainer>
             </Card>
 
-            <Card className="bg-white border-2 border-gray-100 p-5">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-500" />
-                Current Goals
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-700 font-medium">Squat 400 lbs</span>
-                    <span className="text-gray-500">75%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-400 to-blue-600" style={{ width: '75%' }} />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-700 font-medium">50 Workouts This Month</span>
-                    <span className="text-gray-500">60%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-green-400 to-green-600" style={{ width: '60%' }} />
-                  </div>
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-500" />
+                  My Goals
+                </h3>
+                <Button
+                  onClick={() => setShowAddGoal(true)}
+                  size="sm"
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Goal
+                </Button>
               </div>
-            </Card>
+
+              {activeGoals.length === 0 ? (
+                <Card className="p-8 text-center border-2 border-dashed border-gray-200">
+                  <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-gray-500 mb-2">No goals set yet</p>
+                  <Button
+                    onClick={() => setShowAddGoal(true)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Set Your First Goal
+                  </Button>
+                </Card>
+              ) : (
+                activeGoals.map(goal => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onUpdate={handleUpdateGoal}
+                    onDelete={(id) => deleteGoalMutation.mutate(id)}
+                    onToggleReminder={handleToggleReminder}
+                  />
+                ))
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-4">
@@ -332,6 +394,14 @@ export default function Profile() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AddGoalModal
+        open={showAddGoal}
+        onClose={() => setShowAddGoal(false)}
+        onSave={(data) => createGoalMutation.mutate(data)}
+        currentUser={currentUser}
+        isLoading={createGoalMutation.isPending}
+      />
     </div>
   );
 }
