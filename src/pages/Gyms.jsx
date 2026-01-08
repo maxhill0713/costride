@@ -63,11 +63,6 @@ export default function Gyms() {
                 Gym Community
               </h1>
             </div>
-            <Link to={createPageUrl('GymSignup')}>
-              <Button className="bg-white/95 backdrop-blur-sm text-blue-600 hover:bg-white hover:scale-105 font-bold rounded-2xl h-12 px-6 shadow-lg transition-all">
-                Register Your Gym
-              </Button>
-            </Link>
           </div>
           <Input
             placeholder="Search by name or city..."

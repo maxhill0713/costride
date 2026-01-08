@@ -144,7 +144,7 @@ export default function GymCommunity() {
     }
   });
 
-  const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email;
+  const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
 
   // Filter top lifts for this gym's members (simplified - in real app would link members to gyms)
   const topLifts = lifts.slice(0, 10).map(lift => {
