@@ -1,0 +1,252 @@
+import React, { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Flame, Calendar, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
+import { differenceInDays, parseISO, startOfDay } from 'date-fns';
+
+export default function CheckInButton({ gym }) {
+  const [isChecking, setIsChecking] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['checkIns', currentUser?.id, gym?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ 
+      user_id: currentUser.id,
+      gym_id: gym.id 
+    }, '-check_in_date'),
+    enabled: !!currentUser && !!gym
+  });
+
+  const { data: allCheckIns = [] } = useQuery({
+    queryKey: ['allCheckIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
+    enabled: !!currentUser
+  });
+
+  const checkInMutation = useMutation({
+    mutationFn: async (data) => {
+      const newCheckIn = await base44.entities.CheckIn.create(data);
+      return newCheckIn;
+    },
+    onSuccess: async (newCheckIn) => {
+      queryClient.invalidateQueries({ queryKey: ['checkIns'] });
+      queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
+      
+      // Check for milestones
+      const totalVisits = checkIns.length + 1;
+      const streak = calculateStreak([newCheckIn, ...checkIns]);
+      const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
+
+      if (totalVisits === 1) {
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        toast.success('🎉 First check-in at ' + gym.name + '!', {
+          description: 'Welcome to the community!'
+        });
+      } else if (totalVisits === 10) {
+        confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        toast.success('🔥 10 visits milestone!', {
+          description: 'You\'re building consistency!'
+        });
+        await base44.entities.Achievement.create({
+          user_id: currentUser.id,
+          user_name: currentUser.full_name,
+          gym_id: gym.id,
+          achievement_type: '100_lifts',
+          title: '10 Visit Streak',
+          description: `Checked in 10 times at ${gym.name}`,
+          icon: '🔥',
+          points: 50
+        });
+      } else if (totalVisits === 50) {
+        confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
+        toast.success('💪 50 visits! You\'re a regular!', {
+          description: 'Dedication level: Elite'
+        });
+      }
+
+      if (streak === 7) {
+        toast.success('🔥 7 day streak!', {
+          description: 'Keep the momentum going!'
+        });
+      } else if (streak === 30) {
+        confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
+        toast.success('⚡ 30 DAY STREAK!', {
+          description: 'You\'re unstoppable!'
+        });
+        await base44.entities.Achievement.create({
+          user_id: currentUser.id,
+          user_name: currentUser.full_name,
+          gym_id: gym.id,
+          achievement_type: 'streak_30',
+          title: '30 Day Streak',
+          description: 'Trained for 30 consecutive days',
+          icon: '⚡',
+          points: 100
+        });
+      }
+
+      if (gymAnniversary) {
+        confetti({ particleCount: 300, spread: 160, origin: { y: 0.6 } });
+        toast.success(`🎉 ${gymAnniversary} year${gymAnniversary > 1 ? 's' : ''} at ${gym.name}!`, {
+          description: 'What an incredible journey!'
+        });
+      }
+
+      toast.success('✅ Checked in successfully!');
+    }
+  });
+
+  const calculateStreak = (checkIns) => {
+    if (checkIns.length === 0) return 0;
+    
+    let streak = 1;
+    const today = startOfDay(new Date());
+    
+    for (let i = 0; i < checkIns.length - 1; i++) {
+      const current = startOfDay(parseISO(checkIns[i].check_in_date));
+      const next = startOfDay(parseISO(checkIns[i + 1].check_in_date));
+      const daysDiff = differenceInDays(current, next);
+      
+      if (daysDiff === 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  };
+
+  const checkGymAnniversary = (checkIns, newCheckIn) => {
+    if (checkIns.length === 0) return null;
+    
+    const firstVisit = checkIns[checkIns.length - 1];
+    const firstVisitDate = parseISO(firstVisit.check_in_date);
+    const today = new Date();
+    
+    const yearsDiff = today.getFullYear() - firstVisitDate.getFullYear();
+    const isAnniversaryMonth = today.getMonth() === firstVisitDate.getMonth();
+    const isAnniversaryDay = today.getDate() === firstVisitDate.getDate();
+    
+    if (yearsDiff > 0 && isAnniversaryMonth && isAnniversaryDay) {
+      return yearsDiff;
+    }
+    
+    return null;
+  };
+
+  const hasCheckedInToday = () => {
+    if (!checkIns.length) return false;
+    const today = startOfDay(new Date());
+    const lastCheckIn = startOfDay(parseISO(checkIns[0].check_in_date));
+    return differenceInDays(today, lastCheckIn) === 0;
+  };
+
+  const getLastCheckInDays = () => {
+    if (!checkIns.length) return null;
+    const lastCheckIn = parseISO(checkIns[0].check_in_date);
+    return differenceInDays(new Date(), lastCheckIn);
+  };
+
+  const daysSinceLastCheckIn = getLastCheckInDays();
+  const currentStreak = calculateStreak(checkIns);
+  const isInactive = daysSinceLastCheckIn >= 7;
+
+  const handleCheckIn = async () => {
+    if (!currentUser || !gym) return;
+    
+    setIsChecking(true);
+    try {
+      await checkInMutation.mutateAsync({
+        user_id: currentUser.id,
+        user_name: currentUser.full_name,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        check_in_date: new Date().toISOString(),
+        first_visit: checkIns.length === 0
+      });
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Inactivity Warning */}
+      {isInactive && daysSinceLastCheckIn !== null && (
+        <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-orange-900">We miss you!</p>
+              <p className="text-sm text-orange-700">
+                It's been {daysSinceLastCheckIn} days since your last visit. Come back and continue your journey! 💪
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Check-in Stats */}
+      {checkIns.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
+            <div className="flex items-center gap-2 mb-1">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-bold text-blue-900 uppercase">Total Visits</span>
+            </div>
+            <div className="text-2xl font-black text-blue-900">{checkIns.length}</div>
+          </div>
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 border-2 border-orange-200">
+            <div className="flex items-center gap-2 mb-1">
+              <Flame className="w-4 h-4 text-orange-600" />
+              <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
+            </div>
+            <div className="text-2xl font-black text-orange-900">{currentStreak} days</div>
+          </div>
+        </div>
+      )}
+
+      {/* Check-in Button */}
+      <Button
+        onClick={handleCheckIn}
+        disabled={hasCheckedInToday() || isChecking}
+        className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg ${
+          hasCheckedInToday()
+            ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
+            : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+        }`}
+      >
+        {hasCheckedInToday() ? (
+          <>
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Checked In Today ✓
+          </>
+        ) : isChecking ? (
+          'Checking in...'
+        ) : (
+          <>
+            <MapPin className="w-5 h-5 mr-2" />
+            Check In Now
+          </>
+        )}
+      </Button>
+
+      {hasCheckedInToday() && (
+        <p className="text-center text-sm text-gray-500">
+          See you tomorrow! Keep the streak alive 🔥
+        </p>
+      )}
+    </div>
+  );
+}
