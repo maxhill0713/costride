@@ -117,24 +117,24 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30">
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-500 to-pink-500 px-4 pt-8 pb-24">
+      <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 px-4 pt-8 pb-24 shadow-xl">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-lg">
+              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/30">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-bold text-purple-500">
+                  <span className="text-4xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text text-transparent">
                     {currentUser.full_name?.charAt(0)?.toUpperCase()}
                   </span>
                 )}
               </div>
-              <div className="text-white">
+              <div className="text-white drop-shadow-lg">
                 <h1 className="text-3xl font-black">{currentUser.full_name}</h1>
-                <p className="text-purple-100 text-sm">{currentUser.email}</p>
+                <p className="text-white/90 text-sm mt-1">{currentUser.email}</p>
               </div>
             </div>
             {!isEditing ? (
@@ -218,18 +218,18 @@ export default function Profile() {
 
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-white border-2 border-gray-100 p-4 text-center shadow-md">
-            <div className="text-2xl font-black text-gray-900">{stats.totalLifts}</div>
-            <div className="text-xs text-gray-500 font-medium mt-1">Workouts</div>
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="text-3xl font-black bg-gradient-to-br from-blue-500 to-cyan-500 bg-clip-text text-transparent">{stats.totalLifts}</div>
+            <div className="text-xs text-gray-600 font-bold mt-2 uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-white border-2 border-gray-100 p-4 text-center shadow-md">
-            <div className="text-2xl font-black text-orange-500">{stats.personalRecords}</div>
-            <div className="text-xs text-gray-500 font-medium mt-1">PRs</div>
+          <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="text-3xl font-black bg-gradient-to-br from-orange-500 to-red-500 bg-clip-text text-transparent">{stats.personalRecords}</div>
+            <div className="text-xs text-gray-600 font-bold mt-2 uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-white border-2 border-gray-100 p-4 text-center shadow-md">
-            <div className="text-2xl font-black text-purple-500">{stats.weekStreak}</div>
-            <div className="text-xs text-gray-500 font-medium mt-1">Day Streak</div>
+          <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="text-3xl font-black bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text text-transparent">{stats.weekStreak}</div>
+            <div className="text-xs text-gray-600 font-bold mt-2 uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 

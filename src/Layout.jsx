@@ -15,7 +15,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 z-50 md:hidden shadow-2xl">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex justify-around items-center h-20 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
@@ -25,19 +25,19 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-1.5 px-3 py-2 rounded-2xl transition-all
+                  relative flex flex-col items-center justify-center gap-1.5 px-3 py-2 rounded-2xl transition-all duration-300
                   ${isActive 
-                    ? `${item.color} scale-105` 
-                    : 'text-gray-400 hover:text-gray-600'}
+                    ? 'scale-105' 
+                    : 'text-gray-400 hover:text-gray-600 hover:scale-105'}
                 `}
               >
                 {isActive && (
-                  <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-12 h-1 ${item.color.replace('text-', 'bg-')} rounded-full`} />
+                  <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-12 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg`} />
                 )}
-                <div className={`${isActive ? 'bg-current bg-opacity-10 p-2 rounded-xl' : ''}`}>
-                  <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} strokeWidth={isActive ? 2.5 : 2} />
+                <div className={`${isActive ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 p-2.5 rounded-2xl shadow-sm` : 'p-2'}`}>
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''} transition-all duration-300`} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
-                <span className={`text-xs font-bold ${isActive ? 'text-gray-900' : ''}`}>{item.name}</span>
+                <span className={`text-xs font-bold ${isActive ? 'text-gray-900' : ''} transition-colors`}>{item.name}</span>
               </Link>
             );
           })}
@@ -45,14 +45,14 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Side Navigation for Desktop */}
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-white/98 backdrop-blur-xl border-r border-gray-200/50 flex-col items-center py-8 z-50 shadow-xl">
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-white/95 backdrop-blur-xl border-r border-gray-200/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md hover:scale-105 transition-transform">
-            <span className="text-xl font-black text-white">G</span>
+          <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
+            <span className="text-2xl font-black text-white">G</span>
           </div>
         </Link>
         
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -60,15 +60,15 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={createPageUrl(item.page)}
                 className={`
-                  relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all
+                  relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive 
-                    ? 'bg-green-100 text-green-600 shadow-sm' 
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
+                    ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 ${item.color} shadow-md scale-110` 
+                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100/80 hover:scale-105'}
                 `}
               >
-                <item.icon className="w-6 h-6" />
+                <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-500 rounded-r-full" />
+                  <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 ${item.color.replace('text-', 'bg-')} rounded-r-full shadow-lg`} />
                 )}
               </Link>
             );
