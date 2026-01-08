@@ -20,6 +20,7 @@ import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import LogLiftModal from '../components/lifts/LogLiftModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
+import ManageMembersModal from '../components/gym/ManageMembersModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -34,6 +35,7 @@ export default function GymCommunity() {
   const [showLogLift, setShowLogLift] = useState(false);
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showEditHeroImage, setShowEditHeroImage] = useState(false);
+  const [showManageMembers, setShowManageMembers] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -208,6 +210,30 @@ export default function GymCommunity() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowEditHeroImage(false);
+    }
+  });
+
+  const banMemberMutation = useMutation({
+    mutationFn: (userId) => {
+      const currentBanned = gym?.banned_members || [];
+      return base44.entities.Gym.update(gymId, { 
+        banned_members: [...currentBanned, userId] 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
+    }
+  });
+
+  const unbanMemberMutation = useMutation({
+    mutationFn: (userId) => {
+      const currentBanned = gym?.banned_members || [];
+      return base44.entities.Gym.update(gymId, { 
+        banned_members: currentBanned.filter(id => id !== userId) 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
     }
   });
 
@@ -454,6 +480,29 @@ export default function GymCommunity() {
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Rewards
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Manage Members - Gym Owners Only */}
+        {isGymOwner && (
+          <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-blue-900">Member Management</h3>
+                  <p className="text-sm text-blue-700">View and manage your gym members</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowManageMembers(true)}
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl"
+              >
+                Manage Members
               </Button>
             </div>
           </Card>
@@ -1035,6 +1084,14 @@ export default function GymCommunity() {
           currentImageUrl={gym?.image_url}
           onSave={(image_url) => updateHeroImageMutation.mutate(image_url)}
           isLoading={updateHeroImageMutation.isPending}
+        />
+
+        <ManageMembersModal
+          open={showManageMembers}
+          onClose={() => setShowManageMembers(false)}
+          gym={gym}
+          onBanMember={(userId) => banMemberMutation.mutate(userId)}
+          onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)}
         />
       </div>
     </div>
