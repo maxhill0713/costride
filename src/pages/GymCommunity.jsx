@@ -19,6 +19,7 @@ import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import LogLiftModal from '../components/lifts/LogLiftModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
+import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -32,6 +33,7 @@ export default function GymCommunity() {
   const [selectedExercise, setSelectedExercise] = useState('all');
   const [showLogLift, setShowLogLift] = useState(false);
   const [showManagePhotos, setShowManagePhotos] = useState(false);
+  const [showEditHeroImage, setShowEditHeroImage] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -201,6 +203,14 @@ export default function GymCommunity() {
     }
   });
 
+  const updateHeroImageMutation = useMutation({
+    mutationFn: (image_url) => base44.entities.Gym.update(gymId, { image_url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
+      setShowEditHeroImage(false);
+    }
+  });
+
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
 
   // Filter lifts by exercise
@@ -267,6 +277,16 @@ export default function GymCommunity() {
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
+
+        {isGymOwner && (
+          <Button
+            onClick={() => setShowEditHeroImage(true)}
+            variant="ghost"
+            className="absolute top-4 right-4 bg-white/90 backdrop-blur hover:bg-white rounded-full"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+        )}
 
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="max-w-4xl mx-auto">
@@ -1007,6 +1027,14 @@ export default function GymCommunity() {
           gallery={gym?.gallery || []}
           onSave={(gallery) => updateGalleryMutation.mutate(gallery)}
           isLoading={updateGalleryMutation.isPending}
+        />
+
+        <EditHeroImageModal
+          open={showEditHeroImage}
+          onClose={() => setShowEditHeroImage(false)}
+          currentImageUrl={gym?.image_url}
+          onSave={(image_url) => updateHeroImageMutation.mutate(image_url)}
+          isLoading={updateHeroImageMutation.isPending}
         />
       </div>
     </div>
