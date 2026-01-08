@@ -13,6 +13,7 @@ import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
 import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
 import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
+import CheckInButton from '../components/gym/CheckInButton';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -212,6 +213,9 @@ export default function GymCommunity() {
             </div>
           </Card>
         )}
+
+        {/* Check-in Section */}
+        <CheckInButton gym={gym} />
 
         {/* Leaderboard Rewards */}
         <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-6 mb-6">
