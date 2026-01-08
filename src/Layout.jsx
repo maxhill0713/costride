@@ -20,10 +20,10 @@ export default function Layout({ children, currentPageName }) {
   const unreadCount = notifications.length;
 
   const navItems = [
+    { name: 'Home', icon: Dumbbell, page: 'Home', color: 'text-indigo-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Challenges', icon: Trophy, page: 'Challenges', color: 'text-orange-500' },
     { name: 'Leaderboards', icon: Trophy, page: 'Leaderboards', color: 'text-yellow-500' },
-    { name: 'Groups', icon: Users, page: 'Groups', color: 'text-green-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ];

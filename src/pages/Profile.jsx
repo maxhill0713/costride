@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
+import BadgesDisplay from '../components/profile/BadgesDisplay';
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -292,17 +293,20 @@ export default function Profile() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
-            <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+            <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
               Progress
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="badges" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
+              Badges
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
               Achievements
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
               History
             </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
               <Settings className="w-4 h-4 md:mr-1" />
               <span className="hidden md:inline">Settings</span>
             </TabsTrigger>
@@ -365,6 +369,10 @@ export default function Profile() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="badges">
+            <BadgesDisplay user={currentUser} />
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-4">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -56,6 +56,24 @@ export default function GymCommunity() {
     queryFn: async () => {
       const allEvents = await base44.entities.Event.list('-event_date');
       return allEvents.filter(e => e.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classes', gymId],
+    queryFn: async () => {
+      const allClasses = await base44.entities.GymClass.list();
+      return allClasses.filter(c => c.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
+  const { data: coaches = [] } = useQuery({
+    queryKey: ['coaches', gymId],
+    queryFn: async () => {
+      const allCoaches = await base44.entities.Coach.list();
+      return allCoaches.filter(c => c.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -257,12 +275,18 @@ export default function GymCommunity() {
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-7 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Leaderboard
             </TabsTrigger>
             <TabsTrigger value="challenges" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Challenges
+            </TabsTrigger>
+            <TabsTrigger value="classes" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+              Classes
+            </TabsTrigger>
+            <TabsTrigger value="coaches" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+              Coaches
             </TabsTrigger>
             <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Events
@@ -310,6 +334,118 @@ export default function GymCommunity() {
                 </Link>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="classes" className="space-y-4">
+            {classes.length === 0 ? (
+              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
+                <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 font-medium">No classes scheduled yet</p>
+                <p className="text-sm text-gray-400 mt-1">Check back soon for upcoming classes</p>
+              </Card>
+            ) : (
+              classes.map((gymClass) => (
+                <Card key={gymClass.id} className="bg-white border-2 border-gray-100 p-5 rounded-3xl hover:shadow-lg transition-all">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                      <Target className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">{gymClass.name}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{gymClass.description}</p>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge className="bg-purple-100 text-purple-700">
+                          {gymClass.instructor}
+                        </Badge>
+                        {gymClass.difficulty && (
+                          <Badge className="capitalize" variant="outline">
+                            {gymClass.difficulty.replace('_', ' ')}
+                          </Badge>
+                        )}
+                        {gymClass.duration_minutes && (
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {gymClass.duration_minutes} min
+                          </Badge>
+                        )}
+                      </div>
+                      {gymClass.schedule && gymClass.schedule.length > 0 && (
+                        <div className="space-y-1">
+                          {gymClass.schedule.map((slot, idx) => (
+                            <div key={idx} className="text-sm text-gray-600 flex items-center gap-2">
+                              <Calendar className="w-3 h-3" />
+                              <span className="font-medium">{slot.day}</span>
+                              <span>•</span>
+                              <span>{slot.time}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="coaches" className="space-y-4">
+            {coaches.length === 0 ? (
+              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
+                <GraduationCap className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 font-medium">No coaches listed yet</p>
+                <p className="text-sm text-gray-400 mt-1">Stay tuned for our coaching team</p>
+              </Card>
+            ) : (
+              coaches.map((coach) => (
+                <Card key={coach.id} className="bg-white border-2 border-gray-100 p-5 rounded-3xl hover:shadow-lg transition-all">
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {coach.avatar_url ? (
+                        <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl font-bold text-white">
+                          {coach.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900 text-lg">{coach.name}</h3>
+                        {coach.rating && (
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-bold text-gray-900">{coach.rating}</span>
+                          </div>
+                        )}
+                      </div>
+                      {coach.bio && (
+                        <p className="text-sm text-gray-600 mb-3">{coach.bio}</p>
+                      )}
+                      {coach.specialties && coach.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {coach.specialties.map((specialty, idx) => (
+                            <Badge key={idx} className="bg-blue-100 text-blue-700">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        {coach.experience_years && (
+                          <span>{coach.experience_years} years experience</span>
+                        )}
+                        {coach.total_clients > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>{coach.total_clients} clients</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="events" className="space-y-4">
