@@ -7,6 +7,7 @@ export default function Layout({ children, currentPageName }) {
   const navItems = [
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Challenges', icon: Trophy, page: 'Challenges', color: 'text-orange-500' },
+    { name: 'Leaderboards', icon: Trophy, page: 'Leaderboards', color: 'text-yellow-500' },
     { name: 'Groups', icon: Users, page: 'Groups', color: 'text-green-500' },
     { name: 'Messages', icon: MessageCircle, page: 'Messages', color: 'text-cyan-500' },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
