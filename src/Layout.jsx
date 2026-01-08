@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Plus } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Plus, Home, Flame, Award } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -22,16 +22,16 @@ export default function Layout({ children, currentPageName }) {
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 
   const navItems = isGymOwner ? [
-    { name: 'Home', icon: Dumbbell, page: 'Home', color: 'text-indigo-500' },
+    { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
     { name: 'My Gym', icon: Building2, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Register Gym', icon: Plus, page: 'GymSignup', color: 'text-green-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ] : [
-    { name: 'Home', icon: Dumbbell, page: 'Home', color: 'text-indigo-500' },
+    { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
-    { name: 'Challenges', icon: Trophy, page: 'Challenges', color: 'text-orange-500' },
-    { name: 'Leaderboards', icon: Trophy, page: 'Leaderboards', color: 'text-yellow-500' },
+    { name: 'Challenges', icon: Flame, page: 'Challenges', color: 'text-orange-500' },
+    { name: 'Leaderboards', icon: Award, page: 'Leaderboards', color: 'text-yellow-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ];
