@@ -49,40 +49,46 @@ export default function Gyms() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-500 to-cyan-500 px-4 py-8">
+      <div className="bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 px-4 py-10 shadow-xl">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-black text-white flex items-center gap-2">
-              <MapPin className="w-8 h-8" />
+            <h1 className="text-4xl font-black text-white flex items-center gap-3 drop-shadow-lg">
+              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <MapPin className="w-7 h-7" />
+              </div>
               Gym Community
             </h1>
             <Link to={createPageUrl('GymSignup')}>
-              <Button className="bg-white text-blue-600 hover:bg-blue-50 font-bold rounded-2xl">
+              <Button className="bg-white text-blue-600 hover:bg-blue-50 font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
                 Register Your Gym
               </Button>
             </Link>
           </div>
-          <Input
-            placeholder="Search by name or city..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-12 bg-white rounded-2xl border-0"
-          />
+          <div className="relative">
+            <Input
+              placeholder="Search by name or city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-14 bg-white/95 backdrop-blur-sm rounded-2xl border-0 shadow-lg pl-5 text-lg focus:ring-2 focus:ring-white/50 transition-all"
+            />
+          </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-4 shadow-sm">
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 px-4 py-5 shadow-lg">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="font-bold text-gray-900">Filters</span>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+              <Filter className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-gray-900 text-lg">Filter Gyms</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="rounded-2xl border-2 border-gray-200">
+              <SelectTrigger className="rounded-2xl border-2 border-gray-200 bg-white shadow-sm hover:border-blue-300 transition-all">
                 <SelectValue placeholder="Gym Type" />
               </SelectTrigger>
               <SelectContent>
@@ -97,7 +103,7 @@ export default function Gyms() {
             </Select>
 
             <Select value={maxDistance} onValueChange={setMaxDistance}>
-              <SelectTrigger className="rounded-2xl border-2 border-gray-200">
+              <SelectTrigger className="rounded-2xl border-2 border-gray-200 bg-white shadow-sm hover:border-blue-300 transition-all">
                 <SelectValue placeholder="Distance" />
               </SelectTrigger>
               <SelectContent>
@@ -110,7 +116,7 @@ export default function Gyms() {
             </Select>
 
             <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
-              <SelectTrigger className="rounded-2xl border-2 border-gray-200">
+              <SelectTrigger className="rounded-2xl border-2 border-gray-200 bg-white shadow-sm hover:border-blue-300 transition-all">
                 <SelectValue placeholder="Equipment" />
               </SelectTrigger>
               <SelectContent>
@@ -128,16 +134,18 @@ export default function Gyms() {
       </div>
 
       {/* Gyms List */}
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {filteredGyms.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border-2 border-gray-100">
-            <Dumbbell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-bold text-gray-700">No gyms found</p>
-            <p className="text-sm text-gray-500 mt-1">Try adjusting your filters</p>
+          <div className="text-center py-20 bg-white rounded-3xl border-2 border-gray-100 shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Dumbbell className="w-10 h-10 text-gray-400" />
+            </div>
+            <p className="text-xl font-bold text-gray-700">No gyms found</p>
+            <p className="text-sm text-gray-500 mt-2">Try adjusting your filters</p>
           </div>
         ) : (
           filteredGyms.map((gym) => (
-            <Card key={gym.id} className="bg-white border-2 border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all">
+            <Card key={gym.id} className="bg-white border border-gray-200/50 overflow-hidden hover:border-blue-300 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               {/* Image */}
               {gym.image_url && (
                 <div className="w-full h-48 bg-gradient-to-br from-blue-400 to-cyan-500 relative">
