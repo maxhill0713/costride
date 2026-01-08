@@ -17,6 +17,7 @@ import CheckInButton from '../components/gym/CheckInButton';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
 import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
+import LogLiftModal from '../components/lifts/LogLiftModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,6 +28,8 @@ export default function GymCommunity() {
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
   const [showManageCoaches, setShowManageCoaches] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState('all');
+  const [showLogLift, setShowLogLift] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -53,8 +56,12 @@ export default function GymCommunity() {
   });
 
   const { data: lifts = [] } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-weight_lbs')
+    queryKey: ['lifts', gymId],
+    queryFn: async () => {
+      const allLifts = await base44.entities.Lift.list('-weight_lbs');
+      return allLifts.filter(l => l.gym_id === gymId);
+    },
+    enabled: !!gymId
   });
 
   const { data: events = [] } = useQuery({
@@ -176,13 +183,37 @@ export default function GymCommunity() {
     }
   });
 
+  const createLiftMutation = useMutation({
+    mutationFn: (liftData) => base44.entities.Lift.create(liftData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lifts', gymId] });
+      setShowLogLift(false);
+    }
+  });
+
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
 
-  // Filter top lifts for this gym's members (simplified - in real app would link members to gyms)
-  const topLifts = lifts.slice(0, 10).map(lift => {
-    const member = members.find(m => m.id === lift.member_id);
-    return { ...lift, member };
-  });
+  // Filter lifts by exercise
+  const filteredLifts = selectedExercise === 'all' 
+    ? lifts 
+    : lifts.filter(l => l.exercise === selectedExercise);
+
+  // Get best lift per member for selected exercise
+  const bestLiftsPerMember = filteredLifts.reduce((acc, lift) => {
+    const key = lift.member_id;
+    if (!acc[key] || lift.weight_lbs > acc[key].weight_lbs) {
+      acc[key] = lift;
+    }
+    return acc;
+  }, {});
+
+  const topLifts = Object.values(bestLiftsPerMember)
+    .sort((a, b) => b.weight_lbs - a.weight_lbs)
+    .slice(0, 10)
+    .map(lift => {
+      const member = members.find(m => m.id === lift.member_id);
+      return { ...lift, member };
+    });
 
   if (gymLoading) {
     return (
@@ -463,6 +494,54 @@ export default function GymCommunity() {
           </TabsList>
 
           <TabsContent value="leaderboard" className="space-y-3">
+            {currentUser && (
+              <Button
+                onClick={() => setShowLogLift(true)}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
+              >
+                <Trophy className="w-4 h-4 mr-2" />
+                Log Your Lift
+              </Button>
+            )}
+
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+              <Button
+                variant={selectedExercise === 'all' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('all')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                All Exercises
+              </Button>
+              <Button
+                variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('bench_press')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Bench Press
+              </Button>
+              <Button
+                variant={selectedExercise === 'squat' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('squat')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Squat
+              </Button>
+              <Button
+                variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('deadlift')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Deadlift
+              </Button>
+              <Button
+                variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('overhead_press')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Overhead Press
+              </Button>
+            </div>
+
             {topLifts.length === 0 ? (
               <Card className="p-12 text-center">
                 <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -839,6 +918,14 @@ export default function GymCommunity() {
           onDeleteCoach={(id) => deleteCoachMutation.mutate(id)}
           gym={gym}
           isLoading={createCoachMutation.isPending}
+        />
+
+        <LogLiftModal
+          open={showLogLift}
+          onClose={() => setShowLogLift(false)}
+          onSuccess={(data) => createLiftMutation.mutate(data)}
+          gym={gym}
+          currentUser={currentUser}
         />
       </div>
     </div>
