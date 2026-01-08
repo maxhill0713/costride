@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,6 +18,7 @@ import ManageRewardsModal from '../components/gym/ManageRewardsModal';
 import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import LogLiftModal from '../components/lifts/LogLiftModal';
+import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -30,6 +31,7 @@ export default function GymCommunity() {
   const [showManageCoaches, setShowManageCoaches] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState('all');
   const [showLogLift, setShowLogLift] = useState(false);
+  const [showManagePhotos, setShowManagePhotos] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -188,6 +190,14 @@ export default function GymCommunity() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lifts', gymId] });
       setShowLogLift(false);
+    }
+  });
+
+  const updateGalleryMutation = useMutation({
+    mutationFn: (gallery) => base44.entities.Gym.update(gymId, { gallery }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
+      setShowManagePhotos(false);
     }
   });
 
@@ -469,7 +479,7 @@ export default function GymCommunity() {
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-8 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Leaderboard
             </TabsTrigger>
@@ -481,6 +491,9 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger value="coaches" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Coaches
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+              Photos
             </TabsTrigger>
             <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Events
@@ -728,6 +741,47 @@ export default function GymCommunity() {
             )}
           </TabsContent>
 
+          <TabsContent value="photos" className="space-y-4">
+            {isGymOwner && (
+              <Button
+                onClick={() => setShowManagePhotos(true)}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-2xl mb-4"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Manage Photos
+              </Button>
+            )}
+            {(!gym.gallery || gym.gallery.length === 0) ? (
+              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
+                <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 font-medium">No photos yet</p>
+                {isGymOwner ? (
+                  <Button
+                    onClick={() => setShowManagePhotos(true)}
+                    variant="outline"
+                    className="mt-3"
+                  >
+                    Add Photos
+                  </Button>
+                ) : (
+                  <p className="text-sm text-gray-400 mt-1">Check back soon for gym photos</p>
+                )}
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {gym.gallery.map((url, idx) => (
+                  <Card key={idx} className="overflow-hidden rounded-3xl">
+                    <img 
+                      src={url} 
+                      alt={`${gym.name} photo ${idx + 1}`} 
+                      className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="events" className="space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
@@ -926,6 +980,14 @@ export default function GymCommunity() {
           onSuccess={(data) => createLiftMutation.mutate(data)}
           gym={gym}
           currentUser={currentUser}
+        />
+
+        <ManageGymPhotosModal
+          open={showManagePhotos}
+          onClose={() => setShowManagePhotos(false)}
+          gallery={gym?.gallery || []}
+          onSave={(gallery) => updateGalleryMutation.mutate(gallery)}
+          isLoading={updateGalleryMutation.isPending}
         />
       </div>
     </div>
