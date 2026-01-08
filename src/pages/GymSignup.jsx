@@ -28,6 +28,7 @@ export default function GymSignup() {
     price: '',
     amenities: [],
     equipment: [],
+    specializes_in: [],
     reward_offer: '',
     image_url: ''
   });
@@ -59,6 +60,7 @@ export default function GymSignup() {
   };
 
   const amenitiesOptions = ['WiFi', 'Parking', '24/7', 'Personal Training', 'Showers', 'Lockers', 'Sauna', 'Smoothie Bar'];
+  const specializationOptions = ['Weight Loss', 'Muscle Gain', 'Bulking Programs', 'Strength Training', 'Powerlifting', 'Bodybuilding', 'CrossFit', 'HIIT', 'Cardio', 'Rehabilitation'];
 
   const toggleArrayItem = (field, item) => {
     setFormData(prev => ({
@@ -198,9 +200,31 @@ export default function GymSignup() {
 
             {/* Step 2: Amenities & Equipment */}
             <div className={step === 2 ? '' : 'hidden'}>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Amenities & Equipment</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Specializations & Details</h3>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-gray-700 font-semibold mb-2 block">Gym Specializations</Label>
+                  <p className="text-sm text-gray-600 mb-3">What does your gym specialize in? (Select all that apply)</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {specializationOptions.map((spec) => (
+                      <Button
+                        key={spec}
+                        type="button"
+                        onClick={() => toggleArrayItem('specializes_in', spec)}
+                        variant={formData.specializes_in.includes(spec) ? 'default' : 'outline'}
+                        className={`rounded-2xl ${
+                          formData.specializes_in.includes(spec)
+                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                            : ''
+                        }`}
+                      >
+                        {spec}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <Label className="text-gray-700 font-semibold mb-2 block">Amenities</Label>
                   <div className="grid grid-cols-2 gap-2">
