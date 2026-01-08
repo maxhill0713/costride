@@ -54,8 +54,8 @@ export default function Challenges() {
     const participantCount = challenge.participants?.length || 0;
 
     return (
-      <Card key={challenge.id} className="bg-white border-2 border-gray-200 overflow-hidden hover:border-blue-300 transition-all">
-        <div className={`h-2 ${challenge.type === 'gym_vs_gym' ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'}`} />
+      <Card key={challenge.id} className="bg-white/95 backdrop-blur-sm border border-gray-200/50 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 rounded-3xl">
+        <div className={`h-1 ${challenge.type === 'gym_vs_gym' ? 'bg-gradient-to-r from-red-500 via-orange-500 to-pink-500' : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'}`} />
         <div className="p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
@@ -81,17 +81,17 @@ export default function Challenges() {
               
               {/* Gym vs Gym */}
               {challenge.type === 'gym_vs_gym' && (
-                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl mb-3">
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-red-50 via-orange-50 to-pink-50 rounded-2xl mb-3 border border-red-200/50">
                   <div className="flex-1 text-center">
-                    <p className="font-bold text-gray-900">{challenge.gym_name}</p>
-                    <p className="text-xs text-gray-500">Home Gym</p>
+                    <p className="font-bold text-gray-900 text-sm">{challenge.gym_name}</p>
+                    <p className="text-xs text-gray-500 font-medium">Home Gym</p>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                    <span className="font-black text-red-600">VS</span>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-md">
+                    <span className="font-black text-white text-sm">VS</span>
                   </div>
                   <div className="flex-1 text-center">
-                    <p className="font-bold text-gray-900">{challenge.competing_gym_name}</p>
-                    <p className="text-xs text-gray-500">Challenger</p>
+                    <p className="font-bold text-gray-900 text-sm">{challenge.competing_gym_name}</p>
+                    <p className="text-xs text-gray-500 font-medium">Challenger</p>
                   </div>
                 </div>
               )}
@@ -124,24 +124,29 @@ export default function Challenges() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-900">{participantCount} participants</span>
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200/50">
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50/80 rounded-full">
+              <Users className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-bold text-gray-900">{participantCount}</span>
+              <span className="text-xs text-gray-500 font-medium">joined</span>
             </div>
             {challenge.status !== 'completed' && (
               <Button
                 onClick={() => handleJoin(challenge)}
                 disabled={isParticipant}
-                className={`${isParticipant ? 'bg-gray-300' : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'} text-white font-bold rounded-2xl`}
+                className={`${
+                  isParticipant 
+                    ? 'bg-green-100 text-green-700 hover:bg-green-100' 
+                    : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md hover:shadow-lg'
+                } text-white font-bold rounded-2xl transition-all`}
               >
-                {isParticipant ? 'Joined' : 'Join Challenge'}
+                {isParticipant ? '✓ Joined' : 'Join Challenge'}
               </Button>
             )}
             {challenge.status === 'completed' && challenge.winner_name && (
-              <div className="flex items-center gap-2 text-sm">
-                <Trophy className="w-4 h-4 text-yellow-500" />
-                <span className="font-bold text-gray-900">{challenge.winner_name}</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-full border border-yellow-200">
+                <Trophy className="w-4 h-4 text-yellow-600" />
+                <span className="font-bold text-gray-900 text-sm">{challenge.winner_name}</span>
               </div>
             )}
           </div>
@@ -151,22 +156,28 @@ export default function Challenges() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/30 to-red-50/30">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
+      <div className="relative bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-4 py-16 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMCAxMGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bS0xMCAwYzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTAgMTBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyek0yNiAzNGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bTEwIDBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-black text-white mb-2 flex items-center gap-3">
-                <Trophy className="w-10 h-10" />
-                Challenges
-              </h1>
-              <p className="text-orange-100 text-lg">Compete, win, and earn bragging rights</p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                  <Trophy className="w-8 h-8 text-white" />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-white">
+                  Challenges
+                </h1>
+              </div>
+              <p className="text-white/90 text-lg font-medium">Compete, win, and earn bragging rights</p>
             </div>
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-white text-orange-600 hover:bg-orange-50 font-bold rounded-2xl"
+              className="bg-white/95 backdrop-blur-sm text-orange-600 hover:bg-white hover:scale-105 font-bold rounded-2xl h-12 px-6 shadow-lg transition-all"
             >
+              <Trophy className="w-4 h-4 mr-2" />
               Create Challenge
             </Button>
           </div>
@@ -174,20 +185,29 @@ export default function Challenges() {
       </div>
 
       {/* Stats Bar */}
-      <div className="max-w-4xl mx-auto px-4 -mt-8">
-        <Card className="bg-white border-2 border-gray-200 shadow-xl">
-          <div className="grid grid-cols-3 divide-x divide-gray-200">
-            <div className="p-4 text-center">
-              <p className="text-3xl font-black text-gray-900">{activeChallenges.length}</p>
-              <p className="text-sm text-gray-500">Active Now</p>
+      <div className="max-w-4xl mx-auto px-4 -mt-10">
+        <Card className="bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-2xl rounded-3xl overflow-hidden">
+          <div className="grid grid-cols-3 divide-x divide-gray-200/50">
+            <div className="p-6 text-center hover:bg-orange-50/50 transition-colors">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <p className="text-3xl font-black bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">{activeChallenges.length}</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-600">Active Now</p>
             </div>
-            <div className="p-4 text-center">
-              <p className="text-3xl font-black text-gray-900">{upcomingChallenges.length}</p>
-              <p className="text-sm text-gray-500">Upcoming</p>
+            <div className="p-6 text-center hover:bg-blue-50/50 transition-colors">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Calendar className="w-5 h-5 text-blue-500" />
+                <p className="text-3xl font-black bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{upcomingChallenges.length}</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-600">Upcoming</p>
             </div>
-            <div className="p-4 text-center">
-              <p className="text-3xl font-black text-gray-900">{completedChallenges.length}</p>
-              <p className="text-sm text-gray-500">Completed</p>
+            <div className="p-6 text-center hover:bg-green-50/50 transition-colors">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Trophy className="w-5 h-5 text-green-500" />
+                <p className="text-3xl font-black bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">{completedChallenges.length}</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-600">Completed</p>
             </div>
           </div>
         </Card>
@@ -196,39 +216,57 @@ export default function Challenges() {
       {/* Challenges List */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Tabs defaultValue="active">
-          <TabsList className="grid grid-cols-3 w-full mb-6">
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsList className="grid grid-cols-3 w-full mb-6 bg-white/80 backdrop-blur-sm border border-gray-200/50 p-1.5 rounded-2xl shadow-sm">
+            <TabsTrigger value="active" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-semibold">
+              <Flame className="w-4 h-4 mr-1.5" />
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="upcoming" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-semibold">
+              <Calendar className="w-4 h-4 mr-1.5" />
+              Upcoming
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-semibold">
+              <Trophy className="w-4 h-4 mr-1.5" />
+              Completed
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active" className="space-y-4">
+          <TabsContent value="active" className="space-y-5">
             {activeChallenges.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-200">
-                <Flame className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">No active challenges</p>
+              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Flame className="w-10 h-10 text-orange-500" />
+                </div>
+                <p className="text-gray-600 font-medium">No active challenges</p>
+                <p className="text-sm text-gray-500 mt-1">Check back soon or create one!</p>
               </Card>
             ) : (
               activeChallenges.map(renderChallenge)
             )}
           </TabsContent>
 
-          <TabsContent value="upcoming" className="space-y-4">
+          <TabsContent value="upcoming" className="space-y-5">
             {upcomingChallenges.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-200">
-                <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">No upcoming challenges</p>
+              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-10 h-10 text-blue-500" />
+                </div>
+                <p className="text-gray-600 font-medium">No upcoming challenges</p>
+                <p className="text-sm text-gray-500 mt-1">Stay tuned for new competitions!</p>
               </Card>
             ) : (
               upcomingChallenges.map(renderChallenge)
             )}
           </TabsContent>
 
-          <TabsContent value="completed" className="space-y-4">
+          <TabsContent value="completed" className="space-y-5">
             {completedChallenges.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-200">
-                <Trophy className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">No completed challenges yet</p>
+              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="w-10 h-10 text-green-500" />
+                </div>
+                <p className="text-gray-600 font-medium">No completed challenges yet</p>
+                <p className="text-sm text-gray-500 mt-1">Winners will be displayed here!</p>
               </Card>
             ) : (
               completedChallenges.map(renderChallenge)
