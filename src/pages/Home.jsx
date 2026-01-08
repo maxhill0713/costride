@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -6,14 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock } from 'lucide-react';
 import { format, isToday, differenceInDays, startOfDay } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 export default function Home() {
+  const navigate = useNavigate();
+  
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
   });
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser, navigate]);
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns'],

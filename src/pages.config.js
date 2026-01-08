@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Home from './pages/Home';
+import Onboarding from './pages/Onboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -34,6 +35,7 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "Home": Home,
+    "Onboarding": Onboarding,
 }
 
 export const pagesConfig = {
