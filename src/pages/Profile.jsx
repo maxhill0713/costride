@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
@@ -16,6 +19,13 @@ export default function Profile() {
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
   const queryClient = useQueryClient();
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: (settings) => base44.auth.updateMe(settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    }
+  });
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -260,7 +270,7 @@ export default function Profile() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 pb-8">
         <Tabs defaultValue="progress" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
             <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
               Progress
             </TabsTrigger>
@@ -269,6 +279,10 @@ export default function Profile() {
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
               History
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <Settings className="w-4 h-4 md:mr-1" />
+              <span className="hidden md:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
 
@@ -391,6 +405,169 @@ export default function Profile() {
                 </div>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <Card className="bg-white border-2 border-gray-100 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                  <Bell className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
+                  <p className="text-sm text-gray-500">Manage your notification preferences</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    {currentUser.notifications_enabled ? (
+                      <Bell className="w-5 h-5 text-blue-500" />
+                    ) : (
+                      <BellOff className="w-5 h-5 text-gray-400" />
+                    )}
+                    <div>
+                      <Label className="text-sm font-bold text-gray-900">Push Notifications</Label>
+                      <p className="text-xs text-gray-500">Get notified about challenges and updates</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={currentUser.notifications_enabled ?? true}
+                    onCheckedChange={(checked) => updateSettingsMutation.mutate({ notifications_enabled: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    {currentUser.email_notifications ? (
+                      <Bell className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <BellOff className="w-5 h-5 text-gray-400" />
+                    )}
+                    <div>
+                      <Label className="text-sm font-bold text-gray-900">Email Notifications</Label>
+                      <p className="text-xs text-gray-500">Receive email updates and summaries</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={currentUser.email_notifications ?? true}
+                    onCheckedChange={(checked) => updateSettingsMutation.mutate({ email_notifications: checked })}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white border-2 border-gray-100 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                  {currentUser.dark_mode ? (
+                    <Moon className="w-6 h-6 text-white" />
+                  ) : (
+                    <Sun className="w-6 h-6 text-white" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Appearance</h3>
+                  <p className="text-sm text-gray-500">Customize your app experience</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    {currentUser.dark_mode ? (
+                      <Moon className="w-5 h-5 text-indigo-500" />
+                    ) : (
+                      <Sun className="w-5 h-5 text-orange-500" />
+                    )}
+                    <div>
+                      <Label className="text-sm font-bold text-gray-900">Dark Mode</Label>
+                      <p className="text-xs text-gray-500">Switch between light and dark theme</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={currentUser.dark_mode ?? false}
+                    onCheckedChange={(checked) => updateSettingsMutation.mutate({ dark_mode: checked })}
+                  />
+                </div>
+
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Ruler className="w-5 h-5 text-purple-500" />
+                    <div>
+                      <Label className="text-sm font-bold text-gray-900">Unit System</Label>
+                      <p className="text-xs text-gray-500">Choose your preferred measurement units</p>
+                    </div>
+                  </div>
+                  <Select 
+                    value={currentUser.units || 'imperial'} 
+                    onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
+                  >
+                    <SelectTrigger className="rounded-2xl border-2 border-gray-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
+                      <SelectItem value="metric">Metric (kg, m)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white border-2 border-gray-100 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+                  <Lock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Privacy</h3>
+                  <p className="text-sm text-gray-500">Control your profile visibility</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  {currentUser.public_profile ? (
+                    <Globe className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <Lock className="w-5 h-5 text-gray-400" />
+                  )}
+                  <div>
+                    <Label className="text-sm font-bold text-gray-900">Public Profile</Label>
+                    <p className="text-xs text-gray-500">Allow others to view your profile and stats</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={currentUser.public_profile ?? true}
+                  onCheckedChange={(checked) => updateSettingsMutation.mutate({ public_profile: checked })}
+                />
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">!</span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-red-900">Danger Zone</h3>
+                  <p className="text-sm text-red-700">Irreversible actions</p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 rounded-2xl font-semibold"
+                onClick={() => {
+                  if (confirm('Are you sure you want to logout?')) {
+                    base44.auth.logout();
+                  }
+                }}
+              >
+                Logout
+              </Button>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
