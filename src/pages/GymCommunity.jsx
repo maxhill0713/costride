@@ -15,6 +15,8 @@ import CreateEventModal from '../components/events/CreateEventModal';
 import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
 import CheckInButton from '../components/gym/CheckInButton';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
+import ManageClassesModal from '../components/gym/ManageClassesModal';
+import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -23,6 +25,8 @@ export default function GymCommunity() {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
   const [showManageRewards, setShowManageRewards] = useState(false);
+  const [showManageClasses, setShowManageClasses] = useState(false);
+  const [showManageCoaches, setShowManageCoaches] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -141,6 +145,34 @@ export default function GymCommunity() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
+    }
+  });
+
+  const createClassMutation = useMutation({
+    mutationFn: (classData) => base44.entities.GymClass.create(classData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes', gymId] });
+    }
+  });
+
+  const deleteClassMutation = useMutation({
+    mutationFn: (classId) => base44.entities.GymClass.delete(classId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes', gymId] });
+    }
+  });
+
+  const createCoachMutation = useMutation({
+    mutationFn: (coachData) => base44.entities.Coach.create(coachData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
+    }
+  });
+
+  const deleteCoachMutation = useMutation({
+    mutationFn: (coachId) => base44.entities.Coach.delete(coachId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
   });
 
@@ -468,11 +500,30 @@ export default function GymCommunity() {
           </TabsContent>
 
           <TabsContent value="classes" className="space-y-4">
+            {isGymOwner && (
+              <Button
+                onClick={() => setShowManageClasses(true)}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl mb-4"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Manage Classes
+              </Button>
+            )}
             {classes.length === 0 ? (
               <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
                 <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500 font-medium">No classes scheduled yet</p>
-                <p className="text-sm text-gray-400 mt-1">Check back soon for upcoming classes</p>
+                {isGymOwner ? (
+                  <Button
+                    onClick={() => setShowManageClasses(true)}
+                    variant="outline"
+                    className="mt-3"
+                  >
+                    Add Classes
+                  </Button>
+                ) : (
+                  <p className="text-sm text-gray-400 mt-1">Check back soon for upcoming classes</p>
+                )}
               </Card>
             ) : (
               classes.map((gymClass) => (
@@ -520,11 +571,30 @@ export default function GymCommunity() {
           </TabsContent>
 
           <TabsContent value="coaches" className="space-y-4">
+            {isGymOwner && (
+              <Button
+                onClick={() => setShowManageCoaches(true)}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl mb-4"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Manage Coaches
+              </Button>
+            )}
             {coaches.length === 0 ? (
               <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
                 <GraduationCap className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500 font-medium">No coaches listed yet</p>
-                <p className="text-sm text-gray-400 mt-1">Stay tuned for our coaching team</p>
+                {isGymOwner ? (
+                  <Button
+                    onClick={() => setShowManageCoaches(true)}
+                    variant="outline"
+                    className="mt-3"
+                  >
+                    Add Coaches
+                  </Button>
+                ) : (
+                  <p className="text-sm text-gray-400 mt-1">Stay tuned for our coaching team</p>
+                )}
               </Card>
             ) : (
               coaches.map((coach) => (
@@ -749,6 +819,26 @@ export default function GymCommunity() {
           onDeleteReward={(id) => deleteRewardMutation.mutate(id)}
           gym={gym}
           isLoading={createRewardMutation.isPending}
+        />
+
+        <ManageClassesModal
+          open={showManageClasses}
+          onClose={() => setShowManageClasses(false)}
+          classes={classes}
+          onCreateClass={(data) => createClassMutation.mutate(data)}
+          onDeleteClass={(id) => deleteClassMutation.mutate(id)}
+          gym={gym}
+          isLoading={createClassMutation.isPending}
+        />
+
+        <ManageCoachesModal
+          open={showManageCoaches}
+          onClose={() => setShowManageCoaches(false)}
+          coaches={coaches}
+          onCreateCoach={(data) => createCoachMutation.mutate(data)}
+          onDeleteCoach={(id) => deleteCoachMutation.mutate(id)}
+          gym={gym}
+          isLoading={createCoachMutation.isPending}
         />
       </div>
     </div>
