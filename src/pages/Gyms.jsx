@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Wifi, Clock, ParkingCircle, Heart, Filter, Gift, BadgeCheck } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Wifi, Clock, ParkingCircle, Heart, Filter, Gift, BadgeCheck, Edit } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 
 export default function Gyms() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,10 +17,25 @@ export default function Gyms() {
   const [selectedType, setSelectedType] = useState('all');
   const [maxDistance, setMaxDistance] = useState('all');
   const [selectedEquipment, setSelectedEquipment] = useState('all');
+  const [editingGym, setEditingGym] = useState(null);
+  const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me().catch(() => null)
+  });
 
   const { data: gyms = [] } = useQuery({
     queryKey: ['gyms'],
     queryFn: () => base44.entities.Gym.list()
+  });
+
+  const updateGymImageMutation = useMutation({
+    mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setEditingGym(null);
+    }
   });
 
   const filteredGyms = gyms.filter(gym => {
@@ -136,7 +152,10 @@ export default function Gyms() {
             <p className="text-sm text-gray-500 mt-1">Try adjusting your filters</p>
           </div>
         ) : (
-          filteredGyms.map((gym) => (
+          filteredGyms.map((gym) => {
+            const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
+
+            return (
             <Card key={gym.id} className="bg-white/95 backdrop-blur-sm border border-gray-200/50 overflow-hidden hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 rounded-3xl">
               {/* Image */}
               {gym.image_url && (
@@ -155,6 +174,14 @@ export default function Gyms() {
                         Verified
                       </Badge>
                     </div>
+                  )}
+                  {isOwner && (
+                    <button
+                      onClick={() => setEditingGym(gym)}
+                      className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center hover:scale-110 transition-transform"
+                    >
+                      <Edit className="w-5 h-5 text-gray-600" />
+                    </button>
                   )}
                 </div>
               )}
@@ -253,10 +280,19 @@ export default function Gyms() {
                   </Button>
                 </div>
               </div>
-            </Card>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
+              </Card>
+              );
+              })
+              )}
+              </div>
+
+              <EditHeroImageModal
+              open={!!editingGym}
+              onClose={() => setEditingGym(null)}
+              currentImageUrl={editingGym?.image_url}
+              onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })}
+              isLoading={updateGymImageMutation.isPending}
+              />
+              </div>
+              );
+              }
