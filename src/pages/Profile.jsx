@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler } from 'lucide-react';
@@ -18,6 +18,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [activeTab, setActiveTab] = useState('progress');
   const queryClient = useQueryClient();
 
   const updateSettingsMutation = useMutation({
@@ -31,6 +32,17 @@ export default function Profile() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
   });
+
+  // Apply dark mode to document
+  useEffect(() => {
+    if (currentUser?.dark_mode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
+  }, [currentUser?.dark_mode]);
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
@@ -148,14 +160,24 @@ export default function Profile() {
               </div>
             </div>
             {!isEditing ? (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-white hover:bg-white/20"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 className="w-5 h-5" />
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full"
+                  onClick={() => setActiveTab('settings')}
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit2 className="w-5 h-5" />
+                </Button>
+              </div>
             ) : (
               <div className="flex gap-2">
                 <Button 
@@ -269,7 +291,7 @@ export default function Profile() {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 pb-8">
-        <Tabs defaultValue="progress" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
             <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
               Progress

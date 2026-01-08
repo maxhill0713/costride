@@ -1,3 +1,4 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,6 +11,39 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark Mode Styles */
+  .dark body {
+    background: linear-gradient(to bottom right, #0f172a, #1e293b, #334155);
+    color: #f1f5f9;
+  }
+
+  .dark .bg-white {
+    background-color: #1e293b !important;
+  }
+
+  .dark .bg-gray-50 {
+    background-color: #0f172a !important;
+  }
+
+  .dark .text-gray-900 {
+    color: #f1f5f9 !important;
+  }
+
+  .dark .text-gray-600,
+  .dark .text-gray-500 {
+    color: #94a3b8 !important;
+  }
+
+  .dark .border-gray-100,
+  .dark .border-gray-200 {
+    border-color: #334155 !important;
+  }
+
+  .dark .bg-gradient-to-br.from-slate-50 {
+    background: linear-gradient(to bottom right, #0f172a, #1e293b) !important;
   }
 }
 
