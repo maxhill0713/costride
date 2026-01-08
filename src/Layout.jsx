@@ -13,9 +13,9 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden shadow-2xl">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 z-50 md:hidden shadow-2xl">
         <div className="flex justify-around items-center h-20 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
@@ -45,7 +45,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Side Navigation for Desktop */}
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-white/95 backdrop-blur-lg border-r-2 border-gray-200 flex-col items-center py-8 z-50 shadow-lg">
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-white/98 backdrop-blur-xl border-r border-gray-200/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md hover:scale-105 transition-transform">
             <span className="text-xl font-black text-white">G</span>
