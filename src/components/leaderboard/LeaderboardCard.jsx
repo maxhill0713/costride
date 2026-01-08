@@ -1,5 +1,6 @@
 import React from 'react';
-import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, Video, PlayCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 const rankIcons = {
@@ -8,9 +9,15 @@ const rankIcons = {
   3: { icon: Award, color: 'text-orange-600', bg: 'bg-orange-100' },
 };
 
-export default function LeaderboardCard({ rank, name, weight, exercise, isPR, avatarUrl }) {
+export default function LeaderboardCard({ rank, member, lift }) {
   const RankIcon = rankIcons[rank]?.icon || null;
   const isTopThree = rank <= 3;
+  const name = member?.name || lift?.member_name || 'Anonymous';
+  const avatarUrl = member?.avatar_url;
+  const weight = lift?.weight_lbs;
+  const exercise = lift?.exercise;
+  const isPR = lift?.is_pr;
+  const videoUrl = lift?.video_url;
 
   return (
     <motion.div
@@ -53,7 +60,15 @@ export default function LeaderboardCard({ rank, name, weight, exercise, isPR, av
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-gray-900 truncate">{name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-gray-900 truncate">{name}</h3>
+          {videoUrl && (
+            <Badge className="bg-red-500 text-white flex items-center gap-1 text-xs">
+              <Video className="w-3 h-3" />
+              Video
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-gray-500 capitalize">{exercise?.replace(/_/g, ' ')}</p>
       </div>
 
@@ -61,6 +76,17 @@ export default function LeaderboardCard({ rank, name, weight, exercise, isPR, av
       <div className="text-right">
         <div className="text-2xl font-black bg-gradient-to-br from-green-500 to-blue-600 bg-clip-text text-transparent">{weight}</div>
         <div className="text-xs text-gray-400 uppercase tracking-wider">lbs</div>
+        {videoUrl && (
+          <a 
+            href={videoUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium mt-1"
+          >
+            <PlayCircle className="w-3 h-3" />
+            Watch
+          </a>
+        )}
       </div>
     </motion.div>
   );
