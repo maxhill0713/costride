@@ -415,19 +415,18 @@ export default function GymCommunity() {
                   <p className="text-sm text-purple-700">Earn rewards for your dedication!</p>
                 </div>
               </div>
-              {isGymOwner && (
-                {showOwnerControls && (
-                  <Button
-                    onClick={() => setShowManageRewards(true)}
-                    size="sm"
-                    variant="outline"
-                    className="rounded-2xl"
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Manage
-                  </Button>
-                )}
-                </div>
+              {showOwnerControls && (
+                <Button
+                  onClick={() => setShowManageRewards(true)}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-2xl"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Manage
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {rewards.filter(r => r.active).slice(0, 4).map((reward) => {
                 const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
