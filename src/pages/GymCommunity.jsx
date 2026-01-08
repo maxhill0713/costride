@@ -36,6 +36,7 @@ export default function GymCommunity() {
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showEditHeroImage, setShowEditHeroImage] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
+  const [viewAsMember, setViewAsMember] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -238,6 +239,7 @@ export default function GymCommunity() {
   });
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
+  const showOwnerControls = isGymOwner && !viewAsMember;
 
   // Filter lifts by exercise
   const filteredLifts = selectedExercise === 'all' 
@@ -301,18 +303,29 @@ export default function GymCommunity() {
         <Link to={createPageUrl('Gyms')} className="absolute top-4 left-4">
           <Button variant="ghost" className="bg-white/90 backdrop-blur hover:bg-white rounded-full">
             <ChevronLeft className="w-5 h-5" />
-          </Button>
-        </Link>
+            </Button>
+            </Link>
 
-        {isGymOwner && (
-          <Button
-            onClick={() => setShowEditHeroImage(true)}
-            variant="ghost"
-            className="absolute top-4 right-4 bg-white/90 backdrop-blur hover:bg-white rounded-full"
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-        )}
+            {isGymOwner && (
+            <div className="absolute top-4 right-4 flex gap-2">
+            <Button
+              onClick={() => setViewAsMember(!viewAsMember)}
+              variant="ghost"
+              className={`bg-white/90 backdrop-blur hover:bg-white rounded-full ${viewAsMember ? 'ring-2 ring-blue-500' : ''}`}
+            >
+              {viewAsMember ? '👤 Member View' : '👑 Owner View'}
+            </Button>
+            {!viewAsMember && (
+              <Button
+                onClick={() => setShowEditHeroImage(true)}
+                variant="ghost"
+                className="bg-white/90 backdrop-blur hover:bg-white rounded-full"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            )}
+            </div>
+            )}
 
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="max-w-4xl mx-auto">
@@ -403,17 +416,18 @@ export default function GymCommunity() {
                 </div>
               </div>
               {isGymOwner && (
-                <Button
-                  onClick={() => setShowManageRewards(true)}
-                  size="sm"
-                  variant="outline"
-                  className="rounded-2xl"
-                >
-                  <Edit className="w-3 h-3 mr-1" />
-                  Manage
-                </Button>
-              )}
-            </div>
+                {showOwnerControls && (
+                  <Button
+                    onClick={() => setShowManageRewards(true)}
+                    size="sm"
+                    variant="outline"
+                    className="rounded-2xl"
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    Manage
+                  </Button>
+                )}
+                </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {rewards.filter(r => r.active).slice(0, 4).map((reward) => {
                 const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
@@ -466,7 +480,7 @@ export default function GymCommunity() {
         )}
 
         {/* Manage Rewards Button for Gym Owners */}
-        {isGymOwner && rewards.filter(r => r.active).length === 0 && (
+        {showOwnerControls && rewards.filter(r => r.active).length === 0 && (
           <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
             <div className="text-center">
               <Gift className="w-12 h-12 mx-auto mb-3 text-purple-500" />
@@ -486,7 +500,7 @@ export default function GymCommunity() {
         )}
 
         {/* Manage Members - Gym Owners Only */}
-        {isGymOwner && (
+        {showOwnerControls && (
           <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 p-6 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -557,24 +571,24 @@ export default function GymCommunity() {
                 <div>
                   <h3 className="text-xl font-black text-gray-900">Gym Photos</h3>
                   <p className="text-sm text-gray-600">See our facilities</p>
-                </div>
-              </div>
-              {isGymOwner && (
-                <Button
+                  </div>
+                  </div>
+                  {showOwnerControls && (
+                  <Button
                   onClick={() => setShowManagePhotos(true)}
                   size="sm"
                   className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-2xl"
-                >
+                  >
                   <Edit className="w-3 h-3 mr-1" />
                   Manage
-                </Button>
-              )}
+                  </Button>
+                  )}
             </div>
             {(!gym.gallery || gym.gallery.length === 0) ? (
               <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-2xl">
                 <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="text-gray-500 font-medium">No photos yet</p>
-                {isGymOwner && (
+                {showOwnerControls && (
                   <Button
                     onClick={() => setShowManagePhotos(true)}
                     variant="outline"
@@ -721,7 +735,7 @@ export default function GymCommunity() {
           </TabsContent>
 
           <TabsContent value="classes" className="space-y-4">
-            {isGymOwner && (
+            {showOwnerControls && (
               <Button
                 onClick={() => setShowManageClasses(true)}
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl mb-4"
@@ -734,7 +748,7 @@ export default function GymCommunity() {
               <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
                 <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500 font-medium">No classes scheduled yet</p>
-                {isGymOwner ? (
+                {showOwnerControls ? (
                   <Button
                     onClick={() => setShowManageClasses(true)}
                     variant="outline"
@@ -792,7 +806,7 @@ export default function GymCommunity() {
           </TabsContent>
 
           <TabsContent value="coaches" className="space-y-4">
-            {isGymOwner && (
+            {showOwnerControls && (
               <Button
                 onClick={() => setShowManageCoaches(true)}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl mb-4"
@@ -805,7 +819,7 @@ export default function GymCommunity() {
               <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
                 <GraduationCap className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500 font-medium">No coaches listed yet</p>
-                {isGymOwner ? (
+                {showOwnerControls ? (
                   <Button
                     onClick={() => setShowManageCoaches(true)}
                     variant="outline"
@@ -942,7 +956,7 @@ export default function GymCommunity() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-bold text-gray-500 uppercase">Equipment Available</p>
-                  {isGymOwner && (
+                  {showOwnerControls && (
                     <Button
                       onClick={() => setShowManageEquipment(true)}
                       size="sm"
@@ -966,7 +980,7 @@ export default function GymCommunity() {
                 ) : (
                   <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
                     <p className="text-gray-500 text-sm">No equipment listed yet</p>
-                    {isGymOwner && (
+                    {showOwnerControls && (
                       <Button
                         onClick={() => setShowManageEquipment(true)}
                         size="sm"
