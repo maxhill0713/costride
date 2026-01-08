@@ -1,103 +1,304 @@
-import React from 'react';
-import { Bell, Heart, MessageCircle, UserPlus, Trophy, TrendingUp } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
-
-const notifications = [
-  {
-    id: 1,
-    type: 'like',
-    icon: Heart,
-    color: 'text-red-500',
-    bgColor: 'bg-red-50',
-    user: 'The Beast',
-    action: 'liked your post',
-    time: '5m ago',
-    unread: true
-  },
-  {
-    id: 2,
-    type: 'comment',
-    icon: MessageCircle,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50',
-    user: 'Iron Lady',
-    action: 'commented: "Great form! 💪"',
-    time: '1h ago',
-    unread: true
-  },
-  {
-    id: 3,
-    type: 'follow',
-    icon: UserPlus,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50',
-    user: 'Tank',
-    action: 'started following you',
-    time: '2h ago',
-    unread: true
-  },
-  {
-    id: 4,
-    type: 'achievement',
-    icon: Trophy,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-50',
-    user: 'System',
-    action: 'You earned "100 Workouts" badge!',
-    time: '5h ago',
-    unread: false
-  },
-  {
-    id: 5,
-    type: 'pr',
-    icon: TrendingUp,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50',
-    user: 'Lightning',
-    action: 'beat your record on Deadlift',
-    time: '1d ago',
-    unread: false
-  }
-];
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Bell, BellOff, Flame, Trophy, Calendar, Target, CheckCircle2, AlertCircle, PartyPopper, TrendingUp, X } from 'lucide-react';
+import { format, differenceInDays, parseISO } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 export default function Notifications() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-              <Bell className="w-6 h-6" />
-              Notifications
-            </h1>
-            <button className="text-sm font-semibold text-purple-600">
-              Mark all read
-            </button>
-          </div>
-        </div>
+  const queryClient = useQueryClient();
 
-        {/* Notifications List */}
-        <div className="p-4 space-y-2">
-          {notifications.map((notif) => (
-            <Card key={notif.id} className={`bg-white border-2 ${notif.unread ? 'border-purple-200 bg-purple-50/30' : 'border-gray-100'} p-4 hover:border-gray-200 transition-all cursor-pointer`}>
-              <div className="flex items-start gap-3">
-                <div className={`w-12 h-12 rounded-full ${notif.bgColor} flex items-center justify-center flex-shrink-0`}>
-                  <notif.icon className={`w-5 h-5 ${notif.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900">
-                    <span className="font-bold">{notif.user}</span> {notif.action}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
-                </div>
-                {notif.unread && (
-                  <div className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0 mt-2" />
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date'),
+    enabled: !!currentUser
+  });
+
+  const markAsReadMutation = useMutation({
+    mutationFn: (id) => base44.entities.Notification.update(id, { read: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  const deleteNotificationMutation = useMutation({
+    mutationFn: (id) => base44.entities.Notification.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      const unreadNotifications = notifications.filter(n => !n.read);
+      await Promise.all(unreadNotifications.map(n => 
+        base44.entities.Notification.update(n.id, { read: true })
+      ));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  // Check for inactivity and create nudges
+  useEffect(() => {
+    if (!currentUser || !currentUser.last_check_in) return;
+
+    const checkInactivity = async () => {
+      const daysSinceCheckIn = differenceInDays(new Date(), parseISO(currentUser.last_check_in));
+      
+      if (daysSinceCheckIn >= 7) {
+        // Check if we already sent this notification
+        const existingNudge = notifications.find(n => 
+          n.type === 'inactivity' && !n.read && differenceInDays(new Date(), parseISO(n.created_date)) < 1
+        );
+
+        if (!existingNudge) {
+          await base44.entities.Notification.create({
+            user_id: currentUser.id,
+            type: 'inactivity',
+            title: 'We miss you! 💪',
+            message: `You haven't checked in for ${daysSinceCheckIn} days. Your gym buddies are waiting for you!`,
+            icon: '😢',
+            action_url: createPageUrl('Gyms')
+          });
+          queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        }
+      }
+    };
+
+    checkInactivity();
+  }, [currentUser, notifications, queryClient]);
+
+  // Check milestones
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const checkMilestones = async () => {
+      const milestones = [];
+      const achieved = currentUser.milestones_achieved || [];
+
+      // 10 visits milestone
+      if (currentUser.total_check_ins >= 10 && !achieved.includes('10_visits')) {
+        milestones.push({
+          id: '10_visits',
+          title: '10 Check-ins Milestone! 🎯',
+          message: 'Congratulations! You\'ve checked in 10 times. Keep the momentum going!',
+          icon: '🎯'
+        });
+      }
+
+      // 30-day streak
+      if (currentUser.current_streak >= 30 && !achieved.includes('30_day_streak')) {
+        milestones.push({
+          id: '30_day_streak',
+          title: '30-Day Streak Champion! 🔥',
+          message: 'Incredible! You\'ve maintained a 30-day check-in streak. You\'re unstoppable!',
+          icon: '🔥'
+        });
+      }
+
+      // Gym anniversary
+      if (currentUser.gym_join_date) {
+        const daysSinceJoined = differenceInDays(new Date(), parseISO(currentUser.gym_join_date));
+        const years = Math.floor(daysSinceJoined / 365);
+        
+        if (years >= 1 && !achieved.includes(`anniversary_${years}`)) {
+          milestones.push({
+            id: `anniversary_${years}`,
+            title: `${years} Year Anniversary! 🎉`,
+            message: `${years} year${years > 1 ? 's' : ''} at ${currentUser.gym_location || 'your gym'}! What an amazing journey!`,
+            icon: '🎉'
+          });
+        }
+      }
+
+      // Create notifications for new milestones
+      for (const milestone of milestones) {
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: milestone.title,
+          message: milestone.message,
+          icon: milestone.icon,
+          metadata: { milestone_id: milestone.id }
+        });
+
+        // Update user's achieved milestones
+        await base44.auth.updateMe({
+          milestones_achieved: [...achieved, milestone.id]
+        });
+      }
+
+      if (milestones.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'currentUser'] });
+      }
+    };
+
+    checkMilestones();
+  }, [currentUser, queryClient]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const getNotificationIcon = (type, icon) => {
+    if (icon) return icon;
+    switch (type) {
+      case 'inactivity': return <AlertCircle className="w-5 h-5 text-orange-500" />;
+      case 'milestone': return <Trophy className="w-5 h-5 text-yellow-500" />;
+      case 'anniversary': return <PartyPopper className="w-5 h-5 text-purple-500" />;
+      case 'engagement': return <TrendingUp className="w-5 h-5 text-blue-500" />;
+      case 'achievement': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+      case 'challenge': return <Flame className="w-5 h-5 text-red-500" />;
+      default: return <Bell className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'inactivity': return 'from-orange-50 to-red-50 border-orange-200';
+      case 'milestone': return 'from-yellow-50 to-orange-50 border-yellow-200';
+      case 'anniversary': return 'from-purple-50 to-pink-50 border-purple-200';
+      case 'engagement': return 'from-blue-50 to-cyan-50 border-blue-200';
+      case 'achievement': return 'from-green-50 to-emerald-50 border-green-200';
+      case 'challenge': return 'from-red-50 to-pink-50 border-red-200';
+      default: return 'from-gray-50 to-gray-100 border-gray-200';
+    }
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading notifications...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      {/* Header */}
+      <div className="relative bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 px-4 py-12 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMCAxMGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bS0xMCAwYzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTAgMTBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyek0yNiAzNGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bTEwIDBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
+        <div className="max-w-2xl mx-auto relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Bell className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-black text-white">
+                  Notifications
+                </h1>
+                {unreadCount > 0 && (
+                  <p className="text-white/90 text-sm mt-1">{unreadCount} unread</p>
                 )}
               </div>
-            </Card>
-          ))}
+            </div>
+            {unreadCount > 0 && (
+              <Button
+                onClick={() => markAllReadMutation.mutate()}
+                disabled={markAllReadMutation.isPending}
+                className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-2xl"
+              >
+                Mark all read
+              </Button>
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* Notifications List */}
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {notifications.length === 0 ? (
+          <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+            <BellOff className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <p className="text-gray-500 font-medium">No notifications yet</p>
+            <p className="text-sm text-gray-400 mt-1">We'll notify you about important updates</p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map((notification) => (
+              <Card
+                key={notification.id}
+                className={`bg-gradient-to-r ${getNotificationColor(notification.type)} border-2 overflow-hidden hover:shadow-lg transition-all duration-300 rounded-3xl ${
+                  !notification.read ? 'ring-2 ring-blue-400/50' : ''
+                }`}
+              >
+                <div className="p-5">
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className="flex-shrink-0">
+                      {notification.icon && typeof notification.icon === 'string' && notification.icon.length <= 2 ? (
+                        <div className="text-3xl">{notification.icon}</div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                          {getNotificationIcon(notification.type, null)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900">{notification.title}</h3>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                          className="flex-shrink-0 h-8 w-8 hover:bg-white/50 rounded-full"
+                        >
+                          <X className="w-4 h-4 text-gray-500" />
+                        </Button>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{notification.message}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500">
+                          {format(new Date(notification.created_date), 'MMM d, h:mm a')}
+                        </span>
+                        {!notification.read && (
+                          <Badge className="bg-blue-500 text-white text-xs">New</Badge>
+                        )}
+                      </div>
+                      
+                      {/* Action Button */}
+                      <div className="flex gap-2 mt-3">
+                        {notification.action_url && (
+                          <Link to={notification.action_url}>
+                            <Button
+                              size="sm"
+                              className="bg-white hover:bg-gray-50 text-gray-900 rounded-2xl shadow-sm"
+                              onClick={() => markAsReadMutation.mutate(notification.id)}
+                            >
+                              Take Action
+                            </Button>
+                          </Link>
+                        )}
+                        {!notification.read && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => markAsReadMutation.mutate(notification.id)}
+                            className="bg-white/50 hover:bg-white rounded-2xl"
+                          >
+                            Mark as read
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

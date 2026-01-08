@@ -1,15 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Trophy, Dumbbell, Crown, MessageCircle, Users } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me().catch(() => null)
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id, read: false }),
+    enabled: !!currentUser
+  });
+
+  const unreadCount = notifications.length;
+
   const navItems = [
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Challenges', icon: Trophy, page: 'Challenges', color: 'text-orange-500' },
     { name: 'Leaderboards', icon: Trophy, page: 'Leaderboards', color: 'text-yellow-500' },
     { name: 'Groups', icon: Users, page: 'Groups', color: 'text-green-500' },
-    { name: 'Messages', icon: MessageCircle, page: 'Messages', color: 'text-cyan-500' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ];
 
@@ -35,8 +50,13 @@ export default function Layout({ children, currentPageName }) {
                 {isActive && (
                   <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-12 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg`} />
                 )}
-                <div className={`${isActive ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 p-2.5 rounded-2xl shadow-sm` : 'p-2'}`}>
+                <div className={`relative ${isActive ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 p-2.5 rounded-2xl shadow-sm` : 'p-2'}`}>
                   <item.icon className={`w-6 h-6 ${isActive ? item.color : ''} transition-all duration-300`} strokeWidth={isActive ? 2.5 : 2} />
+                  {item.badge > 0 && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </div>
+                  )}
                 </div>
                 <span className={`text-xs font-bold ${isActive ? 'text-gray-900' : ''} transition-colors`}>{item.name}</span>
               </Link>
@@ -67,7 +87,14 @@ export default function Layout({ children, currentPageName }) {
                     : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100/80 hover:scale-105'}
                 `}
               >
-                <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
+                <div className="relative">
+                  <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
+                  {item.badge > 0 && (
+                    <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </div>
+                  )}
+                </div>
                 {isActive && (
                   <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 ${item.color.replace('text-', 'bg-')} rounded-r-full shadow-lg`} />
                 )}
