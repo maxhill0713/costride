@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +14,7 @@ import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
 import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
 import CheckInButton from '../components/gym/CheckInButton';
+import ManageRewardsModal from '../components/gym/ManageRewardsModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -21,6 +22,7 @@ export default function GymCommunity() {
   const queryClient = useQueryClient();
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
+  const [showManageRewards, setShowManageRewards] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -78,6 +80,15 @@ export default function GymCommunity() {
     enabled: !!gymId
   });
 
+  const { data: rewards = [] } = useQuery({
+    queryKey: ['rewards', gymId],
+    queryFn: async () => {
+      const allRewards = await base44.entities.Reward.list();
+      return allRewards.filter(r => r.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
   const createEventMutation = useMutation({
     mutationFn: (eventData) => base44.entities.Event.create({
       ...eventData,
@@ -106,6 +117,30 @@ export default function GymCommunity() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowManageEquipment(false);
+    }
+  });
+
+  const createRewardMutation = useMutation({
+    mutationFn: (rewardData) => base44.entities.Reward.create(rewardData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
+    }
+  });
+
+  const deleteRewardMutation = useMutation({
+    mutationFn: (rewardId) => base44.entities.Reward.delete(rewardId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
+    }
+  });
+
+  const claimRewardMutation = useMutation({
+    mutationFn: ({ rewardId, userId, currentClaimed }) => 
+      base44.entities.Reward.update(rewardId, {
+        claimed_by: [...currentClaimed, userId]
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
     }
   });
 
@@ -234,6 +269,102 @@ export default function GymCommunity() {
 
         {/* Check-in Section */}
         <CheckInButton gym={gym} />
+
+        {/* Rewards Section */}
+        {rewards.filter(r => r.active).length > 0 && (
+          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                  <Gift className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-purple-900">Member Rewards</h3>
+                  <p className="text-sm text-purple-700">Earn rewards for your dedication!</p>
+                </div>
+              </div>
+              {isGymOwner && (
+                <Button
+                  onClick={() => setShowManageRewards(true)}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-2xl"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Manage
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {rewards.filter(r => r.active).slice(0, 4).map((reward) => {
+                const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
+                return (
+                  <Card key={reward.id} className="p-4 bg-white border-2 border-purple-200">
+                    <div className="flex items-start gap-3">
+                      <div className="text-3xl">{reward.icon || '🎁'}</div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-900 text-sm">{reward.title}</h4>
+                        {reward.description && (
+                          <p className="text-xs text-gray-600 mt-1">{reward.description}</p>
+                        )}
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {reward.value && (
+                            <Badge className="bg-green-100 text-green-700 text-xs">{reward.value}</Badge>
+                          )}
+                          <Badge variant="outline" className="capitalize text-xs">
+                            {reward.requirement.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                        {currentUser && (
+                          <Button
+                            size="sm"
+                            disabled={hasUserClaimed}
+                            onClick={() => {
+                              if (!hasUserClaimed) {
+                                claimRewardMutation.mutate({
+                                  rewardId: reward.id,
+                                  userId: currentUser.id,
+                                  currentClaimed: reward.claimed_by || []
+                                });
+                              }
+                            }}
+                            className={`mt-2 w-full rounded-2xl text-xs ${
+                              hasUserClaimed 
+                                ? 'bg-gray-200 text-gray-500' 
+                                : 'bg-purple-500 hover:bg-purple-600 text-white'
+                            }`}
+                          >
+                            {hasUserClaimed ? '✓ Claimed' : 'Claim Reward'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
+        {/* Manage Rewards Button for Gym Owners */}
+        {isGymOwner && rewards.filter(r => r.active).length === 0 && (
+          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
+            <div className="text-center">
+              <Gift className="w-12 h-12 mx-auto mb-3 text-purple-500" />
+              <h3 className="font-bold text-gray-900 mb-2">Create Member Rewards</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Motivate your members with rewards for check-ins, streaks, and achievements!
+              </p>
+              <Button
+                onClick={() => setShowManageRewards(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Rewards
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Leaderboard Rewards */}
         <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-6 mb-6">
@@ -608,6 +739,16 @@ export default function GymCommunity() {
           equipment={gym?.equipment || []}
           onSave={(equipment) => updateEquipmentMutation.mutate(equipment)}
           isLoading={updateEquipmentMutation.isPending}
+        />
+
+        <ManageRewardsModal
+          open={showManageRewards}
+          onClose={() => setShowManageRewards(false)}
+          rewards={rewards}
+          onCreateReward={(data) => createRewardMutation.mutate(data)}
+          onDeleteReward={(id) => deleteRewardMutation.mutate(id)}
+          gym={gym}
+          isLoading={createRewardMutation.isPending}
         />
       </div>
     </div>
