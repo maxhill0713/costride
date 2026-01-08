@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Progress } from '@/components/ui/progress';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
@@ -56,7 +57,13 @@ export default function Profile() {
     enabled: !!currentUser
   });
 
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['checkIns'],
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date')
+  });
+
   const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
+  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
 
   React.useEffect(() => {
     if (currentUser) {
@@ -111,12 +118,30 @@ export default function Profile() {
 
   const activeGoals = goals.filter(g => g.status === 'active');
 
+  const currentStreak = currentUser?.current_streak || 0;
+  const longestStreak = currentUser?.longest_streak || 0;
+  const lastCheckIn = currentUser?.last_check_in_date;
+  const daysSinceCheckIn = lastCheckIn ? Math.floor((new Date() - new Date(lastCheckIn)) / (1000 * 60 * 60 * 24)) : null;
+
+  // Streak milestones
+  const streakMilestones = [
+    { days: 7, name: '7 Day Warrior', icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { days: 30, name: 'Monthly Master', icon: '⚡', color: 'from-yellow-400 to-orange-500' },
+    { days: 50, name: 'Unstoppable', icon: '💪', color: 'from-purple-400 to-pink-500' },
+    { days: 100, name: 'Century Champion', icon: '👑', color: 'from-blue-400 to-cyan-500' },
+    { days: 365, name: 'Year Legend', icon: '🏆', color: 'from-green-400 to-emerald-500' }
+  ];
+
+  const nextMilestone = streakMilestones.find(m => m.days > currentStreak) || streakMilestones[streakMilestones.length - 1];
+  const streakProgress = (currentStreak / nextMilestone.days) * 100;
+  const earnedBadges = streakMilestones.filter(m => longestStreak >= m.days);
+
   const stats = {
     totalLifts: memberLifts.length,
     personalRecords: memberLifts.filter(l => l.is_pr).length,
     totalWeight: memberLifts.reduce((sum, l) => sum + (l.weight_lbs * (l.reps || 1)), 0),
     bestLift: Math.max(...memberLifts.map(l => l.weight_lbs), 0),
-    weekStreak: 5
+    weekStreak: currentStreak
   };
 
   const getProgressData = () => {
@@ -249,8 +274,78 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Re-engagement Banner */}
+      {daysSinceCheckIn !== null && daysSinceCheckIn >= 3 && currentStreak > 0 && (
+        <div className="max-w-2xl mx-auto px-4 -mt-20 mb-4">
+          <Card className="bg-gradient-to-r from-orange-500 to-red-500 border-0 p-5 text-white shadow-2xl animate-pulse">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-lg mb-1">We Miss You! 🔥</h3>
+                <p className="text-white/90 text-sm">
+                  It's been {daysSinceCheckIn} days since your last check-in. Don't lose your {currentStreak}-day streak!
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
+        {/* Streak Cards */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 p-5">
+            <div className="flex items-center gap-3 mb-2">
+              <Flame className="w-8 h-8 text-orange-600" />
+              <div>
+                <p className="text-sm font-medium text-orange-700">Current Streak</p>
+                <p className="text-3xl font-black text-orange-900">{currentStreak}</p>
+                <p className="text-xs text-orange-600">days</p>
+              </div>
+            </div>
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-xs text-orange-700 mb-1">
+                <span>Next: {nextMilestone.name}</span>
+                <span>{currentStreak}/{nextMilestone.days}</span>
+              </div>
+              <Progress value={streakProgress} className="h-2 bg-orange-200" />
+            </div>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 p-5">
+            <div className="flex items-center gap-3">
+              <Trophy className="w-8 h-8 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium text-purple-700">Longest Streak</p>
+                <p className="text-3xl font-black text-purple-900">{longestStreak}</p>
+                <p className="text-xs text-purple-600">days ever</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Milestone Badges */}
+        {earnedBadges.length > 0 && (
+          <Card className="p-5 mb-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
+            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-yellow-600" />
+              Streak Milestones
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {earnedBadges.map((badge) => (
+                <div key={badge.days} className={`p-3 rounded-2xl bg-gradient-to-br ${badge.color} text-white text-center`}>
+                  <div className="text-3xl mb-1">{badge.icon}</div>
+                  <p className="font-bold text-xs">{badge.name}</p>
+                  <p className="text-xs opacity-90">{badge.days}d</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <div className="grid grid-cols-3 gap-4">
           <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-blue-500 to-cyan-500 bg-clip-text text-transparent">{stats.totalLifts}</div>
