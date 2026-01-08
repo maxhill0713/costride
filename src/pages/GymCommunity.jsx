@@ -477,9 +477,72 @@ export default function GymCommunity() {
 
 
 
+        {/* Gym Photos Gallery */}
+        {(gym.gallery && gym.gallery.length > 0) || isGymOwner ? (
+          <Card className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 p-6 rounded-3xl mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center">
+                  <ImageIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900">Gym Photos</h3>
+                  <p className="text-sm text-gray-600">See our facilities</p>
+                </div>
+              </div>
+              {isGymOwner && (
+                <Button
+                  onClick={() => setShowManagePhotos(true)}
+                  size="sm"
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-2xl"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Manage
+                </Button>
+              )}
+            </div>
+            {(!gym.gallery || gym.gallery.length === 0) ? (
+              <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-2xl">
+                <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-500 font-medium">No photos yet</p>
+                {isGymOwner && (
+                  <Button
+                    onClick={() => setShowManagePhotos(true)}
+                    variant="outline"
+                    className="mt-3"
+                  >
+                    Add Photos
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {gym.gallery.slice(0, 6).map((url, idx) => (
+                  <div key={idx} className="relative overflow-hidden rounded-2xl aspect-video">
+                    <img 
+                      src={url} 
+                      alt={`${gym.name} photo ${idx + 1}`} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            {gym.gallery && gym.gallery.length > 6 && (
+              <Button
+                onClick={() => setShowManagePhotos(true)}
+                variant="outline"
+                className="w-full mt-3 rounded-2xl"
+              >
+                View All {gym.gallery.length} Photos
+              </Button>
+            )}
+          </Card>
+        ) : null}
+
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-8 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-7 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Leaderboard
             </TabsTrigger>
@@ -491,9 +554,6 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger value="coaches" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Coaches
-            </TabsTrigger>
-            <TabsTrigger value="photos" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
-              Photos
             </TabsTrigger>
             <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Events
@@ -738,47 +798,6 @@ export default function GymCommunity() {
                   </div>
                 </Card>
               ))
-            )}
-          </TabsContent>
-
-          <TabsContent value="photos" className="space-y-4">
-            {isGymOwner && (
-              <Button
-                onClick={() => setShowManagePhotos(true)}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-2xl mb-4"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Manage Photos
-              </Button>
-            )}
-            {(!gym.gallery || gym.gallery.length === 0) ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
-                <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500 font-medium">No photos yet</p>
-                {isGymOwner ? (
-                  <Button
-                    onClick={() => setShowManagePhotos(true)}
-                    variant="outline"
-                    className="mt-3"
-                  >
-                    Add Photos
-                  </Button>
-                ) : (
-                  <p className="text-sm text-gray-400 mt-1">Check back soon for gym photos</p>
-                )}
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {gym.gallery.map((url, idx) => (
-                  <Card key={idx} className="overflow-hidden rounded-3xl">
-                    <img 
-                      src={url} 
-                      alt={`${gym.name} photo ${idx + 1}`} 
-                      className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </Card>
-                ))}
-              </div>
             )}
           </TabsContent>
 
