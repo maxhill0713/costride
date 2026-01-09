@@ -77,22 +77,22 @@ export default function Home() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="bg-slate-800/95 backdrop-blur-sm border border-cyan-700/50 p-4 text-center">
+            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-cyan-600/30 p-4 text-center shadow-lg">
               <Flame className="w-6 h-6 mx-auto mb-2 text-cyan-400" />
               <div className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userStreak}</div>
               <div className="text-xs text-cyan-300 font-medium">Day Streak</div>
             </Card>
-            <Card className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 p-4 text-center">
+            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-blue-600/30 p-4 text-center shadow-lg">
               <Users className="w-6 h-6 mx-auto mb-2 text-blue-400" />
               <div className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{todayCheckIns.length}</div>
               <div className="text-xs text-blue-300 font-medium">Checked In</div>
             </Card>
-            <Card className="bg-slate-800/95 backdrop-blur-sm border border-purple-700/50 p-4 text-center">
+            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-purple-600/30 p-4 text-center shadow-lg">
               <Trophy className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
               <div className="text-2xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{activeChallenges.length}</div>
               <div className="text-xs text-yellow-300 font-medium">Active</div>
             </Card>
-            <Card className="bg-slate-800/95 backdrop-blur-sm border border-teal-700/50 p-4 text-center">
+            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-teal-600/30 p-4 text-center shadow-lg">
               <TrendingUp className="w-6 h-6 mx-auto mb-2 text-teal-400" />
               <div className="text-2xl font-black bg-gradient-to-r from-teal-400 to-green-400 bg-clip-text text-transparent">{goals.length}</div>
               <div className="text-xs text-teal-300 font-medium">Goals</div>
@@ -128,9 +128,9 @@ export default function Home() {
 
         {/* Active Challenges */}
         {activeChallenges.length > 0 && (
-          <Card className="bg-slate-800/95 backdrop-blur-sm border border-cyan-700/50 p-6 rounded-3xl">
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent flex items-center gap-2">
+              <h2 className="text-xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent flex items-center gap-2">
                 <Trophy className="w-6 h-6 text-cyan-400" />
                 Active Challenges
               </h2>
@@ -144,7 +144,7 @@ export default function Home() {
             <div className="space-y-3">
               {activeChallenges.map((challenge) => (
                 <Link key={challenge.id} to={createPageUrl('Challenges')}>
-                  <Card className="p-4 bg-gradient-to-r from-slate-700/80 to-slate-800/80 border border-cyan-700/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer">
+                  <Card className="p-4 bg-gradient-to-r from-slate-700/80 via-slate-750/80 to-slate-800/80 border border-slate-600/40 hover:shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h3 className="font-bold text-cyan-300 mb-1">{challenge.title}</h3>
@@ -164,9 +164,9 @@ export default function Home() {
         )}
 
         {/* Who Checked In Today */}
-        <Card className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 p-6 rounded-3xl">
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent flex items-center gap-2">
+            <h2 className="text-xl font-black bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent flex items-center gap-2">
               <Users className="w-6 h-6 text-blue-400" />
               Who's Training Today
             </h2>
@@ -183,15 +183,15 @@ export default function Home() {
           ) : (
             <div className="space-y-3">
               {todayCheckIns.slice(0, 10).map((checkIn) => (
-                <div key={checkIn.id} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-2xl border border-blue-700/30">
+                <div key={checkIn.id} className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-2xl border border-slate-600/30">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                     <span className="text-white font-bold text-sm">
                       {checkIn.user_name?.charAt(0)?.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-white">{checkIn.user_name}</p>
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <p className="font-bold text-slate-100">{checkIn.user_name}</p>
+                    <div className="flex items-center gap-2 text-sm text-slate-300">
                       <MapPin className="w-3 h-3" />
                       <span>{checkIn.gym_name}</span>
                       {checkIn.first_visit && (
@@ -213,9 +213,9 @@ export default function Home() {
 
         {/* Today's Activity */}
         {todayLifts.length > 0 && (
-          <Card className="bg-slate-800/95 backdrop-blur-sm border border-purple-700/50 p-6 rounded-3xl">
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent flex items-center gap-2">
+              <h2 className="text-xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent flex items-center gap-2">
                 <Dumbbell className="w-6 h-6 text-purple-400" />
                 Today's Lifts
               </h2>
@@ -228,14 +228,14 @@ export default function Home() {
             </div>
             <div className="space-y-3">
               {todayLifts.map((lift) => (
-                <div key={lift.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-2xl border border-purple-700/50">
+                <div key={lift.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-700/60 via-purple-900/40 to-pink-900/40 rounded-2xl border border-slate-600/40">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                       <Dumbbell className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-bold text-white">{lift.member_name}</p>
-                      <p className="text-sm text-slate-400 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
+                      <p className="font-bold text-slate-100">{lift.member_name}</p>
+                      <p className="text-sm text-slate-300 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
                     </div>
                   </div>
                   <div className="text-right">

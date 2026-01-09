@@ -164,13 +164,13 @@ export default function Notifications() {
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'inactivity': return 'from-orange-900/30 to-red-900/30 border-orange-700/50';
-      case 'milestone': return 'from-yellow-900/30 to-orange-900/30 border-yellow-600/50';
-      case 'anniversary': return 'from-purple-900/30 to-pink-900/30 border-purple-700/50';
-      case 'engagement': return 'from-blue-900/30 to-cyan-900/30 border-cyan-700/50';
-      case 'achievement': return 'from-green-900/30 to-emerald-900/30 border-teal-700/50';
-      case 'challenge': return 'from-red-900/30 to-pink-900/30 border-red-700/50';
-      default: return 'from-slate-800/50 to-slate-900/50 border-slate-700/50';
+      case 'inactivity': return 'from-slate-700/70 via-orange-900/30 to-slate-800/70 border-slate-600/40';
+      case 'milestone': return 'from-slate-700/70 via-yellow-900/30 to-slate-800/70 border-slate-600/40';
+      case 'anniversary': return 'from-slate-700/70 via-purple-900/30 to-slate-800/70 border-slate-600/40';
+      case 'engagement': return 'from-slate-700/70 via-cyan-900/30 to-slate-800/70 border-slate-600/40';
+      case 'achievement': return 'from-slate-700/70 via-teal-900/30 to-slate-800/70 border-slate-600/40';
+      case 'challenge': return 'from-slate-700/70 via-red-900/30 to-slate-800/70 border-slate-600/40';
+      default: return 'from-slate-700/60 to-slate-800/60 border-slate-600/40';
     }
   };
 
@@ -218,7 +218,7 @@ export default function Notifications() {
       {/* Notifications List */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         {notifications.length === 0 ? (
-          <Card className="p-12 text-center border-2 border-dashed border-cyan-700/50 rounded-3xl bg-slate-800/50">
+          <Card className="p-12 text-center border-2 border-dashed border-slate-600/50 rounded-3xl bg-gradient-to-br from-slate-700/50 to-slate-800/50">
             <BellOff className="w-16 h-16 mx-auto mb-4 text-slate-600" />
             <p className="text-slate-300 font-medium">No notifications yet</p>
             <p className="text-sm text-slate-400 mt-1">We'll notify you about important updates</p>
@@ -248,7 +248,7 @@ export default function Notifications() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{notification.title}</h3>
+                        <h3 className="font-bold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">{notification.title}</h3>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -258,7 +258,7 @@ export default function Notifications() {
                           <X className="w-4 h-4 text-slate-400" />
                         </Button>
                       </div>
-                      <p className="text-sm text-slate-300 mb-2">{notification.message}</p>
+                      <p className="text-sm text-slate-200 mb-2">{notification.message}</p>
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-slate-500">
                           {format(new Date(notification.created_date), 'MMM d, h:mm a')}

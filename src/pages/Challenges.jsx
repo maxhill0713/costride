@@ -54,7 +54,7 @@ export default function Challenges() {
     const participantCount = challenge.participants?.length || 0;
 
     return (
-      <Card key={challenge.id} className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-cyan-700/30 overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/20 hover:scale-[1.02] hover:border-cyan-500/50 transition-all duration-300 rounded-3xl">
+      <Card key={challenge.id} className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/50 overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/20 hover:scale-[1.02] hover:border-cyan-500/50 transition-all duration-300 rounded-3xl">
         <div className={`h-1 ${challenge.type === 'gym_vs_gym' ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500' : 'bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500'}`} />
         <div className="p-6">
           {/* Header */}
@@ -76,8 +76,8 @@ export default function Challenges() {
                   </Badge>
                 )}
               </div>
-              <h3 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent mb-2">{challenge.title}</h3>
-              <p className="text-slate-300 mb-3">{challenge.description}</p>
+              <h3 className="text-2xl font-black bg-gradient-to-r from-cyan-200 via-blue-200 to-cyan-200 bg-clip-text text-transparent mb-2">{challenge.title}</h3>
+              <p className="text-slate-200 mb-3">{challenge.description}</p>
               
               {/* Gym vs Gym */}
               {challenge.type === 'gym_vs_gym' && (
@@ -124,8 +124,8 @@ export default function Challenges() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-blue-700/50">
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-700/80 rounded-full">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-600/30">
+            <div className="flex items-center gap-2 px-3 py-2 bg-slate-600/50 rounded-full">
               <Users className="w-4 h-4 text-slate-300" />
               <span className="text-sm font-bold text-white">{participantCount}</span>
               <span className="text-xs text-slate-400 font-medium">joined</span>
@@ -186,7 +186,7 @@ export default function Challenges() {
 
       {/* Stats Bar */}
       <div className="max-w-4xl mx-auto px-4 -mt-10">
-        <Card className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 shadow-2xl rounded-3xl overflow-hidden">
+        <Card className="bg-gradient-to-br from-slate-800/95 via-slate-700/95 to-slate-800/95 backdrop-blur-sm border border-blue-700/30 shadow-2xl rounded-3xl overflow-hidden">
           <div className="grid grid-cols-3 divide-x divide-blue-700/50">
             <div className="p-6 text-center hover:bg-slate-700/50 transition-colors">
               <div className="flex items-center justify-center gap-2 mb-1">
@@ -216,7 +216,7 @@ export default function Challenges() {
       {/* Challenges List */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Tabs defaultValue="active">
-          <TabsList className="grid grid-cols-3 w-full mb-6 bg-slate-800/80 backdrop-blur-sm border border-blue-700/50 p-1.5 rounded-2xl shadow-sm">
+          <TabsList className="grid grid-cols-3 w-full mb-6 bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 p-1.5 rounded-2xl shadow-sm">
             <TabsTrigger value="active" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-semibold text-slate-400">
               <Flame className="w-4 h-4 mr-1.5" />
               Active
