@@ -54,7 +54,7 @@ export default function Challenges() {
     const participantCount = challenge.participants?.length || 0;
 
     return (
-      <Card key={challenge.id} className="bg-white/95 backdrop-blur-sm border border-gray-200/50 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 rounded-3xl">
+      <Card key={challenge.id} className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 rounded-3xl">
         <div className={`h-1 ${challenge.type === 'gym_vs_gym' ? 'bg-gradient-to-r from-red-500 via-orange-500 to-pink-500' : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'}`} />
         <div className="p-6">
           {/* Header */}
@@ -76,22 +76,22 @@ export default function Challenges() {
                   </Badge>
                 )}
               </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-2">{challenge.title}</h3>
-              <p className="text-gray-600 mb-3">{challenge.description}</p>
+              <h3 className="text-2xl font-black text-white mb-2">{challenge.title}</h3>
+              <p className="text-slate-300 mb-3">{challenge.description}</p>
               
               {/* Gym vs Gym */}
               {challenge.type === 'gym_vs_gym' && (
                 <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-red-50 via-orange-50 to-pink-50 rounded-2xl mb-3 border border-red-200/50">
                   <div className="flex-1 text-center">
-                    <p className="font-bold text-gray-900 text-sm">{challenge.gym_name}</p>
-                    <p className="text-xs text-gray-500 font-medium">Home Gym</p>
+                    <p className="font-bold text-white text-sm">{challenge.gym_name}</p>
+                    <p className="text-xs text-slate-400 font-medium">Home Gym</p>
                   </div>
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-md">
                     <span className="font-black text-white text-sm">VS</span>
                   </div>
                   <div className="flex-1 text-center">
-                    <p className="font-bold text-gray-900 text-sm">{challenge.competing_gym_name}</p>
-                    <p className="text-xs text-gray-500 font-medium">Challenger</p>
+                    <p className="font-bold text-white text-sm">{challenge.competing_gym_name}</p>
+                    <p className="text-xs text-slate-400 font-medium">Challenger</p>
                   </div>
                 </div>
               )}
@@ -101,8 +101,8 @@ export default function Challenges() {
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <div>
-                    <p className="text-gray-500 text-xs">Duration</p>
-                    <p className="font-semibold text-gray-900">
+                    <p className="text-slate-400 text-xs">Duration</p>
+                    <p className="font-semibold text-white">
                       {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}
                     </p>
                   </div>
@@ -110,8 +110,8 @@ export default function Challenges() {
                 <div className="flex items-center gap-2 text-sm">
                   <Target className="w-4 h-4 text-gray-400" />
                   <div>
-                    <p className="text-gray-500 text-xs">Goal</p>
-                    <p className="font-semibold text-gray-900 capitalize">{challenge.goal_type.replace('_', ' ')}</p>
+                    <p className="text-slate-400 text-xs">Goal</p>
+                    <p className="font-semibold text-white capitalize">{challenge.goal_type.replace('_', ' ')}</p>
                   </div>
                 </div>
               </div>
@@ -124,11 +124,11 @@ export default function Challenges() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200/50">
-            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50/80 rounded-full">
-              <Users className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-bold text-gray-900">{participantCount}</span>
-              <span className="text-xs text-gray-500 font-medium">joined</span>
+          <div className="flex items-center justify-between pt-4 border-t border-blue-700/50">
+            <div className="flex items-center gap-2 px-3 py-2 bg-slate-700/80 rounded-full">
+              <Users className="w-4 h-4 text-slate-300" />
+              <span className="text-sm font-bold text-white">{participantCount}</span>
+              <span className="text-xs text-slate-400 font-medium">joined</span>
             </div>
             {challenge.status !== 'completed' && (
               <Button
@@ -144,9 +144,9 @@ export default function Challenges() {
               </Button>
             )}
             {challenge.status === 'completed' && challenge.winner_name && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-full border border-yellow-200">
-                <Trophy className="w-4 h-4 text-yellow-600" />
-                <span className="font-bold text-gray-900 text-sm">{challenge.winner_name}</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-full border border-yellow-500">
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                <span className="font-bold text-white text-sm">{challenge.winner_name}</span>
               </div>
             )}
           </div>
@@ -156,9 +156,9 @@ export default function Challenges() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/30 to-red-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Header */}
-      <div className="relative bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-4 py-16 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMCAxMGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bS0xMCAwYzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTAgMTBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyek0yNiAzNGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bTEwIDBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -175,7 +175,7 @@ export default function Challenges() {
             </div>
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-white/95 backdrop-blur-sm text-orange-600 hover:bg-white hover:scale-105 font-bold rounded-2xl h-12 px-6 shadow-lg transition-all"
+              className="bg-white/95 backdrop-blur-sm text-cyan-600 hover:bg-white hover:scale-105 font-bold rounded-2xl h-12 px-6 shadow-lg transition-all"
             >
               <Trophy className="w-4 h-4 mr-2" />
               Create Challenge
@@ -186,28 +186,28 @@ export default function Challenges() {
 
       {/* Stats Bar */}
       <div className="max-w-4xl mx-auto px-4 -mt-10">
-        <Card className="bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-2xl rounded-3xl overflow-hidden">
-          <div className="grid grid-cols-3 divide-x divide-gray-200/50">
-            <div className="p-6 text-center hover:bg-orange-50/50 transition-colors">
+        <Card className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 shadow-2xl rounded-3xl overflow-hidden">
+          <div className="grid grid-cols-3 divide-x divide-blue-700/50">
+            <div className="p-6 text-center hover:bg-slate-700/50 transition-colors">
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Flame className="w-5 h-5 text-orange-500" />
                 <p className="text-3xl font-black bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">{activeChallenges.length}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-600">Active Now</p>
+              <p className="text-sm font-semibold text-slate-300">Active Now</p>
             </div>
-            <div className="p-6 text-center hover:bg-blue-50/50 transition-colors">
+            <div className="p-6 text-center hover:bg-slate-700/50 transition-colors">
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Calendar className="w-5 h-5 text-blue-500" />
                 <p className="text-3xl font-black bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{upcomingChallenges.length}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-600">Upcoming</p>
+              <p className="text-sm font-semibold text-slate-300">Upcoming</p>
             </div>
-            <div className="p-6 text-center hover:bg-green-50/50 transition-colors">
+            <div className="p-6 text-center hover:bg-slate-700/50 transition-colors">
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Trophy className="w-5 h-5 text-green-500" />
                 <p className="text-3xl font-black bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">{completedChallenges.length}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-600">Completed</p>
+              <p className="text-sm font-semibold text-slate-300">Completed</p>
             </div>
           </div>
         </Card>
@@ -216,7 +216,7 @@ export default function Challenges() {
       {/* Challenges List */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Tabs defaultValue="active">
-          <TabsList className="grid grid-cols-3 w-full mb-6 bg-white/80 backdrop-blur-sm border border-gray-200/50 p-1.5 rounded-2xl shadow-sm">
+          <TabsList className="grid grid-cols-3 w-full mb-6 bg-slate-800/80 backdrop-blur-sm border border-blue-700/50 p-1.5 rounded-2xl shadow-sm">
             <TabsTrigger value="active" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-semibold">
               <Flame className="w-4 h-4 mr-1.5" />
               Active
@@ -233,12 +233,12 @@ export default function Challenges() {
 
           <TabsContent value="active" className="space-y-5">
             {activeChallenges.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+              <Card className="p-12 text-center border-2 border-dashed border-blue-700/50 rounded-3xl bg-slate-800/50">
                 <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Flame className="w-10 h-10 text-orange-500" />
                 </div>
-                <p className="text-gray-600 font-medium">No active challenges</p>
-                <p className="text-sm text-gray-500 mt-1">Check back soon or create one!</p>
+                <p className="text-slate-300 font-medium">No active challenges</p>
+                <p className="text-sm text-slate-400 mt-1">Check back soon or create one!</p>
               </Card>
             ) : (
               activeChallenges.map(renderChallenge)
@@ -247,12 +247,12 @@ export default function Challenges() {
 
           <TabsContent value="upcoming" className="space-y-5">
             {upcomingChallenges.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+              <Card className="p-12 text-center border-2 border-dashed border-blue-700/50 rounded-3xl bg-slate-800/50">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Calendar className="w-10 h-10 text-blue-500" />
                 </div>
-                <p className="text-gray-600 font-medium">No upcoming challenges</p>
-                <p className="text-sm text-gray-500 mt-1">Stay tuned for new competitions!</p>
+                <p className="text-slate-300 font-medium">No upcoming challenges</p>
+                <p className="text-sm text-slate-400 mt-1">Stay tuned for new competitions!</p>
               </Card>
             ) : (
               upcomingChallenges.map(renderChallenge)
@@ -261,12 +261,12 @@ export default function Challenges() {
 
           <TabsContent value="completed" className="space-y-5">
             {completedChallenges.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+              <Card className="p-12 text-center border-2 border-dashed border-blue-700/50 rounded-3xl bg-slate-800/50">
                 <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Trophy className="w-10 h-10 text-green-500" />
                 </div>
-                <p className="text-gray-600 font-medium">No completed challenges yet</p>
-                <p className="text-sm text-gray-500 mt-1">Winners will be displayed here!</p>
+                <p className="text-slate-300 font-medium">No completed challenges yet</p>
+                <p className="text-sm text-slate-400 mt-1">Winners will be displayed here!</p>
               </Card>
             ) : (
               completedChallenges.map(renderChallenge)
