@@ -568,26 +568,26 @@ export default function GymCommunity() {
 
         {/* Tabs */}
         <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
-            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+          <TabsList className="flex w-full mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
+            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Leaderboard
             </TabsTrigger>
-            <TabsTrigger value="challenges" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+            <TabsTrigger value="challenges" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Challenges
             </TabsTrigger>
-            <TabsTrigger value="classes" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+            <TabsTrigger value="classes" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Classes
             </TabsTrigger>
-            <TabsTrigger value="coaches" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+            <TabsTrigger value="coaches" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Coaches
             </TabsTrigger>
-            <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+            <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Events
             </TabsTrigger>
-            <TabsTrigger value="feed" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+            <TabsTrigger value="feed" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Feed
             </TabsTrigger>
-            <TabsTrigger value="info" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+            <TabsTrigger value="info" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Info
             </TabsTrigger>
           </TabsList>
