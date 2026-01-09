@@ -60,16 +60,16 @@ export default function Home() {
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 px-4 py-8 shadow-xl">
+      <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-8 shadow-xl">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
+              <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent mb-2">
                 Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
-              <p className="text-white/90 text-sm">
+              <p className="text-cyan-100 text-sm">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
             </div>
@@ -77,25 +77,25 @@ export default function Home() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="bg-white/95 backdrop-blur-sm p-4 text-center">
-              <Flame className="w-6 h-6 mx-auto mb-2 text-orange-500" />
-              <div className="text-2xl font-black text-gray-900">{userStreak}</div>
-              <div className="text-xs text-gray-600 font-medium">Day Streak</div>
+            <Card className="bg-slate-800/95 backdrop-blur-sm border border-cyan-700/50 p-4 text-center">
+              <Flame className="w-6 h-6 mx-auto mb-2 text-cyan-400" />
+              <div className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userStreak}</div>
+              <div className="text-xs text-cyan-300 font-medium">Day Streak</div>
             </Card>
-            <Card className="bg-white/95 backdrop-blur-sm p-4 text-center">
-              <Users className="w-6 h-6 mx-auto mb-2 text-blue-500" />
-              <div className="text-2xl font-black text-gray-900">{todayCheckIns.length}</div>
-              <div className="text-xs text-gray-600 font-medium">Checked In</div>
+            <Card className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 p-4 text-center">
+              <Users className="w-6 h-6 mx-auto mb-2 text-blue-400" />
+              <div className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{todayCheckIns.length}</div>
+              <div className="text-xs text-blue-300 font-medium">Checked In</div>
             </Card>
-            <Card className="bg-white/95 backdrop-blur-sm p-4 text-center">
-              <Trophy className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
-              <div className="text-2xl font-black text-gray-900">{activeChallenges.length}</div>
-              <div className="text-xs text-gray-600 font-medium">Active</div>
+            <Card className="bg-slate-800/95 backdrop-blur-sm border border-purple-700/50 p-4 text-center">
+              <Trophy className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
+              <div className="text-2xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{activeChallenges.length}</div>
+              <div className="text-xs text-yellow-300 font-medium">Active</div>
             </Card>
-            <Card className="bg-white/95 backdrop-blur-sm p-4 text-center">
-              <TrendingUp className="w-6 h-6 mx-auto mb-2 text-green-500" />
-              <div className="text-2xl font-black text-gray-900">{goals.length}</div>
-              <div className="text-xs text-gray-600 font-medium">Goals</div>
+            <Card className="bg-slate-800/95 backdrop-blur-sm border border-teal-700/50 p-4 text-center">
+              <TrendingUp className="w-6 h-6 mx-auto mb-2 text-teal-400" />
+              <div className="text-2xl font-black bg-gradient-to-r from-teal-400 to-green-400 bg-clip-text text-transparent">{goals.length}</div>
+              <div className="text-xs text-teal-300 font-medium">Goals</div>
             </Card>
           </div>
         </div>
@@ -128,14 +128,14 @@ export default function Home() {
 
         {/* Active Challenges */}
         {activeChallenges.length > 0 && (
-          <Card className="bg-white border-2 border-gray-100 p-6 rounded-3xl">
+          <Card className="bg-slate-800/95 backdrop-blur-sm border border-cyan-700/50 p-6 rounded-3xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-orange-500" />
+              <h2 className="text-xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-cyan-400" />
                 Active Challenges
               </h2>
               <Link to={createPageUrl('Challenges')}>
-                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300">
                   View All
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -144,17 +144,17 @@ export default function Home() {
             <div className="space-y-3">
               {activeChallenges.map((challenge) => (
                 <Link key={challenge.id} to={createPageUrl('Challenges')}>
-                  <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 hover:shadow-lg transition-all cursor-pointer">
+                  <Card className="p-4 bg-gradient-to-r from-slate-700/80 to-slate-800/80 border border-cyan-700/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 mb-1">{challenge.title}</h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <h3 className="font-bold text-cyan-300 mb-1">{challenge.title}</h3>
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
                           <Badge className="capitalize">{challenge.type.replace('_', ' ')}</Badge>
                           <span>•</span>
                           <span>{challenge.participants?.length || 0} participants</span>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                      <ChevronRight className="w-5 h-5 text-cyan-600" />
                     </div>
                   </Card>
                 </Link>
@@ -164,34 +164,34 @@ export default function Home() {
         )}
 
         {/* Who Checked In Today */}
-        <Card className="bg-white border-2 border-gray-100 p-6 rounded-3xl">
+        <Card className="bg-slate-800/95 backdrop-blur-sm border border-blue-700/50 p-6 rounded-3xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-              <Users className="w-6 h-6 text-blue-500" />
+            <h2 className="text-xl font-black bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent flex items-center gap-2">
+              <Users className="w-6 h-6 text-blue-400" />
               Who's Training Today
             </h2>
-            <Badge className="bg-blue-100 text-blue-700 font-bold">
+            <Badge className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 border border-blue-500/50 font-bold">
               {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'}
             </Badge>
           </div>
           {todayCheckIns.length === 0 ? (
             <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500">No check-ins yet today</p>
-              <p className="text-sm text-gray-400 mt-1">Be the first to check in!</p>
+              <Users className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+              <p className="text-slate-400">No check-ins yet today</p>
+              <p className="text-sm text-slate-500 mt-1">Be the first to check in!</p>
             </div>
           ) : (
             <div className="space-y-3">
               {todayCheckIns.slice(0, 10).map((checkIn) => (
-                <div key={checkIn.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                <div key={checkIn.id} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-2xl border border-blue-700/30">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                     <span className="text-white font-bold text-sm">
                       {checkIn.user_name?.charAt(0)?.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-gray-900">{checkIn.user_name}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <p className="font-bold text-white">{checkIn.user_name}</p>
+                    <div className="flex items-center gap-2 text-sm text-slate-400">
                       <MapPin className="w-3 h-3" />
                       <span>{checkIn.gym_name}</span>
                       {checkIn.first_visit && (
@@ -200,7 +200,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-1 text-sm text-slate-500">
                       <Clock className="w-3 h-3" />
                       <span>{format(new Date(checkIn.check_in_date), 'h:mm a')}</span>
                     </div>
@@ -213,14 +213,14 @@ export default function Home() {
 
         {/* Today's Activity */}
         {todayLifts.length > 0 && (
-          <Card className="bg-white border-2 border-gray-100 p-6 rounded-3xl">
+          <Card className="bg-slate-800/95 backdrop-blur-sm border border-purple-700/50 p-6 rounded-3xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                <Dumbbell className="w-6 h-6 text-purple-500" />
+              <h2 className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent flex items-center gap-2">
+                <Dumbbell className="w-6 h-6 text-purple-400" />
                 Today's Lifts
               </h2>
               <Link to={createPageUrl('Leaderboard')}>
-                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300">
                   View All
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -228,19 +228,19 @@ export default function Home() {
             </div>
             <div className="space-y-3">
               {todayLifts.map((lift) => (
-                <div key={lift.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-2xl border-2 border-purple-200">
+                <div key={lift.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-2xl border border-purple-700/50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                       <Dumbbell className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">{lift.member_name}</p>
-                      <p className="text-sm text-gray-600 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
+                      <p className="font-bold text-white">{lift.member_name}</p>
+                      <p className="text-sm text-slate-400 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-black text-purple-700">{lift.weight_lbs}</p>
-                    <p className="text-xs text-gray-500">lbs {lift.reps && `× ${lift.reps}`}</p>
+                    <p className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{lift.weight_lbs}</p>
+                    <p className="text-xs text-slate-500">lbs {lift.reps && `× ${lift.reps}`}</p>
                     {lift.is_pr && (
                       <Badge className="bg-red-500 text-white text-xs mt-1">PR! 🔥</Badge>
                     )}
@@ -254,14 +254,14 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
           <Link to={createPageUrl('Challenges')}>
-            <Card className="p-6 bg-gradient-to-br from-orange-500 to-red-500 border-0 text-white hover:shadow-xl transition-all cursor-pointer">
+            <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
               <Trophy className="w-10 h-10 mb-3" />
               <h3 className="font-black text-lg mb-1">Join Challenge</h3>
               <p className="text-sm text-white/90">Compete with others</p>
             </Card>
           </Link>
           <Link to={createPageUrl('Gyms')}>
-            <Card className="p-6 bg-gradient-to-br from-blue-500 to-cyan-500 border-0 text-white hover:shadow-xl transition-all cursor-pointer">
+            <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 border-0 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer">
               <Dumbbell className="w-10 h-10 mb-3" />
               <h3 className="font-black text-lg mb-1">Find Gyms</h3>
               <p className="text-sm text-white/90">Explore nearby</p>
