@@ -562,72 +562,94 @@ export default function GymCommunity() {
         {/* Gym Photos Gallery */}
         {(gym.gallery && gym.gallery.length > 0) || isGymOwner ? (
           <Card className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 p-6 rounded-3xl mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center">
-                  <ImageIcon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Gym Photos</h3>
-                  <p className="text-sm font-normal text-gray-600 leading-relaxed">See our facilities</p>
-                  </div>
-                  </div>
-                  {showOwnerControls && (
-                  <Button
-                  onClick={() => setShowManagePhotos(true)}
-                  size="sm"
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-2xl"
-                  >
-                  <Edit className="w-3 h-3 mr-1" />
-                  Manage
-                  </Button>
-                  )}
-            </div>
-            {(!gym.gallery || gym.gallery.length === 0) ? (
-              <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-2xl">
-                <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500 font-normal">No photos yet</p>
-                {showOwnerControls && (
-                  <Button
-                    onClick={() => setShowManagePhotos(true)}
-                    variant="outline"
-                    className="mt-3"
-                  >
-                    Add Photos
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {gym.gallery.slice(0, 6).map((url, idx) => (
-                  <div key={idx} className="relative overflow-hidden rounded-2xl aspect-video">
-                    <img 
-                      src={url} 
-                      alt={`${gym.name} photo ${idx + 1}`} 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-            {gym.gallery && gym.gallery.length > 6 && (
-              <Button
-                onClick={() => setShowManagePhotos(true)}
-                variant="outline"
-                className="w-full mt-3 rounded-2xl"
-              >
-                View All {gym.gallery.length} Photos
-              </Button>
-            )}
+...
           </Card>
         ) : null}
 
+        {/* Leaderboard Section */}
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">Gym Leaderboard</h3>
+                <p className="text-sm font-normal text-slate-300 leading-relaxed">Top performers this month</p>
+              </div>
+            </div>
+          </div>
+
+          {currentUser && (
+            <Button
+              onClick={() => setShowLogLift(true)}
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Log Your Lift
+            </Button>
+          )}
+
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <Button
+              variant={selectedExercise === 'all' ? 'default' : 'outline'}
+              onClick={() => setSelectedExercise('all')}
+              className="rounded-2xl whitespace-nowrap"
+            >
+              All Exercises
+            </Button>
+            <Button
+              variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
+              onClick={() => setSelectedExercise('bench_press')}
+              className="rounded-2xl whitespace-nowrap"
+            >
+              Bench Press
+            </Button>
+            <Button
+              variant={selectedExercise === 'squat' ? 'default' : 'outline'}
+              onClick={() => setSelectedExercise('squat')}
+              className="rounded-2xl whitespace-nowrap"
+            >
+              Squat
+            </Button>
+            <Button
+              variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
+              onClick={() => setSelectedExercise('deadlift')}
+              className="rounded-2xl whitespace-nowrap"
+            >
+              Deadlift
+            </Button>
+            <Button
+              variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
+              onClick={() => setSelectedExercise('overhead_press')}
+              className="rounded-2xl whitespace-nowrap"
+            >
+              Overhead Press
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {topLifts.length === 0 ? (
+              <div className="p-12 text-center border-2 border-dashed border-slate-600/50 rounded-2xl bg-slate-700/50">
+                <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                <p className="text-slate-400">No lifts recorded yet</p>
+              </div>
+            ) : (
+              topLifts.map((lift, idx) => (
+                <LeaderboardCard
+                  key={lift.id}
+                  rank={idx + 1}
+                  member={lift.member}
+                  lift={lift}
+                />
+              ))
+            )}
+          </div>
+        </Card>
+
         {/* Tabs */}
-        <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
-            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
-              Leaderboard
-            </TabsTrigger>
+        <Tabs defaultValue="challenges" className="w-full">
+          <TabsList className="grid w-full grid-cols-6 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
             <TabsTrigger value="challenges" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               Challenges
             </TabsTrigger>
@@ -647,72 +669,6 @@ export default function GymCommunity() {
               Info
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="leaderboard" className="space-y-3">
-            {currentUser && (
-              <Button
-                onClick={() => setShowLogLift(true)}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
-              >
-                <Trophy className="w-4 h-4 mr-2" />
-                Log Your Lift
-              </Button>
-            )}
-
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-              <Button
-                variant={selectedExercise === 'all' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('all')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                All Exercises
-              </Button>
-              <Button
-                variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('bench_press')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Bench Press
-              </Button>
-              <Button
-                variant={selectedExercise === 'squat' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('squat')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Squat
-              </Button>
-              <Button
-                variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('deadlift')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Deadlift
-              </Button>
-              <Button
-                variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('overhead_press')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Overhead Press
-              </Button>
-            </div>
-
-            {topLifts.length === 0 ? (
-              <Card className="p-12 text-center">
-                <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No lifts recorded yet</p>
-              </Card>
-            ) : (
-              topLifts.map((lift, idx) => (
-                <LeaderboardCard
-                  key={lift.id}
-                  rank={idx + 1}
-                  member={lift.member}
-                  lift={lift}
-                />
-              ))
-            )}
-          </TabsContent>
 
           <TabsContent value="challenges">
             <div className="space-y-4">
