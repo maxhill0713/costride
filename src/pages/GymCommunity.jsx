@@ -578,9 +578,7 @@ export default function GymCommunity() {
             <TabsTrigger value="classes" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Classes
             </TabsTrigger>
-            <TabsTrigger value="coaches" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
-              Coaches
-            </TabsTrigger>
+
             <TabsTrigger value="events" className="rounded-xl font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs whitespace-nowrap flex-shrink-0 px-3">
               Events
             </TabsTrigger>
@@ -748,84 +746,7 @@ export default function GymCommunity() {
             )}
           </TabsContent>
 
-          <TabsContent value="coaches" className="space-y-4">
-            {showOwnerControls && (
-              <Button
-                onClick={() => setShowManageCoaches(true)}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl mb-4"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Manage Coaches
-              </Button>
-            )}
-            {coaches.length === 0 ? (
-              <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl">
-                <GraduationCap className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500 font-medium">No coaches listed yet</p>
-                {showOwnerControls ? (
-                  <Button
-                    onClick={() => setShowManageCoaches(true)}
-                    variant="outline"
-                    className="mt-3"
-                  >
-                    Add Coaches
-                  </Button>
-                ) : (
-                  <p className="text-sm text-gray-400 mt-1">Stay tuned for our coaching team</p>
-                )}
-              </Card>
-            ) : (
-              coaches.map((coach) => (
-                <Card key={coach.id} className="bg-white border-2 border-gray-100 p-5 rounded-3xl hover:shadow-lg transition-all">
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {coach.avatar_url ? (
-                        <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-2xl font-bold text-white">
-                          {coach.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900 text-lg">{coach.name}</h3>
-                        {coach.rating && (
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-bold text-gray-900">{coach.rating}</span>
-                          </div>
-                        )}
-                      </div>
-                      {coach.bio && (
-                        <p className="text-sm font-normal text-gray-600 mb-3 leading-relaxed">{coach.bio}</p>
-                      )}
-                      {coach.specialties && coach.specialties.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {coach.specialties.map((specialty, idx) => (
-                            <Badge key={idx} className="bg-blue-100 text-blue-700">
-                              {specialty}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        {coach.experience_years && (
-                          <span>{coach.experience_years} years experience</span>
-                        )}
-                        {coach.total_clients > 0 && (
-                          <>
-                            <span>•</span>
-                            <span>{coach.total_clients} clients</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))
-            )}
-          </TabsContent>
+
 
           <TabsContent value="events" className="space-y-4">
             <div className="flex justify-between items-center mb-4">
@@ -964,13 +885,99 @@ export default function GymCommunity() {
               )}
 
               {gym.distance_km && (
-                <div>
+                <div className="mb-6">
                   <p className="text-sm font-bold text-gray-500 uppercase mb-2">Distance</p>
                   <p className="text-gray-900">{gym.distance_km} km away</p>
                 </div>
               )}
-            </Card>
-          </TabsContent>
+
+              {/* Coaches Section */}
+              <div className="pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-bold text-gray-500 uppercase">Coaches</p>
+                  {showOwnerControls && (
+                    <Button
+                      onClick={() => setShowManageCoaches(true)}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-2xl"
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Manage
+                    </Button>
+                  )}
+                </div>
+                {coaches.length === 0 ? (
+                  <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+                    <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-gray-500 text-sm">No coaches listed yet</p>
+                    {showOwnerControls && (
+                      <Button
+                        onClick={() => setShowManageCoaches(true)}
+                        size="sm"
+                        variant="outline"
+                        className="mt-2"
+                      >
+                        Add Coaches
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {coaches.map((coach) => (
+                      <div key={coach.id} className="bg-gray-50 border border-gray-200 p-4 rounded-2xl">
+                        <div className="flex items-start gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {coach.avatar_url ? (
+                              <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-lg font-bold text-white">
+                                {coach.name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-gray-900">{coach.name}</h4>
+                              {coach.rating && (
+                                <div className="flex items-center gap-1">
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs font-bold text-gray-900">{coach.rating}</span>
+                                </div>
+                              )}
+                            </div>
+                            {coach.bio && (
+                              <p className="text-xs text-gray-600 mb-2 leading-relaxed">{coach.bio}</p>
+                            )}
+                            {coach.specialties && coach.specialties.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-1">
+                                {coach.specialties.map((specialty, idx) => (
+                                  <Badge key={idx} className="bg-blue-100 text-blue-700 text-xs">
+                                    {specialty}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-3 text-xs text-gray-600">
+                              {coach.experience_years && (
+                                <span>{coach.experience_years} years</span>
+                              )}
+                              {coach.total_clients > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <span>{coach.total_clients} clients</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              </Card>
+              </TabsContent>
         </Tabs>
 
         <CreateEventModal
