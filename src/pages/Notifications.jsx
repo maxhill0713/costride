@@ -152,25 +152,25 @@ export default function Notifications() {
   const getNotificationIcon = (type, icon) => {
     if (icon) return icon;
     switch (type) {
-      case 'inactivity': return <AlertCircle className="w-5 h-5 text-orange-500" />;
-      case 'milestone': return <Trophy className="w-5 h-5 text-yellow-500" />;
-      case 'anniversary': return <PartyPopper className="w-5 h-5 text-purple-500" />;
-      case 'engagement': return <TrendingUp className="w-5 h-5 text-blue-500" />;
-      case 'achievement': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      case 'challenge': return <Flame className="w-5 h-5 text-red-500" />;
-      default: return <Bell className="w-5 h-5 text-gray-500" />;
+      case 'inactivity': return <AlertCircle className="w-5 h-5 text-orange-400" />;
+      case 'milestone': return <Trophy className="w-5 h-5 text-yellow-400" />;
+      case 'anniversary': return <PartyPopper className="w-5 h-5 text-purple-400" />;
+      case 'engagement': return <TrendingUp className="w-5 h-5 text-cyan-400" />;
+      case 'achievement': return <CheckCircle2 className="w-5 h-5 text-teal-400" />;
+      case 'challenge': return <Flame className="w-5 h-5 text-red-400" />;
+      default: return <Bell className="w-5 h-5 text-slate-400" />;
     }
   };
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'inactivity': return 'from-orange-50 to-red-50 border-orange-200';
-      case 'milestone': return 'from-yellow-50 to-orange-50 border-yellow-200';
-      case 'anniversary': return 'from-purple-50 to-pink-50 border-purple-200';
-      case 'engagement': return 'from-blue-50 to-cyan-50 border-blue-200';
-      case 'achievement': return 'from-green-50 to-emerald-50 border-green-200';
-      case 'challenge': return 'from-red-50 to-pink-50 border-red-200';
-      default: return 'from-gray-50 to-gray-100 border-gray-200';
+      case 'inactivity': return 'from-orange-900/30 to-red-900/30 border-orange-700/50';
+      case 'milestone': return 'from-yellow-900/30 to-orange-900/30 border-yellow-600/50';
+      case 'anniversary': return 'from-purple-900/30 to-pink-900/30 border-purple-700/50';
+      case 'engagement': return 'from-blue-900/30 to-cyan-900/30 border-cyan-700/50';
+      case 'achievement': return 'from-green-900/30 to-emerald-900/30 border-teal-700/50';
+      case 'challenge': return 'from-red-900/30 to-pink-900/30 border-red-700/50';
+      default: return 'from-slate-800/50 to-slate-900/50 border-slate-700/50';
     }
   };
 
@@ -183,22 +183,22 @@ export default function Notifications() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Header */}
-      <div className="relative bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 px-4 py-12 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-12 overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMCAxMGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bS0xMCAwYzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTAgMTBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyek0yNiAzNGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bTEwIDBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
         <div className="max-w-2xl mx-auto relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Bell className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-black text-white">
+                <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">
                   Notifications
                 </h1>
                 {unreadCount > 0 && (
-                  <p className="text-white/90 text-sm mt-1">{unreadCount} unread</p>
+                  <p className="text-cyan-100 text-sm mt-1">{unreadCount} unread</p>
                 )}
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function Notifications() {
               <Button
                 onClick={() => markAllReadMutation.mutate()}
                 disabled={markAllReadMutation.isPending}
-                className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-2xl"
+                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white rounded-2xl shadow-lg"
               >
                 Mark all read
               </Button>
@@ -218,18 +218,18 @@ export default function Notifications() {
       {/* Notifications List */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         {notifications.length === 0 ? (
-          <Card className="p-12 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
-            <BellOff className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 font-medium">No notifications yet</p>
-            <p className="text-sm text-gray-400 mt-1">We'll notify you about important updates</p>
+          <Card className="p-12 text-center border-2 border-dashed border-cyan-700/50 rounded-3xl bg-slate-800/50">
+            <BellOff className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+            <p className="text-slate-300 font-medium">No notifications yet</p>
+            <p className="text-sm text-slate-400 mt-1">We'll notify you about important updates</p>
           </Card>
         ) : (
           <div className="space-y-3">
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`bg-gradient-to-r ${getNotificationColor(notification.type)} border-2 overflow-hidden hover:shadow-lg transition-all duration-300 rounded-3xl ${
-                  !notification.read ? 'ring-2 ring-blue-400/50' : ''
+                className={`bg-gradient-to-r ${getNotificationColor(notification.type)} border overflow-hidden hover:shadow-xl hover:shadow-cyan-500/20 transition-all duration-300 rounded-3xl ${
+                  !notification.read ? 'ring-2 ring-cyan-500/50' : ''
                 }`}
               >
                 <div className="p-5">
@@ -239,7 +239,7 @@ export default function Notifications() {
                       {notification.icon && typeof notification.icon === 'string' && notification.icon.length <= 2 ? (
                         <div className="text-3xl">{notification.icon}</div>
                       ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-700/80 flex items-center justify-center shadow-sm border border-cyan-700/50">
                           {getNotificationIcon(notification.type, null)}
                         </div>
                       )}
@@ -248,23 +248,23 @@ export default function Notifications() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-gray-900">{notification.title}</h3>
+                        <h3 className="font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{notification.title}</h3>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                          className="flex-shrink-0 h-8 w-8 hover:bg-white/50 rounded-full"
+                          className="flex-shrink-0 h-8 w-8 hover:bg-slate-700/50 rounded-full"
                         >
-                          <X className="w-4 h-4 text-gray-500" />
+                          <X className="w-4 h-4 text-slate-400" />
                         </Button>
                       </div>
-                      <p className="text-sm text-gray-700 mb-2">{notification.message}</p>
+                      <p className="text-sm text-slate-300 mb-2">{notification.message}</p>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-slate-500">
                           {format(new Date(notification.created_date), 'MMM d, h:mm a')}
                         </span>
                         {!notification.read && (
-                          <Badge className="bg-blue-500 text-white text-xs">New</Badge>
+                          <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs shadow-lg shadow-cyan-500/30">New</Badge>
                         )}
                       </div>
                       
@@ -274,7 +274,7 @@ export default function Notifications() {
                           <Link to={notification.action_url}>
                             <Button
                               size="sm"
-                              className="bg-white hover:bg-gray-50 text-gray-900 rounded-2xl shadow-sm"
+                              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl shadow-lg"
                               onClick={() => markAsReadMutation.mutate(notification.id)}
                             >
                               Take Action
@@ -286,7 +286,7 @@ export default function Notifications() {
                             size="sm"
                             variant="outline"
                             onClick={() => markAsReadMutation.mutate(notification.id)}
-                            className="bg-white/50 hover:bg-white rounded-2xl"
+                            className="bg-slate-700/50 hover:bg-slate-700 border-cyan-700/50 text-cyan-300 rounded-2xl"
                           >
                             Mark as read
                           </Button>
