@@ -194,7 +194,7 @@ export default function Notifications() {
                 <Bell className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-semibold bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">
                   Notifications
                 </h1>
                 {unreadCount > 0 && (
@@ -248,7 +248,7 @@ export default function Notifications() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">{notification.title}</h3>
+                        <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">{notification.title}</h3>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -258,7 +258,7 @@ export default function Notifications() {
                           <X className="w-4 h-4 text-slate-400" />
                         </Button>
                       </div>
-                      <p className="text-sm text-slate-200 mb-2">{notification.message}</p>
+                      <p className="text-sm font-normal text-slate-200 mb-2 leading-relaxed">{notification.message}</p>
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-slate-500">
                           {format(new Date(notification.created_date), 'MMM d, h:mm a')}

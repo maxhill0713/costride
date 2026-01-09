@@ -76,8 +76,8 @@ export default function Challenges() {
                   </Badge>
                 )}
               </div>
-              <h3 className="text-2xl font-black bg-gradient-to-r from-cyan-200 via-blue-200 to-cyan-200 bg-clip-text text-transparent mb-2">{challenge.title}</h3>
-              <p className="text-slate-200 mb-3">{challenge.description}</p>
+              <h3 className="text-2xl font-semibold bg-gradient-to-r from-cyan-200 via-blue-200 to-cyan-200 bg-clip-text text-transparent mb-2">{challenge.title}</h3>
+              <p className="text-slate-200 font-normal mb-3 leading-relaxed">{challenge.description}</p>
               
               {/* Gym vs Gym */}
               {challenge.type === 'gym_vs_gym' && (

@@ -332,7 +332,7 @@ export default function GymCommunity() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h1 className="text-3xl font-black">{gym.name}</h1>
+                  <h1 className="text-3xl font-semibold">{gym.name}</h1>
                   {gym.verified && (
                     <BadgeCheck className="w-6 h-6 text-green-400" />
                   )}
@@ -359,21 +359,21 @@ export default function GymCommunity() {
           <Card className="p-4 text-center bg-white">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Users className="w-5 h-5 text-blue-600" />
-              <span className="text-2xl font-black text-gray-900">{gym.members_count || 0}</span>
+              <span className="text-2xl font-semibold text-gray-900">{gym.members_count || 0}</span>
             </div>
-            <p className="text-sm text-gray-600">Members</p>
-          </Card>
-          <Card className="p-4 text-center bg-white">
+            <p className="text-sm font-normal text-gray-600">Members</p>
+            </Card>
+            <Card className="p-4 text-center bg-white">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Star className="w-5 h-5 text-yellow-500" />
-              <span className="text-2xl font-black text-gray-900">{gym.rating || 0}</span>
+              <span className="text-2xl font-semibold text-gray-900">{gym.rating || 0}</span>
             </div>
-            <p className="text-sm text-gray-600">Rating</p>
-          </Card>
-          <Card className="p-4 text-center bg-white">
+            <p className="text-sm font-normal text-gray-600">Rating</p>
+            </Card>
+            <Card className="p-4 text-center bg-white">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Trophy className="w-5 h-5 text-orange-500" />
-              <span className="text-2xl font-black text-gray-900">{lifts.length}</span>
+              <span className="text-2xl font-semibold text-gray-900">{lifts.length}</span>
             </div>
             <p className="text-sm text-gray-600">PRs</p>
           </Card>
@@ -388,8 +388,8 @@ export default function GymCommunity() {
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-black text-orange-900 text-lg">{gym.reward_offer}</p>
-                  <p className="text-sm text-orange-700">Special offer for new members!</p>
+                  <p className="font-semibold text-orange-900 text-lg">{gym.reward_offer}</p>
+                  <p className="text-sm font-normal text-orange-700 leading-relaxed">Special offer for new members!</p>
                 </div>
               </div>
               <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl">
@@ -411,8 +411,8 @@ export default function GymCommunity() {
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-purple-900">Member Rewards</h3>
-                  <p className="text-sm text-purple-700">Earn rewards for your dedication!</p>
+                  <h3 className="text-xl font-semibold text-purple-900">Member Rewards</h3>
+                  <p className="text-sm font-normal text-purple-700 leading-relaxed">Earn rewards for your dedication!</p>
                 </div>
               </div>
               {showOwnerControls && (
@@ -435,9 +435,9 @@ export default function GymCommunity() {
                     <div className="flex items-start gap-3">
                       <div className="text-3xl">{reward.icon || '🎁'}</div>
                       <div className="flex-1">
-                        <h4 className="font-bold text-gray-900 text-sm">{reward.title}</h4>
+                        <h4 className="font-semibold text-gray-900 text-sm">{reward.title}</h4>
                         {reward.description && (
-                          <p className="text-xs text-gray-600 mt-1">{reward.description}</p>
+                          <p className="text-xs font-normal text-gray-600 mt-1 leading-relaxed">{reward.description}</p>
                         )}
                         <div className="flex flex-wrap gap-1 mt-2">
                           {reward.value && (
@@ -483,8 +483,8 @@ export default function GymCommunity() {
           <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
             <div className="text-center">
               <Gift className="w-12 h-12 mx-auto mb-3 text-purple-500" />
-              <h3 className="font-bold text-gray-900 mb-2">Create Member Rewards</h3>
-              <p className="text-sm text-gray-600 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Create Member Rewards</h3>
+              <p className="text-sm font-normal text-gray-600 mb-4 leading-relaxed">
                 Motivate your members with rewards for check-ins, streaks, and achievements!
               </p>
               <Button
@@ -507,8 +507,8 @@ export default function GymCommunity() {
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-blue-900">Member Management</h3>
-                  <p className="text-sm text-blue-700">View and manage your gym members</p>
+                  <h3 className="text-xl font-semibold text-blue-900">Member Management</h3>
+                  <p className="text-sm font-normal text-blue-700 leading-relaxed">View and manage your gym members</p>
                 </div>
               </div>
               <Button
@@ -528,30 +528,30 @@ export default function GymCommunity() {
               <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-black text-purple-900">Leaderboard Rewards</h3>
-              <p className="text-sm text-purple-700">Compete and win exclusive rewards!</p>
+              <h3 className="text-xl font-semibold text-purple-900">Leaderboard Rewards</h3>
+              <p className="text-sm font-normal text-purple-700 leading-relaxed">Compete and win exclusive rewards!</p>
             </div>
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 bg-yellow-50 border-2 border-yellow-300 rounded-2xl">
               <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white">1</div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900">1st Place</p>
-                <p className="text-sm text-gray-600">Free month membership + £50 sports voucher</p>
+                <p className="font-semibold text-gray-900">1st Place</p>
+                <p className="text-sm font-normal text-gray-600 leading-relaxed">Free month membership + £50 sports voucher</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-gray-300 rounded-2xl">
               <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center font-black text-white">2</div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900">2nd Place</p>
-                <p className="text-sm text-gray-600">50% off membership + £25 sports voucher</p>
+                <p className="font-semibold text-gray-900">2nd Place</p>
+                <p className="text-sm font-normal text-gray-600 leading-relaxed">50% off membership + £25 sports voucher</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-orange-50 border-2 border-orange-300 rounded-2xl">
               <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-black text-white">3</div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900">3rd Place</p>
-                <p className="text-sm text-gray-600">25% off membership + £10 sports voucher</p>
+                <p className="font-semibold text-gray-900">3rd Place</p>
+                <p className="text-sm font-normal text-gray-600 leading-relaxed">25% off membership + £10 sports voucher</p>
               </div>
             </div>
           </div>
@@ -568,8 +568,8 @@ export default function GymCommunity() {
                   <ImageIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-gray-900">Gym Photos</h3>
-                  <p className="text-sm text-gray-600">See our facilities</p>
+                  <h3 className="text-xl font-semibold text-gray-900">Gym Photos</h3>
+                  <p className="text-sm font-normal text-gray-600 leading-relaxed">See our facilities</p>
                   </div>
                   </div>
                   {showOwnerControls && (
@@ -586,7 +586,7 @@ export default function GymCommunity() {
             {(!gym.gallery || gym.gallery.length === 0) ? (
               <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-2xl">
                 <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500 font-medium">No photos yet</p>
+                <p className="text-gray-500 font-normal">No photos yet</p>
                 {showOwnerControls && (
                   <Button
                     onClick={() => setShowManagePhotos(true)}
@@ -767,8 +767,8 @@ export default function GymCommunity() {
                       <Target className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 text-lg mb-1">{gymClass.name}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{gymClass.description}</p>
+                      <h3 className="font-semibold text-gray-900 text-lg mb-1">{gymClass.name}</h3>
+                      <p className="text-sm font-normal text-gray-600 mb-3 leading-relaxed">{gymClass.description}</p>
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge className="bg-purple-100 text-purple-700">
                           {gymClass.instructor}
@@ -845,7 +845,7 @@ export default function GymCommunity() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-gray-900 text-lg">{coach.name}</h3>
+                        <h3 className="font-semibold text-gray-900 text-lg">{coach.name}</h3>
                         {coach.rating && (
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -854,7 +854,7 @@ export default function GymCommunity() {
                         )}
                       </div>
                       {coach.bio && (
-                        <p className="text-sm text-gray-600 mb-3">{coach.bio}</p>
+                        <p className="text-sm font-normal text-gray-600 mb-3 leading-relaxed">{coach.bio}</p>
                       )}
                       {coach.specialties && coach.specialties.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-2">
@@ -885,7 +885,7 @@ export default function GymCommunity() {
 
           <TabsContent value="events" className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Upcoming Events</h3>
               <Button
                 onClick={() => setShowCreateEvent(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
@@ -943,7 +943,7 @@ export default function GymCommunity() {
 
           <TabsContent value="info">
             <Card className="p-6 bg-white">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Gym Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Gym Information</h3>
               
               {gym.type && (
                 <div className="mb-6">
