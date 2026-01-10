@@ -6,7 +6,6 @@ import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import Home from './pages/Home';
 import Leaderboard from './pages/Leaderboard';
-import Leaderboards from './pages/Leaderboards';
 import Members from './pages/Members';
 import Messages from './pages/Messages';
 import Notifications from './pages/Notifications';
@@ -29,7 +28,6 @@ export const PAGES = {
     "Gyms": Gyms,
     "Home": Home,
     "Leaderboard": Leaderboard,
-    "Leaderboards": Leaderboards,
     "Members": Members,
     "Messages": Messages,
     "Notifications": Notifications,
