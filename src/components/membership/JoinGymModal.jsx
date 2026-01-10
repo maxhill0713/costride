@@ -235,6 +235,45 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
           <div className="space-y-4">
             <h3 className="font-bold text-gray-900">Select Payment Method:</h3>
             
+            {/* Quick Payment Options */}
+            <div className="space-y-2">
+              <Button
+                onClick={() => {
+                  processPaymentMutation.mutate({ paymentMethodId: 'apple_pay' });
+                }}
+                className="w-full bg-black hover:bg-gray-900 text-white font-bold h-12 rounded-2xl flex items-center justify-center gap-2"
+                disabled={processPaymentMutation.isPending}
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                </svg>
+                Pay
+              </Button>
+
+              <Button
+                onClick={() => {
+                  processPaymentMutation.mutate({ paymentMethodId: 'paypal' });
+                }}
+                className="w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold h-12 rounded-2xl flex items-center justify-center gap-2"
+                disabled={processPaymentMutation.isPending}
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.794.68l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L9.22 7.771a.965.965 0 01.952-.812h4.42c1.659 0 2.988.37 3.944 1.162.36.3.64.646.84 1.018.146.27.261.556.346.858.007.026.014.052.02.078l.024.097.013.057c.028.13.05.264.069.401l.014.104z"/>
+                  <path d="M10.736 8.421l.012-.006.02-.008.023-.01c.023-.009.046-.018.07-.026l.027-.01a.798.798 0 01.095-.025l.028-.007.085-.015.03-.004c.28-.038.577-.058.887-.058h4.42c1.183 0 2.15.197 2.892.594l.05.027c-.15 1.72-1.031 3.265-2.504 4.16-.848.516-1.863.79-2.986.79h-.5a.805.805 0 00-.794.68l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558l2.977-18.338a.965.965 0 01.952-.812h4.42c.313 0 .607.02.887.058.032.004.063.01.095.015l.027.007c.033.009.064.017.095.025l.028.01a.72.72 0 01.07.026l.023.01.02.008.012.006z" opacity=".7"/>
+                </svg>
+                PayPal
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or pay with card</span>
+              </div>
+            </div>
+            
             <RadioGroup value={selectedPaymentMethod} onValueChange={handlePaymentMethodSelection}>
               {paymentMethods.map((method) => (
                 <Card key={method.id} className={`p-4 cursor-pointer transition-all ${selectedPaymentMethod === method.id ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
