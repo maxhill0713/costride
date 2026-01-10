@@ -8,7 +8,12 @@ import { base44 } from '@/api/base44Client';
 export default function Layout({ children, currentPageName }) {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me().catch(() => null)
+    queryFn: () => base44.auth.me().catch(() => ({
+      id: 'guest',
+      full_name: 'Guest',
+      email: 'guest@example.com',
+      account_type: 'user'
+    }))
   });
 
   const { data: notifications = [] } = useQuery({
@@ -39,8 +44,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
-        <div className="flex justify-around items-center h-20 px-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] safe-area-inset-bottom">
+        <div className="flex justify-around items-center h-20 px-1">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -66,7 +71,7 @@ export default function Layout({ children, currentPageName }) {
                     </div>
                   )}
                 </div>
-                <span className={`text-xs font-bold ${isActive ? 'text-white' : ''} transition-colors`}>{item.name}</span>
+                <span className={`text-[10px] font-bold ${isActive ? 'text-white' : ''} transition-colors leading-tight`}>{item.name}</span>
               </Link>
             );
           })}
