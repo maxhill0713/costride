@@ -6,9 +6,11 @@ import { CheckCircle, Flame, Calendar, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CheckInButton({ gym }) {
   const [isChecking, setIsChecking] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -37,6 +39,9 @@ export default function CheckInButton({ gym }) {
       return newCheckIn;
     },
     onSuccess: async (newCheckIn) => {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      
       queryClient.invalidateQueries({ queryKey: ['checkIns'] });
       queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
       
@@ -180,6 +185,30 @@ export default function CheckInButton({ gym }) {
 
   return (
     <div className="space-y-3">
+      {/* Success Animation */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ 
+                scale: [1, 1.2, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ duration: 0.6 }}
+              className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-full p-8 shadow-2xl"
+            >
+              <CheckCircle className="w-24 h-24 text-white" strokeWidth={3} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Inactivity Warning */}
       {isInactive && daysSinceLastCheckIn !== null && (
         <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-2xl p-4">
@@ -218,15 +247,20 @@ export default function CheckInButton({ gym }) {
       )}
 
       {/* Check-in Button */}
-      <Button
-        onClick={handleCheckIn}
-        disabled={hasCheckedInToday() || isChecking}
-        className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg ${
-          hasCheckedInToday()
-            ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-        }`}
+      <motion.div
+        whileTap={!hasCheckedInToday() && !isChecking ? { scale: 0.95 } : {}}
+        animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
+        transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}
       >
+        <Button
+          onClick={handleCheckIn}
+          disabled={hasCheckedInToday() || isChecking}
+          className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
+            hasCheckedInToday()
+              ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+          }`}
+        >
         {hasCheckedInToday() ? (
           <>
             <CheckCircle className="w-5 h-5 mr-2" />
@@ -240,7 +274,8 @@ export default function CheckInButton({ gym }) {
             Check In Now
           </>
         )}
-      </Button>
+        </Button>
+      </motion.div>
 
       {hasCheckedInToday() && (
         <p className="text-center text-sm text-gray-500">
