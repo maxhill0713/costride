@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +73,11 @@ export default function Profile() {
     enabled: !!currentUser
   });
 
+  const { data: allGyms = [] } = useQuery({
+    queryKey: ['gyms'],
+    queryFn: () => base44.entities.Gym.list()
+  });
+
   const claimRewardMutation = useMutation({
     mutationFn: ({ rewardId, userId, currentClaimed }) => 
       base44.entities.Reward.update(rewardId, {
@@ -88,6 +93,7 @@ export default function Profile() {
 
   // Get gyms user is a member of
   const memberGymIds = gymMemberships.map(m => m.gym_id);
+  const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
   
   // Filter rewards for gyms user is a member of
   const availableRewards = allRewards.filter(r => 
@@ -416,6 +422,56 @@ export default function Profile() {
             </Button>
           </div>
         </Card>
+
+        {/* Gym Memberships */}
+        {memberGyms.length > 0 && (
+          <Card className="bg-white border-2 border-gray-100 p-5 mt-4">
+            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-blue-500" />
+              Your Gym Memberships
+            </h3>
+            <div className="grid gap-3">
+              {memberGyms.map((gym) => {
+                const membership = gymMemberships.find(m => m.gym_id === gym.id);
+                return (
+                  <div 
+                    key={gym.id} 
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200 hover:shadow-md transition-all"
+                  >
+                    {gym.image_url ? (
+                      <img 
+                        src={gym.image_url} 
+                        alt={gym.name}
+                        className="w-16 h-16 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                        <Dumbbell className="w-8 h-8 text-white" />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900">{gym.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium capitalize">
+                          {gym.type}
+                        </span>
+                        <span className="text-xs text-gray-600">• {gym.city}</span>
+                      </div>
+                      {membership?.membership_type && (
+                        <p className="text-xs text-gray-500 mt-1 capitalize">
+                          {membership.membership_type} membership
+                        </p>
+                      )}
+                    </div>
+                    
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Content */}
