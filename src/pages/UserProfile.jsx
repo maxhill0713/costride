@@ -138,13 +138,22 @@ export default function UserProfile() {
               {viewingUser.location && (
                 <p className="text-white/80 text-sm">{viewingUser.location}</p>
               )}
-              {isOwnProfile && (
-                <Link to={createPageUrl('Profile')} className="inline-block mt-2">
-                  <Button size="sm" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-2xl">
-                    Edit Profile
-                  </Button>
-                </Link>
-              )}
+              <div className="flex gap-2 mt-2">
+                {isOwnProfile ? (
+                  <Link to={createPageUrl('Profile')}>
+                    <Button size="sm" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-2xl">
+                      Edit Profile
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to={`${createPageUrl('Messages')}?userId=${userId}`}>
+                    <Button size="sm" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-2xl">
+                      <MessageCircle className="w-4 h-4 mr-1" />
+                      Message
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>

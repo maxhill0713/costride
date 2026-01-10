@@ -15,6 +15,10 @@ export default function Messages() {
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
+  // Check for userId in URL to open direct message
+  const urlParams = new URLSearchParams(window.location.search);
+  const directUserId = urlParams.get('userId');
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
@@ -25,10 +29,23 @@ export default function Messages() {
     queryFn: () => base44.entities.Message.list('-created_date')
   });
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => base44.entities.User.list()
   });
+
+  // Auto-open chat if directUserId is present
+  useEffect(() => {
+    if (directUserId && allUsers.length > 0 && !selectedChat) {
+      const targetUser = allUsers.find(u => u.id === directUserId);
+      if (targetUser) {
+        setSelectedChat({
+          userId: targetUser.id,
+          userName: targetUser.full_name
+        });
+      }
+    }
+  }, [directUserId, allUsers, selectedChat]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -90,9 +107,9 @@ export default function Messages() {
     });
   };
 
-  const filteredMembers = members.filter(m =>
-    m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = allUsers.filter(u =>
+    u.id !== currentUser?.id &&
+    u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const unreadCount = conversationList.filter(conv => conv.unread).length;
@@ -156,7 +173,7 @@ export default function Messages() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Search members..."
+                  placeholder="Search users..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 rounded-2xl bg-gray-50 border-0 focus:ring-2 focus:ring-blue-400"
@@ -167,21 +184,25 @@ export default function Messages() {
             <div className="flex-1 overflow-y-auto px-2">
               {searchQuery ? (
                 <div className="space-y-1">
-                  {filteredMembers.map(member => (
+                  {filteredUsers.map(user => (
                     <button
-                      key={member.id}
+                      key={user.id}
                       onClick={() => {
-                        setSelectedChat({ userId: member.id, userName: member.name });
+                        setSelectedChat({ userId: user.id, userName: user.full_name });
                         setSearchQuery('');
                       }}
                       className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 transition-all"
                     >
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md">
-                        <span className="text-white font-bold text-lg">{member.name.charAt(0)}</span>
+                        {user.avatar_url ? (
+                          <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                          <span className="text-white font-bold text-lg">{user.full_name?.charAt(0)}</span>
+                        )}
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-gray-900">{member.name}</p>
-                        {member.nickname && <p className="text-sm text-gray-500">{member.nickname}</p>}
+                        <p className="font-semibold text-gray-900">{user.full_name}</p>
+                        {user.location && <p className="text-sm text-gray-500">{user.location}</p>}
                       </div>
                     </button>
                   ))}
@@ -190,7 +211,7 @@ export default function Messages() {
                 <div className="text-center py-12">
                   <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-gray-500">No messages yet</p>
-                  <p className="text-sm text-gray-400 mt-1">Search members to start chatting</p>
+                  <p className="text-sm text-gray-400 mt-1">Search users to start chatting</p>
                 </div>
               ) : (
                 <div className="space-y-1">
