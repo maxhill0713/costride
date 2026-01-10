@@ -21,6 +21,7 @@ import LogLiftModal from '../components/lifts/LogLiftModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
+import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -37,6 +38,7 @@ export default function GymCommunity() {
   const [showEditHeroImage, setShowEditHeroImage] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [viewAsMember, setViewAsMember] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -240,6 +242,7 @@ export default function GymCommunity() {
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
   const showOwnerControls = isGymOwner && !viewAsMember;
+  const hasPremium = currentUser?.has_premium || isGymOwner;
 
   // Filter lifts by exercise
   const filteredLifts = selectedExercise === 'all' 
@@ -403,7 +406,28 @@ export default function GymCommunity() {
         <CheckInButton gym={gym} />
 
         {/* Rewards Section */}
-        {rewards.filter(r => r.active).length > 0 && (
+        {!hasPremium ? (
+          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                  <Gift className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-purple-900">Member Rewards</h3>
+                  <p className="text-sm font-normal text-purple-700 leading-relaxed">Upgrade to unlock exclusive rewards!</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowUpgradeModal(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Upgrade
+              </Button>
+            </div>
+          </Card>
+        ) : rewards.filter(r => r.active).length > 0 ? (
           <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -476,7 +500,7 @@ export default function GymCommunity() {
               })}
             </div>
           </Card>
-        )}
+        ) : null}
 
         {/* Manage Rewards Button for Gym Owners */}
         {showOwnerControls && rewards.filter(r => r.active).length === 0 && (
@@ -591,68 +615,89 @@ export default function GymCommunity() {
           </TabsList>
 
           <TabsContent value="leaderboard" className="space-y-3">
-            {currentUser && (
-              <Button
-                onClick={() => setShowLogLift(true)}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
-              >
-                <Trophy className="w-4 h-4 mr-2" />
-                Log Your Lift
-              </Button>
-            )}
-
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-              <Button
-                variant={selectedExercise === 'all' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('all')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                All Exercises
-              </Button>
-              <Button
-                variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('bench_press')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Bench Press
-              </Button>
-              <Button
-                variant={selectedExercise === 'squat' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('squat')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Squat
-              </Button>
-              <Button
-                variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('deadlift')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Deadlift
-              </Button>
-              <Button
-                variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('overhead_press')}
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Overhead Press
-              </Button>
-            </div>
-
-            {topLifts.length === 0 ? (
-              <Card className="p-12 text-center">
-                <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No lifts recorded yet</p>
+            {!hasPremium ? (
+              <Card className="p-12 text-center bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Crown className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Premium Feature</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Upgrade to Premium to access the leaderboard, compete with other members, and track your personal records!
+                </p>
+                <Button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl"
+                >
+                  <Crown className="w-4 h-4 mr-2" />
+                  Upgrade to Premium
+                </Button>
               </Card>
             ) : (
-              topLifts.map((lift, idx) => (
-                <LeaderboardCard
-                  key={lift.id}
-                  rank={idx + 1}
-                  member={lift.member}
-                  lift={lift}
-                />
-              ))
+              <>
+                {currentUser && (
+                  <Button
+                    onClick={() => setShowLogLift(true)}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
+                  >
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Log Your Lift
+                  </Button>
+                )}
+
+                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                  <Button
+                    variant={selectedExercise === 'all' ? 'default' : 'outline'}
+                    onClick={() => setSelectedExercise('all')}
+                    className="rounded-2xl whitespace-nowrap"
+                  >
+                    All Exercises
+                  </Button>
+                  <Button
+                    variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
+                    onClick={() => setSelectedExercise('bench_press')}
+                    className="rounded-2xl whitespace-nowrap"
+                  >
+                    Bench Press
+                  </Button>
+                  <Button
+                    variant={selectedExercise === 'squat' ? 'default' : 'outline'}
+                    onClick={() => setSelectedExercise('squat')}
+                    className="rounded-2xl whitespace-nowrap"
+                  >
+                    Squat
+                  </Button>
+                  <Button
+                    variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
+                    onClick={() => setSelectedExercise('deadlift')}
+                    className="rounded-2xl whitespace-nowrap"
+                  >
+                    Deadlift
+                  </Button>
+                  <Button
+                    variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
+                    onClick={() => setSelectedExercise('overhead_press')}
+                    className="rounded-2xl whitespace-nowrap"
+                  >
+                    Overhead Press
+                  </Button>
+                </div>
+
+                {topLifts.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500">No lifts recorded yet</p>
+                  </Card>
+                ) : (
+                  topLifts.map((lift, idx) => (
+                    <LeaderboardCard
+                      key={lift.id}
+                      rank={idx + 1}
+                      member={lift.member}
+                      lift={lift}
+                    />
+                  ))
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -1056,6 +1101,12 @@ export default function GymCommunity() {
           gym={gym}
           onBanMember={(userId) => banMemberMutation.mutate(userId)}
           onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)}
+        />
+
+        <UpgradeMembershipModal
+          open={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          currentUser={currentUser}
         />
       </div>
     </div>
