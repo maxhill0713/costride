@@ -12,10 +12,12 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    goal_type: 'numerical',
     target_value: '',
     current_value: 0,
     unit: 'lbs',
     exercise: '',
+    frequency_period: 'weekly',
     deadline: '',
     reminder_enabled: true,
     status: 'active'
@@ -33,10 +35,12 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
     setFormData({
       title: '',
       description: '',
+      goal_type: 'numerical',
       target_value: '',
       current_value: 0,
       unit: 'lbs',
       exercise: '',
+      frequency_period: 'weekly',
       deadline: '',
       reminder_enabled: true,
       status: 'active'
@@ -66,6 +70,20 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
           </div>
 
           <div className="space-y-2">
+            <Label>Goal Type *</Label>
+            <Select value={formData.goal_type} onValueChange={(value) => setFormData({ ...formData, goal_type: value, unit: value === 'numerical' ? 'lbs' : 'workouts' })}>
+              <SelectTrigger className="rounded-2xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="numerical">Numerical (e.g., lift 300 lbs)</SelectItem>
+                <SelectItem value="frequency">Frequency (e.g., 6 workouts per week)</SelectItem>
+                <SelectItem value="consistency">Consistency (e.g., 30 day streak)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label>Description</Label>
             <Textarea
               value={formData.description}
@@ -78,49 +96,68 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Target Value *</Label>
+              <Label>
+                {formData.goal_type === 'numerical' && 'Target Value *'}
+                {formData.goal_type === 'frequency' && 'Times per Period *'}
+                {formData.goal_type === 'consistency' && 'Days *'}
+              </Label>
               <Input
                 type="number"
                 value={formData.target_value}
                 onChange={(e) => setFormData({ ...formData, target_value: e.target.value })}
-                placeholder="300"
+                placeholder={formData.goal_type === 'numerical' ? '300' : formData.goal_type === 'frequency' ? '6' : '30'}
                 required
                 className="rounded-2xl"
               />
             </div>
             <div className="space-y-2">
-              <Label>Unit *</Label>
-              <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
-                <SelectTrigger className="rounded-2xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lbs">lbs</SelectItem>
-                  <SelectItem value="kg">kg</SelectItem>
-                  <SelectItem value="reps">reps</SelectItem>
-                  <SelectItem value="workouts">workouts</SelectItem>
-                  <SelectItem value="days">days</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>
+                {formData.goal_type === 'numerical' ? 'Unit *' : 'Period *'}
+              </Label>
+              {formData.goal_type === 'numerical' ? (
+                <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+                  <SelectTrigger className="rounded-2xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lbs">lbs</SelectItem>
+                    <SelectItem value="kg">kg</SelectItem>
+                    <SelectItem value="reps">reps</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select value={formData.frequency_period} onValueChange={(value) => setFormData({ ...formData, frequency_period: value })}>
+                  <SelectTrigger className="rounded-2xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Exercise (Optional)</Label>
-            <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-              <SelectTrigger className="rounded-2xl">
-                <SelectValue placeholder="Select exercise" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bench_press">Bench Press</SelectItem>
-                <SelectItem value="squat">Squat</SelectItem>
-                <SelectItem value="deadlift">Deadlift</SelectItem>
-                <SelectItem value="overhead_press">Overhead Press</SelectItem>
-                <SelectItem value="barbell_row">Barbell Row</SelectItem>
-                <SelectItem value="power_clean">Power Clean</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {formData.goal_type === 'numerical' && (
+            <div className="space-y-2">
+              <Label>Exercise (Optional)</Label>
+              <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
+                <SelectTrigger className="rounded-2xl">
+                  <SelectValue placeholder="Select exercise" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bench_press">Bench Press</SelectItem>
+                  <SelectItem value="squat">Squat</SelectItem>
+                  <SelectItem value="deadlift">Deadlift</SelectItem>
+                  <SelectItem value="overhead_press">Overhead Press</SelectItem>
+                  <SelectItem value="barbell_row">Barbell Row</SelectItem>
+                  <SelectItem value="power_clean">Power Clean</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Deadline</Label>

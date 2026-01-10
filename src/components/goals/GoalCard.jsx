@@ -9,6 +9,16 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
   const progress = Math.min((goal.current_value / goal.target_value) * 100, 100);
   const isCompleted = goal.status === 'completed' || progress >= 100;
 
+  const getGoalDisplay = () => {
+    if (goal.goal_type === 'frequency') {
+      return `${goal.current_value} / ${goal.target_value} times ${goal.frequency_period}`;
+    } else if (goal.goal_type === 'consistency') {
+      return `${goal.current_value} / ${goal.target_value} day streak`;
+    } else {
+      return `${goal.current_value} / ${goal.target_value} ${goal.unit}`;
+    }
+  };
+
   return (
     <Card className={`p-5 border-2 ${isCompleted ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'}`}>
       <div className="flex items-start justify-between mb-3">
@@ -52,7 +62,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
         <div>
           <div className="flex justify-between text-sm mb-2">
             <span className="text-gray-700 font-medium">
-              {goal.current_value} / {goal.target_value} {goal.unit}
+              {getGoalDisplay()}
             </span>
             <span className="text-gray-500 font-bold">{Math.round(progress)}%</span>
           </div>
