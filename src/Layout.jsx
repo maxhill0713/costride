@@ -44,8 +44,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-safe">
-        <div className="flex justify-around items-center h-16 px-0.5">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+        <div className="flex justify-around items-center h-14 px-0">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -54,24 +54,22 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-1 px-1.5 py-2 rounded-2xl transition-all duration-300 min-w-0 flex-1
-                  ${isActive 
-                    ? 'scale-105' 
-                    : 'text-slate-400 hover:text-white hover:scale-105'}
+                  relative flex flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 transition-all duration-200 min-w-0 flex-1
+                  ${isActive ? 'text-white' : 'text-slate-400'}
                 `}
               >
                 {isActive && (
-                  <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg`} />
+                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-6 h-1 ${item.color.replace('text-', 'bg-')} rounded-full`} />
                 )}
-                <div className={`relative ${isActive ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 p-2 rounded-xl shadow-sm` : 'p-1.5'}`}>
-                  <item.icon className={`w-4 h-4 ${isActive ? item.color : ''} transition-all duration-300`} strokeWidth={isActive ? 2.5 : 2} />
+                <div className="relative">
+                  <item.icon className={`w-5 h-5 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                       {item.badge > 9 ? '9+' : item.badge}
                     </div>
                   )}
                 </div>
-                <span className={`text-[10px] font-bold ${isActive ? 'text-white' : ''} transition-colors leading-tight`}>{item.name}</span>
+                <span className={`text-[9px] font-semibold leading-none mt-0.5 ${isActive ? item.color : ''}`}>{item.name}</span>
               </Link>
             );
           })}
@@ -118,7 +116,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Main Content */}
-      <main className="pb-24 md:pb-0 md:pl-20">
+      <main className="pb-16 md:pb-0 md:pl-20">
         {children}
       </main>
     </div>
