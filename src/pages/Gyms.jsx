@@ -90,7 +90,7 @@ export default function Gyms() {
       </div>
 
       {/* Filters */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-4 shadow-md">
+      <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-4 shadow-md">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-2 mb-3">
             <Filter className="w-5 h-5 text-gray-600" />
@@ -146,7 +146,7 @@ export default function Gyms() {
       {/* Gyms List */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {filteredGyms.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border-2 border-gray-100">
+          <div className="text-center py-16 bg-slate-100/80 rounded-3xl border-2 border-gray-100">
             <Dumbbell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-lg font-bold text-gray-700">No gyms found</p>
             <p className="text-sm text-gray-500 mt-1">Try adjusting your filters</p>

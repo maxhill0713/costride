@@ -290,10 +290,10 @@ export default function Home() {
             </Badge>
           </div>
           {todayCheckIns.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-              <p className="text-slate-400">No check-ins yet today</p>
-              <p className="text-sm text-slate-500 mt-1">Be the first to check in!</p>
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 mx-auto mb-3 text-slate-500" />
+                <p className="text-slate-300">No check-ins yet today</p>
+                <p className="text-sm text-slate-400 mt-1">Be the first to check in!</p>
             </div>
           ) : (
             <div className="space-y-3">

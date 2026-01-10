@@ -23,6 +23,11 @@ css
     background-color: #E6EAEE !important;
   }
 
+  /* Soft white text */
+  .text-white {
+    color: #F5F7FA !important;
+  }
+
   /* Dark Mode Styles */
   .dark body {
     background: linear-gradient(to bottom right, #0a1929, #1a2332, #1e3a5f);
