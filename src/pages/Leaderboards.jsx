@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, TrendingUp, Users, Dumbbell, Target, Crown, Medal, Award, Flame, Zap, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 
 export default function Leaderboards() {
   const [timeframe, setTimeframe] = useState('all-time');
