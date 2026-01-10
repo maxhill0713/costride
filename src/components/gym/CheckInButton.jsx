@@ -156,7 +156,8 @@ export default function CheckInButton({ gym }) {
       const next = startOfDay(parseISO(checkIns[i + 1].check_in_date));
       const daysDiff = differenceInDays(current, next);
       
-      if (daysDiff === 1) {
+      // Allow 1 day grace period (1 or 2 days apart still counts as consecutive)
+      if (daysDiff === 1 || daysDiff === 2) {
         streak++;
       } else {
         break;
