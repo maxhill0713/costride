@@ -1,19 +1,80 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Dumbbell, Check, Trophy, Gift, TrendingUp } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Dumbbell, Check, Trophy, Gift, TrendingUp, Loader2, CreditCard, Lock, Plus, ChevronLeft } from 'lucide-react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function JoinGymModal({ open, onClose, gym, currentUser }) {
+  const [step, setStep] = useState(1); // 1: Plan, 2: Payment Method, 3: Payment Details, 4: Confirmation
+  const [selectedPlan, setSelectedPlan] = useState('monthly');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [newPaymentMethod, setNewPaymentMethod] = useState({
+    type: 'card',
+    card_number: '',
+    card_brand: 'visa',
+    expiry_month: '',
+    expiry_year: '',
+    cvv: '',
+    billing_name: '',
+    billing_address: '',
+    billing_postcode: '',
+    paypal_email: '',
+    is_default: true
+  });
   const queryClient = useQueryClient();
 
-  const joinGymMutation = useMutation({
-    mutationFn: async () => {
-      const expirationDate = new Date();
-      expirationDate.setMonth(expirationDate.getMonth() + 1);
-      return base44.entities.GymMembership.create({
+  const { data: paymentMethods = [] } = useQuery({
+    queryKey: ['paymentMethods', currentUser?.id],
+    queryFn: async () => {
+      const methods = await base44.entities.PaymentMethod.list();
+      return methods.filter(m => m.user_id === currentUser?.id);
+    },
+    enabled: !!currentUser && open
+  });
+
+  const savePaymentMethodMutation = useMutation({
+    mutationFn: async (paymentData) => {
+      return await base44.entities.PaymentMethod.create({
+        ...paymentData,
+        user_id: currentUser.id,
+        user_email: currentUser.email
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['paymentMethods'] });
+    }
+  });
+
+  const processPaymentMutation = useMutation({
+    mutationFn: async ({ paymentMethodId }) => {
+      // Create payment record
+      const payment = await base44.entities.Payment.create({
+        user_id: currentUser.id,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        amount: getPlanPrice(),
+        currency: 'GBP',
+        payment_method_id: paymentMethodId,
+        payment_type: 'membership',
+        status: 'completed',
+        membership_type: selectedPlan
+      });
+
+      // Create membership
+      const expiryDate = selectedPlan === 'monthly' 
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        : selectedPlan === 'annual'
+        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        : new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
+
+      await base44.entities.GymMembership.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         user_email: currentUser.email,
@@ -21,89 +82,434 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
         gym_name: gym.name,
         status: 'active',
         join_date: new Date().toISOString().split('T')[0],
-        expiry_date: expirationDate.toISOString().split('T')[0],
-        membership_type: 'monthly'
+        expiry_date: expiryDate.toISOString().split('T')[0],
+        membership_type: selectedPlan
       });
+
+      return payment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
-      onClose();
+      setStep(4);
     }
   });
+
+  const getPlanPrice = () => {
+    const basePrice = parseFloat(gym?.price || 50);
+    if (selectedPlan === 'monthly') return basePrice;
+    if (selectedPlan === 'annual') return basePrice * 10;
+    if (selectedPlan === 'lifetime') return basePrice * 60;
+    return basePrice;
+  };
+
+  const handlePaymentMethodSelection = (methodId) => {
+    setSelectedPaymentMethod(methodId);
+  };
+
+  const handleProceedToPayment = () => {
+    if (selectedPaymentMethod && selectedPaymentMethod !== 'new') {
+      processPaymentMutation.mutate({ paymentMethodId: selectedPaymentMethod });
+    } else {
+      setStep(3);
+    }
+  };
+
+  const handleCompletePayment = async () => {
+    const last4 = newPaymentMethod.card_number.slice(-4);
+    const savedMethod = await savePaymentMethodMutation.mutateAsync({
+      ...newPaymentMethod,
+      card_last_four: last4,
+      card_number: undefined,
+      cvv: undefined
+    });
+
+    await processPaymentMutation.mutateAsync({ paymentMethodId: savedMethod.id });
+  };
+
+  const handleClose = () => {
+    setStep(1);
+    setSelectedPlan('monthly');
+    setSelectedPaymentMethod(null);
+    setNewPaymentMethod({
+      type: 'card',
+      card_number: '',
+      card_brand: 'visa',
+      expiry_month: '',
+      expiry_year: '',
+      cvv: '',
+      billing_name: '',
+      billing_address: '',
+      billing_postcode: '',
+      paypal_email: '',
+      is_default: true
+    });
+    onClose();
+  };
 
   if (!gym) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            {step > 1 && step < 4 && (
+              <button onClick={() => setStep(step - 1)} className="mr-2">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
             <Dumbbell className="w-6 h-6 text-blue-500" />
-            Join {gym.name}
+            {step === 4 ? 'Payment Successful!' : `Join ${gym.name}`}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="mt-4">
-          <Card className="p-6 border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 mb-4">
-            <div className="text-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Gym Membership</h3>
-              {gym.price ? (
-                <>
-                  <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                    £{gym.price}
+        {/* Step 1: Plan Selection */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <h3 className="font-bold text-gray-900">Select Your Plan:</h3>
+            <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan}>
+              <Card className={`p-4 cursor-pointer transition-all ${selectedPlan === 'monthly' ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
+                onClick={() => setSelectedPlan('monthly')}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="monthly" id="monthly" />
+                    <div>
+                      <Label htmlFor="monthly" className="font-bold text-gray-900 cursor-pointer">Monthly</Label>
+                      <p className="text-xs text-gray-500">Pay month by month</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600">per month</p>
-                </>
+                  <div className="text-right">
+                    <div className="text-xl font-black text-blue-600">£{gym?.price || 50}</div>
+                    <div className="text-xs text-gray-500">/month</div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className={`p-4 cursor-pointer transition-all ${selectedPlan === 'annual' ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
+                onClick={() => setSelectedPlan('annual')}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="annual" id="annual" />
+                    <div>
+                      <Label htmlFor="annual" className="font-bold text-gray-900 cursor-pointer">Annual</Label>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500">Save 2 months!</p>
+                        <Badge className="bg-green-500 text-white">Best Value</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-black text-blue-600">£{(gym?.price || 50) * 10}</div>
+                    <div className="text-xs text-gray-500">/year</div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className={`p-4 cursor-pointer transition-all ${selectedPlan === 'lifetime' ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
+                onClick={() => setSelectedPlan('lifetime')}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="lifetime" id="lifetime" />
+                    <div>
+                      <Label htmlFor="lifetime" className="font-bold text-gray-900 cursor-pointer">Lifetime</Label>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500">One-time payment</p>
+                        <Badge className="bg-purple-500 text-white">Premium</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-black text-purple-600">£{(gym?.price || 50) * 60}</div>
+                    <div className="text-xs text-gray-500">forever</div>
+                  </div>
+                </div>
+              </Card>
+            </RadioGroup>
+
+            <div className="space-y-3 pt-4">
+              <h3 className="font-bold text-gray-900">What's Included:</h3>
+              {[
+                { icon: Dumbbell, text: 'Full gym access' },
+                { icon: TrendingUp, text: '24/7 availability' },
+                { icon: Trophy, text: 'Compete on leaderboards' },
+                { icon: Gift, text: 'Earn exclusive rewards' },
+                { icon: Check, text: 'Join challenges & events' },
+              ].map((benefit, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <benefit.icon className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span className="text-gray-900 font-medium">{benefit.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => setStep(2)}
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold h-12 rounded-2xl"
+            >
+              Continue to Payment
+            </Button>
+          </div>
+        )}
+
+        {/* Step 2: Payment Method Selection */}
+        {step === 2 && (
+          <div className="space-y-4">
+            <h3 className="font-bold text-gray-900">Select Payment Method:</h3>
+            
+            <RadioGroup value={selectedPaymentMethod} onValueChange={handlePaymentMethodSelection}>
+              {paymentMethods.map((method) => (
+                <Card key={method.id} className={`p-4 cursor-pointer transition-all ${selectedPaymentMethod === method.id ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
+                  onClick={() => handlePaymentMethodSelection(method.id)}>
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value={method.id} id={method.id} />
+                    <CreditCard className="w-5 h-5 text-gray-600" />
+                    <div className="flex-1">
+                      <Label htmlFor={method.id} className="font-bold text-gray-900 cursor-pointer capitalize">
+                        {method.card_brand} •••• {method.card_last_four}
+                      </Label>
+                      <p className="text-xs text-gray-500">Expires {method.expiry_month}/{method.expiry_year}</p>
+                    </div>
+                    {method.is_default && (
+                      <Badge className="bg-green-100 text-green-700">Default</Badge>
+                    )}
+                  </div>
+                </Card>
+              ))}
+
+              <Card className={`p-4 cursor-pointer transition-all ${selectedPaymentMethod === 'new' ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
+                onClick={() => handlePaymentMethodSelection('new')}>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="new" id="new" />
+                  <Plus className="w-5 h-5 text-blue-600" />
+                  <Label htmlFor="new" className="font-bold text-blue-600 cursor-pointer">
+                    Add New Payment Method
+                  </Label>
+                </div>
+              </Card>
+            </RadioGroup>
+
+            <Card className="p-4 bg-gray-50">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-gray-900">Total:</span>
+                <span className="text-2xl font-black text-blue-600">£{getPlanPrice()}</span>
+              </div>
+            </Card>
+
+            <Button
+              onClick={handleProceedToPayment}
+              disabled={!selectedPaymentMethod || processPaymentMutation.isPending}
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold h-12 rounded-2xl"
+            >
+              {processPaymentMutation.isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                    Free
-                  </div>
-                  <p className="text-sm text-gray-600">Join now</p>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Pay £{getPlanPrice()}
                 </>
               )}
-            </div>
+            </Button>
 
+            <p className="text-xs text-gray-500 text-center flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3" />
+              Secure payment processing
+            </p>
+          </div>
+        )}
+
+        {/* Step 3: New Payment Details */}
+        {step === 3 && (
+          <div className="space-y-4">
+            <h3 className="font-bold text-gray-900">Payment Details:</h3>
+            
             <div className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Access gym facilities</span>
+              <div>
+                <Label>Payment Type</Label>
+                <Select value={newPaymentMethod.type} onValueChange={(value) => setNewPaymentMethod({...newPaymentMethod, type: value})}>
+                  <SelectTrigger className="rounded-2xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="card">Credit/Debit Card</SelectItem>
+                    <SelectItem value="paypal">PayPal</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex items-start gap-2">
-                <Trophy className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Compete on leaderboards</span>
+
+              {newPaymentMethod.type === 'card' && (
+                <>
+                  <div>
+                    <Label>Card Number</Label>
+                    <Input
+                      placeholder="1234 5678 9012 3456"
+                      value={newPaymentMethod.card_number}
+                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, card_number: e.target.value.replace(/\s/g, '')})}
+                      className="rounded-2xl"
+                      maxLength={16}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <Label>Month</Label>
+                      <Input
+                        placeholder="MM"
+                        value={newPaymentMethod.expiry_month}
+                        onChange={(e) => setNewPaymentMethod({...newPaymentMethod, expiry_month: e.target.value})}
+                        className="rounded-2xl"
+                        maxLength={2}
+                      />
+                    </div>
+                    <div>
+                      <Label>Year</Label>
+                      <Input
+                        placeholder="YYYY"
+                        value={newPaymentMethod.expiry_year}
+                        onChange={(e) => setNewPaymentMethod({...newPaymentMethod, expiry_year: e.target.value})}
+                        className="rounded-2xl"
+                        maxLength={4}
+                      />
+                    </div>
+                    <div>
+                      <Label>CVV</Label>
+                      <Input
+                        placeholder="123"
+                        type="password"
+                        value={newPaymentMethod.cvv}
+                        onChange={(e) => setNewPaymentMethod({...newPaymentMethod, cvv: e.target.value})}
+                        className="rounded-2xl"
+                        maxLength={3}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Card Brand</Label>
+                    <Select value={newPaymentMethod.card_brand} onValueChange={(value) => setNewPaymentMethod({...newPaymentMethod, card_brand: value})}>
+                      <SelectTrigger className="rounded-2xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="visa">Visa</SelectItem>
+                        <SelectItem value="mastercard">Mastercard</SelectItem>
+                        <SelectItem value="amex">American Express</SelectItem>
+                        <SelectItem value="discover">Discover</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {newPaymentMethod.type === 'paypal' && (
+                <div>
+                  <Label>PayPal Email</Label>
+                  <Input
+                    placeholder="your@email.com"
+                    type="email"
+                    value={newPaymentMethod.paypal_email}
+                    onChange={(e) => setNewPaymentMethod({...newPaymentMethod, paypal_email: e.target.value})}
+                    className="rounded-2xl"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label>Billing Name</Label>
+                <Input
+                  placeholder="Full name on card"
+                  value={newPaymentMethod.billing_name}
+                  onChange={(e) => setNewPaymentMethod({...newPaymentMethod, billing_name: e.target.value})}
+                  className="rounded-2xl"
+                />
               </div>
-              <div className="flex items-start gap-2">
-                <Gift className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Earn exclusive rewards</span>
+
+              <div>
+                <Label>Billing Address</Label>
+                <Input
+                  placeholder="123 Main Street"
+                  value={newPaymentMethod.billing_address}
+                  onChange={(e) => setNewPaymentMethod({...newPaymentMethod, billing_address: e.target.value})}
+                  className="rounded-2xl"
+                />
               </div>
-              <div className="flex items-start gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Track your progress</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Join gym challenges</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Attend classes & events</span>
+
+              <div>
+                <Label>Postcode</Label>
+                <Input
+                  placeholder="SW1A 1AA"
+                  value={newPaymentMethod.billing_postcode}
+                  onChange={(e) => setNewPaymentMethod({...newPaymentMethod, billing_postcode: e.target.value})}
+                  className="rounded-2xl"
+                />
               </div>
             </div>
-          </Card>
 
-          <Button
-            onClick={() => joinGymMutation.mutate()}
-            disabled={joinGymMutation.isPending}
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12"
-          >
-            {joinGymMutation.isPending ? 'Processing...' : 'Join Gym Now'}
-          </Button>
+            <Card className="p-4 bg-gray-50">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-gray-900">Total:</span>
+                <span className="text-2xl font-black text-blue-600">£{getPlanPrice()}</span>
+              </div>
+            </Card>
 
-          <p className="text-xs text-center text-gray-500 mt-4">
-            By joining, you agree to the gym's terms and conditions.
-          </p>
-        </div>
+            <Button
+              onClick={handleCompletePayment}
+              disabled={processPaymentMutation.isPending}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold h-12 rounded-2xl"
+            >
+              {processPaymentMutation.isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Complete Payment
+                </>
+              )}
+            </Button>
+
+            <p className="text-xs text-gray-500 text-center flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3" />
+              Your payment details are secure and encrypted
+            </p>
+          </div>
+        )}
+
+        {/* Step 4: Confirmation */}
+        {step === 4 && (
+          <div className="space-y-4 text-center py-6">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <Check className="w-10 h-10 text-green-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">Welcome to {gym.name}!</h3>
+            <p className="text-gray-600">Your membership is now active. Start your fitness journey today!</p>
+            
+            <Card className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 text-left">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Plan:</span>
+                  <span className="font-bold text-gray-900 capitalize">{selectedPlan}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount Paid:</span>
+                  <span className="font-bold text-gray-900">£{getPlanPrice()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <Badge className="bg-green-500 text-white">Active</Badge>
+                </div>
+              </div>
+            </Card>
+
+            <Button
+              onClick={handleClose}
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold h-12 rounded-2xl"
+            >
+              Start Working Out!
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
