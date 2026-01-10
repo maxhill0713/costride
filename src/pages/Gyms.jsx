@@ -156,7 +156,7 @@ export default function Gyms() {
             const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
 
             return (
-            <Card key={gym.id} className="bg-white/95 backdrop-blur-sm border border-gray-200/50 overflow-hidden hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 rounded-3xl">
+            <Card key={gym.id} className="bg-slate-50/95 backdrop-blur-sm border border-gray-200/50 overflow-hidden hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 rounded-3xl">
               {/* Image */}
               {gym.image_url && (
                 <div className="w-full h-48 bg-gradient-to-br from-blue-400 to-cyan-500 relative">

@@ -211,7 +211,7 @@ export default function Profile() {
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/30">
+              <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/30">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
