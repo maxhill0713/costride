@@ -626,89 +626,68 @@ export default function GymCommunity() {
           </TabsList>
 
           <TabsContent value="leaderboard" className="space-y-3">
-            {!isMember ? (
-              <Card className="p-12 text-center bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Dumbbell className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Members Only</h3>
-                <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  Join this gym to access the leaderboard, compete with other members, and track your personal records!
-                </p>
-                <Button
-                  onClick={() => setShowJoinGymModal(true)}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl"
-                >
-                  <Dumbbell className="w-4 h-4 mr-2" />
-                  Join This Gym
-                </Button>
+            {currentUser && isMember && (
+              <Button
+                onClick={() => setShowLogLift(true)}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
+              >
+                <Trophy className="w-4 h-4 mr-2" />
+                Log Your Lift
+              </Button>
+            )}
+
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+              <Button
+                variant={selectedExercise === 'all' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('all')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                All Exercises
+              </Button>
+              <Button
+                variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('bench_press')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Bench Press
+              </Button>
+              <Button
+                variant={selectedExercise === 'squat' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('squat')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Squat
+              </Button>
+              <Button
+                variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('deadlift')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Deadlift
+              </Button>
+              <Button
+                variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
+                onClick={() => setSelectedExercise('overhead_press')}
+                className="rounded-2xl whitespace-nowrap"
+              >
+                Overhead Press
+              </Button>
+            </div>
+
+            {topLifts.length === 0 ? (
+              <Card className="p-12 text-center">
+                <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500">No lifts recorded yet</p>
               </Card>
             ) : (
-              <>
-                {currentUser && (
-                  <Button
-                    onClick={() => setShowLogLift(true)}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-2xl mb-4"
-                  >
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Log Your Lift
-                  </Button>
-                )}
-
-                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                  <Button
-                    variant={selectedExercise === 'all' ? 'default' : 'outline'}
-                    onClick={() => setSelectedExercise('all')}
-                    className="rounded-2xl whitespace-nowrap"
-                  >
-                    All Exercises
-                  </Button>
-                  <Button
-                    variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
-                    onClick={() => setSelectedExercise('bench_press')}
-                    className="rounded-2xl whitespace-nowrap"
-                  >
-                    Bench Press
-                  </Button>
-                  <Button
-                    variant={selectedExercise === 'squat' ? 'default' : 'outline'}
-                    onClick={() => setSelectedExercise('squat')}
-                    className="rounded-2xl whitespace-nowrap"
-                  >
-                    Squat
-                  </Button>
-                  <Button
-                    variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
-                    onClick={() => setSelectedExercise('deadlift')}
-                    className="rounded-2xl whitespace-nowrap"
-                  >
-                    Deadlift
-                  </Button>
-                  <Button
-                    variant={selectedExercise === 'overhead_press' ? 'default' : 'outline'}
-                    onClick={() => setSelectedExercise('overhead_press')}
-                    className="rounded-2xl whitespace-nowrap"
-                  >
-                    Overhead Press
-                  </Button>
-                </div>
-
-                {topLifts.length === 0 ? (
-                  <Card className="p-12 text-center">
-                    <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-500">No lifts recorded yet</p>
-                  </Card>
-                ) : (
-                  topLifts.map((lift, idx) => (
-                    <LeaderboardCard
-                      key={lift.id}
-                      rank={idx + 1}
-                      member={lift.member}
-                      lift={lift}
-                    />
-                  ))
-                )}
-              </>
+              topLifts.map((lift, idx) => (
+                <LeaderboardCard
+                  key={lift.id}
+                  rank={idx + 1}
+                  member={lift.member}
+                  lift={lift}
+                />
+              ))
             )}
           </TabsContent>
 
