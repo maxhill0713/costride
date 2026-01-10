@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Flame, Users, Swords, Calendar, Target, TrendingUp } from 'lucide-react';
+import { Trophy, Flame, Users, Calendar, Target, TrendingUp } from 'lucide-react';
 import { format, isAfter, isBefore } from 'date-fns';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 
@@ -55,15 +55,13 @@ export default function Challenges() {
 
     return (
       <Card key={challenge.id} className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/50 overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/20 hover:scale-[1.02] hover:border-cyan-500/50 transition-all duration-300 rounded-3xl">
-        <div className={`h-1 ${challenge.type === 'gym_vs_gym' ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500' : 'bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500'}`} />
+        <div className="h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500" />
         <div className="p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                {challenge.type === 'gym_vs_gym' ? (
-                  <Swords className="w-5 h-5 text-cyan-400" />
-                ) : challenge.type === 'team' ? (
+                {challenge.type === 'team' ? (
                   <Users className="w-5 h-5 text-blue-400" />
                 ) : (
                   <Target className="w-5 h-5 text-purple-400" />
@@ -78,23 +76,6 @@ export default function Challenges() {
               </div>
               <h3 className="text-2xl font-semibold bg-gradient-to-r from-cyan-200 via-blue-200 to-cyan-200 bg-clip-text text-transparent mb-2">{challenge.title}</h3>
               <p className="text-slate-200 font-normal mb-3 leading-relaxed">{challenge.description}</p>
-              
-              {/* Gym vs Gym */}
-              {challenge.type === 'gym_vs_gym' && (
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-red-50 via-orange-50 to-pink-50 rounded-2xl mb-3 border border-red-200/50">
-                  <div className="flex-1 text-center">
-                    <p className="font-bold text-white text-sm">{challenge.gym_name}</p>
-                    <p className="text-xs text-slate-400 font-medium">Home Gym</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-md">
-                    <span className="font-black text-white text-sm">VS</span>
-                  </div>
-                  <div className="flex-1 text-center">
-                    <p className="font-bold text-white text-sm">{challenge.competing_gym_name}</p>
-                    <p className="text-xs text-slate-400 font-medium">Challenger</p>
-                  </div>
-                </div>
-              )}
 
               {/* Details */}
               <div className="grid grid-cols-2 gap-3 mb-4">
