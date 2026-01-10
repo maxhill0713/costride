@@ -22,6 +22,7 @@ import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
+import JoinGymModal from '../components/membership/JoinGymModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -39,6 +40,7 @@ export default function GymCommunity() {
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [viewAsMember, setViewAsMember] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showJoinGymModal, setShowJoinGymModal] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -107,6 +109,15 @@ export default function GymCommunity() {
       return allRewards.filter(r => r.gym_id === gymId);
     },
     enabled: !!gymId
+  });
+
+  const { data: gymMembership } = useQuery({
+    queryKey: ['gymMembership', currentUser?.id, gymId],
+    queryFn: async () => {
+      const memberships = await base44.entities.GymMembership.list();
+      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
+    },
+    enabled: !!currentUser && !!gymId
   });
 
   const createEventMutation = useMutation({
@@ -242,7 +253,7 @@ export default function GymCommunity() {
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
   const showOwnerControls = isGymOwner && !viewAsMember;
-  const hasPremium = currentUser?.has_premium || isGymOwner;
+  const isMember = !!gymMembership || isGymOwner;
 
   // Filter lifts by exercise
   const filteredLifts = selectedExercise === 'all' 
@@ -406,7 +417,7 @@ export default function GymCommunity() {
         <CheckInButton gym={gym} />
 
         {/* Rewards Section */}
-        {!hasPremium ? (
+        {!isMember ? (
           <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6 mb-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -415,15 +426,15 @@ export default function GymCommunity() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-purple-900">Member Rewards</h3>
-                  <p className="text-sm font-normal text-purple-700 leading-relaxed">Upgrade to unlock exclusive rewards!</p>
+                  <p className="text-sm font-normal text-purple-700 leading-relaxed">Join this gym to unlock exclusive rewards!</p>
                 </div>
               </div>
               <Button
-                onClick={() => setShowUpgradeModal(true)}
+                onClick={() => setShowJoinGymModal(true)}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl"
               >
-                <Crown className="w-4 h-4 mr-2" />
-                Upgrade
+                <Dumbbell className="w-4 h-4 mr-2" />
+                Join Gym
               </Button>
             </div>
           </Card>
@@ -615,21 +626,21 @@ export default function GymCommunity() {
           </TabsList>
 
           <TabsContent value="leaderboard" className="space-y-3">
-            {!hasPremium ? (
+            {!isMember ? (
               <Card className="p-12 text-center bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Crown className="w-10 h-10 text-white" />
+                  <Dumbbell className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Premium Feature</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Members Only</h3>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  Upgrade to Premium to access the leaderboard, compete with other members, and track your personal records!
+                  Join this gym to access the leaderboard, compete with other members, and track your personal records!
                 </p>
                 <Button
-                  onClick={() => setShowUpgradeModal(true)}
+                  onClick={() => setShowJoinGymModal(true)}
                   className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl"
                 >
-                  <Crown className="w-4 h-4 mr-2" />
-                  Upgrade to Premium
+                  <Dumbbell className="w-4 h-4 mr-2" />
+                  Join This Gym
                 </Button>
               </Card>
             ) : (
@@ -1106,6 +1117,13 @@ export default function GymCommunity() {
         <UpgradeMembershipModal
           open={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
+          currentUser={currentUser}
+        />
+
+        <JoinGymModal
+          open={showJoinGymModal}
+          onClose={() => setShowJoinGymModal(false)}
+          gym={gym}
           currentUser={currentUser}
         />
       </div>
