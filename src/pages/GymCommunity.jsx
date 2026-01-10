@@ -429,13 +429,21 @@ export default function GymCommunity() {
                   <p className="text-sm font-normal text-purple-700 leading-relaxed">Join this gym to unlock exclusive rewards!</p>
                 </div>
               </div>
-              <Button
-                onClick={() => setShowJoinGymModal(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl"
-              >
-                <Dumbbell className="w-4 h-4 mr-2" />
-                Join Gym
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => setShowJoinGymModal(true)}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-2xl"
+                >
+                  <Dumbbell className="w-4 h-4 mr-2" />
+                  Join Gym
+                </Button>
+                <button
+                  onClick={() => setShowJoinGymModal(true)}
+                  className="text-sm text-purple-700 hover:text-purple-900 font-medium underline"
+                >
+                  Already a member? Register here
+                </button>
+              </div>
             </div>
           </Card>
         ) : rewards.filter(r => r.active).length > 0 ? (
