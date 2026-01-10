@@ -61,10 +61,10 @@ export default function Layout({ children, currentPageName }) {
                 `}
               >
                 {isActive && (
-                  <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-12 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg`} />
+                  <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg`} />
                 )}
-                <div className={`relative ${isActive ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 p-2.5 rounded-2xl shadow-sm` : 'p-2'}`}>
-                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''} transition-all duration-300`} strokeWidth={isActive ? 2.5 : 2} />
+                <div className={`relative ${isActive ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-100 ${item.color.replace('text-', 'to-')}-200 p-2 rounded-xl shadow-sm` : 'p-1.5'}`}>
+                  <item.icon className={`w-4 h-4 ${isActive ? item.color : ''} transition-all duration-300`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 && (
                     <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                       {item.badge > 9 ? '9+' : item.badge}
