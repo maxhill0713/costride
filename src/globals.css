@@ -23,9 +23,43 @@ css
     background-color: #E6EAEE !important;
   }
 
+  .bg-gray-50 {
+    background-color: #E6EAEE !important;
+  }
+
+  .bg-slate-50 {
+    background-color: #E6EAEE !important;
+  }
+
   /* Soft white text */
   .text-white {
     color: #F5F7FA !important;
+  }
+
+  /* Border colors */
+  .border-white {
+    border-color: #D1D9E0 !important;
+  }
+
+  .ring-white {
+    --tw-ring-color: #D1D9E0 !important;
+  }
+
+  /* Background opacity variants */
+  [class*="bg-white/"] {
+    background-color: rgba(230, 234, 238, var(--tw-bg-opacity, 1)) !important;
+  }
+
+  [class*="bg-slate-50/"] {
+    background-color: rgba(230, 234, 238, var(--tw-bg-opacity, 1)) !important;
+  }
+
+  .bg-slate-100 {
+    background-color: #D8DDE3 !important;
+  }
+
+  .bg-gray-100 {
+    background-color: #D8DDE3 !important;
   }
 
   /* Dark Mode Styles */
