@@ -25,6 +25,7 @@ export default function GymOwnerDashboard() {
   const [showManageCoaches, setShowManageCoaches] = useState(false);
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
+  const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -39,6 +40,18 @@ export default function GymOwnerDashboard() {
   });
 
   const myGyms = gyms.filter(g => g.owner_email === currentUser?.email);
+
+  const { data: allCheckIns = [] } = useQuery({
+    queryKey: ['allCheckIns'],
+    queryFn: () => base44.entities.CheckIn.list(),
+    enabled: !!currentUser
+  });
+
+  const { data: allMemberships = [] } = useQuery({
+    queryKey: ['allMemberships'],
+    queryFn: () => base44.entities.GymMembership.list(),
+    enabled: !!currentUser
+  });
 
   React.useEffect(() => {
     if (myGyms.length > 0 && !selectedGym) {
@@ -239,6 +252,43 @@ export default function GymOwnerDashboard() {
     value
   }));
 
+  // Gym Leaderboard Data
+  const gymLeaderboardData = gyms.map(gym => {
+    const gymCheckIns = allCheckIns.filter(c => c.gym_id === gym.id);
+    const gymMembers = allMemberships.filter(m => m.gym_id === gym.id && m.status === 'active');
+    const uniqueUsers = new Set(gymCheckIns.map(c => c.user_id)).size;
+    
+    // Calculate engagement score
+    const avgCheckInsPerMember = uniqueUsers > 0 ? gymCheckIns.length / uniqueUsers : 0;
+    const engagementScore = Math.min(100, Math.round((avgCheckInsPerMember / 10) * 100));
+    
+    return {
+      id: gym.id,
+      name: gym.name,
+      members: gymMembers.length,
+      rating: gym.rating || 0,
+      checkIns: gymCheckIns.length,
+      engagementScore,
+      isOwner: gym.owner_email === currentUser?.email,
+      overallScore: (gymMembers.length * 0.4 + (gym.rating || 0) * 20 * 0.4 + engagementScore * 0.2)
+    };
+  });
+
+  // Sort based on filter
+  const sortedGyms = [...gymLeaderboardData].sort((a, b) => {
+    switch (leaderboardFilter) {
+      case 'members':
+        return b.members - a.members;
+      case 'rating':
+        return b.rating - a.rating;
+      case 'engagement':
+        return b.engagementScore - a.engagementScore;
+      case 'overall':
+      default:
+        return b.overallScore - a.overallScore;
+    }
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
@@ -337,9 +387,12 @@ export default function GymOwnerDashboard() {
         </div>
 
         <Tabs defaultValue="analytics" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
             <TabsTrigger value="analytics" className="rounded-xl font-semibold">
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold">
+              Leaderboard
             </TabsTrigger>
             <TabsTrigger value="management" className="rounded-xl font-semibold">
               Management
@@ -418,6 +471,143 @@ export default function GymOwnerDashboard() {
               ) : (
                 <p className="text-gray-500 text-center py-8">No check-ins yet</p>
               )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="leaderboard" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Leaderboard</h3>
+              <p className="text-gray-600 mb-4">See how your gym ranks against others in the community</p>
+              
+              {/* Filters */}
+              <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <Button
+                  variant={leaderboardFilter === 'overall' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('overall')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Trophy className="w-4 h-4 mr-1" />
+                  Overall Best
+                </Button>
+                <Button
+                  variant={leaderboardFilter === 'members' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('members')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Users className="w-4 h-4 mr-1" />
+                  Most Members
+                </Button>
+                <Button
+                  variant={leaderboardFilter === 'rating' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('rating')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Star className="w-4 h-4 mr-1" />
+                  Highest Rated
+                </Button>
+                <Button
+                  variant={leaderboardFilter === 'engagement' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('engagement')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Activity className="w-4 h-4 mr-1" />
+                  Member Engagement
+                </Button>
+              </div>
+
+              {/* Leaderboard */}
+              <div className="space-y-3">
+                {sortedGyms.slice(0, 10).map((gym, idx) => {
+                  const rankColors = {
+                    0: 'from-yellow-400 to-yellow-500',
+                    1: 'from-gray-300 to-gray-400',
+                    2: 'from-orange-400 to-orange-500'
+                  };
+                  const rankIcons = {
+                    0: '🥇',
+                    1: '🥈',
+                    2: '🥉'
+                  };
+                  
+                  return (
+                    <div
+                      key={gym.id}
+                      className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                        gym.isOwner
+                          ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-300 shadow-md'
+                          : 'bg-white border-gray-200'
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-lg ${
+                        idx < 3 ? `bg-gradient-to-br ${rankColors[idx]} shadow-lg` : 'bg-gray-400'
+                      }`}>
+                        {idx < 3 ? rankIcons[idx] : idx + 1}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-bold text-gray-900">{gym.name}</h4>
+                          {gym.isOwner && (
+                            <Badge className="bg-blue-500 text-white">Your Gym</Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-3 text-sm">
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Users className="w-4 h-4" />
+                            {gym.members} members
+                          </span>
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            {gym.rating.toFixed(1)}/5
+                          </span>
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Activity className="w-4 h-4" />
+                            {gym.engagementScore}% engaged
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {leaderboardFilter === 'overall' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-blue-600">
+                            {Math.round(gym.overallScore)}
+                          </div>
+                          <div className="text-xs text-gray-500">Score</div>
+                        </div>
+                      )}
+                      {leaderboardFilter === 'members' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-green-600">
+                            {gym.members}
+                          </div>
+                          <div className="text-xs text-gray-500">Members</div>
+                        </div>
+                      )}
+                      {leaderboardFilter === 'rating' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-yellow-600">
+                            {gym.rating.toFixed(1)}
+                          </div>
+                          <div className="text-xs text-gray-500">Rating</div>
+                        </div>
+                      )}
+                      {leaderboardFilter === 'engagement' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-purple-600">
+                            {gym.engagementScore}%
+                          </div>
+                          <div className="text-xs text-gray-500">Engagement</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </Card>
           </TabsContent>
 
