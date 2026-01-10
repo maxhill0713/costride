@@ -48,7 +48,7 @@ export default function CheckInButton({ gym }) {
       
       // Check for milestones
       const totalVisits = checkIns.length + 1;
-      const streak = calculateStreak([newCheckIn, ...checkIns]);
+      const streak = calculateStreak([newCheckIn, ...checkIns], currentUser);
       const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
 
       if (totalVisits === 1) {
@@ -145,10 +145,11 @@ export default function CheckInButton({ gym }) {
     }
   });
 
-  const calculateStreak = (checkIns) => {
+  const calculateStreak = (checkIns, user) => {
     if (checkIns.length === 0) return 0;
     
     let streak = 1;
+    let freezesUsed = 0;
     const today = startOfDay(new Date());
     
     for (let i = 0; i < checkIns.length - 1; i++) {
@@ -159,6 +160,10 @@ export default function CheckInButton({ gym }) {
       // Allow 1 day grace period (1 or 2 days apart still counts as consecutive)
       if (daysDiff === 1 || daysDiff === 2) {
         streak++;
+      } else if (daysDiff === 3 && user?.streak_freezes_available > 0 && freezesUsed === 0) {
+        // Use a streak freeze for a 2-day gap (3 days apart)
+        streak++;
+        freezesUsed++;
       } else {
         break;
       }
@@ -199,7 +204,7 @@ export default function CheckInButton({ gym }) {
   };
 
   const daysSinceLastCheckIn = getLastCheckInDays();
-  const currentStreak = calculateStreak(checkIns);
+  const currentStreak = calculateStreak(checkIns, currentUser);
   const isInactive = daysSinceLastCheckIn >= 7;
 
   const handleCheckIn = async () => {
@@ -265,20 +270,36 @@ export default function CheckInButton({ gym }) {
 
       {/* Check-in Stats */}
       {checkIns.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
-            <div className="flex items-center gap-2 mb-1">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="text-xs font-bold text-blue-900 uppercase">Total Visits</span>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-1">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <span className="text-xs font-bold text-blue-900 uppercase">Total Visits</span>
+              </div>
+              <div className="text-2xl font-black text-blue-900">{checkIns.length}</div>
             </div>
-            <div className="text-2xl font-black text-blue-900">{checkIns.length}</div>
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 border-2 border-orange-200">
+              <div className="flex items-center gap-2 mb-1">
+                <Flame className="w-4 h-4 text-orange-600" />
+                <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
+              </div>
+              <div className="text-2xl font-black text-orange-900">{currentStreak} days</div>
+            </div>
           </div>
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 border-2 border-orange-200">
-            <div className="flex items-center gap-2 mb-1">
-              <Flame className="w-4 h-4 text-orange-600" />
-              <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
+          
+          {/* Streak Freezes */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border-2 border-purple-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">❄️</span>
+                  <span className="text-xs font-bold text-purple-900 uppercase">Streak Freezes</span>
+                </div>
+                <p className="text-xs text-purple-700">Protect your streak if you miss a day</p>
+              </div>
+              <div className="text-3xl font-black text-purple-900">{currentUser?.streak_freezes_available || 0}</div>
             </div>
-            <div className="text-2xl font-black text-orange-900">{currentStreak} days</div>
           </div>
         </div>
       )}

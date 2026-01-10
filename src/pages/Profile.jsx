@@ -370,6 +370,29 @@ export default function Profile() {
           </Card>
         </div>
 
+        {/* Streak Freezes Card */}
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-2xl">❄️</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-cyan-300">Streak Freezes Available</p>
+                <p className="text-xs text-cyan-400 mt-0.5">Protects your streak if you miss a day</p>
+              </div>
+            </div>
+            <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              {currentUser?.streak_freezes_available || 0}
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-slate-700/50 rounded-2xl">
+            <p className="text-xs text-slate-300">
+              💡 <strong>Earn freezes</strong> by completing challenges or attending gym events (max 1 per month)
+            </p>
+          </div>
+        </Card>
+
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
           <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg">
