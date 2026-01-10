@@ -70,9 +70,7 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
       // Create membership
       const expiryDate = selectedPlan === 'monthly' 
         ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        : selectedPlan === 'annual'
-        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        : new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
+        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
       await base44.entities.GymMembership.create({
         user_id: currentUser.id,
@@ -97,8 +95,7 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
   const getPlanPrice = () => {
     const basePrice = parseFloat(gym?.price || 50);
     if (selectedPlan === 'monthly') return basePrice;
-    if (selectedPlan === 'annual') return basePrice * 10;
-    if (selectedPlan === 'lifetime') return basePrice * 60;
+    if (selectedPlan === 'annual') return Math.round(basePrice * 10);
     return basePrice;
   };
 
@@ -199,28 +196,8 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-black text-blue-600">£{(gym?.price || 50) * 10}</div>
+                    <div className="text-xl font-black text-blue-600">£{Math.round((gym?.price || 50) * 10)}</div>
                     <div className="text-xs text-gray-500">/year</div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className={`p-4 cursor-pointer transition-all ${selectedPlan === 'lifetime' ? 'border-2 border-blue-500 bg-blue-50' : 'border-2 border-gray-200'}`}
-                onClick={() => setSelectedPlan('lifetime')}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="lifetime" id="lifetime" />
-                    <div>
-                      <Label htmlFor="lifetime" className="font-bold text-gray-900 cursor-pointer">Lifetime</Label>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">One-time payment</p>
-                        <Badge className="bg-purple-500 text-white">Premium</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xl font-black text-purple-600">£{(gym?.price || 50) * 60}</div>
-                    <div className="text-xs text-gray-500">forever</div>
                   </div>
                 </div>
               </Card>
