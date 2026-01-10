@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,8 +62,41 @@ export default function Profile() {
     queryFn: () => base44.entities.CheckIn.list('-check_in_date')
   });
 
+  const { data: allRewards = [] } = useQuery({
+    queryKey: ['rewards'],
+    queryFn: () => base44.entities.Reward.list()
+  });
+
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  const claimRewardMutation = useMutation({
+    mutationFn: ({ rewardId, userId, currentClaimed }) => 
+      base44.entities.Reward.update(rewardId, {
+        claimed_by: [...currentClaimed, userId]
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rewards'] });
+    }
+  });
+
   const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
   const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
+
+  // Get gyms user is a member of
+  const memberGymIds = gymMemberships.map(m => m.gym_id);
+  
+  // Filter rewards for gyms user is a member of
+  const availableRewards = allRewards.filter(r => 
+    r.active && memberGymIds.includes(r.gym_id)
+  );
+
+  // User check-in count for reward eligibility
+  const userCheckInCount = userCheckIns.length;
+  const hasClaimedReward = (reward) => reward.claimed_by?.includes(currentUser?.id);
 
   React.useEffect(() => {
     if (currentUser) {
@@ -388,20 +421,23 @@ export default function Profile() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
-            <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
+          <TabsList className="grid w-full grid-cols-6 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
+            <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
               Progress
             </TabsTrigger>
-            <TabsTrigger value="badges" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
+            <TabsTrigger value="rewards" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+              Rewards
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
               Badges
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
+            <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
               Achievements
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
+            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
               History
             </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm">
+            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
               <Settings className="w-4 h-4 md:mr-1" />
               <span className="hidden md:inline">Settings</span>
             </TabsTrigger>
@@ -464,6 +500,140 @@ export default function Profile() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="rewards" className="space-y-4">
+            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <Gift className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Your Rewards</h3>
+                  <p className="text-sm text-gray-600">Claim exclusive rewards from your gyms</p>
+                </div>
+              </div>
+
+              {availableRewards.length === 0 ? (
+                <div className="text-center py-8">
+                  <Gift className="w-16 h-16 mx-auto mb-3 text-gray-300" />
+                  <p className="text-gray-600 mb-2">No rewards available yet</p>
+                  <p className="text-sm text-gray-500">Join a gym to unlock exclusive rewards!</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {availableRewards.map((reward) => {
+                    const hasClaimed = hasClaimedReward(reward);
+                    const meetsRequirement = (() => {
+                      switch (reward.requirement) {
+                        case 'check_ins_10':
+                          return userCheckInCount >= 10;
+                        case 'check_ins_50':
+                          return userCheckInCount >= 50;
+                        case 'streak_30':
+                          return currentStreak >= 30;
+                        case 'none':
+                          return true;
+                        case 'points':
+                          return true; // simplified
+                        default:
+                          return false;
+                      }
+                    })();
+
+                    return (
+                      <Card key={reward.id} className={`p-5 border-2 transition-all ${
+                        hasClaimed 
+                          ? 'bg-gray-50 border-gray-200' 
+                          : meetsRequirement 
+                            ? 'bg-white border-purple-200 hover:shadow-lg' 
+                            : 'bg-white border-gray-200 opacity-60'
+                      }`}>
+                        <div className="flex items-start gap-4">
+                          <div className="text-4xl">{reward.icon || '🎁'}</div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div>
+                                <h4 className="font-bold text-gray-900">{reward.title}</h4>
+                                <p className="text-xs text-gray-500 mt-0.5">{reward.gym_name}</p>
+                              </div>
+                              {reward.value && (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                                  {reward.value}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {reward.description && (
+                              <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
+                            )}
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex gap-2">
+                                <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full capitalize">
+                                  {reward.requirement.replace(/_/g, ' ')}
+                                </span>
+                                <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full capitalize">
+                                  {reward.type.replace(/_/g, ' ')}
+                                </span>
+                              </div>
+                              
+                              {hasClaimed ? (
+                                <span className="text-sm font-bold text-green-600 flex items-center gap-1">
+                                  ✓ Claimed
+                                </span>
+                              ) : !meetsRequirement ? (
+                                <span className="text-xs text-gray-500 font-medium">
+                                  🔒 Locked
+                                </span>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  onClick={() => claimRewardMutation.mutate({
+                                    rewardId: reward.id,
+                                    userId: currentUser.id,
+                                    currentClaimed: reward.claimed_by || []
+                                  })}
+                                  disabled={claimRewardMutation.isPending}
+                                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl"
+                                >
+                                  Claim Now
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+
+            {/* Stats */}
+            <Card className="bg-white border-2 border-gray-100 p-5">
+              <h4 className="font-bold text-gray-900 mb-4">Your Progress</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Total Check-ins</span>
+                  <span className="font-bold text-gray-900">{userCheckInCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Current Streak</span>
+                  <span className="font-bold text-gray-900">{currentStreak} days</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Gyms Joined</span>
+                  <span className="font-bold text-gray-900">{gymMemberships.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Rewards Claimed</span>
+                  <span className="font-bold text-gray-900">
+                    {allRewards.filter(r => r.claimed_by?.includes(currentUser?.id)).length}
+                  </span>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="badges">
