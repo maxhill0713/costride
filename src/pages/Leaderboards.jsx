@@ -4,9 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, TrendingUp, Users, Dumbbell, Target, Crown, Medal, Award, Flame, Zap } from 'lucide-react';
+import { Trophy, TrendingUp, Users, Dumbbell, Target, Crown, Medal, Award, Flame, Zap, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function Leaderboards() {
   const [timeframe, setTimeframe] = useState('all-time');
@@ -31,6 +33,43 @@ export default function Leaderboards() {
     queryFn: () => base44.entities.Lift.list()
   });
 
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['checkIns'],
+    queryFn: () => base44.entities.CheckIn.list()
+  });
+
+  // Get tier for gym based on stats
+  const getGymTier = (engagementScore) => {
+    if (engagementScore >= 1000) {
+      return { 
+        name: 'Gold', 
+        color: 'from-yellow-400 to-orange-500',
+        icon: Crown,
+        bgColor: 'bg-yellow-100',
+        textColor: 'text-yellow-700',
+        borderColor: 'border-yellow-300'
+      };
+    }
+    if (engagementScore >= 500) {
+      return { 
+        name: 'Silver', 
+        color: 'from-gray-300 to-gray-500',
+        icon: Shield,
+        bgColor: 'bg-gray-100',
+        textColor: 'text-gray-700',
+        borderColor: 'border-gray-300'
+      };
+    }
+    return { 
+      name: 'Bronze', 
+      color: 'from-orange-400 to-orange-600',
+      icon: Medal,
+      bgColor: 'bg-orange-100',
+      textColor: 'text-orange-700',
+      borderColor: 'border-orange-300'
+    };
+  };
+
   // Calculate gym rankings
   const calculateGymRankings = () => {
     return gyms.map(gym => {
@@ -46,8 +85,11 @@ export default function Leaderboards() {
       const totalLifts = stats.total_lifts || 0;
       const engagementScore = stats.engagement_score || (totalLifts + (challengesWon * 100) + (activeMembers * 10));
 
+      const tier = getGymTier(engagementScore);
+
       return {
         ...gym,
+        tier,
         stats: {
           totalMembers,
           activeMembers,
@@ -135,6 +177,10 @@ export default function Leaderboards() {
                         {gym.verified && (
                           <Badge className="bg-green-500 text-white text-xs">Verified</Badge>
                         )}
+                        <Badge className={`${gym.tier.bgColor} ${gym.tier.textColor} border-2 ${gym.tier.borderColor} text-xs font-bold flex items-center gap-1`}>
+                          <gym.tier.icon className="w-3 h-3" />
+                          {gym.tier.name}
+                        </Badge>
                       </div>
                       <p className="text-sm text-gray-500 capitalize">{gym.type} • {gym.city}</p>
                     </div>

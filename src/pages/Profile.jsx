@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
+import StatusBadge from '../components/profile/StatusBadge';
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -220,7 +221,10 @@ export default function Profile() {
                 )}
               </div>
               <div className="text-white drop-shadow-lg">
-                <h1 className="text-3xl font-black">{currentUser.full_name}</h1>
+                <div className="flex items-center gap-2 mb-1">
+                  <h1 className="text-3xl font-black">{currentUser.full_name}</h1>
+                  <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
+                </div>
                 <p className="text-white/90 text-sm mt-1">{currentUser.email}</p>
               </div>
             </div>
