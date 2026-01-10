@@ -205,9 +205,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 px-4 pt-8 pb-24 shadow-xl">
+      <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 pt-8 pb-24 shadow-xl">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
@@ -340,31 +340,31 @@ export default function Profile() {
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 p-5">
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 shadow-lg">
             <div className="flex items-center gap-3 mb-2">
-              <Flame className="w-8 h-8 text-orange-600" />
+              <Flame className="w-8 h-8 text-cyan-400" />
               <div>
-                <p className="text-sm font-medium text-orange-700">Current Streak</p>
-                <p className="text-3xl font-black text-orange-900">{currentStreak}</p>
-                <p className="text-xs text-orange-600">days</p>
+                <p className="text-sm font-medium text-cyan-300">Current Streak</p>
+                <p className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
+                <p className="text-xs text-cyan-300">days</p>
               </div>
             </div>
             <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-orange-700 mb-1">
+              <div className="flex items-center justify-between text-xs text-cyan-300 mb-1">
                 <span>Next: {nextMilestone.name}</span>
                 <span>{currentStreak}/{nextMilestone.days}</span>
               </div>
-              <Progress value={streakProgress} className="h-2 bg-orange-200" />
+              <Progress value={streakProgress} className="h-2 bg-slate-600" />
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 p-5">
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 p-5 shadow-lg">
             <div className="flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-purple-600" />
+              <Trophy className="w-8 h-8 text-purple-400" />
               <div>
-                <p className="text-sm font-medium text-purple-700">Longest Streak</p>
-                <p className="text-3xl font-black text-purple-900">{longestStreak}</p>
-                <p className="text-xs text-purple-600">days ever</p>
+                <p className="text-sm font-medium text-purple-300">Longest Streak</p>
+                <p className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
+                <p className="text-xs text-purple-300">days ever</p>
               </div>
             </div>
           </Card>
@@ -372,9 +372,9 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
-            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-600" />
+          <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg">
+            <h3 className="font-semibold bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-yellow-400" />
               Streak Milestones
             </h3>
             <div className="grid grid-cols-3 gap-2">
@@ -390,26 +390,26 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-4">
-          <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="text-3xl font-black bg-gradient-to-br from-blue-500 to-cyan-500 bg-clip-text text-transparent">{stats.totalLifts}</div>
-            <div className="text-xs text-gray-600 font-bold mt-2 uppercase tracking-wide">Workouts</div>
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="text-3xl font-black bg-gradient-to-br from-blue-400 to-cyan-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
+            <div className="text-xs text-cyan-300 font-bold mt-2 uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="text-3xl font-black bg-gradient-to-br from-orange-500 to-red-500 bg-clip-text text-transparent">{stats.personalRecords}</div>
-            <div className="text-xs text-gray-600 font-bold mt-2 uppercase tracking-wide">PRs</div>
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="text-3xl font-black bg-gradient-to-br from-orange-400 to-red-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
+            <div className="text-xs text-orange-300 font-bold mt-2 uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-white border border-gray-200/50 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="text-3xl font-black bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text text-transparent">{stats.weekStreak}</div>
-            <div className="text-xs text-gray-600 font-bold mt-2 uppercase tracking-wide">Day Streak</div>
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="text-3xl font-black bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.weekStreak}</div>
+            <div className="text-xs text-purple-300 font-bold mt-2 uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 
         {/* Share Weekly Summary */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 p-4 mt-4">
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-blue-600/40 p-4 mt-4 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <h3 className="font-bold text-gray-900 mb-1">Weekly Summary</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-bold bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent mb-1">Weekly Summary</h3>
+              <p className="text-sm text-slate-300">
                 {stats.totalLifts} workouts • {stats.personalRecords} PRs • {stats.weekStreak} day streak
               </p>
             </div>
@@ -419,7 +419,7 @@ export default function Profile() {
                 navigator.clipboard.writeText(summary);
                 alert('Weekly summary copied to clipboard!');
               }}
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
             >
               <Share2 className="w-4 h-4 mr-2" />
               Share
@@ -429,9 +429,9 @@ export default function Profile() {
 
         {/* Gym Memberships */}
         {memberGyms.length > 0 && (
-          <Card className="bg-white border-2 border-gray-100 p-5 mt-4">
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-blue-500" />
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 mt-4 shadow-lg">
+            <h3 className="font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-blue-400" />
               Your Gym Memberships
             </h3>
             <div className="grid gap-3">
@@ -440,7 +440,7 @@ export default function Profile() {
                 return (
                   <div 
                     key={gym.id} 
-                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200 hover:shadow-md transition-all"
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-2xl border border-blue-600/30 hover:shadow-lg hover:shadow-blue-500/20 transition-all"
                   >
                     {gym.image_url ? (
                       <img 
@@ -455,15 +455,15 @@ export default function Profile() {
                     )}
                     
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900">{gym.name}</h4>
+                      <h4 className="font-bold text-slate-100">{gym.name}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium capitalize">
+                        <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/50 rounded-full font-medium capitalize">
                           {gym.type}
                         </span>
-                        <span className="text-xs text-gray-600">• {gym.city}</span>
+                        <span className="text-xs text-slate-400">• {gym.city}</span>
                       </div>
                       {membership?.membership_type && (
-                        <p className="text-xs text-gray-500 mt-1 capitalize">
+                        <p className="text-xs text-slate-400 mt-1 capitalize">
                           {membership.membership_type} membership
                         </p>
                       )}
@@ -481,32 +481,32 @@ export default function Profile() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl overflow-x-auto">
-            <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+          <TabsList className="grid w-full grid-cols-6 mb-6 bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 p-1.5 rounded-2xl shadow-sm overflow-x-auto">
+            <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Progress
             </TabsTrigger>
-            <TabsTrigger value="rewards" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+            <TabsTrigger value="rewards" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Rewards
             </TabsTrigger>
-            <TabsTrigger value="badges" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+            <TabsTrigger value="badges" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Badges
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+            <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Achievements
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               History
             </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs md:text-sm whitespace-nowrap">
+            <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               <Settings className="w-4 h-4 md:mr-1" />
               <span className="hidden md:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="progress" className="space-y-4">
-            <Card className="bg-white border-2 border-gray-100 p-5">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-purple-500" />
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-purple-400" />
                 Bench Press Progress
               </h3>
               <ResponsiveContainer width="100%" height={200}>
@@ -522,14 +522,14 @@ export default function Profile() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-500" />
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-400" />
                   My Goals
                 </h3>
                 <Button
                   onClick={() => setShowAddGoal(true)}
                   size="sm"
-                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Goal
@@ -537,9 +537,9 @@ export default function Profile() {
               </div>
 
               {activeGoals.length === 0 ? (
-                <Card className="p-8 text-center border-2 border-dashed border-gray-200">
-                  <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-gray-500 mb-2">No goals set yet</p>
+                <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
+                  <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                  <p className="text-slate-300 mb-2">No goals set yet</p>
                   <Button
                     onClick={() => setShowAddGoal(true)}
                     variant="outline"
@@ -563,22 +563,22 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="rewards" className="space-y-4">
-            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-6">
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Your Rewards</h3>
-                  <p className="text-sm text-gray-600">Claim exclusive rewards from your gyms</p>
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">Your Rewards</h3>
+                  <p className="text-sm text-slate-300">Claim exclusive rewards from your gyms</p>
                 </div>
               </div>
 
               {availableRewards.length === 0 ? (
                 <div className="text-center py-8">
-                  <Gift className="w-16 h-16 mx-auto mb-3 text-gray-300" />
-                  <p className="text-gray-600 mb-2">No rewards available yet</p>
-                  <p className="text-sm text-gray-500">Join a gym to unlock exclusive rewards!</p>
+                  <Gift className="w-16 h-16 mx-auto mb-3 text-slate-600" />
+                  <p className="text-slate-300 mb-2">No rewards available yet</p>
+                  <p className="text-sm text-slate-400">Join a gym to unlock exclusive rewards!</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -671,24 +671,24 @@ export default function Profile() {
             </Card>
 
             {/* Stats */}
-            <Card className="bg-white border-2 border-gray-100 p-5">
-              <h4 className="font-bold text-gray-900 mb-4">Your Progress</h4>
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
+              <h4 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">Your Progress</h4>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Total Check-ins</span>
-                  <span className="font-bold text-gray-900">{userCheckInCount}</span>
+                  <span className="text-sm text-slate-300">Total Check-ins</span>
+                  <span className="font-bold text-slate-100">{userCheckInCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Current Streak</span>
-                  <span className="font-bold text-gray-900">{currentStreak} days</span>
+                  <span className="text-sm text-slate-300">Current Streak</span>
+                  <span className="font-bold text-slate-100">{currentStreak} days</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Gyms Joined</span>
-                  <span className="font-bold text-gray-900">{gymMemberships.length}</span>
+                  <span className="text-sm text-slate-300">Gyms Joined</span>
+                  <span className="font-bold text-slate-100">{gymMemberships.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Rewards Claimed</span>
-                  <span className="font-bold text-gray-900">
+                  <span className="text-sm text-slate-300">Rewards Claimed</span>
+                  <span className="font-bold text-slate-100">
                     {allRewards.filter(r => r.claimed_by?.includes(currentUser?.id)).length}
                   </span>
                 </div>
@@ -707,14 +707,14 @@ export default function Profile() {
               { icon: Dumbbell, title: 'Iron Warrior', desc: 'Lift 100,000 lbs total', color: 'from-purple-400 to-purple-600', unlocked: false },
               { icon: Calendar, title: '30 Day Streak', desc: 'Train for 30 consecutive days', color: 'from-blue-400 to-cyan-500', unlocked: false }
             ].map((achievement, idx) => (
-              <Card key={idx} className={`bg-white border-2 border-gray-100 p-5 ${achievement.unlocked ? '' : 'opacity-50'}`}>
+              <Card key={idx} className={`bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg ${achievement.unlocked ? '' : 'opacity-50'}`}>
                 <div className="flex items-center gap-4">
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center shadow-md`}>
                     <achievement.icon className="w-7 h-7 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-gray-900">{achievement.title}</h4>
-                    <p className="text-sm text-gray-500">{achievement.desc}</p>
+                    <h4 className="font-bold text-slate-100">{achievement.title}</h4>
+                    <p className="text-sm text-slate-400">{achievement.desc}</p>
                   </div>
                   {achievement.unlocked && (
                     <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
@@ -728,21 +728,21 @@ export default function Profile() {
 
           <TabsContent value="history" className="space-y-3">
             {memberLifts.slice(0, 10).map((lift) => (
-              <Card key={lift.id} className="bg-white border-2 border-gray-100 p-4">
+              <Card key={lift.id} className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
                       <Dumbbell className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900 capitalize">{lift.exercise?.replace(/_/g, ' ')}</h4>
-                      <p className="text-sm text-gray-500">{new Date(lift.created_date).toLocaleDateString()}</p>
+                      <h4 className="font-bold text-slate-100 capitalize">{lift.exercise?.replace(/_/g, ' ')}</h4>
+                      <p className="text-sm text-slate-400">{new Date(lift.created_date).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <div className="text-xl font-black text-gray-900">{lift.weight_lbs}</div>
-                      <div className="text-xs text-gray-500">lbs {lift.reps && `× ${lift.reps}`}</div>
+                      <div className="text-xl font-black text-slate-100">{lift.weight_lbs}</div>
+                      <div className="text-xs text-slate-400">lbs {lift.reps && `× ${lift.reps}`}</div>
                     </div>
                     <Button 
                       variant="ghost" 
@@ -752,7 +752,7 @@ export default function Profile() {
                         navigator.clipboard.writeText(summary);
                         alert('Workout summary copied! Share it with your friends.');
                       }}
-                      className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                      className="text-cyan-400 hover:text-cyan-300 hover:bg-slate-700/50"
                     >
                       <Share2 className="w-5 h-5" />
                     </Button>
@@ -763,14 +763,14 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
-            <Card className="bg-white border-2 border-gray-100 p-6">
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
                   <Bell className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
-                  <p className="text-sm text-gray-500">Manage your notification preferences</p>
+                  <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">Notifications</h3>
+                  <p className="text-sm text-slate-300">Manage your notification preferences</p>
                 </div>
               </div>
 
@@ -778,13 +778,13 @@ export default function Profile() {
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                   <div className="flex items-center gap-3">
                     {currentUser.notifications_enabled ? (
-                      <Bell className="w-5 h-5 text-blue-500" />
+                      <Bell className="w-5 h-5 text-cyan-400" />
                     ) : (
-                      <BellOff className="w-5 h-5 text-gray-400" />
+                      <BellOff className="w-5 h-5 text-slate-500" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-gray-900">Push Notifications</Label>
-                      <p className="text-xs text-gray-500">Get notified about challenges and updates</p>
+                      <Label className="text-sm font-bold text-slate-100">Push Notifications</Label>
+                      <p className="text-xs text-slate-400">Get notified about challenges and updates</p>
                     </div>
                   </div>
                   <Switch
@@ -793,16 +793,16 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
                   <div className="flex items-center gap-3">
                     {currentUser.email_notifications ? (
-                      <Bell className="w-5 h-5 text-green-500" />
+                      <Bell className="w-5 h-5 text-green-400" />
                     ) : (
-                      <BellOff className="w-5 h-5 text-gray-400" />
+                      <BellOff className="w-5 h-5 text-slate-500" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-gray-900">Email Notifications</Label>
-                      <p className="text-xs text-gray-500">Receive email updates and summaries</p>
+                      <Label className="text-sm font-bold text-slate-100">Email Notifications</Label>
+                      <p className="text-xs text-slate-400">Receive email updates and summaries</p>
                     </div>
                   </div>
                   <Switch
@@ -813,9 +813,9 @@ export default function Profile() {
               </div>
             </Card>
 
-            <Card className="bg-white border-2 border-gray-100 p-6">
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
                   {currentUser.dark_mode ? (
                     <Moon className="w-6 h-6 text-white" />
                   ) : (
@@ -823,22 +823,22 @@ export default function Profile() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Appearance</h3>
-                  <p className="text-sm text-gray-500">Customize your app experience</p>
+                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">Appearance</h3>
+                  <p className="text-sm text-slate-300">Customize your app experience</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
                   <div className="flex items-center gap-3">
                     {currentUser.dark_mode ? (
-                      <Moon className="w-5 h-5 text-indigo-500" />
+                      <Moon className="w-5 h-5 text-indigo-400" />
                     ) : (
-                      <Sun className="w-5 h-5 text-orange-500" />
+                      <Sun className="w-5 h-5 text-orange-400" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-gray-900">Dark Mode</Label>
-                      <p className="text-xs text-gray-500">Switch between light and dark theme</p>
+                      <Label className="text-sm font-bold text-slate-100">Dark Mode</Label>
+                      <p className="text-xs text-slate-400">Switch between light and dark theme</p>
                     </div>
                   </div>
                   <Switch
@@ -847,19 +847,19 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="p-4 bg-gray-50 rounded-2xl">
+                <div className="p-4 bg-slate-700/50 rounded-2xl">
                   <div className="flex items-center gap-3 mb-3">
-                    <Ruler className="w-5 h-5 text-purple-500" />
+                    <Ruler className="w-5 h-5 text-purple-400" />
                     <div>
-                      <Label className="text-sm font-bold text-gray-900">Unit System</Label>
-                      <p className="text-xs text-gray-500">Choose your preferred measurement units</p>
+                      <Label className="text-sm font-bold text-slate-100">Unit System</Label>
+                      <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
                     </div>
                   </div>
                   <Select 
                     value={currentUser.units || 'imperial'} 
                     onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
                   >
-                    <SelectTrigger className="rounded-2xl border-2 border-gray-200">
+                    <SelectTrigger className="rounded-2xl border-2 border-slate-600 bg-slate-800/50 text-slate-100">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -871,27 +871,27 @@ export default function Profile() {
               </div>
             </Card>
 
-            <Card className="bg-white border-2 border-gray-100 p-6">
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Privacy</h3>
-                  <p className="text-sm text-gray-500">Control your profile visibility</p>
+                  <h3 className="text-lg font-semibold bg-gradient-to-r from-green-200 to-emerald-200 bg-clip-text text-transparent">Privacy</h3>
+                  <p className="text-sm text-slate-300">Control your profile visibility</p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+              <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
                 <div className="flex items-center gap-3">
                   {currentUser.public_profile ? (
-                    <Globe className="w-5 h-5 text-green-500" />
+                    <Globe className="w-5 h-5 text-green-400" />
                   ) : (
-                    <Lock className="w-5 h-5 text-gray-400" />
+                    <Lock className="w-5 h-5 text-slate-500" />
                   )}
                   <div>
-                    <Label className="text-sm font-bold text-gray-900">Public Profile</Label>
-                    <p className="text-xs text-gray-500">Allow others to view your profile and stats</p>
+                    <Label className="text-sm font-bold text-slate-100">Public Profile</Label>
+                    <p className="text-xs text-slate-400">Allow others to view your profile and stats</p>
                   </div>
                 </div>
                 <Switch
