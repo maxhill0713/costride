@@ -341,13 +341,21 @@ export default function Profile() {
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 shadow-lg">
-            <div className="flex items-center gap-3 mb-2">
-              <Flame className="w-8 h-8 text-cyan-400" />
-              <div>
-                <p className="text-sm font-medium text-cyan-300">Current Streak</p>
-                <p className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                <p className="text-xs text-cyan-300">days</p>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Flame className="w-8 h-8 text-cyan-400" />
+                <div>
+                  <p className="text-sm font-medium text-cyan-300">Current Streak</p>
+                  <p className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
+                  <p className="text-xs text-cyan-300">days</p>
+                </div>
               </div>
+              {currentUser?.streak_freezes_available > 0 && (
+                <div className="text-center px-2">
+                  <span className="text-xl">❄️</span>
+                  <p className="text-xs text-cyan-300 font-bold">{currentUser.streak_freezes_available}</p>
+                </div>
+              )}
             </div>
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-cyan-300 mb-1">
@@ -370,28 +378,7 @@ export default function Profile() {
           </Card>
         </div>
 
-        {/* Streak Freezes Card */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-2xl">❄️</span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-cyan-300">Streak Freezes Available</p>
-                <p className="text-xs text-cyan-400 mt-0.5">Protects your streak if you miss a day</p>
-              </div>
-            </div>
-            <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              {currentUser?.streak_freezes_available || 0}
-            </div>
-          </div>
-          <div className="mt-4 p-3 bg-slate-700/50 rounded-2xl">
-            <p className="text-xs text-slate-300">
-              💡 <strong>Earn freezes</strong> by completing challenges or attending gym events (max 1 per month)
-            </p>
-          </div>
-        </Card>
+
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (

@@ -251,6 +251,35 @@ export default function CheckInButton({ gym }) {
         )}
       </AnimatePresence>
 
+      {/* Streak at Risk / Freeze Option */}
+      {daysSinceLastCheckIn !== null && daysSinceLastCheckIn >= 2 && currentUser?.streak_freezes_available > 0 && currentStreak > 0 && (
+        <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-300 rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
+              <span className="text-xl">❄️</span>
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-cyan-900">Your streak is at risk!</p>
+              <p className="text-sm text-cyan-700 mb-3">
+                Use a streak freeze to protect your {currentStreak}-day streak?
+              </p>
+              <Button 
+                onClick={async () => {
+                  await base44.auth.updateMe({ 
+                    streak_freezes_available: (currentUser.streak_freezes_available || 0) - 1 
+                  });
+                  queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+                  toast.success('❄️ Streak freeze applied! Your streak is protected.');
+                }}
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl text-sm h-9"
+              >
+                Apply Freeze ({currentUser.streak_freezes_available} available)
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Inactivity Warning */}
       {isInactive && daysSinceLastCheckIn !== null && (
         <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-2xl p-4">
@@ -288,19 +317,7 @@ export default function CheckInButton({ gym }) {
             </div>
           </div>
           
-          {/* Streak Freezes */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border-2 border-purple-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xl">❄️</span>
-                  <span className="text-xs font-bold text-purple-900 uppercase">Streak Freezes</span>
-                </div>
-                <p className="text-xs text-purple-700">Protect your streak if you miss a day</p>
-              </div>
-              <div className="text-3xl font-black text-purple-900">{currentUser?.streak_freezes_available || 0}</div>
-            </div>
-          </div>
+
         </div>
       )}
 
