@@ -44,6 +44,7 @@ export default function CheckInButton({ gym }) {
       
       queryClient.invalidateQueries({ queryKey: ['checkIns'] });
       queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       
       // Check for milestones
       const totalVisits = checkIns.length + 1;
@@ -55,10 +56,24 @@ export default function CheckInButton({ gym }) {
         toast.success('🎉 First check-in at ' + gym.name + '!', {
           description: 'Welcome to the community!'
         });
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: '🎉 First Check-in!',
+          message: `Welcome to ${gym.name}! This is the start of an amazing journey.`,
+          icon: '🎉'
+        });
       } else if (totalVisits === 10) {
         confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
         toast.success('🔥 10 visits milestone!', {
           description: 'You\'re building consistency!'
+        });
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: '👏 You completed 10 check-ins!',
+          message: 'You\'re building great consistency. Keep up the amazing work!',
+          icon: '🎯'
         });
         await base44.entities.Achievement.create({
           user_id: currentUser.id,
@@ -81,10 +96,24 @@ export default function CheckInButton({ gym }) {
         toast.success('🔥 7 day streak!', {
           description: 'Keep the momentum going!'
         });
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'streak',
+          title: '🎉 Congrats! You hit a 7-day streak!',
+          message: 'You\'re on fire! Keep the momentum going and watch your progress soar.',
+          icon: '🔥'
+        });
       } else if (streak === 30) {
         confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
         toast.success('⚡ 30 DAY STREAK!', {
           description: 'You\'re unstoppable!'
+        });
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'streak',
+          title: '🎉 Congrats! You hit a 30-day streak!',
+          message: 'Incredible dedication! You\'ve trained for 30 consecutive days. You\'re unstoppable!',
+          icon: '⚡'
         });
         await base44.entities.Achievement.create({
           user_id: currentUser.id,
@@ -102,6 +131,13 @@ export default function CheckInButton({ gym }) {
         confetti({ particleCount: 300, spread: 160, origin: { y: 0.6 } });
         toast.success(`🎉 ${gymAnniversary} year${gymAnniversary > 1 ? 's' : ''} at ${gym.name}!`, {
           description: 'What an incredible journey!'
+        });
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `🎉 ${gymAnniversary} Year Anniversary!`,
+          message: `${gymAnniversary} year${gymAnniversary > 1 ? 's' : ''} at ${gym.name}! What an incredible journey!`,
+          icon: '🎊'
         });
       }
 
