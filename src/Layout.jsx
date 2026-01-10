@@ -44,8 +44,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] safe-area-inset-bottom">
-        <div className="flex justify-around items-center h-20 px-1">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-safe">
+        <div className="flex justify-around items-center h-16 px-0.5">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -54,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-1.5 px-3 py-2 rounded-2xl transition-all duration-300
+                  relative flex flex-col items-center justify-center gap-1 px-1.5 py-2 rounded-2xl transition-all duration-300 min-w-0 flex-1
                   ${isActive 
                     ? 'scale-105' 
                     : 'text-slate-400 hover:text-white hover:scale-105'}
