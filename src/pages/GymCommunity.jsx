@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import PostCard from '../components/feed/PostCard';
+import GymPostCard from '../components/feed/GymPostCard';
+import CreateGymPostButton from '../components/feed/CreateGymPostButton';
 import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
 import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
@@ -832,18 +833,26 @@ export default function GymCommunity() {
           </TabsContent>
 
           <TabsContent value="feed" className="space-y-4">
+            {showOwnerControls && (
+              <CreateGymPostButton
+                gym={gym}
+                currentUser={currentUser}
+                onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+              />
+            )}
             {posts.length === 0 ? (
               <Card className="p-12 text-center">
                 <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500">No posts yet</p>
+                {showOwnerControls && (
+                  <p className="text-sm text-gray-400 mt-2">Create your first post to engage with members!</p>
+                )}
               </Card>
             ) : (
               posts.slice(0, 10).map((post) => (
-                <PostCard
+                <GymPostCard
                   key={post.id}
                   post={post}
-                  onLike={() => {}}
-                  onComment={() => {}}
                 />
               ))
             )}
