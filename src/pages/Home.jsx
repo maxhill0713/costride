@@ -4,8 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock } from 'lucide-react';
-import { format, isToday, differenceInDays, startOfDay } from 'date-fns';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target } from 'lucide-react';
+import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -59,6 +59,29 @@ export default function Home() {
   const lastCheckIn = currentUser?.last_check_in;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
+  // Calculate weekly progress
+  const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
+  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
+  const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
+  const weeklyTarget = 3; // Target: 3 gym visits per week
+  
+  // Calculate goal progress
+  const goalsOnTrack = goals.filter(g => {
+    const progress = (g.current_value / g.target_value) * 100;
+    const daysUntilDeadline = g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null;
+    
+    if (!daysUntilDeadline || daysUntilDeadline < 0) return progress >= 80;
+    
+    const totalDuration = g.deadline ? differenceInDays(new Date(g.deadline), new Date(g.created_date || new Date())) : 30;
+    const daysPassed = totalDuration - daysUntilDeadline;
+    const expectedProgress = (daysPassed / totalDuration) * 100;
+    
+    return progress >= expectedProgress * 0.8; // 80% of expected progress
+  }).length;
+  
+  const isOnTrack = weeklyCheckIns.length >= weeklyTarget && (goals.length === 0 || goalsOnTrack >= goals.length * 0.5);
+  const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Hero Header */}
@@ -102,6 +125,69 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Progress Tracker */}
+        <Card className={`${isOnTrack ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300' : 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300'} p-5 shadow-lg`}>
+          <div className="flex items-start gap-4">
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${isOnTrack ? 'bg-green-500' : 'bg-orange-500'}`}>
+              {isOnTrack ? <CheckCircle className="w-8 h-8 text-white" /> : <AlertCircle className="w-8 h-8 text-white" />}
+            </div>
+            <div className="flex-1">
+              <h3 className={`text-xl font-black mb-2 ${isOnTrack ? 'text-green-900' : 'text-orange-900'}`}>
+                {isOnTrack ? '🎉 You\'re On Track!' : '⚠️ You\'re Falling Behind'}
+              </h3>
+              <div className="space-y-2">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : 'text-orange-800'}`}>
+                      Weekly Gym Visits: {weeklyCheckIns.length}/{weeklyTarget}
+                    </span>
+                    <span className={`text-xs font-bold ${weeklyCheckIns.length >= weeklyTarget ? 'text-green-700' : 'text-orange-700'}`}>
+                      {weeklyCheckIns.length >= weeklyTarget ? '✓ Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-orange-500'} transition-all duration-500`}
+                      style={{ width: `${Math.min((weeklyCheckIns.length / weeklyTarget) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+                {goals.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : 'text-orange-800'}`}>
+                        Goals Progress: {goalsOnTrack}/{goals.length} on track
+                      </span>
+                      <span className={`text-xs font-bold ${goalsOnTrack >= goals.length * 0.5 ? 'text-green-700' : 'text-orange-700'}`}>
+                        {progressPercentage}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-500' : 'bg-orange-500'} transition-all duration-500`}
+                        style={{ width: `${progressPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <p className={`text-sm mt-3 ${isOnTrack ? 'text-green-700' : 'text-orange-700'}`}>
+                {isOnTrack 
+                  ? 'Keep up the great work! You\'re crushing your fitness goals 💪' 
+                  : 'Don\'t give up! Get back on track by checking in at a gym today 🔥'}
+              </p>
+              {!isOnTrack && (
+                <Link to={createPageUrl('Gyms')} className="mt-3 inline-block">
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl">
+                    <Target className="w-4 h-4 mr-2" />
+                    Check In Now
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </Card>
+
         {/* Check-in Reminder */}
         {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
           <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 p-5">
