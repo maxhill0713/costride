@@ -17,12 +17,10 @@ export default function Home() {
     queryFn: () => base44.auth.me()
   });
 
-  // Redirect to onboarding if not completed, or to dashboard if gym owner
+  // Redirect to onboarding if not completed
   useEffect(() => {
     if (currentUser && !currentUser.onboarding_completed) {
       navigate(createPageUrl('Onboarding'));
-    } else if (currentUser?.account_type === 'gym_owner') {
-      navigate(createPageUrl('GymOwnerDashboard'));
     }
   }, [currentUser, navigate]);
 
@@ -151,6 +149,14 @@ export default function Home() {
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
             </div>
+            {currentUser?.account_type === 'gym_owner' && (
+              <Link to={createPageUrl('GymOwnerDashboard')}>
+                <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Admin View
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Quick Stats */}
