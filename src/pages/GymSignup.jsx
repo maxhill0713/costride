@@ -15,6 +15,10 @@ import { toast } from 'sonner';
 export default function GymSignup() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [equipmentSearch, setEquipmentSearch] = useState('');
+  const [customEquipment, setCustomEquipment] = useState('');
+  const [addressSearch, setAddressSearch] = useState('');
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -127,6 +131,30 @@ export default function GymSignup() {
     }));
   };
 
+  const addCustomEquipment = () => {
+    if (customEquipment.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        equipment: [...prev.equipment, customEquipment.trim()]
+      }));
+      setCustomEquipment('');
+    }
+  };
+
+  const filteredEquipment = equipmentOptions.filter(eq => 
+    eq.toLowerCase().includes(equipmentSearch.toLowerCase())
+  );
+
+  const ukCities = [
+    'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Liverpool', 
+    'Newcastle', 'Sheffield', 'Bristol', 'Edinburgh', 'Leicester', 'Nottingham',
+    'Cardiff', 'Belfast', 'Brighton', 'Southampton', 'Oxford', 'Cambridge'
+  ];
+
+  const filteredCities = ukCities.filter(city =>
+    city.toLowerCase().includes(addressSearch.toLowerCase())
+  );
+
 
 
   // Temporarily disabled access check for testing
@@ -215,15 +243,37 @@ export default function GymSignup() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="relative">
                     <Label className="text-gray-700 font-semibold">City *</Label>
                     <Input
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, city: e.target.value });
+                        setAddressSearch(e.target.value);
+                        setShowAddressSuggestions(true);
+                      }}
+                      onFocus={() => setShowAddressSuggestions(true)}
                       placeholder="London"
                       required
                       className="mt-1 rounded-2xl border-2 border-gray-200"
                     />
+                    {showAddressSuggestions && addressSearch && filteredCities.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
+                        {filteredCities.map(city => (
+                          <button
+                            key={city}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, city });
+                              setShowAddressSuggestions(false);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-blue-50 first:rounded-t-2xl last:rounded-b-2xl transition-colors"
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label className="text-gray-700 font-semibold">Postcode</Label>
@@ -320,9 +370,38 @@ export default function GymSignup() {
 
                 <div>
                   <Label className="text-gray-700 font-semibold mb-2 block">Gym Equipment</Label>
-                  <p className="text-sm text-gray-600 mb-3">Select all equipment available at your gym</p>
+                  <p className="text-sm text-gray-600 mb-3">Select equipment or add your own</p>
+                  
+                  {/* Custom Equipment Input */}
+                  <div className="mb-3 flex gap-2">
+                    <Input
+                      value={customEquipment}
+                      onChange={(e) => setCustomEquipment(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomEquipment())}
+                      placeholder="Type custom equipment name..."
+                      className="rounded-2xl border-2 border-gray-200"
+                    />
+                    <Button
+                      type="button"
+                      onClick={addCustomEquipment}
+                      className="rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+
+                  {/* Search Box */}
+                  <Input
+                    value={equipmentSearch}
+                    onChange={(e) => setEquipmentSearch(e.target.value)}
+                    placeholder="Search equipment..."
+                    className="mb-3 rounded-2xl border-2 border-gray-200"
+                  />
+
+                  {/* Equipment List */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto p-2 border-2 border-gray-200 rounded-2xl">
-                    {equipmentOptions.map((equipment) => (
+                    {filteredEquipment.map((equipment) => (
                       <Button
                         key={equipment}
                         type="button"
@@ -338,12 +417,28 @@ export default function GymSignup() {
                         {equipment}
                       </Button>
                     ))}
+                    {filteredEquipment.length === 0 && (
+                      <p className="col-span-2 text-center text-gray-500 py-4">No equipment found</p>
+                    )}
                   </div>
+
+                  {/* Selected Count */}
                   {formData.equipment.length > 0 && (
                     <div className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-2xl">
-                      <p className="text-sm font-bold text-green-900">
+                      <p className="text-sm font-bold text-green-900 mb-2">
                         ✓ {formData.equipment.length} equipment item{formData.equipment.length !== 1 ? 's' : ''} selected
                       </p>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.equipment.map((item, idx) => (
+                          <Badge 
+                            key={idx} 
+                            className="bg-green-600 text-white cursor-pointer hover:bg-red-500 transition-colors"
+                            onClick={() => toggleArrayItem('equipment', item)}
+                          >
+                            {item} ×
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
