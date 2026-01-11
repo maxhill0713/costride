@@ -24,9 +24,10 @@ export default function Home() {
     }
   }, [currentUser, navigate]);
 
-  const { data: checkIns = [] } = useQuery({
+  const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date')
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    refetchInterval: 30000 // Refetch every 30 seconds
   });
 
   const { data: challenges = [] } = useQuery({
@@ -45,8 +46,11 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  // Today's check-ins
-  const todayCheckIns = checkIns.filter(c => isToday(new Date(c.check_in_date)));
+  // Filter user's check-ins
+  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
+
+  // Today's check-ins (all users)
+  const todayCheckIns = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
 
   // Active challenges
   const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
@@ -54,9 +58,30 @@ export default function Home() {
   // Recent lifts today
   const todayLifts = lifts.filter(l => isToday(new Date(l.created_date))).slice(0, 5);
 
-  // User streak
-  const userStreak = currentUser?.current_streak || 0;
-  const lastCheckIn = currentUser?.last_check_in;
+  // Calculate user streak from check-ins
+  const calculateStreak = (checkIns) => {
+    if (checkIns.length === 0) return 0;
+    
+    let streak = 1;
+    const today = startOfDay(new Date());
+    
+    for (let i = 0; i < checkIns.length - 1; i++) {
+      const current = startOfDay(new Date(checkIns[i].check_in_date));
+      const next = startOfDay(new Date(checkIns[i + 1].check_in_date));
+      const daysDiff = differenceInDays(current, next);
+      
+      if (daysDiff === 1 || daysDiff === 2) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  };
+
+  const userStreak = calculateStreak(userCheckIns);
+  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
   // Create reminder notification if inactive for 3+ days
@@ -90,7 +115,6 @@ export default function Home() {
 
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
-  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
   const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
   const weeklyTarget = 3; // Target: 3 gym visits per week
   
