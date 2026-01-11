@@ -53,6 +53,12 @@ export default function GymOwnerDashboard() {
     enabled: !!currentUser
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: !!currentUser
+  });
+
   React.useEffect(() => {
     if (myGyms.length > 0 && !selectedGym) {
       setSelectedGym(myGyms[0]);
@@ -222,8 +228,20 @@ export default function GymOwnerDashboard() {
   }).length;
 
   const last30Days = checkIns.filter(c => {
-    const checkInDate = new Date(c.check_in_date);
+    const checkInDate = new Date(c.check_in_date));
     return isWithinInterval(checkInDate, { start: subDays(new Date(), 30), end: new Date() });
+  }).length;
+
+  // Calculate at-risk members (no check-in for 7-10 days)
+  const gymMemberships = allMemberships.filter(m => m.gym_id === selectedGym?.id && m.status === 'active');
+  const atRiskMembers = gymMemberships.filter(membership => {
+    const memberCheckIns = checkIns.filter(c => c.user_id === membership.user_id);
+    if (memberCheckIns.length === 0) return false;
+    
+    const lastCheckIn = new Date(memberCheckIns[0].check_in_date);
+    const daysSinceLastCheckIn = Math.floor((new Date() - lastCheckIn) / (1000 * 60 * 60 * 24));
+    
+    return daysSinceLastCheckIn >= 7 && daysSinceLastCheckIn <= 10;
   }).length;
 
   // Check-ins by day (last 7 days)
@@ -314,6 +332,30 @@ export default function GymOwnerDashboard() {
             </div>
           )}
         </div>
+
+        {/* At-Risk Alert */}
+        {atRiskMembers > 0 && (
+          <Card className="p-5 mb-4 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+                <Bell className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-lg mb-1">⚠️ Members At Risk</h3>
+                <p className="text-white/90 text-sm">
+                  {atRiskMembers} {atRiskMembers === 1 ? 'member hasn\'t' : 'members haven\'t'} checked in for 7-10 days this week
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowManageMembers(true)}
+                variant="outline"
+                className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-bold"
+              >
+                View Members
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
