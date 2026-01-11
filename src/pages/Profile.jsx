@@ -16,6 +16,7 @@ import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
+import ConsistencyJourney from '../components/profile/ConsistencyJourney';
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -514,6 +515,8 @@ export default function Profile() {
           </TabsList>
 
           <TabsContent value="progress" className="space-y-4">
+            <ConsistencyJourney totalCheckIns={userCheckIns.length} />
+
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-purple-400" />
