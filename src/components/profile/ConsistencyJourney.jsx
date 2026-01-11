@@ -7,20 +7,20 @@ const stages = [
   {
     name: 'Starter',
     min: 0,
-    max: 4,
+    max: 9,
     color: 'from-slate-400 to-slate-500',
     message: 'Every journey starts with showing up'
   },
   {
     name: 'Getting Consistent',
-    min: 5,
-    max: 14,
+    min: 10,
+    max: 19,
     color: 'from-blue-400 to-cyan-500',
     message: 'Building your gym habit, one visit at a time'
   },
   {
     name: 'Gym Regular',
-    min: 15,
+    min: 20,
     max: 29,
     color: 'from-purple-400 to-pink-500',
     message: 'Consistency is your superpower'
@@ -28,7 +28,7 @@ const stages = [
   {
     name: 'Go Fittie',
     min: 30,
-    max: Infinity,
+    max: 30,
     color: 'from-yellow-400 to-orange-500',
     message: 'You\'ve made showing up a lifestyle!'
   }
@@ -42,8 +42,8 @@ export default function ConsistencyJourney({ totalCheckIns }) {
   const getProgressToNextStage = () => {
     const currentStage = getCurrentStage();
     
-    if (currentStage.max === Infinity) {
-      return 100; // Max stage reached
+    if (totalCheckIns >= 30) {
+      return 100; // Completed at 30 check-ins
     }
     
     const checkInsInStage = totalCheckIns - currentStage.min;
@@ -103,9 +103,9 @@ export default function ConsistencyJourney({ totalCheckIns }) {
             {currentStage.max - totalCheckIns + 1} more {currentStage.max - totalCheckIns + 1 === 1 ? 'check-in' : 'check-ins'} to reach <span className="font-bold text-slate-300">{nextStage}</span>
           </p>
         )}
-        {!nextStage && (
+        {!nextStage && totalCheckIns >= 30 && (
           <p className="text-xs text-slate-300 mt-2 font-medium">
-            ✨ You've reached the highest stage! Keep showing up!
+            ✨ Journey complete! You've built an amazing habit!
           </p>
         )}
       </div>
