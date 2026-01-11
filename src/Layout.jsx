@@ -27,7 +27,7 @@ export default function Layout({ children, currentPageName }) {
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 
   const navItems = isGymOwner ? [
-    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-blue-500' },
+    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-yellow-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
     { name: 'Register', icon: Plus, page: 'GymSignup', color: 'text-green-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
