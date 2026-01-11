@@ -10,12 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
+
 
 export default function GymSignup() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
-  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -70,6 +69,54 @@ export default function GymSignup() {
 
   const amenitiesOptions = ['WiFi', 'Parking', '24/7', 'Personal Training', 'Showers', 'Lockers', 'Sauna', 'Smoothie Bar'];
   const specializationOptions = ['Weight Loss', 'Muscle Gain', 'Bulking Programs', 'Strength Training', 'Powerlifting', 'Bodybuilding', 'CrossFit', 'HIIT', 'Cardio', 'Rehabilitation'];
+  
+  const equipmentOptions = [
+    'Hammer Strength Chest Press',
+    'Hammer Strength Iso-Lateral Row',
+    'Hammer Strength Leg Press',
+    'Life Fitness Smith Machine',
+    'Life Fitness Cable Crossover',
+    'Rogue Power Rack',
+    'Rogue Ohio Bar',
+    'Eleiko Competition Plates',
+    'Eleiko Powerlifting Bar',
+    'Technogym Treadmill',
+    'Technogym Elliptical',
+    'Concept2 Rowing Machine',
+    'Assault Bike',
+    'Prime Fitness Lateral Raise',
+    'Prime Fitness Single Leg Press',
+    'Nautilus Chest Fly Machine',
+    'Nautilus Leg Curl',
+    'Matrix Hack Squat',
+    'Cybex Arc Trainer',
+    'Cybex Leg Extension',
+    'Precor Chest Press',
+    'Precor Shoulder Press',
+    'Rogue Echo Bike',
+    'Rogue Monster Rack',
+    'Titan Fitness Lat Pulldown',
+    'Titan Fitness Leg Press',
+    'Arsenal Strength Chest Press',
+    'Arsenal Strength Squat Rack',
+    'Sorinex Bench Press',
+    'Sorinex Dumbbell Rack',
+    'Watson Adjustable Bench',
+    'Watson Olympic Platform',
+    'York Barbell Set',
+    'York Dumbbells',
+    'Ivanko Weight Plates',
+    'Bells of Steel Power Rack',
+    'Bells of Steel Cable Machine',
+    'Gym80 Chest Supported Row',
+    'Gym80 Shoulder Press',
+    'Keiser Strength Equipment',
+    'Keiser Functional Trainer',
+    'StairMaster Stepmill',
+    'StairMaster Gauntlet',
+    'FreeMotion Cable Crossover',
+    'FreeMotion Dual Cable Cross'
+  ];
 
   const toggleArrayItem = (field, item) => {
     setFormData(prev => ({
@@ -80,10 +127,7 @@ export default function GymSignup() {
     }));
   };
 
-  const handleSaveEquipment = (equipment) => {
-    setFormData({ ...formData, equipment });
-    setShowEquipmentModal(false);
-  };
+
 
   // Temporarily disabled access check for testing
   // if (currentUser && currentUser.account_type !== 'gym_owner') {
@@ -275,36 +319,31 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold mb-2 block">Specific Equipment</Label>
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mb-3">
-                    <p className="text-sm text-blue-900 font-medium mb-1">
-                      List your exact equipment with brands and models
-                    </p>
-                    <p className="text-xs text-blue-700">
-                      e.g., "Hammer Strength Chest Supported Row", "Prime Lateral Raise Machine"
-                    </p>
+                  <Label className="text-gray-700 font-semibold mb-2 block">Gym Equipment</Label>
+                  <p className="text-sm text-gray-600 mb-3">Select all equipment available at your gym</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto p-2 border-2 border-gray-200 rounded-2xl">
+                    {equipmentOptions.map((equipment) => (
+                      <Button
+                        key={equipment}
+                        type="button"
+                        onClick={() => toggleArrayItem('equipment', equipment)}
+                        variant={formData.equipment.includes(equipment) ? 'default' : 'outline'}
+                        className={`rounded-xl text-left justify-start h-auto py-3 ${
+                          formData.equipment.includes(equipment)
+                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
+                            : ''
+                        }`}
+                        size="sm"
+                      >
+                        {equipment}
+                      </Button>
+                    ))}
                   </div>
-                  <Button
-                    type="button"
-                    onClick={() => setShowEquipmentModal(true)}
-                    variant="outline"
-                    className="w-full rounded-2xl border-2 border-dashed border-blue-300 hover:bg-blue-50 h-12"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {formData.equipment.length > 0 ? `Manage Equipment (${formData.equipment.length})` : 'Add Equipment'}
-                  </Button>
                   {formData.equipment.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {formData.equipment.slice(0, 5).map((item, idx) => (
-                        <Badge key={idx} variant="outline" className="bg-purple-50 text-purple-900 border-purple-200">
-                          {item}
-                        </Badge>
-                      ))}
-                      {formData.equipment.length > 5 && (
-                        <Badge variant="outline" className="bg-gray-50 text-gray-600">
-                          +{formData.equipment.length - 5} more
-                        </Badge>
-                      )}
+                    <div className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-2xl">
+                      <p className="text-sm font-bold text-green-900">
+                        ✓ {formData.equipment.length} equipment item{formData.equipment.length !== 1 ? 's' : ''} selected
+                      </p>
                     </div>
                   )}
                 </div>
@@ -356,12 +395,6 @@ export default function GymSignup() {
           </form>
         </Card>
 
-        <ManageEquipmentModal
-          open={showEquipmentModal}
-          onClose={() => setShowEquipmentModal(false)}
-          equipment={formData.equipment}
-          onSave={handleSaveEquipment}
-        />
       </div>
     </div>
   );
