@@ -85,28 +85,28 @@ export default function GymSignup() {
     setShowEquipmentModal(false);
   };
 
-  // Redirect if not gym owner
-  if (currentUser && currentUser.account_type !== 'gym_owner') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Dumbbell className="w-12 h-12 text-red-600" />
-          </div>
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Access Restricted</h2>
-          <p className="text-gray-600 mb-6">
-            Only gym owner accounts can register gyms. Please create a gym owner account during onboarding.
-          </p>
-          <Button 
-            onClick={() => window.location.href = '/'}
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12"
-          >
-            Back to Home
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  // Temporarily disabled access check for testing
+  // if (currentUser && currentUser.account_type !== 'gym_owner') {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+  //       <Card className="max-w-md w-full p-8 text-center">
+  //         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+  //           <Dumbbell className="w-12 h-12 text-red-600" />
+  //         </div>
+  //         <h2 className="text-2xl font-black text-gray-900 mb-2">Access Restricted</h2>
+  //         <p className="text-gray-600 mb-6">
+  //           Only gym owner accounts can register gyms. Please create a gym owner account during onboarding.
+  //         </p>
+  //         <Button 
+  //           onClick={() => window.location.href = '/'}
+  //           className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12"
+  //         >
+  //           Back to Home
+  //         </Button>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   if (submitted) {
     return (
