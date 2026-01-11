@@ -32,10 +32,15 @@ export default function GymSignup() {
 
   const queryClient = useQueryClient();
 
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, refetch: refetchUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
   });
+
+  // Auto-refetch on mount to get latest user data
+  React.useEffect(() => {
+    refetchUser();
+  }, []);
 
   const createGymMutation = useMutation({
     mutationFn: async (data) => {

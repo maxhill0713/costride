@@ -28,10 +28,15 @@ export default function GymOwnerDashboard() {
   const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
   const queryClient = useQueryClient();
 
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, refetch: refetchUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
   });
+
+  // Auto-refetch on mount to get latest user data
+  React.useEffect(() => {
+    refetchUser();
+  }, []);
 
   const { data: gyms = [] } = useQuery({
     queryKey: ['gyms'],
