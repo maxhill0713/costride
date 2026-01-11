@@ -325,20 +325,29 @@ export default function GymOwnerDashboard() {
             <p className="text-gray-600">Manage your gym and track performance</p>
           </div>
           
-          {myGyms.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {myGyms.map(gym => (
-                <Button
-                  key={gym.id}
-                  variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedGym(gym)}
-                  className="whitespace-nowrap"
-                >
-                  {gym.name}
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="flex gap-3 items-center">
+            <Link to={createPageUrl('Home')}>
+              <Button variant="outline" className="border-2">
+                <Users className="w-4 h-4 mr-2" />
+                Member View
+              </Button>
+            </Link>
+            
+            {myGyms.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto">
+                {myGyms.map(gym => (
+                  <Button
+                    key={gym.id}
+                    variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
+                    onClick={() => setSelectedGym(gym)}
+                    className="whitespace-nowrap"
+                  >
+                    {gym.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* At-Risk Alert */}
