@@ -261,6 +261,30 @@ export default function GymOwnerDashboard() {
     return isWithinInterval(checkInDate, { start: subDays(new Date(), 30), end: new Date() });
   }).length;
 
+  // Today's check-ins
+  const todayCheckIns = checkIns.filter(c => {
+    const checkInDate = startOfDay(new Date(c.check_in_date));
+    return checkInDate.getTime() === startOfDay(new Date()).getTime();
+  }).length;
+
+  // Active members this week (unique users)
+  const activeMembersThisWeek = new Set(checkIns.filter(c => {
+    const checkInDate = new Date(c.check_in_date);
+    return isWithinInterval(checkInDate, { start: subDays(new Date(), 7), end: new Date() });
+  }).map(c => c.user_id)).size;
+
+  // Last week's active members for comparison
+  const activeMembersLastWeek = new Set(checkIns.filter(c => {
+    const checkInDate = new Date(c.check_in_date);
+    return isWithinInterval(checkInDate, { start: subDays(new Date(), 14), end: subDays(new Date(), 7) });
+  }).map(c => c.user_id)).size;
+
+  // Weekly attendance change
+  const weeklyChange = activeMembersThisWeek - activeMembersLastWeek;
+  const weeklyChangePercent = activeMembersLastWeek > 0 
+    ? Math.round((weeklyChange / activeMembersLastWeek) * 100) 
+    : 0;
+
   // Calculate at-risk members (no check-in for 7-10 days)
   const gymMemberships = allMemberships.filter(m => m.gym_id === selectedGym?.id && m.status === 'active');
   const atRiskMembers = gymMemberships.filter(membership => {
@@ -496,100 +520,28 @@ export default function GymOwnerDashboard() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Engagement Overview */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Engagement Overview</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">Total Members</p>
-                  <p className="text-3xl font-black text-blue-600">{uniqueMembers}</p>
-                </div>
-                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">Active (7 days)</p>
-                  <p className="text-3xl font-black text-green-600">{new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).map(c => c.user_id)).size}</p>
-                </div>
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">PRs Logged</p>
-                  <p className="text-3xl font-black text-purple-600">{lifts.filter(l => l.is_pr).length}</p>
-                </div>
-                <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">Avg Rating</p>
-                  <p className="text-3xl font-black text-orange-600">{(selectedGym?.rating || 0).toFixed(1)}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Check-ins Chart */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Check-ins (Last 7 Days)</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={checkInsByDay}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="checkIns" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-
-            {/* Quick Stats Grid */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Top Members */}
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Top Active Members</h3>
-                {checkIns.length > 0 ? (
-                  <div className="space-y-3">
-                    {Object.entries(
-                      checkIns.reduce((acc, c) => {
-                        acc[c.user_name] = (acc[c.user_name] || 0) + 1;
-                        return acc;
-                      }, {})
-                    )
-                      .sort(([, a], [, b]) => b - a)
-                      .slice(0, 5)
-                      .map(([name, count], idx) => (
-                        <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white text-sm">
-                              {idx + 1}
-                            </div>
-                            <span className="font-bold text-gray-900">{name}</span>
-                          </div>
-                          <Badge>{count} visits</Badge>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-8">No check-ins yet</p>
-                )}
+            {/* Key Metrics - No Graphs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
+                <p className="text-blue-100 font-semibold mb-2">Check-ins Today</p>
+                <p className="text-6xl font-black mb-1">{todayCheckIns}</p>
+                <p className="text-sm text-blue-100">members checked in</p>
               </Card>
 
-              {/* Exercise Breakdown */}
-              {exerciseData.length > 0 && (
-                <Card className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Popular Exercises</h3>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={exerciseData.slice(0, 5)}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {exerciseData.slice(0, 5).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </Card>
-              )}
+              <Card className="p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white border-0 shadow-lg">
+                <p className="text-green-100 font-semibold mb-2">Active This Week</p>
+                <p className="text-6xl font-black mb-1">{activeMembersThisWeek}</p>
+                <p className="text-sm text-green-100">unique members</p>
+              </Card>
+
+              <Card className="p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                <p className="text-purple-100 font-semibold mb-2">Weekly Change</p>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <p className="text-6xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
+                  <span className="text-2xl font-bold opacity-80">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
+                </div>
+                <p className="text-sm text-purple-100">vs last week</p>
+              </Card>
             </div>
           </TabsContent>
 
