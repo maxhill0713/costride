@@ -17,10 +17,12 @@ export default function Home() {
     queryFn: () => base44.auth.me()
   });
 
-  // Redirect to onboarding if not completed
+  // Redirect to onboarding if not completed, or to dashboard if gym owner
   useEffect(() => {
     if (currentUser && !currentUser.onboarding_completed) {
       navigate(createPageUrl('Onboarding'));
+    } else if (currentUser?.account_type === 'gym_owner') {
+      navigate(createPageUrl('GymOwnerDashboard'));
     }
   }, [currentUser, navigate]);
 
