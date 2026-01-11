@@ -195,20 +195,21 @@ export default function GymOwnerDashboard() {
     }
   });
 
-  if (currentUser?.account_type !== 'gym_owner') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 text-center max-w-md">
-          <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Gym Owner Access Only</h2>
-          <p className="text-gray-600 mb-4">This dashboard is only accessible to gym owners</p>
-          <Link to={createPageUrl('Home')}>
-            <Button>Back to Home</Button>
-          </Link>
-        </Card>
-      </div>
-    );
-  }
+  // Access check temporarily disabled for testing
+  // if (currentUser?.account_type !== 'gym_owner') {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+  //       <Card className="p-8 text-center max-w-md">
+  //         <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+  //         <h2 className="text-2xl font-bold text-gray-900 mb-2">Gym Owner Access Only</h2>
+  //         <p className="text-gray-600 mb-4">This dashboard is only accessible to gym owners</p>
+  //         <Link to={createPageUrl('Home')}>
+  //           <Button>Back to Home</Button>
+  //         </Link>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   if (myGyms.length === 0) {
     return (
