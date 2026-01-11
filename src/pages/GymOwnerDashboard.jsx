@@ -121,6 +121,27 @@ export default function GymOwnerDashboard() {
     enabled: !!selectedGym
   });
 
+  const { data: posts = [] } = useQuery({
+    queryKey: ['posts', selectedGym?.id],
+    queryFn: async () => {
+      const allPosts = await base44.entities.Post.list('-created_date');
+      return allPosts.filter(p => {
+        const postCheckIns = checkIns.filter(c => c.user_id === p.member_id);
+        return postCheckIns.length > 0;
+      });
+    },
+    enabled: !!selectedGym && checkIns.length > 0
+  });
+
+  const { data: challenges = [] } = useQuery({
+    queryKey: ['challenges', selectedGym?.id],
+    queryFn: async () => {
+      const allChallenges = await base44.entities.Challenge.list('-created_date');
+      return allChallenges.filter(c => c.gym_id === selectedGym?.id || c.competing_gym_id === selectedGym?.id);
+    },
+    enabled: !!selectedGym
+  });
+
   const createRewardMutation = useMutation({
     mutationFn: (rewardData) => base44.entities.Reward.create(rewardData),
     onSuccess: () => {
@@ -452,21 +473,170 @@ export default function GymOwnerDashboard() {
           </Button>
         </div>
 
-        <Tabs defaultValue="analytics" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
-            <TabsTrigger value="analytics" className="rounded-xl font-semibold">
-              Analytics
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+            <TabsTrigger value="overview" className="rounded-xl font-semibold">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="feed" className="rounded-xl font-semibold">
+              Feed
             </TabsTrigger>
             <TabsTrigger value="leaderboard" className="rounded-xl font-semibold">
               Leaderboard
             </TabsTrigger>
-            <TabsTrigger value="management" className="rounded-xl font-semibold">
-              Management
+            <TabsTrigger value="challenges" className="rounded-xl font-semibold">
+              Challenges
             </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-xl font-semibold">
-              Settings
+            <TabsTrigger value="rewards" className="rounded-xl font-semibold">
+              Rewards
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="rounded-xl font-semibold">
+              Profile
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Engagement Overview */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Engagement Overview</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Total Members</p>
+                  <p className="text-3xl font-black text-blue-600">{uniqueMembers}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Active (7 days)</p>
+                  <p className="text-3xl font-black text-green-600">{new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).map(c => c.user_id)).size}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">PRs Logged</p>
+                  <p className="text-3xl font-black text-purple-600">{lifts.filter(l => l.is_pr).length}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Avg Rating</p>
+                  <p className="text-3xl font-black text-orange-600">{(selectedGym?.rating || 0).toFixed(1)}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Check-ins Chart */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Check-ins (Last 7 Days)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={checkInsByDay}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="checkIns" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+
+            {/* Quick Stats Grid */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Top Members */}
+              <Card className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Top Active Members</h3>
+                {checkIns.length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(
+                      checkIns.reduce((acc, c) => {
+                        acc[c.user_name] = (acc[c.user_name] || 0) + 1;
+                        return acc;
+                      }, {})
+                    )
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([name, count], idx) => (
+                        <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white text-sm">
+                              {idx + 1}
+                            </div>
+                            <span className="font-bold text-gray-900">{name}</span>
+                          </div>
+                          <Badge>{count} visits</Badge>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No check-ins yet</p>
+                )}
+              </Card>
+
+              {/* Exercise Breakdown */}
+              {exerciseData.length > 0 && (
+                <Card className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Popular Exercises</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={exerciseData.slice(0, 5)}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {exerciseData.slice(0, 5).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="feed" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Gym Activity Feed</h3>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Post
+                  </Button>
+                </Link>
+              </div>
+              {posts.length > 0 ? (
+                <div className="space-y-4">
+                  {posts.slice(0, 10).map(post => (
+                    <div key={post.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+                          {post.member_name?.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-900">{post.member_name}</p>
+                          <p className="text-sm text-gray-500">{format(new Date(post.created_date), 'PPp')}</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-900 mb-3">{post.content}</p>
+                      {post.image_url && (
+                        <img src={post.image_url} alt="Post" className="w-full rounded-xl mb-3" />
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span>❤️ {post.likes || 0} likes</span>
+                        <span>💬 {post.comments?.length || 0} comments</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Activity className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 mb-2">No activity yet</p>
+                  <p className="text-sm text-gray-400">Posts from your gym members will appear here</p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
             {/* Check-ins Chart */}
@@ -673,6 +843,198 @@ export default function GymOwnerDashboard() {
                     </div>
                   );
                 })}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="challenges" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Challenges & Events</h3>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </Link>
+              </div>
+              
+              {/* Challenges */}
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-3">Active Challenges</h4>
+                {challenges.filter(c => c.status === 'active').length > 0 ? (
+                  <div className="space-y-3">
+                    {challenges.filter(c => c.status === 'active').map(challenge => (
+                      <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl border-2 border-orange-200">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h5 className="font-bold text-gray-900">{challenge.title}</h5>
+                            <p className="text-sm text-gray-600">{challenge.description}</p>
+                          </div>
+                          <Badge className="bg-orange-500 text-white">{challenge.type.replace('_', ' ')}</Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                          <span>👥 {challenge.participants?.length || 0} participants</span>
+                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-6">No active challenges</p>
+                )}
+              </div>
+
+              {/* Events */}
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-3">Upcoming Events</h4>
+                {events.length > 0 ? (
+                  <div className="space-y-3">
+                    {events.slice(0, 5).map(event => (
+                      <div key={event.id} className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-900">{event.title}</h5>
+                            <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
+                              <span>📅 {format(new Date(event.event_date), 'PPP')}</span>
+                              <span>👥 {event.attendees || 0} attending</span>
+                            </div>
+                          </div>
+                          {event.image_url && (
+                            <img src={event.image_url} alt={event.title} className="w-20 h-20 rounded-xl object-cover ml-3" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-6">No upcoming events</p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rewards" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Rewards Program</h3>
+                <Button onClick={() => setShowManageRewards(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Reward
+                </Button>
+              </div>
+              
+              {rewards.length > 0 ? (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {rewards.map(reward => (
+                    <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">{reward.icon || '🎁'}</div>
+                        <Badge className={reward.active ? 'bg-green-500' : 'bg-gray-400'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
+                      </div>
+                      <h4 className="font-bold text-gray-900 mb-1">{reward.title}</h4>
+                      <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-purple-600 font-bold">{reward.value}</span>
+                        <span className="text-gray-500">{reward.claimed_by?.length || 0} claimed</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Award className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 mb-2">No rewards yet</p>
+                  <p className="text-sm text-gray-400">Create rewards to incentivize member engagement</p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Profile</h3>
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Basic Information</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Gym Name</label>
+                      <p className="text-gray-900 font-medium mt-1">{selectedGym?.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Type</label>
+                      <Badge className="capitalize mt-1">{selectedGym?.type}</Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Location</label>
+                      <p className="text-gray-900 mt-1">{selectedGym?.address}, {selectedGym?.city} {selectedGym?.postcode}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Monthly Price</label>
+                      <p className="text-gray-900 font-bold mt-1">£{selectedGym?.price}/month</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Amenities & Equipment */}
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Amenities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.amenities?.map((amenity, idx) => (
+                      <Badge key={idx} variant="outline">{amenity}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Equipment</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.equipment?.slice(0, 15).map((item, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-blue-50">{item}</Badge>
+                    ))}
+                    {selectedGym?.equipment?.length > 15 && (
+                      <Badge variant="outline">+{selectedGym.equipment.length - 15} more</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Gallery */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-gray-700">Photo Gallery</h4>
+                    <Button onClick={() => setShowManagePhotos(true)} variant="outline" size="sm">
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Manage Photos
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedGym?.gallery?.slice(0, 6).map((url, idx) => (
+                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid md:grid-cols-3 gap-3">
+                  <Button onClick={() => setShowManageClasses(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Calendar className="w-6 h-6" />
+                    <span className="font-bold">Manage Classes</span>
+                    <span className="text-xs text-gray-500">{classes.length} classes</span>
+                  </Button>
+                  <Button onClick={() => setShowManageCoaches(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Target className="w-6 h-6" />
+                    <span className="font-bold">Manage Coaches</span>
+                    <span className="text-xs text-gray-500">{coaches.length} coaches</span>
+                  </Button>
+                  <Button onClick={() => setShowManageMembers(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Users className="w-6 h-6" />
+                    <span className="font-bold">View Members</span>
+                    <span className="text-xs text-gray-500">{uniqueMembers} members</span>
+                  </Button>
+                </div>
               </div>
             </Card>
           </TabsContent>
