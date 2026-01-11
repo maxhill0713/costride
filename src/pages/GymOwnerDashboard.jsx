@@ -228,7 +228,7 @@ export default function GymOwnerDashboard() {
   }).length;
 
   const last30Days = checkIns.filter(c => {
-    const checkInDate = new Date(c.check_in_date));
+    const checkInDate = new Date(c.check_in_date);
     return isWithinInterval(checkInDate, { start: subDays(new Date(), 30), end: new Date() });
   }).length;
 
