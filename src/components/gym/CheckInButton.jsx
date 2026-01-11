@@ -85,6 +85,21 @@ export default function CheckInButton({ gym }) {
           icon: '🔥',
           points: 50
         });
+      } else if (totalVisits === 30) {
+        confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        toast.success('🏆 30 visits! You\'re a Gym Regular!', {
+          description: 'You\'ve built a solid habit!'
+        });
+        await base44.entities.Achievement.create({
+          user_id: currentUser.id,
+          user_name: currentUser.full_name,
+          gym_id: gym.id,
+          achievement_type: 'community_leader',
+          title: 'Gym Regular',
+          description: `Reached 30 check-ins at ${gym.name}`,
+          icon: '🏆',
+          points: 75
+        });
       } else if (totalVisits === 50) {
         confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
         toast.success('💪 50 visits! You\'re a regular!', {
