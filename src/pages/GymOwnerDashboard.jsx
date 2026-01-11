@@ -195,18 +195,19 @@ export default function GymOwnerDashboard() {
     }
   });
 
-  if (currentUser?.account_type !== 'gym_owner') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 text-center max-w-md">
-          <p className="text-gray-600 mb-4">This page is only accessible to gym owners</p>
-          <Link to={createPageUrl('Home')}>
-            <Button>Back to Home</Button>
-          </Link>
-        </Card>
-      </div>
-    );
-  }
+  // Temporarily disabled access check for testing
+  // if (currentUser?.account_type !== 'gym_owner') {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+  //       <Card className="p-8 text-center max-w-md">
+  //         <p className="text-gray-600 mb-4">This page is only accessible to gym owners</p>
+  //         <Link to={createPageUrl('Home')}>
+  //           <Button>Back to Home</Button>
+  //         </Link>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   if (myGyms.length === 0) {
     return (
