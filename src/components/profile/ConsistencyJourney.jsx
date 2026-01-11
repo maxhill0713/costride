@@ -19,14 +19,14 @@ const stages = [
     message: 'Building your gym habit, one visit at a time'
   },
   {
-    name: 'Gym Regular',
+    name: 'Committed',
     min: 20,
     max: 29,
     color: 'from-purple-400 to-pink-500',
     message: 'Consistency is your superpower'
   },
   {
-    name: 'Go Fittie',
+    name: 'Gym Regular',
     min: 30,
     max: 30,
     color: 'from-yellow-400 to-orange-500',
