@@ -14,6 +14,11 @@ import { createPageUrl } from '../utils';
 export default function Home() {
   const navigate = useNavigate();
   const [showCheckIn, setShowCheckIn] = useState(false);
+  
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
@@ -29,11 +34,6 @@ export default function Home() {
   const memberGym = gymMemberships.length > 0 
     ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
     : null;
-  
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
-  });
 
   // Redirect to onboarding if not completed
   useEffect(() => {
