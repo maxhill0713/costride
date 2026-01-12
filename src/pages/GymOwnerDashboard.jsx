@@ -15,6 +15,7 @@ import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
+import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -25,6 +26,7 @@ export default function GymOwnerDashboard() {
   const [showManageCoaches, setShowManageCoaches] = useState(false);
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
   const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
   const queryClient = useQueryClient();
 
@@ -165,6 +167,13 @@ export default function GymOwnerDashboard() {
 
   const deleteClassMutation = useMutation({
     mutationFn: (classId) => base44.entities.GymClass.delete(classId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes', selectedGym?.id] });
+    }
+  });
+
+  const updateClassMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.GymClass.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', selectedGym?.id] });
     }
@@ -555,12 +564,10 @@ export default function GymOwnerDashboard() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Gym Activity Feed</h3>
-                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Post
-                  </Button>
-                </Link>
+                <Button onClick={() => setShowCreatePost(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Post
+                </Button>
               </div>
               {posts.length > 0 ? (
                 <div className="space-y-4">
@@ -1151,9 +1158,10 @@ export default function GymOwnerDashboard() {
           onClose={() => setShowManageClasses(false)}
           classes={classes}
           onCreateClass={(data) => createClassMutation.mutate(data)}
+          onUpdateClass={(id, data) => updateClassMutation.mutate({ id, data })}
           onDeleteClass={(id) => deleteClassMutation.mutate(id)}
           gym={selectedGym}
-          isLoading={createClassMutation.isPending}
+          isLoading={createClassMutation.isPending || updateClassMutation.isPending}
         />
 
         <ManageCoachesModal
@@ -1180,6 +1188,15 @@ export default function GymOwnerDashboard() {
           gym={selectedGym}
           onBanMember={(userId) => banMemberMutation.mutate(userId)}
           onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)}
+        />
+
+        <CreateGymOwnerPostModal
+          open={showCreatePost}
+          onClose={() => setShowCreatePost(false)}
+          gym={selectedGym}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['posts', selectedGym?.id] });
+          }}
         />
       </div>
     </div>

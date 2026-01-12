@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Trash2, Plus, Clock } from 'lucide-react';
+import { Calendar, Trash2, Plus, Clock, Edit } from 'lucide-react';
 
-export default function ManageClassesModal({ open, onClose, classes = [], onCreateClass, onDeleteClass, gym, isLoading }) {
+export default function ManageClassesModal({ open, onClose, classes = [], onCreateClass, onDeleteClass, onUpdateClass, gym, isLoading }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingClass, setEditingClass] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -42,11 +43,16 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
   };
 
   const handleCreate = () => {
-    onCreateClass({
-      ...formData,
-      gym_id: gym.id,
-      gym_name: gym.name
-    });
+    if (editingClass) {
+      onUpdateClass(editingClass.id, formData);
+      setEditingClass(null);
+    } else {
+      onCreateClass({
+        ...formData,
+        gym_id: gym.id,
+        gym_name: gym.name
+      });
+    }
     setFormData({
       name: '',
       description: '',
@@ -57,6 +63,34 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
       schedule: []
     });
     setShowCreateForm(false);
+  };
+
+  const handleEdit = (gymClass) => {
+    setFormData({
+      name: gymClass.name,
+      description: gymClass.description || '',
+      instructor: gymClass.instructor,
+      duration_minutes: gymClass.duration_minutes || 60,
+      difficulty: gymClass.difficulty || 'all_levels',
+      max_capacity: gymClass.max_capacity || 20,
+      schedule: gymClass.schedule || []
+    });
+    setEditingClass(gymClass);
+    setShowCreateForm(true);
+  };
+
+  const handleCancel = () => {
+    setShowCreateForm(false);
+    setEditingClass(null);
+    setFormData({
+      name: '',
+      description: '',
+      instructor: '',
+      duration_minutes: 60,
+      difficulty: 'all_levels',
+      max_capacity: 20,
+      schedule: []
+    });
   };
 
   return (
@@ -82,7 +116,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
 
           {showCreateForm && (
             <Card className="p-4 bg-purple-50 border-2 border-purple-200">
-              <h3 className="font-bold text-gray-900 mb-4">New Class</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{editingClass ? 'Edit Class' : 'New Class'}</h3>
               <div className="space-y-3">
                 <div>
                   <Label>Class Name *</Label>
@@ -201,10 +235,10 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
                     disabled={!formData.name || !formData.instructor || isLoading}
                     className="flex-1 bg-purple-500 hover:bg-purple-600 rounded-2xl"
                   >
-                    {isLoading ? 'Creating...' : 'Create Class'}
+                    {isLoading ? (editingClass ? 'Updating...' : 'Creating...') : (editingClass ? 'Update Class' : 'Create Class')}
                   </Button>
                   <Button
-                    onClick={() => setShowCreateForm(false)}
+                    onClick={handleCancel}
                     variant="outline"
                     className="rounded-2xl"
                   >
@@ -246,14 +280,24 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDeleteClass(gymClass.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(gymClass)}
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDeleteClass(gymClass.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))
