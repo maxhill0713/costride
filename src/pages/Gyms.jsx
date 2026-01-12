@@ -90,56 +90,51 @@ export default function Gyms() {
       </div>
 
       {/* Filters */}
-      <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-4 shadow-md">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="font-bold text-gray-900">Filters</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="rounded-2xl border-2 border-gray-200">
-                <SelectValue placeholder="Gym Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="powerlifting">Powerlifting</SelectItem>
-                <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
-                <SelectItem value="crossfit">CrossFit</SelectItem>
-                <SelectItem value="boxing">Boxing</SelectItem>
-                <SelectItem value="mma">MMA</SelectItem>
-                <SelectItem value="general">General</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-2 shadow-md">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <Filter className="w-4 h-4 text-gray-600" />
+          <Select value={selectedType} onValueChange={setSelectedType}>
+            <SelectTrigger className="h-9 rounded-xl border-2 border-gray-200 text-sm">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="powerlifting">Powerlifting</SelectItem>
+              <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
+              <SelectItem value="crossfit">CrossFit</SelectItem>
+              <SelectItem value="boxing">Boxing</SelectItem>
+              <SelectItem value="mma">MMA</SelectItem>
+              <SelectItem value="general">General</SelectItem>
+            </SelectContent>
+          </Select>
 
-            <Select value={maxDistance} onValueChange={setMaxDistance}>
-              <SelectTrigger className="rounded-2xl border-2 border-gray-200">
-                <SelectValue placeholder="Distance" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any Distance</SelectItem>
-                <SelectItem value="5">Within 5 km</SelectItem>
-                <SelectItem value="10">Within 10 km</SelectItem>
-                <SelectItem value="20">Within 20 km</SelectItem>
-                <SelectItem value="50">Within 50 km</SelectItem>
-              </SelectContent>
-            </Select>
+          <Select value={maxDistance} onValueChange={setMaxDistance}>
+            <SelectTrigger className="h-9 rounded-xl border-2 border-gray-200 text-sm">
+              <SelectValue placeholder="Distance" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any Distance</SelectItem>
+              <SelectItem value="5">Within 5 km</SelectItem>
+              <SelectItem value="10">Within 10 km</SelectItem>
+              <SelectItem value="20">Within 20 km</SelectItem>
+              <SelectItem value="50">Within 50 km</SelectItem>
+            </SelectContent>
+          </Select>
 
-            <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
-              <SelectTrigger className="rounded-2xl border-2 border-gray-200">
-                <SelectValue placeholder="Equipment" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Equipment</SelectItem>
-                <SelectItem value="Power Racks">Power Racks</SelectItem>
-                <SelectItem value="Barbells">Barbells</SelectItem>
-                <SelectItem value="Dumbbells">Dumbbells</SelectItem>
-                <SelectItem value="Cable Machines">Cable Machines</SelectItem>
-                <SelectItem value="Cardio Equipment">Cardio Equipment</SelectItem>
-                <SelectItem value="Olympic Platforms">Olympic Platforms</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
+            <SelectTrigger className="h-9 rounded-xl border-2 border-gray-200 text-sm">
+              <SelectValue placeholder="Equipment" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Equipment</SelectItem>
+              <SelectItem value="Power Racks">Power Racks</SelectItem>
+              <SelectItem value="Barbells">Barbells</SelectItem>
+              <SelectItem value="Dumbbells">Dumbbells</SelectItem>
+              <SelectItem value="Cable Machines">Cable Machines</SelectItem>
+              <SelectItem value="Cardio Equipment">Cardio Equipment</SelectItem>
+              <SelectItem value="Olympic Platforms">Olympic Platforms</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
