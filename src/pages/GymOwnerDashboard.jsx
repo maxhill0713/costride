@@ -506,30 +506,27 @@ export default function GymOwnerDashboard() {
           </Button>
         </div>
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
-            <TabsTrigger value="overview" className="rounded-xl font-semibold">
-              Overview
+        <Tabs defaultValue="snapshot" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
+            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-sm">
+              Snapshot
             </TabsTrigger>
-            <TabsTrigger value="feed" className="rounded-xl font-semibold">
-              Feed
+            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-xs md:text-sm">
+              Engagement
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="rounded-xl font-semibold">
-              Leaderboard
+            <TabsTrigger value="content" className="rounded-xl font-semibold text-xs md:text-sm">
+              Content
             </TabsTrigger>
-            <TabsTrigger value="challenges" className="rounded-xl font-semibold">
-              Challenges
+            <TabsTrigger value="admin" className="rounded-xl font-semibold text-xs md:text-sm">
+              Admin
             </TabsTrigger>
-            <TabsTrigger value="rewards" className="rounded-xl font-semibold">
-              Rewards
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="rounded-xl font-semibold">
-              Profile
+            <TabsTrigger value="insights" className="rounded-xl font-semibold text-xs md:text-sm">
+              Insights
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Key Metrics - No Graphs */}
+          <TabsContent value="snapshot" className="space-y-6">
+            {/* Today/This Week Snapshot */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
                 <p className="text-blue-100 font-semibold mb-2">Check-ins Today</p>
@@ -558,9 +555,429 @@ export default function GymOwnerDashboard() {
                 <p className="text-sm text-orange-100">no check-in 7-10 days</p>
               </Card>
             </div>
+
+            {/* What to Do Next */}
+            <Card className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">💡 What to Do Next</h3>
+              <div className="space-y-3">
+                {atRiskMembers > 0 && (
+                  <div className="p-4 bg-white rounded-2xl border-2 border-orange-200">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">⚠️</span>
+                      <div>
+                        <p className="font-bold text-gray-900">Reach out to at-risk members</p>
+                        <p className="text-sm text-gray-600">{atRiskMembers} members haven't checked in recently</p>
+                        <Button onClick={() => setShowManageMembers(true)} size="sm" className="mt-2">
+                          View Members
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {posts.length < 3 && (
+                  <div className="p-4 bg-white rounded-2xl border-2 border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">📸</span>
+                      <div>
+                        <p className="font-bold text-gray-900">Share gym updates</p>
+                        <p className="text-sm text-gray-600">Keep members engaged with regular posts</p>
+                        <Button onClick={() => setShowCreatePost(true)} size="sm" className="mt-2">
+                          Create Post
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {challenges.filter(c => c.status === 'active').length === 0 && (
+                  <div className="p-4 bg-white rounded-2xl border-2 border-green-200">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🏆</span>
+                      <div>
+                        <p className="font-bold text-gray-900">Create a challenge</p>
+                        <p className="text-sm text-gray-600">Boost engagement with a gym challenge</p>
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                          <Button size="sm" className="mt-2">
+                            Create Challenge
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Activity Log (Last 7 Days) */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Activity Log (Last 7 Days)</h3>
+              <div className="space-y-3">
+                {checkIns
+                  .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
+                  .slice(0, 15)
+                  .map((checkIn, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                          {checkIn.user_name?.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">{checkIn.user_name}</p>
+                          <p className="text-sm text-gray-600">Checked in</p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">{format(new Date(checkIn.check_in_date), 'MMM d, h:mm a')}</span>
+                    </div>
+                  ))}
+                {checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).length === 0 && (
+                  <p className="text-gray-500 text-center py-8">No activity in the last 7 days</p>
+                )}
+              </div>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="feed" className="space-y-6">
+          <TabsContent value="engagement" className="space-y-6">
+            {/* Engagement Overview */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Engagement Overview</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Total Members</p>
+                  <p className="text-3xl font-black text-blue-600">{uniqueMembers}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Active (7 days)</p>
+                  <p className="text-3xl font-black text-green-600">{activeMembersThisWeek}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Total Check-ins</p>
+                  <p className="text-3xl font-black text-purple-600">{last7Days}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">PRs Logged</p>
+                  <p className="text-3xl font-black text-orange-600">{lifts.filter(l => l.is_pr).length}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Weekly Leaderboard */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Weekly Leaderboard</h3>
+              <p className="text-gray-600 mb-4">Top members this week by check-ins</p>
+              <div className="space-y-3">
+                {Object.entries(
+                  checkIns
+                    .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
+                    .reduce((acc, c) => {
+                      acc[c.user_name] = (acc[c.user_name] || 0) + 1;
+                      return acc;
+                    }, {})
+                )
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 10)
+                  .map(([name, count], idx) => {
+                    const medals = ['🥇', '🥈', '🥉'];
+                    return (
+                      <div key={name} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white">
+                            {idx < 3 ? medals[idx] : idx + 1}
+                          </div>
+                          <span className="font-bold text-gray-900">{name}</span>
+                        </div>
+                        <Badge className="text-lg px-3">{count} visits</Badge>
+                      </div>
+                    );
+                  })}
+              </div>
+            </Card>
+
+            {/* Reward Effectiveness */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Reward Effectiveness</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="p-4 bg-purple-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Active Rewards</p>
+                  <p className="text-3xl font-black text-purple-600">{rewards.filter(r => r.active).length}</p>
+                </div>
+                <div className="p-4 bg-pink-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Total Claims</p>
+                  <p className="text-3xl font-black text-pink-600">
+                    {rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0)}
+                  </p>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-2xl">
+                  <p className="text-sm text-gray-600 mb-1">Most Popular</p>
+                  <p className="text-lg font-bold text-orange-600">
+                    {rewards.sort((a, b) => (b.claimed_by?.length || 0) - (a.claimed_by?.length || 0))[0]?.title || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Button onClick={() => setShowManageRewards(true)} variant="outline" className="w-full">
+                  Manage Rewards
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-6">
+            {/* Challenges & Events */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Challenges & Events</h3>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </Link>
+              </div>
+              
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-3">Active Challenges</h4>
+                {challenges.filter(c => c.status === 'active').length > 0 ? (
+                  <div className="space-y-3">
+                    {challenges.filter(c => c.status === 'active').map(challenge => (
+                      <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl border-2 border-orange-200">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h5 className="font-bold text-gray-900">{challenge.title}</h5>
+                            <p className="text-sm text-gray-600">{challenge.description}</p>
+                          </div>
+                          <Badge className="bg-orange-500 text-white">{challenge.type.replace('_', ' ')}</Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                          <span>👥 {challenge.participants?.length || 0} participants</span>
+                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-6">No active challenges</p>
+                )}
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-3">Upcoming Events</h4>
+                {events.length > 0 ? (
+                  <div className="space-y-3">
+                    {events.slice(0, 5).map(event => (
+                      <div key={event.id} className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-900">{event.title}</h5>
+                            <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
+                              <span>📅 {format(new Date(event.event_date), 'PPP')}</span>
+                              <span>👥 {event.attendees || 0} attending</span>
+                            </div>
+                          </div>
+                          {event.image_url && (
+                            <img src={event.image_url} alt={event.title} className="w-20 h-20 rounded-xl object-cover ml-3" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-6">No upcoming events</p>
+                )}
+              </div>
+            </Card>
+
+            {/* Gym Feed Management */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Gym Feed Management</h3>
+                <Button onClick={() => setShowCreatePost(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Post
+                </Button>
+              </div>
+              {posts.length > 0 ? (
+                <div className="space-y-4">
+                  {posts.slice(0, 10).map(post => (
+                    <div key={post.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+                          {post.member_name?.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-900">{post.member_name}</p>
+                          <p className="text-sm text-gray-500">{format(new Date(post.created_date), 'PPp')}</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-900 mb-3">{post.content}</p>
+                      {post.image_url && (
+                        <img src={post.image_url} alt="Post" className="w-full rounded-xl mb-3" />
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span>❤️ {post.likes || 0} likes</span>
+                        <span>💬 {post.comments?.length || 0} comments</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Activity className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 mb-2">No activity yet</p>
+                  <p className="text-sm text-gray-400">Posts from your gym will appear here</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Rewards Management */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Rewards Management</h3>
+                <Button onClick={() => setShowManageRewards(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Reward
+                </Button>
+              </div>
+              
+              {rewards.length > 0 ? (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {rewards.slice(0, 6).map(reward => (
+                    <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">{reward.icon || '🎁'}</div>
+                        <Badge className={reward.active ? 'bg-green-500' : 'bg-gray-400'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
+                      </div>
+                      <h4 className="font-bold text-gray-900 mb-1">{reward.title}</h4>
+                      <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-purple-600 font-bold">{reward.value}</span>
+                        <span className="text-gray-500">{reward.claimed_by?.length || 0} claimed</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Award className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 mb-2">No rewards yet</p>
+                  <p className="text-sm text-gray-400">Create rewards to incentivize member engagement</p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="admin" className="space-y-6">
+            {/* Gym Profile Setup */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Profile Setup</h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Basic Information</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Gym Name</label>
+                      <p className="text-gray-900 font-medium mt-1">{selectedGym?.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Type</label>
+                      <Badge className="capitalize mt-1">{selectedGym?.type}</Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Location</label>
+                      <p className="text-gray-900 mt-1">{selectedGym?.address}, {selectedGym?.city} {selectedGym?.postcode}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Monthly Price</label>
+                      <p className="text-gray-900 font-bold mt-1">£{selectedGym?.price}/month</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Amenities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.amenities?.map((amenity, idx) => (
+                      <Badge key={idx} variant="outline">{amenity}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Equipment</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.equipment?.slice(0, 15).map((item, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-blue-50">{item}</Badge>
+                    ))}
+                    {selectedGym?.equipment?.length > 15 && (
+                      <Badge variant="outline">+{selectedGym.equipment.length - 15} more</Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-gray-700">Photo Gallery</h4>
+                    <Button onClick={() => setShowManagePhotos(true)} variant="outline" size="sm">
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Manage Photos
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedGym?.gallery?.slice(0, 6).map((url, idx) => (
+                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-3">
+                  <Button onClick={() => setShowManageClasses(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Calendar className="w-6 h-6" />
+                    <span className="font-bold">Manage Classes</span>
+                    <span className="text-xs text-gray-500">{classes.length} classes</span>
+                  </Button>
+                  <Button onClick={() => setShowManageCoaches(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Target className="w-6 h-6" />
+                    <span className="font-bold">Manage Coaches</span>
+                    <span className="text-xs text-gray-500">{coaches.length} coaches</span>
+                  </Button>
+                  <Button onClick={() => setShowManageMembers(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Users className="w-6 h-6" />
+                    <span className="font-bold">View Members</span>
+                    <span className="text-xs text-gray-500">{uniqueMembers} members</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Admin Access */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Admin Access</h3>
+              <div className="space-y-3">
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Owner Email</p>
+                  <p className="text-gray-900 font-medium">{selectedGym?.owner_email}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Gym ID</p>
+                  <p className="text-gray-900 font-mono text-sm">{selectedGym?.id}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Verified Status</p>
+                  <Badge className={selectedGym?.verified ? 'bg-green-500' : 'bg-gray-400'}>
+                    {selectedGym?.verified ? 'Verified' : 'Not Verified'}
+                  </Badge>
+                </div>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button variant="outline" className="w-full">
+                    View Public Gym Page
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+
+          <TabsContent value="oldanalytics" className="space-y-6">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Gym Activity Feed</h3>
@@ -603,7 +1020,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
+          <TabsContent value="olddata" className="space-y-6">
             {/* Check-ins Chart */}
             <Card className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Check-ins (Last 7 Days)</h3>
@@ -675,7 +1092,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="leaderboard" className="space-y-6">
+          <TabsContent value="oldleaderboard" className="space-y-6">
             <Card className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Leaderboard</h3>
               <p className="text-gray-600 mb-4">See how your gym ranks against others in the community</p>
@@ -812,7 +1229,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="challenges" className="space-y-6">
+          <TabsContent value="oldchallenges" className="space-y-6">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Challenges & Events</h3>
@@ -880,7 +1297,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="rewards" className="space-y-6">
+          <TabsContent value="oldrewards" className="space-y-6">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Rewards Program</h3>
@@ -917,7 +1334,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="profile" className="space-y-6">
+          <TabsContent value="oldprofile" className="space-y-6">
             <Card className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Profile</h3>
               <div className="space-y-6">
