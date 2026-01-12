@@ -42,6 +42,16 @@ export default function CheckInButton({ gym }) {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       
+      // Epic confetti for every check-in
+      confetti({ 
+        particleCount: 150, 
+        spread: 120, 
+        origin: { y: 0.6 },
+        colors: ['#10b981', '#06b6d4', '#3b82f6']
+      });
+      setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 60, origin: { x: 0 } }), 150);
+      setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 60, origin: { x: 1 } }), 300);
+      
       queryClient.invalidateQueries({ queryKey: ['checkIns'] });
       queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -52,7 +62,15 @@ export default function CheckInButton({ gym }) {
       const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
 
       if (totalVisits === 1) {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        // Epic confetti celebration
+        confetti({ 
+          particleCount: 200, 
+          spread: 160, 
+          origin: { y: 0.6 },
+          colors: ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6']
+        });
+        setTimeout(() => confetti({ particleCount: 100, angle: 60, spread: 55, origin: { x: 0 } }), 200);
+        setTimeout(() => confetti({ particleCount: 100, angle: 120, spread: 55, origin: { x: 1 } }), 400);
         toast.success('🎉 First check-in at ' + gym.name + '!', {
           description: 'Welcome to the community!'
         });
@@ -254,13 +272,20 @@ export default function CheckInButton({ gym }) {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ 
-                scale: [1, 1.2, 1],
-                rotate: [0, 5, -5, 0]
+                scale: [1, 1.3, 1],
+                rotate: [0, 10, -10, 0]
               }}
-              transition={{ duration: 0.6 }}
-              className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-full p-8 shadow-2xl"
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="bg-gradient-to-br from-green-500 via-emerald-500 to-cyan-500 rounded-full p-10 shadow-2xl"
             >
-              <CheckCircle className="w-24 h-24 text-white" strokeWidth={3} />
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 0.5 }}
+              >
+                <CheckCircle className="w-32 h-32 text-white" strokeWidth={3} />
+              </motion.div>
             </motion.div>
           </motion.div>
         )}

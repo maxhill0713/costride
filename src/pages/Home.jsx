@@ -168,13 +168,20 @@ export default function Home() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button 
-                onClick={() => setShowCheckIn(true)}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Check In
-              </Button>
+              {daysSinceCheckIn === 0 ? (
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-4 py-2 shadow-lg animate-pulse">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Checked In ✓
+                </Badge>
+              ) : (
+                <Button 
+                  onClick={() => setShowCheckIn(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Check In
+                </Button>
+              )}
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
                   <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
