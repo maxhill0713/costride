@@ -102,6 +102,15 @@ export default function Gyms() {
                 {showAllGyms ? 'Find Gyms' : userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
               </h1>
             </div>
+            {!showAllGyms && userGyms.length > 0 && (
+              <Button 
+                onClick={() => setShowAllGyms(true)}
+                className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm rounded-2xl font-bold"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Find Other Gyms
+              </Button>
+            )}
           </div>
           {showAllGyms && (
             <Input
@@ -115,10 +124,11 @@ export default function Gyms() {
       </div>
 
       {/* Filters */}
-      <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-2 shadow-md">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Filter className="w-4 h-4 text-gray-600" />
-          <Select value={selectedType} onValueChange={setSelectedType}>
+      {showAllGyms && (
+        <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-2 shadow-md">
+          <div className="max-w-2xl mx-auto flex items-center gap-3">
+            <Filter className="w-4 h-4 text-gray-600" />
+            <Select value={selectedType} onValueChange={setSelectedType}>
             <SelectTrigger className="h-9 rounded-xl border-2 border-gray-200 text-sm">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
@@ -162,6 +172,7 @@ export default function Gyms() {
           </Select>
         </div>
       </div>
+      )}
 
       {/* Gyms List */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
