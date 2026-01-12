@@ -11,6 +11,7 @@ import { createPageUrl } from '../utils';
 
 export default function Home() {
   const navigate = useNavigate();
+  const [showCheckIn, setShowCheckIn] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -149,14 +150,23 @@ export default function Home() {
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
             </div>
-            {currentUser?.account_type === 'gym_owner' && (
-              <Link to={createPageUrl('GymOwnerDashboard')}>
-                <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Admin View
-                </Button>
-              </Link>
-            )}
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowCheckIn(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Check In
+              </Button>
+              {currentUser?.account_type === 'gym_owner' && (
+                <Link to={createPageUrl('GymOwnerDashboard')}>
+                  <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Admin View
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
 
 
@@ -393,6 +403,13 @@ export default function Home() {
             </Card>
           </Link>
         </div>
+
+        {/* Check-in Modal */}
+        <CheckInButton 
+          open={showCheckIn}
+          onClose={() => setShowCheckIn(false)}
+          currentUser={currentUser}
+        />
       </div>
     </div>
   );
