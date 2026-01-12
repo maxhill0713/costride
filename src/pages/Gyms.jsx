@@ -18,11 +18,18 @@ export default function Gyms() {
   const [maxDistance, setMaxDistance] = useState('all');
   const [selectedEquipment, setSelectedEquipment] = useState('all');
   const [editingGym, setEditingGym] = useState(null);
+  const [showAllGyms, setShowAllGyms] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => null)
+  });
+
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser
   });
 
   const { data: gyms = [] } = useQuery({
@@ -38,6 +45,20 @@ export default function Gyms() {
     }
   });
 
+  // Auto-redirect if user has exactly 1 gym
+  React.useEffect(() => {
+    if (gymMemberships.length === 1 && gyms.length > 0 && !showAllGyms) {
+      const userGym = gyms.find(g => g.id === gymMemberships[0].gym_id);
+      if (userGym) {
+        window.location.href = createPageUrl('GymCommunity') + '?id=' + userGym.id;
+      }
+    }
+  }, [gymMemberships, gyms, showAllGyms]);
+
+  const userGyms = gymMemberships.length > 0 
+    ? gyms.filter(g => gymMemberships.some(m => m.gym_id === g.id))
+    : [];
+
   const filteredGyms = gyms.filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -48,6 +69,8 @@ export default function Gyms() {
     
     return matchesSearch && matchesType && matchesDistance && matchesEquipment;
   });
+
+  const gymsToShow = showAllGyms ? filteredGyms : userGyms;
 
   const amenityIcons = {
     'WiFi': Wifi,
@@ -73,19 +96,21 @@ export default function Gyms() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-white" />
+                <Dumbbell className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white">
-                Gym Community
+                {showAllGyms ? 'Find Gyms' : userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
               </h1>
             </div>
           </div>
-          <Input
-            placeholder="Search by name or city..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-14 bg-white/95 backdrop-blur-sm rounded-2xl border-0 shadow-xl text-base"
-          />
+          {showAllGyms && (
+            <Input
+              placeholder="Search by name or city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-14 bg-white/95 backdrop-blur-sm rounded-2xl border-0 shadow-xl text-base"
+            />
+          )}
         </div>
       </div>
 
@@ -140,14 +165,45 @@ export default function Gyms() {
 
       {/* Gyms List */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {filteredGyms.length === 0 ? (
+        {/* Browse All Gyms Button */}
+        {!showAllGyms && userGyms.length > 0 && (
+          <Button 
+            onClick={() => setShowAllGyms(true)}
+            variant="outline"
+            className="w-full border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 rounded-2xl h-12 font-bold"
+          >
+            <MapPin className="w-5 h-5 mr-2" />
+            Browse All Gyms
+          </Button>
+        )}
+        
+        {showAllGyms && userGyms.length > 0 && (
+          <Button 
+            onClick={() => setShowAllGyms(false)}
+            variant="outline"
+            className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50 rounded-2xl h-12 font-bold"
+          >
+            <Dumbbell className="w-5 h-5 mr-2" />
+            Back to My Gyms
+          </Button>
+        )}
+
+        {gymsToShow.length === 0 ? (
           <div className="text-center py-16 bg-slate-100/80 rounded-3xl border-2 border-gray-100">
             <Dumbbell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-bold text-gray-700">No gyms found</p>
-            <p className="text-sm text-gray-500 mt-1">Try adjusting your filters</p>
+            <p className="text-lg font-bold text-gray-700">{showAllGyms ? 'No gyms found' : 'No gym memberships yet'}</p>
+            <p className="text-sm text-gray-500 mt-1">{showAllGyms ? 'Try adjusting your filters' : 'Join a gym to get started!'}</p>
+            {!showAllGyms && (
+              <Button 
+                onClick={() => setShowAllGyms(true)}
+                className="mt-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl"
+              >
+                Browse Gyms
+              </Button>
+            )}
           </div>
         ) : (
-          filteredGyms.map((gym) => {
+          gymsToShow.map((gym) => {
             const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
 
             return (
