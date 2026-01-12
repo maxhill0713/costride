@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target } from 'lucide-react';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
@@ -14,6 +14,21 @@ import { createPageUrl } from '../utils';
 export default function Home() {
   const navigate = useNavigate();
   const [showCheckIn, setShowCheckIn] = useState(false);
+
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  const { data: allGyms = [] } = useQuery({
+    queryKey: ['gyms'],
+    queryFn: () => base44.entities.Gym.list()
+  });
+
+  const memberGym = gymMemberships.length > 0 
+    ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
+    : null;
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -176,6 +191,29 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Streak Status - One Line */}
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-4 shadow-lg">
+          <p className="text-center text-lg font-bold">
+            {userStreak > 0 && daysSinceCheckIn === 0 ? (
+              <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                🔥 {userStreak}-day streak active
+              </span>
+            ) : userStreak > 0 && daysSinceCheckIn === 1 ? (
+              <span className="bg-gradient-to-r from-orange-300 to-red-300 bg-clip-text text-transparent">
+                ⚠️ Check in today to keep your streak
+              </span>
+            ) : currentUser?.streak_freeze_active ? (
+              <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                Streak frozen today ❄️
+              </span>
+            ) : (
+              <span className="bg-gradient-to-r from-slate-300 to-slate-400 bg-clip-text text-transparent">
+                Start your streak today 💪
+              </span>
+            )}
+          </p>
+        </Card>
+
         {/* Progress Tracker */}
         <Card className={`${isOnTrack ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300' : 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300'} p-5 shadow-lg`}>
           <div className="flex items-start gap-4">
@@ -407,11 +445,19 @@ export default function Home() {
         </div>
 
         {/* Check-in Modal */}
-        <CheckInButton 
-          open={showCheckIn}
-          onClose={() => setShowCheckIn(false)}
-          currentUser={currentUser}
-        />
+        {showCheckIn && memberGym && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-black text-gray-900">Quick Check-In</h2>
+                <Button variant="ghost" size="icon" onClick={() => setShowCheckIn(false)}>
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <CheckInButton gym={memberGym} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
