@@ -976,6 +976,11 @@ export default function GymOwnerDashboard() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Coming Soon</h3>
+              <p className="text-gray-600">Advanced insights and analytics will be available here.</p>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="oldanalytics" className="space-y-6">
             <Card className="p-6">
