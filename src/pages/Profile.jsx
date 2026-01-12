@@ -517,6 +517,79 @@ export default function Profile() {
           <TabsContent value="progress" className="space-y-4">
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
+            {/* Weekly Summary */}
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-blue-600/40 p-4 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="font-bold bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent mb-1">Weekly Summary</h3>
+                  <p className="text-sm text-slate-300">
+                    {stats.totalLifts} workouts • {stats.personalRecords} PRs • {stats.weekStreak} day streak
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    const summary = `💪 My Week in Fitness:\n✅ ${stats.totalLifts} workouts completed\n🔥 ${stats.personalRecords} personal records\n⚡ ${stats.weekStreak} day streak\n🏋️ ${stats.totalWeight.toLocaleString()} lbs total lifted`;
+                    navigator.clipboard.writeText(summary);
+                    alert('Weekly summary copied to clipboard!');
+                  }}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+              </div>
+            </Card>
+
+            {/* Gym Memberships */}
+            {memberGyms.length > 0 && (
+              <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
+                <h3 className="font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-4 flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-400" />
+                  Your Gym Memberships
+                </h3>
+                <div className="grid gap-3">
+                  {memberGyms.map((gym) => {
+                    const membership = gymMemberships.find(m => m.gym_id === gym.id);
+                    return (
+                      <div 
+                        key={gym.id} 
+                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-2xl border border-blue-600/30 hover:shadow-lg hover:shadow-blue-500/20 transition-all"
+                      >
+                        {gym.image_url ? (
+                          <img 
+                            src={gym.image_url} 
+                            alt={gym.name}
+                            className="w-16 h-16 rounded-xl object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                            <Dumbbell className="w-8 h-8 text-white" />
+                          </div>
+                        )}
+                        
+                        <div className="flex-1">
+                          <h4 className="font-bold text-slate-100">{gym.name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/50 rounded-full font-medium capitalize">
+                              {gym.type}
+                            </span>
+                            <span className="text-xs text-slate-400">• {gym.city}</span>
+                          </div>
+                          {membership?.membership_type && (
+                            <p className="text-xs text-slate-400 mt-1 capitalize">
+                              {membership.membership_type} membership
+                            </p>
+                          )}
+                        </div>
+                        
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">

@@ -159,29 +159,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-cyan-600/30 p-4 text-center shadow-lg">
-              <Flame className="w-6 h-6 mx-auto mb-2 text-cyan-400" />
-              <div className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userStreak}</div>
-              <div className="text-xs text-cyan-300 font-medium">Day Streak</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-blue-600/30 p-4 text-center shadow-lg">
-              <Users className="w-6 h-6 mx-auto mb-2 text-blue-400" />
-              <div className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{todayCheckIns.length}</div>
-              <div className="text-xs text-blue-300 font-medium">Checked In</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-purple-600/30 p-4 text-center shadow-lg">
-              <Trophy className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
-              <div className="text-2xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{activeChallenges.length}</div>
-              <div className="text-xs text-yellow-300 font-medium">Active</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/95 backdrop-blur-sm border border-teal-600/30 p-4 text-center shadow-lg">
-              <TrendingUp className="w-6 h-6 mx-auto mb-2 text-teal-400" />
-              <div className="text-2xl font-black bg-gradient-to-r from-teal-400 to-green-400 bg-clip-text text-transparent">{goals.length}</div>
-              <div className="text-xs text-teal-300 font-medium">Goals</div>
-            </Card>
-          </div>
+
         </div>
       </div>
 
