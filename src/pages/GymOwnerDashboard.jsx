@@ -521,7 +521,7 @@ export default function GymOwnerDashboard() {
 
           <TabsContent value="overview" className="space-y-6">
             {/* Key Metrics - No Graphs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
                 <p className="text-blue-100 font-semibold mb-2">Check-ins Today</p>
                 <p className="text-6xl font-black mb-1">{todayCheckIns}</p>
@@ -541,6 +541,12 @@ export default function GymOwnerDashboard() {
                   <span className="text-2xl font-bold opacity-80">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
                 </div>
                 <p className="text-sm text-purple-100">vs last week</p>
+              </Card>
+
+              <Card className="p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg">
+                <p className="text-orange-100 font-semibold mb-2">At-Risk Members</p>
+                <p className="text-6xl font-black mb-1">{atRiskMembers}</p>
+                <p className="text-sm text-orange-100">no check-in 7-10 days</p>
               </Card>
             </div>
           </TabsContent>
