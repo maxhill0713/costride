@@ -308,42 +308,7 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Active Challenges */}
-        {activeChallenges.length > 0 && (
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-cyan-400" />
-                Active Challenges
-              </h2>
-              <Link to={createPageUrl('Challenges')}>
-                <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300">
-                  View All
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {activeChallenges.map((challenge) => (
-                <Link key={challenge.id} to={createPageUrl('Challenges')}>
-                  <Card className="p-4 bg-gradient-to-r from-slate-700/80 via-slate-750/80 to-slate-800/80 border border-slate-600/40 hover:shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-cyan-300 mb-1">{challenge.title}</h3>
-                        <div className="flex items-center gap-2 text-sm text-slate-400">
-                          <Badge className="capitalize">{challenge.type.replace('_', ' ')}</Badge>
-                          <span>•</span>
-                          <span>{challenge.participants?.length || 0} participants</span>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-cyan-600" />
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </Card>
-        )}
+
 
         {/* Who Checked In Today */}
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
@@ -435,18 +400,18 @@ export default function Home() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
-          <Link to={createPageUrl('Challenges')}>
+          <Link to={createPageUrl('Gyms')}>
             <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
               <Trophy className="w-10 h-10 mb-3" />
-              <h3 className="font-black text-lg mb-1">Join Challenge</h3>
-              <p className="text-sm text-white/90">Compete with others</p>
+              <h3 className="font-black text-lg mb-1">View Gyms</h3>
+              <p className="text-sm text-white/90">Explore communities</p>
             </Card>
           </Link>
           <Link to={createPageUrl('Gyms')}>
             <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 border-0 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer">
               <Dumbbell className="w-10 h-10 mb-3" />
-              <h3 className="font-black text-lg mb-1">Find Gyms</h3>
-              <p className="text-sm text-white/90">Explore nearby</p>
+              <h3 className="font-black text-lg mb-1">Check In</h3>
+              <p className="text-sm text-white/90">Start your workout</p>
             </Card>
           </Link>
         </div>

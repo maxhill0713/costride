@@ -1,4 +1,3 @@
-import Challenges from './pages/Challenges';
 import Groups from './pages/Groups';
 import GymCommunity from './pages/GymCommunity';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
@@ -20,7 +19,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Challenges": Challenges,
     "Groups": Groups,
     "GymCommunity": GymCommunity,
     "GymOwnerDashboard": GymOwnerDashboard,
@@ -41,7 +39,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Challenges",
+    mainPage: "Groups",
     Pages: PAGES,
     Layout: __Layout,
 };
