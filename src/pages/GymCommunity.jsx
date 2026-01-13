@@ -27,6 +27,7 @@ import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
 import WeeklyEventCard from '../components/feed/WeeklyEventCard';
 import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
+import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -268,7 +269,7 @@ export default function GymCommunity() {
   const showOwnerControls = isGymOwner && !viewAsMember;
   const isMember = !!gymMembership || isGymOwner;
 
-  // System-generated challenges
+  // System-generated challenges with participant counts
   const systemChallenges = [
     {
       id: 'weekend-warrior',
@@ -276,7 +277,8 @@ export default function GymCommunity() {
       description: 'Check in 3 times this weekend (Sat-Sun)',
       type: 'weekend',
       timeframe: 'This Weekend',
-      reward: '+50 points'
+      reward: '+50 points',
+      participants: 23
     },
     {
       id: 'weekly-grind',
@@ -284,7 +286,8 @@ export default function GymCommunity() {
       description: 'Complete 5 workouts this week',
       type: 'weekly',
       timeframe: 'This Week',
-      reward: '+100 points'
+      reward: '+100 points',
+      participants: 47
     },
     {
       id: 'streak-starter',
@@ -292,9 +295,18 @@ export default function GymCommunity() {
       description: 'Build a 3-day streak',
       type: 'streak',
       timeframe: '3 Days',
-      reward: '+75 points'
+      reward: '+75 points',
+      participants: 31
     }
   ];
+
+  // Mock leaderboard data
+  const weeklyLeaders = members.slice(0, 3).map((member, idx) => ({
+    id: member.id,
+    name: member.name || member.nickname || 'Member',
+    progress: ['100%', '95%', '87%'][idx],
+    score: [500, 475, 435][idx]
+  }));
 
   // Get upcoming events (next 7 days)
   const upcomingEvents = events.filter(e => {
@@ -507,6 +519,7 @@ export default function GymCommunity() {
               <SystemChallengeCard
                 key={challenge.id}
                 challenge={challenge}
+                participantCount={challenge.participants}
                 onJoin={(challenge) => {
                   toast.success(`Joined ${challenge.title}!`, {
                     description: 'Track your progress in the Challenges tab'
@@ -515,6 +528,11 @@ export default function GymCommunity() {
               />
             ))}
           </div>
+
+          {/* Mini Leaderboard */}
+          {weeklyLeaders.length > 0 && (
+            <MiniLeaderboard topParticipants={weeklyLeaders} />
+          )}
 
           {/* Posts Feed - Scrollable */}
           {showOwnerControls && (
@@ -547,12 +565,18 @@ export default function GymCommunity() {
               <SystemChallengeCard
                 key={challenge.id}
                 challenge={challenge}
+                participantCount={challenge.participants}
                 onJoin={(challenge) => {
                   toast.success(`Joined ${challenge.title}!`);
                 }}
               />
             ))}
           </div>
+
+          {/* Mini Leaderboard */}
+          {weeklyLeaders.length > 0 && (
+            <MiniLeaderboard topParticipants={weeklyLeaders} />
+          )}
 
           {/* Active Challenges with Progress */}
           {challenges.filter(c => c.status === 'active').length > 0 && (

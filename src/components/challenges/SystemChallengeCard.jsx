@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Zap, Target, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function SystemChallengeCard({ challenge, onJoin, isJoined = false }) {
+export default function SystemChallengeCard({ challenge, onJoin, isJoined = false, participantCount = 0 }) {
   const getChallengeIcon = () => {
     switch(challenge.type) {
       case 'weekend': return Zap;
@@ -68,10 +68,15 @@ export default function SystemChallengeCard({ challenge, onJoin, isJoined = fals
           <div className="flex-1">
             <h3 className="font-black text-gray-900 mb-1 text-lg">{challenge.title}</h3>
             <p className="text-sm text-gray-600 mb-3">{challenge.description}</p>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
               <Badge className={`bg-gradient-to-r ${gradient} text-white text-xs`}>
                 {challenge.reward}
               </Badge>
+              {participantCount > 0 && (
+                <Badge className="bg-white/90 text-gray-700 text-xs font-semibold">
+                  👥 {participantCount} joined
+                </Badge>
+              )}
             </div>
             <Button 
               onClick={() => onJoin && onJoin(challenge)}
