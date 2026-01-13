@@ -906,6 +906,44 @@ export default function GymCommunity() {
 
         {/* Rewards Tab */}
         <TabsContent value="rewards" className="space-y-3 mt-0">
+          {/* Gym Bonuses */}
+          <Card className="bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200 p-5">
+            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Gift className="w-5 h-5 text-cyan-600" />
+              Gym Bonuses
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-start gap-3 p-3 bg-white border-2 border-cyan-200 rounded-xl">
+                <div className="text-2xl">🎟️</div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900">Free First Day Pass</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Try the gym for free on your first visit</p>
+                  <Button 
+                    size="sm" 
+                    className="mt-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-2xl text-xs w-full"
+                  >
+                    Claim Pass
+                  </Button>
+                </div>
+              </div>
+              {gym.reward_offer && (
+                <div className="flex items-start gap-3 p-3 bg-white border-2 border-orange-200 rounded-xl">
+                  <div className="text-2xl">🎁</div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900">{gym.reward_offer}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">Special gym offer</p>
+                    <Button 
+                      size="sm" 
+                      className="mt-2 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-xs w-full"
+                    >
+                      Claim Offer
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
           {/* Monthly Leaderboard Prizes */}
           <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-5">
             <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -928,22 +966,7 @@ export default function GymCommunity() {
             </div>
           </Card>
 
-          {gym.reward_offer && (
-            <Card className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                  <Gift className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-orange-900">{gym.reward_offer}</p>
-                  <p className="text-sm text-orange-700">Special offer for new members!</p>
-                </div>
-              </div>
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-2xl">
-                Claim Offer
-              </Button>
-            </Card>
-          )}
+
 
           {/* Member Rewards */}
           {!isMember ? (
