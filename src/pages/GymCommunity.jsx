@@ -24,6 +24,7 @@ import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
+import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -108,6 +109,15 @@ export default function GymCommunity() {
     queryFn: async () => {
       const allRewards = await base44.entities.Reward.list();
       return allRewards.filter(r => r.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
+  const { data: challenges = [] } = useQuery({
+    queryKey: ['challenges', gymId],
+    queryFn: async () => {
+      const allChallenges = await base44.entities.Challenge.list();
+      return allChallenges.filter(c => c.gym_id === gymId || c.type === 'community');
     },
     enabled: !!gymId
   });
@@ -450,6 +460,15 @@ export default function GymCommunity() {
 
         {/* Challenges Tab */}
         <TabsContent value="challenges" className="space-y-3 mt-0">
+          {/* Active Challenges with Progress */}
+          {challenges.filter(c => c.status === 'active').map((challenge) => (
+            <ChallengeProgressCard 
+              key={challenge.id} 
+              challenge={challenge} 
+              userProgress={Math.random()} 
+            />
+          ))}
+
           {/* Leaderboard Section */}
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">

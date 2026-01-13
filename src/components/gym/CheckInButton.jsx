@@ -61,6 +61,14 @@ export default function CheckInButton({ gym }) {
       const streak = calculateStreak([newCheckIn, ...checkIns], currentUser);
       const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
 
+      // Show streak in toast
+      if (streak > 1) {
+        toast.success(`✅ Checked in! You're on a ${streak}-day streak 🔥`, {
+          description: 'Keep it going! One day at a time.',
+          duration: 4000
+        });
+      }
+
       if (totalVisits === 1) {
         // Epic confetti celebration
         confetti({ 
@@ -270,22 +278,44 @@ export default function CheckInButton({ gym }) {
             className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
           >
             <motion.div
-              initial={{ scale: 0 }}
+              initial={{ scale: 0, y: 50 }}
               animate={{ 
-                scale: [1, 1.3, 1],
-                rotate: [0, 10, -10, 0]
+                scale: [0, 1.2, 1],
+                y: [50, 0, 0],
+                rotate: [0, 5, -5, 0]
               }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              className="bg-gradient-to-br from-green-500 via-emerald-500 to-cyan-500 rounded-full p-10 shadow-2xl"
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="bg-gradient-to-br from-green-500 via-emerald-500 to-cyan-500 rounded-3xl p-8 shadow-2xl"
             >
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 0.5 }}
-              >
-                <CheckCircle className="w-32 h-32 text-white" strokeWidth={3} />
-              </motion.div>
+              <div className="flex flex-col items-center gap-3">
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 0.5 }}
+                >
+                  <CheckCircle className="w-24 h-24 text-white" strokeWidth={3} />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-center"
+                >
+                  <p className="text-white text-2xl font-black">Checked In!</p>
+                  {currentStreak > 0 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                      className="flex items-center justify-center gap-2 mt-2 bg-white/20 rounded-full px-4 py-1"
+                    >
+                      <Flame className="w-5 h-5 text-orange-300" />
+                      <span className="text-white text-lg font-bold">{currentStreak + 1} Day Streak</span>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         )}
