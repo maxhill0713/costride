@@ -510,30 +510,6 @@ export default function GymCommunity() {
             </div>
           )}
 
-          {/* System Challenges */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-gray-900">⚡ Quick Challenges</h2>
-            </div>
-            {systemChallenges.map((challenge) => (
-              <SystemChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                participantCount={challenge.participants}
-                onJoin={(challenge) => {
-                  toast.success(`Joined ${challenge.title}!`, {
-                    description: 'Track your progress in the Challenges tab'
-                  });
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Mini Leaderboard */}
-          {weeklyLeaders.length > 0 && (
-            <MiniLeaderboard topParticipants={weeklyLeaders} />
-          )}
-
           {/* Posts Feed - Scrollable */}
           {showOwnerControls && (
             <CreateGymPostButton
