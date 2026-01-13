@@ -270,7 +270,7 @@ export default function GymCommunity() {
       description: 'Check in 3 times this weekend (Sat-Sun)',
       type: 'weekend',
       timeframe: 'This Weekend',
-      reward: '+50 points',
+      reward: 'Free protein shake',
       participants: 23
     },
     {
@@ -279,7 +279,7 @@ export default function GymCommunity() {
       description: 'Complete 5 workouts this week',
       type: 'weekly',
       timeframe: 'This Week',
-      reward: '+100 points',
+      reward: '£5 off next month',
       participants: 47
     },
     {
@@ -288,7 +288,7 @@ export default function GymCommunity() {
       description: 'Build a 3-day streak',
       type: 'streak',
       timeframe: '3 Days',
-      reward: '+75 points',
+      reward: 'Free gym merchandise',
       participants: 31
     }
   ];
