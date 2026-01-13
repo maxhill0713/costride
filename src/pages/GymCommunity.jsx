@@ -368,7 +368,7 @@ export default function GymCommunity() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Header Section - 15% of screen */}
       <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-6 py-8 relative">
         {isGymOwner && (
@@ -415,11 +415,11 @@ export default function GymCommunity() {
       <Tabs defaultValue="feed" className="w-full" onValueChange={(value) => {
         // Optional: Add analytics tracking here
       }}>
-        <div className="sticky top-0 z-20 bg-white border-b-2 border-gray-100 shadow-sm">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-800/50 shadow-lg">
           <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-12">
             <TabsTrigger 
               value="feed" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 rounded-none h-full text-gray-500"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 rounded-none h-full text-slate-400"
             >
               <div className="flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4" />
@@ -428,7 +428,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-purple-500 data-[state=active]:text-purple-600 rounded-none h-full text-gray-500"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-purple-400 data-[state=active]:text-purple-400 rounded-none h-full text-slate-400"
             >
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" />
@@ -437,7 +437,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="events" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 rounded-none h-full text-gray-500"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-orange-400 data-[state=active]:text-orange-400 rounded-none h-full text-slate-400"
             >
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -446,7 +446,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="rewards" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-pink-500 data-[state=active]:text-pink-600 rounded-none h-full text-gray-500"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-pink-400 data-[state=active]:text-pink-400 rounded-none h-full text-slate-400"
             >
               <div className="flex items-center gap-1.5">
                 <Gift className="w-4 h-4" />
@@ -520,10 +520,10 @@ export default function GymCommunity() {
           )}
           
           {posts.length === 0 ? (
-            <Card className="p-8 text-center bg-white border-2 border-dashed border-gray-200">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-900 font-semibold mb-1">No community posts yet</p>
-              <p className="text-sm text-gray-500">Be the first to share your workout! 💪</p>
+            <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
+              <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
+              <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
             </Card>
           ) : (
             posts.slice(0, 10).map((post) => (
@@ -569,9 +569,9 @@ export default function GymCommunity() {
           )}
 
           {/* Leaderboard Section */}
-          <Card className="bg-white p-5">
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-600/40 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Community Leaderboard</h3>
+              <h3 className="text-lg font-bold text-slate-100">Community Leaderboard</h3>
             </div>
 
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
@@ -607,21 +607,21 @@ export default function GymCommunity() {
             {leaderboardView === 'checkins' && (
               checkInLeaderboard.length === 0 ? (
                 <div className="p-8 text-center">
-                  <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-gray-500 text-sm">No check-ins this week yet</p>
+                  <CheckCircle className="w-12 h-12 mx-auto mb-2 text-slate-600" />
+                  <p className="text-slate-400 text-sm">No check-ins this week yet</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {checkInLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
                         idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-blue-500'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-sm">{member.userName}</p>
-                        <p className="text-xs text-gray-600">{member.count} check-ins this week</p>
+                        <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
+                        <p className="text-xs text-slate-400">{member.count} check-ins this week</p>
                       </div>
                       <CheckCircle className="w-5 h-5 text-green-500" />
                     </div>
@@ -633,21 +633,21 @@ export default function GymCommunity() {
             {leaderboardView === 'challenges' && (
               challengeLeaderboard.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-gray-500 text-sm">No challenges completed yet</p>
+                  <Trophy className="w-12 h-12 mx-auto mb-2 text-slate-600" />
+                  <p className="text-slate-400 text-sm">No challenges completed yet</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {challengeLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
                         idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-purple-500'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-sm">{member.userName}</p>
-                        <p className="text-xs text-gray-600">{member.count} challenges completed</p>
+                        <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
+                        <p className="text-xs text-slate-400">{member.count} challenges completed</p>
                       </div>
                       <Trophy className="w-5 h-5 text-purple-500" />
                     </div>
@@ -659,21 +659,21 @@ export default function GymCommunity() {
             {leaderboardView === 'streaks' && (
               streakLeaderboard.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Flame className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-gray-500 text-sm">No streaks yet</p>
+                  <Flame className="w-12 h-12 mx-auto mb-2 text-slate-600" />
+                  <p className="text-slate-400 text-sm">No streaks yet</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {streakLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
                         idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-red-500'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-sm">{member.userName}</p>
-                        <p className="text-xs text-gray-600">{member.streak} day streak</p>
+                        <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
+                        <p className="text-xs text-slate-400">{member.streak} day streak</p>
                       </div>
                       <Flame className="w-5 h-5 text-orange-500" />
                     </div>
