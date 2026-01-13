@@ -882,8 +882,9 @@ export default function GymCommunity() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
 
-        <CreateEventModal
+      <CreateEventModal
           open={showCreateEvent}
           onClose={() => setShowCreateEvent(false)}
           onSave={(data) => createEventMutation.mutate(data)}
@@ -973,7 +974,6 @@ export default function GymCommunity() {
           gym={gym}
           currentUser={currentUser}
         />
-      </div>
     </div>
   );
 }
