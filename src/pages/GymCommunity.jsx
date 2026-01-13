@@ -25,6 +25,8 @@ import ManageMembersModal from '../components/gym/ManageMembersModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
+import WeeklyEventCard from '../components/feed/WeeklyEventCard';
+import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -266,6 +268,42 @@ export default function GymCommunity() {
   const showOwnerControls = isGymOwner && !viewAsMember;
   const isMember = !!gymMembership || isGymOwner;
 
+  // System-generated challenges
+  const systemChallenges = [
+    {
+      id: 'weekend-warrior',
+      title: '🔥 Weekend Warrior',
+      description: 'Check in 3 times this weekend (Sat-Sun)',
+      type: 'weekend',
+      timeframe: 'This Weekend',
+      reward: '+50 points'
+    },
+    {
+      id: 'weekly-grind',
+      title: '💪 Weekly Grind',
+      description: 'Complete 5 workouts this week',
+      type: 'weekly',
+      timeframe: 'This Week',
+      reward: '+100 points'
+    },
+    {
+      id: 'streak-starter',
+      title: '⚡ Streak Starter',
+      description: 'Build a 3-day streak',
+      type: 'streak',
+      timeframe: '3 Days',
+      reward: '+75 points'
+    }
+  ];
+
+  // Get upcoming events (next 7 days)
+  const upcomingEvents = events.filter(e => {
+    const eventDate = new Date(e.event_date);
+    const today = new Date();
+    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return eventDate >= today && eventDate <= weekFromNow;
+  }).slice(0, 2);
+
   // Filter lifts by exercise
   const filteredLifts = selectedExercise === 'all' 
     ? lifts 
@@ -357,7 +395,9 @@ export default function GymCommunity() {
       </div>
 
       {/* Horizontal Tab Menu - 10% of screen */}
-      <Tabs defaultValue="feed" className="w-full">
+      <Tabs defaultValue="feed" className="w-full" onValueChange={(value) => {
+        // Optional: Add analytics tracking here
+      }}>
         <div className="sticky top-0 z-20 bg-white border-b-2 border-gray-100 shadow-sm">
           <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-12">
             <TabsTrigger 
@@ -439,6 +479,43 @@ export default function GymCommunity() {
           {/* Check-in Section */}
           <CheckInButton gym={gym} />
 
+          {/* Upcoming Events This Week */}
+          {upcomingEvents.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-gray-900">📅 This Week</h2>
+              </div>
+              {upcomingEvents.map((event) => (
+                <WeeklyEventCard
+                  key={event.id}
+                  event={event}
+                  onRSVP={(eventId) => {
+                    const event = events.find(e => e.id === eventId);
+                    rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* System Challenges */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-gray-900">⚡ Quick Challenges</h2>
+            </div>
+            {systemChallenges.map((challenge) => (
+              <SystemChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                onJoin={(challenge) => {
+                  toast.success(`Joined ${challenge.title}!`, {
+                    description: 'Track your progress in the Challenges tab'
+                  });
+                }}
+              />
+            ))}
+          </div>
+
           {/* Posts Feed - Scrollable */}
           {showOwnerControls && (
             <CreateGymPostButton
@@ -463,14 +540,33 @@ export default function GymCommunity() {
 
         {/* Challenges Tab */}
         <TabsContent value="challenges" className="space-y-3 mt-0">
+          {/* System Challenges */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-bold text-gray-900">⚡ Quick Wins</h2>
+            {systemChallenges.map((challenge) => (
+              <SystemChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                onJoin={(challenge) => {
+                  toast.success(`Joined ${challenge.title}!`);
+                }}
+              />
+            ))}
+          </div>
+
           {/* Active Challenges with Progress */}
-          {challenges.filter(c => c.status === 'active').map((challenge) => (
-            <ChallengeProgressCard 
-              key={challenge.id} 
-              challenge={challenge} 
-              userProgress={Math.random()} 
-            />
-          ))}
+          {challenges.filter(c => c.status === 'active').length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-gray-900">🏆 Active Challenges</h2>
+              {challenges.filter(c => c.status === 'active').map((challenge) => (
+                <ChallengeProgressCard 
+                  key={challenge.id} 
+                  challenge={challenge} 
+                  userProgress={Math.random()} 
+                />
+              ))}
+            </div>
+          )}
 
           {/* Leaderboard Section */}
           <Card className="bg-white p-5">
