@@ -461,93 +461,64 @@ export default function GymCommunity() {
 
         {/* Feed Tab */}
         <TabsContent value="feed" className="space-y-3 mt-0">
-          {/* Mini Leaderboard Widget - Weekly Check-ins */}
-          {checkInLeaderboard.length > 0 && (
-            <>
-              {/* User's Position Banner */}
-              {currentUser && (() => {
-                const userPosition = checkInLeaderboard.findIndex(m => m.userId === currentUser.id);
-                if (userPosition >= 0) {
-                  const userCheckIns = checkInLeaderboard[userPosition].count;
-                  const leaderCheckIns = checkInLeaderboard[0]?.count || 0;
-                  const secondPlaceCheckIns = checkInLeaderboard[1]?.count || 0;
-                  const diff = leaderCheckIns - userCheckIns;
-                  
-                  // Show banner if user is in top 5 and not in 1st place
-                  if (userPosition > 0 && userPosition < 5) {
-                    return (
-                      <Card className="bg-gradient-to-r from-orange-500 to-pink-500 p-4 shadow-lg border-2 border-white/30">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                            👀
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-black text-white text-sm">
-                              You're #{userPosition + 1} this week
-                            </p>
-                            <p className="text-white/90 text-xs">
-                              {diff === 1 
-                                ? 'One more visit to take the lead 🔥' 
-                                : `${diff} more visits to reach #1`}
-                            </p>
-                          </div>
-                          <Flame className="w-6 h-6 text-white animate-pulse" />
-                        </div>
-                      </Card>
-                    );
-                  } else if (userPosition === 0) {
-                    // User is in 1st place
-                    const lead = userCheckIns - secondPlaceCheckIns;
-                    return (
-                      <Card className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 shadow-lg border-2 border-white/30">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                            👑
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-black text-white text-sm">
-                              You're #1 this week!
-                            </p>
-                            <p className="text-white/90 text-xs">
-                              {lead > 0 
-                                ? `Leading by ${lead} check-in${lead > 1 ? 's' : ''} 🔥` 
-                                : 'Stay consistent to keep the lead!'}
-                            </p>
-                          </div>
-                          <Trophy className="w-6 h-6 text-white" />
-                        </div>
-                      </Card>
-                    );
-                  }
-                }
-                return null;
-              })()}
+          {/* User's Position Banner */}
+          {currentUser && checkInLeaderboard.length > 0 && (() => {
+            const userPosition = checkInLeaderboard.findIndex(m => m.userId === currentUser.id);
+            if (userPosition >= 0) {
+              const userCheckIns = checkInLeaderboard[userPosition].count;
+              const leaderCheckIns = checkInLeaderboard[0]?.count || 0;
+              const secondPlaceCheckIns = checkInLeaderboard[1]?.count || 0;
+              const diff = leaderCheckIns - userCheckIns;
               
-              <Card className="bg-gradient-to-r from-purple-500 to-blue-500 p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-white" />
-                    <h3 className="font-bold text-white text-sm">This Week's Top Attendees</h3>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  {checkInLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-2 bg-white/20 backdrop-blur p-2 rounded-lg">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-white text-xs ${
-                        idx === 0 ? 'bg-yellow-400' : idx === 1 ? 'bg-gray-300' : 'bg-orange-400'
-                      }`}>
-                        {idx + 1}
+              // Show banner if user is in top 5 and not in 1st place
+              if (userPosition > 0 && userPosition < 5) {
+                return (
+                  <Card className="bg-gradient-to-r from-orange-500 to-pink-500 p-4 shadow-lg border-2 border-white/30">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                        👀
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-xs text-white">{member.userName}</p>
-                        <p className="text-[10px] text-white/80">{member.count} check-ins this week</p>
+                        <p className="font-black text-white text-sm">
+                          You're #{userPosition + 1} this week
+                        </p>
+                        <p className="text-white/90 text-xs">
+                          {diff === 1 
+                            ? 'One more visit to take the lead 🔥' 
+                            : `${diff} more visits to reach #1`}
+                        </p>
                       </div>
+                      <Flame className="w-6 h-6 text-white animate-pulse" />
                     </div>
-                  ))}
-                </div>
-              </Card>
-            </>
-          )}
+                  </Card>
+                );
+              } else if (userPosition === 0) {
+                // User is in 1st place
+                const lead = userCheckIns - secondPlaceCheckIns;
+                return (
+                  <Card className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 shadow-lg border-2 border-white/30">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                        👑
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-black text-white text-sm">
+                          You're #1 this week!
+                        </p>
+                        <p className="text-white/90 text-xs">
+                          {lead > 0 
+                            ? `Leading by ${lead} check-in${lead > 1 ? 's' : ''} 🔥` 
+                            : 'Stay consistent to keep the lead!'}
+                        </p>
+                      </div>
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                  </Card>
+                );
+              }
+            }
+            return null;
+          })()}
 
           {/* Check-in Section */}
           <CheckInButton gym={gym} />
