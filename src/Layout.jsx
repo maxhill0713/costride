@@ -43,7 +43,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-        <div className="flex justify-around items-center h-16 px-0">
+        <div className="flex justify-around items-center h-20 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -52,22 +52,22 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 transition-all duration-200 min-w-0 flex-1
-                  ${isActive ? 'text-white' : 'text-slate-400'}
+                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 rounded-2xl active:scale-95
+                  ${isActive ? 'text-white bg-slate-800/60' : 'text-slate-400'}
                 `}
               >
                 {isActive && (
-                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-6 h-1 ${item.color.replace('text-', 'bg-')} rounded-full`} />
+                  <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-8 h-1 ${item.color.replace('text-', 'bg-')} rounded-full`} />
                 )}
                 <div className="relative">
-                  <item.icon className={`w-5 h-5 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900">
                       {item.badge > 9 ? '9+' : item.badge}
                     </div>
                   )}
                 </div>
-                <span className={`text-[9px] font-semibold leading-none mt-0.5 ${isActive ? item.color : ''}`}>{item.name}</span>
+                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
               </Link>
             );
           })}
@@ -114,7 +114,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Main Content */}
-      <main className="md:pb-0 md:pl-20" style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
+      <main className="md:pb-0 md:pl-20" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
         {children}
       </main>
     </div>
