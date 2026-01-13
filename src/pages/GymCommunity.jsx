@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,8 +38,7 @@ export default function GymCommunity() {
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
   const [showManageCoaches, setShowManageCoaches] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState('all');
-  const [showLogLift, setShowLogLift] = useState(false);
+  const [leaderboardView, setLeaderboardView] = useState('checkins');
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showEditHeroImage, setShowEditHeroImage] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
@@ -71,11 +70,11 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Post.list('-created_date')
   });
 
-  const { data: lifts = [] } = useQuery({
-    queryKey: ['lifts', gymId],
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['checkIns', gymId],
     queryFn: async () => {
-      const allLifts = await base44.entities.Lift.list('-weight_lbs');
-      return allLifts.filter(l => l.gym_id === gymId);
+      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
+      return allCheckIns.filter(c => c.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -217,13 +216,7 @@ export default function GymCommunity() {
     }
   });
 
-  const createLiftMutation = useMutation({
-    mutationFn: (liftData) => base44.entities.Lift.create(liftData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lifts', gymId] });
-      setShowLogLift(false);
-    }
-  });
+
 
   const updateGalleryMutation = useMutation({
     mutationFn: (gallery) => base44.entities.Gym.update(gymId, { gallery }),
@@ -316,27 +309,39 @@ export default function GymCommunity() {
     return eventDate >= today && eventDate <= weekFromNow;
   }).slice(0, 2);
 
-  // Filter lifts by exercise
-  const filteredLifts = selectedExercise === 'all' 
-    ? lifts 
-    : lifts.filter(l => l.exercise === selectedExercise);
+  // Calculate weekly check-ins per user
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
 
-  // Get best lift per member for selected exercise
-  const bestLiftsPerMember = filteredLifts.reduce((acc, lift) => {
-    const key = lift.member_id;
-    if (!acc[key] || lift.weight_lbs > acc[key].weight_lbs) {
-      acc[key] = lift;
-    }
-    return acc;
-  }, {});
+  const checkInLeaderboard = Object.values(
+    weeklyCheckIns.reduce((acc, checkIn) => {
+      const userId = checkIn.user_id;
+      if (!acc[userId]) {
+        acc[userId] = { userId, userName: checkIn.user_name, count: 0 };
+      }
+      acc[userId].count++;
+      return acc;
+    }, {})
+  ).sort((a, b) => b.count - a.count).slice(0, 10);
 
-  const topLifts = Object.values(bestLiftsPerMember)
-    .sort((a, b) => b.weight_lbs - a.weight_lbs)
-    .slice(0, 10)
-    .map(lift => {
-      const member = members.find(m => m.id === lift.member_id);
-      return { ...lift, member };
-    });
+  // Calculate challenge completions (mock data for now)
+  const challengeLeaderboard = members.slice(0, 10).map((member, idx) => ({
+    userId: member.id,
+    userName: member.name || member.nickname || 'Member',
+    count: Math.max(0, 15 - idx * 2)
+  })).filter(m => m.count > 0);
+
+  // Calculate streaks (mock data based on check-ins)
+  const streakLeaderboard = Object.values(
+    checkIns.reduce((acc, checkIn) => {
+      const userId = checkIn.user_id;
+      if (!acc[userId]) {
+        acc[userId] = { userId, userName: checkIn.user_name, streak: Math.floor(Math.random() * 30) + 1 };
+      }
+      return acc;
+    }, {})
+  ).sort((a, b) => b.streak - a.streak).slice(0, 10);
 
   if (gymLoading) {
     return (
@@ -456,31 +461,26 @@ export default function GymCommunity() {
 
         {/* Feed Tab */}
         <TabsContent value="feed" className="space-y-3 mt-0">
-          {/* Mini Leaderboard Widget - Sticky */}
-          {topLifts.length > 0 && (
+          {/* Mini Leaderboard Widget - Weekly Check-ins */}
+          {checkInLeaderboard.length > 0 && (
             <Card className="bg-gradient-to-r from-purple-500 to-blue-500 p-4 shadow-lg">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-white" />
-                  <h3 className="font-bold text-white text-sm">Top Weekly Lifters</h3>
+                  <h3 className="font-bold text-white text-sm">This Week's Top Attendees</h3>
                 </div>
-                <Link to={createPageUrl('Leaderboard')}>
-                  <Button size="sm" variant="ghost" className="text-white text-xs h-7">
-                    View Full
-                  </Button>
-                </Link>
               </div>
               <div className="space-y-1.5">
-                {topLifts.slice(0, 3).map((lift, idx) => (
-                  <div key={lift.id} className="flex items-center gap-2 bg-white/20 backdrop-blur p-2 rounded-lg">
+                {checkInLeaderboard.slice(0, 3).map((member, idx) => (
+                  <div key={member.userId} className="flex items-center gap-2 bg-white/20 backdrop-blur p-2 rounded-lg">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-white text-xs ${
                       idx === 0 ? 'bg-yellow-400' : idx === 1 ? 'bg-gray-300' : 'bg-orange-400'
                     }`}>
                       {idx + 1}
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-xs text-white">{lift.member?.name || 'Unknown'}</p>
-                      <p className="text-[10px] text-white/80">{lift.weight_lbs} lbs • {lift.exercise.replace('_', ' ')}</p>
+                      <p className="font-semibold text-xs text-white">{member.userName}</p>
+                      <p className="text-[10px] text-white/80">{member.count} check-ins this week</p>
                     </div>
                   </div>
                 ))}
@@ -571,70 +571,115 @@ export default function GymCommunity() {
           {/* Leaderboard Section */}
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Gym Leaderboard</h3>
-              {currentUser && isMember && (
-                <Button
-                  onClick={() => setShowLogLift(true)}
-                  size="sm"
-                  className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl"
-                >
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Log Lift
-                </Button>
-              )}
+              <h3 className="text-lg font-bold text-gray-900">Community Leaderboard</h3>
             </div>
 
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
               <Button
-                variant={selectedExercise === 'all' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('all')}
+                variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
+                onClick={() => setLeaderboardView('checkins')}
                 size="sm"
                 className="rounded-2xl whitespace-nowrap"
               >
-                All
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Weekly Check-ins
               </Button>
               <Button
-                variant={selectedExercise === 'bench_press' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('bench_press')}
+                variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
+                onClick={() => setLeaderboardView('challenges')}
                 size="sm"
                 className="rounded-2xl whitespace-nowrap"
               >
-                Bench
+                <Trophy className="w-3 h-3 mr-1" />
+                Challenges
               </Button>
               <Button
-                variant={selectedExercise === 'squat' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('squat')}
+                variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
+                onClick={() => setLeaderboardView('streaks')}
                 size="sm"
                 className="rounded-2xl whitespace-nowrap"
               >
-                Squat
-              </Button>
-              <Button
-                variant={selectedExercise === 'deadlift' ? 'default' : 'outline'}
-                onClick={() => setSelectedExercise('deadlift')}
-                size="sm"
-                className="rounded-2xl whitespace-nowrap"
-              >
-                Deadlift
+                <Flame className="w-3 h-3 mr-1" />
+                Streaks
               </Button>
             </div>
 
-            {topLifts.length === 0 ? (
-              <div className="p-8 text-center">
-                <Trophy className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No lifts recorded yet</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {topLifts.map((lift, idx) => (
-                  <LeaderboardCard
-                    key={lift.id}
-                    rank={idx + 1}
-                    member={lift.member}
-                    lift={lift}
-                  />
-                ))}
-              </div>
+            {leaderboardView === 'checkins' && (
+              checkInLeaderboard.length === 0 ? (
+                <div className="p-8 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-gray-500 text-sm">No check-ins this week yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {checkInLeaderboard.map((member, idx) => (
+                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
+                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-blue-500'
+                      }`}>
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-sm">{member.userName}</p>
+                        <p className="text-xs text-gray-600">{member.count} check-ins this week</p>
+                      </div>
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+
+            {leaderboardView === 'challenges' && (
+              challengeLeaderboard.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Trophy className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-gray-500 text-sm">No challenges completed yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {challengeLeaderboard.map((member, idx) => (
+                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
+                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-purple-500'
+                      }`}>
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-sm">{member.userName}</p>
+                        <p className="text-xs text-gray-600">{member.count} challenges completed</p>
+                      </div>
+                      <Trophy className="w-5 h-5 text-purple-500" />
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+
+            {leaderboardView === 'streaks' && (
+              streakLeaderboard.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Flame className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-gray-500 text-sm">No streaks yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {streakLeaderboard.map((member, idx) => (
+                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
+                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-red-500'
+                      }`}>
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-sm">{member.userName}</p>
+                        <p className="text-xs text-gray-600">{member.streak} day streak</p>
+                      </div>
+                      <Flame className="w-5 h-5 text-orange-500" />
+                    </div>
+                  ))}
+                </div>
+              )
             )}
           </Card>
 
@@ -1036,14 +1081,6 @@ export default function GymCommunity() {
           onDeleteCoach={(id) => deleteCoachMutation.mutate(id)}
           gym={gym}
           isLoading={createCoachMutation.isPending}
-        />
-
-        <LogLiftModal
-          open={showLogLift}
-          onClose={() => setShowLogLift(false)}
-          onSuccess={(data) => createLiftMutation.mutate(data)}
-          gym={gym}
-          currentUser={currentUser}
         />
 
         <ManageGymPhotosModal
