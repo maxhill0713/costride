@@ -253,9 +253,11 @@ export default function CheckInButton({ gym }) {
 
   const hasCheckedInToday = () => {
     if (!checkIns.length) return false;
-    const today = startOfDay(new Date());
-    const lastCheckIn = startOfDay(parseISO(checkIns[0].check_in_date));
-    return differenceInDays(today, lastCheckIn) === 0;
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lastCheckInDate = new Date(checkIns[0].check_in_date);
+    const lastCheckInMidnight = new Date(lastCheckInDate.getFullYear(), lastCheckInDate.getMonth(), lastCheckInDate.getDate());
+    return todayMidnight.getTime() === lastCheckInMidnight.getTime();
   };
 
   const getLastCheckInDays = () => {
