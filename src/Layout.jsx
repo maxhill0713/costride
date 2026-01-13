@@ -26,6 +26,14 @@ export default function Layout({ children, currentPageName }) {
 
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  const primaryGymId = gymMemberships.length > 0 ? gymMemberships[0].gym_id : null;
+
   const navItems = isGymOwner ? [
     { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-yellow-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
@@ -34,6 +42,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
   ] : [
     { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
+    { name: 'Community', icon: Users, page: 'GymCommunity', params: primaryGymId ? `?id=${primaryGymId}` : '', color: 'text-cyan-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
@@ -49,7 +58,7 @@ export default function Layout({ children, currentPageName }) {
             return (
               <Link
                 key={item.page}
-                to={createPageUrl(item.page)}
+                to={createPageUrl(item.page) + (item.params || '')}
                 aria-label={item.name}
                 className={`
                   relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 rounded-2xl active:scale-95
@@ -88,7 +97,7 @@ export default function Layout({ children, currentPageName }) {
             return (
               <Link
                 key={item.page}
-                to={createPageUrl(item.page)}
+                to={createPageUrl(item.page) + (item.params || '')}
                 className={`
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive 
