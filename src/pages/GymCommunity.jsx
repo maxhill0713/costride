@@ -436,6 +436,9 @@ export default function GymCommunity() {
             </Card>
           )}
 
+          {/* Check-in Section */}
+          <CheckInButton gym={gym} />
+
           {/* Posts Feed - Scrollable */}
           {showOwnerControls && (
             <CreateGymPostButton
