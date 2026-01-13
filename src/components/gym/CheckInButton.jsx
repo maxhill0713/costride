@@ -55,11 +55,31 @@ export default function CheckInButton({ gym }) {
       queryClient.invalidateQueries({ queryKey: ['checkIns'] });
       queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
       
       // Check for milestones
       const totalVisits = checkIns.length + 1;
       const streak = calculateStreak([newCheckIn, ...checkIns], currentUser);
       const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
+
+      // Auto-update streak goals
+      try {
+        const userGoals = await base44.entities.Goal.filter({ 
+          user_id: currentUser.id,
+          status: 'active',
+          goal_type: 'consistency'
+        });
+        
+        for (const goal of userGoals) {
+          if (streak > goal.current_value) {
+            await base44.entities.Goal.update(goal.id, {
+              current_value: streak
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error updating streak goals:', error);
+      }
 
       // Show streak in toast
       if (streak > 1) {
