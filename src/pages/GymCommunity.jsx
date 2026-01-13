@@ -881,8 +881,8 @@ export default function GymCommunity() {
             </Card>
           )}
         </TabsContent>
-      </Tabs>
       </div>
+      </Tabs>
 
       <CreateEventModal
           open={showCreateEvent}
