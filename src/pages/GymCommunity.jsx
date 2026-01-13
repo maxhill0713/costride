@@ -638,28 +638,6 @@ export default function GymCommunity() {
             )}
           </Card>
 
-          {/* Leaderboard Rewards */}
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-5">
-            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-purple-600" />
-              Monthly Prizes
-            </h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
-                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white text-sm">1</div>
-                <p className="text-sm font-medium text-gray-900">Free month + £50 voucher</p>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-gray-300 rounded-xl">
-                <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center font-black text-white text-sm">2</div>
-                <p className="text-sm font-medium text-gray-900">50% off + £25 voucher</p>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-orange-50 border-2 border-orange-300 rounded-xl">
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-sm">3</div>
-                <p className="text-sm font-medium text-gray-900">25% off + £10 voucher</p>
-              </div>
-            </div>
-          </Card>
-
           {/* Gym vs Gym Challenges */}
           <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 p-5">
             <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -838,6 +816,28 @@ export default function GymCommunity() {
 
         {/* Rewards Tab */}
         <TabsContent value="rewards" className="space-y-3 mt-0">
+          {/* Monthly Leaderboard Prizes */}
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-5">
+            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-purple-600" />
+              Monthly Leaderboard Prizes
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white text-sm">1</div>
+                <p className="text-sm font-medium text-gray-900">Free month + £50 voucher</p>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-gray-300 rounded-xl">
+                <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center font-black text-white text-sm">2</div>
+                <p className="text-sm font-medium text-gray-900">50% off + £25 voucher</p>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-orange-50 border-2 border-orange-300 rounded-xl">
+                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-sm">3</div>
+                <p className="text-sm font-medium text-gray-900">25% off + £10 voucher</p>
+              </div>
+            </div>
+          </Card>
+
           {gym.reward_offer && (
             <Card className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 p-5">
               <div className="flex items-center gap-3 mb-3">
