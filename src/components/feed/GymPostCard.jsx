@@ -8,18 +8,18 @@ export default function GymPostCard({ post }) {
     <Card className="bg-white/95 backdrop-blur-sm border-2 border-gray-100 overflow-hidden hover:shadow-lg transition-all rounded-3xl">
       {/* Media */}
       {(post.video_url || post.image_url) && (
-        <div className="w-full aspect-square bg-gray-100">
+        <div className="w-full bg-gray-100">
           {post.video_url ? (
             <video 
               src={post.video_url} 
               controls 
-              className="w-full h-full object-contain"
+              className="w-full max-h-[600px] object-contain"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full h-full object-contain"
+              className="w-full object-contain"
             />
           ) : null}
         </div>
