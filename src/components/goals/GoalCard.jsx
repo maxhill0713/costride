@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Calendar, TrendingUp, CheckCircle2, Trash2, Bell, BellOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Target, Calendar, TrendingUp, CheckCircle2, Trash2, Bell, BellOff, Plus, Minus, Edit3 } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(goal.current_value);
+  
   const progress = Math.min((goal.current_value / goal.target_value) * 100, 100);
   const isCompleted = goal.status === 'completed' || progress >= 100;
 
@@ -17,6 +21,29 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
     } else {
       return `${goal.current_value} / ${goal.target_value} ${goal.unit}`;
     }
+  };
+
+  const getIncrementAmount = () => {
+    if (goal.goal_type === 'consistency' || goal.goal_type === 'frequency') {
+      return 1;
+    }
+    // For numerical goals, smart increment based on unit
+    if (goal.unit === 'lbs' || goal.unit === 'kg') {
+      return goal.target_value > 100 ? 5 : 2.5;
+    }
+    return 1;
+  };
+
+  const increment = getIncrementAmount();
+
+  const handleQuickUpdate = (change) => {
+    const newValue = Math.max(0, goal.current_value + change);
+    onUpdate(goal, newValue);
+  };
+
+  const handleManualUpdate = () => {
+    onUpdate(goal, parseFloat(editValue));
+    setIsEditing(false);
   };
 
   return (
@@ -82,24 +109,74 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
         )}
 
         {!isCompleted && (
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onUpdate(goal, goal.current_value + 1)}
-              className="flex-1 rounded-xl"
-            >
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Update Progress
-            </Button>
-            {progress >= 100 && (
-              <Button
-                size="sm"
-                onClick={() => onUpdate(goal, goal.current_value, 'completed')}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white rounded-xl"
-              >
-                Mark Complete
-              </Button>
+          <div className="space-y-2">
+            {isEditing ? (
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  className="rounded-xl"
+                  step={increment}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleManualUpdate}
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl"
+                >
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditValue(goal.current_value);
+                  }}
+                  className="rounded-xl"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleQuickUpdate(-increment)}
+                    className="rounded-xl"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleQuickUpdate(increment)}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl font-semibold"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add {increment} {goal.unit || ''}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="rounded-xl"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                  </Button>
+                </div>
+                {progress >= 100 && (
+                  <Button
+                    size="sm"
+                    onClick={() => onUpdate(goal, goal.current_value, 'completed')}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white rounded-xl"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    Mark Complete
+                  </Button>
+                )}
+              </>
             )}
           </div>
         )}
