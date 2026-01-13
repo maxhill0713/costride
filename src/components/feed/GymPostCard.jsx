@@ -13,13 +13,13 @@ export default function GymPostCard({ post }) {
             <video 
               src={post.video_url} 
               controls 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           ) : null}
         </div>
