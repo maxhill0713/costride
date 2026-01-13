@@ -303,141 +303,130 @@ export default function GymCommunity() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
-      {/* Header Section */}
-      <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-6 relative">
-        <Link to={createPageUrl('Gyms')} className="absolute top-4 left-4">
-          <Button variant="ghost" size="icon" className="bg-white/90 backdrop-blur hover:bg-white rounded-full">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Header Section - 15% of screen */}
+      <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-6 py-8 relative">
         {isGymOwner && (
-          <div className="absolute top-4 right-4 flex gap-2">
-            <Button
-              onClick={() => setViewAsMember(!viewAsMember)}
-              variant="ghost"
-              className={`bg-white/90 backdrop-blur hover:bg-white rounded-full ${viewAsMember ? 'ring-2 ring-blue-500' : ''}`}
-            >
-              {viewAsMember ? '👤 Member View' : '👑 Owner View'}
-            </Button>
-          </div>
+          <Button
+            onClick={() => setViewAsMember(!viewAsMember)}
+            variant="ghost"
+            size="sm"
+            className="absolute top-4 right-4 bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs"
+          >
+            {viewAsMember ? '👤 Member' : '👑 Owner'}
+          </Button>
         )}
 
-        <div className="max-w-4xl mx-auto text-center pt-8">
-          <div className="flex justify-center mb-3">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          {/* Gym Logo - Circle, Left Side */}
+          <div className="flex-shrink-0">
             {gym.image_url ? (
-              <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur border-4 border-white/30 overflow-hidden">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur border-4 border-white/50 overflow-hidden shadow-lg">
                 <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur border-4 border-white/30 flex items-center justify-center">
-                <Dumbbell className="w-10 h-10 text-white" />
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur border-4 border-white/50 flex items-center justify-center shadow-lg">
+                <Dumbbell className="w-8 h-8 text-white" />
               </div>
             )}
           </div>
           
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <h1 className="text-2xl font-black text-white">{gym.name}</h1>
-            {gym.verified && <BadgeCheck className="w-5 h-5 text-green-400" />}
-          </div>
-          
-          <p className="text-white/90 text-sm mb-3 flex items-center justify-center gap-1">
-            <MapPin className="w-4 h-4" />
-            {gym.city}
-          </p>
-
-          {/* Quick Event/Challenge Banner */}
-          {events.length > 0 && (
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-2 inline-flex items-center gap-2 text-white text-sm">
-              <Calendar className="w-4 h-4" />
-              <span>Next event: {new Date(events[0].event_date).toLocaleDateString()}</span>
+          {/* Gym Name & Info - Center-Left */}
+          <div className="flex-1 text-left">
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl font-black text-white">{gym.name}</h1>
+              {gym.verified && <BadgeCheck className="w-5 h-5 text-white" />}
             </div>
-          )}
+            <p className="text-white/80 text-sm font-medium">Your fitness community 💪</p>
+            <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {gym.city}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Horizontal Tab Menu - 10% of screen */}
       <Tabs defaultValue="feed" className="w-full">
-        <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
-          <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14">
+        <div className="sticky top-0 z-20 bg-white border-b-2 border-gray-100 shadow-sm">
+          <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-12">
             <TabsTrigger 
               value="feed" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-blue-500 rounded-none h-full"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 rounded-none h-full text-gray-500"
             >
-              <div className="flex flex-col items-center gap-1">
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-xs font-semibold">Feed</span>
+              <div className="flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm font-bold">Feed</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-blue-500 rounded-none h-full"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-purple-500 data-[state=active]:text-purple-600 rounded-none h-full text-gray-500"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Trophy className="w-5 h-5" />
-                <span className="text-xs font-semibold">Challenges</span>
+              <div className="flex items-center gap-1.5">
+                <Trophy className="w-4 h-4" />
+                <span className="text-sm font-bold">Challenges</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="events" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-blue-500 rounded-none h-full"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 rounded-none h-full text-gray-500"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Calendar className="w-5 h-5" />
-                <span className="text-xs font-semibold">Events</span>
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm font-bold">Events</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="rewards" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-blue-500 rounded-none h-full"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-pink-500 data-[state=active]:text-pink-600 rounded-none h-full text-gray-500"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Gift className="w-5 h-5" />
-                <span className="text-xs font-semibold">Rewards</span>
+              <div className="flex items-center gap-1.5">
+                <Gift className="w-4 h-4" />
+                <span className="text-sm font-bold">Rewards</span>
               </div>
             </TabsTrigger>
           </TabsList>
         </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      {/* Main Content Area - Vertical Scroll */}
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-24">
 
         {/* Feed Tab */}
-        <TabsContent value="feed" className="space-y-4 mt-0">
-          {/* Leaderboard Widget */}
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-purple-600" />
-                <h3 className="font-bold text-gray-900">Top Lifters</h3>
-              </div>
-              <Link to={createPageUrl('Leaderboard')}>
-                <Button size="sm" variant="ghost" className="text-purple-600">
-                  View All
-                </Button>
-              </Link>
-            </div>
-            <div className="space-y-2">
-              {topLifts.slice(0, 3).map((lift, idx) => (
-                <div key={lift.id} className="flex items-center gap-3 bg-white p-2 rounded-xl">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
-                    idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : 'bg-orange-500'
-                  }`}>
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm text-gray-900">{lift.member?.name || 'Unknown'}</p>
-                    <p className="text-xs text-gray-600">{lift.weight_lbs} lbs • {lift.exercise.replace('_', ' ')}</p>
-                  </div>
+        <TabsContent value="feed" className="space-y-3 mt-0">
+          {/* Mini Leaderboard Widget - Sticky */}
+          {topLifts.length > 0 && (
+            <Card className="bg-gradient-to-r from-purple-500 to-blue-500 p-4 shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-white" />
+                  <h3 className="font-bold text-white text-sm">Top Weekly Lifters</h3>
                 </div>
-              ))}
-            </div>
-          </Card>
+                <Link to={createPageUrl('Leaderboard')}>
+                  <Button size="sm" variant="ghost" className="text-white text-xs h-7">
+                    View Full
+                  </Button>
+                </Link>
+              </div>
+              <div className="space-y-1.5">
+                {topLifts.slice(0, 3).map((lift, idx) => (
+                  <div key={lift.id} className="flex items-center gap-2 bg-white/20 backdrop-blur p-2 rounded-lg">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-white text-xs ${
+                      idx === 0 ? 'bg-yellow-400' : idx === 1 ? 'bg-gray-300' : 'bg-orange-400'
+                    }`}>
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-xs text-white">{lift.member?.name || 'Unknown'}</p>
+                      <p className="text-[10px] text-white/80">{lift.weight_lbs} lbs • {lift.exercise.replace('_', ' ')}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
-          {/* Check-in Section */}
-          <CheckInButton gym={gym} />
-
-          {/* Posts Feed */}
+          {/* Posts Feed - Scrollable */}
           {showOwnerControls && (
             <CreateGymPostButton
               gym={gym}
@@ -447,9 +436,10 @@ export default function GymCommunity() {
           )}
           
           {posts.length === 0 ? (
-            <Card className="p-12 text-center">
-              <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">No posts yet</p>
+            <Card className="p-8 text-center bg-white border-2 border-dashed border-gray-200">
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-900 font-semibold mb-1">No community posts yet</p>
+              <p className="text-sm text-gray-500">Be the first to share your workout! 💪</p>
             </Card>
           ) : (
             posts.slice(0, 10).map((post) => (
@@ -459,7 +449,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Challenges Tab */}
-        <TabsContent value="challenges" className="space-y-4 mt-0">
+        <TabsContent value="challenges" className="space-y-3 mt-0">
           {/* Leaderboard Section */}
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
@@ -570,7 +560,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Events Tab */}
-        <TabsContent value="events" className="space-y-4 mt-0">
+        <TabsContent value="events" className="space-y-3 mt-0">
           {/* Classes Section */}
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
@@ -729,7 +719,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Rewards Tab */}
-        <TabsContent value="rewards" className="space-y-4 mt-0">
+        <TabsContent value="rewards" className="space-y-3 mt-0">
           {gym.reward_offer && (
             <Card className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 p-5">
               <div className="flex items-center gap-3 mb-3">
@@ -974,6 +964,21 @@ export default function GymCommunity() {
           gym={gym}
           currentUser={currentUser}
         />
+
+      {/* Floating Action Button (FAB) - Check-in */}
+      {isMember && (
+        <div className="fixed bottom-20 right-6 z-30 md:bottom-8">
+          <button
+            onClick={() => {
+              const checkInBtn = document.querySelector('[data-checkin-btn]');
+              if (checkInBtn) checkInBtn.click();
+            }}
+            className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-200 hover:shadow-blue-500/50"
+          >
+            <BadgeCheck className="w-8 h-8 text-white" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
