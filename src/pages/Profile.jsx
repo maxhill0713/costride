@@ -437,56 +437,6 @@ export default function Profile() {
             </Button>
           </div>
         </Card>
-
-        {/* Gym Memberships */}
-        {memberGyms.length > 0 && (
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 mt-4 shadow-lg">
-            <h3 className="font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-4 flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-blue-400" />
-              Your Gym Memberships
-            </h3>
-            <div className="grid gap-3">
-              {memberGyms.map((gym) => {
-                const membership = gymMemberships.find(m => m.gym_id === gym.id);
-                return (
-                  <div 
-                    key={gym.id} 
-                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-2xl border border-blue-600/30 hover:shadow-lg hover:shadow-blue-500/20 transition-all"
-                  >
-                    {gym.image_url ? (
-                      <img 
-                        src={gym.image_url} 
-                        alt={gym.name}
-                        className="w-16 h-16 rounded-xl object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                        <Dumbbell className="w-8 h-8 text-white" />
-                      </div>
-                    )}
-                    
-                    <div className="flex-1">
-                      <h4 className="font-bold text-slate-100">{gym.name}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/50 rounded-full font-medium capitalize">
-                          {gym.type}
-                        </span>
-                        <span className="text-xs text-slate-400">• {gym.city}</span>
-                      </div>
-                      {membership?.membership_type && (
-                        <p className="text-xs text-slate-400 mt-1 capitalize">
-                          {membership.membership_type} membership
-                        </p>
-                      )}
-                    </div>
-                    
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        )}
       </div>
 
       {/* Content */}
@@ -540,9 +490,50 @@ export default function Profile() {
               </div>
             </Card>
 
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-400" />
+                  My Goals
+                </h3>
+                <Button
+                  onClick={() => setShowAddGoal(true)}
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Goal
+                </Button>
+              </div>
+
+              {activeGoals.length === 0 ? (
+                <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
+                  <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                  <p className="text-slate-300 mb-2">No goals set yet</p>
+                  <Button
+                    onClick={() => setShowAddGoal(true)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Set Your First Goal
+                  </Button>
+                </Card>
+              ) : (
+                activeGoals.map(goal => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onUpdate={handleUpdateGoal}
+                    onDelete={(id) => deleteGoalMutation.mutate(id)}
+                    onToggleReminder={handleToggleReminder}
+                  />
+                ))
+              )}
+            </div>
+
             {/* Gym Memberships */}
             {memberGyms.length > 0 && (
-              <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
+              <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 mt-4 shadow-lg">
                 <h3 className="font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-4 flex items-center gap-2">
                   <Building2 className="w-5 h-5 text-blue-400" />
                   Your Gym Memberships
@@ -589,47 +580,6 @@ export default function Profile() {
                 </div>
               </Card>
             )}
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-400" />
-                  My Goals
-                </h3>
-                <Button
-                  onClick={() => setShowAddGoal(true)}
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Goal
-                </Button>
-              </div>
-
-              {activeGoals.length === 0 ? (
-                <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
-                  <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-300 mb-2">No goals set yet</p>
-                  <Button
-                    onClick={() => setShowAddGoal(true)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Set Your First Goal
-                  </Button>
-                </Card>
-              ) : (
-                activeGoals.map(goal => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onUpdate={handleUpdateGoal}
-                    onDelete={(id) => deleteGoalMutation.mutate(id)}
-                    onToggleReminder={handleToggleReminder}
-                  />
-                ))
-              )}
-            </div>
           </TabsContent>
 
           <TabsContent value="rewards" className="space-y-4">
