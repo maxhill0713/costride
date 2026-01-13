@@ -234,6 +234,76 @@ export default function GymCommunity() {
     }
   });
 
+  const { data: claimedBonuses = [] } = useQuery({
+    queryKey: ['claimedBonuses', currentUser?.id, gymId],
+    queryFn: async () => {
+      const bonuses = await base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId });
+      return bonuses;
+    },
+    enabled: !!currentUser && !!gymId
+  });
+
+  const { data: challengeParticipants = [] } = useQuery({
+    queryKey: ['challengeParticipants', currentUser?.id],
+    queryFn: async () => {
+      const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id });
+      return participants;
+    },
+    enabled: !!currentUser
+  });
+
+  const claimBonusMutation = useMutation({
+    mutationFn: ({ bonusType, offerDetails }) =>
+      base44.entities.ClaimedBonus.create({
+        user_id: currentUser.id,
+        gym_id: gymId,
+        bonus_type: bonusType,
+        offer_details: offerDetails
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] });
+      // Create notification
+      base44.entities.Notification.create({
+        user_id: currentUser.id,
+        type: 'reward',
+        title: '🎁 Bonus Claimed!',
+        message: 'Your gym bonus has been claimed successfully',
+        icon: '🎉'
+      });
+    }
+  });
+
+  const joinChallengeMutation = useMutation({
+    mutationFn: (challenge) =>
+      base44.entities.ChallengeParticipant.create({
+        user_id: currentUser.id,
+        user_name: currentUser.full_name,
+        challenge_id: challenge.id,
+        challenge_title: challenge.title,
+        progress: 0,
+        completed: false
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
+      // Create notification
+      base44.entities.Notification.create({
+        user_id: currentUser.id,
+        type: 'challenge',
+        title: '💪 Challenge Joined!',
+        message: 'Good luck on your new challenge!',
+        icon: '🎯'
+      });
+    }
+  });
+
+  const hasClaimedBonus = (bonusType) => {
+    return claimedBonuses.some(b => b.bonus_type === bonusType);
+  };
+
+  const hasjoinedChallenge = (challengeId) => {
+    return challengeParticipants.some(p => p.challenge_id === challengeId);
+  };
+
   const banMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
@@ -590,9 +660,8 @@ export default function GymCommunity() {
                 key={challenge.id}
                 challenge={challenge}
                 participantCount={challenge.participants}
-                onJoin={(challenge) => {
-                  toast.success(`Joined ${challenge.title}!`);
-                }}
+                isJoined={hasjoinedChallenge(challenge.id)}
+                onJoin={(challenge) => joinChallengeMutation.mutate(challenge)}
               />
             ))}
           </div>
@@ -920,9 +989,14 @@ export default function GymCommunity() {
                   <p className="text-xs text-gray-600 mt-0.5">Try the gym for free on your first visit</p>
                   <Button 
                     size="sm" 
-                    className="mt-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-2xl text-xs w-full"
+                    onClick={() => claimBonusMutation.mutate({ 
+                      bonusType: 'free_day_pass', 
+                      offerDetails: 'Free First Day Pass' 
+                    })}
+                    disabled={hasClaimedBonus('free_day_pass') || claimBonusMutation.isPending}
+                    className={`mt-2 ${hasClaimedBonus('free_day_pass') ? 'bg-green-500' : 'bg-cyan-500 hover:bg-cyan-600'} text-white rounded-2xl text-xs w-full`}
                   >
-                    Claim Pass
+                    {hasClaimedBonus('free_day_pass') ? '✓ Claimed' : 'Claim Pass'}
                   </Button>
                 </div>
               </div>
@@ -934,9 +1008,14 @@ export default function GymCommunity() {
                     <p className="text-xs text-gray-600 mt-0.5">Special gym offer</p>
                     <Button 
                       size="sm" 
-                      className="mt-2 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-xs w-full"
+                      onClick={() => claimBonusMutation.mutate({ 
+                        bonusType: 'gym_offer', 
+                        offerDetails: gym.reward_offer 
+                      })}
+                      disabled={hasClaimedBonus('gym_offer') || claimBonusMutation.isPending}
+                      className={`mt-2 ${hasClaimedBonus('gym_offer') ? 'bg-green-500' : 'bg-orange-500 hover:bg-orange-600'} text-white rounded-2xl text-xs w-full`}
                     >
-                      Claim Offer
+                      {hasClaimedBonus('gym_offer') ? '✓ Claimed' : 'Claim Offer'}
                     </Button>
                   </div>
                 </div>
