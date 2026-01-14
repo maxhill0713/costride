@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
+import AICoach from './pages/AICoach';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "UserProfile": UserProfile,
+    "AICoach": AICoach,
 }
 
 export const pagesConfig = {
