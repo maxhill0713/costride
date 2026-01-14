@@ -4,13 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Search, TrendingUp } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import CreateGroupModal from '../components/groups/CreateGroupModal';
+import { Target, Plus, Trophy, Flame, CheckCircle, MapPin } from 'lucide-react';
+import AddGoalModal from '../components/goals/AddGoalModal';
+import GoalCard from '../components/goals/GoalCard';
+import { Progress } from '@/components/ui/progress';
 
 export default function Groups() {
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddGoal, setShowAddGoal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -18,183 +18,206 @@ export default function Groups() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: groups = [] } = useQuery({
-    queryKey: ['groups'],
-    queryFn: () => base44.entities.Group.list('-member_count')
+  const { data: goals = [] } = useQuery({
+    queryKey: ['goals', currentUser?.id],
+    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id }, '-created_date'),
+    enabled: !!currentUser
   });
 
-  const createGroupMutation = useMutation({
-    mutationFn: (groupData) => base44.entities.Group.create({
-      ...groupData,
-      creator_id: currentUser?.id,
-      members: [currentUser?.id],
-      member_count: 1
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['allCheckIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
+    enabled: !!currentUser
+  });
+
+  const { data: lifts = [] } = useQuery({
+    queryKey: ['lifts', currentUser?.id],
+    queryFn: () => base44.entities.Lift.filter({ member_id: currentUser.id }, '-lift_date'),
+    enabled: !!currentUser
+  });
+
+  const { data: achievements = [] } = useQuery({
+    queryKey: ['achievements', currentUser?.id],
+    queryFn: () => base44.entities.Achievement.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser
+  });
+
+  const createGoalMutation = useMutation({
+    mutationFn: (goalData) => base44.entities.Goal.create({
+      ...goalData,
+      user_id: currentUser.id,
+      user_name: currentUser.full_name
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-      setShowCreateGroup(false);
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      setShowAddGoal(false);
     }
   });
 
-  const joinGroupMutation = useMutation({
-    mutationFn: ({ groupId, members }) =>
-      base44.entities.Group.update(groupId, {
-        members: [...members, currentUser?.id],
-        member_count: members.length + 1
-      }),
+  const updateGoalMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
   });
 
-  const categoryColors = {
-    running: 'bg-blue-100 text-blue-800',
-    weightlifting: 'bg-orange-100 text-orange-800',
-    yoga: 'bg-purple-100 text-purple-800',
-    crossfit: 'bg-red-100 text-red-800',
-    cycling: 'bg-green-100 text-green-800',
-    boxing: 'bg-yellow-100 text-yellow-800',
-    general: 'bg-gray-100 text-gray-800'
+  const deleteGoalMutation = useMutation({
+    mutationFn: (goalId) => base44.entities.Goal.delete(goalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    }
+  });
+
+  const activeGoals = goals.filter(g => g.status === 'active');
+  const completedGoals = goals.filter(g => g.status === 'completed');
+
+  // Calculate current streak
+  const calculateStreak = () => {
+    if (checkIns.length === 0) return 0;
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < checkIns.length; i++) {
+      const checkInDate = new Date(checkIns[i].check_in_date);
+      checkInDate.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today - checkInDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === streak) {
+        streak++;
+      } else if (daysDiff === streak + 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
   };
 
-  const filteredGroups = groups.filter(g =>
-    g.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    g.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const myGroups = groups.filter(g => g.members?.includes(currentUser?.id));
+  const currentStreak = calculateStreak();
+  const totalCheckIns = checkIns.length;
+  const totalLifts = lifts.length;
+  const totalAchievements = achievements.length;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-6xl mx-auto p-4 pt-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-black text-gray-900">Groups & Clubs</h1>
-            <p className="text-gray-600">Connect with people who share your interests</p>
-          </div>
-          <Button
-            onClick={() => setShowCreateGroup(true)}
-            className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Create Group
-          </Button>
+        <div className="mb-6">
+          <h1 className="text-3xl font-black text-gray-900">Your Progress</h1>
+          <p className="text-gray-600">Track your fitness journey</p>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="Search groups..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-14 rounded-2xl bg-white"
-          />
-        </div>
-
-        {/* My Groups */}
-        {myGroups.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">My Groups</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {myGroups.map(group => (
-                <Card key={group.id} className="p-6 bg-white hover:shadow-lg transition-shadow">
-                  {group.image_url ? (
-                    <div className="w-full h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 mb-4">
-                      <img src={group.image_url} alt={group.name} className="w-full h-full object-cover rounded-2xl" />
-                    </div>
-                  ) : (
-                    <div className="w-full h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 mb-4 flex items-center justify-center">
-                      <Users className="w-12 h-12 text-white" />
-                    </div>
-                  )}
-                  <Badge className={`${categoryColors[group.category]} mb-3`}>
-                    {group.category}
-                  </Badge>
-                  <h3 className="font-bold text-gray-900 text-lg mb-2">{group.name}</h3>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{group.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {group.member_count} members
-                    </span>
-                    <Button variant="outline" className="rounded-full">
-                      View
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+        {/* Progress Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-bold text-blue-900 uppercase">Check-ins</span>
             </div>
-          </div>
-        )}
+            <div className="text-3xl font-black text-blue-900">{totalCheckIns}</div>
+          </Card>
 
-        {/* All Groups */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
-            Discover Groups
-          </h2>
-          {filteredGroups.length === 0 ? (
+          <Card className="p-4 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Flame className="w-4 h-4 text-orange-600" />
+              <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
+            </div>
+            <div className="text-3xl font-black text-orange-900">{currentStreak}</div>
+          </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-4 h-4 text-purple-600" />
+              <span className="text-xs font-bold text-purple-900 uppercase">Lifts</span>
+            </div>
+            <div className="text-3xl font-black text-purple-900">{totalLifts}</div>
+          </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="w-4 h-4 text-green-600" />
+              <span className="text-xs font-bold text-green-900 uppercase">Achievements</span>
+            </div>
+            <div className="text-3xl font-black text-green-900">{totalAchievements}</div>
+          </Card>
+        </div>
+
+        {/* Goals Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+              <Target className="w-6 h-6 text-blue-500" />
+              Your Goals
+            </h2>
+            <Button
+              onClick={() => setShowAddGoal(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Goal
+            </Button>
+          </div>
+
+          {/* Active Goals */}
+          {activeGoals.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Active Goals</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {activeGoals.map(goal => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onUpdate={(data) => updateGoalMutation.mutate({ id: goal.id, data })}
+                    onDelete={() => deleteGoalMutation.mutate(goal.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Completed Goals */}
+          {completedGoals.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-green-500" />
+                Completed Goals
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {completedGoals.map(goal => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onUpdate={(data) => updateGoalMutation.mutate({ id: goal.id, data })}
+                    onDelete={() => deleteGoalMutation.mutate(goal.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No Goals State */}
+          {activeGoals.length === 0 && completedGoals.length === 0 && (
             <Card className="p-12 text-center">
-              <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 mb-2">No groups found</p>
+              <Target className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500 mb-2">No goals yet</p>
+              <p className="text-sm text-gray-400 mb-4">Set your first goal and start tracking your progress!</p>
               <Button
-                onClick={() => setShowCreateGroup(true)}
-                variant="outline"
+                onClick={() => setShowAddGoal(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
               >
-                Create First Group
+                <Plus className="w-4 h-4 mr-2" />
+                Add Your First Goal
               </Button>
             </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredGroups.map(group => {
-                const isMember = group.members?.includes(currentUser?.id);
-                return (
-                  <Card key={group.id} className="p-6 bg-white hover:shadow-lg transition-shadow">
-                    {group.image_url ? (
-                      <div className="w-full h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 mb-4">
-                        <img src={group.image_url} alt={group.name} className="w-full h-full object-cover rounded-2xl" />
-                      </div>
-                    ) : (
-                      <div className="w-full h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 mb-4 flex items-center justify-center">
-                        <Users className="w-12 h-12 text-white" />
-                      </div>
-                    )}
-                    <Badge className={`${categoryColors[group.category]} mb-3`}>
-                      {group.category}
-                    </Badge>
-                    <h3 className="font-bold text-gray-900 text-lg mb-2">{group.name}</h3>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{group.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500 flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {group.member_count} members
-                      </span>
-                      {!isMember && (
-                        <Button
-                          onClick={() => joinGroupMutation.mutate({ groupId: group.id, members: group.members || [] })}
-                          className="bg-blue-500 hover:bg-blue-600 text-white rounded-full"
-                        >
-                          Join
-                        </Button>
-                      )}
-                      {isMember && (
-                        <Badge className="bg-green-100 text-green-800">Joined</Badge>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
           )}
         </div>
 
-        <CreateGroupModal
-          open={showCreateGroup}
-          onClose={() => setShowCreateGroup(false)}
-          onSave={(data) => createGroupMutation.mutate(data)}
-          isLoading={createGroupMutation.isPending}
+        <AddGoalModal
+          open={showAddGoal}
+          onClose={() => setShowAddGoal(false)}
+          onSave={(data) => createGoalMutation.mutate(data)}
+          isLoading={createGoalMutation.isPending}
         />
       </div>
     </div>
