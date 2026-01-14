@@ -18,7 +18,13 @@ export default function ManageRewardsModal({ open, onClose, rewards = [], onCrea
     requirement: 'points',
     points_required: 0,
     value: '',
-    icon: '🎁'
+    icon: '🎁',
+    quantity_limited: false,
+    quantity_available: 0,
+    expiry_date: '',
+    terms_conditions: '',
+    auto_apply: false,
+    featured: false
   });
 
   const handleCreate = () => {
@@ -36,7 +42,13 @@ export default function ManageRewardsModal({ open, onClose, rewards = [], onCrea
       requirement: 'points',
       points_required: 0,
       value: '',
-      icon: '🎁'
+      icon: '🎁',
+      quantity_limited: false,
+      quantity_available: 0,
+      expiry_date: '',
+      terms_conditions: '',
+      auto_apply: false,
+      featured: false
     });
     setShowCreateForm(false);
   };
@@ -156,6 +168,75 @@ export default function ManageRewardsModal({ open, onClose, rewards = [], onCrea
                       onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                       className="rounded-2xl text-2xl"
                     />
+                  </div>
+                </div>
+
+                {/* Advanced Options */}
+                <div className="space-y-3 p-3 bg-gray-50 rounded-2xl">
+                  <Label className="font-bold">Advanced Options</Label>
+                  
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="quantity_limited"
+                      checked={formData.quantity_limited}
+                      onChange={(e) => setFormData({ ...formData, quantity_limited: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="quantity_limited" className="cursor-pointer">Limited Quantity</Label>
+                  </div>
+
+                  {formData.quantity_limited && (
+                    <Input
+                      type="number"
+                      value={formData.quantity_available}
+                      onChange={(e) => setFormData({ ...formData, quantity_available: parseInt(e.target.value) || 0 })}
+                      placeholder="Available quantity"
+                      className="rounded-2xl"
+                    />
+                  )}
+
+                  <div>
+                    <Label>Expiry Date (Optional)</Label>
+                    <Input
+                      type="date"
+                      value={formData.expiry_date}
+                      onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                      className="rounded-2xl mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Terms & Conditions (Optional)</Label>
+                    <Textarea
+                      value={formData.terms_conditions}
+                      onChange={(e) => setFormData({ ...formData, terms_conditions: e.target.value })}
+                      placeholder="Any restrictions or conditions..."
+                      className="rounded-2xl mt-1"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      checked={formData.featured}
+                      onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="featured" className="cursor-pointer">⭐ Feature This Reward</Label>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="auto_apply"
+                      checked={formData.auto_apply}
+                      onChange={(e) => setFormData({ ...formData, auto_apply: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="auto_apply" className="cursor-pointer">Auto-apply when eligible</Label>
                   </div>
                 </div>
 
