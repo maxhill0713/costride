@@ -1,9 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+
+const REACTIONS = ['💪', '🔥', '👏', '💯', '⚡'];
 
 export default function GymPostCard({ post }) {
+  const queryClient = useQueryClient();
+  const [showReactions, setShowReactions] = useState(false);
+  
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const reactionMutation = useMutation({
+    mutationFn: ({ postId, emoji }) => {
+      const reactions = post.reactions || {};
+      const userId = currentUser?.id;
+      
+      if (reactions[userId] === emoji) {
+        delete reactions[userId];
+      } else {
+        reactions[userId] = emoji;
+      }
+      
+      return base44.entities.Post.update(postId, { reactions });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      setShowReactions(false);
+    }
+  });
+
+  const reactions = post.reactions || {};
+  const userReaction = currentUser ? reactions[currentUser.id] : null;
+  const reactionCounts = Object.values(reactions).reduce((acc, emoji) => {
+    acc[emoji] = (acc[emoji] || 0) + 1;
+    return acc;
+  }, {});
+  const totalReactions = Object.keys(reactions).length;
   return (
     <Card className="bg-white/95 backdrop-blur-sm border-2 border-gray-100 overflow-hidden hover:shadow-lg transition-all rounded-3xl">
       {/* Media */}
@@ -55,6 +93,53 @@ export default function GymPostCard({ post }) {
             </p>
           </div>
         )}
+
+        {/* Reactions Section */}
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          {/* Display reaction counts */}
+          {totalReactions > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {Object.entries(reactionCounts).map(([emoji, count]) => (
+                <div key={emoji} className="px-2 py-1 bg-gray-50 rounded-full border border-gray-200 text-sm flex items-center gap-1">
+                  <span>{emoji}</span>
+                  <span className="text-xs font-semibold text-gray-600">{count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Reaction button */}
+          {currentUser && (
+            <div className="relative">
+              <button
+                onClick={() => setShowReactions(!showReactions)}
+                className={`w-full py-2 rounded-xl font-semibold text-sm transition-all ${
+                  userReaction 
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' 
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {userReaction ? `${userReaction} Reacted` : '👍 React'}
+              </button>
+
+              {/* Reaction picker */}
+              {showReactions && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 p-3 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 flex justify-around z-10">
+                  {REACTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => reactionMutation.mutate({ postId: post.id, emoji })}
+                      className="text-3xl hover:scale-125 transition-transform active:scale-110"
+                      disabled={reactionMutation.isPending}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </Card>
   );
