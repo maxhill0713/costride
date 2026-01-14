@@ -662,7 +662,7 @@ export default function GymCommunity() {
             </Card>
           ) : (
             posts.slice(0, 10).map((post) => (
-              <GymPostCard key={post.id} post={post} />
+              <GymPostCard key={post.id} post={post} gym={gym} />
             ))
           )}
         </TabsContent>

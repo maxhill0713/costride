@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Calendar, Edit, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const REACTIONS = ['💪', '🔥', '👏', '💯', '⚡'];
 
-export default function GymPostCard({ post }) {
+export default function GymPostCard({ post, gym }) {
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editImageUrl, setEditImageUrl] = useState(post.image_url || '');
+  const [isUploading, setIsUploading] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -34,6 +44,39 @@ export default function GymPostCard({ post }) {
       setShowReactions(false);
     }
   });
+
+  const updatePostMutation = useMutation({
+    mutationFn: () => base44.entities.Post.update(post.id, {
+      content: editContent,
+      image_url: editImageUrl || null
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      setShowEditModal(false);
+      toast.success('Post updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update post');
+    }
+  });
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setEditImageUrl(file_url);
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      toast.error('Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email;
 
   const reactions = post.reactions || {};
   const userReaction = currentUser ? reactions[currentUser.id] : null;
@@ -82,6 +125,16 @@ export default function GymPostCard({ post }) {
               {format(new Date(post.created_date), 'MMM d, yyyy')}
             </p>
           </div>
+          {isGymOwner && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowEditModal(true)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
         <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">{post.content}</p>
@@ -141,6 +194,63 @@ export default function GymPostCard({ post }) {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label>Content</Label>
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder="Share an update with your members..."
+                className="rounded-2xl min-h-32"
+              />
+            </div>
+
+            <div>
+              <Label>Image (Optional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploading}
+                  className="rounded-2xl"
+                />
+                {isUploading && <Loader2 className="w-5 h-5 animate-spin" />}
+              </div>
+              {editImageUrl && (
+                <div className="mt-2">
+                  <img src={editImageUrl} alt="Preview" className="w-full h-40 object-cover rounded-2xl" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowEditModal(false)}
+                className="flex-1 rounded-2xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => updatePostMutation.mutate()}
+                disabled={updatePostMutation.isPending || !editContent.trim()}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl"
+              >
+                {updatePostMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
