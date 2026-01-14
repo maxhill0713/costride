@@ -62,23 +62,54 @@ export default function CheckInButton({ gym }) {
       const streak = calculateStreak([newCheckIn, ...checkIns], currentUser);
       const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
 
-      // Auto-update streak goals
+      // Auto-update streak and frequency goals
       try {
         const userGoals = await base44.entities.Goal.filter({ 
           user_id: currentUser.id,
-          status: 'active',
-          goal_type: 'consistency'
+          status: 'active'
         });
         
         for (const goal of userGoals) {
-          if (streak > goal.current_value) {
+          // Update consistency (streak) goals
+          if (goal.goal_type === 'consistency' && streak > goal.current_value) {
             await base44.entities.Goal.update(goal.id, {
               current_value: streak
             });
+            
+            // Check if goal completed
+            if (streak >= goal.target_value && goal.status === 'active') {
+              await base44.entities.Goal.update(goal.id, { status: 'completed' });
+              toast.success(`🎉 Goal completed: ${goal.title}!`);
+            }
+          }
+          
+          // Update frequency goals (workouts per week/month)
+          if (goal.goal_type === 'frequency') {
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            
+            let relevantCheckIns = [];
+            if (goal.frequency_period === 'weekly') {
+              relevantCheckIns = allCheckIns.filter(c => new Date(c.check_in_date) >= weekAgo);
+            } else if (goal.frequency_period === 'monthly') {
+              relevantCheckIns = allCheckIns.filter(c => new Date(c.check_in_date) >= monthAgo);
+            }
+            
+            const currentProgress = relevantCheckIns.length + 1; // +1 for today's check-in
+            await base44.entities.Goal.update(goal.id, {
+              current_value: currentProgress
+            });
+            
+            // Check if goal completed
+            if (currentProgress >= goal.target_value && goal.status === 'active') {
+              await base44.entities.Goal.update(goal.id, { status: 'completed' });
+              toast.success(`🎉 Goal completed: ${goal.title}!`);
+            }
           }
         }
       } catch (error) {
-        console.error('Error updating streak goals:', error);
+        console.error('Error updating goals:', error);
       }
 
       // Show streak in toast
