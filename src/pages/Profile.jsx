@@ -144,10 +144,17 @@ export default function Profile() {
     }
   });
 
-  const handleUpdateGoal = (goal, newValue, status) => {
+  const handleUpdateGoal = (goal, newValue, status, milestones) => {
+    const updateData = { 
+      current_value: newValue, 
+      status: status || goal.status 
+    };
+    if (milestones) {
+      updateData.milestones = milestones;
+    }
     updateGoalMutation.mutate({
       id: goal.id,
-      data: { current_value: newValue, status: status || goal.status }
+      data: updateData
     });
   };
 

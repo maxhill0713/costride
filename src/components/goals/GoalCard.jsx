@@ -38,11 +38,20 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
 
   const handleQuickUpdate = (change) => {
     const newValue = Math.max(0, goal.current_value + change);
-    onUpdate(goal, newValue);
+    const updatedMilestones = goal.milestones?.map(m => ({
+      ...m,
+      reached: newValue >= m.value
+    })) || [];
+    onUpdate(goal, newValue, goal.status, updatedMilestones);
   };
 
   const handleManualUpdate = () => {
-    onUpdate(goal, parseFloat(editValue));
+    const newValue = parseFloat(editValue);
+    const updatedMilestones = goal.milestones?.map(m => ({
+      ...m,
+      reached: newValue >= m.value
+    })) || [];
+    onUpdate(goal, newValue, goal.status, updatedMilestones);
     setIsEditing(false);
   };
 
@@ -169,7 +178,10 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                 {progress >= 100 && (
                   <Button
                     size="sm"
-                    onClick={() => onUpdate(goal, goal.current_value, 'completed')}
+                    onClick={() => {
+                      const updatedMilestones = goal.milestones?.map(m => ({ ...m, reached: true })) || [];
+                      onUpdate(goal, goal.current_value, 'completed', updatedMilestones);
+                    }}
                     className="w-full bg-green-500 hover:bg-green-600 text-white rounded-xl"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1" />
