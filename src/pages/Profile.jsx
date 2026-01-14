@@ -446,6 +446,9 @@ export default function Profile() {
             <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Progress
             </TabsTrigger>
+            <TabsTrigger value="goals" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
+              Goals
+            </TabsTrigger>
             <TabsTrigger value="rewards" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Rewards
             </TabsTrigger>
@@ -455,9 +458,6 @@ export default function Profile() {
             <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Achievements
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
-              History
-            </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               <Settings className="w-4 h-4 md:mr-1" />
               <span className="hidden md:inline">Settings</span>
@@ -466,6 +466,41 @@ export default function Profile() {
 
           <TabsContent value="progress" className="space-y-4">
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
+
+            {/* Progress Stats */}
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
+              <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">Your Progress</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-700/50 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs font-bold text-cyan-300 uppercase">Check-ins</span>
+                  </div>
+                  <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userCheckIns.length}</div>
+                </div>
+                <div className="bg-slate-700/50 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flame className="w-4 h-4 text-orange-400" />
+                    <span className="text-xs font-bold text-orange-300 uppercase">Streak</span>
+                  </div>
+                  <div className="text-3xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">{currentStreak}</div>
+                </div>
+                <div className="bg-slate-700/50 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Dumbbell className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-bold text-purple-300 uppercase">Workouts</span>
+                  </div>
+                  <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
+                </div>
+                <div className="bg-slate-700/50 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    <span className="text-xs font-bold text-yellow-300 uppercase">PRs</span>
+                  </div>
+                  <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
+                </div>
+              </div>
+            </Card>
 
             {/* Weekly Summary */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-blue-600/40 p-4 shadow-lg">
@@ -489,47 +524,6 @@ export default function Profile() {
                 </Button>
               </div>
             </Card>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-400" />
-                  My Goals
-                </h3>
-                <Button
-                  onClick={() => setShowAddGoal(true)}
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Goal
-                </Button>
-              </div>
-
-              {activeGoals.length === 0 ? (
-                <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
-                  <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-300 mb-2">No goals set yet</p>
-                  <Button
-                    onClick={() => setShowAddGoal(true)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Set Your First Goal
-                  </Button>
-                </Card>
-              ) : (
-                activeGoals.map(goal => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onUpdate={handleUpdateGoal}
-                    onDelete={(id) => deleteGoalMutation.mutate(id)}
-                    onToggleReminder={handleToggleReminder}
-                  />
-                ))
-              )}
-            </div>
 
             {/* Gym Memberships */}
             {memberGyms.length > 0 && (
@@ -746,40 +740,45 @@ export default function Profile() {
             ))}
           </TabsContent>
 
-          <TabsContent value="history" className="space-y-3">
-            {memberLifts.slice(0, 10).map((lift) => (
-              <Card key={lift.id} className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
-                      <Dumbbell className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-100 capitalize">{lift.exercise?.replace(/_/g, ' ')}</h4>
-                      <p className="text-sm text-slate-400">{new Date(lift.created_date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-xl font-black text-slate-100">{lift.weight_lbs}</div>
-                      <div className="text-xs text-slate-400">lbs {lift.reps && `× ${lift.reps}`}</div>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => {
-                        const summary = `💪 Just completed ${lift.exercise.replace(/_/g, ' ')} - ${lift.weight_lbs} lbs${lift.reps ? ` × ${lift.reps} reps` : ''}! ${lift.is_pr ? '🔥 NEW PR!' : ''}`;
-                        navigator.clipboard.writeText(summary);
-                        alert('Workout summary copied! Share it with your friends.');
-                      }}
-                      className="text-cyan-400 hover:text-cyan-300 hover:bg-slate-700/50"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
+          <TabsContent value="goals" className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">
+                <Target className="w-5 h-5 text-blue-400" />
+                My Goals
+              </h3>
+              <Button
+                onClick={() => setShowAddGoal(true)}
+                size="sm"
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Goal
+              </Button>
+            </div>
+
+            {activeGoals.length === 0 ? (
+              <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
+                <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                <p className="text-slate-300 mb-2">No goals set yet</p>
+                <Button
+                  onClick={() => setShowAddGoal(true)}
+                  variant="outline"
+                  size="sm"
+                >
+                  Set Your First Goal
+                </Button>
               </Card>
-            ))}
+            ) : (
+              activeGoals.map(goal => (
+                <GoalCard
+                  key={goal.id}
+                  goal={goal}
+                  onUpdate={handleUpdateGoal}
+                  onDelete={(id) => deleteGoalMutation.mutate(id)}
+                  onToggleReminder={handleToggleReminder}
+                />
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
