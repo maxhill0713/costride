@@ -182,34 +182,6 @@ export default function Profile() {
   const streakProgress = (currentStreak / nextMilestone.days) * 100;
   const earnedBadges = streakMilestones.filter(m => longestStreak >= m.days);
 
-  // Identity & Status Calculation
-  const getIdentityStatus = () => {
-    const workouts = stats.totalLifts;
-    const prs = stats.personalRecords;
-    const streak = currentStreak;
-
-    if (workouts < 5) return { title: 'Beginner', subtitle: 'Just Starting Out', next: 'Complete 5 workouts to become a Novice', color: 'from-gray-400 to-gray-500' };
-    if (workouts < 20) return { title: 'Novice Lifter', subtitle: 'Building Habits', next: 'Complete 20 workouts to become Committed', color: 'from-blue-400 to-blue-500' };
-    if (workouts < 50) return { title: 'Committed Athlete', subtitle: 'Making Progress', next: 'Complete 50 workouts to become Dedicated', color: 'from-purple-400 to-purple-500' };
-    if (streak < 30) return { title: 'Dedicated Athlete', subtitle: 'Showing Consistency', next: 'Reach 30-day streak to become Elite', color: 'from-orange-400 to-orange-500' };
-    if (prs < 10) return { title: 'Elite Performer', subtitle: 'Breaking Barriers', next: 'Achieve 10 PRs to become a Champion', color: 'from-cyan-400 to-cyan-500' };
-    return { title: 'Champion', subtitle: 'Peak Performance', next: 'Keep pushing your limits!', color: 'from-yellow-400 to-yellow-500' };
-  };
-
-  const identityStatus = getIdentityStatus();
-
-  // Risk Assessment
-  const getStreakRisk = () => {
-    if (!lastCheckIn) return null;
-    if (daysSinceCheckIn === 0) return { level: 'safe', message: '✅ Safe: Checked in today', color: 'text-green-400' };
-    if (daysSinceCheckIn === 1) return { level: 'safe', message: '✅ Safe: 1 day since last check-in', color: 'text-green-400' };
-    if (daysSinceCheckIn === 2) return { level: 'warning', message: '⚠️ Warning: Check in today to keep your streak!', color: 'text-yellow-400' };
-    if (daysSinceCheckIn === 3) return { level: 'danger', message: '🔥 Danger: Streak expires tomorrow!', color: 'text-orange-400' };
-    return { level: 'lost', message: '❌ Streak Lost: Time to start fresh!', color: 'text-red-400' };
-  };
-
-  const streakRisk = getStreakRisk();
-
   // AI Coach setup
   useEffect(() => {
     if (currentUser && !conversationId && activeTab === 'coach') {
@@ -262,6 +234,34 @@ export default function Profile() {
     bestLift: Math.max(...memberLifts.map(l => l.weight_lbs), 0),
     weekStreak: currentStreak
   };
+
+  // Identity & Status Calculation
+  const getIdentityStatus = () => {
+    const workouts = stats.totalLifts;
+    const prs = stats.personalRecords;
+    const streak = currentStreak;
+
+    if (workouts < 5) return { title: 'Beginner', subtitle: 'Just Starting Out', next: 'Complete 5 workouts to become a Novice', color: 'from-gray-400 to-gray-500' };
+    if (workouts < 20) return { title: 'Novice Lifter', subtitle: 'Building Habits', next: 'Complete 20 workouts to become Committed', color: 'from-blue-400 to-blue-500' };
+    if (workouts < 50) return { title: 'Committed Athlete', subtitle: 'Making Progress', next: 'Complete 50 workouts to become Dedicated', color: 'from-purple-400 to-purple-500' };
+    if (streak < 30) return { title: 'Dedicated Athlete', subtitle: 'Showing Consistency', next: 'Reach 30-day streak to become Elite', color: 'from-orange-400 to-orange-500' };
+    if (prs < 10) return { title: 'Elite Performer', subtitle: 'Breaking Barriers', next: 'Achieve 10 PRs to become a Champion', color: 'from-cyan-400 to-cyan-500' };
+    return { title: 'Champion', subtitle: 'Peak Performance', next: 'Keep pushing your limits!', color: 'from-yellow-400 to-yellow-500' };
+  };
+
+  const identityStatus = getIdentityStatus();
+
+  // Risk Assessment
+  const getStreakRisk = () => {
+    if (!lastCheckIn) return null;
+    if (daysSinceCheckIn === 0) return { level: 'safe', message: '✅ Safe: Checked in today', color: 'text-green-400' };
+    if (daysSinceCheckIn === 1) return { level: 'safe', message: '✅ Safe: 1 day since last check-in', color: 'text-green-400' };
+    if (daysSinceCheckIn === 2) return { level: 'warning', message: '⚠️ Warning: Check in today to keep your streak!', color: 'text-yellow-400' };
+    if (daysSinceCheckIn === 3) return { level: 'danger', message: '🔥 Danger: Streak expires tomorrow!', color: 'text-orange-400' };
+    return { level: 'lost', message: '❌ Streak Lost: Time to start fresh!', color: 'text-red-400' };
+  };
+
+  const streakRisk = getStreakRisk();
 
   const getProgressData = () => {
     const last30Days = memberLifts
