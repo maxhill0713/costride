@@ -74,9 +74,17 @@ const BADGE_LIBRARY = [
   }
 ];
 
-export default function BadgesDisplay({ user }) {
-  const earnedBadges = BADGE_LIBRARY.filter(badge => badge.requirement(user));
-  const lockedBadges = BADGE_LIBRARY.filter(badge => !badge.requirement(user));
+export default function BadgesDisplay({ user, checkIns = [] }) {
+  // Calculate stats from actual data
+  const userStats = {
+    total_check_ins: checkIns.length,
+    longest_streak: user.longest_streak || 0,
+    current_streak: user.current_streak || 0,
+    gym_join_date: user.created_date
+  };
+
+  const earnedBadges = BADGE_LIBRARY.filter(badge => badge.requirement(userStats));
+  const lockedBadges = BADGE_LIBRARY.filter(badge => !badge.requirement(userStats));
 
   return (
     <div className="space-y-6">

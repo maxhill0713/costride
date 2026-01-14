@@ -741,7 +741,7 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="badges">
-            <BadgesDisplay user={currentUser} />
+            <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-4">
