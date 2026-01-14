@@ -329,7 +329,9 @@ export default function GymCommunity() {
   });
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
+  const isCoach = currentUser && coaches.some(c => c.user_email === currentUser.email);
   const showOwnerControls = isGymOwner && !viewAsMember;
+  const canManageEventsAndClasses = isGymOwner || isCoach;
   const isMember = !!gymMembership || isGymOwner;
 
   // System-generated challenges with participant counts
@@ -450,6 +452,11 @@ export default function GymCommunity() {
           >
             {viewAsMember ? '👤 Member' : '👑 Owner'}
           </Button>
+        )}
+        {isCoach && !isGymOwner && (
+          <div className="absolute top-4 right-4 bg-blue-500/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-semibold">
+            🎓 Coach
+          </div>
         )}
 
         <div className="max-w-4xl mx-auto flex items-center gap-4">
@@ -820,7 +827,7 @@ export default function GymCommunity() {
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Classes</h3>
-              {showOwnerControls && (
+              {canManageEventsAndClasses && (
                 <Button
                   onClick={() => setShowManageClasses(true)}
                   size="sm"
@@ -881,14 +888,16 @@ export default function GymCommunity() {
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
-              <Button
-                onClick={() => setShowCreateEvent(true)}
-                size="sm"
-                className="bg-blue-500 text-white rounded-2xl"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Create
-              </Button>
+              {canManageEventsAndClasses && (
+                <Button
+                  onClick={() => setShowCreateEvent(true)}
+                  size="sm"
+                  className="bg-blue-500 text-white rounded-2xl"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create
+                </Button>
+              )}
             </div>
             
             {events.length === 0 ? (

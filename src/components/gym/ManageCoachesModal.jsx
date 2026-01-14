@@ -12,6 +12,7 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    user_email: '',
     bio: '',
     avatar_url: '',
     specialties: [],
@@ -65,6 +66,7 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
     });
     setFormData({
       name: '',
+      user_email: '',
       bio: '',
       avatar_url: '',
       specialties: [],
@@ -108,6 +110,18 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
                     placeholder="John Doe"
                     className="rounded-2xl"
                   />
+                </div>
+
+                <div>
+                  <Label>Coach Email *</Label>
+                  <Input
+                    type="email"
+                    value={formData.user_email}
+                    onChange={(e) => setFormData({ ...formData, user_email: e.target.value })}
+                    placeholder="coach@example.com"
+                    className="rounded-2xl"
+                  />
+                  <p className="text-xs text-gray-600 mt-1">Coach can manage events & classes with this email</p>
                 </div>
 
                 <div>
@@ -211,7 +225,7 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
                 <div className="flex gap-2">
                   <Button
                     onClick={handleCreate}
-                    disabled={!formData.name || isLoading}
+                    disabled={!formData.name || !formData.user_email || isLoading}
                     className="flex-1 bg-blue-500 hover:bg-blue-600 rounded-2xl"
                   >
                     {isLoading ? 'Adding...' : 'Add Coach'}
