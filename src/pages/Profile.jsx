@@ -182,6 +182,34 @@ export default function Profile() {
   const streakProgress = (currentStreak / nextMilestone.days) * 100;
   const earnedBadges = streakMilestones.filter(m => longestStreak >= m.days);
 
+  // Identity & Status Calculation
+  const getIdentityStatus = () => {
+    const workouts = stats.totalLifts;
+    const prs = stats.personalRecords;
+    const streak = currentStreak;
+
+    if (workouts < 5) return { title: 'Beginner', subtitle: 'Just Starting Out', next: 'Complete 5 workouts to become a Novice', color: 'from-gray-400 to-gray-500' };
+    if (workouts < 20) return { title: 'Novice Lifter', subtitle: 'Building Habits', next: 'Complete 20 workouts to become Committed', color: 'from-blue-400 to-blue-500' };
+    if (workouts < 50) return { title: 'Committed Athlete', subtitle: 'Making Progress', next: 'Complete 50 workouts to become Dedicated', color: 'from-purple-400 to-purple-500' };
+    if (streak < 30) return { title: 'Dedicated Athlete', subtitle: 'Showing Consistency', next: 'Reach 30-day streak to become Elite', color: 'from-orange-400 to-orange-500' };
+    if (prs < 10) return { title: 'Elite Performer', subtitle: 'Breaking Barriers', next: 'Achieve 10 PRs to become a Champion', color: 'from-cyan-400 to-cyan-500' };
+    return { title: 'Champion', subtitle: 'Peak Performance', next: 'Keep pushing your limits!', color: 'from-yellow-400 to-yellow-500' };
+  };
+
+  const identityStatus = getIdentityStatus();
+
+  // Risk Assessment
+  const getStreakRisk = () => {
+    if (!lastCheckIn) return null;
+    if (daysSinceCheckIn === 0) return { level: 'safe', message: '✅ Safe: Checked in today', color: 'text-green-400' };
+    if (daysSinceCheckIn === 1) return { level: 'safe', message: '✅ Safe: 1 day since last check-in', color: 'text-green-400' };
+    if (daysSinceCheckIn === 2) return { level: 'warning', message: '⚠️ Warning: Check in today to keep your streak!', color: 'text-yellow-400' };
+    if (daysSinceCheckIn === 3) return { level: 'danger', message: '🔥 Danger: Streak expires tomorrow!', color: 'text-orange-400' };
+    return { level: 'lost', message: '❌ Streak Lost: Time to start fresh!', color: 'text-red-400' };
+  };
+
+  const streakRisk = getStreakRisk();
+
   // AI Coach setup
   useEffect(() => {
     if (currentUser && !conversationId && activeTab === 'coach') {
@@ -389,6 +417,26 @@ export default function Profile() {
 
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
+        {/* Identity Card */}
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">Your Identity</p>
+              <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent`}>
+                {identityStatus.title}
+              </h3>
+              <p className="text-sm text-slate-400 mt-1">{identityStatus.subtitle}</p>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl mb-2">🏆</div>
+            </div>
+          </div>
+          <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20">
+            <p className="text-xs text-cyan-300 font-bold mb-1">WHAT YOU'RE BECOMING</p>
+            <p className="text-sm text-slate-200">{identityStatus.next}</p>
+          </div>
+        </Card>
+
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 shadow-lg">
@@ -408,6 +456,16 @@ export default function Profile() {
                 </div>
               )}
             </div>
+            {streakRisk && (
+              <div className={`mt-2 px-3 py-1.5 rounded-lg ${
+                streakRisk.level === 'safe' ? 'bg-green-900/30 border border-green-600/30' :
+                streakRisk.level === 'warning' ? 'bg-yellow-900/30 border border-yellow-600/30' :
+                streakRisk.level === 'danger' ? 'bg-orange-900/30 border border-orange-600/30' :
+                'bg-red-900/30 border border-red-600/30'
+              }`}>
+                <p className={`text-xs font-bold ${streakRisk.color}`}>{streakRisk.message}</p>
+              </div>
+            )}
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-cyan-300 mb-1">
                 <span>Next: {nextMilestone.name}</span>
@@ -418,25 +476,61 @@ export default function Profile() {
           </Card>
 
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 p-5 shadow-lg">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-3">
               <Trophy className="w-8 h-8 text-purple-400" />
               <div>
-                <p className="text-sm font-medium text-purple-300">Longest Streak</p>
+                <p className="text-sm font-medium text-purple-300">Best Streak</p>
                 <p className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
                 <p className="text-xs text-purple-300">days ever</p>
               </div>
             </div>
+            {currentStreak > 0 && longestStreak > currentStreak && (
+              <div className="bg-purple-900/30 border border-purple-600/30 rounded-lg px-3 py-1.5">
+                <p className="text-xs font-bold text-purple-300">💎 Keep going to beat your record!</p>
+              </div>
+            )}
+            {currentStreak === longestStreak && currentStreak > 0 && (
+              <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg px-3 py-1.5">
+                <p className="text-xs font-bold text-yellow-300">🔥 New personal record!</p>
+              </div>
+            )}
           </Card>
         </div>
 
 
+
+        {/* Protection & Risk Info */}
+        {currentStreak > 0 && (
+          <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 shadow-lg">
+            <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-cyan-400" />
+              What Happens If You Stop?
+            </h3>
+            <div className="space-y-3">
+              <div className="bg-slate-700/50 rounded-2xl p-3">
+                <p className="text-xs text-slate-400 mb-1">Grace Period</p>
+                <p className="text-sm text-slate-200">You have a 2-day grace period. Miss 3 days and your {currentStreak}-day streak resets to 0.</p>
+              </div>
+              {currentUser?.streak_freezes_available > 0 && (
+                <div className="bg-cyan-900/30 border border-cyan-600/30 rounded-2xl p-3">
+                  <p className="text-xs text-cyan-300 mb-1">❄️ Protection Available</p>
+                  <p className="text-sm text-slate-200">You have {currentUser.streak_freezes_available} streak freeze{currentUser.streak_freezes_available > 1 ? 's' : ''} to protect your progress if life gets busy.</p>
+                </div>
+              )}
+              <div className="bg-orange-900/30 border border-orange-600/30 rounded-2xl p-3">
+                <p className="text-xs text-orange-300 mb-1">⚠️ What You'll Lose</p>
+                <p className="text-sm text-slate-200">Your {currentStreak}-day streak and progress toward "{nextMilestone.name}" will be lost. You'll start from day 1.</p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
           <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg">
             <h3 className="font-semibold bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-400" />
-              Streak Milestones
+              Milestones Unlocked
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {earnedBadges.map((badge) => (
