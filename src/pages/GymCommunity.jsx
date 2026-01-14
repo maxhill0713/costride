@@ -216,6 +216,13 @@ export default function GymCommunity() {
     }
   });
 
+  const updateCoachMutation = useMutation({
+    mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
+    }
+  });
+
 
 
   const updateGalleryMutation = useMutation({
@@ -329,9 +336,12 @@ export default function GymCommunity() {
   });
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
-  const isCoach = currentUser && coaches.some(c => c.user_email === currentUser.email);
+  const currentCoach = currentUser && coaches.find(c => c.user_email === currentUser.email);
+  const isCoach = !!currentCoach;
   const showOwnerControls = isGymOwner && !viewAsMember;
-  const canManageEventsAndClasses = isGymOwner || isCoach;
+  const canManageEvents = isGymOwner || (currentCoach?.can_manage_events ?? false);
+  const canManageClasses = isGymOwner || (currentCoach?.can_manage_classes ?? false);
+  const canPost = isGymOwner || (currentCoach?.can_post ?? false);
   const isMember = !!gymMembership || isGymOwner;
 
   // System-generated challenges with participant counts
@@ -636,7 +646,7 @@ export default function GymCommunity() {
           )}
 
           {/* Posts Feed - Scrollable */}
-          {showOwnerControls && (
+          {canPost && (
             <CreateGymPostButton
               gym={gym}
               currentUser={currentUser}
@@ -827,7 +837,7 @@ export default function GymCommunity() {
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Classes</h3>
-              {canManageEventsAndClasses && (
+              {canManageClasses && (
                 <Button
                   onClick={() => setShowManageClasses(true)}
                   size="sm"
@@ -888,7 +898,7 @@ export default function GymCommunity() {
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
-              {canManageEventsAndClasses && (
+              {canManageEvents && (
                 <Button
                   onClick={() => setShowCreateEvent(true)}
                   size="sm"
@@ -1235,6 +1245,7 @@ export default function GymCommunity() {
           coaches={coaches}
           onCreateCoach={(data) => createCoachMutation.mutate(data)}
           onDeleteCoach={(id) => deleteCoachMutation.mutate(id)}
+          onUpdateCoach={(coachId, data) => updateCoachMutation.mutate({ coachId, data })}
           gym={gym}
           isLoading={createCoachMutation.isPending}
         />

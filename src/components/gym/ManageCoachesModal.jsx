@@ -6,10 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, Trash2, Plus, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { GraduationCap, Trash2, Plus, X, Edit } from 'lucide-react';
 
-export default function ManageCoachesModal({ open, onClose, coaches = [], onCreateCoach, onDeleteCoach, gym, isLoading }) {
+export default function ManageCoachesModal({ open, onClose, coaches = [], onCreateCoach, onDeleteCoach, onUpdateCoach, gym, isLoading }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingCoach, setEditingCoach] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     user_email: '',
@@ -18,7 +20,10 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
     specialties: [],
     certifications: [],
     experience_years: 0,
-    rating: 5
+    rating: 5,
+    can_post: false,
+    can_manage_events: true,
+    can_manage_classes: true
   });
   const [newSpecialty, setNewSpecialty] = useState('');
   const [newCertification, setNewCertification] = useState('');
@@ -72,9 +77,16 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
       specialties: [],
       certifications: [],
       experience_years: 0,
-      rating: 5
+      rating: 5,
+      can_post: false,
+      can_manage_events: true,
+      can_manage_classes: true
     });
     setShowCreateForm(false);
+  };
+
+  const togglePermission = (coach, permission) => {
+    onUpdateCoach(coach.id, { [permission]: !coach[permission] });
   };
 
   return (
@@ -222,6 +234,43 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
                   )}
                 </div>
 
+                <div className="space-y-3 pt-2 border-t">
+                  <Label className="font-semibold">Permissions</Label>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Post on Feed</p>
+                      <p className="text-xs text-gray-600">Allow coach to create posts</p>
+                    </div>
+                    <Switch
+                      checked={formData.can_post}
+                      onCheckedChange={(checked) => setFormData({ ...formData, can_post: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Manage Events</p>
+                      <p className="text-xs text-gray-600">Create and edit events</p>
+                    </div>
+                    <Switch
+                      checked={formData.can_manage_events}
+                      onCheckedChange={(checked) => setFormData({ ...formData, can_manage_events: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Manage Classes</p>
+                      <p className="text-xs text-gray-600">Create and edit classes</p>
+                    </div>
+                    <Switch
+                      checked={formData.can_manage_classes}
+                      onCheckedChange={(checked) => setFormData({ ...formData, can_manage_classes: checked })}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex gap-2">
                   <Button
                     onClick={handleCreate}
@@ -252,29 +301,60 @@ export default function ManageCoachesModal({ open, onClose, coaches = [], onCrea
             ) : (
               coaches.map((coach) => (
                 <Card key={coach.id} className="p-4 bg-white border-2 border-gray-200">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-900">{coach.name}</h4>
-                      {coach.bio && (
-                        <p className="text-sm text-gray-600 mt-1">{coach.bio}</p>
-                      )}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {coach.specialties && coach.specialties.map((spec, idx) => (
-                          <Badge key={idx} className="bg-blue-100 text-blue-700">{spec}</Badge>
-                        ))}
-                        {coach.experience_years > 0 && (
-                          <Badge variant="outline">{coach.experience_years} years</Badge>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-900">{coach.name}</h4>
+                        <p className="text-xs text-gray-500">{coach.user_email}</p>
+                        {coach.bio && (
+                          <p className="text-sm text-gray-600 mt-1">{coach.bio}</p>
                         )}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {coach.specialties && coach.specialties.map((spec, idx) => (
+                            <Badge key={idx} className="bg-blue-100 text-blue-700">{spec}</Badge>
+                          ))}
+                          {coach.experience_years > 0 && (
+                            <Badge variant="outline">{coach.experience_years} years</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDeleteCoach(coach.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t">
+                      <p className="text-xs font-semibold text-gray-700">Permissions</p>
+                      
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600">Post on Feed</p>
+                        <Switch
+                          checked={coach.can_post ?? false}
+                          onCheckedChange={() => togglePermission(coach, 'can_post')}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600">Manage Events</p>
+                        <Switch
+                          checked={coach.can_manage_events ?? true}
+                          onCheckedChange={() => togglePermission(coach, 'can_manage_events')}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600">Manage Classes</p>
+                        <Switch
+                          checked={coach.can_manage_classes ?? true}
+                          onCheckedChange={() => togglePermission(coach, 'can_manage_classes')}
+                        />
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDeleteCoach(coach.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </Card>
               ))
