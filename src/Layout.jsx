@@ -43,7 +43,6 @@ export default function Layout({ children, currentPageName }) {
   ] : [
     { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
     { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-yellow-500' },
-    { name: 'AI Coach', icon: Award, page: 'AICoach', color: 'text-green-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },

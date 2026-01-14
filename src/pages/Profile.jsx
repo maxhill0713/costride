@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle, Brain, Send, Loader2, Sparkles, Apple, MessageCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,12 +17,17 @@ import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
+import CoachMessageBubble from '../components/coach/CoachMessageBubble';
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
+  const [coachInput, setCoachInput] = useState('');
+  const [conversationId, setConversationId] = useState(null);
+  const [coachMessages, setCoachMessages] = useState([]);
+  const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
   const updateSettingsMutation = useMutation({
@@ -176,6 +181,51 @@ export default function Profile() {
   const nextMilestone = streakMilestones.find(m => m.days > currentStreak) || streakMilestones[streakMilestones.length - 1];
   const streakProgress = (currentStreak / nextMilestone.days) * 100;
   const earnedBadges = streakMilestones.filter(m => longestStreak >= m.days);
+
+  // AI Coach setup
+  useEffect(() => {
+    if (currentUser && !conversationId && activeTab === 'coach') {
+      base44.agents.createConversation({
+        agent_name: 'fitness_coach',
+        metadata: {
+          name: `${currentUser.full_name}'s Fitness Coaching`,
+          description: 'AI Fitness Coach Session'
+        }
+      }).then(conv => {
+        setConversationId(conv.id);
+        setCoachMessages(conv.messages || []);
+      });
+    }
+  }, [currentUser, conversationId, activeTab]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
+      setCoachMessages(data.messages);
+    });
+    return () => unsubscribe();
+  }, [conversationId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [coachMessages]);
+
+  const sendCoachMessageMutation = useMutation({
+    mutationFn: async (message) => {
+      const conversation = await base44.agents.getConversation(conversationId);
+      return base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: message
+      });
+    }
+  });
+
+  const handleCoachSend = async () => {
+    if (!coachInput.trim() || !conversationId || sendCoachMessageMutation.isPending) return;
+    const message = coachInput;
+    setCoachInput('');
+    await sendCoachMessageMutation.mutateAsync(message);
+  };
 
   const stats = {
     totalLifts: memberLifts.length,
@@ -442,12 +492,15 @@ export default function Profile() {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6 bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 p-1.5 rounded-2xl shadow-sm overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-7 mb-6 bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 p-1.5 rounded-2xl shadow-sm overflow-x-auto">
             <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Progress
             </TabsTrigger>
             <TabsTrigger value="goals" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Goals
+            </TabsTrigger>
+            <TabsTrigger value="coach" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
+              AI Coach
             </TabsTrigger>
             <TabsTrigger value="rewards" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               Rewards
@@ -738,6 +791,86 @@ export default function Profile() {
                 </div>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="coach" className="space-y-4">
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">AI Fitness Coach</h3>
+                  <p className="text-sm text-slate-300">Your personal training & nutrition expert</p>
+                </div>
+              </div>
+
+              {coachMessages.length === 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-cyan-400" />
+                    Quick Actions
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { icon: Dumbbell, label: 'Workout Plan', message: 'Create a personalized workout plan based on my goals and progress' },
+                      { icon: Apple, label: 'Nutrition', message: 'Give me nutrition advice and meal plan suggestions for my goals' },
+                      { icon: TrendingUp, label: 'Progress', message: 'Analyze my training history and suggest optimizations' },
+                      { icon: Sparkles, label: 'Form Tips', message: 'Give me form correction tips for my main lifts' }
+                    ].map((action, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setCoachInput(action.message);
+                          setTimeout(() => handleCoachSend(), 100);
+                        }}
+                        className="h-auto py-3 flex flex-col items-center gap-2 bg-slate-700/50 hover:bg-slate-600/50 border border-cyan-600/30 hover:border-cyan-500/50 rounded-2xl transition-all"
+                      >
+                        <action.icon className="w-5 h-5 text-cyan-400" />
+                        <span className="text-xs font-semibold text-slate-200">{action.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
+                {coachMessages.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                    <p className="text-slate-300 text-sm">Start a conversation with your AI coach</p>
+                  </div>
+                ) : (
+                  coachMessages.map((msg, idx) => (
+                    <CoachMessageBubble key={idx} message={msg} />
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="flex gap-3">
+                <input
+                  value={coachInput}
+                  onChange={(e) => setCoachInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleCoachSend()}
+                  placeholder="Ask your coach anything..."
+                  className="flex-1 bg-slate-800/50 border border-slate-600 text-slate-100 placeholder:text-slate-400 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  disabled={sendCoachMessageMutation.isPending || !conversationId}
+                />
+                <Button
+                  onClick={handleCoachSend}
+                  disabled={!coachInput.trim() || sendCoachMessageMutation.isPending || !conversationId}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl"
+                  size="icon"
+                >
+                  {sendCoachMessageMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
