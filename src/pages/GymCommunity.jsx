@@ -325,25 +325,31 @@ export default function GymCommunity() {
       case 'visits_5':
         return userCheckIns.length >= 5;
       case 'visits_10':
+      case 'check_ins_10':
         return userCheckIns.length >= 10;
       case 'visits_25':
         return userCheckIns.length >= 25;
       case 'visits_50':
+      case 'check_ins_50':
         return userCheckIns.length >= 50;
       case 'visits_100':
         return userCheckIns.length >= 100;
       case 'streak_7':
-        // Check for 7 consecutive days
         return calculateCurrentStreak(userCheckIns) >= 7;
       case 'streak_30':
         return calculateCurrentStreak(userCheckIns) >= 30;
       case 'streak_90':
         return calculateCurrentStreak(userCheckIns) >= 90;
       case 'referral_3':
-        // Would need referral data
+      case 'referral':
         return false;
       case 'referral_10':
         return false;
+      case 'challenge_winner':
+        return false;
+      case 'points':
+      case 'none':
+        return true;
       default:
         return true;
     }
@@ -363,10 +369,12 @@ export default function GymCommunity() {
       case 'visits_5':
         return { current: Math.min(userCheckIns.length, 5), target: 5, percentage: Math.min(userCheckIns.length / 5 * 100, 100) };
       case 'visits_10':
+      case 'check_ins_10':
         return { current: Math.min(userCheckIns.length, 10), target: 10, percentage: Math.min(userCheckIns.length / 10 * 100, 100) };
       case 'visits_25':
         return { current: Math.min(userCheckIns.length, 25), target: 25, percentage: Math.min(userCheckIns.length / 25 * 100, 100) };
       case 'visits_50':
+      case 'check_ins_50':
         return { current: Math.min(userCheckIns.length, 50), target: 50, percentage: Math.min(userCheckIns.length / 50 * 100, 100) };
       case 'visits_100':
         return { current: Math.min(userCheckIns.length, 100), target: 100, percentage: Math.min(userCheckIns.length / 100 * 100, 100) };
@@ -377,9 +385,15 @@ export default function GymCommunity() {
       case 'streak_90':
         return { current: Math.min(currentStreak, 90), target: 90, percentage: Math.min(currentStreak / 90 * 100, 100) };
       case 'referral_3':
+      case 'referral':
         return { current: 0, target: 3, percentage: 0 };
       case 'referral_10':
         return { current: 0, target: 10, percentage: 0 };
+      case 'challenge_winner':
+        return { current: 0, target: 1, percentage: 0 };
+      case 'points':
+      case 'none':
+        return { current: 1, target: 1, percentage: 100 };
       default:
         return { current: 1, target: 1, percentage: 100 };
     }
