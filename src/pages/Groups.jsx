@@ -100,70 +100,87 @@ export default function Groups() {
   const totalAchievements = achievements.length;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="max-w-6xl mx-auto p-4 pt-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 pb-24">
+      <div className="max-w-7xl mx-auto p-6 pt-8">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-black text-gray-900">Your Progress</h1>
-          <p className="text-gray-600">Track your fitness journey</p>
+        <div className="mb-10">
+          <h1 className="text-5xl font-black text-gray-900 mb-3 tracking-tight">Your Progress</h1>
+          <p className="text-gray-600 text-lg">Track your fitness journey with precision and clarity</p>
         </div>
 
         {/* Progress Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="text-xs font-bold text-blue-900 uppercase">Check-ins</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          <Card className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Check-ins</span>
             </div>
-            <div className="text-3xl font-black text-blue-900">{totalCheckIns}</div>
+            <div className="text-4xl font-black text-gray-900">{totalCheckIns}</div>
+            <p className="text-xs text-gray-500 mt-2">Total gym visits</p>
           </Card>
 
-          <Card className="p-4 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Flame className="w-4 h-4 text-orange-600" />
-              <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
+          <Card className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-md">
+                <Flame className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Streak</span>
             </div>
-            <div className="text-3xl font-black text-orange-900">{currentStreak}</div>
+            <div className="text-4xl font-black text-gray-900">{currentStreak}</div>
+            <p className="text-xs text-gray-500 mt-2">Consecutive days</p>
           </Card>
 
-          <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-4 h-4 text-purple-600" />
-              <span className="text-xs font-bold text-purple-900 uppercase">Lifts</span>
+          <Card className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Lifts</span>
             </div>
-            <div className="text-3xl font-black text-purple-900">{totalLifts}</div>
+            <div className="text-4xl font-black text-gray-900">{totalLifts}</div>
+            <p className="text-xs text-gray-500 mt-2">Workouts logged</p>
           </Card>
 
-          <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy className="w-4 h-4 text-green-600" />
-              <span className="text-xs font-bold text-green-900 uppercase">Achievements</span>
+          <Card className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Achievements</span>
             </div>
-            <div className="text-3xl font-black text-green-900">{totalAchievements}</div>
+            <div className="text-4xl font-black text-gray-900">{totalAchievements}</div>
+            <p className="text-xs text-gray-500 mt-2">Milestones reached</p>
           </Card>
         </div>
 
         {/* Goals Section */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-              <Target className="w-6 h-6 text-blue-500" />
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-black text-gray-900 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
               Your Goals
             </h2>
             <Button
               onClick={() => setShowAddGoal(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl px-6 py-6 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Add Goal
+              <span className="font-semibold">Add Goal</span>
             </Button>
           </div>
 
           {/* Active Goals */}
           {activeGoals.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Active Goals</h3>
-              <div className="grid md:grid-cols-2 gap-4">
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                Active Goals
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
                 {activeGoals.map(goal => (
                   <GoalCard
                     key={goal.id}
@@ -179,11 +196,13 @@ export default function Groups() {
           {/* Completed Goals */}
           {completedGoals.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-green-500" />
+              <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-white" />
+                </div>
                 Completed Goals
               </h3>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-6">
                 {completedGoals.map(goal => (
                   <GoalCard
                     key={goal.id}
@@ -198,16 +217,18 @@ export default function Groups() {
 
           {/* No Goals State */}
           {activeGoals.length === 0 && completedGoals.length === 0 && (
-            <Card className="p-12 text-center">
-              <Target className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 mb-2">No goals yet</p>
-              <p className="text-sm text-gray-400 mb-4">Set your first goal and start tracking your progress!</p>
+            <Card className="p-16 text-center bg-white border-0 shadow-lg">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mx-auto mb-6">
+                <Target className="w-10 h-10 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No goals yet</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">Set your first goal and start tracking your progress with precision and clarity!</p>
               <Button
                 onClick={() => setShowAddGoal(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Goal
+                <Plus className="w-5 h-5 mr-2" />
+                <span className="font-semibold">Add Your First Goal</span>
               </Button>
             </Card>
           )}
