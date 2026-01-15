@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -345,6 +346,42 @@ export default function GymCommunity() {
         return false;
       default:
         return true;
+    }
+  };
+
+  const getRequirementProgress = (requirement) => {
+    if (!currentUser) return { current: 0, target: 1, percentage: 0 };
+
+    const userCheckIns = checkIns.filter(c => c.user_id === currentUser.id);
+    const currentStreak = calculateCurrentStreak(userCheckIns);
+    
+    switch (requirement) {
+      case 'first_visit':
+        return { current: Math.min(userCheckIns.length, 1), target: 1, percentage: Math.min(userCheckIns.length / 1 * 100, 100) };
+      case 'visits_3':
+        return { current: Math.min(userCheckIns.length, 3), target: 3, percentage: Math.min(userCheckIns.length / 3 * 100, 100) };
+      case 'visits_5':
+        return { current: Math.min(userCheckIns.length, 5), target: 5, percentage: Math.min(userCheckIns.length / 5 * 100, 100) };
+      case 'visits_10':
+        return { current: Math.min(userCheckIns.length, 10), target: 10, percentage: Math.min(userCheckIns.length / 10 * 100, 100) };
+      case 'visits_25':
+        return { current: Math.min(userCheckIns.length, 25), target: 25, percentage: Math.min(userCheckIns.length / 25 * 100, 100) };
+      case 'visits_50':
+        return { current: Math.min(userCheckIns.length, 50), target: 50, percentage: Math.min(userCheckIns.length / 50 * 100, 100) };
+      case 'visits_100':
+        return { current: Math.min(userCheckIns.length, 100), target: 100, percentage: Math.min(userCheckIns.length / 100 * 100, 100) };
+      case 'streak_7':
+        return { current: Math.min(currentStreak, 7), target: 7, percentage: Math.min(currentStreak / 7 * 100, 100) };
+      case 'streak_30':
+        return { current: Math.min(currentStreak, 30), target: 30, percentage: Math.min(currentStreak / 30 * 100, 100) };
+      case 'streak_90':
+        return { current: Math.min(currentStreak, 90), target: 90, percentage: Math.min(currentStreak / 90 * 100, 100) };
+      case 'referral_3':
+        return { current: 0, target: 3, percentage: 0 };
+      case 'referral_10':
+        return { current: 0, target: 10, percentage: 0 };
+      default:
+        return { current: 1, target: 1, percentage: 100 };
     }
   };
 
@@ -1176,6 +1213,7 @@ export default function GymCommunity() {
                   const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
                   const meetsReq = meetsRequirement(reward.requirement);
                   const canClaim = !hasUserClaimed && meetsReq;
+                  const progress = getRequirementProgress(reward.requirement);
                   
                   return (
                     <div key={reward.id} className={`border p-4 rounded-2xl ${
@@ -1201,6 +1239,22 @@ export default function GymCommunity() {
                               {reward.requirement.replace('_', ' ')}
                             </Badge>
                           </div>
+                          
+                          {/* Progress Bar */}
+                          {!hasUserClaimed && (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-700">
+                                  {progress.current} / {progress.target}
+                                </span>
+                                <span className="text-xs font-semibold text-purple-600">
+                                  {Math.round(progress.percentage)}%
+                                </span>
+                              </div>
+                              <Progress value={progress.percentage} className="h-2" />
+                            </div>
+                          )}
+
                           {currentUser && (
                             <Button
                               size="sm"
