@@ -450,11 +450,11 @@ export default function GymOwnerDashboard() {
 
           <Card className="p-6 bg-gradient-to-br from-orange-500 to-red-500 text-white">
             <div className="flex items-center justify-between mb-2">
-              <Trophy className="w-8 h-8" />
-              <Star className="w-5 h-5" />
+              <Activity className="w-8 h-8" />
+              <TrendingUp className="w-5 h-5" />
             </div>
-            <div className="text-3xl font-black mb-1">{lifts.length}</div>
-            <p className="text-orange-100">Total PRs Logged</p>
+            <div className="text-3xl font-black mb-1">{activeMembersThisWeek}</div>
+            <p className="text-orange-100">Active This Week</p>
           </Card>
 
           <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 text-white">
