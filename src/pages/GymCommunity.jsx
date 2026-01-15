@@ -311,6 +311,71 @@ export default function GymCommunity() {
     return challengeParticipants.some(p => p.challenge_id === challengeId);
   };
 
+  const meetsRequirement = (requirement) => {
+    if (!currentUser) return false;
+
+    const userCheckIns = checkIns.filter(c => c.user_id === currentUser.id);
+    
+    switch (requirement) {
+      case 'first_visit':
+        return userCheckIns.length >= 1;
+      case 'visits_3':
+        return userCheckIns.length >= 3;
+      case 'visits_5':
+        return userCheckIns.length >= 5;
+      case 'visits_10':
+        return userCheckIns.length >= 10;
+      case 'visits_25':
+        return userCheckIns.length >= 25;
+      case 'visits_50':
+        return userCheckIns.length >= 50;
+      case 'visits_100':
+        return userCheckIns.length >= 100;
+      case 'streak_7':
+        // Check for 7 consecutive days
+        return calculateCurrentStreak(userCheckIns) >= 7;
+      case 'streak_30':
+        return calculateCurrentStreak(userCheckIns) >= 30;
+      case 'streak_90':
+        return calculateCurrentStreak(userCheckIns) >= 90;
+      case 'referral_3':
+        // Would need referral data
+        return false;
+      case 'referral_10':
+        return false;
+      default:
+        return true;
+    }
+  };
+
+  const calculateCurrentStreak = (userCheckIns) => {
+    if (userCheckIns.length === 0) return 0;
+
+    const sortedCheckIns = [...userCheckIns].sort((a, b) => 
+      new Date(b.check_in_date) - new Date(a.check_in_date)
+    );
+
+    let streak = 1;
+    let currentDate = new Date(sortedCheckIns[0].check_in_date);
+    currentDate.setHours(0, 0, 0, 0);
+
+    for (let i = 1; i < sortedCheckIns.length; i++) {
+      const checkInDate = new Date(sortedCheckIns[i].check_in_date);
+      checkInDate.setHours(0, 0, 0, 0);
+
+      const daysDiff = Math.floor((currentDate - checkInDate) / (1000 * 60 * 60 * 24));
+
+      if (daysDiff === 1) {
+        streak++;
+        currentDate = checkInDate;
+      } else if (daysDiff > 1) {
+        break;
+      }
+    }
+
+    return streak;
+  };
+
   const banMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
@@ -1109,12 +1174,22 @@ export default function GymCommunity() {
               <div className="space-y-3">
                 {rewards.filter(r => r.active).map((reward) => {
                   const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
+                  const meetsReq = meetsRequirement(reward.requirement);
+                  const canClaim = !hasUserClaimed && meetsReq;
+                  
                   return (
-                    <div key={reward.id} className="bg-gray-50 border border-gray-200 p-4 rounded-2xl">
+                    <div key={reward.id} className={`border p-4 rounded-2xl ${
+                      meetsReq ? 'bg-gray-50 border-gray-200' : 'bg-gray-100 border-gray-300 opacity-60'
+                    }`}>
                       <div className="flex items-start gap-3">
                         <div className="text-3xl">{reward.icon || '🎁'}</div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 text-sm">{reward.title}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-gray-900 text-sm">{reward.title}</h4>
+                            {!meetsReq && (
+                              <Badge className="bg-gray-400 text-white text-xs">🔒 Locked</Badge>
+                            )}
+                          </div>
                           {reward.description && (
                             <p className="text-xs text-gray-600 mt-1">{reward.description}</p>
                           )}
@@ -1129,9 +1204,9 @@ export default function GymCommunity() {
                           {currentUser && (
                             <Button
                               size="sm"
-                              disabled={hasUserClaimed}
+                              disabled={!canClaim || claimRewardMutation.isPending}
                               onClick={() => {
-                                if (!hasUserClaimed) {
+                                if (canClaim) {
                                   claimRewardMutation.mutate({
                                     rewardId: reward.id,
                                     userId: currentUser.id,
@@ -1141,11 +1216,13 @@ export default function GymCommunity() {
                               }}
                               className={`mt-2 w-full rounded-2xl text-xs ${
                                 hasUserClaimed 
-                                  ? 'bg-gray-200 text-gray-500' 
+                                  ? 'bg-green-500 text-white cursor-default' 
+                                  : !meetsReq
+                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                   : 'bg-purple-500 hover:bg-purple-600 text-white'
                               }`}
                             >
-                              {hasUserClaimed ? '✓ Claimed' : 'Claim Reward'}
+                              {hasUserClaimed ? '✓ Claimed' : !meetsReq ? '🔒 Requirements Not Met' : 'Claim Reward'}
                             </Button>
                           )}
                         </div>
