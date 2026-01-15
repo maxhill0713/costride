@@ -370,13 +370,13 @@ export default function GymOwnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 p-8">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between gap-6 mb-8">
+        <div className="flex items-center justify-between gap-6 mb-10">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2">Gym Owner Dashboard</h1>
-            <p className="text-gray-600 text-lg">Manage your gym and track performance</p>
+            <h1 className="text-5xl font-black text-gray-900 mb-3 tracking-tight">Gym Owner Dashboard</h1>
+            <p className="text-gray-600 text-lg">Manage your gym and track performance with precision</p>
           </div>
           
           <div className="flex gap-4 items-center">
@@ -406,21 +406,21 @@ export default function GymOwnerDashboard() {
 
         {/* At-Risk Alert */}
         {atRiskMembers > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-                <Bell className="w-6 h-6" />
+          <Card className="p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
+                <Bell className="w-7 h-7" />
               </div>
               <div className="flex-1">
-                <h3 className="font-black text-lg mb-1">⚠️ Members At Risk</h3>
-                <p className="text-white/90 text-sm">
+                <h3 className="font-black text-xl mb-2">⚠️ Members At Risk</h3>
+                <p className="text-white/90">
                   {atRiskMembers} {atRiskMembers === 1 ? 'member hasn\'t' : 'members haven\'t'} checked in for 7-10 days this week
                 </p>
               </div>
               <Button
                 onClick={() => setShowManageMembers(true)}
                 variant="outline"
-                className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-bold"
+                className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-semibold px-8 py-6 rounded-xl shadow-lg"
               >
                 View Members
               </Button>
@@ -430,98 +430,114 @@ export default function GymOwnerDashboard() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <Users className="w-10 h-10" />
-              <TrendingUp className="w-6 h-6" />
+          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                <Users className="w-7 h-7 text-white" />
+              </div>
+              <TrendingUp className="w-6 h-6 text-blue-500" />
             </div>
-            <div className="text-4xl font-black mb-2">{uniqueMembers}</div>
-            <p className="text-blue-100 text-lg">Active Members</p>
+            <div className="text-5xl font-black mb-2 text-gray-900">{uniqueMembers}</div>
+            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Active Members</p>
           </Card>
 
-          <Card className="p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <Activity className="w-10 h-10" />
-              <Badge className="bg-white/20 text-white text-sm">{last7Days} this week</Badge>
+          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                <Activity className="w-7 h-7 text-white" />
+              </div>
+              <Badge className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 text-sm font-semibold">{last7Days} this week</Badge>
             </div>
-            <div className="text-4xl font-black mb-2">{last30Days}</div>
-            <p className="text-green-100 text-lg">Check-ins (30 days)</p>
+            <div className="text-5xl font-black mb-2 text-gray-900">{last30Days}</div>
+            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Check-ins (30 days)</p>
           </Card>
 
-          <Card className="p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <Activity className="w-10 h-10" />
-              <TrendingUp className="w-6 h-6" />
+          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+                <Activity className="w-7 h-7 text-white" />
+              </div>
+              <TrendingUp className="w-6 h-6 text-orange-500" />
             </div>
-            <div className="text-4xl font-black mb-2">{activeMembersThisWeek}</div>
-            <p className="text-orange-100 text-lg">Active This Week</p>
+            <div className="text-5xl font-black mb-2 text-gray-900">{activeMembersThisWeek}</div>
+            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Active This Week</p>
           </Card>
 
-          <Card className="p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <Star className="w-10 h-10" />
-              <span className="text-3xl font-bold">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
+          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <Star className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-purple-600">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
             </div>
-            <div className="text-4xl font-black mb-2">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
-            <p className="text-purple-100 text-lg">Average Rating</p>
-            <p className="text-xs text-purple-200 mt-2 italic">Only you can see this</p>
+            <div className="text-5xl font-black mb-2 text-gray-900">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
+            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Average Rating</p>
+            <p className="text-xs text-gray-400 mt-3 italic">Only you can see this rating</p>
           </Card>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-5 gap-4 mb-8">
           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white h-auto py-8 flex-col gap-3 shadow-xl">
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
               <Dumbbell className="w-10 h-10" />
-              <span className="font-black text-lg">View My Gym</span>
-              <span className="text-sm text-blue-100">Manage & Post</span>
+              <span className="font-black text-xl">View My Gym</span>
+              <span className="text-sm text-blue-100 font-medium">Manage & Post</span>
             </Button>
           </Link>
           <Button
             onClick={() => setShowManageMembers(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <Users className="w-8 h-8" />
-            <span className="font-bold text-base">Members</span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
+              <Users className="w-7 h-7 text-blue-600" />
+            </div>
+            <span className="font-bold text-base text-gray-900">Members</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <Award className="w-8 h-8" />
-            <span className="font-bold text-base">Rewards</span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
+              <Award className="w-7 h-7 text-purple-600" />
+            </div>
+            <span className="font-bold text-base text-gray-900">Rewards</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <Calendar className="w-8 h-8" />
-            <span className="font-bold text-base">Classes</span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
+              <Calendar className="w-7 h-7 text-green-600" />
+            </div>
+            <span className="font-bold text-base text-gray-900">Classes</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <Target className="w-8 h-8" />
-            <span className="font-bold text-base">Coaches</span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
+              <Target className="w-7 h-7 text-orange-600" />
+            </div>
+            <span className="font-bold text-base text-gray-900">Coaches</span>
           </Button>
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white border-2 border-gray-100 p-2 rounded-2xl h-14 shadow-md">
-            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-base">
+          <TabsList className="grid w-full grid-cols-5 mb-10 bg-white border-0 p-2 rounded-2xl h-16 shadow-xl">
+            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Snapshot
             </TabsTrigger>
-            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-base">
+            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Engagement
             </TabsTrigger>
-            <TabsTrigger value="content" className="rounded-xl font-semibold text-base">
+            <TabsTrigger value="content" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Content
             </TabsTrigger>
-            <TabsTrigger value="admin" className="rounded-xl font-semibold text-base">
+            <TabsTrigger value="admin" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Admin
             </TabsTrigger>
-            <TabsTrigger value="insights" className="rounded-xl font-semibold text-base">
+            <TabsTrigger value="insights" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Insights
             </TabsTrigger>
           </TabsList>
@@ -558,8 +574,13 @@ export default function GymOwnerDashboard() {
             </div>
 
             {/* What to Do Next */}
-            <Card className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">💡 What to Do Next</h3>
+            <Card className="p-8 bg-white border-0 shadow-xl">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-2xl">💡</span>
+                </div>
+                What to Do Next
+              </h3>
               <div className="space-y-3">
                 {atRiskMembers > 0 && (
                   <div className="p-4 bg-white rounded-2xl border-2 border-orange-200">
@@ -609,8 +630,8 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Activity Log (Last 7 Days) */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Activity Log (Last 7 Days)</h3>
+            <Card className="p-8 bg-white border-0 shadow-xl">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Activity Log (Last 7 Days)</h3>
               <div className="space-y-3">
                 {checkIns
                   .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
