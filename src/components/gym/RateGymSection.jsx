@@ -7,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export default function RateGymSection({ gym, currentUser }) {
+export default function RateGymSection({ gym, currentUser, isGymOwner }) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [review, setReview] = useState('');
@@ -92,33 +92,36 @@ export default function RateGymSection({ gym, currentUser }) {
     <Card id="gym-rating-section" className="bg-white p-5">
       <h3 className="text-lg font-bold text-gray-900 mb-4">Rate This Gym</h3>
       
-      {/* Current Average Rating */}
-      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-4 mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600 mb-1">Average Rating</p>
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-black text-yellow-600">{gym.rating?.toFixed(1) || '0.0'}</span>
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-5 h-5 ${
-                      star <= Math.round(gym.rating || 0)
-                        ? 'text-yellow-400 fill-yellow-400'
-                        : 'text-gray-300'
-                    }`}
-                  />
-                ))}
+      {/* Current Average Rating - Only visible to gym owner */}
+      {isGymOwner && (
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-4 mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Average Rating</p>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-black text-yellow-600">{gym.rating?.toFixed(1) || '0.0'}</span>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-5 h-5 ${
+                        star <= Math.round(gym.rating || 0)
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">{allRatings.length}</p>
+              <p className="text-xs text-gray-500">ratings</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600">{allRatings.length}</p>
-            <p className="text-xs text-gray-500">ratings</p>
-          </div>
+          <p className="text-xs text-gray-500 mt-2 italic">Only you can see this rating</p>
         </div>
-      </div>
+      )}
 
       {/* User Rating Form */}
       {currentUser && (
@@ -172,8 +175,8 @@ export default function RateGymSection({ gym, currentUser }) {
         </div>
       )}
 
-      {/* Recent Reviews */}
-      {allRatings.length > 0 && (
+      {/* Recent Reviews - Only visible to gym owner */}
+      {isGymOwner && allRatings.length > 0 && (
         <div className="mt-6">
           <h4 className="font-semibold text-gray-900 mb-3">Recent Reviews</h4>
           <div className="space-y-3">

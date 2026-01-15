@@ -610,19 +610,7 @@ export default function GymCommunity() {
               <h1 className="text-2xl font-black text-white">{gym.name}</h1>
               {gym.verified && <BadgeCheck className="w-5 h-5 text-white" />}
             </div>
-            <div className="flex items-center gap-3">
-              <p className="text-white/80 text-sm font-medium">Your fitness community 💪</p>
-              <button 
-                onClick={() => {
-                  const ratingSection = document.getElementById('gym-rating-section');
-                  if (ratingSection) ratingSection.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full hover:bg-white/30 transition-colors"
-              >
-                <Star className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-                <span className="text-xs font-bold text-white">{gym.rating?.toFixed(1) || '0.0'}</span>
-              </button>
-            </div>
+            <p className="text-white/80 text-sm font-medium">Your fitness community 💪</p>
             <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1">
               <MapPin className="w-3 h-3" />
               {gym.city}
@@ -1065,7 +1053,7 @@ export default function GymCommunity() {
           </Card>
 
           {/* Rate Gym Section */}
-          <RateGymSection gym={gym} currentUser={currentUser} />
+          <RateGymSection gym={gym} currentUser={currentUser} isGymOwner={isGymOwner} />
 
           {/* Coaches Section */}
           <Card className="bg-white p-5">

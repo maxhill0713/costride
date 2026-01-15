@@ -460,10 +460,11 @@ export default function GymOwnerDashboard() {
           <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 text-white">
             <div className="flex items-center justify-between mb-2">
               <Star className="w-8 h-8" />
-              <span className="text-2xl font-bold">{selectedGym?.rating || 0}/5</span>
+              <span className="text-2xl font-bold">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
             </div>
-            <div className="text-3xl font-black mb-1">{selectedGym?.rating || 0}</div>
+            <div className="text-3xl font-black mb-1">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
             <p className="text-purple-100">Average Rating</p>
+            <p className="text-xs text-purple-200 mt-1 italic">Only you can see this</p>
           </Card>
         </div>
 
