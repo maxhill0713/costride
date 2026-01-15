@@ -876,8 +876,8 @@ export default function GymOwnerDashboard() {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Gym Profile Setup</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="font-bold text-gray-700 mb-3">Basic Information</h4>
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <h4 className="font-bold text-gray-700 mb-3 text-lg">Basic Information</h4>
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label className="text-sm font-bold text-gray-500 uppercase">Gym Name</label>
                       <p className="text-gray-900 font-medium mt-1">{selectedGym?.name}</p>
