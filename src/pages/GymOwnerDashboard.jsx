@@ -933,21 +933,21 @@ export default function GymOwnerDashboard() {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-3">
-                  <Button onClick={() => setShowManageClasses(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
-                    <Calendar className="w-6 h-6" />
-                    <span className="font-bold">Manage Classes</span>
-                    <span className="text-xs text-gray-500">{classes.length} classes</span>
+                <div className="grid grid-cols-3 gap-4">
+                  <Button onClick={() => setShowManageClasses(true)} variant="outline" className="h-auto py-6 flex-col gap-3">
+                    <Calendar className="w-8 h-8" />
+                    <span className="font-bold text-base">Manage Classes</span>
+                    <span className="text-sm text-gray-500">{classes.length} classes</span>
                   </Button>
-                  <Button onClick={() => setShowManageCoaches(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
-                    <Target className="w-6 h-6" />
-                    <span className="font-bold">Manage Coaches</span>
-                    <span className="text-xs text-gray-500">{coaches.length} coaches</span>
+                  <Button onClick={() => setShowManageCoaches(true)} variant="outline" className="h-auto py-6 flex-col gap-3">
+                    <Target className="w-8 h-8" />
+                    <span className="font-bold text-base">Manage Coaches</span>
+                    <span className="text-sm text-gray-500">{coaches.length} coaches</span>
                   </Button>
-                  <Button onClick={() => setShowManageMembers(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
-                    <Users className="w-6 h-6" />
-                    <span className="font-bold">View Members</span>
-                    <span className="text-xs text-gray-500">{uniqueMembers} members</span>
+                  <Button onClick={() => setShowManageMembers(true)} variant="outline" className="h-auto py-6 flex-col gap-3">
+                    <Users className="w-8 h-8" />
+                    <span className="font-bold text-base">View Members</span>
+                    <span className="text-sm text-gray-500">{uniqueMembers} members</span>
                   </Button>
                 </div>
               </div>
