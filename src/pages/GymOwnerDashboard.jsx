@@ -844,7 +844,7 @@ export default function GymOwnerDashboard() {
               </div>
               
               {rewards.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-6">
                   {rewards.slice(0, 6).map(reward => (
                     <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
                       <div className="flex items-start justify-between mb-3">
@@ -872,8 +872,8 @@ export default function GymOwnerDashboard() {
 
           <TabsContent value="admin" className="space-y-8">
             {/* Gym Profile Setup */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Profile Setup</h3>
+            <Card className="p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Gym Profile Setup</h3>
               <div className="space-y-6">
                 <div>
                   <h4 className="font-bold text-gray-700 mb-3">Basic Information</h4>
