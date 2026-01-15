@@ -355,10 +355,14 @@ export default function GymCommunity() {
     }
   };
 
-  const getRequirementProgress = (requirement) => {
+  const getRequirementProgress = (requirement, rewardCreatedDate) => {
     if (!currentUser) return { current: 0, target: 1, percentage: 0 };
 
-    const userCheckIns = checkIns.filter(c => c.user_id === currentUser.id);
+    // Only count check-ins after the reward was created
+    const userCheckIns = checkIns.filter(c => 
+      c.user_id === currentUser.id && 
+      new Date(c.check_in_date) >= new Date(rewardCreatedDate)
+    );
     const currentStreak = calculateCurrentStreak(userCheckIns);
     
     switch (requirement) {
@@ -1227,7 +1231,7 @@ export default function GymCommunity() {
                   const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
                   const meetsReq = meetsRequirement(reward.requirement);
                   const canClaim = !hasUserClaimed && meetsReq;
-                  const progress = getRequirementProgress(reward.requirement);
+                  const progress = getRequirementProgress(reward.requirement, reward.created_date);
                   
                   return (
                     <div key={reward.id} className={`border p-4 rounded-2xl ${
