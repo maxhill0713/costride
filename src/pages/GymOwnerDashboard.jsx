@@ -370,31 +370,31 @@ export default function GymOwnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 p-8">
+      <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">Gym Owner Dashboard</h1>
-            <p className="text-gray-600">Manage your gym and track performance</p>
+            <h1 className="text-4xl font-black text-gray-900 mb-2">Gym Owner Dashboard</h1>
+            <p className="text-gray-600 text-lg">Manage your gym and track performance</p>
           </div>
           
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-4 items-center">
             <Link to={createPageUrl('Home')}>
-              <Button variant="outline" className="border-2">
-                <Users className="w-4 h-4 mr-2" />
+              <Button variant="outline" className="border-2 h-12 px-6">
+                <Users className="w-5 h-5 mr-2" />
                 Member View
               </Button>
             </Link>
             
             {myGyms.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
+              <div className="flex gap-3">
                 {myGyms.map(gym => (
                   <Button
                     key={gym.id}
                     variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
                     onClick={() => setSelectedGym(gym)}
-                    className="whitespace-nowrap"
+                    className="whitespace-nowrap h-12 px-6"
                   >
                     {gym.name}
                   </Button>
@@ -429,106 +429,106 @@ export default function GymOwnerDashboard() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="p-6 bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <Users className="w-8 h-8" />
-              <TrendingUp className="w-5 h-5" />
+        <div className="grid grid-cols-4 gap-6 mb-8">
+          <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <Users className="w-10 h-10" />
+              <TrendingUp className="w-6 h-6" />
             </div>
-            <div className="text-3xl font-black mb-1">{uniqueMembers}</div>
-            <p className="text-blue-100">Active Members</p>
+            <div className="text-4xl font-black mb-2">{uniqueMembers}</div>
+            <p className="text-blue-100 text-lg">Active Members</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <Activity className="w-8 h-8" />
-              <Badge className="bg-white/20 text-white">{last7Days} this week</Badge>
+          <Card className="p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <Activity className="w-10 h-10" />
+              <Badge className="bg-white/20 text-white text-sm">{last7Days} this week</Badge>
             </div>
-            <div className="text-3xl font-black mb-1">{last30Days}</div>
-            <p className="text-green-100">Check-ins (30 days)</p>
+            <div className="text-4xl font-black mb-2">{last30Days}</div>
+            <p className="text-green-100 text-lg">Check-ins (30 days)</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-red-500 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <Activity className="w-8 h-8" />
-              <TrendingUp className="w-5 h-5" />
+          <Card className="p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <Activity className="w-10 h-10" />
+              <TrendingUp className="w-6 h-6" />
             </div>
-            <div className="text-3xl font-black mb-1">{activeMembersThisWeek}</div>
-            <p className="text-orange-100">Active This Week</p>
+            <div className="text-4xl font-black mb-2">{activeMembersThisWeek}</div>
+            <p className="text-orange-100 text-lg">Active This Week</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <Star className="w-8 h-8" />
-              <span className="text-2xl font-bold">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
+          <Card className="p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <Star className="w-10 h-10" />
+              <span className="text-3xl font-bold">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
             </div>
-            <div className="text-3xl font-black mb-1">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
-            <p className="text-purple-100">Average Rating</p>
-            <p className="text-xs text-purple-200 mt-1 italic">Only you can see this</p>
+            <div className="text-4xl font-black mb-2">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
+            <p className="text-purple-100 text-lg">Average Rating</p>
+            <p className="text-xs text-purple-200 mt-2 italic">Only you can see this</p>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="col-span-2 md:col-span-1">
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white h-auto py-6 flex-col gap-2 shadow-lg">
-              <Dumbbell className="w-8 h-8" />
+        <div className="grid grid-cols-5 gap-4 mb-8">
+          <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+            <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white h-auto py-8 flex-col gap-3 shadow-xl">
+              <Dumbbell className="w-10 h-10" />
               <span className="font-black text-lg">View My Gym</span>
-              <span className="text-xs text-blue-100">Manage & Post</span>
+              <span className="text-sm text-blue-100">Manage & Post</span>
             </Button>
           </Link>
           <Button
             onClick={() => setShowManageMembers(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-4 flex-col gap-2"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
           >
-            <Users className="w-6 h-6" />
-            <span className="font-bold">Members</span>
+            <Users className="w-8 h-8" />
+            <span className="font-bold text-base">Members</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-4 flex-col gap-2"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
           >
-            <Award className="w-6 h-6" />
-            <span className="font-bold">Rewards</span>
+            <Award className="w-8 h-8" />
+            <span className="font-bold text-base">Rewards</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-4 flex-col gap-2"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
           >
-            <Calendar className="w-6 h-6" />
-            <span className="font-bold">Classes</span>
+            <Calendar className="w-8 h-8" />
+            <span className="font-bold text-base">Classes</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-4 flex-col gap-2"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 h-auto py-8 flex-col gap-3 shadow-lg"
           >
-            <Target className="w-6 h-6" />
-            <span className="font-bold">Coaches</span>
+            <Target className="w-8 h-8" />
+            <span className="font-bold text-base">Coaches</span>
           </Button>
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 bg-white border-2 border-gray-100 p-1 rounded-2xl">
-            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-sm">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white border-2 border-gray-100 p-2 rounded-2xl h-14 shadow-md">
+            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-base">
               Snapshot
             </TabsTrigger>
-            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-xs md:text-sm">
+            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-base">
               Engagement
             </TabsTrigger>
-            <TabsTrigger value="content" className="rounded-xl font-semibold text-xs md:text-sm">
+            <TabsTrigger value="content" className="rounded-xl font-semibold text-base">
               Content
             </TabsTrigger>
-            <TabsTrigger value="admin" className="rounded-xl font-semibold text-xs md:text-sm">
+            <TabsTrigger value="admin" className="rounded-xl font-semibold text-base">
               Admin
             </TabsTrigger>
-            <TabsTrigger value="insights" className="rounded-xl font-semibold text-xs md:text-sm">
+            <TabsTrigger value="insights" className="rounded-xl font-semibold text-base">
               Insights
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="snapshot" className="space-y-6">
+          <TabsContent value="snapshot" className="space-y-8">
             {/* Today/This Week Snapshot */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-6">
               <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
                 <p className="text-blue-100 font-semibold mb-2">Check-ins Today</p>
                 <p className="text-6xl font-black mb-1">{todayCheckIns}</p>
@@ -636,11 +636,11 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="engagement" className="space-y-6">
+          <TabsContent value="engagement" className="space-y-8">
             {/* Engagement Overview */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Engagement Overview</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Engagement Overview</h3>
+              <div className="grid grid-cols-4 gap-6">
                 <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
                   <p className="text-sm text-gray-600 mb-1">Total Members</p>
                   <p className="text-3xl font-black text-blue-600">{uniqueMembers}</p>
@@ -697,9 +697,9 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Reward Effectiveness */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Reward Effectiveness</h3>
-              <div className="grid md:grid-cols-3 gap-4">
+            <Card className="p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Reward Effectiveness</h3>
+              <div className="grid grid-cols-3 gap-6">
                 <div className="p-4 bg-purple-50 rounded-2xl">
                   <p className="text-sm text-gray-600 mb-1">Active Rewards</p>
                   <p className="text-3xl font-black text-purple-600">{rewards.filter(r => r.active).length}</p>
@@ -725,7 +725,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="content" className="space-y-6">
+          <TabsContent value="content" className="space-y-8">
             {/* Challenges & Events */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -834,9 +834,9 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Rewards Management */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">Rewards Management</h3>
+            <Card className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Rewards Management</h3>
                 <Button onClick={() => setShowManageRewards(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Reward
@@ -870,7 +870,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="admin" className="space-y-6">
+          <TabsContent value="admin" className="space-y-8">
             {/* Gym Profile Setup */}
             <Card className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Profile Setup</h3>
