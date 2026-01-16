@@ -16,6 +16,9 @@ export default function Layout({ children, currentPageName }) {
     }))
   });
 
+  // Hide navigation on onboarding and signup pages
+  const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup';
+
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id, read: false }),
@@ -51,7 +54,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+      {!hideNavigation && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
         <div className="flex justify-around items-center h-20 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
@@ -79,12 +83,14 @@ export default function Layout({ children, currentPageName }) {
                 <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
               </Link>
             );
-          })}
-        </div>
-      </nav>
+            })}
+            </div>
+            </nav>
+            )}
 
-      {/* Side Navigation for Desktop */}
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
+            {/* Side Navigation for Desktop */}
+            {!hideNavigation && (
+            <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8">
           <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
             <span className="text-2xl font-black text-white">G</span>
@@ -118,12 +124,13 @@ export default function Layout({ children, currentPageName }) {
                 )}
               </Link>
             );
-          })}
-        </div>
-      </nav>
+            })}
+            </div>
+            </nav>
+            )}
 
-      {/* Main Content */}
-      <main className="md:pb-0 md:pl-20" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+            {/* Main Content */}
+            <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
         {children}
       </main>
     </div>
