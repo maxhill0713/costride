@@ -17,7 +17,7 @@ export default function Layout({ children, currentPageName }) {
   });
 
   // Hide navigation on onboarding and signup pages
-  const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup';
+  const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup';
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],

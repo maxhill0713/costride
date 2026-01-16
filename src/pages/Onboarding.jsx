@@ -99,7 +99,7 @@ export default function Onboarding() {
       if (variables.account_type === 'gym_owner') {
         navigate(createPageUrl('GymSignup'));
       } else {
-        navigate(createPageUrl('Home'));
+        navigate(createPageUrl('MemberSignup'));
       }
     }
   });
