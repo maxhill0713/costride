@@ -12,7 +12,6 @@ import { createPageUrl } from '../utils';
 
 export default function MemberSignup() {
   const [formData, setFormData] = useState({
-    nickname: '',
     bio: '',
     avatar_url: ''
   });
@@ -101,18 +100,17 @@ export default function MemberSignup() {
             {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
           </div>
 
-          {/* Nickname */}
+          {/* Name Display */}
           <div>
-            <Label htmlFor="nickname" className="text-gray-900 font-semibold mb-2 block">
-              Gym Nickname (Optional)
+            <Label className="text-gray-900 font-semibold mb-2 block">
+              Your Name
             </Label>
             <Input
-              id="nickname"
-              value={formData.nickname}
-              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-              placeholder="e.g., Iron Mike, The Beast, etc."
-              className="h-12 text-base"
+              value={currentUser?.full_name || ''}
+              disabled
+              className="h-12 text-base bg-gray-50"
             />
+            <p className="text-xs text-gray-500 mt-1">This is your account name</p>
           </div>
 
           {/* Bio */}
