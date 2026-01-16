@@ -106,18 +106,13 @@ export default function Onboarding() {
 
   const handleAccountTypeSelection = () => {
     if (!selectedAccountType) return;
-    
-    if (selectedAccountType === 'gym_owner') {
-      // Gym owners skip fitness goal selection
-      completeOnboardingMutation.mutate({ account_type: selectedAccountType });
-    } else {
-      // Personal users continue to fitness goal selection
-      setStep(2);
-    }
+    setStep(2);
   };
 
   const handleContinue = () => {
-    if (selectedGoal) {
+    if (selectedAccountType === 'gym_owner') {
+      completeOnboardingMutation.mutate({ account_type: selectedAccountType });
+    } else if (selectedGoal) {
       completeOnboardingMutation.mutate({
         account_type: 'personal',
         fitness_goal: selectedGoal
@@ -184,8 +179,42 @@ export default function Onboarding() {
           </>
         )}
 
+        {/* Step 2: Fitness Goal Selection (Personal Users Only) OR Gym Owner Confirmation */}
+        {step === 2 && selectedAccountType === 'gym_owner' && (
+          <>
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
+                <Building2 className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
+                Ready to register your gym?
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Let's get your gym set up on the platform
+              </p>
+            </div>
+
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={() => setStep(1)}
+                variant="outline"
+                className="px-8 py-6 text-lg rounded-2xl border-2"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleContinue}
+                disabled={completeOnboardingMutation.isPending}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-8 py-6 text-lg rounded-2xl disabled:opacity-50"
+              >
+                {completeOnboardingMutation.isPending ? 'Starting...' : 'Register My Gym'}
+              </Button>
+            </div>
+          </>
+        )}
+
         {/* Step 2: Fitness Goal Selection (Personal Users Only) */}
-        {step === 2 && (
+        {step === 2 && selectedAccountType === 'personal' && (
           <>
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
