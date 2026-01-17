@@ -922,6 +922,42 @@ export default function Profile() {
 
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Lock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold bg-gradient-to-r from-indigo-200 to-purple-200 bg-clip-text text-transparent">Account Details</h3>
+                  <p className="text-sm text-slate-300">Manage your email and password</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-700/50 rounded-2xl">
+                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
+                  <Input
+                    type="email"
+                    value={currentUser.email}
+                    disabled
+                    className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">Contact support to change your email</p>
+                </div>
+
+                <div className="p-4 bg-slate-700/50 rounded-2xl">
+                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Password</Label>
+                  <Input
+                    type="password"
+                    value="••••••••"
+                    disabled
+                    className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">Contact support to reset your password</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
                   <Lock className="w-6 h-6 text-white" />
                 </div>
