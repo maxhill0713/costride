@@ -17,6 +17,7 @@ import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
+import ClaimedRewardCard from '../components/rewards/ClaimedRewardCard';
 
 
 export default function Profile() {
@@ -81,13 +82,30 @@ export default function Profile() {
     queryFn: () => base44.entities.Gym.list()
   });
 
+  const { data: claimedBonuses = [] } = useQuery({
+    queryKey: ['claimedBonuses', currentUser?.id],
+    queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser
+  });
+
   const claimRewardMutation = useMutation({
-    mutationFn: ({ rewardId, userId, currentClaimed }) => 
-      base44.entities.Reward.update(rewardId, {
-        claimed_by: [...currentClaimed, userId]
-      }),
+    mutationFn: async ({ reward, userId }) => {
+      // Create ClaimedBonus record
+      await base44.entities.ClaimedBonus.create({
+        user_id: userId,
+        gym_id: reward.gym_id,
+        bonus_type: reward.type === 'discount' ? 'gym_offer' : 'free_day_pass',
+        offer_details: reward.title
+      });
+      
+      // Update reward claimed_by list
+      return base44.entities.Reward.update(reward.id, {
+        claimed_by: [...(reward.claimed_by || []), userId]
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards'] });
+      queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
     }
   });
 
@@ -106,6 +124,10 @@ export default function Profile() {
   // User check-in count for reward eligibility
   const userCheckInCount = userCheckIns.length;
   const hasClaimedReward = (reward) => reward.claimed_by?.includes(currentUser?.id);
+  
+  // Get claimed rewards with their bonus records
+  const claimedRewards = availableRewards.filter(r => hasClaimedReward(r));
+  const unclaimedRewards = availableRewards.filter(r => !hasClaimedReward(r));
 
   React.useEffect(() => {
     if (currentUser) {
@@ -625,91 +647,122 @@ export default function Profile() {
                   <p className="text-sm text-slate-400">Join a gym to unlock exclusive rewards!</p>
                 </div>
               ) : (
-                <div className="grid gap-4">
-                  {availableRewards.map((reward) => {
-                    const hasClaimed = hasClaimedReward(reward);
-                    const meetsRequirement = (() => {
-                      switch (reward.requirement) {
-                        case 'check_ins_10':
-                          return userCheckInCount >= 10;
-                        case 'check_ins_50':
-                          return userCheckInCount >= 50;
-                        case 'streak_30':
-                          return currentStreak >= 30;
-                        case 'none':
-                          return true;
-                        case 'points':
-                          return true; // simplified
-                        default:
-                          return false;
-                      }
-                    })();
+                <div className="space-y-6">
+                  {/* Claimed Rewards */}
+                  {claimedRewards.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-bold text-green-300 mb-3 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" />
+                        Claimed Rewards ({claimedRewards.length})
+                      </h4>
+                      <div className="grid gap-4">
+                        {claimedRewards.map((reward) => {
+                          const claimedBonus = claimedBonuses.find(cb => 
+                            cb.gym_id === reward.gym_id && 
+                            cb.offer_details === reward.title
+                          );
+                          const gym = allGyms.find(g => g.id === reward.gym_id);
+                          
+                          return claimedBonus ? (
+                            <ClaimedRewardCard
+                              key={reward.id}
+                              claimedBonus={claimedBonus}
+                              reward={reward}
+                              gym={gym}
+                            />
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
 
-                    return (
-                      <Card key={reward.id} className={`p-5 border-2 transition-all ${
-                        hasClaimed 
-                          ? 'bg-gray-50 border-gray-200' 
-                          : meetsRequirement 
-                            ? 'bg-white border-purple-200 hover:shadow-lg' 
-                            : 'bg-white border-gray-200 opacity-60'
-                      }`}>
-                        <div className="flex items-start gap-4">
-                          <div className="text-4xl">{reward.icon || '🎁'}</div>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div>
-                                <h4 className="font-bold text-gray-900">{reward.title}</h4>
-                                <p className="text-xs text-gray-500 mt-0.5">{reward.gym_name}</p>
+                  {/* Available Rewards */}
+                  {unclaimedRewards.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-bold text-purple-300 mb-3 flex items-center gap-2">
+                        <Gift className="w-4 h-4" />
+                        Available Rewards ({unclaimedRewards.length})
+                      </h4>
+                      <div className="grid gap-4">
+                        {unclaimedRewards.map((reward) => {
+                          const meetsRequirement = (() => {
+                            switch (reward.requirement) {
+                              case 'check_ins_10':
+                                return userCheckInCount >= 10;
+                              case 'check_ins_50':
+                                return userCheckInCount >= 50;
+                              case 'streak_30':
+                                return currentStreak >= 30;
+                              case 'none':
+                                return true;
+                              case 'points':
+                                return true;
+                              default:
+                                return false;
+                            }
+                          })();
+
+                          return (
+                            <Card key={reward.id} className={`p-5 border-2 transition-all ${
+                              meetsRequirement 
+                                ? 'bg-white border-purple-200 hover:shadow-lg' 
+                                : 'bg-white border-gray-200 opacity-60'
+                            }`}>
+                              <div className="flex items-start gap-4">
+                                <div className="text-4xl">{reward.icon || '🎁'}</div>
+                                <div className="flex-1">
+                                  <div className="flex items-start justify-between gap-2 mb-2">
+                                    <div>
+                                      <h4 className="font-bold text-gray-900">{reward.title}</h4>
+                                      <p className="text-xs text-gray-500 mt-0.5">{reward.gym_name}</p>
+                                    </div>
+                                    {reward.value && (
+                                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                                        {reward.value}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  {reward.description && (
+                                    <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
+                                  )}
+                                  
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex gap-2">
+                                      <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full capitalize">
+                                        {reward.requirement.replace(/_/g, ' ')}
+                                      </span>
+                                      <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full capitalize">
+                                        {reward.type.replace(/_/g, ' ')}
+                                      </span>
+                                    </div>
+                                    
+                                    {!meetsRequirement ? (
+                                      <span className="text-xs text-gray-500 font-medium">
+                                        🔒 Locked
+                                      </span>
+                                    ) : (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => claimRewardMutation.mutate({
+                                          reward,
+                                          userId: currentUser.id
+                                        })}
+                                        disabled={claimRewardMutation.isPending}
+                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl"
+                                      >
+                                        Claim Now
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              {reward.value && (
-                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                                  {reward.value}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {reward.description && (
-                              <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
-                            )}
-                            
-                            <div className="flex items-center justify-between">
-                              <div className="flex gap-2">
-                                <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full capitalize">
-                                  {reward.requirement.replace(/_/g, ' ')}
-                                </span>
-                                <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full capitalize">
-                                  {reward.type.replace(/_/g, ' ')}
-                                </span>
-                              </div>
-                              
-                              {hasClaimed ? (
-                                <span className="text-sm font-bold text-green-600 flex items-center gap-1">
-                                  ✓ Claimed
-                                </span>
-                              ) : !meetsRequirement ? (
-                                <span className="text-xs text-gray-500 font-medium">
-                                  🔒 Locked
-                                </span>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  onClick={() => claimRewardMutation.mutate({
-                                    rewardId: reward.id,
-                                    userId: currentUser.id,
-                                    currentClaimed: reward.claimed_by || []
-                                  })}
-                                  disabled={claimRewardMutation.isPending}
-                                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl"
-                                >
-                                  Claim Now
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  })}
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>
