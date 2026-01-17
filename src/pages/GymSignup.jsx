@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 
 
 export default function GymSignup() {
@@ -19,6 +20,7 @@ export default function GymSignup() {
   const [customEquipment, setCustomEquipment] = useState('');
   const [addressSearch, setAddressSearch] = useState('');
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -775,6 +777,10 @@ export default function GymSignup() {
           </form>
         </Card>
 
+        <ForgotPasswordModal
+          open={showForgotPassword}
+          onClose={() => setShowForgotPassword(false)}
+        />
       </div>
     </div>
   );
