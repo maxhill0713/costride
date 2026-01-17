@@ -437,28 +437,24 @@ export default function CheckInButton({ gym }) {
       )}
 
       {/* Check-in Stats */}
-      {checkIns.length > 0 && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
-              <div className="flex items-center gap-2 mb-1">
-                <MapPin className="w-4 h-4 text-blue-600" />
-                <span className="text-xs font-bold text-blue-900 uppercase">Total Visits</span>
-              </div>
-              <div className="text-2xl font-black text-blue-900">{checkIns.length}</div>
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
+            <div className="flex items-center gap-2 mb-1">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-bold text-blue-900 uppercase">Total Visits</span>
             </div>
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 border-2 border-orange-200">
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-orange-600" />
-                <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
-              </div>
-              <div className="text-2xl font-black text-orange-900">{currentStreak} days</div>
-            </div>
+            <div className="text-2xl font-black text-blue-900">{gymMembership ? checkIns.length : 0}</div>
           </div>
-          
-
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 border-2 border-orange-200">
+            <div className="flex items-center gap-2 mb-1">
+              <Flame className="w-4 h-4 text-orange-600" />
+              <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
+            </div>
+            <div className="text-2xl font-black text-orange-900">{gymMembership ? currentStreak : 0} days</div>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Check-in Button */}
       {!gymMembership ? (
