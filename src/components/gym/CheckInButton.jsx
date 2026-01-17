@@ -18,6 +18,15 @@ export default function CheckInButton({ gym }) {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: gymMembership } = useQuery({
+    queryKey: ['gymMembership', currentUser?.id, gym?.id],
+    queryFn: async () => {
+      const memberships = await base44.entities.GymMembership.list();
+      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gym.id && m.status === 'active');
+    },
+    enabled: !!currentUser && !!gym
+  });
+
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id, gym?.id],
     queryFn: () => base44.entities.CheckIn.filter({ 
@@ -304,6 +313,13 @@ export default function CheckInButton({ gym }) {
   const handleCheckIn = async () => {
     if (!currentUser || !gym) return;
     
+    if (!gymMembership) {
+      toast.error('You need a membership to check in', {
+        description: 'Join this gym to start checking in and tracking your progress!'
+      });
+      return;
+    }
+    
     setIsChecking(true);
     try {
       await checkInMutation.mutateAsync({
@@ -445,35 +461,42 @@ export default function CheckInButton({ gym }) {
       )}
 
       {/* Check-in Button */}
-      <motion.div
-        whileTap={!hasCheckedInToday() && !isChecking ? { scale: 0.95 } : {}}
-        animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
-        transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}
-      >
-        <Button
-          onClick={handleCheckIn}
-          disabled={hasCheckedInToday() || isChecking}
-          className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
-            hasCheckedInToday()
-              ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-          }`}
+      {!gymMembership ? (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
+          <p className="text-purple-900 font-semibold mb-2">Join this gym to check in</p>
+          <p className="text-sm text-purple-700">Get a membership to start tracking your progress!</p>
+        </div>
+      ) : (
+        <motion.div
+          whileTap={!hasCheckedInToday() && !isChecking ? { scale: 0.95 } : {}}
+          animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}
         >
-        {hasCheckedInToday() ? (
-          <>
-            <CheckCircle className="w-5 h-5 mr-2" />
-            Checked In Today ✓
-          </>
-        ) : isChecking ? (
-          'Checking in...'
-        ) : (
-          <>
-            <MapPin className="w-5 h-5 mr-2" />
-            Check In Now
-          </>
-        )}
-        </Button>
-      </motion.div>
+          <Button
+            onClick={handleCheckIn}
+            disabled={hasCheckedInToday() || isChecking}
+            className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
+              hasCheckedInToday()
+                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+            }`}
+          >
+          {hasCheckedInToday() ? (
+            <>
+              <CheckCircle className="w-5 h-5 mr-2" />
+              Checked In Today ✓
+            </>
+          ) : isChecking ? (
+            'Checking in...'
+          ) : (
+            <>
+              <MapPin className="w-5 h-5 mr-2" />
+              Check In Now
+            </>
+          )}
+          </Button>
+        </motion.div>
+      )}
 
       {hasCheckedInToday() && (
         <p className="text-center text-sm text-gray-500">
