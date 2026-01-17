@@ -120,9 +120,18 @@ export default function MemberSignup() {
 
           {/* Password */}
           <div>
-            <Label htmlFor="password" className="text-gray-900 font-semibold mb-2 block">
-              Password *
-            </Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="password" className="text-gray-900 font-semibold">
+                Password *
+              </Label>
+              <button
+                type="button"
+                onClick={() => base44.auth.redirectToLogin()}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Forgot Password?
+              </button>
+            </div>
             <Input
               id="password"
               type="password"

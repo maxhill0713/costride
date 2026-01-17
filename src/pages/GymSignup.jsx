@@ -484,7 +484,16 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Password *</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-gray-700 font-semibold">Password *</Label>
+                    <button
+                      type="button"
+                      onClick={() => base44.auth.redirectToLogin()}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                   <Input
                     type="password"
                     value={formData.password}
