@@ -1,5 +1,6 @@
 import Groups from './pages/Groups';
 import GymCommunity from './pages/GymCommunity';
+import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import Home from './pages/Home';
@@ -21,6 +22,7 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "Groups": Groups,
     "GymCommunity": GymCommunity,
+    "GymOwnerDashboard": GymOwnerDashboard,
     "GymSignup": GymSignup,
     "Gyms": Gyms,
     "Home": Home,
