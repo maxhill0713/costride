@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { User, Camera, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 
 export default function MemberSignup() {
   const [formData, setFormData] = useState({
@@ -19,7 +18,6 @@ export default function MemberSignup() {
     avatar_url: ''
   });
   const [uploading, setUploading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -126,13 +124,12 @@ export default function MemberSignup() {
               <Label htmlFor="password" className="text-gray-900 font-semibold">
                 Password *
               </Label>
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
+              <a
+                href="/auth/login"
                 className="text-xs text-blue-600 hover:text-blue-700 font-medium"
               >
                 Forgot Password?
-              </button>
+              </a>
             </div>
             <Input
               id="password"
@@ -200,11 +197,6 @@ export default function MemberSignup() {
           </div>
         </form>
       </Card>
-
-      <ForgotPasswordModal
-        open={showForgotPassword}
-        onClose={() => setShowForgotPassword(false)}
-      />
     </div>
   );
 }

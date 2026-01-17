@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 
 
 export default function GymSignup() {
@@ -20,7 +19,6 @@ export default function GymSignup() {
   const [customEquipment, setCustomEquipment] = useState('');
   const [addressSearch, setAddressSearch] = useState('');
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -488,13 +486,12 @@ export default function GymSignup() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-gray-700 font-semibold">Password *</Label>
-                    <button
-                      type="button"
-                      onClick={() => setShowForgotPassword(true)}
+                    <a
+                      href="/auth/login"
                       className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                     >
                       Forgot Password?
-                    </button>
+                    </a>
                   </div>
                   <Input
                     type="password"
@@ -776,11 +773,6 @@ export default function GymSignup() {
             </div>
           </form>
         </Card>
-
-        <ForgotPasswordModal
-          open={showForgotPassword}
-          onClose={() => setShowForgotPassword(false)}
-        />
       </div>
     </div>
   );
