@@ -12,6 +12,8 @@ import { createPageUrl } from '../utils';
 
 export default function MemberSignup() {
   const [formData, setFormData] = useState({
+    email: '',
+    password: '',
     bio: '',
     avatar_url: ''
   });
@@ -98,6 +100,39 @@ export default function MemberSignup() {
               </label>
             </div>
             {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+          </div>
+
+          {/* Email */}
+          <div>
+            <Label htmlFor="email" className="text-gray-900 font-semibold mb-2 block">
+              Email *
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="your@email.com"
+              required
+              className="h-12 text-base"
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <Label htmlFor="password" className="text-gray-900 font-semibold mb-2 block">
+              Password *
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="••••••••"
+              required
+              minLength={6}
+              className="h-12 text-base"
+            />
           </div>
 
           {/* Name Display */}
