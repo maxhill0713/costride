@@ -488,7 +488,7 @@ export default function GymSignup() {
                     <Label className="text-gray-700 font-semibold">Password *</Label>
                     <button
                       type="button"
-                      onClick={() => base44.auth.redirectToLogin()}
+                      onClick={() => setShowForgotPassword(true)}
                       className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                     >
                       Forgot Password?
