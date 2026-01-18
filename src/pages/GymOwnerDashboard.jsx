@@ -1274,6 +1274,129 @@ export default function GymOwnerDashboard() {
                 </div>
               </div>
             </Card>
+
+            {/* Retention Graphs Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Weekly Check-in Trend */}
+              <Card className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Weekly Check-in Trend</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 11; i >= 0; i--) {
+                      const weekStart = subDays(new Date(), i * 7);
+                      const weekEnd = subDays(new Date(), (i - 1) * 7);
+                      const weekCheckIns = checkIns.filter(c => 
+                        isWithinInterval(new Date(c.check_in_date), { start: weekStart, end: weekEnd })
+                      );
+                      data.push({
+                        week: format(weekStart, 'MMM d'),
+                        checkIns: weekCheckIns.length
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="checkIns" stroke="#3b82f6" strokeWidth={2} name="Check-ins" />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-gray-600 mt-3 text-center">Attendance over the last 12 weeks</p>
+              </Card>
+
+              {/* Challenge Participation Over Time */}
+              <Card className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Challenge Participation</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthStart = subDays(new Date(), i * 30);
+                      const monthEnd = subDays(new Date(), (i - 1) * 30);
+                      const monthChallenges = challenges.filter(c => 
+                        isWithinInterval(new Date(c.start_date), { start: monthStart, end: monthEnd })
+                      );
+                      const totalParticipants = monthChallenges.reduce((sum, c) => sum + (c.participants?.length || 0), 0);
+                      data.push({
+                        month: format(monthStart, 'MMM'),
+                        participants: totalParticipants
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="participants" fill="#f59e0b" name="Participants" />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-gray-600 mt-3 text-center">Engagement trend over 6 months</p>
+              </Card>
+
+              {/* Active Members Growth */}
+              <Card className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Active Members Growth</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthEnd = subDays(new Date(), i * 30);
+                      const monthStart = subDays(monthEnd, 30);
+                      const activeMembers = new Set(
+                        checkIns.filter(c => 
+                          isWithinInterval(new Date(c.check_in_date), { start: monthStart, end: monthEnd })
+                        ).map(c => c.user_id)
+                      ).size;
+                      data.push({
+                        month: format(monthEnd, 'MMM'),
+                        members: activeMembers
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="members" stroke="#10b981" strokeWidth={2} name="Active Members" />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-gray-600 mt-3 text-center">Members who checked in last 30 days</p>
+              </Card>
+
+              {/* Rewards Redeemed */}
+              <Card className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Rewards Redeemed</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const rewardClaims = {};
+                    rewards.forEach(reward => {
+                      const claimCount = reward.claimed_by?.length || 0;
+                      if (claimCount > 0) {
+                        rewardClaims[reward.title] = claimCount;
+                      }
+                    });
+                    return Object.entries(rewardClaims)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([title, claims]) => ({
+                        reward: title.length > 15 ? title.substring(0, 15) + '...' : title,
+                        claims
+                      }));
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="reward" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="claims" fill="#8b5cf6" name="Claims" />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-gray-600 mt-3 text-center">Track incentive effectiveness</p>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="oldanalytics" className="space-y-6">
