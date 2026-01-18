@@ -1037,96 +1037,105 @@ export default function GymOwnerDashboard() {
 
               <Card className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Day of Week Analysis</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={(() => {
+                <div className="space-y-3">
+                  {(() => {
                     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                     const dayData = {};
                     checkIns.forEach(c => {
                       const day = new Date(c.check_in_date).getDay();
                       dayData[day] = (dayData[day] || 0) + 1;
                     });
-                    return days.map((name, idx) => ({
-                      day: name.slice(0, 3),
-                      checkIns: dayData[idx] || 0
-                    }));
-                  })()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="checkIns" fill="#f59e0b" />
-                  </BarChart>
-                </ResponsiveContainer>
+                    const sortedDays = days.map((name, idx) => ({ name, count: dayData[idx] || 0, idx }))
+                      .sort((a, b) => b.count - a.count);
+                    
+                    return sortedDays.map(({ name, count, idx }, rank) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-orange-600">#{rank + 1}</span>
+                          <span className="font-medium text-gray-900">{name}</span>
+                        </div>
+                        <span className="text-xl font-black text-orange-600">{count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
               </Card>
             </div>
 
             {/* Member Check-in Trends */}
             <Card className="p-6 md:p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Check-in Trends (Last 30 Days)</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={(() => {
-                  const data = [];
-                  for (let i = 29; i >= 0; i--) {
-                    const date = subDays(new Date(), i);
-                    const dayCheckIns = checkIns.filter(c => {
-                      const checkInDate = startOfDay(new Date(c.check_in_date));
-                      return checkInDate.getTime() === startOfDay(date).getTime();
-                    });
-                    data.push({
-                      date: format(date, 'MMM d'),
-                      checkIns: dayCheckIns.length,
-                      uniqueMembers: new Set(dayCheckIns.map(c => c.user_id)).size
-                    });
-                  }
-                  return data;
-                })()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="checkIns" stroke="#3b82f6" strokeWidth={2} name="Check-ins" />
-                  <Line type="monotone" dataKey="uniqueMembers" stroke="#10b981" strokeWidth={2} name="Unique Members" />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {(() => {
+                  const last7DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }));
+                  const last14DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 14), end: subDays(new Date(), 7) }));
+                  const last30DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() }));
+                  const previousMonthCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 60), end: subDays(new Date(), 30) }));
+                  
+                  return (
+                    <>
+                      <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">Last 7 Days</p>
+                        <p className="text-3xl font-black text-blue-600">{last7DaysCheckIns.length}</p>
+                        <p className="text-xs text-gray-500 mt-1">check-ins</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">Last 30 Days</p>
+                        <p className="text-3xl font-black text-green-600">{last30DaysCheckIns.length}</p>
+                        <p className="text-xs text-gray-500 mt-1">check-ins</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">Daily Average</p>
+                        <p className="text-3xl font-black text-purple-600">{Math.round(last30DaysCheckIns.length / 30)}</p>
+                        <p className="text-xs text-gray-500 mt-1">per day</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">vs Previous Month</p>
+                        <p className="text-3xl font-black text-orange-600">
+                          {previousMonthCheckIns.length > 0 ? 
+                            (((last30DaysCheckIns.length - previousMonthCheckIns.length) / previousMonthCheckIns.length) * 100).toFixed(0) 
+                            : 0}%
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">change</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             </Card>
 
             {/* Peak Hours Analysis */}
             <Card className="p-6 md:p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Peak Hours Analysis</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={(() => {
+              <div className="space-y-3">
+                {(() => {
                   const hourlyData = {};
                   checkIns.forEach(c => {
                     const hour = new Date(c.check_in_date).getHours();
                     hourlyData[hour] = (hourlyData[hour] || 0) + 1;
                   });
-                  return Array.from({ length: 24 }, (_, i) => ({
-                    hour: i === 0 ? '12am' : i < 12 ? `${i}am` : i === 12 ? '12pm' : `${i - 12}pm`,
-                    checkIns: hourlyData[i] || 0
-                  }));
-                })()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="hour" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="checkIns" fill="#8b5cf6" />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-sm text-gray-600 mt-4 text-center">
-                Most popular hours: {(() => {
-                  const hourlyData = {};
-                  checkIns.forEach(c => {
-                    const hour = new Date(c.check_in_date).getHours();
-                    hourlyData[hour] = (hourlyData[hour] || 0) + 1;
-                  });
-                  const sorted = Object.entries(hourlyData).sort(([, a], [, b]) => b - a).slice(0, 3);
-                  return sorted.map(([hour]) => {
+                  const sorted = Object.entries(hourlyData)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 10);
+                  
+                  return sorted.map(([hour, count], idx) => {
                     const h = parseInt(hour);
-                    return h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
-                  }).join(', ');
+                    const timeLabel = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+                    const endH = (h + 1) % 24;
+                    const endLabel = endH === 0 ? '12am' : endH < 12 ? `${endH}am` : endH === 12 ? '12pm' : `${endH - 12}pm`;
+                    
+                    return (
+                      <div key={hour} className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-purple-600">#{idx + 1}</span>
+                          <span className="font-medium text-gray-900">{timeLabel} - {endLabel}</span>
+                        </div>
+                        <span className="text-xl font-black text-purple-600">{count}</span>
+                      </div>
+                    );
+                  });
                 })()}
-              </p>
+              </div>
             </Card>
 
             {/* Member Engagement Breakdown */}
@@ -1202,58 +1211,33 @@ export default function GymOwnerDashboard() {
             {/* First Visit vs Returning Members */}
             <Card className="p-6 md:p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">New vs Returning Members</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: 'First-time Visitors', value: checkIns.filter(c => c.first_visit).length },
-                          { name: 'Returning Members', value: checkIns.filter(c => !c.first_visit).length }
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        <Cell fill="#10b981" />
-                        <Cell fill="#3b82f6" />
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-5 bg-green-50 rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-gray-700">First-time Visitors</span>
+                    <span className="text-3xl font-black text-green-600">
+                      {checkIns.filter(c => c.first_visit).length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">New members discovering your gym</p>
                 </div>
-                <div className="space-y-4">
-                  <div className="p-5 bg-green-50 rounded-2xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-gray-700">First-time Visitors</span>
-                      <span className="text-2xl font-black text-green-600">
-                        {checkIns.filter(c => c.first_visit).length}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">New members discovering your gym</p>
+                <div className="p-5 bg-blue-50 rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-gray-700">Returning Members</span>
+                    <span className="text-3xl font-black text-blue-600">
+                      {checkIns.filter(c => !c.first_visit).length}
+                    </span>
                   </div>
-                  <div className="p-5 bg-blue-50 rounded-2xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-gray-700">Returning Members</span>
-                      <span className="text-2xl font-black text-blue-600">
-                        {checkIns.filter(c => !c.first_visit).length}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">Loyal members coming back</p>
+                  <p className="text-xs text-gray-600">Loyal members coming back</p>
+                </div>
+                <div className="p-5 bg-purple-50 rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-gray-700">Return Rate</span>
+                    <span className="text-3xl font-black text-purple-600">
+                      {checkIns.length > 0 ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100) : 0}%
+                    </span>
                   </div>
-                  <div className="p-5 bg-purple-50 rounded-2xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-gray-700">Return Rate</span>
-                      <span className="text-2xl font-black text-purple-600">
-                        {checkIns.length > 0 ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100) : 0}%
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">Members who came back after first visit</p>
-                  </div>
+                  <p className="text-xs text-gray-600">Members who came back after first visit</p>
                 </div>
               </div>
             </Card>
