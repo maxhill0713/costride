@@ -1138,6 +1138,39 @@ export default function GymOwnerDashboard() {
               </div>
             </Card>
 
+            {/* Reward Engagement */}
+            <Card className="p-6 md:p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Reward Engagement</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {(() => {
+                  const totalRewardClaims = rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0);
+                  const usersEarningRewards = new Set(rewards.flatMap(r => r.claimed_by || [])).size;
+                  const percentEarning = uniqueMembers > 0 ? Math.round((usersEarningRewards / uniqueMembers) * 100) : 0;
+                  const avgRewardsPerUser = uniqueMembers > 0 ? (totalRewardClaims / uniqueMembers).toFixed(1) : 0;
+                  
+                  return (
+                    <>
+                      <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">Users Earning Rewards</p>
+                        <p className="text-4xl font-black text-purple-600">{percentEarning}%</p>
+                        <p className="text-xs text-gray-500 mt-1">{usersEarningRewards} of {uniqueMembers} members</p>
+                      </div>
+                      <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">Total Claims</p>
+                        <p className="text-4xl font-black text-blue-600">{totalRewardClaims}</p>
+                        <p className="text-xs text-gray-500 mt-1">rewards redeemed</p>
+                      </div>
+                      <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
+                        <p className="text-sm text-gray-600 mb-1">Avg Rewards Per User</p>
+                        <p className="text-4xl font-black text-green-600">{avgRewardsPerUser}</p>
+                        <p className="text-xs text-gray-500 mt-1">rewards per member</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </Card>
+
             {/* Member Engagement Breakdown */}
             <Card className="p-6 md:p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Member Engagement Levels</h3>
