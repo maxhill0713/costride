@@ -96,7 +96,7 @@ export default function Plus() {
               <p className="text-purple-100">Premium Analytics Included</p>
             </div>
 
-            <div className="space-y-3 mb-8">
+            <div className="space-y-3 mb-6">
               {proFeatures.map((feature, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
@@ -109,6 +109,8 @@ export default function Plus() {
                 </div>
               ))}
             </div>
+
+            <p className="text-center text-purple-100 text-sm mb-8">...and more</p>
 
             <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-12 rounded-2xl shadow-lg">
               Start Free Trial
