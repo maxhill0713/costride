@@ -542,7 +542,7 @@ export default function GymOwnerDashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="snapshot" className="space-y-6 md:space-y-8">
+          <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
             {/* Today/This Week Snapshot */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <Card className="p-5 md:p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
@@ -657,7 +657,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="engagement" className="space-y-8">
+          <TabsContent value="engagement" className="space-y-8 mt-4 md:mt-6">
             {/* Engagement Overview */}
             <Card className="p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Engagement Overview</h3>
@@ -746,7 +746,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="content" className="space-y-8">
+          <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
             {/* Challenges & Events */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -891,7 +891,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="admin" className="space-y-8">
+          <TabsContent value="admin" className="space-y-8 mt-4 md:mt-6">
             {/* Gym Profile Setup */}
             <Card className="p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Gym Profile Setup</h3>
@@ -1001,7 +1001,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="insights" className="space-y-6">
+          <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Coming Soon</h3>
               <p className="text-gray-600">Advanced insights and analytics will be available here.</p>
