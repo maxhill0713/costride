@@ -46,7 +46,7 @@ export default function Plus() {
             <Crown className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-3">
-            Fattie <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Plus</span>
+            <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Retention Pro</span>
           </h1>
           <p className="text-lg text-gray-600 font-medium">Premium Analytics Includes</p>
         </div>
