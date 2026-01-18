@@ -5,29 +5,34 @@ import { Card } from '@/components/ui/card';
 
 const features = [
   {
-    icon: Zap,
-    title: 'Advanced Analytics',
-    description: 'Track your progress with detailed insights and charts'
+    icon: BarChart,
+    title: 'Advanced Attendance Insights',
+    description: 'Track check-ins and engagement trends over time'
   },
   {
     icon: TrendingUp,
-    title: 'Personalized Plans',
-    description: 'AI-powered workout and nutrition plans tailored for you'
+    title: 'Retention & Churn Prediction',
+    description: 'Identify members at risk of leaving and take action early'
   },
   {
     icon: Users,
-    title: 'Private Coaching',
-    description: 'Connect with certified trainers for 1-on-1 sessions'
+    title: 'LTV / ARPM Tracking',
+    description: 'Understand how much each member is worth and how revenue changes over time'
   },
   {
-    icon: BarChart,
-    title: 'Performance Tracking',
-    description: 'Monitor every lift, set, and rep with precision'
+    icon: Zap,
+    title: 'Revenue & ROI Reporting',
+    description: 'See how rewards and campaigns impact your bottom line'
   },
   {
     icon: Shield,
-    title: 'Ad-Free Experience',
-    description: 'Enjoy uninterrupted training sessions'
+    title: 'Automated Alerts & Re-engagement Actions',
+    description: 'Get notified when members become inactive and automatically re-engage them'
+  },
+  {
+    icon: Crown,
+    title: 'Custom Reports & Export',
+    description: 'Download reports for management and planning'
   }
 ];
 
@@ -43,7 +48,7 @@ export default function Plus() {
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-3">
             Fattie <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Plus</span>
           </h1>
-          <p className="text-lg text-gray-600 font-medium">Unlock your full potential</p>
+          <p className="text-lg text-gray-600 font-medium">Premium Analytics Includes</p>
         </div>
 
         {/* Features */}
@@ -65,7 +70,7 @@ export default function Plus() {
 
         {/* Pricing */}
         <Card className="bg-gradient-to-br from-purple-500 to-pink-500 border-0 p-8 text-center text-white shadow-2xl">
-          <h2 className="text-3xl font-black mb-2">$9.99/month</h2>
+          <h2 className="text-3xl font-black mb-2">£49.99/month</h2>
           <p className="text-purple-100 mb-6">Start your 7-day free trial</p>
           <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-14 rounded-2xl text-lg shadow-lg">
             Start Free Trial
