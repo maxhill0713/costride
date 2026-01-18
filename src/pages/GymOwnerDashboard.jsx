@@ -370,10 +370,10 @@ export default function GymOwnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 p-5 md:p-8 pb-24 md:pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-6 mb-8 md:mb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6 md:mb-10">
           <div>
             <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight">Gym Owner Dashboard</h1>
             <p className="text-gray-600 text-sm md:text-lg">Manage your gym and track performance with precision</p>
@@ -406,7 +406,7 @@ export default function GymOwnerDashboard() {
 
         {/* At-Risk Alert */}
         {atRiskMembers > 0 && (
-          <Card className="p-5 md:p-6 mb-6 md:mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
+          <Card className="p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
                 <Bell className="w-7 h-7" />
@@ -429,7 +429,7 @@ export default function GymOwnerDashboard() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
@@ -477,7 +477,7 @@ export default function GymOwnerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-4 mb-8 md:mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="col-span-2 md:col-span-1">
             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
               <Dumbbell className="w-8 h-8 md:w-10 md:h-10" />
@@ -524,7 +524,7 @@ export default function GymOwnerDashboard() {
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-14 md:h-16 shadow-xl overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-12 md:h-16 shadow-xl overflow-x-auto">
             <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Snapshot
             </TabsTrigger>
@@ -542,11 +542,11 @@ export default function GymOwnerDashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-6 md:mt-6">
+          <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
             {/* Today/This Week Snapshot */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
-              <Card className="p-6 md:p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
-                <p className="text-blue-100 font-semibold mb-3 text-xs md:text-sm">Check-ins Today</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              <Card className="p-5 md:p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
+                <p className="text-blue-100 font-semibold mb-2 text-xs md:text-sm">Check-ins Today</p>
                 <p className="text-4xl md:text-6xl font-black mb-1">{todayCheckIns}</p>
                 <p className="text-xs md:text-sm text-blue-100">members checked in</p>
               </Card>
@@ -657,7 +657,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="engagement" className="space-y-6 md:space-y-8 mt-6 md:mt-6">
+          <TabsContent value="engagement" className="space-y-8 mt-4 md:mt-6">
             {/* Engagement Overview */}
             <Card className="p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Engagement Overview</h3>
@@ -746,7 +746,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="content" className="space-y-6 md:space-y-8 mt-6 md:mt-6">
+          <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
             {/* Challenges & Events */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -891,7 +891,7 @@ export default function GymOwnerDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="admin" className="space-y-6 md:space-y-8 mt-6 md:mt-6">
+          <TabsContent value="admin" className="space-y-8 mt-4 md:mt-6">
             {/* Gym Profile Setup */}
             <Card className="p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Gym Profile Setup</h3>
