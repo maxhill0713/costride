@@ -1129,64 +1129,6 @@ export default function GymOwnerDashboard() {
               </p>
             </Card>
 
-            {/* Member Retention & Growth */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Member Retention</h3>
-                <div className="space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
-                    <p className="text-sm text-gray-600 mb-1">Active This Month</p>
-                    <p className="text-3xl font-black text-green-600">
-                      {new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">out of {uniqueMembers} total members</p>
-                  </div>
-                  <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl">
-                    <p className="text-sm text-gray-600 mb-1">Inactive (30+ days)</p>
-                    <p className="text-3xl font-black text-orange-600">
-                      {(() => {
-                        const activeIds = new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id));
-                        const allMemberIds = new Set(checkIns.map(c => c.user_id));
-                        return allMemberIds.size - activeIds.size;
-                      })()}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">Consider reaching out</p>
-                  </div>
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl">
-                    <p className="text-sm text-gray-600 mb-1">Retention Rate</p>
-                    <p className="text-3xl font-black text-blue-600">
-                      {uniqueMembers > 0 ? Math.round((new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size / uniqueMembers) * 100) : 0}%
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">30-day active rate</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Day of Week Analysis</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={(() => {
-                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                    const dayData = {};
-                    checkIns.forEach(c => {
-                      const day = new Date(c.check_in_date).getDay();
-                      dayData[day] = (dayData[day] || 0) + 1;
-                    });
-                    return days.map((name, idx) => ({
-                      day: name.slice(0, 3),
-                      checkIns: dayData[idx] || 0
-                    }));
-                  })()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="checkIns" fill="#f59e0b" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
-            </div>
-
             {/* Member Engagement Breakdown */}
             <Card className="p-6 md:p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Member Engagement Levels</h3>
