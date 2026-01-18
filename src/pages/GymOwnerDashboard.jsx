@@ -370,31 +370,31 @@ export default function GymOwnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6 md:mb-10">
           <div>
-            <h1 className="text-5xl font-black text-gray-900 mb-3 tracking-tight">Gym Owner Dashboard</h1>
-            <p className="text-gray-600 text-lg">Manage your gym and track performance with precision</p>
+            <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight">Gym Owner Dashboard</h1>
+            <p className="text-gray-600 text-sm md:text-lg">Manage your gym and track performance with precision</p>
           </div>
           
-          <div className="flex gap-4 items-center">
-            <Link to={createPageUrl('Home')}>
-              <Button variant="outline" className="border-2 h-12 px-6">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-stretch sm:items-center">
+            <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
+              <Button variant="outline" className="border-2 h-12 px-4 md:px-6 w-full">
                 <Users className="w-5 h-5 mr-2" />
                 Member View
               </Button>
             </Link>
             
             {myGyms.length > 1 && (
-              <div className="flex gap-3">
+              <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
                 {myGyms.map(gym => (
                   <Button
                     key={gym.id}
                     variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
                     onClick={() => setSelectedGym(gym)}
-                    className="whitespace-nowrap h-12 px-6"
+                    className="whitespace-nowrap h-12 px-4 md:px-6"
                   >
                     {gym.name}
                   </Button>
@@ -429,147 +429,147 @@ export default function GymOwnerDashboard() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
-                <Users className="w-7 h-7 text-white" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                <Users className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
-              <TrendingUp className="w-6 h-6 text-blue-500" />
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
             </div>
-            <div className="text-5xl font-black mb-2 text-gray-900">{uniqueMembers}</div>
-            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Active Members</p>
+            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{uniqueMembers}</div>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Active Members</p>
           </Card>
 
-          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
-                <Activity className="w-7 h-7 text-white" />
+          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                <Activity className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
-              <Badge className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 text-sm font-semibold">{last7Days} this week</Badge>
+              <Badge className="bg-green-50 text-green-700 border border-green-200 px-2 md:px-3 py-1 text-xs md:text-sm font-semibold">{last7Days} week</Badge>
             </div>
-            <div className="text-5xl font-black mb-2 text-gray-900">{last30Days}</div>
-            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Check-ins (30 days)</p>
+            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{last30Days}</div>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Check-ins (30d)</p>
           </Card>
 
-          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
-                <Activity className="w-7 h-7 text-white" />
+          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+                <Activity className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
-              <TrendingUp className="w-6 h-6 text-orange-500" />
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />
             </div>
-            <div className="text-5xl font-black mb-2 text-gray-900">{activeMembersThisWeek}</div>
-            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Active This Week</p>
+            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{activeMembersThisWeek}</div>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Active This Week</p>
           </Card>
 
-          <Card className="p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                <Star className="w-7 h-7 text-white" />
+          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <Star className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
-              <span className="text-3xl font-bold text-purple-600">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
+              <span className="text-xl md:text-3xl font-bold text-purple-600">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
             </div>
-            <div className="text-5xl font-black mb-2 text-gray-900">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
-            <p className="text-gray-500 text-base font-semibold uppercase tracking-wide">Average Rating</p>
-            <p className="text-xs text-gray-400 mt-3 italic">Only you can see this rating</p>
+            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Average Rating</p>
+            <p className="text-xs text-gray-400 mt-2 md:mt-3 italic hidden md:block">Only you can see this rating</p>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-5 gap-4 mb-8">
-          <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
-              <Dumbbell className="w-10 h-10" />
-              <span className="font-black text-xl">View My Gym</span>
-              <span className="text-sm text-blue-100 font-medium">Manage & Post</span>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+          <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="col-span-2 md:col-span-1">
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
+              <Dumbbell className="w-8 h-8 md:w-10 md:h-10" />
+              <span className="font-black text-lg md:text-xl">View My Gym</span>
+              <span className="text-xs md:text-sm text-blue-100 font-medium">Manage & Post</span>
             </Button>
           </Link>
           <Button
             onClick={() => setShowManageMembers(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
-              <Users className="w-7 h-7 text-blue-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
             </div>
-            <span className="font-bold text-base text-gray-900">Members</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">Members</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
-              <Award className="w-7 h-7 text-purple-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
+              <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
             </div>
-            <span className="font-bold text-base text-gray-900">Rewards</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">Rewards</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
-              <Calendar className="w-7 h-7 text-green-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
+              <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-600" />
             </div>
-            <span className="font-bold text-base text-gray-900">Classes</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">Classes</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
-              <Target className="w-7 h-7 text-orange-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
+              <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
             </div>
-            <span className="font-bold text-base text-gray-900">Coaches</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">Coaches</span>
           </Button>
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-10 bg-white border-0 p-2 rounded-2xl h-16 shadow-xl">
-            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
+          <TabsList className="grid w-full grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-12 md:h-16 shadow-xl overflow-x-auto">
+            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Snapshot
             </TabsTrigger>
-            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
+            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Engagement
             </TabsTrigger>
-            <TabsTrigger value="content" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
+            <TabsTrigger value="content" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Content
             </TabsTrigger>
-            <TabsTrigger value="admin" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
+            <TabsTrigger value="admin" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Admin
             </TabsTrigger>
-            <TabsTrigger value="insights" className="rounded-xl font-semibold text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
+            <TabsTrigger value="insights" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               Insights
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="snapshot" className="space-y-8">
+          <TabsContent value="snapshot" className="space-y-6 md:space-y-8">
             {/* Today/This Week Snapshot */}
-            <div className="grid grid-cols-4 gap-6">
-              <Card className="p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
-                <p className="text-blue-100 font-semibold mb-2">Check-ins Today</p>
-                <p className="text-6xl font-black mb-1">{todayCheckIns}</p>
-                <p className="text-sm text-blue-100">members checked in</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              <Card className="p-5 md:p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
+                <p className="text-blue-100 font-semibold mb-2 text-xs md:text-sm">Check-ins Today</p>
+                <p className="text-4xl md:text-6xl font-black mb-1">{todayCheckIns}</p>
+                <p className="text-xs md:text-sm text-blue-100">members checked in</p>
               </Card>
 
-              <Card className="p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white border-0 shadow-lg">
-                <p className="text-green-100 font-semibold mb-2">Active This Week</p>
-                <p className="text-6xl font-black mb-1">{activeMembersThisWeek}</p>
-                <p className="text-sm text-green-100">unique members</p>
+              <Card className="p-5 md:p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white border-0 shadow-lg">
+                <p className="text-green-100 font-semibold mb-2 text-xs md:text-sm">Active This Week</p>
+                <p className="text-4xl md:text-6xl font-black mb-1">{activeMembersThisWeek}</p>
+                <p className="text-xs md:text-sm text-green-100">unique members</p>
               </Card>
 
-              <Card className="p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-                <p className="text-purple-100 font-semibold mb-2">Weekly Change</p>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <p className="text-6xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
-                  <span className="text-2xl font-bold opacity-80">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
+              <Card className="p-5 md:p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                <p className="text-purple-100 font-semibold mb-2 text-xs md:text-sm">Weekly Change</p>
+                <div className="flex items-baseline gap-1 md:gap-2 mb-1">
+                  <p className="text-4xl md:text-6xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
+                  <span className="text-lg md:text-2xl font-bold opacity-80">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
                 </div>
-                <p className="text-sm text-purple-100">vs last week</p>
+                <p className="text-xs md:text-sm text-purple-100">vs last week</p>
               </Card>
 
-              <Card className="p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg">
-                <p className="text-orange-100 font-semibold mb-2">At-Risk Members</p>
-                <p className="text-6xl font-black mb-1">{atRiskMembers}</p>
-                <p className="text-sm text-orange-100">no check-in 7-10 days</p>
+              <Card className="p-5 md:p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg">
+                <p className="text-orange-100 font-semibold mb-2 text-xs md:text-sm">At-Risk Members</p>
+                <p className="text-4xl md:text-6xl font-black mb-1">{atRiskMembers}</p>
+                <p className="text-xs md:text-sm text-orange-100">no check-in 7-10 days</p>
               </Card>
             </div>
 

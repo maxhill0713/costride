@@ -1,4 +1,5 @@
 import GymCommunity from './pages/GymCommunity';
+import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import Home from './pages/Home';
@@ -14,12 +15,12 @@ import Profile from './pages/Profile';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
-import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "GymCommunity": GymCommunity,
+    "GymOwnerDashboard": GymOwnerDashboard,
     "GymSignup": GymSignup,
     "Gyms": Gyms,
     "Home": Home,
@@ -35,7 +36,6 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "UserProfile": UserProfile,
-    "GymOwnerDashboard": GymOwnerDashboard,
 }
 
 export const pagesConfig = {
