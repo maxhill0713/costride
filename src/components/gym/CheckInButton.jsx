@@ -310,6 +310,18 @@ export default function CheckInButton({ gym }) {
   const currentStreak = calculateStreak(checkIns, currentUser);
   const isInactive = daysSinceLastCheckIn >= 7;
 
+  const getDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in km
+  };
+
   const handleCheckIn = async () => {
     if (!currentUser || !gym) return;
     
@@ -322,6 +334,57 @@ export default function CheckInButton({ gym }) {
     
     setIsChecking(true);
     try {
+      // Get user's location
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      // Get gym coordinates from postcode using geocoding API
+      const gymPostcode = gym.postcode;
+      if (!gymPostcode) {
+        toast.error('Gym location not set', {
+          description: 'Please contact the gym owner to set their location.'
+        });
+        setIsChecking(false);
+        return;
+      }
+
+      // Use free geocoding API to convert postcode to coordinates
+      const geocodeResponse = await fetch(
+        `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
+      );
+      
+      if (!geocodeResponse.ok) {
+        toast.error('Could not verify gym location', {
+          description: 'Please try again or contact support.'
+        });
+        setIsChecking(false);
+        return;
+      }
+
+      const geocodeData = await geocodeResponse.json();
+      const gymLat = geocodeData.result.latitude;
+      const gymLon = geocodeData.result.longitude;
+
+      // Calculate distance
+      const distance = getDistance(userLat, userLon, gymLat, gymLon);
+      const maxDistance = 0.5; // 500 meters = 0.5 km
+
+      if (distance > maxDistance) {
+        toast.error('Too far from gym', {
+          description: `You must be within 500m of the gym to check in. You're ${(distance * 1000).toFixed(0)}m away.`
+        });
+        setIsChecking(false);
+        return;
+      }
+
       await checkInMutation.mutateAsync({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
@@ -330,8 +393,27 @@ export default function CheckInButton({ gym }) {
         check_in_date: new Date().toISOString(),
         first_visit: checkIns.length === 0
       });
-    } finally {
+    } catch (error) {
+      if (error.code === error.PERMISSION_DENIED) {
+        toast.error('Location access denied', {
+          description: 'Please enable location access to check in.'
+        });
+      } else if (error.code === error.POSITION_UNAVAILABLE) {
+        toast.error('Location unavailable', {
+          description: 'Could not determine your location. Please try again.'
+        });
+      } else if (error.code === error.TIMEOUT) {
+        toast.error('Location timeout', {
+          description: 'Location request timed out. Please try again.'
+        });
+      } else {
+        console.error('Check-in error:', error);
+      }
       setIsChecking(false);
+    } finally {
+      if (!checkInMutation.isPending) {
+        setIsChecking(false);
+      }
     }
   };
 
