@@ -15,12 +15,14 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
     title: '',
     description: '',
     type: 'individual',
+    category: 'lifting',
     gym_id: '',
     gym_name: '',
     competing_gym_id: '',
     competing_gym_name: '',
     exercise: 'bench_press',
     goal_type: 'total_weight',
+    target_value: 0,
     start_date: new Date().toISOString().split('T')[0],
     end_date: '',
     status: 'upcoming',
@@ -43,12 +45,14 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
         title: '',
         description: '',
         type: 'individual',
+        category: 'lifting',
         gym_id: '',
         gym_name: '',
         competing_gym_id: '',
         competing_gym_name: '',
         exercise: 'bench_press',
         goal_type: 'total_weight',
+        target_value: 0,
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
         status: 'upcoming',
@@ -102,6 +106,33 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label>Challenge Category *</Label>
+            <Select value={formData.category} onValueChange={(value) => {
+              const updates = { category: value };
+              if (value === 'lifting') {
+                updates.goal_type = 'total_weight';
+              } else if (value === 'check_ins') {
+                updates.goal_type = 'total_check_ins';
+              } else if (value === 'streak') {
+                updates.goal_type = 'longest_streak';
+              } else if (value === 'attendance') {
+                updates.goal_type = 'most_days';
+              }
+              setFormData({ ...formData, ...updates });
+            }}>
+              <SelectTrigger className="rounded-2xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lifting">💪 Lifting (Weight/Reps)</SelectItem>
+                <SelectItem value="check_ins">📍 Check-ins</SelectItem>
+                <SelectItem value="streak">🔥 Streak</SelectItem>
+                <SelectItem value="attendance">📅 Attendance</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Challenge Type *</Label>
@@ -118,22 +149,24 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Exercise *</Label>
-              <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-                <SelectTrigger className="rounded-2xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bench_press">Bench Press</SelectItem>
-                  <SelectItem value="squat">Squat</SelectItem>
-                  <SelectItem value="deadlift">Deadlift</SelectItem>
-                  <SelectItem value="overhead_press">Overhead Press</SelectItem>
-                  <SelectItem value="barbell_row">Barbell Row</SelectItem>
-                  <SelectItem value="power_clean">Power Clean</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {formData.category === 'lifting' && (
+              <div className="space-y-2">
+                <Label>Exercise *</Label>
+                <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
+                  <SelectTrigger className="rounded-2xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bench_press">Bench Press</SelectItem>
+                    <SelectItem value="squat">Squat</SelectItem>
+                    <SelectItem value="deadlift">Deadlift</SelectItem>
+                    <SelectItem value="overhead_press">Overhead Press</SelectItem>
+                    <SelectItem value="barbell_row">Barbell Row</SelectItem>
+                    <SelectItem value="power_clean">Power Clean</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {formData.type === 'gym_vs_gym' && (
@@ -187,13 +220,40 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="total_weight">Total Weight Lifted</SelectItem>
-                <SelectItem value="total_reps">Total Reps</SelectItem>
-                <SelectItem value="max_weight">Max Weight</SelectItem>
+                {formData.category === 'lifting' && (
+                  <>
+                    <SelectItem value="total_weight">Total Weight Lifted</SelectItem>
+                    <SelectItem value="total_reps">Total Reps</SelectItem>
+                    <SelectItem value="max_weight">Max Weight</SelectItem>
+                  </>
+                )}
+                {formData.category === 'check_ins' && (
+                  <SelectItem value="total_check_ins">Most Check-ins</SelectItem>
+                )}
+                {formData.category === 'streak' && (
+                  <SelectItem value="longest_streak">Longest Streak</SelectItem>
+                )}
+                {formData.category === 'attendance' && (
+                  <SelectItem value="most_days">Most Days Attended</SelectItem>
+                )}
                 <SelectItem value="participation">Most Participants</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {(formData.category === 'check_ins' || formData.category === 'streak') && (
+            <div className="space-y-2">
+              <Label>Target {formData.category === 'check_ins' ? 'Check-ins' : 'Streak (days)'}</Label>
+              <Input
+                type="number"
+                value={formData.target_value}
+                onChange={(e) => setFormData({ ...formData, target_value: parseInt(e.target.value) || 0 })}
+                placeholder={formData.category === 'check_ins' ? '50' : '30'}
+                className="rounded-2xl"
+              />
+              <p className="text-xs text-gray-500">Optional milestone goal for participants</p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
