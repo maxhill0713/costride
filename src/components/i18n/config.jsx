@@ -70,6 +70,21 @@ const resources = {
         close: "Close",
         create: "Create",
         manage: "Manage"
+      },
+      memberSignup: {
+        title: 'Complete Your Profile',
+        subtitle: "Let's personalize your fitness journey",
+        email: 'Email',
+        password: 'Password',
+        forgotPassword: 'Forgot Password?',
+        yourName: 'Your Name',
+        accountName: 'This is your account name',
+        bio: 'Bio (Optional)',
+        bioPlaceholder: 'Tell us about your fitness journey...',
+        skipForNow: 'Skip for Now',
+        completeSetup: 'Complete Setup',
+        creatingProfile: 'Creating Profile...',
+        uploading: 'Uploading...'
       }
     }
   },
@@ -141,6 +156,21 @@ const resources = {
         close: "Cerrar",
         create: "Crear",
         manage: "Gestionar"
+      },
+      memberSignup: {
+        title: 'Completa tu Perfil',
+        subtitle: 'Personalicemos tu viaje fitness',
+        email: 'Correo Electrónico',
+        password: 'Contraseña',
+        forgotPassword: '¿Olvidaste tu Contraseña?',
+        yourName: 'Tu Nombre',
+        accountName: 'Este es el nombre de tu cuenta',
+        bio: 'Biografía (Opcional)',
+        bioPlaceholder: 'Cuéntanos sobre tu viaje fitness...',
+        skipForNow: 'Omitir por Ahora',
+        completeSetup: 'Completar Configuración',
+        creatingProfile: 'Creando Perfil...',
+        uploading: 'Subiendo...'
       }
     }
   }
