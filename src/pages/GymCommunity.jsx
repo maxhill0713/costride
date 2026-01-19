@@ -688,7 +688,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-orange-500 to-pink-500 p-4 shadow-lg border-2 border-white/30 cursor-pointer hover:scale-105 transition-transform">
+                    <Card className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 shadow-lg border-2 border-white/30 cursor-pointer hover:scale-105 transition-transform">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
                           👀
@@ -719,7 +719,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 shadow-lg border-2 border-white/30 cursor-pointer hover:scale-105 transition-transform">
+                    <Card className="bg-gradient-to-r from-green-500 to-green-600 p-4 shadow-lg border-2 border-white/30 cursor-pointer hover:scale-105 transition-transform">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
                           👑
@@ -867,7 +867,7 @@ export default function GymCommunity() {
                   {checkInLeaderboard.map((member, idx) => (
                     <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-blue-500'
+                        idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-blue-400' : idx === 2 ? 'bg-blue-500' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
@@ -875,7 +875,7 @@ export default function GymCommunity() {
                         <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
                         <p className="text-xs text-slate-400">{member.count} check-ins this week</p>
                       </div>
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
                   ))}
                 </div>
@@ -893,7 +893,7 @@ export default function GymCommunity() {
                   {challengeLeaderboard.map((member, idx) => (
                     <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-purple-500'
+                        idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-blue-400' : idx === 2 ? 'bg-blue-500' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
@@ -919,7 +919,7 @@ export default function GymCommunity() {
                   {streakLeaderboard.map((member, idx) => (
                     <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-500' : 'bg-red-500'
+                        idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-blue-400' : idx === 2 ? 'bg-blue-500' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
@@ -936,16 +936,16 @@ export default function GymCommunity() {
           </Card>
 
           {/* Gym vs Gym Challenges */}
-          <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 p-5">
-            <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-orange-600" />
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-blue-400" />
               Gym Challenges
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-slate-300 mb-4">
               Compete with other gyms and earn bragging rights!
             </p>
             <Link to={createPageUrl('Challenges')}>
-              <Button className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl">
+              <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl">
                 View All Challenges
               </Button>
             </Link>
@@ -1119,17 +1119,17 @@ export default function GymCommunity() {
         {/* Rewards Tab */}
         <TabsContent value="rewards" className="space-y-3 mt-0">
           {/* Gym Bonuses */}
-          <Card className="bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200 p-5">
-            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Gift className="w-5 h-5 text-cyan-600" />
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
+            <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+              <Gift className="w-5 h-5 text-blue-400" />
               Gym Bonuses
             </h3>
             <div className="space-y-2">
-              <div className="flex items-start gap-3 p-3 bg-white border-2 border-cyan-200 rounded-xl">
+              <div className="flex items-start gap-3 p-3 bg-slate-700/60 border-2 border-blue-500/40 rounded-xl">
                 <div className="text-2xl">🎟️</div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-900">Free First Day Pass</p>
-                  <p className="text-xs text-gray-600 mt-0.5">Try the gym for free on your first visit</p>
+                  <p className="text-sm font-bold text-white">Free First Day Pass</p>
+                  <p className="text-xs text-slate-300 mt-0.5">Try the gym for free on your first visit</p>
                   <Button 
                     size="sm" 
                     onClick={() => claimBonusMutation.mutate({ 
@@ -1137,18 +1137,18 @@ export default function GymCommunity() {
                       offerDetails: 'Free First Day Pass' 
                     })}
                     disabled={hasClaimedBonus('free_day_pass') || claimBonusMutation.isPending}
-                    className={`mt-2 ${hasClaimedBonus('free_day_pass') ? 'bg-green-500' : 'bg-cyan-500 hover:bg-cyan-600'} text-white rounded-2xl text-xs w-full`}
+                    className={`mt-2 ${hasClaimedBonus('free_day_pass') ? 'bg-green-500' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-2xl text-xs w-full`}
                   >
                     {hasClaimedBonus('free_day_pass') ? '✓ Claimed' : 'Claim Pass'}
                   </Button>
                 </div>
               </div>
               {gym.reward_offer && (
-                <div className="flex items-start gap-3 p-3 bg-white border-2 border-orange-200 rounded-xl">
+                <div className="flex items-start gap-3 p-3 bg-slate-700/60 border-2 border-green-500/40 rounded-xl">
                   <div className="text-2xl">🎁</div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900">{gym.reward_offer}</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Special gym offer</p>
+                    <p className="text-sm font-bold text-white">{gym.reward_offer}</p>
+                    <p className="text-xs text-slate-300 mt-0.5">Special gym offer</p>
                     <Button 
                       size="sm" 
                       onClick={() => claimBonusMutation.mutate({ 
@@ -1156,7 +1156,7 @@ export default function GymCommunity() {
                         offerDetails: gym.reward_offer 
                       })}
                       disabled={hasClaimedBonus('gym_offer') || claimBonusMutation.isPending}
-                      className={`mt-2 ${hasClaimedBonus('gym_offer') ? 'bg-green-500' : 'bg-orange-500 hover:bg-orange-600'} text-white rounded-2xl text-xs w-full`}
+                      className={`mt-2 ${hasClaimedBonus('gym_offer') ? 'bg-green-500' : 'bg-green-500 hover:bg-green-600'} text-white rounded-2xl text-xs w-full`}
                     >
                       {hasClaimedBonus('gym_offer') ? '✓ Claimed' : 'Claim Offer'}
                     </Button>
@@ -1167,23 +1167,23 @@ export default function GymCommunity() {
           </Card>
 
           {/* Monthly Leaderboard Prizes */}
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-5">
-            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-purple-600" />
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
+            <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-blue-400" />
               Monthly Leaderboard Prizes
             </h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
-                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white text-sm">1</div>
-                <p className="text-sm font-medium text-gray-900">Free month + £50 voucher</p>
+              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-green-500/40 rounded-xl">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center font-black text-white text-sm">1</div>
+                <p className="text-sm font-medium text-white">Free month + £50 voucher</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 border-2 border-gray-300 rounded-xl">
-                <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center font-black text-white text-sm">2</div>
-                <p className="text-sm font-medium text-gray-900">50% off + £25 voucher</p>
+              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-blue-500/40 rounded-xl">
+                <div className="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center font-black text-white text-sm">2</div>
+                <p className="text-sm font-medium text-white">50% off + £25 voucher</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-orange-50 border-2 border-orange-300 rounded-xl">
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-sm">3</div>
-                <p className="text-sm font-medium text-gray-900">25% off + £10 voucher</p>
+              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-blue-500/40 rounded-xl">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center font-black text-white text-sm">3</div>
+                <p className="text-sm font-medium text-white">25% off + £10 voucher</p>
               </div>
             </div>
           </Card>
@@ -1332,20 +1332,20 @@ export default function GymCommunity() {
 
           {/* Manage Members - Gym Owners Only */}
           {showOwnerControls && (
-            <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 p-5">
+            <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-blue-900">Member Management</h3>
-                    <p className="text-sm text-blue-700">Manage your gym members</p>
+                    <h3 className="font-bold text-white">Member Management</h3>
+                    <p className="text-sm text-slate-300">Manage your gym members</p>
                   </div>
                 </div>
                 <Button
                   onClick={() => setShowManageMembers(true)}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl"
                 >
                   Manage
                 </Button>
