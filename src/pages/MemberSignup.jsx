@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { User, Camera, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import LanguageSelector from '../components/LanguageSelector';
 
 export default function MemberSignup() {
   const [formData, setFormData] = useState({
@@ -60,6 +61,9 @@ export default function MemberSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
       <Card className="max-w-2xl w-full p-8 md:p-12 bg-white border-0 shadow-xl rounded-3xl">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
