@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Plus, Home, Flame, Award } from 'lucide-react';
+import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Plus, Home, Flame, Award, MoreVertical } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function Layout({ children, currentPageName }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => ({
@@ -40,9 +43,9 @@ export default function Layout({ children, currentPageName }) {
   const navItems = isGymOwner ? [
     { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-yellow-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
-    { name: 'Register', icon: Plus, page: 'GymSignup', color: 'text-green-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
+    { name: 'More', icon: MoreVertical, isDropdown: true, color: 'text-slate-400' },
   ] : [
     { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
     { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-yellow-500' },
@@ -59,6 +62,33 @@ export default function Layout({ children, currentPageName }) {
         <div className="flex justify-around items-center h-20 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
+
+            if (item.isDropdown) {
+              return (
+                <DropdownMenu key={item.name} open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      aria-label={item.name}
+                      className="relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 rounded-2xl active:scale-95 text-slate-400"
+                    >
+                      <div className="relative">
+                        <item.icon className="w-6 h-6" strokeWidth={2} />
+                      </div>
+                      <span className="text-[10px] font-semibold leading-none">{item.name}</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" side="top" className="mb-2">
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('GymSignup')} className="flex items-center gap-2">
+                        <Plus className="w-4 h-4 text-green-500" />
+                        <span>Register Your Gym</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            }
+
             return (
               <Link
                 key={item.page}
@@ -100,6 +130,27 @@ export default function Layout({ children, currentPageName }) {
         <div className="flex flex-col gap-3">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
+
+            if (item.isDropdown) {
+              return (
+                <DropdownMenu key={item.name}>
+                  <DropdownMenuTrigger asChild>
+                    <button className="relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105">
+                      <item.icon className="w-6 h-6" strokeWidth={2} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" side="right" className="ml-2">
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('GymSignup')} className="flex items-center gap-2">
+                        <Plus className="w-4 h-4 text-green-500" />
+                        <span>Register Your Gym</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            }
+
             return (
               <Link
                 key={item.page}
