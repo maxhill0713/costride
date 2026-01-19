@@ -574,7 +574,7 @@ export default function Profile() {
 
             {/* Progress Stats */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
-              <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">Your Progress</h3>
+              <h3 className="font-semibold text-white mb-4">Your Progress</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -635,7 +635,7 @@ export default function Profile() {
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">Your Rewards</h3>
+                  <h3 className="text-xl font-semibold text-white">Your Rewards</h3>
                   <p className="text-sm text-slate-300">Claim exclusive rewards from your gyms</p>
                 </div>
               </div>
@@ -769,7 +769,7 @@ export default function Profile() {
 
             {/* Stats */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
-              <h4 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">Your Progress</h4>
+              <h4 className="font-semibold text-white mb-4">Your Progress</h4>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-300">Total Check-ins</span>
@@ -825,7 +825,7 @@ export default function Profile() {
 
           <TabsContent value="goals" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Target className="w-5 h-5 text-blue-400" />
                 My Goals
               </h3>
@@ -871,7 +871,7 @@ export default function Profile() {
                   <Bell className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">Notifications</h3>
+                  <h3 className="text-lg font-semibold text-white">Notifications</h3>
                   <p className="text-sm text-slate-300">Manage your notification preferences</p>
                 </div>
               </div>
@@ -925,7 +925,7 @@ export default function Profile() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">Appearance</h3>
+                  <h3 className="text-lg font-semibold text-white">Appearance</h3>
                   <p className="text-sm text-slate-300">Customize your app experience</p>
                 </div>
               </div>
@@ -979,7 +979,7 @@ export default function Profile() {
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-indigo-200 to-purple-200 bg-clip-text text-transparent">Account Details</h3>
+                  <h3 className="text-lg font-semibold text-white">Account Details</h3>
                   <p className="text-sm text-slate-300">Manage your email and password</p>
                 </div>
               </div>
@@ -1015,7 +1015,7 @@ export default function Profile() {
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-green-200 to-emerald-200 bg-clip-text text-transparent">Privacy</h3>
+                  <h3 className="text-lg font-semibold text-white">Privacy</h3>
                   <p className="text-sm text-slate-300">Control your profile visibility</p>
                 </div>
               </div>
