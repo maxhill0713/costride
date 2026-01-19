@@ -10,8 +10,10 @@ import { User, Camera, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LanguageSelector from '../components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 
 export default function MemberSignup() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -70,10 +72,10 @@ export default function MemberSignup() {
             <User className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-3">
-            Complete Your Profile
+            {t('memberSignup.title')}
           </h1>
           <p className="text-gray-600 text-lg">
-            Let's personalize your fitness journey
+            {t('memberSignup.subtitle')}
           </p>
         </div>
 
@@ -103,13 +105,13 @@ export default function MemberSignup() {
                 />
               </label>
             </div>
-            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+            {uploading && <p className="text-sm text-gray-500">{t('memberSignup.uploading')}</p>}
           </div>
 
           {/* Email */}
           <div>
             <Label htmlFor="email" className="text-gray-900 font-semibold mb-2 block">
-              Email *
+              {t('memberSignup.email')} *
             </Label>
             <Input
               id="email"
@@ -126,13 +128,13 @@ export default function MemberSignup() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label htmlFor="password" className="text-gray-900 font-semibold">
-                Password *
+                {t('memberSignup.password')} *
               </Label>
               <a
                 href="/auth/login"
                 className="text-xs text-blue-600 hover:text-blue-700 font-medium"
               >
-                Forgot Password?
+                {t('memberSignup.forgotPassword')}
               </a>
             </div>
             <Input
@@ -150,26 +152,26 @@ export default function MemberSignup() {
           {/* Name Display */}
           <div>
             <Label className="text-gray-900 font-semibold mb-2 block">
-              Your Name
+              {t('memberSignup.yourName')}
             </Label>
             <Input
               value={currentUser?.full_name || ''}
               disabled
               className="h-12 text-base bg-gray-50"
             />
-            <p className="text-xs text-gray-500 mt-1">This is your account name</p>
+            <p className="text-xs text-gray-500 mt-1">{t('memberSignup.accountName')}</p>
           </div>
 
           {/* Bio */}
           <div>
             <Label htmlFor="bio" className="text-gray-900 font-semibold mb-2 block">
-              Bio (Optional)
+              {t('memberSignup.bio')}
             </Label>
             <Textarea
               id="bio"
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Tell us about your fitness journey..."
+              placeholder={t('memberSignup.bioPlaceholder')}
               className="min-h-32 text-base"
             />
           </div>
@@ -182,7 +184,7 @@ export default function MemberSignup() {
               variant="outline"
               className="flex-1 h-14 text-base rounded-xl border-2"
             >
-              Skip for Now
+              {t('memberSignup.skipForNow')}
             </Button>
             <Button
               type="submit"
@@ -190,10 +192,10 @@ export default function MemberSignup() {
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold"
             >
               {createMemberMutation.isPending ? (
-                'Creating Profile...'
+                t('memberSignup.creatingProfile')
               ) : (
                 <>
-                  Complete Setup
+                  {t('memberSignup.completeSetup')}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
