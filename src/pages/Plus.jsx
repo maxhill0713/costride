@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import '../components/i18n/config';
 
 const proFeatures = [
   {
@@ -49,6 +51,7 @@ const basicFeatures = [
 ];
 
 export default function Plus() {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: currentUser } = useQuery({
@@ -108,9 +111,9 @@ export default function Plus() {
             <Crown className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3">
-            Choose Your Plan
+            {t('plus.title')}
           </h1>
-          <p className="text-lg text-slate-300 font-medium">Select the plan that fits your gym's needs</p>
+          <p className="text-lg text-slate-300 font-medium">{t('plus.subtitle')}</p>
         </div>
 
         {/* Pricing Cards */}
@@ -118,13 +121,13 @@ export default function Plus() {
           {/* Basic Plan */}
           <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-8 hover:shadow-xl transition-all">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Basic</h2>
-              <div className="text-4xl font-black text-white mb-2">Free</div>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('plus.basic.title')}</h2>
+              <div className="text-4xl font-black text-white mb-2">{t('plus.basic.price')}</div>
               <p className="text-slate-300">Essential gym management</p>
             </div>
             
             <div className="space-y-3 mb-8">
-              {basicFeatures.map((feature, idx) => (
+              {t('plus.basic.features', { returnObjects: true }).map((feature, idx) => (
                 <div key={idx} className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                   <span className="text-slate-200">{feature}</span>
@@ -137,7 +140,7 @@ export default function Plus() {
               className="w-full h-12 rounded-2xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700"
               disabled
             >
-              {isSubscribed ? 'Your Plan' : 'Current Plan'}
+              {isSubscribed ? t('plus.yourPlan') : t('plus.currentPlan')}
             </Button>
           </Card>
 
@@ -148,8 +151,8 @@ export default function Plus() {
             </div>
             
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">Retention Pro</h2>
-              <div className="text-4xl font-black mb-2">£49.99/month</div>
+              <h2 className="text-2xl font-bold mb-2">{t('plus.pro.title')}</h2>
+              <div className="text-4xl font-black mb-2">{t('plus.monthlyPrice')}</div>
               <p className="text-purple-100">Premium Analytics Included</p>
             </div>
 
@@ -177,12 +180,12 @@ export default function Plus() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Loading...
+                  {t('common.loading')}
                 </>
               ) : isSubscribed ? (
                 '✓ Subscribed'
               ) : (
-                'Subscribe Now'
+                t('plus.subscribeNow')
               )}
             </Button>
             {!isSubscribed && (

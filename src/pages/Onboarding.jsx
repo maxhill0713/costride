@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingDown, TrendingUp, Dumbbell, Target, Zap, Heart, Activity, Building2, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useTranslation } from 'react-i18next';
+import '../components/i18n/config';
+import LanguageSelector from '../components/LanguageSelector';
 
 const ACCOUNT_TYPES = [
   {
@@ -78,6 +81,7 @@ const FITNESS_GOALS = [
 ];
 
 export default function Onboarding() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1); // 1: account type, 2: fitness goal (personal only)
   const [selectedAccountType, setSelectedAccountType] = useState(null);
   const [selectedGoal, setSelectedGoal] = useState(null);
@@ -122,6 +126,9 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
       <Card className="max-w-4xl w-full p-8 md:p-12 bg-white/95 backdrop-blur-sm border-2 border-gray-200 rounded-3xl">
         {/* Step 1: Account Type Selection */}
         {step === 1 && (
@@ -131,10 +138,10 @@ export default function Onboarding() {
                 <Target className="w-10 h-10 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
-                Welcome{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
+                {t('onboarding.welcome')}{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
               <p className="text-gray-600 text-lg">
-                What type of account do you need?
+                {t('onboarding.subtitle')}
               </p>
             </div>
 
@@ -173,7 +180,7 @@ export default function Onboarding() {
                 disabled={!selectedAccountType || completeOnboardingMutation.isPending}
                 className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold px-8 py-6 text-lg rounded-2xl disabled:opacity-50"
               >
-                {completeOnboardingMutation.isPending ? 'Starting...' : 'Continue'}
+                {completeOnboardingMutation.isPending ? 'Starting...' : t('onboarding.getStarted')}
               </Button>
             </div>
           </>
