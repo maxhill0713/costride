@@ -867,7 +867,7 @@ export default function GymCommunity() {
                   {checkInLeaderboard.map((member, idx) => (
                     <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-blue-400' : idx === 2 ? 'bg-blue-500' : 'bg-slate-500'
+                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
@@ -893,7 +893,7 @@ export default function GymCommunity() {
                   {challengeLeaderboard.map((member, idx) => (
                     <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-blue-400' : idx === 2 ? 'bg-blue-500' : 'bg-slate-500'
+                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
@@ -919,7 +919,7 @@ export default function GymCommunity() {
                   {streakLeaderboard.map((member, idx) => (
                     <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-blue-400' : idx === 2 ? 'bg-blue-500' : 'bg-slate-500'
+                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
