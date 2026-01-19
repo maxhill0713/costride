@@ -1330,28 +1330,7 @@ export default function GymCommunity() {
             </Card>
           )}
 
-          {/* Manage Members - Gym Owners Only */}
-          {showOwnerControls && (
-            <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">Member Management</h3>
-                    <p className="text-sm text-slate-300">Manage your gym members</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setShowManageMembers(true)}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl"
-                >
-                  Manage
-                </Button>
-              </div>
-            </Card>
-          )}
+
         </TabsContent>
       </div>
       </Tabs>
