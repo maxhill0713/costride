@@ -1031,14 +1031,14 @@ export default function GymCommunity() {
               )}
             </div>
             
-            {events.length === 0 ? (
+            {events.filter(e => new Date(e.event_date) >= new Date()).length === 0 ? (
               <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
                 <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                 <p className="text-gray-500 text-sm">No upcoming events</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {events.map((event) => (
+                {events.filter(e => new Date(e.event_date) >= new Date()).map((event) => (
                   <EventCard
                     key={event.id}
                     event={event}
