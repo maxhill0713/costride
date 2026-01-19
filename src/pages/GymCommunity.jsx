@@ -767,7 +767,7 @@ export default function GymCommunity() {
           )}
 
           {/* Posts Feed - Scrollable */}
-          {canPost && (
+          {showOwnerControls && (
             <CreateGymPostButton
               gym={gym}
               currentUser={currentUser}
@@ -958,7 +958,7 @@ export default function GymCommunity() {
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Classes</h3>
-              {canManageClasses && (
+              {showOwnerControls && (
                 <Button
                   onClick={() => setShowManageClasses(true)}
                   size="sm"
@@ -1019,7 +1019,7 @@ export default function GymCommunity() {
           <Card className="bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
-              {canManageEvents && (
+              {showOwnerControls && (
                 <Button
                   onClick={() => setShowCreateEvent(true)}
                   size="sm"
