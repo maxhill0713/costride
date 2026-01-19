@@ -16,6 +16,7 @@ import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
+import CreateEventModal from '../components/events/CreateEventModal';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -27,6 +28,8 @@ export default function GymOwnerDashboard() {
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
   const queryClient = useQueryClient();
 
@@ -198,6 +201,33 @@ export default function GymOwnerDashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setShowManagePhotos(false);
+    }
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: (eventData) => base44.entities.Event.create({
+      ...eventData,
+      gym_id: selectedGym.id,
+      gym_name: selectedGym.name,
+      attendees: 0
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', selectedGym.id] });
+      setShowCreateEvent(false);
+    }
+  });
+
+  const createChallengeMutation = useMutation({
+    mutationFn: (challengeData) => base44.entities.Challenge.create({
+      ...challengeData,
+      gym_id: selectedGym.id,
+      gym_name: selectedGym.name,
+      participants: [],
+      status: 'upcoming'
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenges', selectedGym.id] });
+      setShowCreateChallenge(false);
     }
   });
 
@@ -617,11 +647,9 @@ export default function GymOwnerDashboard() {
                       <div>
                         <p className="font-bold text-gray-900">Create a challenge</p>
                         <p className="text-sm text-gray-600">Boost engagement with a gym challenge</p>
-                        <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-                          <Button size="sm" className="mt-2">
-                            Create Challenge
-                          </Button>
-                        </Link>
+                        <Button onClick={() => setShowCreateChallenge(true)} size="sm" className="mt-2">
+                          Create Challenge
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -2036,6 +2064,14 @@ export default function GymOwnerDashboard() {
           onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ['posts', selectedGym?.id] });
           }}
+        />
+
+        <CreateEventModal
+          open={showCreateEvent}
+          onClose={() => setShowCreateEvent(false)}
+          onSave={(data) => createEventMutation.mutate(data)}
+          gym={selectedGym}
+          isLoading={createEventMutation.isPending}
         />
       </div>
     </div>
