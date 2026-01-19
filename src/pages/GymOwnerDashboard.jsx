@@ -779,12 +779,16 @@ export default function GymOwnerDashboard() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Challenges & Events</h3>
-                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create New
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowCreateEvent(true)} variant="outline">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Create Event
                   </Button>
-                </Link>
+                  <Button onClick={() => setShowCreateChallenge(true)}>
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Create Challenge
+                  </Button>
+                </div>
               </div>
               
               <div className="mb-6">
