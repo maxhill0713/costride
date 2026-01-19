@@ -1173,16 +1173,16 @@ export default function GymCommunity() {
               Monthly Leaderboard Prizes
             </h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-green-500/40 rounded-xl">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center font-black text-white text-sm">1</div>
+              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-yellow-500/40 rounded-xl">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white text-sm">1</div>
                 <p className="text-sm font-medium text-white">Free month + £50 voucher</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-blue-500/40 rounded-xl">
-                <div className="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center font-black text-white text-sm">2</div>
+              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-gray-400/40 rounded-xl">
+                <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center font-black text-white text-sm">2</div>
                 <p className="text-sm font-medium text-white">50% off + £25 voucher</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-blue-500/40 rounded-xl">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center font-black text-white text-sm">3</div>
+              <div className="flex items-center gap-3 p-3 bg-slate-700/60 border-2 border-orange-600/40 rounded-xl">
+                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center font-black text-white text-sm">3</div>
                 <p className="text-sm font-medium text-white">25% off + £10 voucher</p>
               </div>
             </div>
