@@ -1692,9 +1692,9 @@ export default function GymOwnerDashboard() {
               {/* Events */}
               <div>
                 <h4 className="text-lg font-bold text-gray-900 mb-3">Upcoming Events</h4>
-                {events.length > 0 ? (
+                {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
                   <div className="space-y-3">
-                    {events.slice(0, 5).map(event => (
+                    {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5).map(event => (
                       <div key={event.id} className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
@@ -1942,9 +1942,9 @@ export default function GymOwnerDashboard() {
                   </Button>
                 </Link>
               </div>
-              {events.length > 0 ? (
+              {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
                 <div className="space-y-3">
-                  {events.slice(0, 3).map(event => (
+                  {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 3).map(event => (
                     <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
                       <div>
                         <p className="font-bold text-gray-900">{event.title}</p>
