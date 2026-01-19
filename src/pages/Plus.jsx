@@ -47,39 +47,39 @@ const basicFeatures = [
 
 export default function Plus() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-orange-50 p-4">
+    <div className="min-h-screen p-4">
       <div className="max-w-5xl mx-auto">
         {/* Hero */}
         <div className="text-center mb-12 pt-8">
           <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
             <Crown className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-3">
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3">
             Choose Your Plan
           </h1>
-          <p className="text-lg text-gray-600 font-medium">Select the plan that fits your gym's needs</p>
+          <p className="text-lg text-slate-300 font-medium">Select the plan that fits your gym's needs</p>
         </div>
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           {/* Basic Plan */}
-          <Card className="bg-white border-2 border-gray-200 p-8 hover:shadow-xl transition-all">
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-8 hover:shadow-xl transition-all">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Basic</h2>
-              <div className="text-4xl font-black text-gray-900 mb-2">Free</div>
-              <p className="text-gray-600">Essential gym management</p>
+              <h2 className="text-2xl font-bold text-white mb-2">Basic</h2>
+              <div className="text-4xl font-black text-white mb-2">Free</div>
+              <p className="text-slate-300">Essential gym management</p>
             </div>
             
             <div className="space-y-3 mb-8">
               {basicFeatures.map((feature, idx) => (
                 <div key={idx} className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">{feature}</span>
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  <span className="text-slate-200">{feature}</span>
                 </div>
               ))}
             </div>
 
-            <Button variant="outline" className="w-full h-12 rounded-2xl font-bold border-2">
+            <Button variant="outline" className="w-full h-12 rounded-2xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700">
               Current Plan
             </Button>
           </Card>

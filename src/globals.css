@@ -13,7 +13,9 @@ css
   }
   
   body {
-    @apply bg-background text-foreground;
+    background: linear-gradient(to bottom right, #172554, #0f172a, #1e3a8a);
+    min-height: 100vh;
+    color: #f1f5f9;
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: background-color 0.3s ease, color 0.3s ease;
   }

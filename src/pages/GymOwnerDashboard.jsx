@@ -370,13 +370,13 @@ export default function GymOwnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6 md:mb-10">
           <div>
-            <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight">Gym Owner Dashboard</h1>
-            <p className="text-gray-600 text-sm md:text-lg">Manage your gym and track performance with precision</p>
+            <h1 className="text-3xl md:text-5xl font-black text-white mb-2 md:mb-3 tracking-tight">Gym Owner Dashboard</h1>
+            <p className="text-slate-300 text-sm md:text-lg">Manage your gym and track performance with precision</p>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-stretch sm:items-center">
