@@ -30,6 +30,7 @@ import WeeklyEventCard from '../components/feed/WeeklyEventCard';
 import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
 import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 import RateGymSection from '../components/gym/RateGymSection';
+import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -47,6 +48,7 @@ export default function GymCommunity() {
   const [viewAsMember, setViewAsMember] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
+  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -124,6 +126,11 @@ export default function GymCommunity() {
       return allChallenges.filter(c => c.gym_id === gymId || c.type === 'community');
     },
     enabled: !!gymId
+  });
+
+  const { data: allGyms = [] } = useQuery({
+    queryKey: ['gyms'],
+    queryFn: () => base44.entities.Gym.list()
   });
 
   const { data: gymMembership } = useQuery({
@@ -222,6 +229,18 @@ export default function GymCommunity() {
     mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
+    }
+  });
+
+  const createChallengeMutation = useMutation({
+    mutationFn: (challengeData) => base44.entities.Challenge.create({
+      ...challengeData,
+      gym_id: gymId,
+      gym_name: gym?.name
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
+      setShowCreateChallenge(false);
     }
   });
 
@@ -790,6 +809,17 @@ export default function GymCommunity() {
 
         {/* Challenges Tab */}
         <TabsContent value="challenges" className="space-y-3 mt-0">
+          {/* Create Challenge Button for Owners */}
+          {showOwnerControls && (
+            <Button
+              onClick={() => setShowCreateChallenge(true)}
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Challenge
+            </Button>
+          )}
+
           {/* System Challenges */}
           <div className="space-y-3">
             <h2 className="text-lg font-bold text-gray-900">⚡ Quick Wins</h2>
@@ -1417,6 +1447,12 @@ export default function GymCommunity() {
           onClose={() => setShowJoinGymModal(false)}
           gym={gym}
           currentUser={currentUser}
+        />
+
+        <CreateChallengeModal
+          open={showCreateChallenge}
+          onClose={() => setShowCreateChallenge(false)}
+          gyms={allGyms}
         />
 
       {/* Floating Action Button (FAB) - Check-in */}
