@@ -8,8 +8,10 @@ import { Bell, BellOff, Flame, Trophy, Calendar, Target, CheckCircle2, AlertCirc
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useTranslation } from 'react-i18next';
 
 export default function Notifications() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -201,10 +203,10 @@ export default function Notifications() {
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-semibold bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">
-                  Notifications
+                  {t('notifications.title')}
                 </h1>
                 {unreadCount > 0 && (
-                  <p className="text-cyan-100 text-sm mt-1">{unreadCount} unread</p>
+                  <p className="text-cyan-100 text-sm mt-1">{unreadCount} {t('notifications.unread')}</p>
                 )}
               </div>
             </div>
@@ -214,7 +216,7 @@ export default function Notifications() {
                 disabled={markAllReadMutation.isPending}
                 className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white rounded-2xl shadow-lg"
               >
-                Mark all read
+                {t('notifications.markAllRead')}
               </Button>
             )}
           </div>
@@ -226,8 +228,8 @@ export default function Notifications() {
         {notifications.length === 0 ? (
           <Card className="p-12 text-center border-2 border-dashed border-slate-600/50 rounded-3xl bg-gradient-to-br from-slate-700/50 to-slate-800/50">
             <BellOff className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-            <p className="text-slate-300 font-medium">No notifications yet</p>
-            <p className="text-sm text-slate-400 mt-1">We'll notify you about important updates</p>
+            <p className="text-slate-300 font-medium">{t('notifications.noNotifications')}</p>
+            <p className="text-sm text-slate-400 mt-1">{t('notifications.notifyUpdates')}</p>
           </Card>
         ) : (
           <div className="space-y-3">
@@ -270,7 +272,7 @@ export default function Notifications() {
                           {format(new Date(notification.created_date), 'MMM d, h:mm a')}
                         </span>
                         {!notification.read && (
-                          <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs shadow-lg shadow-cyan-500/30">New</Badge>
+                          <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs shadow-lg shadow-cyan-500/30">{t('notifications.new')}</Badge>
                         )}
                       </div>
                       
@@ -283,7 +285,7 @@ export default function Notifications() {
                               className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl shadow-lg"
                               onClick={() => markAsReadMutation.mutate(notification.id)}
                             >
-                              Take Action
+                              {t('notifications.takeAction')}
                             </Button>
                           </Link>
                         )}
@@ -294,7 +296,7 @@ export default function Notifications() {
                             onClick={() => markAsReadMutation.mutate(notification.id)}
                             className="bg-slate-700/50 hover:bg-slate-700 border-cyan-700/50 text-cyan-300 rounded-2xl"
                           >
-                            Mark as read
+                            {t('notifications.markAsRead')}
                           </Button>
                         )}
                       </div>

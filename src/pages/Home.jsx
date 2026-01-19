@@ -10,8 +10,10 @@ import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showCheckIn, setShowCheckIn] = useState(false);
   
@@ -167,7 +169,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent mb-2">
-                Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
+                {t('home.welcomeBack')}{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
               <p className="text-cyan-100 text-sm">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
@@ -177,7 +179,7 @@ export default function Home() {
               {daysSinceCheckIn === 0 ? (
                 <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-4 py-2 shadow-lg animate-pulse">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Checked In ✓
+                  {t('home.checkedIn')} ✓
                 </Badge>
               ) : (
                 <Button 
@@ -185,14 +187,14 @@ export default function Home() {
                   className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Check In
+                  {t('home.checkIn')}
                 </Button>
               )}
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
                   <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
                     <Trophy className="w-4 h-4 mr-2" />
-                    Admin View
+                    {t('home.adminView')}
                   </Button>
                 </Link>
               )}
@@ -209,19 +211,19 @@ export default function Home() {
           <p className="text-center text-lg font-bold">
             {userStreak > 0 && daysSinceCheckIn === 0 ? (
               <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                🔥 {userStreak}-day streak active
+                🔥 {userStreak}-{t('home.streakActive')}
               </span>
             ) : userStreak > 0 && daysSinceCheckIn === 1 ? (
               <span className="bg-gradient-to-r from-orange-300 to-red-300 bg-clip-text text-transparent">
-                ⚠️ Check in today to keep your streak
+                ⚠️ {t('home.checkInToday')}
               </span>
             ) : currentUser?.streak_freeze_active ? (
               <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                Streak frozen today ❄️
+                {t('home.streakFrozen')} ❄️
               </span>
             ) : (
               <span className="bg-gradient-to-r from-slate-300 to-slate-400 bg-clip-text text-transparent">
-                Start your streak today 💪
+                {t('home.startStreak')} 💪
               </span>
             )}
           </p>
@@ -235,16 +237,16 @@ export default function Home() {
             </div>
             <div className="flex-1">
               <h3 className={`text-xl font-black mb-2 ${isOnTrack ? 'text-green-900' : isAlmostOnTrack ? 'text-yellow-900' : 'text-orange-900'}`}>
-                {isOnTrack ? '🎉 You\'re On Track!' : isAlmostOnTrack ? '💪 You\'re Almost On Track' : '⚠️ You\'re Falling Behind'}
+                {isOnTrack ? `🎉 ${t('home.onTrack')}` : isAlmostOnTrack ? `💪 ${t('home.almostOnTrack')}` : `⚠️ ${t('home.fallingBehind')}`}
               </h3>
               <div className="space-y-2">
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : isAlmostOnTrack ? 'text-yellow-800' : 'text-orange-800'}`}>
-                      Weekly Gym Visits: {weeklyCheckIns.length}/{weeklyTarget}
+                      {t('home.weeklyVisits')}: {weeklyCheckIns.length}/{weeklyTarget}
                     </span>
                     <span className={`text-xs font-bold ${weeklyCheckIns.length >= weeklyTarget ? 'text-green-700' : 'text-orange-700'}`}>
-                      {weeklyCheckIns.length >= weeklyTarget ? '✓ Complete' : 'Incomplete'}
+                      {weeklyCheckIns.length >= weeklyTarget ? `✓ ${t('home.complete')}` : t('home.incomplete')}
                     </span>
                   </div>
                   <div className="h-2 bg-white/50 rounded-full overflow-hidden">
@@ -258,7 +260,7 @@ export default function Home() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : isAlmostOnTrack ? 'text-yellow-800' : 'text-orange-800'}`}>
-                        Goals Progress: {goalsOnTrack}/{goals.length} on track
+                        {t('home.goalsProgress')}: {goalsOnTrack}/{goals.length} on track
                       </span>
                       <span className={`text-xs font-bold ${goalsOnTrack >= goals.length * 0.5 ? 'text-green-700' : 'text-orange-700'}`}>
                         {progressPercentage}%
@@ -275,16 +277,16 @@ export default function Home() {
               </div>
               <p className={`text-sm mt-3 ${isOnTrack ? 'text-green-700' : isAlmostOnTrack ? 'text-yellow-700' : 'text-orange-700'}`}>
                 {isOnTrack 
-                  ? 'Keep up the great work! You\'re crushing your fitness goals 💪' 
+                  ? `${t('home.onTrackMessage')} 💪` 
                   : isAlmostOnTrack
-                  ? 'You\'re so close! Complete one more to get fully on track 🔥'
-                  : 'Don\'t give up! Get back on track by checking in at a gym today 🔥'}
+                  ? `${t('home.almostOnTrackMessage')} 🔥`
+                  : `${t('home.behindMessage')} 🔥`}
               </p>
               {!isOnTrack && (
                 <Link to={createPageUrl('Gyms')} className="mt-3 inline-block">
                   <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl">
                     <Target className="w-4 h-4 mr-2" />
-                    Check In Now
+                    {t('home.checkInNow')}
                   </Button>
                 </Link>
               )}
@@ -302,14 +304,14 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="font-bold text-orange-900">
-                    {daysSinceCheckIn === 1 ? 'Haven\'t seen you today!' : `${daysSinceCheckIn} days since last check-in`}
+                    {daysSinceCheckIn === 1 ? t('home.notSeenToday') : `${daysSinceCheckIn} ${t('home.daysSinceCheckIn')}`}
                   </h3>
-                  <p className="text-sm text-orange-700">Keep your streak alive! 🔥</p>
+                  <p className="text-sm text-orange-700">{t('home.keepStreakAlive')} 🔥</p>
                 </div>
               </div>
               <Link to={createPageUrl('Gyms')}>
                 <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl">
-                  Check In Now
+                  {t('home.checkInNow')}
                 </Button>
               </Link>
             </div>
@@ -323,17 +325,17 @@ export default function Home() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-black bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent flex items-center gap-2">
               <Users className="w-6 h-6 text-blue-400" />
-              Who's Training Today
+              {t('home.whosTraining')}
             </h2>
             <Badge className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 border border-blue-500/50 font-bold">
-              {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'}
+              {todayCheckIns.length} {todayCheckIns.length === 1 ? t('home.person') : t('home.people')}
             </Badge>
           </div>
           {todayCheckIns.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 mx-auto mb-3 text-slate-500" />
-                <p className="text-slate-300">No check-ins yet today</p>
-                <p className="text-sm text-slate-400 mt-1">Be the first to check in!</p>
+                <p className="text-slate-300">{t('home.noCheckIns')}</p>
+                <p className="text-sm text-slate-400 mt-1">{t('home.beTheFirst')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -350,7 +352,7 @@ export default function Home() {
                       <MapPin className="w-3 h-3" />
                       <span>{checkIn.gym_name}</span>
                       {checkIn.first_visit && (
-                        <Badge className="bg-green-100 text-green-700 text-xs">First Visit 🎉</Badge>
+                        <Badge className="bg-green-100 text-green-700 text-xs">{t('home.firstVisit')} 🎉</Badge>
                       )}
                     </div>
                   </div>
@@ -372,11 +374,11 @@ export default function Home() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent flex items-center gap-2">
                 <Dumbbell className="w-6 h-6 text-purple-400" />
-                Today's Lifts
+                {t('home.todayLifts')}
               </h2>
               <Link to={createPageUrl('Leaderboard')}>
                 <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300">
-                  View All
+                  {t('home.viewAll')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -411,15 +413,15 @@ export default function Home() {
           <Link to={createPageUrl('Gyms')}>
             <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
               <Trophy className="w-10 h-10 mb-3" />
-              <h3 className="font-black text-lg mb-1">View Gyms</h3>
-              <p className="text-sm text-white/90">Explore communities</p>
+              <h3 className="font-black text-lg mb-1">{t('home.viewGyms')}</h3>
+              <p className="text-sm text-white/90">{t('home.exploreCommunities')}</p>
             </Card>
           </Link>
           <Link to={createPageUrl('Gyms')}>
             <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 border-0 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer">
               <Dumbbell className="w-10 h-10 mb-3" />
-              <h3 className="font-black text-lg mb-1">Check In</h3>
-              <p className="text-sm text-white/90">Start your workout</p>
+              <h3 className="font-black text-lg mb-1">{t('home.checkIn')}</h3>
+              <p className="text-sm text-white/90">{t('home.startWorkout')}</p>
             </Card>
           </Link>
         </div>
@@ -429,7 +431,7 @@ export default function Home() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-black text-gray-900">Quick Check-In</h2>
+                <h2 className="text-xl font-black text-gray-900">{t('home.quickCheckIn')}</h2>
                 <Button variant="ghost" size="icon" onClick={() => setShowCheckIn(false)}>
                   <X className="w-5 h-5" />
                 </Button>
