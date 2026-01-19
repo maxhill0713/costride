@@ -2082,9 +2082,7 @@ export default function GymOwnerDashboard() {
         <CreateChallengeModal
           open={showCreateChallenge}
           onClose={() => setShowCreateChallenge(false)}
-          onSave={(data) => createChallengeMutation.mutate(data)}
-          gym={selectedGym}
-          isLoading={createChallengeMutation.isPending}
+          gyms={gyms}
         />
       </div>
     </div>
