@@ -18,9 +18,11 @@ import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
 import ClaimedRewardCard from '../components/rewards/ClaimedRewardCard';
+import { useTranslation } from 'react-i18next';
 
 
 export default function Profile() {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -334,26 +336,26 @@ export default function Profile() {
           {isEditing ? (
             <div className="space-y-3">
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">Bio</label>
+                <label className="text-white text-sm font-medium mb-1 block">{t('profile.bio')}</label>
                 <Textarea
                   value={editData.bio}
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                  placeholder="Tell us about yourself..."
+                  placeholder={t('profile.bioPlaceholder')}
                   className="bg-white/90 border-0 rounded-2xl text-gray-900"
                   rows={3}
                 />
               </div>
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">Gym Location</label>
+                <label className="text-white text-sm font-medium mb-1 block">{t('profile.gymLocation')}</label>
                 <Input
                   value={editData.gym_location}
                   onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
-                  placeholder="e.g. Iron Paradise, Manchester"
+                  placeholder={t('profile.gymLocationPlaceholder')}
                   className="bg-white/90 border-0 rounded-2xl text-gray-900"
                 />
               </div>
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">Profile Photo URL</label>
+                <label className="text-white text-sm font-medium mb-1 block">{t('profile.profilePhoto')}</label>
                 <Input
                   value={editData.avatar_url}
                   onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
@@ -403,7 +405,7 @@ export default function Profile() {
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">Your Identity</p>
+              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">{t('profile.yourIdentity')}</p>
               <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent`}>
                 {identityStatus.title}
               </h3>
@@ -414,7 +416,7 @@ export default function Profile() {
             </div>
           </div>
           <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20">
-            <p className="text-xs text-cyan-300 font-bold mb-1">WHAT YOU'RE BECOMING</p>
+            <p className="text-xs text-cyan-300 font-bold mb-1">{t('profile.whatYoureBecoming')}</p>
             <p className="text-sm text-slate-200">{identityStatus.next}</p>
           </div>
         </Card>
@@ -426,9 +428,9 @@ export default function Profile() {
               <div className="flex items-center gap-3">
                 <Flame className="w-8 h-8 text-cyan-400" />
                 <div>
-                  <p className="text-sm font-medium text-cyan-300">Current Streak</p>
+                  <p className="text-sm font-medium text-cyan-300">{t('profile.currentStreak')}</p>
                   <p className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                  <p className="text-xs text-cyan-300">days</p>
+                  <p className="text-xs text-cyan-300">{t('profile.days')}</p>
                 </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
@@ -461,19 +463,19 @@ export default function Profile() {
             <div className="flex items-center gap-3 mb-3">
               <Trophy className="w-8 h-8 text-purple-400" />
               <div>
-                <p className="text-sm font-medium text-purple-300">Best Streak</p>
+                <p className="text-sm font-medium text-purple-300">{t('profile.bestStreak')}</p>
                 <p className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
-                <p className="text-xs text-purple-300">days ever</p>
+                <p className="text-xs text-purple-300">{t('profile.daysEver')}</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
               <div className="bg-purple-900/30 border border-purple-600/30 rounded-lg px-3 py-1.5">
-                <p className="text-xs font-bold text-purple-300">💎 Keep going to beat your record!</p>
+                <p className="text-xs font-bold text-purple-300">💎 {t('profile.keepGoing')}</p>
               </div>
             )}
             {currentStreak === longestStreak && currentStreak > 0 && (
               <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg px-3 py-1.5">
-                <p className="text-xs font-bold text-yellow-300">🔥 New personal record!</p>
+                <p className="text-xs font-bold text-yellow-300">🔥 {t('profile.newRecord')}</p>
               </div>
             )}
           </Card>
@@ -486,7 +488,7 @@ export default function Profile() {
           <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 shadow-lg">
             <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-cyan-400" />
-              What Happens If You Stop?
+              {t('profile.whatHappens')}
             </h3>
             <div className="space-y-3">
               <div className="bg-slate-700/50 rounded-2xl p-3">
@@ -512,7 +514,7 @@ export default function Profile() {
           <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg">
             <h3 className="font-semibold bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-400" />
-              Milestones Unlocked
+              {t('profile.milestonesUnlocked')}
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {earnedBadges.map((badge) => (
@@ -529,15 +531,15 @@ export default function Profile() {
         <div className="grid grid-cols-3 gap-4">
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-blue-400 to-cyan-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
-            <div className="text-xs text-cyan-300 font-bold mt-2 uppercase tracking-wide">Workouts</div>
+            <div className="text-xs text-cyan-300 font-bold mt-2 uppercase tracking-wide">{t('profile.workouts')}</div>
           </Card>
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-orange-400 to-red-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
-            <div className="text-xs text-orange-300 font-bold mt-2 uppercase tracking-wide">PRs</div>
+            <div className="text-xs text-orange-300 font-bold mt-2 uppercase tracking-wide">{t('profile.prs')}</div>
           </Card>
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.weekStreak}</div>
-            <div className="text-xs text-purple-300 font-bold mt-2 uppercase tracking-wide">Day Streak</div>
+            <div className="text-xs text-purple-300 font-bold mt-2 uppercase tracking-wide">{t('profile.dayStreak')}</div>
           </Card>
         </div>
 
@@ -549,23 +551,23 @@ export default function Profile() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-6 mb-6 bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 p-1.5 rounded-2xl shadow-sm overflow-x-auto">
             <TabsTrigger value="progress" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
-              Progress
+              {t('profile.progress')}
             </TabsTrigger>
             <TabsTrigger value="goals" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
-              Goals
+              {t('profile.goals')}
             </TabsTrigger>
             <TabsTrigger value="rewards" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
-              Rewards
+              {t('profile.rewards')}
             </TabsTrigger>
             <TabsTrigger value="badges" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
-              Badges
+              {t('profile.badges')}
             </TabsTrigger>
             <TabsTrigger value="achievements" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
-              Achievements
+              {t('profile.achievements')}
             </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs md:text-sm whitespace-nowrap text-slate-400">
               <Settings className="w-4 h-4 md:mr-1" />
-              <span className="hidden md:inline">Settings</span>
+              <span className="hidden md:inline">{t('profile.settings')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -574,33 +576,33 @@ export default function Profile() {
 
             {/* Progress Stats */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
-              <h3 className="font-semibold text-white mb-4">Your Progress</h3>
+              <h3 className="font-semibold text-white mb-4">{t('profile.yourProgress')}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-cyan-300 uppercase">Check-ins</span>
+                    <span className="text-xs font-bold text-cyan-300 uppercase">{t('profile.checkIns')}</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userCheckIns.length}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-xs font-bold text-orange-300 uppercase">Streak</span>
+                    <span className="text-xs font-bold text-orange-300 uppercase">{t('profile.currentStreak')}</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">{currentStreak}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Dumbbell className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-bold text-purple-300 uppercase">Workouts</span>
+                    <span className="text-xs font-bold text-purple-300 uppercase">{t('profile.workouts')}</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-300 uppercase">PRs</span>
+                    <span className="text-xs font-bold text-yellow-300 uppercase">{t('profile.prs')}</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
                 </div>
@@ -635,16 +637,16 @@ export default function Profile() {
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Your Rewards</h3>
-                  <p className="text-sm text-slate-300">Claim exclusive rewards from your gyms</p>
+                  <h3 className="text-xl font-semibold text-white">{t('profile.yourRewards')}</h3>
+                  <p className="text-sm text-slate-300">{t('profile.claimRewards')}</p>
                 </div>
               </div>
 
               {availableRewards.length === 0 ? (
                 <div className="text-center py-8">
                   <Gift className="w-16 h-16 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-300 mb-2">No rewards available yet</p>
-                  <p className="text-sm text-slate-400">Join a gym to unlock exclusive rewards!</p>
+                  <p className="text-slate-300 mb-2">{t('profile.noRewards')}</p>
+                  <p className="text-sm text-slate-400">{t('profile.joinGym')}</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -827,7 +829,7 @@ export default function Profile() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Target className="w-5 h-5 text-blue-400" />
-                My Goals
+                {t('profile.myGoals')}
               </h3>
               <Button
                 onClick={() => setShowAddGoal(true)}
@@ -835,20 +837,20 @@ export default function Profile() {
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add Goal
+                {t('profile.addGoal')}
               </Button>
             </div>
 
             {activeGoals.length === 0 ? (
               <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
                 <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-300 mb-2">No goals set yet</p>
+                <p className="text-slate-300 mb-2">{t('profile.noGoals')}</p>
                 <Button
                   onClick={() => setShowAddGoal(true)}
                   variant="outline"
                   size="sm"
                 >
-                  Set Your First Goal
+                  {t('profile.setFirstGoal')}
                 </Button>
               </Card>
             ) : (
@@ -871,8 +873,8 @@ export default function Profile() {
                   <Bell className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Notifications</h3>
-                  <p className="text-sm text-slate-300">Manage your notification preferences</p>
+                  <h3 className="text-lg font-semibold text-white">{t('profile.notifications')}</h3>
+                  <p className="text-sm text-slate-300">{t('profile.notificationDesc')}</p>
                 </div>
               </div>
 
@@ -925,8 +927,8 @@ export default function Profile() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Appearance</h3>
-                  <p className="text-sm text-slate-300">Customize your app experience</p>
+                  <h3 className="text-lg font-semibold text-white">{t('profile.appearance')}</h3>
+                  <p className="text-sm text-slate-300">{t('profile.appearanceDesc')}</p>
                 </div>
               </div>
 
@@ -1053,12 +1055,12 @@ export default function Profile() {
                 variant="outline" 
                 className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 rounded-2xl font-semibold"
                 onClick={() => {
-                  if (confirm('Are you sure you want to logout?')) {
+                  if (confirm(t('profile.logoutConfirm'))) {
                     base44.auth.logout();
                   }
                 }}
               >
-                Logout
+                {t('profile.logout')}
               </Button>
             </Card>
           </TabsContent>
