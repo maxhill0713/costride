@@ -150,7 +150,13 @@ export default function Home() {
     return progress >= expectedProgress * 0.8; // 80% of expected progress
   }).length;
   
-  const isOnTrack = weeklyCheckIns.length >= weeklyTarget && (goals.length === 0 || goalsOnTrack >= goals.length * 0.5);
+  const weeklyComplete = weeklyCheckIns.length >= weeklyTarget;
+  const goalsComplete = goals.length === 0 || goalsOnTrack >= goals.length * 0.5;
+  const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
+  const totalCount = goals.length > 0 ? 2 : 1;
+  
+  const isOnTrack = completedCount === totalCount;
+  const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
   const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
 
   return (
@@ -222,19 +228,19 @@ export default function Home() {
         </Card>
 
         {/* Progress Tracker */}
-        <Card className={`${isOnTrack ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300' : 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300'} p-5 shadow-lg`}>
+        <Card className={`${isOnTrack ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300' : isAlmostOnTrack ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300' : 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300'} p-5 shadow-lg`}>
           <div className="flex items-start gap-4">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${isOnTrack ? 'bg-green-500' : 'bg-orange-500'}`}>
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${isOnTrack ? 'bg-green-500' : isAlmostOnTrack ? 'bg-yellow-500' : 'bg-orange-500'}`}>
               {isOnTrack ? <CheckCircle className="w-8 h-8 text-white" /> : <AlertCircle className="w-8 h-8 text-white" />}
             </div>
             <div className="flex-1">
-              <h3 className={`text-xl font-black mb-2 ${isOnTrack ? 'text-green-900' : 'text-orange-900'}`}>
-                {isOnTrack ? '🎉 You\'re On Track!' : '⚠️ You\'re Falling Behind'}
+              <h3 className={`text-xl font-black mb-2 ${isOnTrack ? 'text-green-900' : isAlmostOnTrack ? 'text-yellow-900' : 'text-orange-900'}`}>
+                {isOnTrack ? '🎉 You\'re On Track!' : isAlmostOnTrack ? '💪 You\'re Almost On Track' : '⚠️ You\'re Falling Behind'}
               </h3>
               <div className="space-y-2">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : 'text-orange-800'}`}>
+                    <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : isAlmostOnTrack ? 'text-yellow-800' : 'text-orange-800'}`}>
                       Weekly Gym Visits: {weeklyCheckIns.length}/{weeklyTarget}
                     </span>
                     <span className={`text-xs font-bold ${weeklyCheckIns.length >= weeklyTarget ? 'text-green-700' : 'text-orange-700'}`}>
@@ -251,7 +257,7 @@ export default function Home() {
                 {goals.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : 'text-orange-800'}`}>
+                      <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : isAlmostOnTrack ? 'text-yellow-800' : 'text-orange-800'}`}>
                         Goals Progress: {goalsOnTrack}/{goals.length} on track
                       </span>
                       <span className={`text-xs font-bold ${goalsOnTrack >= goals.length * 0.5 ? 'text-green-700' : 'text-orange-700'}`}>
@@ -267,9 +273,11 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <p className={`text-sm mt-3 ${isOnTrack ? 'text-green-700' : 'text-orange-700'}`}>
+              <p className={`text-sm mt-3 ${isOnTrack ? 'text-green-700' : isAlmostOnTrack ? 'text-yellow-700' : 'text-orange-700'}`}>
                 {isOnTrack 
                   ? 'Keep up the great work! You\'re crushing your fitness goals 💪' 
+                  : isAlmostOnTrack
+                  ? 'You\'re so close! Complete one more to get fully on track 🔥'
                   : 'Don\'t give up! Get back on track by checking in at a gym today 🔥'}
               </p>
               {!isOnTrack && (
