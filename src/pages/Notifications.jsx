@@ -152,24 +152,30 @@ export default function Notifications() {
   const getNotificationIcon = (type, icon) => {
     if (icon) return icon;
     switch (type) {
-      case 'inactivity': return <AlertCircle className="w-5 h-5 text-orange-400" />;
-      case 'milestone': return <Trophy className="w-5 h-5 text-yellow-400" />;
-      case 'anniversary': return <PartyPopper className="w-5 h-5 text-purple-400" />;
-      case 'engagement': return <TrendingUp className="w-5 h-5 text-cyan-400" />;
-      case 'achievement': return <CheckCircle2 className="w-5 h-5 text-teal-400" />;
-      case 'challenge': return <Flame className="w-5 h-5 text-red-400" />;
-      default: return <Bell className="w-5 h-5 text-slate-400" />;
+      case 'inactivity': return <AlertCircle className="w-6 h-6 text-orange-400" />;
+      case 'milestone': return <Trophy className="w-6 h-6 text-yellow-400" />;
+      case 'anniversary': return <PartyPopper className="w-6 h-6 text-purple-400" />;
+      case 'engagement': return <TrendingUp className="w-6 h-6 text-cyan-400" />;
+      case 'achievement': return <CheckCircle2 className="w-6 h-6 text-green-400" />;
+      case 'challenge': return <Flame className="w-6 h-6 text-red-500" />;
+      case 'streak': return <Flame className="w-6 h-6 text-orange-500" />;
+      case 'reward': return <Trophy className="w-6 h-6 text-pink-400" />;
+      case 'reminder': return <Bell className="w-6 h-6 text-indigo-400" />;
+      default: return <Bell className="w-6 h-6 text-slate-400" />;
     }
   };
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'inactivity': return 'from-slate-700/70 via-orange-900/30 to-slate-800/70 border-slate-600/40';
-      case 'milestone': return 'from-slate-700/70 via-yellow-900/30 to-slate-800/70 border-slate-600/40';
-      case 'anniversary': return 'from-slate-700/70 via-purple-900/30 to-slate-800/70 border-slate-600/40';
-      case 'engagement': return 'from-slate-700/70 via-cyan-900/30 to-slate-800/70 border-slate-600/40';
-      case 'achievement': return 'from-slate-700/70 via-teal-900/30 to-slate-800/70 border-slate-600/40';
-      case 'challenge': return 'from-slate-700/70 via-red-900/30 to-slate-800/70 border-slate-600/40';
+      case 'inactivity': return 'from-orange-500/20 via-red-600/30 to-orange-700/20 border-orange-500/40';
+      case 'milestone': return 'from-yellow-500/20 via-amber-600/30 to-yellow-700/20 border-yellow-500/40';
+      case 'anniversary': return 'from-purple-500/20 via-pink-600/30 to-purple-700/20 border-purple-500/40';
+      case 'engagement': return 'from-cyan-500/20 via-blue-600/30 to-cyan-700/20 border-cyan-500/40';
+      case 'achievement': return 'from-green-500/20 via-emerald-600/30 to-teal-700/20 border-green-500/40';
+      case 'challenge': return 'from-red-500/20 via-rose-600/30 to-red-700/20 border-red-500/40';
+      case 'streak': return 'from-orange-500/20 via-amber-600/30 to-orange-700/20 border-orange-500/40';
+      case 'reward': return 'from-pink-500/20 via-fuchsia-600/30 to-pink-700/20 border-pink-500/40';
+      case 'reminder': return 'from-indigo-500/20 via-purple-600/30 to-indigo-700/20 border-indigo-500/40';
       default: return 'from-slate-700/60 to-slate-800/60 border-slate-600/40';
     }
   };
@@ -237,9 +243,11 @@ export default function Notifications() {
                     {/* Icon */}
                     <div className="flex-shrink-0">
                       {notification.icon && typeof notification.icon === 'string' && notification.icon.length <= 2 ? (
-                        <div className="text-3xl">{notification.icon}</div>
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm">
+                          <div className="text-4xl">{notification.icon}</div>
+                        </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-slate-700/80 flex items-center justify-center shadow-sm border border-cyan-700/50">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm">
                           {getNotificationIcon(notification.type, null)}
                         </div>
                       )}
