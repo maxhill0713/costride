@@ -152,31 +152,31 @@ export default function Notifications() {
   const getNotificationIcon = (type, icon) => {
     if (icon) return icon;
     switch (type) {
-      case 'inactivity': return <AlertCircle className="w-6 h-6 text-orange-400" />;
-      case 'milestone': return <Trophy className="w-6 h-6 text-yellow-400" />;
-      case 'anniversary': return <PartyPopper className="w-6 h-6 text-purple-400" />;
-      case 'engagement': return <TrendingUp className="w-6 h-6 text-cyan-400" />;
-      case 'achievement': return <CheckCircle2 className="w-6 h-6 text-green-400" />;
-      case 'challenge': return <Flame className="w-6 h-6 text-red-500" />;
-      case 'streak': return <Flame className="w-6 h-6 text-orange-500" />;
-      case 'reward': return <Trophy className="w-6 h-6 text-pink-400" />;
-      case 'reminder': return <Bell className="w-6 h-6 text-indigo-400" />;
-      default: return <Bell className="w-6 h-6 text-slate-400" />;
+      case 'inactivity': return <AlertCircle className="w-5 h-5 text-orange-400" />;
+      case 'milestone': return <Trophy className="w-5 h-5 text-yellow-400" />;
+      case 'anniversary': return <PartyPopper className="w-5 h-5 text-purple-400" />;
+      case 'engagement': return <TrendingUp className="w-5 h-5 text-cyan-400" />;
+      case 'achievement': return <CheckCircle2 className="w-5 h-5 text-green-400" />;
+      case 'challenge': return <Flame className="w-5 h-5 text-red-400" />;
+      case 'streak': return <Flame className="w-5 h-5 text-orange-400" />;
+      case 'reward': return <Trophy className="w-5 h-5 text-pink-400" />;
+      case 'reminder': return <Bell className="w-5 h-5 text-indigo-400" />;
+      default: return <Bell className="w-5 h-5 text-slate-400" />;
     }
   };
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'inactivity': return 'from-orange-500/20 via-red-600/30 to-orange-700/20 border-orange-500/40';
-      case 'milestone': return 'from-yellow-500/20 via-amber-600/30 to-yellow-700/20 border-yellow-500/40';
-      case 'anniversary': return 'from-purple-500/20 via-pink-600/30 to-purple-700/20 border-purple-500/40';
-      case 'engagement': return 'from-cyan-500/20 via-blue-600/30 to-cyan-700/20 border-cyan-500/40';
-      case 'achievement': return 'from-green-500/20 via-emerald-600/30 to-teal-700/20 border-green-500/40';
-      case 'challenge': return 'from-red-500/20 via-rose-600/30 to-red-700/20 border-red-500/40';
-      case 'streak': return 'from-orange-500/20 via-amber-600/30 to-orange-700/20 border-orange-500/40';
-      case 'reward': return 'from-pink-500/20 via-fuchsia-600/30 to-pink-700/20 border-pink-500/40';
-      case 'reminder': return 'from-indigo-500/20 via-purple-600/30 to-indigo-700/20 border-indigo-500/40';
-      default: return 'from-slate-700/60 to-slate-800/60 border-slate-600/40';
+      case 'inactivity': return 'bg-slate-800/60 backdrop-blur-sm border-orange-500/30';
+      case 'milestone': return 'bg-slate-800/60 backdrop-blur-sm border-yellow-500/30';
+      case 'anniversary': return 'bg-slate-800/60 backdrop-blur-sm border-purple-500/30';
+      case 'engagement': return 'bg-slate-800/60 backdrop-blur-sm border-cyan-500/30';
+      case 'achievement': return 'bg-slate-800/60 backdrop-blur-sm border-green-500/30';
+      case 'challenge': return 'bg-slate-800/60 backdrop-blur-sm border-red-500/30';
+      case 'streak': return 'bg-slate-800/60 backdrop-blur-sm border-orange-500/30';
+      case 'reward': return 'bg-slate-800/60 backdrop-blur-sm border-pink-500/30';
+      case 'reminder': return 'bg-slate-800/60 backdrop-blur-sm border-indigo-500/30';
+      default: return 'bg-slate-800/60 backdrop-blur-sm border-slate-600/40';
     }
   };
 
@@ -234,8 +234,8 @@ export default function Notifications() {
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`bg-gradient-to-r ${getNotificationColor(notification.type)} border overflow-hidden hover:shadow-xl hover:shadow-cyan-500/20 transition-all duration-300 rounded-3xl ${
-                  !notification.read ? 'ring-2 ring-cyan-500/50' : ''
+                className={`${getNotificationColor(notification.type)} border overflow-hidden hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 rounded-2xl ${
+                  !notification.read ? 'ring-2 ring-blue-500/40' : ''
                 }`}
               >
                 <div className="p-5">
@@ -243,11 +243,9 @@ export default function Notifications() {
                     {/* Icon */}
                     <div className="flex-shrink-0">
                       {notification.icon && typeof notification.icon === 'string' && notification.icon.length <= 2 ? (
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm">
-                          <div className="text-4xl">{notification.icon}</div>
-                        </div>
+                        <div className="text-3xl">{notification.icon}</div>
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm">
+                        <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
                           {getNotificationIcon(notification.type, null)}
                         </div>
                       )}
@@ -256,7 +254,7 @@ export default function Notifications() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">{notification.title}</h3>
+                        <h3 className="font-bold text-white">{notification.title}</h3>
                         <Button
                           variant="ghost"
                           size="icon"
