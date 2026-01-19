@@ -112,12 +112,10 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
               const updates = { category: value };
               if (value === 'lifting') {
                 updates.goal_type = 'total_weight';
-              } else if (value === 'check_ins') {
-                updates.goal_type = 'total_check_ins';
+              } else if (value === 'attendance') {
+                updates.goal_type = 'most_check_ins';
               } else if (value === 'streak') {
                 updates.goal_type = 'longest_streak';
-              } else if (value === 'attendance') {
-                updates.goal_type = 'most_days';
               }
               setFormData({ ...formData, ...updates });
             }}>
@@ -126,9 +124,8 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="lifting">💪 Lifting (Weight/Reps)</SelectItem>
-                <SelectItem value="check_ins">📍 Check-ins</SelectItem>
-                <SelectItem value="streak">🔥 Streak</SelectItem>
-                <SelectItem value="attendance">📅 Attendance</SelectItem>
+                <SelectItem value="attendance">📍 Attendance (Check-ins)</SelectItem>
+                <SelectItem value="streak">🔥 Streak (Consecutive Days)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -227,28 +224,25 @@ export default function CreateChallengeModal({ open, onClose, gyms }) {
                     <SelectItem value="max_weight">Max Weight</SelectItem>
                   </>
                 )}
-                {formData.category === 'check_ins' && (
-                  <SelectItem value="total_check_ins">Most Check-ins</SelectItem>
+                {formData.category === 'attendance' && (
+                  <SelectItem value="most_check_ins">Most Check-ins</SelectItem>
                 )}
                 {formData.category === 'streak' && (
                   <SelectItem value="longest_streak">Longest Streak</SelectItem>
-                )}
-                {formData.category === 'attendance' && (
-                  <SelectItem value="most_days">Most Days Attended</SelectItem>
                 )}
                 <SelectItem value="participation">Most Participants</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {(formData.category === 'check_ins' || formData.category === 'streak') && (
+          {(formData.category === 'attendance' || formData.category === 'streak') && (
             <div className="space-y-2">
-              <Label>Target {formData.category === 'check_ins' ? 'Check-ins' : 'Streak (days)'}</Label>
+              <Label>Target {formData.category === 'attendance' ? 'Check-ins' : 'Streak (days)'}</Label>
               <Input
                 type="number"
                 value={formData.target_value}
                 onChange={(e) => setFormData({ ...formData, target_value: parseInt(e.target.value) || 0 })}
-                placeholder={formData.category === 'check_ins' ? '50' : '30'}
+                placeholder={formData.category === 'attendance' ? '20' : '30'}
                 className="rounded-2xl"
               />
               <p className="text-xs text-gray-500">Optional milestone goal for participants</p>
