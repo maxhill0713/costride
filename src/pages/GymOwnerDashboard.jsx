@@ -17,6 +17,7 @@ import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import CreateEventModal from '../components/events/CreateEventModal';
+import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -780,7 +781,7 @@ export default function GymOwnerDashboard() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Challenges & Events</h3>
                 <div className="flex gap-2">
-                  <Button onClick={() => setShowCreateEvent(true)} variant="outline">
+                  <Button onClick={() => setShowCreateEvent(true)} className="bg-gray-900 hover:bg-gray-800 text-white">
                     <Calendar className="w-4 h-4 mr-2" />
                     Create Event
                   </Button>
@@ -2076,6 +2077,14 @@ export default function GymOwnerDashboard() {
           onSave={(data) => createEventMutation.mutate(data)}
           gym={selectedGym}
           isLoading={createEventMutation.isPending}
+        />
+
+        <CreateChallengeModal
+          open={showCreateChallenge}
+          onClose={() => setShowCreateChallenge(false)}
+          onSave={(data) => createChallengeMutation.mutate(data)}
+          gym={selectedGym}
+          isLoading={createChallengeMutation.isPending}
         />
       </div>
     </div>
