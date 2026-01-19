@@ -41,6 +41,7 @@ export default function Layout({ children, currentPageName }) {
   const primaryGymId = gymMemberships.length > 0 ? gymMemberships[0].gym_id : null;
 
   const navItems = isGymOwner ? [
+    { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
     { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
     { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
     { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
