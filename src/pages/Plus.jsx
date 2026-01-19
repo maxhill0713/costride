@@ -6,7 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import '../components/i18n/config';
 
 const proFeatures = [
   {

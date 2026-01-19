@@ -8,7 +8,6 @@ import { TrendingDown, TrendingUp, Dumbbell, Target, Zap, Heart, Activity, Build
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { useTranslation } from 'react-i18next';
-import '../components/i18n/config';
 import LanguageSelector from '../components/LanguageSelector';
 
 const ACCOUNT_TYPES = [
