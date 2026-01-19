@@ -1,7 +1,10 @@
-import React from 'react';
-import { Crown, Zap, TrendingUp, Users, BarChart, Shield, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Crown, Zap, TrendingUp, Users, BarChart, Shield, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const proFeatures = [
   {
@@ -46,6 +49,56 @@ const basicFeatures = [
 ];
 
 export default function Plus() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', currentUser?.id],
+    queryFn: async () => {
+      const subs = await base44.entities.Subscription.filter({
+        user_id: currentUser.id,
+        subscription_type: 'gym_pro',
+        status: 'active'
+      });
+      return subs[0] || null;
+    },
+    enabled: !!currentUser
+  });
+
+  const handleSubscribe = async () => {
+    // Check if running in iframe
+    if (window.self !== window.top) {
+      toast.error('Checkout only works from published app', {
+        description: 'Please open the app in a new tab to subscribe'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await base44.functions.invoke('createSubscriptionCheckout', {
+        priceId: 'price_1SrNwPDSt5niTKrslvTPCEjV'
+      });
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        toast.error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Failed to start checkout');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isSubscribed = !!subscription;
+
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-5xl mx-auto">
@@ -79,8 +132,12 @@ export default function Plus() {
               ))}
             </div>
 
-            <Button variant="outline" className="w-full h-12 rounded-2xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700">
-              Current Plan
+            <Button 
+              variant="outline" 
+              className="w-full h-12 rounded-2xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700"
+              disabled
+            >
+              {isSubscribed ? 'Your Plan' : 'Current Plan'}
             </Button>
           </Card>
 
@@ -112,10 +169,28 @@ export default function Plus() {
 
             <p className="text-center text-purple-100 text-sm mb-8">...and more</p>
 
-            <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-12 rounded-2xl shadow-lg">
-              Start Free Trial
+            <Button 
+              onClick={handleSubscribe}
+              disabled={isLoading || isSubscribed}
+              className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-12 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  Loading...
+                </>
+              ) : isSubscribed ? (
+                '✓ Subscribed'
+              ) : (
+                'Subscribe Now'
+              )}
             </Button>
-            <p className="text-sm text-purple-100 mt-4 text-center">7-day free trial • Cancel anytime</p>
+            {!isSubscribed && (
+              <p className="text-sm text-purple-100 mt-4 text-center">Cancel anytime • Secure payment via Stripe</p>
+            )}
+            {isSubscribed && (
+              <p className="text-sm text-purple-100 mt-4 text-center">Manage subscription in your profile settings</p>
+            )}
           </Card>
         </div>
       </div>
