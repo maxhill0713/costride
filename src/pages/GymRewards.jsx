@@ -225,51 +225,6 @@ export default function GymRewards() {
             )}
           </div>
         )}
-
-        {/* Stats */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg mt-6">
-          <h4 className="font-semibold text-white mb-4">{t('profile.yourProgress')}</h4>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-300">{t('profile.totalCheckIns')}</span>
-              <span className="font-bold text-slate-100">{userCheckInCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-300">{t('profile.currentStreakDays')}</span>
-              <span className="font-bold text-slate-100">{currentStreak} {t('profile.days')}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-300">{t('profile.gymsJoined')}</span>
-              <span className="font-bold text-slate-100">{gymMemberships.length}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-300">{t('profile.rewardsClaimed')}</span>
-              <span className="font-bold text-slate-100">
-                {allRewards.filter(r => r.claimed_by?.includes(currentUser?.id)).length}
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Gym Memberships */}
-        {memberGyms.length > 0 && (
-          <div className="bg-slate-700/30 rounded-2xl p-3 border border-slate-600/30 mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Building2 className="w-4 h-4 text-blue-400" />
-              <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {memberGyms.map((gym) => (
-                <span 
-                  key={gym.id}
-                  className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-medium"
-                >
-                  {gym.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
