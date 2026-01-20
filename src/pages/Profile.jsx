@@ -779,34 +779,33 @@ export default function Profile() {
                     </div>
                   )}
                 </div>
-              )}
-              </Card>
-              </TabsContent>
-
-              {/* Brand Rewards Tab */}
-              <TabsContent value="brand" className="space-y-4 mt-4">
-              <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/40 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Tag className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white">Brand Rewards</h3>
-                  <p className="text-sm text-slate-300">Discount codes and gift cards from top brands</p>
-                </div>
-              </div>
-
-              <Button
-                onClick={() => window.location.hash = '#/BrandDiscounts'}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl"
-              >
-                View All Brand Codes
-              </Button>
-              </Card>
-              </TabsContent>
-              </Tabs>
+                )}
+                </Card>
                 </TabsContent>
-          </Tabs>
+
+                {/* Brand Rewards Tab */}
+                <TabsContent value="brand" className="space-y-4 mt-4">
+                <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/40 p-6 shadow-lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Tag className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white">Brand Rewards</h3>
+                    <p className="text-sm text-slate-300">Discount codes and gift cards from top brands</p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => window.location.hash = '#/BrandDiscounts'}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl"
+                >
+                  View All Brand Codes
+                </Button>
+                </Card>
+                </TabsContent>
+                </Tabs>
+                </TabsContent>
 
           <TabsContent value="badges">
             <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
