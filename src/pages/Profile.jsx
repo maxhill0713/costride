@@ -18,7 +18,6 @@ import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
-import ClaimedRewardCard from '../components/rewards/ClaimedRewardCard';
 import { useTranslation } from 'react-i18next';
 
 
@@ -806,7 +805,8 @@ export default function Profile() {
               </Card>
               </TabsContent>
               </Tabs>
-              </TabsContent>
+                </TabsContent>
+          </Tabs>
 
           <TabsContent value="badges">
             <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
