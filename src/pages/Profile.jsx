@@ -678,7 +678,7 @@ export default function Profile() {
                             cb.offer_details === reward.title
                           );
                           const gym = allGyms.find(g => g.id === reward.gym_id);
-                          
+
                           return claimedBonus ? (
                             <ClaimedRewardCard
                               key={reward.id}
@@ -738,11 +738,11 @@ export default function Profile() {
                                       </span>
                                     )}
                                   </div>
-                                  
+
                                   {reward.description && (
                                     <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
                                   )}
-                                  
+
                                   <div className="flex items-center justify-between">
                                     <div className="flex gap-2">
                                       <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full capitalize">
@@ -752,7 +752,7 @@ export default function Profile() {
                                         {reward.type.replace(/_/g, ' ')}
                                       </span>
                                     </div>
-                                    
+
                                     {!meetsRequirement ? (
                                       <span className="text-xs text-gray-500 font-medium">
                                         {t('profile.locked')}
@@ -781,33 +781,32 @@ export default function Profile() {
                   )}
                 </div>
               )}
-            </Card>
+              </Card>
+              </TabsContent>
 
-            {/* Stats */}
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
-              <h4 className="font-semibold text-white mb-4">{t('profile.yourProgress')}</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">{t('profile.totalCheckIns')}</span>
-                  <span className="font-bold text-slate-100">{userCheckInCount}</span>
+              {/* Brand Rewards Tab */}
+              <TabsContent value="brand" className="space-y-4 mt-4">
+              <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/40 p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                  <Tag className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">{t('profile.currentStreakDays')}</span>
-                  <span className="font-bold text-slate-100">{currentStreak} {t('profile.days')}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">{t('profile.gymsJoined')}</span>
-                  <span className="font-bold text-slate-100">{gymMemberships.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">{t('profile.rewardsClaimed')}</span>
-                  <span className="font-bold text-slate-100">
-                    {allRewards.filter(r => r.claimed_by?.includes(currentUser?.id)).length}
-                  </span>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">Brand Rewards</h3>
+                  <p className="text-sm text-slate-300">Discount codes and gift cards from top brands</p>
                 </div>
               </div>
-            </Card>
-          </TabsContent>
+
+              <Button
+                onClick={() => window.location.hash = '#/BrandDiscounts'}
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl"
+              >
+                View All Brand Codes
+              </Button>
+              </Card>
+              </TabsContent>
+              </Tabs>
+              </TabsContent>
 
           <TabsContent value="badges">
             <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
