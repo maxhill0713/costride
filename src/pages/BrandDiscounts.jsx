@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
@@ -85,6 +86,12 @@ export default function BrandDiscounts() {
   const unusedCodes = userCodes.filter(c => c.status === 'unused' && (!c.expiry_date || new Date(c.expiry_date) >= new Date()));
   const usedCodes = userCodes.filter(c => c.status === 'used');
   const expiredCodes = userCodes.filter(c => c.expiry_date && new Date(c.expiry_date) < new Date() && c.status === 'unused');
+
+  // Split by type
+  const unusedDiscounts = unusedCodes.filter(c => c.type === 'discount_code');
+  const unusedGiftCards = unusedCodes.filter(c => c.type === 'gift_card');
+  const usedDiscounts = usedCodes.filter(c => c.type === 'discount_code');
+  const usedGiftCards = usedCodes.filter(c => c.type === 'gift_card');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 p-6">
@@ -176,19 +183,26 @@ export default function BrandDiscounts() {
           </AnimatePresence>
         </Card>
 
-        {/* Active Codes */}
+        {/* Tabs for Active Items */}
         {unusedCodes.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-green-400" />
-              Available Codes ({unusedCodes.length})
-            </h3>
-            <div className="space-y-3">
+          <Tabs defaultValue="all" className="mb-6">
+            <TabsList className="w-full bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 mb-4">
+              <TabsTrigger value="all" className="flex-1">All ({unusedCodes.length})</TabsTrigger>
+              <TabsTrigger value="discounts" className="flex-1">Discounts ({unusedDiscounts.length})</TabsTrigger>
+              <TabsTrigger value="giftcards" className="flex-1">Gift Cards ({unusedGiftCards.length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="space-y-3">
               {unusedCodes.map((code) => (
                 <Card key={code.id} className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
+                        {code.type === 'gift_card' ? (
+                          <CreditCard className="w-5 h-5 text-purple-600" />
+                        ) : (
+                          <Tag className="w-5 h-5 text-blue-600" />
+                        )}
                         <h4 className="font-bold text-gray-900">{code.brand}</h4>
                         <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
                           {code.discount_value}
@@ -213,8 +227,88 @@ export default function BrandDiscounts() {
                   </div>
                 </Card>
               ))}
-            </div>
-          </div>
+            </TabsContent>
+
+            <TabsContent value="discounts" className="space-y-3">
+              {unusedDiscounts.length > 0 ? (
+                unusedDiscounts.map((code) => (
+                  <Card key={code.id} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Tag className="w-5 h-5 text-blue-600" />
+                          <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                            {code.discount_value}
+                          </span>
+                        </div>
+                        {code.description && (
+                          <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            <span className="font-mono font-bold">{code.code}</span>
+                          </div>
+                          {code.expiry_date && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              <span>Expires {new Date(code.expiry_date).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <Tag className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No discount codes available</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="giftcards" className="space-y-3">
+              {unusedGiftCards.length > 0 ? (
+                unusedGiftCards.map((code) => (
+                  <Card key={code.id} className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CreditCard className="w-5 h-5 text-purple-600" />
+                          <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                          <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-black rounded-full">
+                            {code.discount_value}
+                          </span>
+                        </div>
+                        {code.description && (
+                          <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            <span className="font-mono font-bold">{code.code}</span>
+                          </div>
+                          {code.expiry_date && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              <span>Expires {new Date(code.expiry_date).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <CreditCard className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No gift cards available</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* Used Codes */}
@@ -222,39 +316,126 @@ export default function BrandDiscounts() {
           <div className="mb-6">
             <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-slate-400" />
-              Redeemed Codes ({usedCodes.length})
+              Redeemed ({usedCodes.length})
             </h3>
-            <div className="space-y-3">
-              {usedCodes.map((code) => (
-                <Card key={code.id} className="bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-300 p-5 opacity-75">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-bold text-gray-900">{code.brand}</h4>
-                        <span className="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full">
-                          {code.discount_value}
-                        </span>
-                      </div>
-                      {code.description && (
-                        <p className="text-sm text-gray-600 mb-2">{code.description}</p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          <span className="font-mono">{code.code}</span>
+            <Tabs defaultValue="all">
+              <TabsList className="w-full bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-slate-600/30 mb-4">
+                <TabsTrigger value="all" className="flex-1">All ({usedCodes.length})</TabsTrigger>
+                <TabsTrigger value="discounts" className="flex-1">Discounts ({usedDiscounts.length})</TabsTrigger>
+                <TabsTrigger value="giftcards" className="flex-1">Gift Cards ({usedGiftCards.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="space-y-3">
+                {usedCodes.map((code) => (
+                  <Card key={code.id} className="bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-300 p-5 opacity-75">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {code.type === 'gift_card' ? (
+                            <CreditCard className="w-5 h-5 text-gray-600" />
+                          ) : (
+                            <Tag className="w-5 h-5 text-gray-600" />
+                          )}
+                          <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                          <span className="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full">
+                            {code.discount_value}
+                          </span>
                         </div>
-                        {code.redeemed_at && (
-                          <div className="flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" />
-                            <span>Redeemed {new Date(code.redeemed_at).toLocaleDateString()}</span>
-                          </div>
+                        {code.description && (
+                          <p className="text-sm text-gray-600 mb-2">{code.description}</p>
                         )}
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            <span className="font-mono">{code.code}</span>
+                          </div>
+                          {code.redeemed_at && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" />
+                              <span>Redeemed {new Date(code.redeemed_at).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  </Card>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="discounts" className="space-y-3">
+                {usedDiscounts.length > 0 ? usedDiscounts.map((code) => (
+                  <Card key={code.id} className="bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-300 p-5 opacity-75">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Tag className="w-5 h-5 text-gray-600" />
+                          <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                          <span className="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full">
+                            {code.discount_value}
+                          </span>
+                        </div>
+                        {code.description && (
+                          <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            <span className="font-mono">{code.code}</span>
+                          </div>
+                          {code.redeemed_at && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" />
+                              <span>Redeemed {new Date(code.redeemed_at).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )) : (
+                  <div className="text-center py-8 text-slate-400">
+                    <p>No redeemed discount codes</p>
                   </div>
-                </Card>
-              ))}
-            </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="giftcards" className="space-y-3">
+                {usedGiftCards.length > 0 ? usedGiftCards.map((code) => (
+                  <Card key={code.id} className="bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-300 p-5 opacity-75">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CreditCard className="w-5 h-5 text-gray-600" />
+                          <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                          <span className="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full">
+                            {code.discount_value}
+                          </span>
+                        </div>
+                        {code.description && (
+                          <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            <span className="font-mono">{code.code}</span>
+                          </div>
+                          {code.redeemed_at && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" />
+                              <span>Redeemed {new Date(code.redeemed_at).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )) : (
+                  <div className="text-center py-8 text-slate-400">
+                    <p>No redeemed gift cards</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
 
