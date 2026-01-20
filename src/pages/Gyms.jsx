@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
+import { useTranslation } from 'react-i18next';
 
 export default function Gyms() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [savedGyms, setSavedGyms] = useState([]);
   const [selectedType, setSelectedType] = useState('all');
@@ -99,7 +101,7 @@ export default function Gyms() {
                 <Dumbbell className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white">
-                {showAllGyms ? 'Find Gyms' : userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
+                {showAllGyms ? t('gyms.findGyms') : userGyms.length > 0 ? t('gyms.myGyms') : t('gyms.findGyms')}
               </h1>
             </div>
             {!showAllGyms && userGyms.length > 0 && (
@@ -108,13 +110,13 @@ export default function Gyms() {
                 className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm rounded-2xl font-bold"
               >
                 <MapPin className="w-4 h-4 mr-2" />
-                Find Other Gyms
+                {t('gyms.findOtherGyms')}
               </Button>
             )}
           </div>
           {showAllGyms && (
             <Input
-              placeholder="Search by name or city..."
+              placeholder={t('gyms.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-14 bg-white/95 backdrop-blur-sm rounded-2xl border-0 shadow-xl text-base"
@@ -133,7 +135,7 @@ export default function Gyms() {
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="all">{t('gyms.allTypes')}</SelectItem>
               <SelectItem value="powerlifting">Powerlifting</SelectItem>
               <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
               <SelectItem value="crossfit">CrossFit</SelectItem>
@@ -148,11 +150,11 @@ export default function Gyms() {
               <SelectValue placeholder="Distance" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Any Distance</SelectItem>
-              <SelectItem value="5">Within 5 km</SelectItem>
-              <SelectItem value="10">Within 10 km</SelectItem>
-              <SelectItem value="20">Within 20 km</SelectItem>
-              <SelectItem value="50">Within 50 km</SelectItem>
+              <SelectItem value="all">{t('gyms.anyDistance')}</SelectItem>
+              <SelectItem value="5">{t('gyms.within5km')}</SelectItem>
+              <SelectItem value="10">{t('gyms.within10km')}</SelectItem>
+              <SelectItem value="20">{t('gyms.within20km')}</SelectItem>
+              <SelectItem value="50">{t('gyms.within50km')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -161,7 +163,7 @@ export default function Gyms() {
               <SelectValue placeholder="Equipment" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Equipment</SelectItem>
+              <SelectItem value="all">{t('gyms.allEquipment')}</SelectItem>
               <SelectItem value="Power Racks">Power Racks</SelectItem>
               <SelectItem value="Barbells">Barbells</SelectItem>
               <SelectItem value="Dumbbells">Dumbbells</SelectItem>
@@ -183,21 +185,21 @@ export default function Gyms() {
             className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50 rounded-2xl h-12 font-bold"
           >
             <Dumbbell className="w-5 h-5 mr-2" />
-            Back to My Gyms
+            {t('gyms.backToMyGyms')}
           </Button>
         )}
 
         {gymsToShow.length === 0 ? (
           <div className="text-center py-16 bg-slate-100/80 rounded-3xl border-2 border-gray-100">
             <Dumbbell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-bold text-gray-700">{showAllGyms ? 'No gyms found' : 'No gym memberships yet'}</p>
-            <p className="text-sm text-gray-500 mt-1">{showAllGyms ? 'Try adjusting your filters' : 'Join a gym to get started!'}</p>
+            <p className="text-lg font-bold text-gray-700">{showAllGyms ? t('gyms.noGymsFound') : t('gyms.noMemberships')}</p>
+            <p className="text-sm text-gray-500 mt-1">{showAllGyms ? t('gyms.tryAdjustingFilters') : t('gyms.joinToGetStarted')}</p>
             {!showAllGyms && (
               <Button 
                 onClick={() => setShowAllGyms(true)}
                 className="mt-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl"
               >
-                Browse Gyms
+                {t('gyms.browseGyms')}
               </Button>
             )}
           </div>
@@ -221,7 +223,7 @@ export default function Gyms() {
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-green-500 text-white flex items-center gap-1">
                         <BadgeCheck className="w-3 h-3" />
-                        Verified
+                        {t('gyms.verified')}
                       </Badge>
                     </div>
                   )}
@@ -257,7 +259,7 @@ export default function Gyms() {
                   {gym.price && (
                     <div className="text-right">
                       <div className="text-2xl font-black text-blue-600">£{gym.price}</div>
-                      <div className="text-xs text-gray-500">/month</div>
+                      <div className="text-xs text-gray-500">{t('gyms.month')}</div>
                     </div>
                   )}
                 </div>
@@ -284,7 +286,7 @@ export default function Gyms() {
                   {gym.members_count && (
                     <div className="flex items-center gap-1 text-sm text-gray-600">
                       <Users className="w-4 h-4" />
-                      <span className="font-medium">{gym.members_count} members</span>
+                      <span className="font-medium">{gym.members_count} {t('gyms.members')}</span>
                     </div>
                   )}
                 </div>
@@ -292,7 +294,7 @@ export default function Gyms() {
                 {/* Equipment */}
                 {gym.equipment && gym.equipment.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-xs font-bold text-gray-500 uppercase mb-2">Equipment</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase mb-2">{t('gyms.equipment')}</p>
                     <div className="flex flex-wrap gap-2">
                       {gym.equipment.map((item, idx) => (
                         <Badge key={idx} variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
@@ -322,11 +324,11 @@ export default function Gyms() {
                 <div className="flex gap-2">
                   <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="flex-1">
                     <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl">
-                      View Community
+                      {t('gyms.viewCommunity')}
                     </Button>
                   </Link>
                   <Button variant="outline" className="px-6 border-2 border-gray-200 rounded-2xl font-semibold">
-                    Check In
+                    {t('gyms.checkIn')}
                   </Button>
                 </div>
               </div>
