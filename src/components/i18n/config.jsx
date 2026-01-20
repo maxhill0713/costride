@@ -858,8 +858,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: storedLanguage || 'es',
-    fallbackLng: 'es',
+    lng: storedLanguage || 'en',
+    fallbackLng: 'en',
     interpolation: {
       escapeValue: false
     }
