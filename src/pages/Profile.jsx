@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from './utils';
 import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle, Tag } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -655,12 +657,11 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={() => window.location.hash = '#/GymRewards'}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl"
-                  >
-                    View All In-Gym Rewards
-                  </Button>
+                  <Link to={createPageUrl('GymRewards')}>
+                    <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl">
+                      View All In-Gym Rewards
+                    </Button>
+                  </Link>
                 </Card>
                 </TabsContent>
 
@@ -677,12 +678,11 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={() => window.location.hash = '#/BrandDiscounts'}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl"
-                >
-                  View All Brand Codes
-                </Button>
+                <Link to={createPageUrl('BrandDiscounts')}>
+                  <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl">
+                    View All Brand Codes
+                  </Button>
+                </Link>
                 </Card>
                 </TabsContent>
                 </Tabs>
