@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ClaimedRewardCard from '../components/rewards/ClaimedRewardCard';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -636,62 +637,24 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="rewards" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* In-Gym Rewards */}
-              <Card 
-                className="bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-orange-500/20 backdrop-blur-sm border border-purple-600/40 p-6 shadow-lg cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => window.location.hash = '#/GymRewards'}
-              >
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                    <Building2 className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">In-Gym Rewards</h3>
-                    <p className="text-sm text-slate-300 mb-3">Free day passes and gym offers</p>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="px-3 py-1 bg-purple-500/30 text-purple-200 text-sm font-bold rounded-full">
-                        {claimedRewards.length} Claimed
-                      </span>
-                      <span className="px-3 py-1 bg-green-500/30 text-green-200 text-sm font-bold rounded-full">
-                        {unclaimedRewards.length} Available
-                      </span>
+            <Tabs defaultValue="gym" className="w-full">
+              <TabsList className="w-full bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30">
+                <TabsTrigger value="gym" className="flex-1">In-Gym Rewards</TabsTrigger>
+                <TabsTrigger value="brand" className="flex-1">Brand Rewards</TabsTrigger>
+              </TabsList>
+
+              {/* In-Gym Rewards Tab */}
+              <TabsContent value="gym" className="space-y-4 mt-4">
+                <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/40 p-6 shadow-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Building2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">In-Gym Rewards</h3>
+                      <p className="text-sm text-slate-300">Free day passes and exclusive gym offers</p>
                     </div>
                   </div>
-                </div>
-              </Card>
-
-              {/* Brand Rewards */}
-              <Card 
-                className="bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-cyan-600/40 p-6 shadow-lg cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => window.location.hash = '#/BrandDiscounts'}
-              >
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                    <Tag className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">Brand Rewards</h3>
-                    <p className="text-sm text-slate-300 mb-3">Discount codes & gift cards</p>
-                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl">
-                      View Codes
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Quick Stats */}
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/40 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Gift className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white">{t('profile.yourRewards')}</h3>
-                  <p className="text-sm text-slate-300">{t('profile.claimRewards')}</p>
-                </div>
-              </div>
 
               {availableRewards.length === 0 ? (
                 <div className="text-center py-8">
