@@ -198,11 +198,11 @@ export default function Profile() {
 
   // Streak milestones
   const streakMilestones = [
-    { days: 7, name: '7 Day Warrior', icon: '🔥', color: 'from-orange-400 to-red-500' },
-    { days: 30, name: 'Monthly Master', icon: '⚡', color: 'from-yellow-400 to-orange-500' },
-    { days: 50, name: 'Unstoppable', icon: '💪', color: 'from-purple-400 to-pink-500' },
-    { days: 100, name: 'Century Champion', icon: '👑', color: 'from-blue-400 to-cyan-500' },
-    { days: 365, name: 'Year Legend', icon: '🏆', color: 'from-green-400 to-emerald-500' }
+    { days: 7, name: t('profile.badges.warrior7'), icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { days: 30, name: t('profile.badges.master30'), icon: '⚡', color: 'from-yellow-400 to-orange-500' },
+    { days: 50, name: t('profile.badges.unstoppable'), icon: '💪', color: 'from-purple-400 to-pink-500' },
+    { days: 100, name: t('profile.badges.champion100'), icon: '👑', color: 'from-blue-400 to-cyan-500' },
+    { days: 365, name: t('profile.badges.legend365'), icon: '🏆', color: 'from-green-400 to-emerald-500' }
   ];
 
   const nextMilestone = streakMilestones.find(m => m.days > currentStreak) || streakMilestones[streakMilestones.length - 1];
@@ -225,12 +225,12 @@ export default function Profile() {
     const prs = stats.personalRecords;
     const streak = currentStreak;
 
-    if (workouts < 5) return { title: 'Beginner', subtitle: 'Just Starting Out', next: 'Complete 5 workouts to become a Novice', color: 'from-gray-400 to-gray-500' };
-    if (workouts < 20) return { title: 'Novice Lifter', subtitle: 'Building Habits', next: 'Complete 20 workouts to become Committed', color: 'from-blue-400 to-blue-500' };
-    if (workouts < 50) return { title: 'Committed Athlete', subtitle: 'Making Progress', next: 'Complete 50 workouts to become Dedicated', color: 'from-purple-400 to-purple-500' };
-    if (streak < 30) return { title: 'Dedicated Athlete', subtitle: 'Showing Consistency', next: 'Reach 30-day streak to become Elite', color: 'from-orange-400 to-orange-500' };
-    if (prs < 10) return { title: 'Elite Performer', subtitle: 'Breaking Barriers', next: 'Achieve 10 PRs to become a Champion', color: 'from-cyan-400 to-cyan-500' };
-    return { title: 'Champion', subtitle: 'Peak Performance', next: 'Keep pushing your limits!', color: 'from-yellow-400 to-yellow-500' };
+    if (workouts < 5) return { title: t('profile.identity.beginner'), subtitle: t('profile.identity.beginnerSub'), next: t('profile.identity.beginnerNext'), color: 'from-gray-400 to-gray-500' };
+    if (workouts < 20) return { title: t('profile.identity.novice'), subtitle: t('profile.identity.noviceSub'), next: t('profile.identity.noviceNext'), color: 'from-blue-400 to-blue-500' };
+    if (workouts < 50) return { title: t('profile.identity.committed'), subtitle: t('profile.identity.committedSub'), next: t('profile.identity.committedNext'), color: 'from-purple-400 to-purple-500' };
+    if (streak < 30) return { title: t('profile.identity.dedicated'), subtitle: t('profile.identity.dedicatedSub'), next: t('profile.identity.dedicatedNext'), color: 'from-orange-400 to-orange-500' };
+    if (prs < 10) return { title: t('profile.identity.elite'), subtitle: t('profile.identity.eliteSub'), next: t('profile.identity.eliteNext'), color: 'from-cyan-400 to-cyan-500' };
+    return { title: t('profile.identity.champion'), subtitle: t('profile.identity.championSub'), next: t('profile.identity.championNext'), color: 'from-yellow-400 to-yellow-500' };
   };
 
   const identityStatus = getIdentityStatus();
@@ -238,11 +238,11 @@ export default function Profile() {
   // Risk Assessment
   const getStreakRisk = () => {
     if (!lastCheckIn) return null;
-    if (daysSinceCheckIn === 0) return { level: 'safe', message: '✅ Safe: Checked in today', color: 'text-green-400' };
-    if (daysSinceCheckIn === 1) return { level: 'safe', message: '✅ Safe: 1 day since last check-in', color: 'text-green-400' };
-    if (daysSinceCheckIn === 2) return { level: 'warning', message: '⚠️ Warning: Check in today to keep your streak!', color: 'text-yellow-400' };
-    if (daysSinceCheckIn === 3) return { level: 'danger', message: '🔥 Danger: Streak expires tomorrow!', color: 'text-orange-400' };
-    return { level: 'lost', message: '❌ Streak Lost: Time to start fresh!', color: 'text-red-400' };
+    if (daysSinceCheckIn === 0) return { level: 'safe', message: t('profile.streakRisk.safe'), color: 'text-green-400' };
+    if (daysSinceCheckIn === 1) return { level: 'safe', message: t('profile.streakRisk.safe1day'), color: 'text-green-400' };
+    if (daysSinceCheckIn === 2) return { level: 'warning', message: t('profile.streakRisk.warning'), color: 'text-yellow-400' };
+    if (daysSinceCheckIn === 3) return { level: 'danger', message: t('profile.streakRisk.danger'), color: 'text-orange-400' };
+    return { level: 'lost', message: t('profile.streakRisk.lost'), color: 'text-red-400' };
   };
 
   const streakRisk = getStreakRisk();
@@ -389,9 +389,9 @@ export default function Profile() {
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-black text-lg mb-1">We Miss You! 🔥</h3>
+                <h3 className="font-black text-lg mb-1">{t('profile.weMissYou')} 🔥</h3>
                 <p className="text-white/90 text-sm">
-                  It's been {daysSinceCheckIn} days since your last check-in. Don't lose your {currentStreak}-day streak!
+                  {t('profile.daysSince', { days: daysSinceCheckIn, streak: currentStreak })}
                 </p>
               </div>
             </div>
@@ -452,7 +452,7 @@ export default function Profile() {
             )}
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-cyan-300 mb-1">
-                <span>Next: {nextMilestone.name}</span>
+                <span>{t('profile.next')}: {nextMilestone.name}</span>
                 <span>{currentStreak}/{nextMilestone.days}</span>
               </div>
               <Progress value={streakProgress} className="h-2 bg-slate-600" />
@@ -801,10 +801,10 @@ export default function Profile() {
 
           <TabsContent value="achievements" className="space-y-4">
             {[
-              { icon: Award, title: '100 Workouts', desc: 'Completed 100 training sessions', color: 'from-yellow-400 to-orange-500', unlocked: true },
-              { icon: TrendingUp, title: 'PR Crusher', desc: 'Set 10 personal records', color: 'from-red-400 to-pink-500', unlocked: true },
-              { icon: Dumbbell, title: 'Iron Warrior', desc: 'Lift 100,000 lbs total', color: 'from-purple-400 to-purple-600', unlocked: false },
-              { icon: Calendar, title: '30 Day Streak', desc: 'Train for 30 consecutive days', color: 'from-blue-400 to-cyan-500', unlocked: false }
+              { icon: Award, title: t('profile.achievements.workouts100'), desc: t('profile.achievements.workouts100Desc'), color: 'from-yellow-400 to-orange-500', unlocked: true },
+              { icon: TrendingUp, title: t('profile.achievements.prCrusher'), desc: t('profile.achievements.prCrusherDesc'), color: 'from-red-400 to-pink-500', unlocked: true },
+              { icon: Dumbbell, title: t('profile.achievements.ironWarrior'), desc: t('profile.achievements.ironWarriorDesc'), color: 'from-purple-400 to-purple-600', unlocked: false },
+              { icon: Calendar, title: t('profile.achievements.streak30'), desc: t('profile.achievements.streak30Desc'), color: 'from-blue-400 to-cyan-500', unlocked: false }
             ].map((achievement, idx) => (
               <Card key={idx} className={`bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg ${achievement.unlocked ? '' : 'opacity-50'}`}>
                 <div className="flex items-center gap-4">

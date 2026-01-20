@@ -517,7 +517,54 @@ const resources = {
         publicProfileDesc: "Permitir que otros vean tu perfil y estadísticas",
         dangerZone: "Zona de Peligro",
         irreversibleActions: "Acciones irreversibles",
-        memberAt: "Miembro en {count} gimnasio{plural}"
+        memberAt: "Miembro en {count} gimnasio{plural}",
+        badges: {
+          warrior7: "Guerrero de 7 Días",
+          master30: "Maestro Mensual",
+          unstoppable: "Imparable",
+          champion100: "Campeón del Siglo",
+          legend365: "Leyenda del Año"
+        },
+        identity: {
+          beginner: "Principiante",
+          beginnerSub: "Recién Comenzando",
+          beginnerNext: "Completa 5 entrenamientos para convertirte en Novato",
+          novice: "Levantador Novato",
+          noviceSub: "Construyendo Hábitos",
+          noviceNext: "Completa 20 entrenamientos para convertirte en Comprometido",
+          committed: "Atleta Comprometido",
+          committedSub: "Progresando",
+          committedNext: "Completa 50 entrenamientos para convertirte en Dedicado",
+          dedicated: "Atleta Dedicado",
+          dedicatedSub: "Mostrando Consistencia",
+          dedicatedNext: "Alcanza una racha de 30 días para convertirte en Élite",
+          elite: "Rendimiento Élite",
+          eliteSub: "Rompiendo Barreras",
+          eliteNext: "Logra 10 PRs para convertirte en Campeón",
+          champion: "Campeón",
+          championSub: "Rendimiento Máximo",
+          championNext: "¡Sigue superando tus límites!"
+        },
+        streakRisk: {
+          safe: "✅ Seguro: Registrado hoy",
+          safe1day: "✅ Seguro: 1 día desde el último registro",
+          warning: "⚠️ Advertencia: ¡Regístrate hoy para mantener tu racha!",
+          danger: "🔥 Peligro: ¡La racha expira mañana!",
+          lost: "❌ Racha Perdida: ¡Es hora de empezar de nuevo!"
+        },
+        achievements: {
+          workouts100: "100 Entrenamientos",
+          workouts100Desc: "Completaste 100 sesiones de entrenamiento",
+          prCrusher: "Triturador de PRs",
+          prCrusherDesc: "Estableciste 10 récords personales",
+          ironWarrior: "Guerrero de Hierro",
+          ironWarriorDesc: "Levantaste un total de 100,000 lbs",
+          streak30: "Racha de 30 Días",
+          streak30Desc: "Entrenaste durante 30 días consecutivos"
+        },
+        weMissYou: "¡Te extrañamos!",
+        daysSince: "Han pasado {days} días desde tu último registro. ¡No pierdas tu racha de {streak} días!",
+        next: "Siguiente"
       },
       common: {
         loading: "Cargando...",
