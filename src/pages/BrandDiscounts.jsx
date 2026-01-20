@@ -1,0 +1,304 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
+
+export default function BrandDiscounts() {
+  const [redeemCode, setRedeemCode] = useState('');
+  const [redeemStatus, setRedeemStatus] = useState(null); // null, 'success', 'error', 'expired', 'used'
+  const [redeemMessage, setRedeemMessage] = useState('');
+  const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const { data: userCodes = [] } = useQuery({
+    queryKey: ['brandDiscountCodes', currentUser?.id],
+    queryFn: () => base44.entities.BrandDiscountCode.filter({ assigned_to: currentUser.id }),
+    enabled: !!currentUser
+  });
+
+  const redeemMutation = useMutation({
+    mutationFn: async (code) => {
+      const allCodes = await base44.entities.BrandDiscountCode.list();
+      const discountCode = allCodes.find(c => 
+        c.code.toLowerCase() === code.toLowerCase() && 
+        (c.assigned_to === currentUser.id || !c.assigned_to)
+      );
+
+      if (!discountCode) {
+        throw new Error('Invalid code');
+      }
+
+      if (discountCode.status === 'used') {
+        throw new Error('Code already used');
+      }
+
+      if (discountCode.expiry_date && new Date(discountCode.expiry_date) < new Date()) {
+        throw new Error('Code expired');
+      }
+
+      return base44.entities.BrandDiscountCode.update(discountCode.id, {
+        status: 'used',
+        assigned_to: currentUser.id,
+        redeemed_at: new Date().toISOString()
+      });
+    },
+    onSuccess: () => {
+      setRedeemStatus('success');
+      setRedeemMessage('Discount code redeemed successfully!');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      queryClient.invalidateQueries({ queryKey: ['brandDiscountCodes'] });
+      setRedeemCode('');
+    },
+    onError: (error) => {
+      if (error.message === 'Code already used') {
+        setRedeemStatus('used');
+        setRedeemMessage('This code has already been used');
+      } else if (error.message === 'Code expired') {
+        setRedeemStatus('expired');
+        setRedeemMessage('This code has expired');
+      } else {
+        setRedeemStatus('error');
+        setRedeemMessage('Invalid discount code');
+      }
+    }
+  });
+
+  const handleRedeem = () => {
+    if (!redeemCode.trim()) return;
+    setRedeemStatus(null);
+    redeemMutation.mutate(redeemCode.trim());
+  };
+
+  const unusedCodes = userCodes.filter(c => c.status === 'unused' && (!c.expiry_date || new Date(c.expiry_date) >= new Date()));
+  const usedCodes = userCodes.filter(c => c.status === 'used');
+  const expiredCodes = userCodes.filter(c => c.expiry_date && new Date(c.expiry_date) < new Date() && c.status === 'unused');
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 p-6">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Gift className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-black text-white mb-2">Brand Discounts</h1>
+          <p className="text-slate-300">Redeem exclusive discount codes from our partners</p>
+        </div>
+
+        {/* Redeem Code Section */}
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 mb-6 shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <Tag className="w-6 h-6 text-purple-400" />
+            <div>
+              <h3 className="text-lg font-bold text-white">Redeem Code</h3>
+              <p className="text-sm text-slate-300">Enter your discount code below</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-4">
+            <Input
+              value={redeemCode}
+              onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
+              onKeyPress={(e) => e.key === 'Enter' && handleRedeem()}
+              placeholder="Enter code..."
+              className="bg-slate-800/50 border-slate-600 text-white rounded-xl uppercase"
+              maxLength={20}
+            />
+            <Button
+              onClick={handleRedeem}
+              disabled={!redeemCode.trim() || redeemMutation.isPending}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl px-8"
+            >
+              {redeemMutation.isPending ? 'Checking...' : 'Redeem'}
+            </Button>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {redeemStatus === 'success' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex items-center gap-2 p-3 bg-green-900/30 border border-green-600/30 rounded-lg"
+              >
+                <CheckCircle className="w-5 h-5 text-green-400" />
+                <p className="text-sm text-green-300 font-medium">{redeemMessage}</p>
+              </motion.div>
+            )}
+
+            {redeemStatus === 'error' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex items-center gap-2 p-3 bg-red-900/30 border border-red-600/30 rounded-lg"
+              >
+                <XCircle className="w-5 h-5 text-red-400" />
+                <p className="text-sm text-red-300 font-medium">{redeemMessage}</p>
+              </motion.div>
+            )}
+
+            {redeemStatus === 'used' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex items-center gap-2 p-3 bg-orange-900/30 border border-orange-600/30 rounded-lg"
+              >
+                <AlertCircle className="w-5 h-5 text-orange-400" />
+                <p className="text-sm text-orange-300 font-medium">{redeemMessage}</p>
+              </motion.div>
+            )}
+
+            {redeemStatus === 'expired' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex items-center gap-2 p-3 bg-gray-900/30 border border-gray-600/30 rounded-lg"
+              >
+                <AlertCircle className="w-5 h-5 text-gray-400" />
+                <p className="text-sm text-gray-300 font-medium">{redeemMessage}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Card>
+
+        {/* Active Codes */}
+        {unusedCodes.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <Tag className="w-5 h-5 text-green-400" />
+              Available Codes ({unusedCodes.length})
+            </h3>
+            <div className="space-y-3">
+              {unusedCodes.map((code) => (
+                <Card key={code.id} className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                          {code.discount_value}
+                        </span>
+                      </div>
+                      {code.description && (
+                        <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          <span className="font-mono font-bold">{code.code}</span>
+                        </div>
+                        {code.expiry_date && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>Expires {new Date(code.expiry_date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Used Codes */}
+        {usedCodes.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-slate-400" />
+              Redeemed Codes ({usedCodes.length})
+            </h3>
+            <div className="space-y-3">
+              {usedCodes.map((code) => (
+                <Card key={code.id} className="bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-300 p-5 opacity-75">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                        <span className="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full">
+                          {code.discount_value}
+                        </span>
+                      </div>
+                      {code.description && (
+                        <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          <span className="font-mono">{code.code}</span>
+                        </div>
+                        {code.redeemed_at && (
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            <span>Redeemed {new Date(code.redeemed_at).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Expired Codes */}
+        {expiredCodes.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              Expired Codes ({expiredCodes.length})
+            </h3>
+            <div className="space-y-3">
+              {expiredCodes.map((code) => (
+                <Card key={code.id} className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300 p-5 opacity-60">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-bold text-gray-900">{code.brand}</h4>
+                        <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                          Expired
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>Expired {new Date(code.expiry_date).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {unusedCodes.length === 0 && usedCodes.length === 0 && expiredCodes.length === 0 && (
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-12 text-center">
+            <Gift className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white mb-2">No Codes Yet</h3>
+            <p className="text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
