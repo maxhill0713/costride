@@ -18,6 +18,7 @@ import ManageMembersModal from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import QRScanner from '../components/gym/QRScanner';
 import { useTranslation } from 'react-i18next';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -33,6 +34,7 @@ export default function GymOwnerDashboard() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
   const queryClient = useQueryClient();
 
@@ -517,7 +519,7 @@ export default function GymOwnerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="col-span-2 md:col-span-1">
             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
               <Dumbbell className="w-8 h-8 md:w-10 md:h-10" />
@@ -525,6 +527,17 @@ export default function GymOwnerDashboard() {
               <span className="text-xs md:text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
             </Button>
           </Link>
+          <Button
+            onClick={() => setShowQRScanner(true)}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1">
+              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+            </div>
+            <span className="font-bold text-sm md:text-base text-white">Scan QR</span>
+          </Button>
           <Button
             onClick={() => setShowManageMembers(true)}
             className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
@@ -2092,6 +2105,11 @@ export default function GymOwnerDashboard() {
           open={showCreateChallenge}
           onClose={() => setShowCreateChallenge(false)}
           gyms={gyms}
+        />
+
+        <QRScanner
+          open={showQRScanner}
+          onClose={() => setShowQRScanner(false)}
         />
       </div>
     </div>
