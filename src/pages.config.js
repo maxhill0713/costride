@@ -17,6 +17,7 @@ import Routines from './pages/Routines';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
 import BrandDiscounts from './pages/BrandDiscounts';
+import GymRewards from './pages/GymRewards';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +41,7 @@ export const PAGES = {
     "Search": Search,
     "UserProfile": UserProfile,
     "BrandDiscounts": BrandDiscounts,
+    "GymRewards": GymRewards,
 }
 
 export const pagesConfig = {

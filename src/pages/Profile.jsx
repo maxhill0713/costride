@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle, Tag } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -636,6 +636,52 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="rewards" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* In-Gym Rewards */}
+              <Card 
+                className="bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-orange-500/20 backdrop-blur-sm border border-purple-600/40 p-6 shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => window.location.hash = '#/GymRewards'}
+              >
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Building2 className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">In-Gym Rewards</h3>
+                    <p className="text-sm text-slate-300 mb-3">Free day passes and gym offers</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="px-3 py-1 bg-purple-500/30 text-purple-200 text-sm font-bold rounded-full">
+                        {claimedRewards.length} Claimed
+                      </span>
+                      <span className="px-3 py-1 bg-green-500/30 text-green-200 text-sm font-bold rounded-full">
+                        {unclaimedRewards.length} Available
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Brand Rewards */}
+              <Card 
+                className="bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-cyan-600/40 p-6 shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => window.location.hash = '#/BrandDiscounts'}
+              >
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Tag className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">Brand Rewards</h3>
+                    <p className="text-sm text-slate-300 mb-3">Discount codes & gift cards</p>
+                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl">
+                      View Codes
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Quick Stats */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
