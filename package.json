@@ -79,7 +79,8 @@
     "zod": "^3.24.2",
     "react-qr-code": "^2.0.15",
     "react-i18next": "^13.5.0",
-    "i18next": "^23.7.0"
+    "i18next": "^23.7.0",
+    "html5-qrcode": "^2.3.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
