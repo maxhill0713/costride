@@ -8,17 +8,13 @@ import { QrCode, CheckCircle, Calendar } from 'lucide-react';
 export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
   const [showQR, setShowQR] = useState(false);
 
-  const qrData = JSON.stringify({
-    id: claimedBonus.id,
-    user_id: claimedBonus.user_id,
-    gym_id: claimedBonus.gym_id,
-    type: claimedBonus.bonus_type,
-    claimed_date: claimedBonus.created_date
-  });
+  const redemptionCode = claimedBonus.redemption_code || claimedBonus.id.slice(0, 8).toUpperCase();
+  const redemptionUrl = `${window.location.origin}${window.location.pathname}#/RedeemReward?code=${redemptionCode}`;
+  const qrData = redemptionUrl;
 
   return (
     <>
-      <Card className="p-5 border-2 border-green-200 bg-green-50/50">
+      <Card className={`p-5 border-2 ${claimedBonus.redeemed ? 'border-gray-300 bg-gray-100 opacity-75' : 'border-green-200 bg-green-50/50'}`}>
         <div className="flex items-start gap-4">
           <div className="text-4xl">{reward?.icon || '🎁'}</div>
           <div className="flex-1">
@@ -26,7 +22,13 @@ export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
               <div>
                 <h4 className="font-bold text-gray-900 flex items-center gap-2">
                   {reward?.title || claimedBonus.offer_details}
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  {claimedBonus.redeemed ? (
+                    <span className="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded-full font-bold">
+                      Redeemed
+                    </span>
+                  ) : (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  )}
                 </h4>
                 <p className="text-xs text-gray-500 mt-0.5">{gym?.name || 'Gym'}</p>
               </div>
@@ -42,19 +44,29 @@ export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
             )}
             
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Calendar className="w-3 h-3" />
-                <span>Claimed {new Date(claimedBonus.created_date).toLocaleDateString()}</span>
+              <div className="flex flex-col gap-1 text-xs text-gray-500">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3" />
+                  <span>Claimed {new Date(claimedBonus.created_date).toLocaleDateString()}</span>
+                </div>
+                {claimedBonus.redeemed && claimedBonus.redeemed_date && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <CheckCircle className="w-3 h-3" />
+                    <span>Redeemed {new Date(claimedBonus.redeemed_date).toLocaleDateString()}</span>
+                  </div>
+                )}
               </div>
               
-              <Button
-                size="sm"
-                onClick={() => setShowQR(true)}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-2xl"
-              >
-                <QrCode className="w-4 h-4 mr-1" />
-                Show QR Code
-              </Button>
+              {!claimedBonus.redeemed && (
+                <Button
+                  size="sm"
+                  onClick={() => setShowQR(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-2xl"
+                >
+                  <QrCode className="w-4 h-4 mr-1" />
+                  Show QR
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -81,8 +93,9 @@ export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
             </div>
             
             <div className="w-full bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-center">
-              <p className="text-xs text-gray-600 font-medium mb-1">Show this code to gym staff</p>
-              <p className="text-xs text-gray-500">Code: {claimedBonus.id.slice(0, 8).toUpperCase()}</p>
+              <p className="text-xs text-gray-600 font-medium mb-2">Show this code to gym staff</p>
+              <p className="text-lg font-black text-gray-900 tracking-wider mb-1">{redemptionCode}</p>
+              <p className="text-xs text-gray-500">Valid until redeemed</p>
             </div>
             
             <Button

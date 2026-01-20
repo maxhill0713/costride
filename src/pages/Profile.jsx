@@ -92,12 +92,17 @@ export default function Profile() {
 
   const claimRewardMutation = useMutation({
     mutationFn: async ({ reward, userId }) => {
+      // Generate unique redemption code
+      const redemptionCode = `${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      
       // Create ClaimedBonus record
       await base44.entities.ClaimedBonus.create({
         user_id: userId,
         gym_id: reward.gym_id,
         bonus_type: reward.type === 'discount' ? 'gym_offer' : 'free_day_pass',
-        offer_details: reward.title
+        offer_details: reward.title,
+        redemption_code: redemptionCode,
+        redeemed: false
       });
       
       // Update reward claimed_by list
