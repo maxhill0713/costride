@@ -18,10 +18,12 @@ import ManageMembersModal from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import { useTranslation } from 'react-i18next';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function GymOwnerDashboard() {
+  const { i18n } = useTranslation();
   const [selectedGym, setSelectedGym] = useState(null);
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
@@ -75,6 +77,13 @@ export default function GymOwnerDashboard() {
       setSelectedGym(myGyms[0]);
     }
   }, [myGyms, selectedGym]);
+
+  // Auto-switch language based on gym's language setting
+  React.useEffect(() => {
+    if (selectedGym?.language && i18n.language !== selectedGym.language) {
+      i18n.changeLanguage(selectedGym.language);
+    }
+  }, [selectedGym, i18n]);
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', selectedGym?.id],
