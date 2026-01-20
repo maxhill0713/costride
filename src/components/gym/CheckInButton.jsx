@@ -2,15 +2,24 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Flame, Calendar, MapPin } from 'lucide-react';
+import { CheckCircle, Flame, Calendar, MapPin, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function CheckInButton({ gym }) {
   const [isChecking, setIsChecking] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showLocationError, setShowLocationError] = useState(false);
+  const [locationErrorDistance, setLocationErrorDistance] = useState(0);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -378,9 +387,8 @@ export default function CheckInButton({ gym }) {
       const maxDistance = 0.5; // 500 meters = 0.5 km
 
       if (distance > maxDistance) {
-        toast.error('Too far from gym', {
-          description: `You must be within 500m of the gym to check in. You're ${(distance * 1000).toFixed(0)}m away.`
-        });
+        setLocationErrorDistance(distance);
+        setShowLocationError(true);
         setIsChecking(false);
         return;
       }
@@ -419,6 +427,48 @@ export default function CheckInButton({ gym }) {
 
   return (
     <div className="space-y-3">
+      {/* Location Error Dialog */}
+      <AlertDialog open={showLocationError} onOpenChange={setShowLocationError}>
+        <AlertDialogContent className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
+          <AlertDialogHeader>
+            <div className="flex flex-col items-center gap-4 mb-2">
+              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-white" strokeWidth={2.5} />
+              </div>
+              <AlertDialogTitle className="text-2xl font-black text-orange-900 text-center">
+                Too Far From Gym
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-center space-y-3">
+              <p className="text-orange-800 text-lg font-semibold">
+                You must be within 500m of the gym to check in
+              </p>
+              <div className="bg-white/60 rounded-xl p-4 border-2 border-orange-200">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <MapPin className="w-5 h-5 text-orange-600" />
+                  <span className="font-bold text-orange-900">Your Distance</span>
+                </div>
+                <p className="text-3xl font-black text-orange-900">
+                  {(locationErrorDistance * 1000).toFixed(0)}m
+                </p>
+                <p className="text-sm text-orange-700 mt-1">
+                  {((locationErrorDistance - 0.5) * 1000).toFixed(0)}m too far
+                </p>
+              </div>
+              <p className="text-sm text-orange-700">
+                Please move closer to {gym?.name} and try again
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Button
+            onClick={() => setShowLocationError(false)}
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-bold h-12"
+          >
+            Got It
+          </Button>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Success Animation */}
       <AnimatePresence>
         {showSuccess && (
