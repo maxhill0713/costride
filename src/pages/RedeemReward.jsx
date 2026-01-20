@@ -55,10 +55,28 @@ export default function RedeemReward() {
     setStatus('checking');
 
     try {
+      // Extract base code and timestamp from time-based code
+      const parts = verifyCode.split('-');
+      const baseCode = parts.slice(0, -1).join('-'); // Everything except last part
+      const timestampPart = parts[parts.length - 1]; // Last part is timestamp
+      
       const allBonuses = await base44.entities.ClaimedBonus.list();
-      const bonus = allBonuses.find(b => b.redemption_code === verifyCode);
+      const bonus = allBonuses.find(b => {
+        const bonusCode = b.redemption_code || b.id.slice(0, 8).toUpperCase();
+        return bonusCode === baseCode;
+      });
 
       if (!bonus) {
+        setStatus('invalid');
+        setClaimedBonus(null);
+        return;
+      }
+
+      // Verify timestamp is within 1 minute window
+      const codeMinute = parseInt(timestampPart, 36);
+      const currentMinute = Math.floor(Date.now() / 60000);
+      
+      if (Math.abs(currentMinute - codeMinute) > 0) {
         setStatus('invalid');
         setClaimedBonus(null);
         return;

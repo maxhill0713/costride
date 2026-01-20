@@ -1,16 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { QrCode, CheckCircle, Calendar } from 'lucide-react';
+import { QrCode, CheckCircle, Calendar, Timer } from 'lucide-react';
 
 export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
   const [showQR, setShowQR] = useState(false);
+  const [currentTimestamp, setCurrentTimestamp] = useState(Date.now());
+  const [timeRemaining, setTimeRemaining] = useState(60);
 
-  const redemptionCode = claimedBonus.redemption_code || claimedBonus.id.slice(0, 8).toUpperCase();
-  const redemptionUrl = `${window.location.origin}${window.location.pathname}#/RedeemReward?code=${redemptionCode}`;
+  // Generate time-based code (changes every minute)
+  const currentMinute = Math.floor(currentTimestamp / 60000);
+  const baseCode = claimedBonus.redemption_code || claimedBonus.id.slice(0, 8).toUpperCase();
+  const timeBasedCode = `${baseCode}-${currentMinute.toString(36).toUpperCase()}`;
+  const redemptionUrl = `${window.location.origin}${window.location.pathname}#/RedeemReward?code=${timeBasedCode}`;
   const qrData = redemptionUrl;
+
+  // Timer effect - updates every second when QR is shown
+  useEffect(() => {
+    if (!showQR) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const secondsInCurrentMinute = Math.floor((now % 60000) / 1000);
+      const remaining = 60 - secondsInCurrentMinute;
+      
+      setTimeRemaining(remaining);
+      
+      // Regenerate code every minute
+      if (remaining === 60) {
+        setCurrentTimestamp(now);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [showQR]);
+
+  // Reset timer when opening QR
+  useEffect(() => {
+    if (showQR) {
+      const now = Date.now();
+      setCurrentTimestamp(now);
+      const secondsInCurrentMinute = Math.floor((now % 60000) / 1000);
+      setTimeRemaining(60 - secondsInCurrentMinute);
+    }
+  }, [showQR]);
 
   return (
     <>
@@ -94,8 +129,14 @@ export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
             
             <div className="w-full bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-center">
               <p className="text-xs text-gray-600 font-medium mb-2">Show this code to gym staff</p>
-              <p className="text-lg font-black text-gray-900 tracking-wider mb-1">{redemptionCode}</p>
-              <p className="text-xs text-gray-500">Valid until redeemed</p>
+              <p className="text-lg font-black text-gray-900 tracking-wider mb-1">{timeBasedCode}</p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <Timer className={`w-4 h-4 ${timeRemaining <= 10 ? 'text-red-500' : 'text-blue-500'}`} />
+                <p className={`text-sm font-bold ${timeRemaining <= 10 ? 'text-red-600' : 'text-blue-600'}`}>
+                  {timeRemaining}s
+                </p>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Code changes every minute</p>
             </div>
             
             <Button
