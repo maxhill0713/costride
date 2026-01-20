@@ -31,8 +31,10 @@ import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
 import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 import RateGymSection from '../components/gym/RateGymSection';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import { useTranslation } from 'react-i18next';
 
 export default function GymCommunity() {
+  const { i18n } = useTranslation();
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
@@ -63,6 +65,13 @@ export default function GymCommunity() {
     },
     enabled: !!gymId
   });
+
+  // Auto-switch language based on gym's language setting
+  React.useEffect(() => {
+    if (gym?.language && i18n.language !== gym.language) {
+      i18n.changeLanguage(gym.language);
+    }
+  }, [gym, i18n]);
 
   const { data: members = [] } = useQuery({
     queryKey: ['members'],

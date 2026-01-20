@@ -11,9 +11,10 @@ import { Card } from '@/components/ui/card';
 import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import LanguageSelector from '../components/LanguageSelector';
-
+import { useTranslation } from 'react-i18next';
 
 export default function GymSignup() {
+  const { i18n } = useTranslation();
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [equipmentSearch, setEquipmentSearch] = useState('');
@@ -28,6 +29,7 @@ export default function GymSignup() {
     city: '',
     postcode: '',
     type: 'general',
+    language: 'en',
     price: '',
     amenities: [],
     equipment: [],
@@ -51,8 +53,11 @@ export default function GymSignup() {
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
+      // Auto-detect language based on city if not set
+      const gymLanguage = data.language || detectLanguageFromCity(data.city);
       return base44.entities.Gym.create({
         ...data,
+        language: gymLanguage,
         owner_email: user.email,
         verified: false,
         rating: 0,
@@ -407,6 +412,11 @@ export default function GymSignup() {
     city.toLowerCase().includes(addressSearch.toLowerCase())
   );
 
+  const detectLanguageFromCity = (city) => {
+    const spanishCities = ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza', 'Málaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao'];
+    return spanishCities.some(sc => city?.includes(sc)) ? 'es' : 'en';
+  };
+
 
 
   // Temporarily disabled access check for testing
@@ -589,6 +599,20 @@ export default function GymSignup() {
                       <SelectItem value="mma">MMA</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div>
+                  <Label className="text-gray-700 font-semibold">Community Language *</Label>
+                  <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
+                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-gray-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">🇬🇧 English</SelectItem>
+                      <SelectItem value="es">🇪🇸 Español</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">Language for your gym's community</p>
                 </div>
 
                 <div>
