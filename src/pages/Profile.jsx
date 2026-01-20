@@ -656,7 +656,7 @@ export default function Profile() {
                   </div>
 
                   {availableRewards.length === 0 ? (
-                <div className="text-center py-8">
+                    <div className="text-center py-8">
                   <Gift className="w-16 h-16 mx-auto mb-3 text-slate-600" />
                   <p className="text-slate-300 mb-2">{t('profile.noRewards')}</p>
                   <p className="text-sm text-slate-400">{t('profile.joinGym')}</p>
