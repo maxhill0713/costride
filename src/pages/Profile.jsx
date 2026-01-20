@@ -262,7 +262,7 @@ export default function Profile() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading profile...</p>
+        <p className="text-gray-500">{t('profile.loading')}</p>
       </div>
     );
   }
@@ -492,18 +492,18 @@ export default function Profile() {
             </h3>
             <div className="space-y-3">
               <div className="bg-slate-700/50 rounded-2xl p-3">
-                <p className="text-xs text-slate-400 mb-1">Grace Period</p>
-                <p className="text-sm text-slate-200">You have a 2-day grace period. Miss 3 days and your {currentStreak}-day streak resets to 0.</p>
+                <p className="text-xs text-slate-400 mb-1">{t('profile.gracePeriod')}</p>
+                <p className="text-sm text-slate-200">{t('profile.gracePeriodDesc', { streak: currentStreak })}</p>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
                 <div className="bg-cyan-900/30 border border-cyan-600/30 rounded-2xl p-3">
-                  <p className="text-xs text-cyan-300 mb-1">❄️ Protection Available</p>
-                  <p className="text-sm text-slate-200">You have {currentUser.streak_freezes_available} streak freeze{currentUser.streak_freezes_available > 1 ? 's' : ''} to protect your progress if life gets busy.</p>
+                  <p className="text-xs text-cyan-300 mb-1">{t('profile.protection')}</p>
+                  <p className="text-sm text-slate-200">{t('profile.protectionDesc', { count: currentUser.streak_freezes_available, plural: currentUser.streak_freezes_available > 1 ? 's' : '' })}</p>
                 </div>
               )}
               <div className="bg-orange-900/30 border border-orange-600/30 rounded-2xl p-3">
-                <p className="text-xs text-orange-300 mb-1">⚠️ What You'll Lose</p>
-                <p className="text-sm text-slate-200">Your {currentStreak}-day streak and progress toward "{nextMilestone.name}" will be lost. You'll start from day 1.</p>
+                <p className="text-xs text-orange-300 mb-1">{t('profile.whatYouLose')}</p>
+                <p className="text-sm text-slate-200">{t('profile.whatYouLoseDesc', { streak: currentStreak, milestone: nextMilestone.name })}</p>
               </div>
             </div>
           </Card>
@@ -614,7 +614,7 @@ export default function Profile() {
               <div className="bg-slate-700/30 rounded-2xl p-3 border border-slate-600/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
+                  <span className="text-xs font-bold text-slate-300">{t('profile.memberAt', { count: memberGyms.length, plural: memberGyms.length > 1 ? 's' : '' })}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {memberGyms.map((gym) => (
@@ -655,7 +655,7 @@ export default function Profile() {
                     <div>
                       <h4 className="text-sm font-bold text-green-300 mb-3 flex items-center gap-2">
                         <CheckCircle className="w-4 h-4" />
-                        Claimed Rewards ({claimedRewards.length})
+                        {t('profile.claimedRewards')} ({claimedRewards.length})
                       </h4>
                       <div className="grid gap-4">
                         {claimedRewards.map((reward) => {
@@ -683,7 +683,7 @@ export default function Profile() {
                     <div>
                       <h4 className="text-sm font-bold text-purple-300 mb-3 flex items-center gap-2">
                         <Gift className="w-4 h-4" />
-                        Available Rewards ({unclaimedRewards.length})
+                        {t('profile.availableRewards')} ({unclaimedRewards.length})
                       </h4>
                       <div className="grid gap-4">
                         {unclaimedRewards.map((reward) => {
@@ -741,7 +741,7 @@ export default function Profile() {
                                     
                                     {!meetsRequirement ? (
                                       <span className="text-xs text-gray-500 font-medium">
-                                        🔒 Locked
+                                        {t('profile.locked')}
                                       </span>
                                     ) : (
                                       <Button
@@ -753,7 +753,7 @@ export default function Profile() {
                                         disabled={claimRewardMutation.isPending}
                                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl"
                                       >
-                                        Claim Now
+                                        {t('profile.claimNow')}
                                       </Button>
                                     )}
                                   </div>
@@ -771,22 +771,22 @@ export default function Profile() {
 
             {/* Stats */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
-              <h4 className="font-semibold text-white mb-4">Your Progress</h4>
+              <h4 className="font-semibold text-white mb-4">{t('profile.yourProgress')}</h4>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">Total Check-ins</span>
+                  <span className="text-sm text-slate-300">{t('profile.totalCheckIns')}</span>
                   <span className="font-bold text-slate-100">{userCheckInCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">Current Streak</span>
-                  <span className="font-bold text-slate-100">{currentStreak} days</span>
+                  <span className="text-sm text-slate-300">{t('profile.currentStreakDays')}</span>
+                  <span className="font-bold text-slate-100">{currentStreak} {t('profile.days')}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">Gyms Joined</span>
+                  <span className="text-sm text-slate-300">{t('profile.gymsJoined')}</span>
                   <span className="font-bold text-slate-100">{gymMemberships.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">Rewards Claimed</span>
+                  <span className="text-sm text-slate-300">{t('profile.rewardsClaimed')}</span>
                   <span className="font-bold text-slate-100">
                     {allRewards.filter(r => r.claimed_by?.includes(currentUser?.id)).length}
                   </span>
@@ -887,8 +887,8 @@ export default function Profile() {
                       <BellOff className="w-5 h-5 text-slate-500" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">Push Notifications</Label>
-                      <p className="text-xs text-slate-400">Get notified about challenges and updates</p>
+                      <Label className="text-sm font-bold text-slate-100">{t('profile.pushNotifications')}</Label>
+                      <p className="text-xs text-slate-400">{t('profile.pushDesc')}</p>
                     </div>
                   </div>
                   <Switch
@@ -905,8 +905,8 @@ export default function Profile() {
                       <BellOff className="w-5 h-5 text-slate-500" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">Email Notifications</Label>
-                      <p className="text-xs text-slate-400">Receive email updates and summaries</p>
+                      <Label className="text-sm font-bold text-slate-100">{t('profile.emailNotifications')}</Label>
+                      <p className="text-xs text-slate-400">{t('profile.emailDesc')}</p>
                     </div>
                   </div>
                   <Switch
@@ -941,8 +941,8 @@ export default function Profile() {
                       <Sun className="w-5 h-5 text-orange-400" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">Dark Mode</Label>
-                      <p className="text-xs text-slate-400">Switch between light and dark theme</p>
+                      <Label className="text-sm font-bold text-slate-100">{t('profile.darkMode')}</Label>
+                      <p className="text-xs text-slate-400">{t('profile.darkModeDesc')}</p>
                     </div>
                   </div>
                   <Switch
@@ -955,8 +955,8 @@ export default function Profile() {
                   <div className="flex items-center gap-3 mb-3">
                     <Ruler className="w-5 h-5 text-purple-400" />
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">Unit System</Label>
-                      <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
+                      <Label className="text-sm font-bold text-slate-100">{t('profile.unitSystem')}</Label>
+                      <p className="text-xs text-slate-400">{t('profile.unitSystemDesc')}</p>
                     </div>
                   </div>
                   <Select 
@@ -967,8 +967,8 @@ export default function Profile() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
-                      <SelectItem value="metric">Metric (kg, m)</SelectItem>
+                      <SelectItem value="imperial">{t('profile.imperial')}</SelectItem>
+                      <SelectItem value="metric">{t('profile.metric')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -981,32 +981,32 @@ export default function Profile() {
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Account Details</h3>
-                  <p className="text-sm text-slate-300">Manage your email and password</p>
+                  <h3 className="text-lg font-semibold text-white">{t('profile.accountDetails')}</h3>
+                  <p className="text-sm text-slate-300">{t('profile.accountDesc')}</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/50 rounded-2xl">
-                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
+                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">{t('profile.emailAddress')}</Label>
                   <Input
                     type="email"
                     value={currentUser.email}
                     disabled
                     className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
                   />
-                  <p className="text-xs text-slate-400 mt-1">Contact support to change your email</p>
+                  <p className="text-xs text-slate-400 mt-1">{t('profile.contactSupport')}</p>
                 </div>
 
                 <div className="p-4 bg-slate-700/50 rounded-2xl">
-                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Password</Label>
+                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">{t('profile.password')}</Label>
                   <Input
                     type="password"
                     value="••••••••"
                     disabled
                     className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
                   />
-                  <p className="text-xs text-slate-400 mt-1">Contact support to reset your password</p>
+                  <p className="text-xs text-slate-400 mt-1">{t('profile.resetPassword')}</p>
                 </div>
               </div>
             </Card>
@@ -1017,8 +1017,8 @@ export default function Profile() {
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Privacy</h3>
-                  <p className="text-sm text-slate-300">Control your profile visibility</p>
+                  <h3 className="text-lg font-semibold text-white">{t('profile.privacy')}</h3>
+                  <p className="text-sm text-slate-300">{t('profile.privacyDesc')}</p>
                 </div>
               </div>
 
@@ -1030,8 +1030,8 @@ export default function Profile() {
                     <Lock className="w-5 h-5 text-slate-500" />
                   )}
                   <div>
-                    <Label className="text-sm font-bold text-slate-100">Public Profile</Label>
-                    <p className="text-xs text-slate-400">Allow others to view your profile and stats</p>
+                    <Label className="text-sm font-bold text-slate-100">{t('profile.publicProfile')}</Label>
+                    <p className="text-xs text-slate-400">{t('profile.publicProfileDesc')}</p>
                   </div>
                 </div>
                 <Switch
@@ -1047,8 +1047,8 @@ export default function Profile() {
                   <span className="text-white font-bold text-lg">!</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-red-900">Danger Zone</h3>
-                  <p className="text-sm text-red-700">Irreversible actions</p>
+                  <h3 className="text-base font-bold text-red-900">{t('profile.dangerZone')}</h3>
+                  <p className="text-sm text-red-700">{t('profile.irreversibleActions')}</p>
                 </div>
               </div>
               <Button 

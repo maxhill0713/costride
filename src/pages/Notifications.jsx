@@ -68,8 +68,8 @@ export default function Notifications() {
           await base44.entities.Notification.create({
             user_id: currentUser.id,
             type: 'inactivity',
-            title: 'We miss you! 💪',
-            message: `You haven't checked in for ${daysSinceCheckIn} days. Your gym buddies are waiting for you!`,
+            title: t('notifications.weMissYou'),
+            message: t('notifications.notCheckedIn', { days: daysSinceCheckIn }),
             icon: '😢',
             action_url: createPageUrl('Gyms')
           });
@@ -93,8 +93,8 @@ export default function Notifications() {
       if (currentUser.total_check_ins >= 10 && !achieved.includes('10_visits')) {
         milestones.push({
           id: '10_visits',
-          title: '10 Check-ins Milestone! 🎯',
-          message: 'Congratulations! You\'ve checked in 10 times. Keep the momentum going!',
+          title: t('notifications.milestone10'),
+          message: t('notifications.milestone10Msg'),
           icon: '🎯'
         });
       }
@@ -103,8 +103,8 @@ export default function Notifications() {
       if (currentUser.current_streak >= 30 && !achieved.includes('30_day_streak')) {
         milestones.push({
           id: '30_day_streak',
-          title: '30-Day Streak Champion! 🔥',
-          message: 'Incredible! You\'ve maintained a 30-day check-in streak. You\'re unstoppable!',
+          title: t('notifications.streak30'),
+          message: t('notifications.streak30Msg'),
           icon: '🔥'
         });
       }
@@ -115,10 +115,11 @@ export default function Notifications() {
         const years = Math.floor(daysSinceJoined / 365);
         
         if (years >= 1 && !achieved.includes(`anniversary_${years}`)) {
+          const plural = years > 1 ? t('notifications.years') : t('notifications.year');
           milestones.push({
             id: `anniversary_${years}`,
-            title: `${years} Year Anniversary! 🎉`,
-            message: `${years} year${years > 1 ? 's' : ''} at ${currentUser.gym_location || 'your gym'}! What an amazing journey!`,
+            title: t('notifications.anniversary', { years, plural }),
+            message: t('notifications.anniversaryMsg', { years, plural, gym: currentUser.gym_location || 'your gym' }),
             icon: '🎉'
           });
         }
@@ -185,7 +186,7 @@ export default function Notifications() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading notifications...</p>
+        <p className="text-gray-500">{t('notifications.loading')}</p>
       </div>
     );
   }
