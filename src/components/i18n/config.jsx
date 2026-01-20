@@ -453,7 +453,10 @@ const resources = {
         privacyDesc: "Control your profile visibility",
         publicProfile: "Public Profile",
         publicProfileDesc: "Allow others to view your profile and stats",
-        memberAt: "Member at {count} gym{plural}"
+        memberAt: "Member at {count} gym{plural}",
+        unlocked: "Unlocked",
+        points: "points",
+        earn: "Earn"
       }
     }
   },
@@ -659,7 +662,10 @@ const resources = {
         },
         weMissYou: "¡Te extrañamos!",
         daysSince: "Han pasado {days} días desde tu último registro. ¡No pierdas tu racha de {streak} días!",
-        next: "Siguiente"
+        next: "Siguiente",
+        unlocked: "Desbloqueado",
+        points: "puntos",
+        earn: "Ganar"
       },
       common: {
         loading: "Cargando...",
