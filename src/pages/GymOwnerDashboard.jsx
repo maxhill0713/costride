@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function GymOwnerDashboard() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [selectedGym, setSelectedGym] = useState(null);
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
@@ -286,11 +286,11 @@ export default function GymOwnerDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Gyms Registered</h2>
-          <p className="text-gray-600 mb-4">You haven't registered any gyms yet</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.noGymsRegistered')}</h2>
+          <p className="text-gray-600 mb-4">{t('dashboard.haventRegistered')}</p>
           <Link to={createPageUrl('GymSignup')}>
             <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
-              Register Your Gym
+              {t('dashboard.registerYourGym')}
             </Button>
           </Link>
         </Card>
@@ -415,15 +415,15 @@ export default function GymOwnerDashboard() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6 md:mb-10">
           <div>
-            <h1 className="text-3xl md:text-5xl font-black text-white mb-2 md:mb-3 tracking-tight">Gym Owner Dashboard</h1>
-            <p className="text-slate-300 text-sm md:text-lg">Manage your gym and track performance with precision</p>
+            <h1 className="text-3xl md:text-5xl font-black text-white mb-2 md:mb-3 tracking-tight">{t('dashboard.title')}</h1>
+            <p className="text-slate-300 text-sm md:text-lg">{t('dashboard.subtitle')}</p>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-stretch sm:items-center">
             <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
               <Button variant="outline" className="border-2 h-12 px-4 md:px-6 w-full">
                 <Users className="w-5 h-5 mr-2" />
-                Member View
+                {t('dashboard.memberView')}
               </Button>
             </Link>
             
@@ -452,9 +452,9 @@ export default function GymOwnerDashboard() {
                 <Bell className="w-7 h-7" />
               </div>
               <div className="flex-1">
-                <h3 className="font-black text-xl mb-2">⚠️ Members At Risk</h3>
+                <h3 className="font-black text-xl mb-2">⚠️ {t('dashboard.membersAtRisk')}</h3>
                 <p className="text-white/90">
-                  {atRiskMembers} {atRiskMembers === 1 ? 'member hasn\'t' : 'members haven\'t'} checked in for 7-10 days this week
+                  {t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}
                 </p>
               </div>
               <Button
@@ -462,7 +462,7 @@ export default function GymOwnerDashboard() {
                 variant="outline"
                 className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-semibold px-8 py-6 rounded-xl shadow-lg"
               >
-                View Members
+                {t('dashboard.viewMembers')}
               </Button>
             </div>
           </Card>
@@ -478,7 +478,7 @@ export default function GymOwnerDashboard() {
               <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
             </div>
             <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{uniqueMembers}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Active Members</p>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{t('dashboard.activeMembers')}</p>
           </Card>
 
           <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
@@ -486,10 +486,10 @@ export default function GymOwnerDashboard() {
               <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
                 <Activity className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
-              <Badge className="bg-green-50 text-green-700 border border-green-200 px-2 md:px-3 py-1 text-xs md:text-sm font-semibold">{last7Days} week</Badge>
+              <Badge className="bg-green-50 text-green-700 border border-green-200 px-2 md:px-3 py-1 text-xs md:text-sm font-semibold">{last7Days} {t('dashboard.week')}</Badge>
             </div>
             <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{last30Days}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Check-ins (30d)</p>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{t('dashboard.checkIns30d')}</p>
           </Card>
 
           <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
@@ -500,7 +500,7 @@ export default function GymOwnerDashboard() {
               <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />
             </div>
             <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{activeMembersThisWeek}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Active This Week</p>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{t('dashboard.activeThisWeek')}</p>
           </Card>
 
           <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
@@ -511,8 +511,8 @@ export default function GymOwnerDashboard() {
               <span className="text-xl md:text-3xl font-bold text-purple-600">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
             </div>
             <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">Average Rating</p>
-            <p className="text-xs text-gray-400 mt-2 md:mt-3 italic hidden md:block">Only you can see this rating</p>
+            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{i18n.language === 'es' ? 'Calificación Promedio' : 'Average Rating'}</p>
+            <p className="text-xs text-gray-400 mt-2 md:mt-3 italic hidden md:block">{i18n.language === 'es' ? 'Solo tú puedes ver esta calificación' : 'Only you can see this rating'}</p>
           </Card>
         </div>
 
@@ -521,8 +521,8 @@ export default function GymOwnerDashboard() {
           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="col-span-2 md:col-span-1">
             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
               <Dumbbell className="w-8 h-8 md:w-10 md:h-10" />
-              <span className="font-black text-lg md:text-xl">View My Gym</span>
-              <span className="text-xs md:text-sm text-blue-100 font-medium">Manage & Post</span>
+              <span className="font-black text-lg md:text-xl">{t('dashboard.viewMyGym')}</span>
+              <span className="text-xs md:text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
             </Button>
           </Link>
           <Button
@@ -532,7 +532,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
               <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">Members</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
@@ -541,7 +541,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
               <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">Rewards</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
@@ -550,7 +550,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
               <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">Classes</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
@@ -559,26 +559,26 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
               <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">Coaches</span>
+            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
           </Button>
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
           <TabsList className="grid w-full grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-12 md:h-16 shadow-xl overflow-x-auto">
             <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              Snapshot
+              {t('dashboard.snapshot')}
             </TabsTrigger>
             <TabsTrigger value="engagement" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              Engagement
+              {t('dashboard.engagement')}
             </TabsTrigger>
             <TabsTrigger value="content" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              Content
+              {t('dashboard.content')}
             </TabsTrigger>
             <TabsTrigger value="admin" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              Admin
+              {t('dashboard.admin')}
             </TabsTrigger>
             <TabsTrigger value="insights" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              Insights
+              {t('dashboard.insights')}
             </TabsTrigger>
           </TabsList>
 
@@ -586,30 +586,30 @@ export default function GymOwnerDashboard() {
             {/* Today/This Week Snapshot */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <Card className="p-5 md:p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
-                <p className="text-blue-100 font-semibold mb-2 text-xs md:text-sm">Check-ins Today</p>
+                <p className="text-blue-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.checkInsToday')}</p>
                 <p className="text-4xl md:text-6xl font-black mb-1">{todayCheckIns}</p>
-                <p className="text-xs md:text-sm text-blue-100">members checked in</p>
+                <p className="text-xs md:text-sm text-blue-100">{t('dashboard.membersCheckedIn')}</p>
               </Card>
 
               <Card className="p-5 md:p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white border-0 shadow-lg">
-                <p className="text-green-100 font-semibold mb-2 text-xs md:text-sm">Active This Week</p>
+                <p className="text-green-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.activeThisWeek')}</p>
                 <p className="text-4xl md:text-6xl font-black mb-1">{activeMembersThisWeek}</p>
-                <p className="text-xs md:text-sm text-green-100">unique members</p>
+                <p className="text-xs md:text-sm text-green-100">{t('dashboard.uniqueMembers')}</p>
               </Card>
 
               <Card className="p-5 md:p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-                <p className="text-purple-100 font-semibold mb-2 text-xs md:text-sm">Weekly Change</p>
+                <p className="text-purple-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.weeklyChange')}</p>
                 <div className="flex items-baseline gap-1 md:gap-2 mb-1">
                   <p className="text-4xl md:text-6xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
                   <span className="text-lg md:text-2xl font-bold opacity-80">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
                 </div>
-                <p className="text-xs md:text-sm text-purple-100">vs last week</p>
+                <p className="text-xs md:text-sm text-purple-100">{t('dashboard.vsLastWeek')}</p>
               </Card>
 
               <Card className="p-5 md:p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg">
-                <p className="text-orange-100 font-semibold mb-2 text-xs md:text-sm">At-Risk Members</p>
+                <p className="text-orange-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.atRiskMembers')}</p>
                 <p className="text-4xl md:text-6xl font-black mb-1">{atRiskMembers}</p>
-                <p className="text-xs md:text-sm text-orange-100">no check-in 7-10 days</p>
+                <p className="text-xs md:text-sm text-orange-100">{t('dashboard.noCheckIn7to10')}</p>
               </Card>
             </div>
 
@@ -619,7 +619,7 @@ export default function GymOwnerDashboard() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   <span className="text-2xl">💡</span>
                 </div>
-                What to Do Next
+                {t('dashboard.whatToDoNext')}
               </h3>
               <div className="space-y-3">
                 {atRiskMembers > 0 && (
@@ -627,10 +627,10 @@ export default function GymOwnerDashboard() {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">⚠️</span>
                       <div>
-                        <p className="font-bold text-gray-900">Reach out to at-risk members</p>
-                        <p className="text-sm text-gray-600">{atRiskMembers} members haven't checked in recently</p>
+                        <p className="font-bold text-gray-900">{t('dashboard.reachOutAtRisk')}</p>
+                        <p className="text-sm text-gray-600">{t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}</p>
                         <Button onClick={() => setShowManageMembers(true)} size="sm" className="mt-2">
-                          View Members
+                          {t('dashboard.viewMembers')}
                         </Button>
                       </div>
                     </div>
@@ -641,10 +641,10 @@ export default function GymOwnerDashboard() {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">📸</span>
                       <div>
-                        <p className="font-bold text-gray-900">Share gym updates</p>
-                        <p className="text-sm text-gray-600">Keep members engaged with regular posts</p>
+                        <p className="font-bold text-gray-900">{t('dashboard.shareGymUpdates')}</p>
+                        <p className="text-sm text-gray-600">{t('dashboard.keepMembersEngaged')}</p>
                         <Button onClick={() => setShowCreatePost(true)} size="sm" className="mt-2">
-                          Create Post
+                          {t('dashboard.createPost')}
                         </Button>
                       </div>
                     </div>
@@ -655,10 +655,10 @@ export default function GymOwnerDashboard() {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">🏆</span>
                       <div>
-                        <p className="font-bold text-gray-900">Create a challenge</p>
-                        <p className="text-sm text-gray-600">Boost engagement with a gym challenge</p>
+                        <p className="font-bold text-gray-900">{t('dashboard.createChallenge')}</p>
+                        <p className="text-sm text-gray-600">{t('dashboard.boostEngagement')}</p>
                         <Button onClick={() => setShowCreateChallenge(true)} size="sm" className="mt-2">
-                          Create Challenge
+                          {t('dashboard.createChallengeBtn')}
                         </Button>
                       </div>
                     </div>
@@ -669,7 +669,7 @@ export default function GymOwnerDashboard() {
 
             {/* Activity Log (Last 7 Days) */}
             <Card className="p-8 bg-white border-0 shadow-xl">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Activity Log (Last 7 Days)</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.activityLog')}</h3>
               <div className="space-y-3">
                 {checkIns
                   .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
@@ -682,14 +682,14 @@ export default function GymOwnerDashboard() {
                         </div>
                         <div>
                           <p className="font-bold text-gray-900">{checkIn.user_name}</p>
-                          <p className="text-sm text-gray-600">Checked in</p>
+                          <p className="text-sm text-gray-600">{t('dashboard.checkedIn')}</p>
                         </div>
                       </div>
                       <span className="text-sm text-gray-500">{format(new Date(checkIn.check_in_date), 'MMM d, h:mm a')}</span>
                     </div>
                   ))}
                 {checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).length === 0 && (
-                  <p className="text-gray-500 text-center py-8">No activity in the last 7 days</p>
+                  <p className="text-gray-500 text-center py-8">{t('dashboard.noActivityLast7Days')}</p>
                 )}
               </div>
             </Card>
