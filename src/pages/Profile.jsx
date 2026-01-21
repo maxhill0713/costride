@@ -518,16 +518,16 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg">
+          <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg overflow-hidden">
             <h3 className="font-semibold bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-400" />
-              {t('profile.milestonesUnlocked')}
+              <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+              <span className="truncate">{t('profile.milestonesUnlocked')}</span>
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {earnedBadges.map((badge) => (
-                <div key={badge.days} className={`p-3 rounded-2xl bg-gradient-to-br ${badge.color} text-white text-center`}>
+                <div key={badge.days} className={`p-3 rounded-2xl bg-gradient-to-br ${badge.color} text-white text-center overflow-hidden`}>
                   <div className="text-3xl mb-1">{badge.icon}</div>
-                  <p className="font-bold text-xs">{badge.name}</p>
+                  <p className="font-bold text-xs truncate">{badge.name}</p>
                   <p className="text-xs opacity-90">{badge.days}d</p>
                 </div>
               ))}
