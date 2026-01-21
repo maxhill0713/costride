@@ -28,6 +28,8 @@ import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
 import WeeklyEventCard from '../components/feed/WeeklyEventCard';
 import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
+import AppChallengeCard from '../components/challenges/AppChallengeCard';
+import GymChallengeCard from '../components/challenges/GymChallengeCard';
 import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 import RateGymSection from '../components/gym/RateGymSection';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
@@ -132,10 +134,14 @@ export default function GymCommunity() {
     queryKey: ['challenges', gymId],
     queryFn: async () => {
       const allChallenges = await base44.entities.Challenge.list();
-      return allChallenges.filter(c => c.gym_id === gymId || c.type === 'community');
+      return allChallenges.filter(c => c.gym_id === gymId || c.is_app_challenge === true);
     },
     enabled: !!gymId
   });
+
+  // Separate app challenges from gym challenges
+  const appChallenges = challenges.filter(c => c.is_app_challenge === true && c.status === 'active');
+  const gymChallenges = challenges.filter(c => c.is_app_challenge !== true && c.status === 'active');
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
@@ -817,46 +823,77 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Challenges Tab */}
-        <TabsContent value="challenges" className="space-y-3 mt-0">
+        <TabsContent value="challenges" className="space-y-4 mt-0">
           {/* Create Challenge Button for Owners */}
           {showOwnerControls && (
             <Button
               onClick={() => setShowCreateChallenge(true)}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl shadow-lg"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create Challenge
+              Create Gym Challenge
             </Button>
           )}
 
-          {/* System Challenges */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-bold text-gray-900">⚡ Quick Wins</h2>
-            {systemChallenges.map((challenge) => (
-              <SystemChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                participantCount={challenge.participants}
-                isJoined={hasjoinedChallenge(challenge.id)}
-                onJoin={(challenge) => joinChallengeMutation.mutate(challenge)}
-              />
-            ))}
-          </div>
-
-
-
-          {/* Active Challenges with Progress */}
-          {challenges.filter(c => c.status === 'active').length > 0 && (
+          {/* App Challenges - Global community challenges */}
+          {appChallenges.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-bold text-gray-900">🏆 Active Challenges</h2>
-              {challenges.filter(c => c.status === 'active').map((challenge) => (
-                <ChallengeProgressCard 
-                  key={challenge.id} 
-                  challenge={challenge} 
-                  userProgress={Math.random()} 
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                  <Trophy className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-lg font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                  App Challenges
+                </h2>
+              </div>
+              <p className="text-sm text-slate-300 mb-3">
+                Join community-wide challenges and compete for amazing prizes! 🏆
+              </p>
+              {appChallenges.map((challenge) => (
+                <AppChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  isJoined={hasjoinedChallenge(challenge.id)}
+                  onJoin={(challenge) => joinChallengeMutation.mutate(challenge)}
+                  currentUser={currentUser}
                 />
               ))}
             </div>
+          )}
+
+          {/* Gym Challenges - Gym-specific challenges */}
+          {gymChallenges.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
+                  <Dumbbell className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-lg font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                  Gym Challenges
+                </h2>
+              </div>
+              <p className="text-sm text-slate-300 mb-3">
+                Exclusive challenges from {gym.name}! 💪
+              </p>
+              {gymChallenges.map((challenge) => (
+                <GymChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  isJoined={hasjoinedChallenge(challenge.id)}
+                  onJoin={(challenge) => joinChallengeMutation.mutate(challenge)}
+                  currentUser={currentUser}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {appChallenges.length === 0 && gymChallenges.length === 0 && (
+            <Card className="bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 p-8 text-center">
+              <Trophy className="w-16 h-16 mx-auto mb-3 text-slate-600" />
+              <p className="text-slate-300 font-semibold mb-2">No Active Challenges</p>
+              <p className="text-sm text-slate-400">Check back soon for new challenges!</p>
+            </Card>
           )}
 
           {/* Leaderboard Section */}
