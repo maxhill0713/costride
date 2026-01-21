@@ -1010,22 +1010,6 @@ export default function GymCommunity() {
               )
             )}
           </Card>
-
-          {/* Gym vs Gym Challenges */}
-          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
-            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-blue-400" />
-              Gym Challenges
-            </h3>
-            <p className="text-sm text-slate-300 mb-4">
-              Compete with other gyms and earn bragging rights!
-            </p>
-            <Link to={createPageUrl('Challenges')}>
-              <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl">
-                View All Challenges
-              </Button>
-            </Link>
-          </Card>
         </TabsContent>
 
         {/* Events Tab */}
