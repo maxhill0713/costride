@@ -409,22 +409,22 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         {/* Identity Card */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div>
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg overflow-hidden">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex-1 min-w-0">
               <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">{t('profile.yourIdentity')}</p>
-              <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent`}>
+              <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent truncate`}>
                 {identityStatus.title}
               </h3>
-              <p className="text-sm text-slate-400 mt-1">{identityStatus.subtitle}</p>
+              <p className="text-sm text-slate-400 mt-1 line-clamp-2">{identityStatus.subtitle}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right flex-shrink-0">
               <div className="text-4xl mb-2">🏆</div>
             </div>
           </div>
-          <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20">
+          <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20 overflow-hidden">
             <p className="text-xs text-cyan-300 font-bold mb-1">{t('profile.whatYoureBecoming')}</p>
-            <p className="text-sm text-slate-200">{identityStatus.next}</p>
+            <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
 
