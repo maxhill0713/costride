@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X } from 'lucide-react';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
@@ -407,6 +407,30 @@ export default function Home() {
             </div>
           </Card>
         )}
+
+        {/* Premium Upgrade Card */}
+        <Link to={createPageUrl('Premium')}>
+          <Card className="p-5 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-700 border-0 text-white hover:shadow-2xl hover:shadow-purple-500/50 transition-all cursor-pointer relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <Badge className="bg-white/20 text-white border-0 font-bold px-3 py-1">
+                  <Trophy className="w-3 h-3 mr-1" />
+                  LIMITED OFFER
+                </Badge>
+                <Crown className="w-8 h-8" />
+              </div>
+              <h3 className="font-black text-2xl mb-2">Go Premium for £4.99/mo</h3>
+              <p className="text-white/90 text-sm mb-4">
+                Unlock exclusive badges, advanced analytics, and priority features
+              </p>
+              <Button className="bg-white text-purple-600 hover:bg-white/90 font-bold rounded-xl">
+                Upgrade Now
+              </Button>
+            </div>
+          </Card>
+        </Link>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
