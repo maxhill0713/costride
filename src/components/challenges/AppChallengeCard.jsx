@@ -17,61 +17,47 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 border-2 border-yellow-300 p-5 relative overflow-hidden shadow-xl">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-br from-orange-400 to-red-400 rounded-full blur-3xl" />
-        </div>
-
+      <Card className="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 border border-yellow-300 p-3 relative overflow-hidden shadow-md">
         {/* App Challenge Badge */}
-        <Badge className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold shadow-lg">
-          <Sparkles className="w-3 h-3 mr-1" />
-          APP CHALLENGE
+        <Badge className="absolute top-2 right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold">
+          <Sparkles className="w-2.5 h-2.5 mr-0.5" />
+          APP
         </Badge>
 
         <div className="relative z-10">
           {/* Icon */}
-          <motion.div 
-            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 flex items-center justify-center mb-4 shadow-xl shadow-orange-500/40"
-            animate={{ 
-              rotate: [0, 5, -5, 0],
-              scale: [1, 1.05, 1]
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
-          >
-            <Trophy className="w-8 h-8 text-white" />
-          </motion.div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 flex items-center justify-center mb-2 shadow-md">
+            <Trophy className="w-5 h-5 text-white" />
+          </div>
 
           {/* Content */}
-          <h3 className="font-black text-gray-900 mb-2 text-xl">{challenge.title}</h3>
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">{challenge.description}</p>
+          <h3 className="font-bold text-gray-900 mb-1 text-sm pr-12">{challenge.title}</h3>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{challenge.description}</p>
 
           {/* Stats */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             {challenge.reward && (
-              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold">
-                <Award className="w-3 h-3 mr-1" />
+              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold">
                 {challenge.reward}
               </Badge>
             )}
-            <Badge className="bg-white/80 text-gray-800 text-xs font-semibold">
-              <Users className="w-3 h-3 mr-1" />
-              {participantCount} joined
+            <Badge className="bg-white text-gray-700 text-[10px] font-semibold">
+              <Users className="w-2.5 h-2.5 mr-0.5" />
+              {participantCount}
             </Badge>
-            <Badge className="bg-white/80 text-gray-800 text-xs font-semibold">
-              {daysLeft}d left
+            <Badge className="bg-white text-gray-700 text-[10px] font-semibold">
+              {daysLeft}d
             </Badge>
           </div>
 
           {/* Goal Info */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-xl p-3 mb-4 border border-orange-200">
-            <p className="text-xs font-bold text-orange-900 uppercase mb-1">Challenge Goal</p>
-            <p className="text-sm text-gray-800">
-              {challenge.goal_type === 'most_check_ins' && `Complete ${challenge.target_value} check-ins`}
-              {challenge.goal_type === 'longest_streak' && `Maintain a ${challenge.target_value}-day streak`}
-              {challenge.goal_type === 'total_weight' && `Lift ${challenge.target_value} lbs total`}
-              {challenge.goal_type === 'participation' && 'Most active participant wins'}
+          <div className="bg-white/70 rounded-lg p-2 mb-2 border border-orange-200">
+            <p className="text-[10px] font-bold text-orange-900 uppercase mb-0.5">Goal</p>
+            <p className="text-xs text-gray-800">
+              {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
+              {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
+              {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
+              {challenge.goal_type === 'participation' && 'Most active wins'}
             </p>
           </div>
 
@@ -79,23 +65,14 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           <Button 
             onClick={() => onJoin && onJoin(challenge)}
             disabled={isJoined}
+            size="sm"
             className={`w-full ${
               isJoined 
                 ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed' 
                 : 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
-            } text-white rounded-2xl h-11 text-sm font-bold shadow-lg`}
+            } text-white rounded-xl h-8 text-xs font-bold`}
           >
-            {isJoined ? (
-              <>
-                <Trophy className="w-4 h-4 mr-2" />
-                You're In! 🎉
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Join Challenge
-              </>
-            )}
+            {isJoined ? '✓ Joined' : 'Join'}
           </Button>
         </div>
       </Card>

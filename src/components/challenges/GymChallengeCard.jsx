@@ -17,51 +17,46 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 border-2 border-blue-200 p-5 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-400 rounded-full blur-2xl" />
-        </div>
-
+      <Card className="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 border border-blue-200 p-3 relative overflow-hidden">
         {/* Gym Badge */}
-        <Badge className="absolute top-3 right-3 bg-blue-500 text-white text-xs font-semibold">
-          <Building2 className="w-3 h-3 mr-1" />
-          {challenge.gym_name}
+        <Badge className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-semibold">
+          <Building2 className="w-2.5 h-2.5 mr-0.5" />
+          Gym
         </Badge>
 
         <div className="relative z-10">
           {/* Icon */}
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-3 shadow-lg">
-            <Dumbbell className="w-7 h-7 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-2 shadow-md">
+            <Dumbbell className="w-5 h-5 text-white" />
           </div>
 
           {/* Content */}
-          <h3 className="font-black text-gray-900 mb-2 text-lg pr-24">{challenge.title}</h3>
-          <p className="text-sm text-gray-600 mb-4">{challenge.description}</p>
+          <h3 className="font-bold text-gray-900 mb-1 text-sm pr-12">{challenge.title}</h3>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{challenge.description}</p>
 
           {/* Stats */}
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             {challenge.reward && (
-              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs">
+              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px]">
                 {challenge.reward}
               </Badge>
             )}
-            <Badge className="bg-white text-gray-700 text-xs font-semibold">
-              <Users className="w-3 h-3 mr-1" />
+            <Badge className="bg-white text-gray-700 text-[10px] font-semibold">
+              <Users className="w-2.5 h-2.5 mr-0.5" />
               {participantCount}
             </Badge>
-            <Badge className="bg-white text-gray-700 text-xs font-semibold">
-              {daysLeft}d left
+            <Badge className="bg-white text-gray-700 text-[10px] font-semibold">
+              {daysLeft}d
             </Badge>
           </div>
 
           {/* Goal Info */}
-          <div className="bg-white/80 rounded-lg p-3 mb-4 border border-blue-200">
-            <p className="text-xs font-bold text-blue-900 uppercase mb-1">
-              <Target className="w-3 h-3 inline mr-1" />
+          <div className="bg-white/80 rounded-lg p-2 mb-2 border border-blue-200">
+            <p className="text-[10px] font-bold text-blue-900 uppercase mb-0.5">
+              <Target className="w-2.5 h-2.5 inline mr-0.5" />
               Goal
             </p>
-            <p className="text-sm text-gray-800">
+            <p className="text-xs text-gray-800">
               {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
               {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
               {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
@@ -73,13 +68,14 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
           <Button 
             onClick={() => onJoin && onJoin(challenge)}
             disabled={isJoined}
+            size="sm"
             className={`w-full ${
               isJoined 
                 ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed' 
                 : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-            } text-white rounded-2xl h-10 text-sm font-bold shadow-md`}
+            } text-white rounded-xl h-8 text-xs font-bold`}
           >
-            {isJoined ? '✓ Joined' : 'Join Challenge'}
+            {isJoined ? '✓ Joined' : 'Join'}
           </Button>
         </div>
       </Card>
