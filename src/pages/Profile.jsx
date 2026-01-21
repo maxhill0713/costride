@@ -430,59 +430,59 @@ export default function Profile() {
 
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <Flame className="w-8 h-8 text-cyan-400" />
-                <div>
-                  <p className="text-sm font-medium text-cyan-300">{t('profile.currentStreak')}</p>
-                  <p className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                  <p className="text-xs text-cyan-300">{t('profile.days')}</p>
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 shadow-lg overflow-hidden">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Flame className="w-6 h-6 text-cyan-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-cyan-300 truncate">{t('profile.currentStreak')}</p>
+                  <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
+                  <p className="text-xs text-cyan-300 truncate">{t('profile.days')}</p>
                 </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
-                <div className="text-center px-2">
-                  <span className="text-xl">❄️</span>
+                <div className="text-center px-1 flex-shrink-0">
+                  <span className="text-lg">❄️</span>
                   <p className="text-xs text-cyan-300 font-bold">{currentUser.streak_freezes_available}</p>
                 </div>
               )}
             </div>
             {streakRisk && (
-              <div className={`mt-2 px-3 py-1.5 rounded-lg ${
+              <div className={`mt-2 px-2 py-1.5 rounded-lg overflow-hidden ${
                 streakRisk.level === 'safe' ? 'bg-green-900/30 border border-green-600/30' :
                 streakRisk.level === 'warning' ? 'bg-yellow-900/30 border border-yellow-600/30' :
                 streakRisk.level === 'danger' ? 'bg-orange-900/30 border border-orange-600/30' :
                 'bg-red-900/30 border border-red-600/30'
               }`}>
-                <p className={`text-xs font-bold ${streakRisk.color}`}>{streakRisk.message}</p>
+                <p className={`text-xs font-bold ${streakRisk.color} line-clamp-2`}>{streakRisk.message}</p>
               </div>
             )}
             <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-cyan-300 mb-1">
-                <span>{t('profile.next')}: {nextMilestone.name}</span>
-                <span>{currentStreak}/{nextMilestone.days}</span>
+              <div className="flex items-center justify-between text-xs text-cyan-300 mb-1 gap-2">
+                <span className="truncate">{t('profile.next')}: {nextMilestone.name}</span>
+                <span className="flex-shrink-0">{currentStreak}/{nextMilestone.days}</span>
               </div>
               <Progress value={streakProgress} className="h-2 bg-slate-600" />
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 p-5 shadow-lg">
-            <div className="flex items-center gap-3 mb-3">
-              <Trophy className="w-8 h-8 text-purple-400" />
-              <div>
-                <p className="text-sm font-medium text-purple-300">{t('profile.bestStreak')}</p>
-                <p className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
-                <p className="text-xs text-purple-300">{t('profile.daysEver')}</p>
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 p-5 shadow-lg overflow-hidden">
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-purple-300 truncate">{t('profile.bestStreak')}</p>
+                <p className="text-2xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
+                <p className="text-xs text-purple-300 truncate">{t('profile.daysEver')}</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
-              <div className="bg-purple-900/30 border border-purple-600/30 rounded-lg px-3 py-1.5">
-                <p className="text-xs font-bold text-purple-300">💎 {t('profile.keepGoing')}</p>
+              <div className="bg-purple-900/30 border border-purple-600/30 rounded-lg px-2 py-1.5 overflow-hidden">
+                <p className="text-xs font-bold text-purple-300 line-clamp-1">💎 {t('profile.keepGoing')}</p>
               </div>
             )}
             {currentStreak === longestStreak && currentStreak > 0 && (
-              <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg px-3 py-1.5">
-                <p className="text-xs font-bold text-yellow-300">🔥 {t('profile.newRecord')}</p>
+              <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg px-2 py-1.5 overflow-hidden">
+                <p className="text-xs font-bold text-yellow-300 line-clamp-1">🔥 {t('profile.newRecord')}</p>
               </div>
             )}
           </Card>
