@@ -569,9 +569,6 @@ export default function Profile() {
             <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               Badges
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
-              Achievements
-            </TabsTrigger>
             <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               <Settings className="w-4 h-4" />
             </TabsTrigger>
@@ -669,32 +666,6 @@ export default function Profile() {
 
           <TabsContent value="badges">
             <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
-          </TabsContent>
-
-          <TabsContent value="achievements" className="space-y-4">
-            {[
-              { icon: Award, title: t('profile.achievements.workouts100'), desc: t('profile.achievements.workouts100Desc'), color: 'from-yellow-400 to-orange-500', unlocked: true },
-              { icon: TrendingUp, title: t('profile.achievements.prCrusher'), desc: t('profile.achievements.prCrusherDesc'), color: 'from-red-400 to-pink-500', unlocked: true },
-              { icon: Dumbbell, title: t('profile.achievements.ironWarrior'), desc: t('profile.achievements.ironWarriorDesc'), color: 'from-purple-400 to-purple-600', unlocked: false },
-              { icon: Calendar, title: t('profile.achievements.streak30'), desc: t('profile.achievements.streak30Desc'), color: 'from-blue-400 to-cyan-500', unlocked: false }
-            ].map((achievement, idx) => (
-              <Card key={idx} className={`bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg ${achievement.unlocked ? '' : 'opacity-50'}`}>
-                <div className="flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center shadow-md`}>
-                    <achievement.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-100">{achievement.title}</h4>
-                    <p className="text-sm text-slate-400">{achievement.desc}</p>
-                  </div>
-                  {achievement.unlocked && (
-                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
