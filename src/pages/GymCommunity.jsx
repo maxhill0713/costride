@@ -710,11 +710,11 @@ export default function GymCommunity() {
       <Tabs defaultValue="feed" className="w-full" onValueChange={(value) => {
         // Optional: Add analytics tracking here
       }}>
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-800/50 shadow-lg">
-          <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-12">
+        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl border-b-2 border-blue-700/40 shadow-xl">
+            <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14">
             <TabsTrigger 
               value="feed" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 rounded-none h-full text-slate-400"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-[0_2px_8px_rgba(96,165,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
               <div className="flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4" />
@@ -723,7 +723,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-purple-400 data-[state=active]:text-purple-400 rounded-none h-full text-slate-400"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-purple-400 data-[state=active]:text-purple-400 data-[state=active]:shadow-[0_2px_8px_rgba(192,132,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" />
@@ -732,7 +732,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="events" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-orange-400 data-[state=active]:text-orange-400 rounded-none h-full text-slate-400"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-orange-400 data-[state=active]:text-orange-400 data-[state=active]:shadow-[0_2px_8px_rgba(251,146,60,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -741,7 +741,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="rewards" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-pink-400 data-[state=active]:text-pink-400 rounded-none h-full text-slate-400"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-pink-400 data-[state=active]:text-pink-400 data-[state=active]:shadow-[0_2px_8px_rgba(244,114,182,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
               <div className="flex items-center gap-1.5">
                 <Gift className="w-4 h-4" />
@@ -775,7 +775,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 shadow-lg border-2 border-white/30 cursor-pointer hover:scale-105 transition-transform">
+                    <Card className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 shadow-2xl border-2 border-white/30 cursor-pointer hover:scale-105 hover:shadow-orange-500/40 transition-all duration-300">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
                           👀
@@ -806,7 +806,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-700 p-4 shadow-lg border border-yellow-500/40 cursor-pointer hover:shadow-xl transition-all rounded-xl">
+                    <Card className="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-700 p-4 shadow-2xl border border-yellow-500/40 cursor-pointer hover:shadow-xl hover:shadow-yellow-600/40 transition-all rounded-xl">
                       <div className="flex items-center gap-3">
                         <div className="text-3xl">🔥</div>
                         <div className="flex-1 text-left min-w-0">
@@ -951,7 +951,7 @@ export default function GymCommunity() {
           )}
 
           {/* Leaderboard Section */}
-          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-600/40 p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/40 p-5 hover:border-slate-600/60 hover:shadow-lg hover:shadow-slate-900/50 transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-100">Community Leaderboard</h3>
             </div>
