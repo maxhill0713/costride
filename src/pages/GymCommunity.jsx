@@ -912,8 +912,9 @@ export default function GymCommunity() {
                   disabled={showOwnerControls}
                 />
               ))}
-            </div>
-          )}
+              </div>
+              </Card>
+              )}
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
