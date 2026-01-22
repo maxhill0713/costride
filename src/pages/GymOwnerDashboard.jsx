@@ -626,53 +626,43 @@ export default function GymOwnerDashboard() {
         </div>
 
         {/* Quick Actions */}
-         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
-           <Button
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+          <Button
             onClick={() => setShowQRScanner(true)}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0"
+            className="bg-emerald-600 hover:bg-emerald-700 h-24 flex-col gap-2 rounded-lg border-0 shadow-lg transition-all"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1">
-              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-              </svg>
-            </div>
-            <span className="font-bold text-sm md:text-base text-white">Scan QR</span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+            </svg>
+            <span className="text-xs font-semibold">Scan</span>
           </Button>
           <Button
             onClick={() => setShowManageMembers(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-slate-700 hover:bg-slate-600 h-24 flex-col gap-2 rounded-lg border border-slate-600 shadow-lg transition-all"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
-              <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
-            </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
+            <Users className="w-5 h-5" />
+            <span className="text-xs font-semibold">Members</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-slate-700 hover:bg-slate-600 h-24 flex-col gap-2 rounded-lg border border-slate-600 shadow-lg transition-all"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
-              <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
-            </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
+            <Award className="w-5 h-5" />
+            <span className="text-xs font-semibold">Rewards</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-slate-700 hover:bg-slate-600 h-24 flex-col gap-2 rounded-lg border border-slate-600 shadow-lg transition-all"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
-              <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-600" />
-            </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
+            <Calendar className="w-5 h-5" />
+            <span className="text-xs font-semibold">Classes</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-slate-700 hover:bg-slate-600 h-24 flex-col gap-2 rounded-lg border border-slate-600 shadow-lg transition-all"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
-              <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
-            </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
+            <Target className="w-5 h-5" />
+            <span className="text-xs font-semibold">Coaches</span>
           </Button>
         </div>
 
