@@ -1069,7 +1069,7 @@ export default function GymCommunity() {
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-3 mt-0">
           {/* Classes Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-100">Classes</h3>
               {showOwnerControls && (
@@ -1130,7 +1130,7 @@ export default function GymCommunity() {
           </Card>
 
           {/* Events Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-orange-500/40 p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-100">Upcoming Events</h3>
               {showOwnerControls && (
@@ -1170,7 +1170,7 @@ export default function GymCommunity() {
           <RateGymSection gym={gym} currentUser={currentUser} isGymOwner={isGymOwner} />
 
           {/* Coaches Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-100">Coaches</h3>
               {showOwnerControls && (
