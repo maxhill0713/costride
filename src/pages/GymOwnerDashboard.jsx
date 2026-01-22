@@ -581,7 +581,7 @@ export default function GymOwnerDashboard() {
               <TrendingUp className="w-5 h-5 text-green-400" />
             </div>
             <div className="text-3xl md:text-4xl font-black mb-1 text-white">{uniqueMembers}</div>
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.activeMembers')}</p>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Active Members</p>
           </Card>
 
           <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
