@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import './components/i18n/config';
+import PageTransition from './components/PageTransition';
 
 export default function Layout({ children, currentPageName }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -182,8 +183,10 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Main Content */}
             <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
-        {children}
-      </main>
+              <PageTransition key={currentPageName}>
+                {children}
+              </PageTransition>
+            </main>
     </div>
   );
 }

@@ -161,6 +161,29 @@ html {
   scroll-behavior: smooth;
 }
 
+/* iOS-like button press animation */
+@keyframes tapScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+button:active:not(:disabled) {
+  animation: tapScale 0.15s ease;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, [role="button"] {
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Card hover animations */
+.hover\:shadow-lg:hover,
+.hover\:shadow-xl:hover,
+.hover\:shadow-2xl:hover {
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* Better focus states */
 *:focus-visible {
   outline: 2px solid #3b82f6;
