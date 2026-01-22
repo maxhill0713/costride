@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Wifi, Clock, ParkingCircle, Heart, Filter, Gift, BadgeCheck, Edit } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Wifi, Clock, ParkingCircle, Heart, Filter, Gift, BadgeCheck, Edit, Key } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
+import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 
 export default function Gyms() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,6 +20,7 @@ export default function Gyms() {
   const [selectedEquipment, setSelectedEquipment] = useState('all');
   const [editingGym, setEditingGym] = useState(null);
   const [showAllGyms, setShowAllGyms] = useState(false);
+  const [showJoinWithCode, setShowJoinWithCode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -102,15 +104,24 @@ export default function Gyms() {
                 {showAllGyms ? 'Find Gyms' : userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
               </h1>
             </div>
-            {!showAllGyms && userGyms.length > 0 && (
+            <div className="flex gap-2">
+              {!showAllGyms && userGyms.length > 0 && (
+                <Button 
+                  onClick={() => setShowAllGyms(true)}
+                  className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm rounded-2xl font-bold"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Find Other Gyms
+                </Button>
+              )}
               <Button 
-                onClick={() => setShowAllGyms(true)}
+                onClick={() => setShowJoinWithCode(true)}
                 className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm rounded-2xl font-bold"
               >
-                <MapPin className="w-4 h-4 mr-2" />
-                Find Other Gyms
+                <Key className="w-4 h-4 mr-2" />
+                Join with Code
               </Button>
-            )}
+            </div>
           </div>
           {showAllGyms && (
             <Input
@@ -342,6 +353,11 @@ export default function Gyms() {
               currentImageUrl={editingGym?.image_url}
               onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })}
               isLoading={updateGymImageMutation.isPending}
+              />
+
+              <JoinWithCodeModal
+              open={showJoinWithCode}
+              onClose={() => setShowJoinWithCode(false)}
               />
               </div>
               );
