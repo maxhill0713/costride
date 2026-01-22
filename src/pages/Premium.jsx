@@ -142,32 +142,32 @@ export default function Premium() {
             <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
               <Star className="w-6 h-6 text-purple-600" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Stand Out</h3>
-            <p className="text-sm text-gray-600">Premium badges and exclusive features</p>
+            <h3 className="font-bold text-gray-900 mb-2">Exclusive Rewards</h3>
+            <p className="text-sm text-gray-600">Premium-only discounts & limited drops</p>
           </Card>
 
           <Card className="p-6 text-center border-2 border-gray-200">
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
               <BarChart3 className="w-6 h-6 text-blue-600" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Track Progress</h3>
-            <p className="text-sm text-gray-600">Advanced analytics and insights</p>
+            <h3 className="font-bold text-gray-900 mb-2">Double Rewards</h3>
+            <p className="text-sm text-gray-600">Earn 2x rewards on every check-in</p>
           </Card>
 
           <Card className="p-6 text-center border-2 border-gray-200">
             <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
-              <Users className="w-6 h-6 text-orange-600" />
+              <Zap className="w-6 h-6 text-orange-600" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Grow Community</h3>
-            <p className="text-sm text-gray-600">Attract and engage more members</p>
+            <h3 className="font-bold text-gray-900 mb-2">Early Access</h3>
+            <p className="text-sm text-gray-600">First to claim limited quantity rewards</p>
           </Card>
 
           <Card className="p-6 text-center border-2 border-gray-200">
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-6 h-6 text-green-600" />
+              <Crown className="w-6 h-6 text-green-600" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Priority Support</h3>
-            <p className="text-sm text-gray-600">Get help when you need it</p>
+            <h3 className="font-bold text-gray-900 mb-2">Free Products</h3>
+            <p className="text-sm text-gray-600">Premium partner gifts & samples</p>
           </Card>
         </div>
       </div>
