@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
+import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,6 +17,7 @@ export default function Home() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -434,18 +436,19 @@ export default function Home() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
+          <Card 
+            onClick={() => setShowJoinModal(true)}
+            className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
+          >
+            <CheckCircle className="w-10 h-10 mb-3" />
+            <h3 className="font-black text-lg mb-1">Join with Code</h3>
+            <p className="text-sm text-white/90">Instant gym access</p>
+          </Card>
           <Link to={createPageUrl('Gyms')}>
             <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
               <Trophy className="w-10 h-10 mb-3" />
               <h3 className="font-black text-lg mb-1">{t('home.viewGyms')}</h3>
               <p className="text-sm text-white/90">{t('home.exploreCommunities')}</p>
-            </Card>
-          </Link>
-          <Link to={createPageUrl('Gyms')}>
-            <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 border-0 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer">
-              <Dumbbell className="w-10 h-10 mb-3" />
-              <h3 className="font-black text-lg mb-1">{t('home.checkIn')}</h3>
-              <p className="text-sm text-white/90">{t('home.startWorkout')}</p>
             </Card>
           </Link>
         </div>
@@ -464,6 +467,13 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Join with Code Modal */}
+        <JoinWithCodeModal 
+          open={showJoinModal} 
+          onClose={() => setShowJoinModal(false)} 
+          currentUser={currentUser}
+        />
       </div>
     </div>
   );
