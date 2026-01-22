@@ -2,12 +2,16 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Trophy, Dumbbell, Users, Target, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
+  const totalDays = differenceInDays(new Date(challenge.end_date), new Date(challenge.start_date));
+  const daysElapsed = totalDays - daysLeft;
+  const progressPercentage = totalDays > 0 ? (daysElapsed / totalDays) * 100 : 0;
   const participantCount = challenge.participants?.length || 0;
 
   return (
@@ -62,6 +66,15 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
               {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
               {challenge.goal_type === 'participation' && 'Most active wins'}
             </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-2">
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-[10px] font-semibold text-slate-400">Challenge Progress</p>
+              <p className="text-[10px] text-slate-500">{daysElapsed}/{totalDays} days</p>
+            </div>
+            <Progress value={progressPercentage} className="h-1.5" />
           </div>
 
           {/* Action Button */}
