@@ -5,7 +5,6 @@ import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Plus, H
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import './components/i18n/config';
 import PageTransition from './components/PageTransition';
 
 export default function Layout({ children, currentPageName }) {
