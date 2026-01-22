@@ -227,7 +227,7 @@ export default function Gyms() {
         {/* Tab List */}
         <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4">
           <div className="max-w-6xl mx-auto">
-            <TabsList className="w-screen md:w-full flex justify-start md:justify-center bg-transparent p-0 h-14 gap-8 border-0 overflow-x-auto md:overflow-x-visible">
+            <TabsList className="w-screen md:w-full flex justify-center bg-transparent p-0 h-14 gap-8 border-0 overflow-x-auto md:overflow-x-visible">
               {userGyms.length > 0 && (
                 <TabsTrigger 
                   value="my-gyms" 
