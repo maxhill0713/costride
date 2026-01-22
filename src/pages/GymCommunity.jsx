@@ -829,10 +829,10 @@ export default function GymCommunity() {
           {showOwnerControls && (
             <Button
               onClick={() => setShowCreateChallenge(true)}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl h-auto py-3 flex-col gap-2 shadow-lg"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Gym Challenge
+              <Plus className="w-5 h-5" />
+              <span className="font-bold">Create Gym Challenge</span>
             </Button>
           )}
 
