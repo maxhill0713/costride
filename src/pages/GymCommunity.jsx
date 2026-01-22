@@ -1523,6 +1523,14 @@ export default function GymCommunity() {
           isLoading={updateHeroImageMutation.isPending}
         />
 
+        <EditGymLogoModal
+          open={showEditGymLogo}
+          onClose={() => setShowEditGymLogo(false)}
+          currentLogoUrl={gym?.logo_url}
+          onSave={(logo_url) => updateGymLogoMutation.mutate(logo_url)}
+          isLoading={updateGymLogoMutation.isPending}
+        />
+
         <ManageMembersModal
           open={showManageMembers}
           onClose={() => setShowManageMembers(false)}
