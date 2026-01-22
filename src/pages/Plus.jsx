@@ -127,26 +127,26 @@ export default function Plus() {
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Basic Plan */}
-          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-6 hover:shadow-xl transition-all">
-            <div className="text-center mb-4">
-              <h2 className="text-xl font-bold text-white mb-1">{t('plus.basic.title')}</h2>
-              <div className="text-3xl font-black text-white mb-1">{t('plus.basic.price')}</div>
-              <p className="text-sm text-slate-300">Essential gym management</p>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-4 hover:shadow-xl transition-all">
+            <div className="text-center mb-3">
+              <h2 className="text-lg font-bold text-white mb-0.5">{t('plus.basic.title')}</h2>
+              <div className="text-2xl font-black text-white mb-0.5">{t('plus.basic.price')}</div>
+              <p className="text-xs text-slate-300">Essential gym management</p>
             </div>
             
-            <div className="space-y-2 mb-4">
-              {t('plus.basic.features', { returnObjects: true }).slice(0, 4).map((feature, idx) => (
+            <div className="space-y-1.5 mb-3">
+              {t('plus.basic.features', { returnObjects: true }).slice(0, 3).map((feature, idx) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-                  <span className="text-sm text-slate-200">{feature}</span>
+                  <CheckCircle className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                  <span className="text-xs text-slate-200">{feature}</span>
                 </div>
               ))}
-              <p className="text-xs text-slate-400 pt-1">+ more features</p>
+              <p className="text-xs text-slate-400 pt-0.5">+ more features</p>
             </div>
 
             <Button 
               variant="outline" 
-              className="w-full h-10 rounded-xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700 text-sm"
+              className="w-full h-9 rounded-lg font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700 text-xs"
               disabled
             >
               {isSubscribed ? t('plus.yourPlan') : t('plus.currentPlan')}
