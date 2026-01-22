@@ -231,7 +231,7 @@ export default function Gyms() {
               {userGyms.length > 0 && (
                 <TabsTrigger 
                   value="my-gyms" 
-                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors"
+                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   My Gyms
@@ -239,7 +239,7 @@ export default function Gyms() {
               )}
               <TabsTrigger 
                 value="explore" 
-                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors"
+                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent"
               >
                 <MapPin className="w-4 h-4 mr-2" />
                 Explore
