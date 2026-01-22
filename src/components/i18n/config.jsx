@@ -1047,4 +1047,4 @@ const resources = {
   }
 };
 
-export const resources = { ...resources };
+export default resources;
