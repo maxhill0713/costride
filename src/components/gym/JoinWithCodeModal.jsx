@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { createPageUrl } from '../../utils';
+import { createPageUrl } from '../utils';
 
 export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const [code, setCode] = useState('');
