@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [billingCycle, setBillingCycle] = useState('monthly');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -48,12 +49,17 @@ export default function Premium() {
     }
   });
 
+  const monthlyPrice = 4.99;
+  const yearlyPrice = 49.99; // ~2 months free
+
   const userPlans = [
     {
       id: 'user_premium',
       name: 'Premium Member',
-      price: 4.99,
-      priceId: 'price_1SsCGXBzxbKKg1zZT7cHR7uh',
+      monthlyPrice: monthlyPrice,
+      yearlyPrice: yearlyPrice,
+      monthlyPriceId: 'price_1SsCGXBzxbKKg1zZT7cHR7uh',
+      yearlyPriceId: 'price_REPLACE_WITH_YEARLY_PREMIUM_PRICE_ID', // TODO: Replace with actual yearly price ID
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       features: [
@@ -72,7 +78,8 @@ export default function Premium() {
 
 
   const handleSubscribe = (plan) => {
-    checkoutMutation.mutate(plan);
+    const priceId = billingCycle === 'yearly' ? plan.yearlyPriceId : plan.monthlyPriceId;
+    checkoutMutation.mutate({ ...plan, priceId });
   };
 
   return (
@@ -90,11 +97,6 @@ export default function Premium() {
 
       {/* User Plans */}
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-gray-900 mb-2">For Members</h2>
-          <p className="text-gray-600">Enhance your workout experience</p>
-        </div>
-
         <div className="grid gap-8 max-w-md mx-auto">
           {userPlans.map((plan) => {
             const Icon = plan.icon;
@@ -111,12 +113,51 @@ export default function Premium() {
                         <h3 className="text-2xl font-black text-gray-900">{plan.name}</h3>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <span className="text-5xl font-black text-gray-900">${plan.price}</span>
-                    <span className="text-gray-500">/month</span>
-                  </div>
+                    </div>
+
+                    {/* Billing Cycle Toggle */}
+                    <div className="flex items-center justify-center gap-3 mb-6 p-1 bg-gray-100 rounded-2xl">
+                    <button
+                      onClick={() => setBillingCycle('monthly')}
+                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
+                        billingCycle === 'monthly'
+                          ? 'bg-white text-gray-900 shadow-md'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      onClick={() => setBillingCycle('yearly')}
+                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
+                        billingCycle === 'yearly'
+                          ? 'bg-white text-gray-900 shadow-md'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        Yearly
+                        <Badge className="bg-green-500 text-white text-xs">Save 17%</Badge>
+                      </div>
+                    </button>
+                    </div>
+
+                    <div className="mb-6">
+                    {billingCycle === 'monthly' ? (
+                      <>
+                        <span className="text-5xl font-black text-gray-900">${plan.monthlyPrice}</span>
+                        <span className="text-gray-500">/month</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-5xl font-black text-gray-900">${plan.yearlyPrice}</span>
+                        <span className="text-gray-500">/year</span>
+                        <div className="text-sm text-gray-600 mt-2">
+                          ${(plan.yearlyPrice / 12).toFixed(2)}/month • 2 MONTHS FREE
+                        </div>
+                      </>
+                    )}
+                    </div>
 
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, idx) => (
