@@ -428,11 +428,11 @@ export default function GymOwnerDashboard() {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6 md:mb-10">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-black text-white mb-2 md:mb-3 tracking-tight">{t('dashboard.title')}</h1>
-            <p className="text-slate-300 text-sm md:text-lg">{t('dashboard.subtitle')}</p>
-          </div>
+         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-8 md:mb-12">
+           <div>
+             <h1 className="text-4xl md:text-6xl font-black text-white mb-2 md:mb-4 tracking-tight" style={{letterSpacing: '-0.5px'}}>{t('dashboard.title')}</h1>
+             <p className="text-slate-400 text-sm md:text-base font-medium">{t('dashboard.subtitle')}</p>
+           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-stretch sm:items-center">
             <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
