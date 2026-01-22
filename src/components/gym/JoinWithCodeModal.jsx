@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { createPageUrl } from '../../utils';
 
 export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const [code, setCode] = useState('');
@@ -57,6 +58,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       toast.success(`Joined ${gym.name}! 🎉`);
       onClose();
+      window.location.href = createPageUrl('GymCommunity') + '?id=' + gym.id;
     },
     onError: (error) => {
       setError(error.message);
