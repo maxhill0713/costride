@@ -37,6 +37,7 @@ export default function GymOwnerDashboard() {
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser, refetch: refetchUser } = useQuery({
@@ -475,7 +476,10 @@ export default function GymOwnerDashboard() {
                    <p className="text-2xl font-black text-white tracking-wider">{selectedGym.join_code}</p>
                  </div>
 
-                 <div className="bg-white p-2 rounded-xl shadow-lg">
+                 <button
+                   onClick={() => setShowQRCodeModal(true)}
+                   className="bg-white p-2 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                 >
                    <div id="qr-code-container">
                      <QRCode 
                        value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
@@ -483,7 +487,7 @@ export default function GymOwnerDashboard() {
                        level="H"
                      />
                    </div>
-                 </div>
+                 </button>
 
                  <Button
                    onClick={() => {
@@ -2195,6 +2199,74 @@ export default function GymOwnerDashboard() {
           open={showQRScanner}
           onClose={() => setShowQRScanner(false)}
         />
+
+        {/* QR Code Fullscreen Modal */}
+        {showQRCodeModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="bg-white max-w-md w-full p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Gym Join QR Code</h3>
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowQRCodeModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              
+              <div className="flex justify-center mb-6 p-6 bg-white rounded-2xl border-2 border-gray-200">
+                <div id="qr-code-fullscreen">
+                  <QRCode 
+                    value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
+                    size={300}
+                    level="H"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-center text-sm text-gray-600 mb-4">
+                  Code: <span className="font-bold text-gray-900">{selectedGym.join_code}</span>
+                </p>
+                
+                <Button
+                  onClick={() => {
+                    const svg = document.getElementById('qr-code-fullscreen').querySelector('svg');
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = () => {
+                      canvas.width = img.width;
+                      canvas.height = img.height;
+                      ctx.drawImage(img, 0, 0);
+                      const pngFile = canvas.toDataURL('image/png');
+                      const downloadLink = document.createElement('a');
+                      downloadLink.download = `${selectedGym.name}-QR-Code.png`;
+                      downloadLink.href = pngFile;
+                      downloadLink.click();
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  }}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download QR Code
+                </Button>
+
+                <Button
+                  onClick={() => setShowQRCodeModal(false)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
