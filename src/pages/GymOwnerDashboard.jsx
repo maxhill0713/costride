@@ -60,19 +60,22 @@ export default function GymOwnerDashboard() {
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['allCheckIns'],
     queryFn: () => base44.entities.CheckIn.list(),
-    enabled: !!currentUser
+    enabled: !!currentUser && !!selectedGym,
+    staleTime: 30000 // Cache for 30 seconds
   });
 
   const { data: allMemberships = [] } = useQuery({
     queryKey: ['allMemberships'],
     queryFn: () => base44.entities.GymMembership.list(),
-    enabled: !!currentUser
+    enabled: !!currentUser && !!selectedGym,
+    staleTime: 30000
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.entities.User.list(),
-    enabled: !!currentUser
+    enabled: !!currentUser && !!selectedGym,
+    staleTime: 30000
   });
 
   React.useEffect(() => {
@@ -91,7 +94,8 @@ export default function GymOwnerDashboard() {
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', selectedGym?.id],
     queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }),
-    enabled: !!selectedGym
+    enabled: !!selectedGym,
+    staleTime: 20000
   });
 
   const { data: lifts = [] } = useQuery({
@@ -100,7 +104,8 @@ export default function GymOwnerDashboard() {
       const allLifts = await base44.entities.Lift.list();
       return allLifts.filter(l => l.gym_id === selectedGym.id);
     },
-    enabled: !!selectedGym
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: rewards = [] } = useQuery({
@@ -109,7 +114,8 @@ export default function GymOwnerDashboard() {
       const allRewards = await base44.entities.Reward.list();
       return allRewards.filter(r => r.gym_id === selectedGym.id);
     },
-    enabled: !!selectedGym
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: classes = [] } = useQuery({
@@ -118,7 +124,8 @@ export default function GymOwnerDashboard() {
       const allClasses = await base44.entities.GymClass.list();
       return allClasses.filter(c => c.gym_id === selectedGym.id);
     },
-    enabled: !!selectedGym
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: coaches = [] } = useQuery({
@@ -127,7 +134,8 @@ export default function GymOwnerDashboard() {
       const allCoaches = await base44.entities.Coach.list();
       return allCoaches.filter(c => c.gym_id === selectedGym.id);
     },
-    enabled: !!selectedGym
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: events = [] } = useQuery({
@@ -136,7 +144,8 @@ export default function GymOwnerDashboard() {
       const allEvents = await base44.entities.Event.list();
       return allEvents.filter(e => e.gym_id === selectedGym.id);
     },
-    enabled: !!selectedGym
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: posts = [] } = useQuery({
@@ -148,7 +157,8 @@ export default function GymOwnerDashboard() {
         return postCheckIns.length > 0;
       });
     },
-    enabled: !!selectedGym && checkIns.length > 0
+    enabled: !!selectedGym && checkIns.length > 0,
+    staleTime: 20000
   });
 
   const { data: challenges = [] } = useQuery({
@@ -157,7 +167,8 @@ export default function GymOwnerDashboard() {
       const allChallenges = await base44.entities.Challenge.list('-created_date');
       return allChallenges.filter(c => c.gym_id === selectedGym?.id || c.competing_gym_id === selectedGym?.id);
     },
-    enabled: !!selectedGym
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const createRewardMutation = useMutation({
