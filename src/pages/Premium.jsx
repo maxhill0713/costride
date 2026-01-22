@@ -59,7 +59,7 @@ export default function Premium() {
       monthlyPrice: monthlyPrice,
       yearlyPrice: yearlyPrice,
       monthlyPriceId: 'price_1SsCGXBzxbKKg1zZT7cHR7uh',
-      yearlyPriceId: 'price_REPLACE_WITH_YEARLY_PREMIUM_PRICE_ID', // TODO: Replace with actual yearly price ID
+      yearlyPriceId: 'price_1SsCqKBzxbKKg1zZ5INp9GWN',
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       features: [
