@@ -889,6 +889,7 @@ export default function GymCommunity() {
 
           {/* App Challenges - Global community challenges */}
           {appChallenges.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-yellow-500/40 p-5">
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
@@ -916,6 +917,7 @@ export default function GymCommunity() {
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-cyan-500/40 p-5">
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
