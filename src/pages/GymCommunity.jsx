@@ -612,7 +612,7 @@ export default function GymCommunity() {
           <img 
             src={gym.image_url} 
             alt={gym.name} 
-            className="w-full h-full object-cover opacity-55"
+            className="w-full h-full object-cover opacity-70"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
