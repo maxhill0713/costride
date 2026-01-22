@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Zap, TrendingUp, Users, BarChart3, Star, Shield, Check } from 'lucide-react';
+import { Crown, Zap, Star, BarChart3, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Premium() {
@@ -67,28 +67,7 @@ export default function Premium() {
     }
   ];
 
-  const gymPlans = [
-    {
-      id: 'gym_pro',
-      name: 'Retention Pro',
-      price: 499,
-      billing: 'yearly',
-      priceId: 'price_REPLACE_WITH_YEARLY_PRICE_ID', // Replace with your Stripe yearly price ID
-      icon: TrendingUp,
-      color: 'from-blue-600 to-cyan-600',
-      badge: 'Save $89',
-      features: [
-        'Advanced analytics & retention insights',
-        'Member engagement tracking',
-        'Automated check-in rewards',
-        'Custom challenge creation',
-        'Priority support',
-        'White-label branding options',
-        'Unlimited staff accounts',
-        'Export member data'
-      ]
-    }
-  ];
+
 
 
 
@@ -162,63 +141,7 @@ export default function Premium() {
         </div>
       </div>
 
-      {/* Gym Plans */}
-      <div className="max-w-6xl mx-auto px-4 py-12 bg-gray-50">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-gray-900 mb-2">For Gym Owners</h2>
-          <p className="text-gray-600">Boost retention and grow your business</p>
-        </div>
 
-        <div className="grid gap-8 max-w-md mx-auto">
-          {gymPlans.map((plan) => {
-            const Icon = plan.icon;
-            return (
-              <Card key={plan.id} className="relative overflow-hidden border-2 border-blue-200 hover:border-blue-400 transition-all">
-                {plan.badge && (
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-green-500 text-white">{plan.badge}</Badge>
-                  </div>
-                )}
-                <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${plan.color}`} />
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-black text-gray-900">{plan.name}</h3>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <span className="text-5xl font-black text-gray-900">${plan.price}</span>
-                    <span className="text-gray-500">/{plan.billing}</span>
-                  </div>
-
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    onClick={() => handleSubscribe(plan)}
-                    disabled={checkoutMutation.isPending}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-bold h-14 rounded-2xl text-lg`}
-                  >
-                    {checkoutMutation.isPending ? 'Loading...' : 'Subscribe Now'}
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Benefits Section */}
       <div className="max-w-6xl mx-auto px-4 py-16">
