@@ -123,8 +123,8 @@ export default function RateGymSection({ gym, currentUser, isGymOwner }) {
         </div>
       )}
 
-      {/* User Rating Form */}
-      {currentUser && (
+      {/* User Rating Form - Gym owners cannot rate their own gym */}
+       {currentUser && !isGymOwner && (
         <div className="space-y-3">
           <div>
             <p className="text-xs font-medium text-gray-700 mb-2">
