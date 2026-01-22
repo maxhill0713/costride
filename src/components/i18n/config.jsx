@@ -50,7 +50,7 @@ const resources = {
         }
       },
       onboarding: {
-        welcome: "Welcome to GymConnect",
+        welcome: "Welcome to Gofattie",
         subtitle: "The ultimate fitness community platform",
         getStarted: "Get Started",
         memberSignup: "I'm a Member",
@@ -508,7 +508,7 @@ const resources = {
         }
       },
       onboarding: {
-        welcome: "Bienvenido a GymConnect",
+        welcome: "Bienvenido a Gofattie",
         subtitle: "La plataforma de comunidad fitness definitiva",
         getStarted: "Comenzar",
         memberSignup: "Soy Miembro",
