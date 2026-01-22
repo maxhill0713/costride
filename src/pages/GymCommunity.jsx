@@ -1351,7 +1351,7 @@ export default function GymCommunity() {
                             </div>
                           )}
 
-                          {currentUser && (
+                          {currentUser && !showOwnerControls && (
                             <Button
                               size="sm"
                               disabled={!canClaim || claimRewardMutation.isPending}
