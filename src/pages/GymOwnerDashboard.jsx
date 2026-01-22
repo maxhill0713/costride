@@ -24,7 +24,6 @@ import QRCode from 'react-qr-code';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function GymOwnerDashboard() {
-  const { i18n, t } = useTranslation();
   const [selectedGym, setSelectedGym] = useState(null);
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
