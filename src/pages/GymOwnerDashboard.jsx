@@ -877,7 +877,7 @@ export default function GymOwnerDashboard() {
                 </div>
               </div>
               <div className="mt-4">
-                <Button onClick={() => setShowManageRewards(true)} variant="outline" className="w-full">
+                <Button onClick={() => setShowManageRewards(true)} variant="outline" className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
                   {t('dashboard.manageRewards')}
                 </Button>
               </div>
