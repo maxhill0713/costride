@@ -789,7 +789,7 @@ export default function GymOwnerDashboard() {
                     </div>
                   ))}
                 {checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).length === 0 && (
-                  <p className="text-gray-500 text-center py-8">{t('dashboard.noActivityLast7Days')}</p>
+                  <p className="text-slate-400 text-center py-8">{t('dashboard.noActivityLast7Days')}</p>
                 )}
               </div>
             </Card>
