@@ -707,11 +707,11 @@ export default function GymCommunity() {
       </div>
 
       {/* Horizontal Tab Menu - 10% of screen */}
-      <Tabs defaultValue="feed" className="w-full" onValueChange={(value) => {
+      <Tabs defaultValue="feed" className="w-full overflow-x-hidden" onValueChange={(value) => {
         // Optional: Add analytics tracking here
       }}>
-        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl border-b-2 border-blue-700/40 shadow-xl">
-            <TabsList className="w-full max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14">
+        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl border-b-2 border-blue-700/40 shadow-xl overflow-x-hidden">
+            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible">
             <TabsTrigger 
               value="feed" 
               className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-[0_2px_8px_rgba(96,165,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
