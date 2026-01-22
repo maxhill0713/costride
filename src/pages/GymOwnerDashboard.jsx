@@ -800,21 +800,21 @@ export default function GymOwnerDashboard() {
             <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.engagementOverview')}</h3>
               <div className="grid grid-cols-4 gap-6">
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalMembers')}</p>
-                  <p className="text-3xl font-black text-blue-600">{uniqueMembers}</p>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.totalMembers')}</p>
+                  <p className="text-3xl font-black text-blue-400">{uniqueMembers}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.active7days')}</p>
-                  <p className="text-3xl font-black text-green-600">{activeMembersThisWeek}</p>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.active7days')}</p>
+                  <p className="text-3xl font-black text-green-400">{activeMembersThisWeek}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalCheckIns')}</p>
-                  <p className="text-3xl font-black text-purple-600">{last7Days}</p>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.totalCheckIns')}</p>
+                  <p className="text-3xl font-black text-purple-400">{last7Days}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.prsLogged')}</p>
-                  <p className="text-3xl font-black text-orange-600">{lifts.filter(l => l.is_pr).length}</p>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.prsLogged')}</p>
+                  <p className="text-3xl font-black text-orange-400">{lifts.filter(l => l.is_pr).length}</p>
                 </div>
               </div>
             </Card>
