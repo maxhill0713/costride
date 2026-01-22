@@ -556,28 +556,27 @@ export default function GymOwnerDashboard() {
         </div>
 
          {/* At-Risk Alert */}
-        {atRiskMembers > 0 && (
-          <Card className="p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
-                <Bell className="w-7 h-7" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-black text-xl mb-2">⚠️ {t('dashboard.membersAtRisk')}</h3>
-                <p className="text-white/90">
-                  {t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}
-                </p>
-              </div>
-              <Button
-                onClick={() => setShowManageMembers(true)}
-                variant="outline"
-                className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-semibold px-8 py-6 rounded-xl shadow-lg"
-              >
-                {t('dashboard.viewMembers')}
-              </Button>
-            </div>
-          </Card>
-        )}
+         {atRiskMembers > 0 && (
+           <Card className="p-5 mb-6 bg-gradient-to-r from-red-900/40 to-red-800/40 border border-red-700/50 shadow-lg">
+             <div className="flex items-start gap-4">
+               <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                 <Bell className="w-5 h-5 text-red-400" />
+               </div>
+               <div className="flex-1">
+                 <h3 className="font-semibold text-white mb-1">{atRiskMembers} Members At Risk</h3>
+                 <p className="text-slate-300 text-sm mb-3">
+                   {atRiskMembers} member{atRiskMembers > 1 ? 's have' : ' has'} not checked in for 7-10 days
+                 </p>
+                 <Button
+                   onClick={() => setShowManageMembers(true)}
+                   className="bg-red-600 hover:bg-red-700 h-8 text-xs"
+                 >
+                   Review Members
+                 </Button>
+               </div>
+             </div>
+           </Card>
+         )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8 md:mb-10">
