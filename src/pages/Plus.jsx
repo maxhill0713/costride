@@ -24,7 +24,10 @@ const basicFeatures = [
   'Gym profile management',
   'Event creation',
   'Class scheduling',
-  'Member directory'
+  'Member directory',
+  'Rewards & challenges',
+  'Coach management',
+  'Community feed'
 ];
 
 export default function Plus() {
@@ -113,7 +116,7 @@ export default function Plus() {
             </div>
             
             <div className="space-y-1.5 mb-3">
-              {t('plus.basic.features', { returnObjects: true }).slice(0, 3).map((feature, idx) => (
+              {t('plus.basic.features', { returnObjects: true }).slice(0, 6).map((feature, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <CheckCircle className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
                   <span className="text-xs text-slate-200">{feature}</span>
