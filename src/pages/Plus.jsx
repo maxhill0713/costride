@@ -52,6 +52,7 @@ const basicFeatures = [
 export default function Plus() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState('yearly'); // 'monthly' or 'yearly'
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -82,8 +83,13 @@ export default function Plus() {
 
     setIsLoading(true);
     try {
+      const priceId = billingCycle === 'yearly' 
+        ? 'price_REPLACE_WITH_YEARLY_PRICE_ID' // Replace with your yearly price ID
+        : 'price_1SrNwPDSt5niTKrslvTPCEjV';
+
       const response = await base44.functions.invoke('createSubscriptionCheckout', {
-        priceId: 'price_1SrNwPDSt5niTKrslvTPCEjV'
+        priceId,
+        subscriptionType: 'gym_pro'
       });
 
       if (response.data.url) {
@@ -100,6 +106,9 @@ export default function Plus() {
   };
 
   const isSubscribed = !!subscription;
+  const monthlyPrice = 49.99;
+  const yearlyPrice = 499;
+  const displayPrice = billingCycle === 'yearly' ? yearlyPrice : monthlyPrice;
 
   return (
     <div className="min-h-screen p-4">
@@ -146,13 +155,48 @@ export default function Plus() {
           {/* Pro Plan */}
           <Card className="bg-gradient-to-br from-purple-500 to-pink-500 border-0 p-8 text-white shadow-2xl relative overflow-hidden">
             <div className="absolute top-4 right-4">
-              <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold">POPULAR</span>
+              <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold">
+                {billingCycle === 'yearly' ? '2 MONTHS FREE' : 'POPULAR'}
+              </span>
             </div>
             
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold mb-2">{t('plus.pro.title')}</h2>
-              <div className="text-4xl font-black mb-2">{t('plus.monthlyPrice')}</div>
-              <p className="text-purple-100">Premium Analytics Included</p>
+              
+              {/* Billing Toggle */}
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <button
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                    billingCycle === 'monthly' 
+                      ? 'bg-white/30 text-white' 
+                      : 'bg-white/10 text-purple-100'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingCycle('yearly')}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                    billingCycle === 'yearly' 
+                      ? 'bg-white/30 text-white' 
+                      : 'bg-white/10 text-purple-100'
+                  }`}
+                >
+                  Yearly
+                </button>
+              </div>
+
+              <div className="text-4xl font-black mb-2">
+                ${displayPrice}
+                <span className="text-xl font-normal">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
+              </div>
+              {billingCycle === 'yearly' && (
+                <p className="text-purple-100 text-sm">That's only $41.58/month - save $89/year!</p>
+              )}
+              {billingCycle === 'monthly' && (
+                <p className="text-purple-100">Premium Analytics Included</p>
+              )}
             </div>
 
             <div className="space-y-3 mb-6">
