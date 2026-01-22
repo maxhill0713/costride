@@ -902,7 +902,7 @@ export default function GymCommunity() {
               <p className="text-sm text-slate-300 mb-3">
                 Join community-wide challenges and compete for amazing prizes! 🏆
               </p>
-              {appChallenges.slice(0, 2).map((challenge) => (
+              {appChallenges.map((challenge) => (
                 <AppChallengeCard
                   key={challenge.id}
                   challenge={challenge}
@@ -931,7 +931,7 @@ export default function GymCommunity() {
               <p className="text-sm text-slate-300 mb-3">
                 Exclusive challenges from {gym.name}! 💪
               </p>
-              {gymChallenges.slice(0, 2).map((challenge) => (
+              {gymChallenges.map((challenge) => (
                 <GymChallengeCard
                   key={challenge.id}
                   challenge={challenge}
@@ -1095,9 +1095,9 @@ export default function GymCommunity() {
                 <p className="text-gray-500 text-sm">No classes scheduled</p>
               </div>
             ) : (
-              <div className="space-y-2 md:space-y-3">
-                {classes.slice(0, 2).map((gymClass) => (
-                  <div key={gymClass.id} className="bg-gray-50 border border-gray-200 p-3 md:p-4 rounded-2xl">
+              <div className="space-y-3">
+                {classes.map((gymClass) => (
+                  <div key={gymClass.id} className="bg-gray-50 border border-gray-200 p-4 rounded-2xl">
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                         <Target className="w-6 h-6 text-white" />
@@ -1155,8 +1155,8 @@ export default function GymCommunity() {
                 <p className="text-gray-500 text-sm">No upcoming events</p>
               </div>
             ) : (
-              <div className="space-y-2 md:space-y-3">
-                {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 2).map((event) => (
+              <div className="space-y-3">
+                {events.filter(e => new Date(e.event_date) >= new Date()).map((event) => (
                   <EventCard
                     key={event.id}
                     event={event}
@@ -1196,9 +1196,9 @@ export default function GymCommunity() {
                 <p className="text-gray-500 text-sm">No coaches listed</p>
               </div>
             ) : (
-              <div className="space-y-2 md:space-y-3">
-                {coaches.slice(0, 2).map((coach) => (
-                  <div key={coach.id} className="bg-gray-50 border border-gray-200 p-3 md:p-4 rounded-2xl">
+              <div className="space-y-3">
+                {coaches.map((coach) => (
+                  <div key={coach.id} className="bg-gray-50 border border-gray-200 p-4 rounded-2xl">
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {coach.avatar_url ? (
@@ -1359,8 +1359,8 @@ export default function GymCommunity() {
                   </Button>
                 )}
               </div>
-              <div className="space-y-2 md:space-y-3">
-                {rewards.filter(r => r.active).slice(0, 3).map((reward) => {
+              <div className="space-y-3">
+                {rewards.filter(r => r.active).map((reward) => {
                   const hasUserClaimed = reward.claimed_by?.includes(currentUser?.id);
                   const meetsReq = meetsRequirement(reward.requirement);
                   const canClaim = !hasUserClaimed && meetsReq;
