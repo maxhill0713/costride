@@ -13,6 +13,17 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
+  // Pre-fill code from URL if present
+  React.useEffect(() => {
+    if (open) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const joinCode = urlParams.get('joinCode');
+      if (joinCode) {
+        setCode(joinCode.toUpperCase());
+      }
+    }
+  }, [open]);
+
   const joinMutation = useMutation({
     mutationFn: async (joinCode) => {
       // Find gym by join code

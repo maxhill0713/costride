@@ -28,6 +28,15 @@ export default function Gyms() {
     queryFn: () => base44.auth.me().catch(() => null)
   });
 
+  // Handle QR code join
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinCode = urlParams.get('joinCode');
+    if (joinCode && currentUser) {
+      setShowJoinWithCode(true);
+    }
+  }, [currentUser]);
+
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
