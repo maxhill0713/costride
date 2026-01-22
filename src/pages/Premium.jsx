@@ -53,7 +53,7 @@ export default function Premium() {
       id: 'user_premium',
       name: 'Premium Member',
       price: 4.99,
-      priceId: 'price_1QvBb5P8ybSi5wnVKQOg1H3H', // Replace with your actual Stripe Price ID
+      priceId: 'price_1SsCGXBzxbKKg1zZT7cHR7uh',
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       features: [
