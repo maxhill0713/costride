@@ -902,19 +902,19 @@ export default function GymOwnerDashboard() {
               </div>
               
               <div className="mb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-3">{t('dashboard.activeChallenges')}</h4>
+                <h4 className="text-lg font-bold text-white mb-3">{t('dashboard.activeChallenges')}</h4>
                 {challenges.filter(c => c.status === 'active').length > 0 ? (
                   <div className="space-y-3">
                     {challenges.filter(c => c.status === 'active').map(challenge => (
-                      <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl border-2 border-orange-200">
+                      <div key={challenge.id} className="p-4 bg-slate-700/50 rounded-2xl border-2 border-orange-500/40">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h5 className="font-bold text-gray-900">{challenge.title}</h5>
-                            <p className="text-sm text-gray-600">{challenge.description}</p>
+                            <h5 className="font-bold text-white">{challenge.title}</h5>
+                            <p className="text-sm text-slate-300">{challenge.description}</p>
                           </div>
-                          <Badge className="bg-orange-500 text-white">{challenge.type.replace('_', ' ')}</Badge>
+                          <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40">{challenge.type.replace('_', ' ')}</Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                        <div className="flex items-center gap-4 text-sm text-slate-300 mt-2">
                           <span>👥 {challenge.participants?.length || 0} {t('dashboard.participants')}</span>
                           <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
                         </div>
@@ -922,7 +922,7 @@ export default function GymOwnerDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-6">{t('dashboard.noActiveChallenges')}</p>
+                  <p className="text-slate-400 text-center py-6">{t('dashboard.noActiveChallenges')}</p>
                 )}
               </div>
 
