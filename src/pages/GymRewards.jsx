@@ -16,6 +16,14 @@ export default function GymRewards() {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', currentUser?.id],
+    queryFn: () => base44.entities.Subscription.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  const isPremium = subscription?.[0]?.subscription_type === 'user_premium';
+
   const { data: allRewards = [] } = useQuery({
     queryKey: ['rewards'],
     queryFn: () => base44.entities.Reward.list()
