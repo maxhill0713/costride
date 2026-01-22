@@ -123,11 +123,10 @@ export default function Layout({ children, currentPageName }) {
             {!hideNavigation && (
             <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8">
-            <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
-              <span className="text-2xl font-black text-white">G</span>
-            </div>
-          </Link>
-          <div className="text-center text-xs font-bold text-slate-300 mb-8">Gofattie</div>
+          <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
+            <span className="text-2xl font-black text-white">G</span>
+          </div>
+        </Link>
         
         <div className="flex flex-col gap-3">
           {navItems.map((item) => {
