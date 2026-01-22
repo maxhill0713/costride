@@ -566,16 +566,16 @@ export default function GymOwnerDashboard() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
-                <Users className="w-5 h-5 md:w-7 md:h-7 text-white" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8 md:mb-10">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-blue-500/30">
+                <Users className="w-6 md:w-7 h-6 md:h-7 text-blue-400" />
               </div>
-              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
+              <TrendingUp className="w-5 h-5 text-green-400" />
             </div>
-            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{uniqueMembers}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{t('dashboard.activeMembers')}</p>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{uniqueMembers}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.activeMembers')}</p>
           </Card>
 
           <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
