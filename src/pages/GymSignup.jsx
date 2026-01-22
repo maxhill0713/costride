@@ -50,24 +50,13 @@ export default function GymSignup() {
     refetchUser();
   }, []);
 
-  const generateGymCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
-
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
       // Auto-detect language based on city if not set
       const gymLanguage = data.language || detectLanguageFromCity(data.city);
-      const joinCode = generateGymCode();
       return base44.entities.Gym.create({
         ...data,
-        join_code: joinCode,
         language: gymLanguage,
         owner_email: user.email,
         verified: false,
