@@ -752,7 +752,7 @@ export default function GymCommunity() {
         </div>
 
       {/* Main Content Area - Vertical Scroll */}
-      <div className="max-w-4xl mx-auto px-4 py-4 pb-24">
+      <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24">
 
         {/* Feed Tab */}
         <TabsContent value="feed" className="space-y-2 md:space-y-3 mt-0">
@@ -833,10 +833,10 @@ export default function GymCommunity() {
            {!showOwnerControls && <CheckInButton gym={gym} />}
 
           {/* Upcoming Events This Week */}
-          {upcomingEvents.length > 0 && (
-            <div className="space-y-3">
+           {upcomingEvents.length > 0 && (
+             <div className="space-y-2 md:space-y-3">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-gray-900">📅 This Week</h2>
+                <h2 className="text-base md:text-lg font-bold text-gray-900">📅 This Week</h2>
               </div>
               {upcomingEvents.map((event) => (
                 <WeeklyEventCard
@@ -955,39 +955,39 @@ export default function GymCommunity() {
           )}
 
           {/* Leaderboard Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/40 p-5 hover:border-slate-600/60 hover:shadow-lg hover:shadow-slate-900/50 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-100">Community Leaderboard</h3>
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/40 p-3 md:p-5 hover:border-slate-600/60 hover:shadow-lg hover:shadow-slate-900/50 transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <h3 className="text-base md:text-lg font-bold text-slate-100">Community Leaderboard</h3>
             </div>
 
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <div className="flex gap-1 md:gap-2 mb-2 md:mb-4 overflow-x-auto pb-2">
               <Button
                 variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
-                onClick={() => setLeaderboardView('checkins')}
-                size="sm"
-                className="rounded-2xl whitespace-nowrap"
-              >
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Weekly Check-ins
-              </Button>
-              <Button
-                variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
-                onClick={() => setLeaderboardView('challenges')}
-                size="sm"
-                className="rounded-2xl whitespace-nowrap"
-              >
-                <Trophy className="w-3 h-3 mr-1" />
-                Challenges
-              </Button>
-              <Button
-                variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
-                onClick={() => setLeaderboardView('streaks')}
-                size="sm"
-                className="rounded-2xl whitespace-nowrap"
-              >
-                <Flame className="w-3 h-3 mr-1" />
-                Streaks
-              </Button>
+                  onClick={() => setLeaderboardView('checkins')}
+                  size="sm"
+                  className="rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
+                >
+                  <CheckCircle className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
+                  <span className="hidden sm:inline">Weekly </span>Check-ins
+                </Button>
+                <Button
+                  variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardView('challenges')}
+                  size="sm"
+                  className="rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
+                >
+                  <Trophy className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
+                  <span className="hidden sm:inline">Challenges</span>
+                </Button>
+                <Button
+                  variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardView('streaks')}
+                  size="sm"
+                  className="rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
+                >
+                  <Flame className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
+                  Streaks
+                </Button>
             </div>
 
             {leaderboardView === 'checkins' && (
@@ -997,19 +997,19 @@ export default function GymCommunity() {
                   <p className="text-slate-400 text-sm">No check-ins this week yet</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 md:space-y-2">
                   {checkInLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
+                    <div key={member.userId} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
+                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm ${
                         idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
-                        <p className="text-xs text-slate-400">{member.count} check-ins this week</p>
+                        <p className="font-semibold text-slate-100 text-xs md:text-sm">{member.userName}</p>
+                        <p className="text-[10px] md:text-xs text-slate-400">{member.count} check-ins</p>
                       </div>
-                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-400 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -1023,19 +1023,19 @@ export default function GymCommunity() {
                   <p className="text-slate-400 text-sm">No challenges completed yet</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 md:space-y-2">
                   {challengeLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
+                    <div key={member.userId} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
+                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm ${
                         idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
-                        <p className="text-xs text-slate-400">{member.count} challenges completed</p>
+                        <p className="font-semibold text-slate-100 text-xs md:text-sm">{member.userName}</p>
+                        <p className="text-[10px] md:text-xs text-slate-400">{member.count} completed</p>
                       </div>
-                      <Trophy className="w-5 h-5 text-purple-500" />
+                      <Trophy className="w-4 md:w-5 h-4 md:h-5 text-purple-500 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -1049,19 +1049,19 @@ export default function GymCommunity() {
                   <p className="text-slate-400 text-sm">No streaks yet</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 md:space-y-2">
                   {streakLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-3 p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm ${
+                    <div key={member.userId} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
+                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm ${
                         idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-100 text-sm">{member.userName}</p>
-                        <p className="text-xs text-slate-400">{member.streak} day streak</p>
+                        <p className="font-semibold text-slate-100 text-xs md:text-sm">{member.userName}</p>
+                        <p className="text-[10px] md:text-xs text-slate-400">{member.streak}d streak</p>
                       </div>
-                      <Flame className="w-5 h-5 text-orange-500" />
+                      <Flame className="w-4 md:w-5 h-4 md:h-5 text-orange-500 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
