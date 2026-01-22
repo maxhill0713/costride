@@ -425,37 +425,46 @@ export default function GymOwnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-[1600px] mx-auto">
-        {/* Header */}
-         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-8 md:mb-12">
-           <div>
-             <h1 className="text-4xl md:text-6xl font-black text-white mb-2 md:mb-4 tracking-tight" style={{letterSpacing: '-0.5px'}}>{t('dashboard.title')}</h1>
-             <p className="text-slate-400 text-sm md:text-base font-medium">{t('dashboard.subtitle')}</p>
-           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-stretch sm:items-center">
-            <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
-              <Button variant="outline" className="border-2 h-12 px-4 md:px-6 w-full">
-                <Users className="w-5 h-5 mr-2" />
-                {t('dashboard.memberView')}
-              </Button>
-            </Link>
-            
-            {myGyms.length > 1 && (
-              <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
-                {myGyms.map(gym => (
-                  <Button
-                    key={gym.id}
-                    variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
-                    onClick={() => setSelectedGym(gym)}
-                    className="whitespace-nowrap h-12 px-4 md:px-6"
-                  >
-                    {gym.name}
-                  </Button>
-                ))}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="max-w-[1600px] mx-auto p-4 md:p-8">
+        {/* Premium Header */}
+        <div className="mb-8 md:mb-12">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                  <Building2 className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-white">Dashboard</h1>
+                  <p className="text-slate-400 text-sm">{selectedGym?.name || 'Gym Management'}</p>
+                </div>
               </div>
-            )}
+              <p className="text-slate-400 text-sm ml-15">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 items-center">
+              {myGyms.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto">
+                  {myGyms.map(gym => (
+                    <Button
+                      key={gym.id}
+                      variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedGym(gym)}
+                      className={`whitespace-nowrap ${selectedGym?.id === gym.id ? 'bg-blue-600 hover:bg-blue-700' : 'border-slate-700 text-slate-400 hover:text-slate-200'}`}
+                    >
+                      {gym.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <Link to={createPageUrl('Home')} className="ml-auto">
+                <Button variant="outline" className="border-slate-700 text-slate-400 hover:text-slate-200">
+                  <Users className="w-4 h-4 mr-2" />
+                  Member View
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
