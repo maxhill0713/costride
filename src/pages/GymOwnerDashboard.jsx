@@ -19,7 +19,6 @@ import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
-import { useTranslation } from 'react-i18next';
 import QRCode from 'react-qr-code';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
