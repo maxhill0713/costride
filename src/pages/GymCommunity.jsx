@@ -1180,9 +1180,20 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Rewards Tab */}
-        <TabsContent value="rewards" className="space-y-3 mt-0">
-          {/* Gym Bonuses */}
-          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
+         <TabsContent value="rewards" className="space-y-3 mt-0">
+           {/* Create Rewards Button for Gym Owners */}
+           {showOwnerControls && (
+             <Button
+               onClick={() => setShowManageRewards(true)}
+               className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-2xl h-auto py-3 flex-col gap-2 shadow-lg"
+             >
+               <Plus className="w-5 h-5" />
+               <span className="font-bold">Create Reward</span>
+             </Button>
+           )}
+
+           {/* Gym Bonuses */}
+           <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-5">
             <h3 className="font-bold text-white mb-3 flex items-center gap-2">
               <Gift className="w-5 h-5 text-blue-400" />
               Gym Bonuses
