@@ -52,8 +52,6 @@ export default function Premium() {
         'Free products from premium partners',
         'Early access + priority redemption',
         'Exclusive leaderboard badges',
-        'Advanced workout analytics',
-        'Priority event access',
         'Ad-free experience'
       ]
     }
