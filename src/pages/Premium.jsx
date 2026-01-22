@@ -59,58 +59,7 @@ export default function Premium() {
     }
   ];
 
-  const gymPlans = [
-    {
-      id: 'gym_basic',
-      name: 'Gym Basic',
-      price: 49,
-      icon: Zap,
-      color: 'from-blue-500 to-cyan-500',
-      features: [
-        'Community page',
-        'Event hosting',
-        'Member leaderboards',
-        'Basic analytics',
-        'Up to 100 members',
-        'Social media sharing'
-      ]
-    },
-    {
-      id: 'gym_pro',
-      name: 'Gym Pro',
-      price: 99,
-      icon: TrendingUp,
-      color: 'from-orange-500 to-red-500',
-      popular: true,
-      features: [
-        'Everything in Basic',
-        'Featured gym placement',
-        'Advanced analytics dashboard',
-        'Unlimited members',
-        'Custom branding',
-        'Referral rewards',
-        'Priority support',
-        'Marketing tools'
-      ]
-    },
-    {
-      id: 'gym_enterprise',
-      name: 'Gym Enterprise',
-      price: 199,
-      icon: Crown,
-      color: 'from-purple-500 to-pink-500',
-      features: [
-        'Everything in Pro',
-        'Multi-location support',
-        'Dedicated account manager',
-        'API access',
-        'White-label options',
-        'Custom integrations',
-        'Advanced reporting',
-        'Premium badge'
-      ]
-    }
-  ];
+
 
   const handleSubscribe = (plan) => {
     subscribeMutation.mutate(plan);
@@ -182,56 +131,7 @@ export default function Premium() {
         </div>
       </div>
 
-      {/* Gym Plans */}
-      <div className="bg-gray-50 py-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-gray-900 mb-2">For Gyms</h2>
-            <p className="text-gray-600">Grow your community and attract new members</p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {gymPlans.map((plan) => {
-              const Icon = plan.icon;
-              return (
-                <Card key={plan.id} className={`relative overflow-hidden ${plan.popular ? 'border-4 border-orange-400 shadow-2xl scale-105' : 'border-2 border-gray-200'}`}>
-                  {plan.popular && (
-                    <div className="absolute top-4 right-4">
-                      <Badge className="bg-orange-500 text-white">Most Popular</Badge>
-                    </div>
-                  )}
-                  <div className={`h-2 bg-gradient-to-r ${plan.color}`} />
-                  <div className="p-6">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-4`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-black text-gray-900 mb-2">{plan.name}</h3>
-                    <div className="mb-6">
-                      <span className="text-4xl font-black text-gray-900">${plan.price}</span>
-                      <span className="text-gray-500">/month</span>
-                    </div>
-
-                    <ul className="space-y-2 mb-6">
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm">
-                          <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <Button
-                      className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-bold h-12 rounded-2xl`}
-                    >
-                      Get Started
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </div>
 
       {/* Benefits Section */}
       <div className="max-w-6xl mx-auto px-4 py-16">
