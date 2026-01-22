@@ -1250,6 +1250,17 @@ export default function GymCommunity() {
 
 
 
+          {/* Create Rewards Button for Gym Owners */}
+          {showOwnerControls && (
+            <Button
+              onClick={() => setShowManageRewards(true)}
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-2xl h-auto py-3 flex-col gap-2 shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="font-bold">Create Reward</span>
+            </Button>
+          )}
+
           {/* Member Rewards */}
           {!isMember ? (
             <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-5">
