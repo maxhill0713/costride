@@ -65,7 +65,7 @@ export default function Plus() {
     setIsLoading(true);
     try {
       const priceId = billingCycle === 'yearly' 
-        ? 'price_REPLACE_WITH_YEARLY_PRICE_ID' // Replace with your yearly price ID
+        ? 'price_1SsCqKBzxbKKg1zZ5INp9GWN'
         : 'price_1SsCKCBzxbKKg1zZmWxN4zTI';
 
       const response = await base44.functions.invoke('createSubscriptionCheckout', {
