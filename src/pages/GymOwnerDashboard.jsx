@@ -860,7 +860,7 @@ export default function GymOwnerDashboard() {
                   <p className="text-3xl font-black text-purple-600">{rewards.filter(r => r.active).length}</p>
                 </div>
                 <div className="p-4 bg-pink-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalClaims')}</p>
+                  <p className="text-sm text-gray-600 mb-1">Total Claims</p>
                   <p className="text-3xl font-black text-pink-600">
                     {rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0)}
                   </p>
@@ -1142,42 +1142,42 @@ export default function GymOwnerDashboard() {
           <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
             {/* Member Engagement Breakdown */}
             <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.memberEngagementLevels')}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Member Engagement Levels</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
+                  <p className="text-sm mb-1 opacity-90">Super Active</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
                       acc[c.user_id] = (acc[c.user_id] || 0) + 1;
                       return acc;
                     }, {})).filter(count => count >= 15).length}
                   </p>
-                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth15')}</p>
+                  <p className="text-xs opacity-75">15+ visits/month</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.active')}</p>
+                  <p className="text-sm mb-1 opacity-90">Active</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
                       acc[c.user_id] = (acc[c.user_id] || 0) + 1;
                       return acc;
                     }, {})).filter(count => count >= 8 && count < 15).length}
                   </p>
-                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth8to14')}</p>
+                  <p className="text-xs opacity-75">8-14 visits/month</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.casual')}</p>
+                  <p className="text-sm mb-1 opacity-90">Casual</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
                       acc[c.user_id] = (acc[c.user_id] || 0) + 1;
                       return acc;
                     }, {})).filter(count => count >= 1 && count < 8).length}
                   </p>
-                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth1to7')}</p>
+                  <p className="text-xs opacity-75">1-7 visits/month</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.atRisk')}</p>
+                  <p className="text-sm mb-1 opacity-90">At Risk</p>
                   <p className="text-4xl font-black">{atRiskMembers}</p>
-                  <p className="text-xs opacity-75">{t('dashboard.daysInactive')}</p>
+                  <p className="text-xs opacity-75">Days inactive</p>
                 </div>
               </div>
             </Card>
@@ -1185,7 +1185,7 @@ export default function GymOwnerDashboard() {
             {/* Member Retention & Growth */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">{t('dashboard.memberRetention')}</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Member Retention</h3>
                 <div className="space-y-4">
                   <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
                     <p className="text-sm text-gray-600 mb-1">Active This Month</p>
@@ -1338,7 +1338,7 @@ export default function GymOwnerDashboard() {
                       <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
                         <p className="text-sm text-gray-600 mb-1">Total Claims</p>
                         <p className="text-4xl font-black text-blue-600">{totalRewardClaims}</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.rewardsRedeemed')}</p>
+                        <p className="text-xs text-gray-500 mt-1">Rewards redeemed</p>
                       </div>
                       <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
                         <p className="text-sm text-gray-600 mb-1">Avg Rewards Per User</p>
@@ -1378,10 +1378,10 @@ export default function GymOwnerDashboard() {
 
             {/* Member Engagement Breakdown */}
             <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.memberEngagementLevels')}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Member Engagement Levels</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
+                  <p className="text-sm mb-1 opacity-90">Super Active</p>
                   <p className="text-4xl font-black">
                     {checkIns.reduce((acc, c) => {
                       acc[c.user_id] = (acc[c.user_id] || 0) + 1;
@@ -1391,32 +1391,32 @@ export default function GymOwnerDashboard() {
                       return acc;
                     }, {})).filter(count => count >= 15).length}
                   </p>
-                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth15')}</p>
+                  <p className="text-xs opacity-75">15+ visits/month</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.active')}</p>
+                  <p className="text-sm mb-1 opacity-90">Active</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
                       acc[c.user_id] = (acc[c.user_id] || 0) + 1;
                       return acc;
                     }, {})).filter(count => count >= 8 && count < 15).length}
                   </p>
-                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth8to14')}</p>
+                  <p className="text-xs opacity-75">8-14 visits/month</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.casual')}</p>
+                  <p className="text-sm mb-1 opacity-90">Casual</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
                       acc[c.user_id] = (acc[c.user_id] || 0) + 1;
                       return acc;
                     }, {})).filter(count => count >= 1 && count < 8).length}
                   </p>
-                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth1to7')}</p>
+                  <p className="text-xs opacity-75">1-7 visits/month</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl">
-                  <p className="text-sm mb-1 opacity-90">{t('dashboard.atRisk')}</p>
+                  <p className="text-sm mb-1 opacity-90">At Risk</p>
                   <p className="text-4xl font-black">{atRiskMembers}</p>
-                  <p className="text-xs opacity-75">{t('dashboard.daysInactive')}</p>
+                  <p className="text-xs opacity-75">Days inactive</p>
                 </div>
               </div>
             </Card>
