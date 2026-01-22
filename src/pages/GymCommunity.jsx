@@ -49,6 +49,7 @@ export default function GymCommunity() {
   const [leaderboardView, setLeaderboardView] = useState('checkins');
   const [showManagePhotos, setShowManagePhotos] = useState(false);
   const [showEditHeroImage, setShowEditHeroImage] = useState(false);
+  const [showEditGymLogo, setShowEditGymLogo] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [viewAsMember, setViewAsMember] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
