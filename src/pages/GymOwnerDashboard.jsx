@@ -723,7 +723,7 @@ export default function GymOwnerDashboard() {
               </h3>
               <div className="space-y-3">
                 {atRiskMembers > 0 && (
-                  <div className="p-4 bg-white rounded-2xl border-2 border-orange-200">
+                  <div className="p-4 bg-slate-700/50 rounded-2xl border-2 border-orange-500/40">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">⚠️</span>
                       <div>
