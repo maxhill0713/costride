@@ -714,8 +714,8 @@ export default function GymOwnerDashboard() {
              </div>
 
             {/* What to Do Next */}
-            <Card className="p-8 bg-white border-0 shadow-xl">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   <span className="text-2xl">💡</span>
                 </div>
