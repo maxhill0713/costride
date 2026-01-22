@@ -940,8 +940,9 @@ export default function GymCommunity() {
                   disabled={showOwnerControls}
                 />
               ))}
-            </div>
-          )}
+              </div>
+              </Card>
+              )}
 
           {/* Empty State */}
           {appChallenges.length === 0 && gymChallenges.length === 0 && (
