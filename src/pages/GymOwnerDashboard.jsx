@@ -684,34 +684,34 @@ export default function GymOwnerDashboard() {
 
           <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
             {/* Today/This Week Snapshot */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              <Card className="p-5 md:p-8 bg-gradient-to-br from-blue-500 to-cyan-500 text-white border-0 shadow-lg">
-                <p className="text-blue-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.checkInsToday')}</p>
-                <p className="text-4xl md:text-6xl font-black mb-1">{todayCheckIns}</p>
-                <p className="text-xs md:text-sm text-blue-100">{t('dashboard.membersCheckedIn')}</p>
-              </Card>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-blue-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.checkInsToday')}</p>
+                 <p className="text-4xl md:text-5xl font-black mb-2">{todayCheckIns}</p>
+                 <p className="text-xs text-blue-200">{t('dashboard.membersCheckedIn')}</p>
+               </Card>
 
-              <Card className="p-5 md:p-8 bg-gradient-to-br from-green-500 to-emerald-500 text-white border-0 shadow-lg">
-                <p className="text-green-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.activeThisWeek')}</p>
-                <p className="text-4xl md:text-6xl font-black mb-1">{activeMembersThisWeek}</p>
-                <p className="text-xs md:text-sm text-green-100">{t('dashboard.uniqueMembers')}</p>
-              </Card>
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-emerald-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.activeThisWeek')}</p>
+                 <p className="text-4xl md:text-5xl font-black mb-2">{activeMembersThisWeek}</p>
+                 <p className="text-xs text-emerald-200">{t('dashboard.uniqueMembers')}</p>
+               </Card>
 
-              <Card className="p-5 md:p-8 bg-gradient-to-br from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-                <p className="text-purple-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.weeklyChange')}</p>
-                <div className="flex items-baseline gap-1 md:gap-2 mb-1">
-                  <p className="text-4xl md:text-6xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
-                  <span className="text-lg md:text-2xl font-bold opacity-80">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
-                </div>
-                <p className="text-xs md:text-sm text-purple-100">{t('dashboard.vsLastWeek')}</p>
-              </Card>
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-violet-600 to-violet-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-violet-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.weeklyChange')}</p>
+                 <div className="flex items-baseline gap-1 mb-2">
+                   <p className="text-4xl md:text-5xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
+                   <span className="text-base md:text-lg font-semibold opacity-90">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
+                 </div>
+                 <p className="text-xs text-violet-200">{t('dashboard.vsLastWeek')}</p>
+               </Card>
 
-              <Card className="p-5 md:p-8 bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg">
-                <p className="text-orange-100 font-semibold mb-2 text-xs md:text-sm">{t('dashboard.atRiskMembers')}</p>
-                <p className="text-4xl md:text-6xl font-black mb-1">{atRiskMembers}</p>
-                <p className="text-xs md:text-sm text-orange-100">{t('dashboard.noCheckIn7to10')}</p>
-              </Card>
-            </div>
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-red-600 to-red-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-red-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.atRiskMembers')}</p>
+                 <p className="text-4xl md:text-5xl font-black mb-2">{atRiskMembers}</p>
+                 <p className="text-xs text-red-200">{t('dashboard.noCheckIn7to10')}</p>
+               </Card>
+             </div>
 
             {/* What to Do Next */}
             <Card className="p-8 bg-white border-0 shadow-xl">
