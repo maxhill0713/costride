@@ -468,87 +468,92 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
 
-        {/* Gym Join Code with QR Code - Compact Version */}
-         <Card className="p-4 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-xl">
-           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-               <CheckCircle className="w-5 h-5" />
-             </div>
-             <div className="flex-1">
-               <h3 className="font-bold text-base mb-0.5">🎯 Gym Join Code</h3>
-               <p className="text-white/90 text-xs">Scan QR or enter code to join</p>
-             </div>
+        {/* Join Code & Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* QR Code Card */}
+          <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-800 border border-slate-700 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-white text-sm">Gym Join Code</h3>
+              {selectedGym?.join_code && (
+                <button
+                  onClick={() => setShowQRCodeModal(true)}
+                  className="text-slate-400 hover:text-slate-200 transition"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            {selectedGym?.join_code ? (
+              <div className="space-y-3">
+                <div className="bg-slate-900 p-3 rounded-lg flex items-center justify-between">
+                  <span className="font-mono text-lg font-black text-cyan-400">{selectedGym.join_code}</span>
+                  <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText(selectedGym.join_code)} className="h-8 w-8 p-0">
+                    <Download className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Button 
+                  onClick={async () => {
+                    const svg = document.getElementById('qr-code-container')?.querySelector('svg');
+                    if (svg) {
+                      const svgData = new XMLSerializer().serializeToString(svg);
+                      const canvas = document.createElement('canvas');
+                      const ctx = canvas.getContext('2d');
+                      const img = new Image();
+                      img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const pngFile = canvas.toDataURL('image/png');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.download = `${selectedGym.name}-QR-Code.png`;
+                        downloadLink.href = pngFile;
+                        downloadLink.click();
+                      };
+                      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                    }
+                  }}
+                  className="w-full bg-slate-700 hover:bg-slate-600 h-8 text-xs"
+                >
+                  Download QR
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={async () => {
+                  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                  await base44.entities.Gym.update(selectedGym.id, { join_code: code });
+                  queryClient.invalidateQueries({ queryKey: ['gyms'] });
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 h-10"
+              >
+                Generate Code
+              </Button>
+            )}
+            <div id="qr-code-container" className="hidden">
+              <QRCode 
+                value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
+                size={80}
+                level="H"
+              />
+            </div>
+          </Card>
 
-             {selectedGym?.join_code ? (
-               <>
-                 <div className="bg-white/25 backdrop-blur px-3 py-2 rounded-xl border border-white/40">
-                   <p className="text-2xl font-black text-white tracking-wider">{selectedGym.join_code}</p>
-                 </div>
-
-                 <button
-                   onClick={() => setShowQRCodeModal(true)}
-                   className="bg-white p-2 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                 >
-                   <div id="qr-code-container">
-                     <QRCode 
-                       value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
-                       size={80}
-                       level="H"
-                     />
-                   </div>
-                 </button>
-
-                 <Button
-                   onClick={() => {
-                     const svg = document.getElementById('qr-code-container').querySelector('svg');
-                     const svgData = new XMLSerializer().serializeToString(svg);
-                     const canvas = document.createElement('canvas');
-                     const ctx = canvas.getContext('2d');
-                     const img = new Image();
-                     img.onload = () => {
-                       canvas.width = img.width;
-                       canvas.height = img.height;
-                       ctx.drawImage(img, 0, 0);
-                       const pngFile = canvas.toDataURL('image/png');
-                       const downloadLink = document.createElement('a');
-                       downloadLink.download = `${selectedGym.name}-QR-Code.png`;
-                       downloadLink.href = pngFile;
-                       downloadLink.click();
-                     };
-                     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-                   }}
-                   size="sm"
-                   className="bg-white/90 hover:bg-white text-green-700 font-semibold px-3"
-                 >
-                   <Download className="w-3 h-3" />
-                 </Button>
-               </>
-             ) : (
-               <Button
-                 onClick={async () => {
-                   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-                   await base44.entities.Gym.update(selectedGym.id, { join_code: code });
-                   queryClient.invalidateQueries({ queryKey: ['gyms'] });
-                 }}
-                 size="sm"
-                 className="bg-white text-green-600 hover:bg-white/90 font-semibold"
-               >
-                 Generate
-               </Button>
-             )}
-           </div>
-         </Card>
-
-         {/* View My Gym */}
-         <div className="mb-6">
-           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="block">
-             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-6 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
-               <Dumbbell className="w-8 h-8" />
-               <span className="font-black text-lg">{t('dashboard.viewMyGym')}</span>
-               <span className="text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
-             </Button>
-           </Link>
-         </div>
+          {/* View Community */}
+          <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="md:col-span-2">
+            <Card className="h-full p-6 bg-gradient-to-br from-cyan-600 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all cursor-pointer group">
+              <div className="h-full flex flex-col justify-between">
+                <div>
+                  <h3 className="font-semibold text-sm opacity-90 mb-1">Community Hub</h3>
+                  <p className="text-2xl font-black">View & Manage</p>
+                </div>
+                <div className="flex items-center gap-2 opacity-75 group-hover:opacity-100 transition">
+                  <Dumbbell className="w-5 h-5" />
+                  <span className="text-sm">Go to community →</span>
+                </div>
+              </div>
+            </Card>
+          </Link>
+        </div>
 
          {/* At-Risk Alert */}
         {atRiskMembers > 0 && (
