@@ -778,8 +778,8 @@ export default function GymCommunity() {
             return null;
           })()}
 
-          {/* Check-in Section */}
-          <CheckInButton gym={gym} />
+          {/* Check-in Section - Only show if not owner in owner view */}
+           {!showOwnerControls && <CheckInButton gym={gym} />}
 
           {/* Upcoming Events This Week */}
           {upcomingEvents.length > 0 && (
