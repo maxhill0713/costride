@@ -770,7 +770,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-amber-600 to-amber-700 p-4 shadow-lg border border-amber-500/30 cursor-pointer hover:shadow-xl transition-all rounded-xl">
+                    <Card className="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-700 p-4 shadow-lg border border-yellow-500/40 cursor-pointer hover:shadow-xl transition-all rounded-xl">
                       <div className="flex items-center gap-3">
                         <div className="text-3xl">🔥</div>
                         <div className="flex-1 text-left min-w-0">
