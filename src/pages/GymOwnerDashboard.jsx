@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, subDays, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
@@ -20,6 +20,7 @@ import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
 import { useTranslation } from 'react-i18next';
+import QRCode from 'react-qr-code';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -446,24 +447,63 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
 
-        {/* Gym Join Code - Always Visible */}
+        {/* Gym Join Code with QR Code - Always Visible */}
         <Card className="p-6 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-2xl">
-          <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
               <CheckCircle className="w-7 h-7" />
             </div>
             <div className="flex-1 text-center md:text-left">
               <h3 className="font-black text-xl mb-2">🎯 Gym Join Code</h3>
               <p className="text-white/95 text-sm font-medium">
-                Members can enter this code in the app for instant access to your gym community
+                Members can scan the QR code or enter the code in the app for instant access to your gym community
               </p>
             </div>
+            
             {selectedGym?.join_code ? (
-              <div className="bg-white/25 backdrop-blur px-6 py-4 rounded-2xl border-2 border-white/40 shadow-2xl">
-                <p className="text-xs text-white/80 uppercase font-bold tracking-wider mb-1 text-center">Your Code</p>
-                <p className="text-4xl font-black text-white tracking-[0.2em] text-center drop-shadow-lg">{selectedGym.join_code}</p>
-                <p className="text-xs text-white/80 mt-2 text-center">Share with members</p>
-              </div>
+              <>
+                <div className="bg-white/25 backdrop-blur px-6 py-4 rounded-2xl border-2 border-white/40 shadow-2xl">
+                  <p className="text-xs text-white/80 uppercase font-bold tracking-wider mb-1 text-center">Your Code</p>
+                  <p className="text-4xl font-black text-white tracking-[0.2em] text-center drop-shadow-lg">{selectedGym.join_code}</p>
+                  <p className="text-xs text-white/80 mt-2 text-center">Share with members</p>
+                </div>
+                
+                <div className="bg-white p-4 rounded-2xl shadow-2xl">
+                  <div id="qr-code-container" className="bg-white p-2 rounded-xl">
+                    <QRCode 
+                      value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
+                      size={120}
+                      level="H"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      const svg = document.getElementById('qr-code-container').querySelector('svg');
+                      const svgData = new XMLSerializer().serializeToString(svg);
+                      const canvas = document.createElement('canvas');
+                      const ctx = canvas.getContext('2d');
+                      const img = new Image();
+                      img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const pngFile = canvas.toDataURL('image/png');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.download = `${selectedGym.name}-QR-Code.png`;
+                        downloadLink.href = pngFile;
+                        downloadLink.click();
+                      };
+                      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2 bg-white/90 hover:bg-white border-green-200 text-green-700 font-semibold"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download QR
+                  </Button>
+                </div>
+              </>
             ) : (
               <div className="bg-white/25 backdrop-blur px-6 py-4 rounded-2xl border-2 border-white/40 shadow-2xl text-center">
                 <p className="text-white/80 text-sm mb-2">No code generated yet</p>
