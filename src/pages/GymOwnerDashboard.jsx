@@ -1317,25 +1317,25 @@ export default function GymOwnerDashboard() {
             {/* Average Visit Duration & Frequency */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
-                <h4 className="font-bold text-gray-700 mb-3">{t('dashboard.avgVisitsMember')}</h4>
+                <h4 className="font-bold text-gray-700 mb-3">Avg Visits per Member</h4>
                 <p className="text-5xl font-black text-purple-600">
                   {uniqueMembers > 0 ? (checkIns.length / uniqueMembers).toFixed(1) : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">{t('dashboard.allTimeAverage')}</p>
+                <p className="text-sm text-gray-600 mt-2">All-time average</p>
               </Card>
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
-                <h4 className="font-bold text-gray-700 mb-3">{t('dashboard.monthlyAvg')}</h4>
+                <h4 className="font-bold text-gray-700 mb-3">Monthly Average</h4>
                 <p className="text-5xl font-black text-blue-600">
                   {uniqueMembers > 0 ? (last30Days / uniqueMembers).toFixed(1) : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">{t('dashboard.visitsPerMember30d')}</p>
+                <p className="text-sm text-gray-600 mt-2">Visits per member (30d)</p>
               </Card>
               <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50">
-                <h4 className="font-bold text-gray-700 mb-3">{t('dashboard.weeklyAvg')}</h4>
+                <h4 className="font-bold text-gray-700 mb-3">Weekly Average</h4>
                 <p className="text-5xl font-black text-green-600">
                   {activeMembersThisWeek > 0 ? (last7Days / activeMembersThisWeek).toFixed(1) : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">{t('dashboard.visitsPerActiveMember7d')}</p>
+                <p className="text-sm text-gray-600 mt-2">Visits per active member (7d)</p>
               </Card>
             </div>
 
