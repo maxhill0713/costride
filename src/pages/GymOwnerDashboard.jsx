@@ -447,33 +447,33 @@ export default function GymOwnerDashboard() {
         </div>
 
         {/* Gym Join Code - Always Visible */}
-        <Card className="p-8 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-2xl">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-              <CheckCircle className="w-10 h-10" />
+        <Card className="p-6 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <CheckCircle className="w-7 h-7" />
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="font-black text-3xl mb-3">🎯 Gym Join Code</h3>
-              <p className="text-white/95 text-base md:text-lg font-medium">
+              <h3 className="font-black text-xl mb-2">🎯 Gym Join Code</h3>
+              <p className="text-white/95 text-sm font-medium">
                 Members can enter this code in the app for instant access to your gym community
               </p>
             </div>
             {selectedGym?.join_code ? (
-              <div className="bg-white/25 backdrop-blur px-10 py-8 rounded-3xl border-4 border-white/40 shadow-2xl">
-                <p className="text-xs text-white/80 uppercase font-bold tracking-wider mb-2 text-center">Your Code</p>
-                <p className="text-6xl font-black text-white tracking-[0.3em] text-center drop-shadow-lg">{selectedGym.join_code}</p>
-                <p className="text-xs text-white/80 mt-3 text-center">Share with members</p>
+              <div className="bg-white/25 backdrop-blur px-6 py-4 rounded-2xl border-2 border-white/40 shadow-2xl">
+                <p className="text-xs text-white/80 uppercase font-bold tracking-wider mb-1 text-center">Your Code</p>
+                <p className="text-4xl font-black text-white tracking-[0.2em] text-center drop-shadow-lg">{selectedGym.join_code}</p>
+                <p className="text-xs text-white/80 mt-2 text-center">Share with members</p>
               </div>
             ) : (
-              <div className="bg-white/25 backdrop-blur px-10 py-8 rounded-3xl border-4 border-white/40 shadow-2xl text-center">
-                <p className="text-white/80 text-sm mb-3">No code generated yet</p>
+              <div className="bg-white/25 backdrop-blur px-6 py-4 rounded-2xl border-2 border-white/40 shadow-2xl text-center">
+                <p className="text-white/80 text-sm mb-2">No code generated yet</p>
                 <Button
                   onClick={async () => {
                     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
                     await base44.entities.Gym.update(selectedGym.id, { join_code: code });
                     queryClient.invalidateQueries({ queryKey: ['gyms'] });
                   }}
-                  className="bg-white text-green-600 hover:bg-white/90 font-bold"
+                  className="bg-white text-green-600 hover:bg-white/90 font-bold text-sm"
                 >
                   Generate Code
                 </Button>
