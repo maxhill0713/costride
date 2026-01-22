@@ -785,7 +785,7 @@ export default function GymOwnerDashboard() {
                            <p className="text-sm text-slate-400">{t('dashboard.checkedIn')}</p>
                         </div>
                       </div>
-                      <span className="text-sm text-gray-500">{format(new Date(checkIn.check_in_date), 'MMM d, h:mm a')}</span>
+                      <span className="text-sm text-slate-400">{format(new Date(checkIn.check_in_date), 'MMM d, h:mm a')}</span>
                     </div>
                   ))}
                 {checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).length === 0 && (
