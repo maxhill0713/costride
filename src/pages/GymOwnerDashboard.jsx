@@ -665,7 +665,7 @@ export default function GymOwnerDashboard() {
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-12 md:h-16 shadow-xl overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-auto md:h-16 shadow-xl gap-2 md:gap-1">
             <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               {t('dashboard.snapshot')}
             </TabsTrigger>
