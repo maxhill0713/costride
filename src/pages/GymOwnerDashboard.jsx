@@ -797,8 +797,8 @@ export default function GymOwnerDashboard() {
 
           <TabsContent value="engagement" className="space-y-8 mt-4 md:mt-6">
             {/* Engagement Overview */}
-            <Card className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.engagementOverview')}</h3>
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.engagementOverview')}</h3>
               <div className="grid grid-cols-4 gap-6">
                 <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
                   <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalMembers')}</p>
