@@ -886,15 +886,15 @@ export default function GymOwnerDashboard() {
 
           <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
             {/* Challenges & Events */}
-            <Card className="p-6">
+            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">{t('dashboard.challengesEvents')}</h3>
+                <h3 className="text-xl font-bold text-white">{t('dashboard.challengesEvents')}</h3>
                 <div className="flex gap-2">
-                  <Button onClick={() => setShowCreateEvent(true)} className="bg-gray-900 hover:bg-gray-800 text-white">
+                  <Button onClick={() => setShowCreateEvent(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
                     <Calendar className="w-4 h-4 mr-2" />
                     {t('dashboard.createEvent')}
                   </Button>
-                  <Button onClick={() => setShowCreateChallenge(true)}>
+                  <Button onClick={() => setShowCreateChallenge(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
                     <Trophy className="w-4 h-4 mr-2" />
                     {t('dashboard.createChallengeBtn')}
                   </Button>
