@@ -279,6 +279,14 @@ export default function GymCommunity() {
     }
   });
 
+  const updateGymLogoMutation = useMutation({
+    mutationFn: (logo_url) => base44.entities.Gym.update(gymId, { logo_url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
+      setShowEditGymLogo(false);
+    }
+  });
+
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id, gymId],
     queryFn: async () => {
