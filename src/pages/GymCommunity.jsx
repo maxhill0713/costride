@@ -945,7 +945,7 @@ export default function GymCommunity() {
               </Card>
               )}
 
-          {/* Empty State */}
+              {/* Empty State */}
           {appChallenges.length === 0 && gymChallenges.length === 0 && (
             <Card className="bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 p-8 text-center">
               <Trophy className="w-16 h-16 mx-auto mb-3 text-slate-600" />
