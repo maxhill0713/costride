@@ -71,9 +71,9 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             size="sm"
             className={`w-full ${
               isJoined 
-                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-            } text-white rounded-xl h-8 text-xs font-bold`}
+                ? 'bg-green-600/60 hover:bg-green-600/60 cursor-not-allowed text-green-100' 
+                : 'bg-blue-900/50 hover:bg-blue-900/70 border border-blue-700/50 text-blue-200'
+            } rounded-xl h-8 text-xs font-bold transition-colors`}
           >
             {isJoined ? '✓ Joined' : 'Join'}
           </Button>
