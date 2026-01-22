@@ -63,10 +63,10 @@ export default function CreateGymPostButton({ gym, currentUser, onPostCreated })
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl mb-4"
+        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl h-auto py-3 flex-col gap-2 shadow-lg mb-4"
       >
-        <Plus className="w-4 h-4 mr-2" />
-        Create Post
+        <Plus className="w-5 h-5" />
+        <span className="font-bold">Create Post</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
