@@ -664,16 +664,16 @@ export default function GymCommunity() {
           <div className="max-w-4xl mx-auto flex items-end gap-4">
             {/* Gym Logo */}
             <div className="flex-shrink-0 relative">
-              {gym.image_url ? (
+              {gym.logo_url ? (
                 <button
-                  onClick={() => showOwnerControls && setShowEditHeroImage(true)}
+                  onClick={() => showOwnerControls && setShowEditGymLogo(true)}
                   className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 overflow-hidden shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
                 >
-                  <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" />
+                  <img src={gym.logo_url} alt={gym.name} className="w-full h-full object-cover" />
                 </button>
               ) : (
                 <button
-                  onClick={() => showOwnerControls && setShowEditHeroImage(true)}
+                  onClick={() => showOwnerControls && setShowEditGymLogo(true)}
                   className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 flex items-center justify-center shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
                 >
                   <Dumbbell className="w-10 h-10 text-white" />
@@ -681,7 +681,7 @@ export default function GymCommunity() {
               )}
               {showOwnerControls && (
                 <button
-                  onClick={() => setShowEditHeroImage(true)}
+                  onClick={() => setShowEditGymLogo(true)}
                   className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-all"
                   title="Upload profile picture"
                 >
