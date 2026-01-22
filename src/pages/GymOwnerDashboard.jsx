@@ -19,13 +19,23 @@ import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
-import { useTranslation } from 'react-i18next';
+// i18n temporarily removed
 import QRCode from 'react-qr-code';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+const t = (key) => {
+  const translations = {
+    'dashboard.title': 'Gym Owner Dashboard',
+    'dashboard.subtitle': 'Manage your gym and engage members',
+    'dashboard.memberView': 'Member View',
+    'dashboard.checkIns': 'Check-ins',
+  };
+  return translations[key] || key;
+};
+
 export default function GymOwnerDashboard() {
-  const { i18n, t } = useTranslation();
+  const i18n = { language: 'en' };
   const [selectedGym, setSelectedGym] = useState(null);
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
@@ -84,12 +94,7 @@ export default function GymOwnerDashboard() {
     }
   }, [myGyms, selectedGym]);
 
-  // Auto-switch language based on gym's language setting
-  React.useEffect(() => {
-    if (selectedGym?.language && i18n.language !== selectedGym.language) {
-      i18n.changeLanguage(selectedGym.language);
-    }
-  }, [selectedGym, i18n]);
+  // Language setting
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', selectedGym?.id],
@@ -459,72 +464,77 @@ export default function GymOwnerDashboard() {
         </div>
 
         {/* Gym Join Code with QR Code - Compact Version */}
-         <Card className="p-4 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-xl">
-           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-               <CheckCircle className="w-5 h-5" />
-             </div>
-             <div className="flex-1">
-               <h3 className="font-bold text-base mb-0.5">🎯 Gym Join Code</h3>
-               <p className="text-white/90 text-xs">Scan QR or enter code to join</p>
-             </div>
+         <Card className="p-3 md:p-4 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <CheckCircle className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-sm md:text-base mb-0.5">🎯 Gym Join Code</h3>
+                <p className="text-white/90 text-xs">Scan QR or enter code to join</p>
+              </div>
 
-             {selectedGym?.join_code ? (
-               <>
-                 <div className="bg-white/25 backdrop-blur px-3 py-2 rounded-xl border border-white/40">
-                   <p className="text-2xl font-black text-white tracking-wider">{selectedGym.join_code}</p>
-                 </div>
+              {selectedGym?.join_code ? (
+                <>
+                  <div className="hidden md:flex bg-white/25 backdrop-blur px-3 py-2 rounded-xl border border-white/40">
+                    <p className="text-2xl font-black text-white tracking-wider">{selectedGym.join_code}</p>
+                  </div>
 
-                 <div className="bg-white p-2 rounded-xl shadow-lg">
-                   <div id="qr-code-container">
-                     <QRCode 
-                       value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
-                       size={80}
-                       level="H"
-                     />
-                   </div>
-                 </div>
+                  <div className="md:hidden bg-white/25 backdrop-blur px-2 py-1 rounded-lg border border-white/40">
+                    <p className="text-lg font-black text-white tracking-wider">{selectedGym.join_code}</p>
+                  </div>
 
-                 <Button
-                   onClick={() => {
-                     const svg = document.getElementById('qr-code-container').querySelector('svg');
-                     const svgData = new XMLSerializer().serializeToString(svg);
-                     const canvas = document.createElement('canvas');
-                     const ctx = canvas.getContext('2d');
-                     const img = new Image();
-                     img.onload = () => {
-                       canvas.width = img.width;
-                       canvas.height = img.height;
-                       ctx.drawImage(img, 0, 0);
-                       const pngFile = canvas.toDataURL('image/png');
-                       const downloadLink = document.createElement('a');
-                       downloadLink.download = `${selectedGym.name}-QR-Code.png`;
-                       downloadLink.href = pngFile;
-                       downloadLink.click();
-                     };
-                     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-                   }}
-                   size="sm"
-                   className="bg-white/90 hover:bg-white text-green-700 font-semibold px-3"
-                 >
-                   <Download className="w-3 h-3" />
-                 </Button>
-               </>
-             ) : (
-               <Button
-                 onClick={async () => {
-                   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-                   await base44.entities.Gym.update(selectedGym.id, { join_code: code });
-                   queryClient.invalidateQueries({ queryKey: ['gyms'] });
-                 }}
-                 size="sm"
-                 className="bg-white text-green-600 hover:bg-white/90 font-semibold"
-               >
-                 Generate
-               </Button>
-             )}
-           </div>
-         </Card>
+                  <div className="hidden md:flex bg-white p-2 rounded-xl shadow-lg">
+                    <div id="qr-code-container">
+                      <QRCode 
+                        value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
+                        size={80}
+                        level="H"
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => {
+                      const svg = document.getElementById('qr-code-container')?.querySelector('svg');
+                      if (!svg) return;
+                      const svgData = new XMLSerializer().serializeToString(svg);
+                      const canvas = document.createElement('canvas');
+                      const ctx = canvas.getContext('2d');
+                      const img = new Image();
+                      img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const pngFile = canvas.toDataURL('image/png');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.download = `${selectedGym.name}-QR-Code.png`;
+                        downloadLink.href = pngFile;
+                        downloadLink.click();
+                      };
+                      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                    }}
+                    size="sm"
+                    className="hidden md:flex bg-white/90 hover:bg-white text-green-700 font-semibold px-3"
+                  >
+                    <Download className="w-3 h-3" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={async () => {
+                    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    await base44.entities.Gym.update(selectedGym.id, { join_code: code });
+                    queryClient.invalidateQueries({ queryKey: ['gyms'] });
+                  }}
+                  size="sm"
+                  className="bg-white text-green-600 hover:bg-white/90 font-semibold"
+                >
+                  Generate
+                </Button>
+              )}
+            </div>
+          </Card>
 
          {/* View My Gym */}
          <div className="mb-6">
@@ -538,28 +548,26 @@ export default function GymOwnerDashboard() {
          </div>
 
          {/* At-Risk Alert */}
-        {atRiskMembers > 0 && (
-          <Card className="p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
-                <Bell className="w-7 h-7" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-black text-xl mb-2">⚠️ {t('dashboard.membersAtRisk')}</h3>
-                <p className="text-white/90">
-                  {t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}
-                </p>
-              </div>
-              <Button
-                onClick={() => setShowManageMembers(true)}
-                variant="outline"
-                className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-semibold px-8 py-6 rounded-xl shadow-lg"
-              >
-                {t('dashboard.viewMembers')}
-              </Button>
-            </div>
-          </Card>
-        )}
+         {atRiskMembers > 0 && (
+           <Card className="p-4 md:p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
+             <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-5">
+               <div className="w-12 md:w-14 h-12 md:h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                 <Bell className="w-6 md:w-7 h-6 md:h-7" />
+               </div>
+               <div className="flex-1">
+                 <h3 className="font-black text-lg md:text-xl mb-1 md:mb-2">⚠️ {atRiskMembers} Members At Risk</h3>
+                 <p className="text-white/90 text-sm">Haven't checked in for 7-10 days</p>
+               </div>
+               <Button
+                 onClick={() => setShowManageMembers(true)}
+                 variant="outline"
+                 className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-semibold px-4 md:px-8 py-3 md:py-6 rounded-xl shadow-lg text-sm md:text-base"
+               >
+                 View Members
+               </Button>
+             </div>
+           </Card>
+         )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
@@ -610,58 +618,58 @@ export default function GymOwnerDashboard() {
         </div>
 
         {/* Quick Actions */}
-         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
-           <Button
-            onClick={() => setShowQRScanner(true)}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0"
-          >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1">
-              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 mb-6 md:mb-8">
+            <Button
+             onClick={() => setShowQRScanner(true)}
+             className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-6 md:py-10 flex-col gap-1 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0"
+           >
+            <div className="w-8 md:w-12 h-8 md:h-12 rounded-xl bg-white/20 flex items-center justify-center mb-0 md:mb-1">
+              <svg className="w-5 md:w-7 h-5 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
             </div>
-            <span className="font-bold text-sm md:text-base text-white">Scan QR</span>
+            <span className="font-bold text-xs md:text-base text-white">QR</span>
           </Button>
           <Button
             onClick={() => setShowManageMembers(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-6 md:py-10 flex-col gap-1 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
-              <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+            <div className="w-8 md:w-12 h-8 md:h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-0 md:mb-1">
+              <Users className="w-5 md:w-7 h-5 md:h-7 text-blue-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
+            <span className="font-bold text-xs md:text-base text-gray-900">Members</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-6 md:py-10 flex-col gap-1 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
-              <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
+            <div className="w-8 md:w-12 h-8 md:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-0 md:mb-1">
+              <Award className="w-5 md:w-7 h-5 md:h-7 text-purple-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
+            <span className="font-bold text-xs md:text-base text-gray-900">Rewards</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="hidden md:flex bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
-              <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-600" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
+              <Calendar className="w-7 h-7 text-green-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
+            <span className="font-bold text-base text-gray-900">Classes</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="hidden md:flex bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-10 flex-col gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
-              <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
+              <Target className="w-7 h-7 text-orange-600" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
+            <span className="font-bold text-base text-gray-900">Coaches</span>
           </Button>
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-12 md:h-16 shadow-xl overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-auto md:h-16 shadow-xl overflow-x-auto gap-1">
             <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
               {t('dashboard.snapshot')}
             </TabsTrigger>
