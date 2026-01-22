@@ -8,36 +8,14 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 const proFeatures = [
-  {
-    icon: BarChart,
-    title: 'Advanced Attendance Insights',
-    description: 'Track check-ins and engagement trends over time'
-  },
-  {
-    icon: TrendingUp,
-    title: 'Retention & Churn Prediction',
-    description: 'Identify members at risk of leaving and take action early'
-  },
-  {
-    icon: Users,
-    title: 'LTV / ARPM Tracking',
-    description: 'Understand how much each member is worth and how revenue changes over time'
-  },
-  {
-    icon: Zap,
-    title: 'Revenue & ROI Reporting',
-    description: 'See how rewards and campaigns impact your bottom line'
-  },
-  {
-    icon: Shield,
-    title: 'Automated Alerts & Re-engagement Actions',
-    description: 'Get notified when members become inactive and automatically re-engage them'
-  },
-  {
-    icon: Crown,
-    title: 'Custom Reports & Export',
-    description: 'Download reports for management and planning'
-  }
+  { icon: BarChart, title: 'Advanced Analytics' },
+  { icon: TrendingUp, title: 'Churn Prediction' },
+  { icon: Users, title: 'LTV Tracking' },
+  { icon: Zap, title: 'ROI Reporting' },
+  { icon: Shield, title: 'Auto Re-engagement' },
+  { icon: Crown, title: 'Custom Reports' },
+  { icon: CheckCircle, title: 'Priority Support' },
+  { icon: TrendingUp, title: 'Growth Insights' }
 ];
 
 const basicFeatures = [
@@ -198,7 +176,7 @@ export default function Plus() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {proFeatures.slice(0, 6).map((feature, idx) => (
+              {proFeatures.map((feature, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <feature.icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div>
