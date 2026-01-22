@@ -294,11 +294,11 @@ export default function GymOwnerDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.noGymsRegistered')}</h2>
-          <p className="text-gray-600 mb-4">{t('dashboard.haventRegistered')}</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Gyms Registered</h2>
+          <p className="text-gray-600 mb-4">You haven't registered any gyms yet</p>
           <Link to={createPageUrl('GymSignup')}>
             <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
-              {t('dashboard.registerYourGym')}
+              Register Your Gym
             </Button>
           </Link>
         </Card>
