@@ -151,8 +151,8 @@ export default function Plus() {
                   onClick={() => setBillingCycle('monthly')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
                     billingCycle === 'monthly' 
-                      ? 'bg-white/30 text-white' 
-                      : 'bg-white/10 text-purple-100'
+                      ? 'bg-white text-purple-600 shadow-lg' 
+                      : 'bg-purple-400/30 text-white hover:bg-purple-400/40'
                   }`}
                 >
                   Monthly
@@ -161,8 +161,8 @@ export default function Plus() {
                   onClick={() => setBillingCycle('yearly')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
                     billingCycle === 'yearly' 
-                      ? 'bg-white/30 text-white' 
-                      : 'bg-white/10 text-purple-100'
+                      ? 'bg-white text-purple-600 shadow-lg' 
+                      : 'bg-purple-400/30 text-white hover:bg-purple-400/40'
                   }`}
                 >
                   Yearly
