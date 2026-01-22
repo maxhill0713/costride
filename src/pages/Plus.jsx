@@ -111,41 +111,42 @@ export default function Plus() {
   const displayPrice = billingCycle === 'yearly' ? yearlyPrice : monthlyPrice;
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen p-4 flex items-center justify-center">
+      <div className="max-w-6xl mx-auto w-full">
         {/* Hero */}
-        <div className="text-center mb-12 pt-8">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
-            <Crown className="w-10 h-10 text-white" />
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-xl">
+            <Crown className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-black text-white mb-1">
             {t('plus.title')}
           </h1>
-          <p className="text-lg text-slate-300 font-medium">{t('plus.subtitle')}</p>
+          <p className="text-sm text-slate-300">{t('plus.subtitle')}</p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 gap-6">
           {/* Basic Plan */}
-          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-8 hover:shadow-xl transition-all">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">{t('plus.basic.title')}</h2>
-              <div className="text-4xl font-black text-white mb-2">{t('plus.basic.price')}</div>
-              <p className="text-slate-300">Essential gym management</p>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-6 hover:shadow-xl transition-all">
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold text-white mb-1">{t('plus.basic.title')}</h2>
+              <div className="text-3xl font-black text-white mb-1">{t('plus.basic.price')}</div>
+              <p className="text-sm text-slate-300">Essential gym management</p>
             </div>
             
-            <div className="space-y-3 mb-8">
-              {t('plus.basic.features', { returnObjects: true }).map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <span className="text-slate-200">{feature}</span>
+            <div className="space-y-2 mb-4">
+              {t('plus.basic.features', { returnObjects: true }).slice(0, 4).map((feature, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-200">{feature}</span>
                 </div>
               ))}
+              <p className="text-xs text-slate-400 pt-1">+ more features</p>
             </div>
 
             <Button 
               variant="outline" 
-              className="w-full h-12 rounded-2xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700"
+              className="w-full h-10 rounded-xl font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700 text-sm"
               disabled
             >
               {isSubscribed ? t('plus.yourPlan') : t('plus.currentPlan')}
@@ -153,21 +154,21 @@ export default function Plus() {
           </Card>
 
           {/* Pro Plan */}
-          <Card className="bg-gradient-to-br from-purple-500 to-pink-500 border-0 p-8 text-white shadow-2xl relative overflow-hidden">
-            <div className="absolute top-4 right-4">
-              <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold">
+          <Card className="bg-gradient-to-br from-purple-500 to-pink-500 border-0 p-6 text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute top-3 right-3">
+              <span className="bg-white/20 backdrop-blur px-2 py-1 rounded-full text-xs font-bold">
                 {billingCycle === 'yearly' ? '2 MONTHS FREE' : 'POPULAR'}
               </span>
             </div>
             
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">{t('plus.pro.title')}</h2>
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold mb-2">{t('plus.pro.title')}</h2>
               
               {/* Billing Toggle */}
-              <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="flex items-center justify-center gap-2 mb-3">
                 <button
                   onClick={() => setBillingCycle('monthly')}
-                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                  className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
                     billingCycle === 'monthly' 
                       ? 'bg-white/30 text-white' 
                       : 'bg-white/10 text-purple-100'
@@ -177,7 +178,7 @@ export default function Plus() {
                 </button>
                 <button
                   onClick={() => setBillingCycle('yearly')}
-                  className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                  className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
                     billingCycle === 'yearly' 
                       ? 'bg-white/30 text-white' 
                       : 'bg-white/10 text-purple-100'
@@ -187,42 +188,34 @@ export default function Plus() {
                 </button>
               </div>
 
-              <div className="text-4xl font-black mb-2">
+              <div className="text-3xl font-black mb-1">
                 ${displayPrice}
-                <span className="text-xl font-normal">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
+                <span className="text-lg font-normal">/{billingCycle === 'yearly' ? 'year' : 'mo'}</span>
               </div>
               {billingCycle === 'yearly' && (
-                <p className="text-purple-100 text-sm">That's only $41.58/month - save $89/year!</p>
-              )}
-              {billingCycle === 'monthly' && (
-                <p className="text-purple-100">Premium Analytics Included</p>
+                <p className="text-purple-100 text-xs">Only $41.58/mo - save $89/year!</p>
               )}
             </div>
 
-            <div className="space-y-3 mb-6">
-              {proFeatures.map((feature, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-4 h-4" />
-                  </div>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {proFeatures.slice(0, 6).map((feature, idx) => (
+                <div key={idx} className="flex items-start gap-2">
+                  <feature.icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-bold text-sm mb-0.5">{feature.title}</h3>
-                    <p className="text-purple-100 text-xs">{feature.description}</p>
+                    <h3 className="font-bold text-xs leading-tight">{feature.title}</h3>
                   </div>
                 </div>
               ))}
             </div>
 
-            <p className="text-center text-purple-100 text-sm mb-8">...and more</p>
-
             <Button 
               onClick={handleSubscribe}
               disabled={isLoading || isSubscribed}
-              className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-12 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-10 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
                   {t('common.loading')}
                 </>
               ) : isSubscribed ? (
@@ -232,10 +225,7 @@ export default function Plus() {
               )}
             </Button>
             {!isSubscribed && (
-              <p className="text-sm text-purple-100 mt-4 text-center">Cancel anytime • Secure payment via Stripe</p>
-            )}
-            {isSubscribed && (
-              <p className="text-sm text-purple-100 mt-4 text-center">Manage subscription in your profile settings</p>
+              <p className="text-xs text-purple-100 mt-2 text-center">Cancel anytime • Secure via Stripe</p>
             )}
           </Card>
         </div>
