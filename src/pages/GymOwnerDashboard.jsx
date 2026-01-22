@@ -838,18 +838,18 @@ export default function GymOwnerDashboard() {
                     const medals = ['🥇', '🥈', '🥉'];
                     return (
                       <Link 
-                        key={name} 
-                        to={createPageUrl('Leaderboard')}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white">
-                            {idx < 3 ? medals[idx] : idx + 1}
-                          </div>
-                          <span className="font-bold text-gray-900">{name}</span>
-                        </div>
-                        <Badge className="text-lg px-3">{count} {t('dashboard.visits')}</Badge>
-                      </Link>
+                         key={name} 
+                         to={createPageUrl('Leaderboard')}
+                         className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl hover:bg-slate-700 transition-colors cursor-pointer border border-slate-600"
+                       >
+                         <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white">
+                             {idx < 3 ? medals[idx] : idx + 1}
+                           </div>
+                           <span className="font-bold text-white">{name}</span>
+                         </div>
+                         <Badge className="text-lg px-3 bg-slate-600 text-slate-100">{count} {t('dashboard.visits')}</Badge>
+                       </Link>
                     );
                   })}
               </div>
