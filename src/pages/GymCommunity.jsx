@@ -22,6 +22,7 @@ import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import LogLiftModal from '../components/lifts/LogLiftModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
+import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
