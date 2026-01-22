@@ -737,12 +737,12 @@ export default function GymOwnerDashboard() {
                   </div>
                 )}
                 {posts.length < 3 && (
-                  <div className="p-4 bg-white rounded-2xl border-2 border-blue-200">
+                  <div className="p-4 bg-slate-700/50 rounded-2xl border-2 border-blue-500/40">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">📸</span>
                       <div>
-                        <p className="font-bold text-gray-900">{t('dashboard.shareGymUpdates')}</p>
-                        <p className="text-sm text-gray-600">{t('dashboard.keepMembersEngaged')}</p>
+                        <p className="font-bold text-white">{t('dashboard.shareGymUpdates')}</p>
+                        <p className="text-sm text-slate-300">{t('dashboard.keepMembersEngaged')}</p>
                         <Button onClick={() => setShowCreatePost(true)} size="sm" className="mt-2">
                           {t('dashboard.createPost')}
                         </Button>
