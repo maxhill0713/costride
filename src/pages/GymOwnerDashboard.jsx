@@ -476,10 +476,10 @@ export default function GymOwnerDashboard() {
                 </button>
               )}
             </div>
-            {selectedGym && selectedGym.join_code ? (
+            {selectedGym?.join_code ? (
                <div className="space-y-3">
-                 <div className="bg-slate-900 p-3 rounded-lg flex items-center justify-between">
-                   <span className="font-mono text-lg font-black text-cyan-400">{selectedGym?.join_code}</span>
+                  <div className="bg-slate-900 p-3 rounded-lg flex items-center justify-between">
+                    <span className="font-mono text-lg font-black text-cyan-400">{selectedGym.join_code}</span>
                   <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText(selectedGym.join_code)} className="h-8 w-8 p-0">
                     <Download className="w-3 h-3" />
                   </Button>
