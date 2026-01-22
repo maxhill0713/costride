@@ -752,10 +752,10 @@ export default function GymCommunity() {
         </div>
 
       {/* Main Content Area - Vertical Scroll */}
-      <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24">
+      <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
 
         {/* Feed Tab */}
-        <TabsContent value="feed" className="space-y-2 md:space-y-3 mt-0">
+        <TabsContent value="feed" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* User's Position Banner */}
           {currentUser && checkInLeaderboard.length > 0 && (() => {
             const userPosition = checkInLeaderboard.findIndex(m => m.userId === currentUser.id);
@@ -875,7 +875,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Challenges Tab */}
-        <TabsContent value="challenges" className="space-y-2 md:space-y-4 mt-0">
+        <TabsContent value="challenges" className="space-y-2 md:space-y-4 mt-0 w-full overflow-hidden">
           {/* Create Challenge Button for Owners */}
           {showOwnerControls && (
             <Button
@@ -1071,7 +1071,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Events Tab */}
-        <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0">
+        <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* Classes Section */}
           <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
@@ -1235,7 +1235,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Rewards Tab */}
-         <TabsContent value="rewards" className="space-y-2 md:space-y-3 mt-0">
+         <TabsContent value="rewards" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
            {/* Create Rewards Button for Gym Owners */}
            {showOwnerControls && (
              <Button
