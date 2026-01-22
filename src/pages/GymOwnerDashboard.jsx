@@ -578,38 +578,37 @@ export default function GymOwnerDashboard() {
             <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.activeMembers')}</p>
           </Card>
 
-          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
-                <Activity className="w-5 h-5 md:w-7 md:h-7 text-white" />
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Activity className="w-6 md:w-7 h-6 md:h-7 text-emerald-400" />
               </div>
-              <Badge className="bg-green-50 text-green-700 border border-green-200 px-2 md:px-3 py-1 text-xs md:text-sm font-semibold">{last7Days} {t('dashboard.week')}</Badge>
+              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 text-xs font-semibold">{last7Days} wk</Badge>
             </div>
-            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{last30Days}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{t('dashboard.checkIns30d')}</p>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{last30Days}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.checkIns30d')}</p>
           </Card>
 
-          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
-                <Activity className="w-5 h-5 md:w-7 md:h-7 text-white" />
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center border border-orange-500/30">
+                <Activity className="w-6 md:w-7 h-6 md:h-7 text-orange-400" />
               </div>
-              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />
+              <TrendingUp className="w-5 h-5 text-orange-400" />
             </div>
-            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{activeMembersThisWeek}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{t('dashboard.activeThisWeek')}</p>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{activeMembersThisWeek}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.activeThisWeek')}</p>
           </Card>
 
-          <Card className="p-4 md:p-8 bg-white border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                <Star className="w-5 h-5 md:w-7 md:h-7 text-white" />
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/20 flex items-center justify-center border border-amber-500/30">
+                <Star className="w-6 md:w-7 h-6 md:h-7 text-amber-400" />
               </div>
-              <span className="text-xl md:text-3xl font-bold text-purple-600">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
+              <span className="text-lg md:text-xl font-bold text-amber-400">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
             </div>
-            <div className="text-3xl md:text-5xl font-black mb-1 md:mb-2 text-gray-900">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
-            <p className="text-gray-500 text-xs md:text-base font-semibold uppercase tracking-wide">{i18n.language === 'es' ? 'Calificación Promedio' : 'Average Rating'}</p>
-            <p className="text-xs text-gray-400 mt-2 md:mt-3 italic hidden md:block">{i18n.language === 'es' ? 'Solo tú puedes ver esta calificación' : 'Only you can see this rating'}</p>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Avg Rating</p>
           </Card>
         </div>
 
