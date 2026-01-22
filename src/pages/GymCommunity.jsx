@@ -882,8 +882,9 @@ export default function GymCommunity() {
                   key={challenge.id}
                   challenge={challenge}
                   isJoined={hasjoinedChallenge(challenge.id)}
-                  onJoin={(challenge) => joinChallengeMutation.mutate(challenge)}
+                  onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
                   currentUser={currentUser}
+                  disabled={showOwnerControls}
                 />
               ))}
             </div>
