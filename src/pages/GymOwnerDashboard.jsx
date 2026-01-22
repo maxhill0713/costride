@@ -727,8 +727,8 @@ export default function GymOwnerDashboard() {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">⚠️</span>
                       <div>
-                        <p className="font-bold text-gray-900">{t('dashboard.reachOutAtRisk')}</p>
-                        <p className="text-sm text-gray-600">{t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}</p>
+                        <p className="font-bold text-white">{t('dashboard.reachOutAtRisk')}</p>
+                        <p className="text-sm text-slate-300">{t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}</p>
                         <Button onClick={() => setShowManageMembers(true)} size="sm" className="mt-2">
                           {t('dashboard.viewMembers')}
                         </Button>
