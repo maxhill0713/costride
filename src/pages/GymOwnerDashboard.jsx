@@ -664,23 +664,23 @@ export default function GymOwnerDashboard() {
         </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 md:mb-10 bg-white border-0 p-1.5 md:p-2 rounded-2xl h-auto md:h-16 shadow-xl gap-2 md:gap-1">
-            <TabsTrigger value="snapshot" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              {t('dashboard.snapshot')}
-            </TabsTrigger>
-            <TabsTrigger value="engagement" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              {t('dashboard.engagement')}
-            </TabsTrigger>
-            <TabsTrigger value="content" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              {t('dashboard.content')}
-            </TabsTrigger>
-            <TabsTrigger value="admin" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              {t('dashboard.admin')}
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="rounded-xl font-semibold text-xs md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200">
-              {t('dashboard.insights')}
-            </TabsTrigger>
-          </TabsList>
+           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 md:mb-10 bg-slate-800/50 border border-slate-700 backdrop-blur-sm p-1 md:p-1.5 rounded-xl h-auto md:h-14 shadow-xl gap-1">
+             <TabsTrigger value="snapshot" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📊 {t('dashboard.snapshot')}
+             </TabsTrigger>
+             <TabsTrigger value="engagement" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               🔥 {t('dashboard.engagement')}
+             </TabsTrigger>
+             <TabsTrigger value="content" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📸 {t('dashboard.content')}
+             </TabsTrigger>
+             <TabsTrigger value="admin" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               ⚙️ {t('dashboard.admin')}
+             </TabsTrigger>
+             <TabsTrigger value="insights" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📈 {t('dashboard.insights')}
+             </TabsTrigger>
+           </TabsList>
 
           <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
             {/* Today/This Week Snapshot */}
