@@ -644,24 +644,30 @@ export default function GymCommunity() {
             {/* Gym Logo */}
             <div className="flex-shrink-0">
               {gym.image_url ? (
-                <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 overflow-hidden shadow-lg">
+                <button
+                  onClick={() => showOwnerControls && setShowEditHeroImage(true)}
+                  className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 overflow-hidden shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
+                >
                   <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" />
-                </div>
+                </button>
               ) : (
-                <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 flex items-center justify-center shadow-lg">
+                <button
+                  onClick={() => showOwnerControls && setShowEditHeroImage(true)}
+                  className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 flex items-center justify-center shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
+                >
                   <Dumbbell className="w-10 h-10 text-white" />
-                </div>
+                </button>
               )}
             </div>
-            
+
             {/* Gym Name & Info */}
             <div className="flex-1 text-left pb-1">
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-3xl font-black text-white">{gym.name}</h1>
-                {gym.verified && <BadgeCheck className="w-6 h-6 text-white" />}
+                <h1 className="text-3xl font-black text-white drop-shadow-lg">{gym.name}</h1>
+                {gym.verified && <BadgeCheck className="w-6 h-6 text-white drop-shadow-lg" />}
               </div>
-              <p className="text-white/90 text-sm font-medium">Your fitness community 💪</p>
-              <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1">
+              <p className="text-white/90 text-sm font-medium drop-shadow-md">Your fitness community 💪</p>
+              <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
                 <MapPin className="w-3 h-3" />
                 {gym.city}
               </p>
