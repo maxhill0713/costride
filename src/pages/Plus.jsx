@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
 
 const premiumFeatures = [
   'Unlock all exclusive brand discounts',
@@ -17,7 +16,6 @@ const premiumFeatures = [
 ];
 
 export default function Plus() {
-  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: currentUser } = useQuery({
