@@ -71,7 +71,12 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
               <p className="text-[10px] font-semibold text-slate-400">Challenge Progress</p>
               <p className="text-[10px] text-slate-500">{daysElapsed}/{totalDays} days</p>
             </div>
-            <Progress value={progressPercentage} className="h-1.5" />
+            <div className="h-1.5 bg-slate-700/40 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-300"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
           </div>
 
           {/* Action Button */}
