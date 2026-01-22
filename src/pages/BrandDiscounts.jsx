@@ -106,20 +106,20 @@ export default function BrandDiscounts() {
         </Button>
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Gift className="w-8 h-8 text-white" />
+          <div className="w-12 md:w-16 h-12 md:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Gift className="w-6 md:w-8 h-6 md:h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-black text-white mb-2">Brand Discounts</h1>
-          <p className="text-slate-300">Redeem exclusive discount codes from our partners</p>
+          <h1 className="text-2xl md:text-3xl font-black text-white mb-2">Brand Discounts</h1>
+          <p className="text-sm md:text-base text-slate-300">Redeem exclusive discount codes from our partners</p>
         </div>
 
         {/* Redeem Code Section */}
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <Tag className="w-6 h-6 text-purple-400" />
-            <div>
-              <h3 className="text-lg font-bold text-white">Redeem Code</h3>
-              <p className="text-sm text-slate-300">Enter your discount code below</p>
+            <Tag className="w-5 md:w-6 h-5 md:h-6 text-purple-400 flex-shrink-0" />
+            <div className="min-w-0">
+              <h3 className="text-base md:text-lg font-bold text-white">Redeem Code</h3>
+              <p className="text-xs md:text-sm text-slate-300">Enter your discount code below</p>
             </div>
           </div>
 
@@ -135,7 +135,7 @@ export default function BrandDiscounts() {
             <Button
               onClick={handleRedeem}
               disabled={!redeemCode.trim() || redeemMutation.isPending}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl px-8"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl px-4 md:px-8 text-sm md:text-base whitespace-nowrap"
             >
               {redeemMutation.isPending ? 'Checking...' : 'Redeem'}
             </Button>
@@ -144,51 +144,51 @@ export default function BrandDiscounts() {
           <AnimatePresence mode="wait">
             {redeemStatus === 'success' && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-2 p-3 bg-green-900/30 border border-green-600/30 rounded-lg"
+               initial={{ opacity: 0, y: -10 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0, y: -10 }}
+               className="flex items-center gap-2 p-3 bg-green-900/30 border border-green-600/30 rounded-lg"
               >
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <p className="text-sm text-green-300 font-medium">{redeemMessage}</p>
+               <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-400 flex-shrink-0" />
+               <p className="text-xs md:text-sm text-green-300 font-medium">{redeemMessage}</p>
               </motion.div>
             )}
 
             {redeemStatus === 'error' && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-2 p-3 bg-red-900/30 border border-red-600/30 rounded-lg"
-              >
-                <XCircle className="w-5 h-5 text-red-400" />
-                <p className="text-sm text-red-300 font-medium">{redeemMessage}</p>
-              </motion.div>
-            )}
+               <motion.div
+                 initial={{ opacity: 0, y: -10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 className="flex items-center gap-2 p-3 bg-red-900/30 border border-red-600/30 rounded-lg"
+               >
+                 <XCircle className="w-4 md:w-5 h-4 md:h-5 text-red-400 flex-shrink-0" />
+                 <p className="text-xs md:text-sm text-red-300 font-medium">{redeemMessage}</p>
+               </motion.div>
+             )}
 
             {redeemStatus === 'used' && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-2 p-3 bg-orange-900/30 border border-orange-600/30 rounded-lg"
-              >
-                <AlertCircle className="w-5 h-5 text-orange-400" />
-                <p className="text-sm text-orange-300 font-medium">{redeemMessage}</p>
-              </motion.div>
-            )}
+               <motion.div
+                 initial={{ opacity: 0, y: -10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 className="flex items-center gap-2 p-3 bg-orange-900/30 border border-orange-600/30 rounded-lg"
+               >
+                 <AlertCircle className="w-4 md:w-5 h-4 md:h-5 text-orange-400 flex-shrink-0" />
+                 <p className="text-xs md:text-sm text-orange-300 font-medium">{redeemMessage}</p>
+               </motion.div>
+             )}
 
             {redeemStatus === 'expired' && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-2 p-3 bg-gray-900/30 border border-gray-600/30 rounded-lg"
-              >
-                <AlertCircle className="w-5 h-5 text-gray-400" />
-                <p className="text-sm text-gray-300 font-medium">{redeemMessage}</p>
-              </motion.div>
-            )}
+               <motion.div
+                 initial={{ opacity: 0, y: -10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 className="flex items-center gap-2 p-3 bg-gray-900/30 border border-gray-600/30 rounded-lg"
+               >
+                 <AlertCircle className="w-4 md:w-5 h-4 md:h-5 text-gray-400 flex-shrink-0" />
+                 <p className="text-xs md:text-sm text-gray-300 font-medium">{redeemMessage}</p>
+               </motion.div>
+             )}
           </AnimatePresence>
         </Card>
 
@@ -206,28 +206,28 @@ export default function BrandDiscounts() {
                 <Card key={code.id} className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {code.type === 'gift_card' ? (
-                          <CreditCard className="w-5 h-5 text-purple-600" />
-                        ) : (
-                          <Tag className="w-5 h-5 text-blue-600" />
-                        )}
-                        <h4 className="font-bold text-gray-900">{code.brand}</h4>
-                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                          {code.discount_value}
-                        </span>
-                      </div>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                         {code.type === 'gift_card' ? (
+                           <CreditCard className="w-4 md:w-5 h-4 md:h-5 text-purple-600 flex-shrink-0" />
+                         ) : (
+                           <Tag className="w-4 md:w-5 h-4 md:h-5 text-blue-600 flex-shrink-0" />
+                         )}
+                         <h4 className="font-bold text-gray-900 text-sm md:text-base">{code.brand}</h4>
+                         <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                           {code.discount_value}
+                         </span>
+                       </div>
                       {code.description && (
-                        <p className="text-sm text-gray-600 mb-2">{code.description}</p>
+                        <p className="text-xs md:text-sm text-gray-600 mb-2">{code.description}</p>
                       )}
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-[10px] md:text-xs text-gray-500">
                         <div className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          <span className="font-mono font-bold">{code.code}</span>
+                          <Tag className="w-3 h-3 flex-shrink-0" />
+                          <span className="font-mono font-bold truncate">{code.code}</span>
                         </div>
                         {code.expiry_date && (
                           <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
+                            <Calendar className="w-3 h-3 flex-shrink-0" />
                             <span>Expires {new Date(code.expiry_date).toLocaleDateString()}</span>
                           </div>
                         )}
@@ -323,8 +323,8 @@ export default function BrandDiscounts() {
         {/* Used Codes */}
         {usedCodes.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-slate-400" />
+            <h3 className="text-base md:text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-slate-400 flex-shrink-0" />
               Redeemed ({usedCodes.length})
             </h3>
             <Tabs defaultValue="all">
@@ -451,8 +451,8 @@ export default function BrandDiscounts() {
         {/* Expired Codes */}
         {expiredCodes.length > 0 && (
           <div>
-            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400" />
+            <h3 className="text-base md:text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <AlertCircle className="w-4 md:w-5 h-4 md:h-5 text-red-400 flex-shrink-0" />
               Expired Codes ({expiredCodes.length})
             </h3>
             <div className="space-y-3">
@@ -482,11 +482,11 @@ export default function BrandDiscounts() {
 
         {/* Empty State */}
         {unusedCodes.length === 0 && usedCodes.length === 0 && expiredCodes.length === 0 && (
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-12 text-center">
-            <Gift className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No Codes Yet</h3>
-            <p className="text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
-          </Card>
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 md:p-12 text-center">
+          <Gift className="w-12 md:w-16 h-12 md:h-16 text-slate-600 mx-auto mb-4" />
+          <h3 className="text-lg md:text-xl font-bold text-white mb-2">No Codes Yet</h3>
+          <p className="text-sm md:text-base text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
+        </Card>
         )}
       </div>
     </div>
