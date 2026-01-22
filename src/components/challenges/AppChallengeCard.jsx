@@ -17,43 +17,43 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 border border-yellow-300 p-3 relative overflow-hidden shadow-md">
+      <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-3 relative overflow-hidden shadow-sm">
         {/* App Challenge Badge */}
-        <Badge className="absolute top-2 right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold">
+        <Badge className="absolute top-2 right-2 bg-amber-900/50 border border-amber-700/50 text-amber-200 text-[10px] font-bold">
           <Sparkles className="w-2.5 h-2.5 mr-0.5" />
           APP
         </Badge>
 
         <div className="relative z-10">
           {/* Icon */}
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 flex items-center justify-center mb-2 shadow-md">
-            <Trophy className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center mb-2 shadow-sm">
+            <Trophy className="w-5 h-5 text-amber-400" />
           </div>
 
           {/* Content */}
-          <h3 className="font-bold text-gray-900 mb-1 text-sm pr-12">{challenge.title}</h3>
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{challenge.description}</p>
+          <h3 className="font-bold text-slate-100 mb-1 text-sm pr-12">{challenge.title}</h3>
+          <p className="text-xs text-slate-400 mb-2 line-clamp-2">{challenge.description}</p>
 
           {/* Stats */}
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             {challenge.reward && (
-              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold">
+              <Badge className="bg-amber-900/40 border border-amber-700/40 text-amber-300 text-[10px] font-bold">
                 {challenge.reward}
               </Badge>
             )}
-            <Badge className="bg-white text-gray-700 text-[10px] font-semibold">
+            <Badge className="bg-slate-700/40 border border-slate-600/40 text-slate-300 text-[10px] font-semibold">
               <Users className="w-2.5 h-2.5 mr-0.5" />
               {participantCount}
             </Badge>
-            <Badge className="bg-white text-gray-700 text-[10px] font-semibold">
+            <Badge className="bg-slate-700/40 border border-slate-600/40 text-slate-300 text-[10px] font-semibold">
               {daysLeft}d
             </Badge>
           </div>
 
           {/* Goal Info */}
-          <div className="bg-white/70 rounded-lg p-2 mb-2 border border-orange-200">
-            <p className="text-[10px] font-bold text-orange-900 uppercase mb-0.5">Goal</p>
-            <p className="text-xs text-gray-800">
+          <div className="bg-slate-700/30 rounded-lg p-2 mb-2 border border-slate-700/50">
+            <p className="text-[10px] font-bold text-slate-300 uppercase mb-0.5">Goal</p>
+            <p className="text-xs text-slate-400">
               {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
               {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
               {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
