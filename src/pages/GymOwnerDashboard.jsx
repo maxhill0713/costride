@@ -856,22 +856,22 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Reward Effectiveness */}
-            <Card className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.rewardEffectiveness')}</h3>
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.rewardEffectiveness')}</h3>
               <div className="grid grid-cols-3 gap-6">
-                <div className="p-4 bg-purple-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.activeRewards')}</p>
-                  <p className="text-3xl font-black text-purple-600">{rewards.filter(r => r.active).length}</p>
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.activeRewards')}</p>
+                  <p className="text-3xl font-black text-purple-400">{rewards.filter(r => r.active).length}</p>
                 </div>
-                <div className="p-4 bg-pink-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalClaims')}</p>
-                  <p className="text-3xl font-black text-pink-600">
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.totalClaims')}</p>
+                  <p className="text-3xl font-black text-pink-400">
                     {rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0)}
                   </p>
                 </div>
-                <div className="p-4 bg-orange-50 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">{t('dashboard.mostPopular')}</p>
-                  <p className="text-lg font-bold text-orange-600">
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.mostPopular')}</p>
+                  <p className="text-lg font-bold text-orange-400">
                     {rewards.sort((a, b) => (b.claimed_by?.length || 0) - (a.claimed_by?.length || 0))[0]?.title || 'N/A'}
                   </p>
                 </div>
