@@ -11,13 +11,13 @@ import Members from './pages/Members';
 import Messages from './pages/Messages';
 import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
+import Plus from './pages/Plus';
 import Premium from './pages/Premium';
 import Profile from './pages/Profile';
 import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
-import Plus from './pages/Plus';
 import __Layout from './Layout.jsx';
 
 
@@ -35,13 +35,13 @@ export const PAGES = {
     "Messages": Messages,
     "Notifications": Notifications,
     "Onboarding": Onboarding,
+    "Plus": Plus,
     "Premium": Premium,
     "Profile": Profile,
     "RedeemReward": RedeemReward,
     "Routines": Routines,
     "Search": Search,
     "UserProfile": UserProfile,
-    "Plus": Plus,
 }
 
 export const pagesConfig = {
