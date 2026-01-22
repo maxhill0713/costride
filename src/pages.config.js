@@ -2,7 +2,6 @@ import BrandDiscounts from './pages/BrandDiscounts';
 import GymCommunity from './pages/GymCommunity';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymRewards from './pages/GymRewards';
-import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import Home from './pages/Home';
 import Leaderboard from './pages/Leaderboard';
@@ -18,6 +17,7 @@ import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
+import GymSignup from './pages/GymSignup';
 import __Layout from './Layout.jsx';
 
 
@@ -26,7 +26,6 @@ export const PAGES = {
     "GymCommunity": GymCommunity,
     "GymOwnerDashboard": GymOwnerDashboard,
     "GymRewards": GymRewards,
-    "GymSignup": GymSignup,
     "Gyms": Gyms,
     "Home": Home,
     "Leaderboard": Leaderboard,
@@ -42,6 +41,7 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "UserProfile": UserProfile,
+    "GymSignup": GymSignup,
 }
 
 export const pagesConfig = {
