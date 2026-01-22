@@ -1069,9 +1069,9 @@ export default function GymCommunity() {
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-3 mt-0">
           {/* Classes Section */}
-          <Card className="bg-white p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Classes</h3>
+              <h3 className="text-lg font-bold text-slate-100">Classes</h3>
               {showOwnerControls && (
                 <Button
                   onClick={() => setShowManageClasses(true)}
@@ -1130,9 +1130,9 @@ export default function GymCommunity() {
           </Card>
 
           {/* Events Section */}
-          <Card className="bg-white p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
+              <h3 className="text-lg font-bold text-slate-100">Upcoming Events</h3>
               {showOwnerControls && (
                 <Button
                   onClick={() => setShowCreateEvent(true)}
@@ -1170,9 +1170,9 @@ export default function GymCommunity() {
           <RateGymSection gym={gym} currentUser={currentUser} isGymOwner={isGymOwner} />
 
           {/* Coaches Section */}
-          <Card className="bg-white p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Coaches</h3>
+              <h3 className="text-lg font-bold text-slate-100">Coaches</h3>
               {showOwnerControls && (
                 <Button
                   onClick={() => setShowManageCoaches(true)}
@@ -1317,7 +1317,7 @@ export default function GymCommunity() {
 
           {/* Member Rewards */}
           {!isMember ? (
-            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-5">
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-700/40 p-5">
               <div className="text-center mb-4">
                 <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Gift className="w-8 h-8 text-white" />
@@ -1340,9 +1340,9 @@ export default function GymCommunity() {
               </button>
             </Card>
           ) : rewards.filter(r => r.active).length > 0 ? (
-            <Card className="bg-white p-5">
+            <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Active Rewards</h3>
+                <h3 className="text-lg font-bold text-slate-100">Active Rewards</h3>
                 {showOwnerControls && (
                   <Button
                     onClick={() => setShowManageRewards(true)}
@@ -1437,7 +1437,7 @@ export default function GymCommunity() {
 
           {/* Manage Rewards Button for Gym Owners */}
           {showOwnerControls && rewards.filter(r => r.active).length === 0 && (
-            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-5">
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-700/40 p-5">
               <div className="text-center">
                 <Gift className="w-12 h-12 mx-auto mb-3 text-purple-500" />
                 <h3 className="font-bold text-gray-900 mb-2">Create Member Rewards</h3>
