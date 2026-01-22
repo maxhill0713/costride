@@ -92,24 +92,24 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">
+      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-4 md:p-6 shadow-2xl">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="text-lg md:text-2xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">
             Join with Code
           </h2>
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="text-slate-400 hover:text-white"
+            className="text-slate-400 hover:text-white h-8 w-8 md:h-10 md:w-10"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 md:w-5 h-4 md:h-5" />
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
           <div>
-            <label className="text-sm font-bold text-slate-300 mb-2 block">
+            <label className="text-xs md:text-sm font-bold text-slate-300 mb-2 block">
               Enter your gym's 6-character code
             </label>
             <Input
@@ -120,43 +120,43 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
               }}
               placeholder="FIT123"
               maxLength={6}
-              className="text-center text-2xl font-bold tracking-widest bg-slate-700/50 border-slate-600 text-white rounded-xl h-14"
+              className="text-center text-lg md:text-2xl font-bold tracking-widest bg-slate-700/50 border-slate-600 text-white rounded-xl h-10 md:h-14"
               autoFocus
             />
-            <p className="text-xs text-slate-400 mt-2">
+            <p className="text-[10px] md:text-xs text-slate-400 mt-2">
               Ask your gym for their unique join code
             </p>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-900/30 border border-red-600/50 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-              <p className="text-sm text-red-300">{error}</p>
+            <div className="flex items-center gap-2 p-2 md:p-3 bg-red-900/30 border border-red-600/50 rounded-xl">
+              <AlertCircle className="w-4 md:w-5 h-4 md:h-5 text-red-400 flex-shrink-0" />
+              <p className="text-xs md:text-sm text-red-300">{error}</p>
             </div>
           )}
 
           <Button
             type="submit"
             disabled={code.length !== 6 || joinMutation.isPending}
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold h-12 rounded-xl"
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold h-10 md:h-12 rounded-xl text-sm md:text-base"
           >
             {joinMutation.isPending ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <Loader2 className="w-4 md:w-5 h-4 md:h-5 mr-2 animate-spin" />
                 Joining...
               </>
             ) : (
               <>
-                <CheckCircle className="w-5 h-5 mr-2" />
+                <CheckCircle className="w-4 md:w-5 h-4 md:h-5 mr-2" />
                 Join Gym
               </>
             )}
           </Button>
         </form>
 
-        <div className="mt-6 p-4 bg-cyan-900/20 border border-cyan-600/30 rounded-xl">
-          <h3 className="text-sm font-bold text-cyan-300 mb-2">How it works</h3>
-          <ul className="text-xs text-slate-300 space-y-1">
+        <div className="mt-4 md:mt-6 p-3 md:p-4 bg-cyan-900/20 border border-cyan-600/30 rounded-xl">
+          <h3 className="text-xs md:text-sm font-bold text-cyan-300 mb-2">How it works</h3>
+          <ul className="text-[10px] md:text-xs text-slate-300 space-y-1">
             <li>• Get your gym's unique code</li>
             <li>• Enter it above</li>
             <li>• Instant access to the community</li>

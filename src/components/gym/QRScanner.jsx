@@ -10,11 +10,12 @@ export default function QRScanner({ open, onClose }) {
 
   useEffect(() => {
     if (open && !scannerRef.current) {
+      const qrBoxSize = window.innerWidth < 768 ? 200 : 250;
       const scanner = new Html5QrcodeScanner(
         "qr-reader",
         { 
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: qrBoxSize, height: qrBoxSize },
           aspectRatio: 1.0
         },
         false
@@ -60,14 +61,14 @@ export default function QRScanner({ open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-w-xs md:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl font-bold">Scan QR Code</DialogTitle>
+          <DialogTitle className="text-center text-lg md:text-xl font-bold">Scan QR Code</DialogTitle>
         </DialogHeader>
         
-        <div className="py-4">
+        <div className="py-3 md:py-4">
           <div id="qr-reader" className="w-full"></div>
-          <p className="text-center text-sm text-gray-600 mt-4">
+          <p className="text-center text-xs md:text-sm text-gray-600 mt-3 md:mt-4">
             Position the QR code within the frame to scan
           </p>
         </div>
