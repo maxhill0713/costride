@@ -39,25 +39,28 @@ Deno.serve(async (req) => {
         const session = event.data.object;
         const userId = session.metadata.user_id;
         const userEmail = session.metadata.user_email;
+        const subscriptionType = session.metadata.subscription_type || 'user_premium';
 
-        console.log('Checkout completed for user:', userEmail);
+        console.log('Checkout completed for user:', userEmail, 'type:', subscriptionType);
 
         // Create subscription record
         await base44.asServiceRole.entities.Subscription.create({
           user_id: userId,
           subscriber_name: userEmail,
-          subscription_type: 'gym_pro',
+          subscription_type: subscriptionType,
           status: 'active',
           start_date: new Date().toISOString().split('T')[0],
-          amount: 49.99,
+          amount: subscriptionType === 'user_premium' ? 4.99 : 49.99,
         });
 
         // Send notification
         await base44.asServiceRole.entities.Notification.create({
           user_id: userId,
           type: 'subscription',
-          title: '🎉 Welcome to Retention Pro!',
-          message: 'Your premium subscription is now active. Enjoy advanced analytics!',
+          title: subscriptionType === 'user_premium' ? '🎉 Welcome to Premium!' : '🎉 Welcome to Retention Pro!',
+          message: subscriptionType === 'user_premium' 
+            ? 'Your premium membership is now active. Unlock exclusive rewards!'
+            : 'Your premium subscription is now active. Enjoy advanced analytics!',
           icon: '👑',
         });
 
@@ -67,13 +70,13 @@ Deno.serve(async (req) => {
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
         const userId = subscription.metadata.user_id;
+        const subscriptionType = subscription.metadata.subscription_type;
 
         console.log('Subscription updated for user:', userId);
 
         // Update subscription status
         const subscriptions = await base44.asServiceRole.entities.Subscription.filter({
           user_id: userId,
-          subscription_type: 'gym_pro',
         });
 
         if (subscriptions.length > 0) {
@@ -91,13 +94,13 @@ Deno.serve(async (req) => {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
         const userId = subscription.metadata.user_id;
+        const subscriptionType = subscription.metadata.subscription_type;
 
         console.log('Subscription cancelled for user:', userId);
 
         // Update subscription to cancelled
         const subscriptions = await base44.asServiceRole.entities.Subscription.filter({
           user_id: userId,
-          subscription_type: 'gym_pro',
         });
 
         if (subscriptions.length > 0) {
@@ -111,7 +114,9 @@ Deno.serve(async (req) => {
           user_id: userId,
           type: 'subscription',
           title: 'Subscription Cancelled',
-          message: 'Your Retention Pro subscription has been cancelled.',
+          message: subscriptionType === 'user_premium'
+            ? 'Your Premium membership has been cancelled.'
+            : 'Your Retention Pro subscription has been cancelled.',
           icon: '💔',
         });
 

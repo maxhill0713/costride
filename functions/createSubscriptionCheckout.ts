@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { priceId } = await req.json();
+    const { priceId, subscriptionType } = await req.json();
 
     if (!priceId) {
       console.error('Missing priceId in request');
@@ -41,12 +41,14 @@ Deno.serve(async (req) => {
         base44_app_id: Deno.env.get('BASE44_APP_ID'),
         user_id: user.id,
         user_email: user.email,
+        subscription_type: subscriptionType || 'user_premium',
       },
       subscription_data: {
         metadata: {
           base44_app_id: Deno.env.get('BASE44_APP_ID'),
           user_id: user.id,
           user_email: user.email,
+          subscription_type: subscriptionType || 'user_premium',
         },
       },
     });

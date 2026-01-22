@@ -24,18 +24,27 @@ export default function Premium() {
 
   const hasActiveSub = subscription?.[0]?.status === 'active';
 
-  const subscribeMutation = useMutation({
-    mutationFn: (plan) => base44.entities.Subscription.create({
-      user_id: currentUser.id,
-      subscriber_name: currentUser.full_name,
-      subscription_type: plan.id,
-      status: 'trial',
-      start_date: new Date().toISOString().split('T')[0],
-      amount: plan.price
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      toast.success('Welcome to Premium! 🎉');
+  const checkoutMutation = useMutation({
+    mutationFn: async (plan) => {
+      const response = await base44.functions.invoke('createSubscriptionCheckout', {
+        priceId: plan.priceId,
+        subscriptionType: plan.id
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        // Check if running in iframe
+        if (window.self !== window.top) {
+          toast.error('Please open this page in a new tab to complete checkout');
+          return;
+        }
+        window.location.href = data.url;
+      }
+    },
+    onError: (error) => {
+      console.error('Checkout error:', error);
+      toast.error('Failed to start checkout. Please try again.');
     }
   });
 
@@ -44,6 +53,7 @@ export default function Premium() {
       id: 'user_premium',
       name: 'Premium Member',
       price: 4.99,
+      priceId: 'price_1QvBb5P8ybSi5wnVKQOg1H3H', // Replace with your actual Stripe Price ID
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       features: [
@@ -60,7 +70,7 @@ export default function Premium() {
 
 
   const handleSubscribe = (plan) => {
-    subscribeMutation.mutate(plan);
+    checkoutMutation.mutate(plan);
   };
 
   return (
@@ -117,10 +127,10 @@ export default function Premium() {
 
                   <Button
                     onClick={() => handleSubscribe(plan)}
-                    disabled={hasActiveSub}
+                    disabled={hasActiveSub || checkoutMutation.isPending}
                     className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-bold h-14 rounded-2xl text-lg`}
                   >
-                    {hasActiveSub ? 'Current Plan' : 'Start 7-Day Free Trial'}
+                    {checkoutMutation.isPending ? 'Loading...' : hasActiveSub ? 'Current Plan' : 'Subscribe Now'}
                   </Button>
                 </div>
               </Card>
