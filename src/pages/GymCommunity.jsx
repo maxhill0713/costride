@@ -770,20 +770,20 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 shadow-xl border-2 border-amber-200/40 cursor-pointer hover:scale-105 transition-transform rounded-2xl">
-                      <div className="flex items-center gap-4">
-                        <div className="text-5xl animate-bounce">🔥</div>
-                        <div className="flex-1 text-left">
-                          <p className="font-black text-white text-lg">
+                    <Card className="bg-gradient-to-r from-amber-600 to-amber-700 p-4 shadow-lg border border-amber-500/30 cursor-pointer hover:shadow-xl transition-all rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl">🔥</div>
+                        <div className="flex-1 text-left min-w-0">
+                          <p className="font-bold text-white text-sm">
                             You're #1 this week!
                           </p>
-                          <p className="text-white/95 text-sm font-semibold">
+                          <p className="text-white/90 text-xs truncate">
                             {lead > 0 
-                              ? `Leading by ${lead} check-in${lead > 1 ? 's' : ''} 🔥` 
+                              ? `Leading by ${lead} check-in${lead > 1 ? 's' : ''}` 
                               : 'Stay consistent to keep the lead!'}
                           </p>
                         </div>
-                        <Trophy className="w-8 h-8 text-white drop-shadow-lg" />
+                        <Trophy className="w-5 h-5 text-white flex-shrink-0" />
                       </div>
                     </Card>
                   </button>
