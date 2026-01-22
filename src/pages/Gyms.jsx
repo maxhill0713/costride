@@ -257,7 +257,7 @@ export default function Gyms() {
                   <p className="text-slate-400">No gym memberships yet</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-3 max-w-2xl">
                   {userGyms.map((gym) => (
                     <GymCard key={gym.id} gym={gym} />
                   ))}
@@ -334,7 +334,7 @@ export default function Gyms() {
                 <p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-3 max-w-2xl">
                 {filteredGyms.map((gym) => (
                   <GymCard key={gym.id} gym={gym} />
                 ))}
