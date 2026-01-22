@@ -820,9 +820,9 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Weekly Leaderboard */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.weeklyLeaderboard')}</h3>
-              <p className="text-gray-600 mb-4">{t('dashboard.topMembersThisWeek')}</p>
+            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-xl font-bold text-white mb-4">{t('dashboard.weeklyLeaderboard')}</h3>
+              <p className="text-slate-300 mb-4">{t('dashboard.topMembersThisWeek')}</p>
               <div className="space-y-3">
                 {Object.entries(
                   checkIns
