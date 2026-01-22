@@ -638,6 +638,13 @@ export default function GymOwnerDashboard() {
             </div>
             <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
           </Button>
+          <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
+              <Dumbbell className="w-8 h-8 md:w-10 md:h-10" />
+              <span className="font-black text-lg md:text-xl">{t('dashboard.viewMyGym')}</span>
+              <span className="text-xs md:text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
+            </Button>
+          </Link>
           <Button
             onClick={() => setShowManageCoaches(true)}
             className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
