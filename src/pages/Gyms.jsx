@@ -358,6 +358,7 @@ export default function Gyms() {
               <JoinWithCodeModal
               open={showJoinWithCode}
               onClose={() => setShowJoinWithCode(false)}
+              currentUser={currentUser}
               />
               </div>
               );
