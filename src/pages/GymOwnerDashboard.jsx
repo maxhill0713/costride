@@ -768,21 +768,21 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Activity Log (Last 7 Days) */}
-            <Card className="p-8 bg-white border-0 shadow-xl">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.activityLog')}</h3>
-              <div className="space-y-3">
-                {checkIns
-                  .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
-                  .slice(0, 15)
-                  .map((checkIn, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
-                          {checkIn.user_name?.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-900">{checkIn.user_name}</p>
-                          <p className="text-sm text-gray-600">{t('dashboard.checkedIn')}</p>
+             <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+               <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.activityLog')}</h3>
+               <div className="space-y-3">
+                 {checkIns
+                   .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
+                   .slice(0, 15)
+                   .map((checkIn, idx) => (
+                     <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                       <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                           {checkIn.user_name?.charAt(0)}
+                         </div>
+                         <div>
+                           <p className="font-bold text-white">{checkIn.user_name}</p>
+                           <p className="text-sm text-slate-400">{t('dashboard.checkedIn')}</p>
                         </div>
                       </div>
                       <span className="text-sm text-gray-500">{format(new Date(checkIn.check_in_date), 'MMM d, h:mm a')}</span>
