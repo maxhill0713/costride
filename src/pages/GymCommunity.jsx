@@ -791,10 +791,11 @@ export default function GymCommunity() {
                 <WeeklyEventCard
                   key={event.id}
                   event={event}
-                  onRSVP={(eventId) => {
+                  onRSVP={!showOwnerControls ? (eventId) => {
                     const event = events.find(e => e.id === eventId);
                     rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
-                  }}
+                  } : null}
+                  disabled={showOwnerControls}
                 />
               ))}
             </div>
