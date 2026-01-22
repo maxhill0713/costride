@@ -751,12 +751,12 @@ export default function GymOwnerDashboard() {
                   </div>
                 )}
                 {challenges.filter(c => c.status === 'active').length === 0 && (
-                  <div className="p-4 bg-white rounded-2xl border-2 border-green-200">
+                  <div className="p-4 bg-slate-700/50 rounded-2xl border-2 border-green-500/40">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">🏆</span>
                       <div>
-                        <p className="font-bold text-gray-900">{t('dashboard.createChallenge')}</p>
-                        <p className="text-sm text-gray-600">{t('dashboard.boostEngagement')}</p>
+                        <p className="font-bold text-white">{t('dashboard.createChallenge')}</p>
+                        <p className="text-sm text-slate-300">{t('dashboard.boostEngagement')}</p>
                         <Button onClick={() => setShowCreateChallenge(true)} size="sm" className="mt-2">
                           {t('dashboard.createChallengeBtn')}
                         </Button>
