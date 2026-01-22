@@ -68,9 +68,9 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
             size="sm"
             className={`w-full ${
               isJoined 
-                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
-            } text-white rounded-xl h-8 text-xs font-bold`}
+                ? 'bg-green-600/60 hover:bg-green-600/60 cursor-not-allowed text-green-100' 
+                : 'bg-amber-900/50 hover:bg-amber-900/70 border border-amber-700/50 text-amber-200'
+            } rounded-xl h-8 text-xs font-bold transition-colors`}
           >
             {isJoined ? '✓ Joined' : 'Join'}
           </Button>
