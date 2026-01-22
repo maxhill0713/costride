@@ -446,6 +446,27 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
 
+        {/* Gym Join Code */}
+        {selectedGym?.join_code && (
+          <Card className="p-6 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-2xl">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="font-black text-2xl mb-2">Your Gym Join Code</h3>
+                <p className="text-white/90 text-sm md:text-base">
+                  Display this code to members for instant community access
+                </p>
+              </div>
+              <div className="bg-white/20 backdrop-blur px-8 py-6 rounded-2xl border-2 border-white/30">
+                <p className="text-xs text-white/70 uppercase font-bold tracking-wider mb-1 text-center">Join Code</p>
+                <p className="text-5xl font-black text-white tracking-widest text-center">{selectedGym.join_code}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* At-Risk Alert */}
         {atRiskMembers > 0 && (
           <Card className="p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
