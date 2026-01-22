@@ -47,14 +47,14 @@ export default function Premium() {
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       features: [
+        'Unlock brand rewards - earn double the rewards',
+        'Exclusive discounts & limited drops',
+        'Free products from premium partners',
+        'Early access + priority redemption',
         'Exclusive leaderboard badges',
         'Advanced workout analytics',
         'Priority event access',
-        'Custom profile themes',
-        'Ad-free experience',
-        'Unlimited gym check-ins',
-        'Premium video uploads',
-        'Early access to new features'
+        'Ad-free experience'
       ]
     }
   ];
