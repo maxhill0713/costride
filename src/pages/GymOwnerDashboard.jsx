@@ -627,39 +627,39 @@ export default function GymOwnerDashboard() {
           </Button>
           <Button
             onClick={() => setShowManageMembers(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-1">
-              <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-1 border border-blue-500/30">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-400" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-1">
-              <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-1 border border-purple-500/30">
+              <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-400" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-1">
-              <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center mb-1 border border-green-500/30">
+              <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-400" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
-            className="bg-white hover:bg-gray-50 text-gray-900 border-0 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
           >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mb-1">
-              <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-1 border border-orange-500/30">
+              <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-400" />
             </div>
-            <span className="font-bold text-sm md:text-base text-gray-900">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
           </Button>
         </div>
 
