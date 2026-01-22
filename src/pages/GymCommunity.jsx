@@ -653,7 +653,7 @@ export default function GymCommunity() {
         <div className="absolute bottom-0 left-0 right-0 px-6 py-6">
           <div className="max-w-4xl mx-auto flex items-end gap-4">
             {/* Gym Logo */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 relative">
               {gym.image_url ? (
                 <button
                   onClick={() => showOwnerControls && setShowEditHeroImage(true)}
@@ -667,6 +667,15 @@ export default function GymCommunity() {
                   className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 flex items-center justify-center shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
                 >
                   <Dumbbell className="w-10 h-10 text-white" />
+                </button>
+              )}
+              {showOwnerControls && (
+                <button
+                  onClick={() => setShowEditHeroImage(true)}
+                  className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-all"
+                  title="Upload profile picture"
+                >
+                  <ImageIcon className="w-3 h-3 text-white" />
                 </button>
               )}
             </div>
