@@ -254,7 +254,9 @@ export default function GymCommunity() {
     },
     onSuccess: (response) => {
       console.log('Challenge created successfully:', response);
+      console.log('Invalidating queries for gymId:', gymId);
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
+      console.log('Modal closing...');
       setShowCreateChallenge(false);
     },
     onError: (error) => {
