@@ -1023,8 +1023,6 @@ export default function GymOwnerDashboard() {
               </Card>
             </div>
 
-
-
             {/* Weekly Leaderboard */}
             <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <h3 className="text-xl font-bold text-white mb-4">{t('dashboard.weeklyLeaderboard')}</h3>
