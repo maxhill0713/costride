@@ -172,30 +172,16 @@ export default function Home() {
       {/* Hero Header */}
       <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">
-                Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
-              </h1>
-              <p className="text-slate-400 text-xs md:text-sm">
-                {format(new Date(), 'EEEE, MMMM d, yyyy')}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {daysSinceCheckIn === 0 ? (
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-4 py-2 shadow-lg animate-pulse">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Checked In ✓
-                </Badge>
-              ) : (
-                <Button 
-                  onClick={() => setShowCheckIn(true)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Check In
-                </Button>
-              )}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">
+                  Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
+                </h1>
+                <p className="text-slate-400 text-xs md:text-sm">
+                  {format(new Date(), 'EEEE, MMMM d, yyyy')}
+                </p>
+              </div>
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
                   <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
@@ -205,9 +191,22 @@ export default function Home() {
                 </Link>
               )}
             </div>
+
+            {daysSinceCheckIn === 0 ? (
+              <Badge className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-6 py-3 shadow-lg animate-pulse">
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Checked In ✓
+              </Badge>
+            ) : memberGym ? (
+              <Button 
+                onClick={() => setShowCheckIn(true)}
+                className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg px-6 py-3 text-base"
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Check In Now
+              </Button>
+            ) : null}
           </div>
-
-
         </div>
       </div>
 
