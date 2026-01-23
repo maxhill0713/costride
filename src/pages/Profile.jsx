@@ -299,7 +299,6 @@ export default function Profile() {
                    <h1 className="text-xl font-black">{currentUser.full_name}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
                 </div>
-                <p className="text-white/90 text-xs">{currentUser.email}</p>
               </div>
             </div>
             {!isEditing ? (
