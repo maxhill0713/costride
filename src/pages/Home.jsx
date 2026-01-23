@@ -193,19 +193,19 @@ export default function Home() {
             </div>
 
             {daysSinceCheckIn === 0 ? (
-              <Badge className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-6 py-3 shadow-lg animate-pulse">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Checked In ✓
-              </Badge>
-            ) : memberGym ? (
-              <Button 
-                onClick={() => setShowCheckIn(true)}
-                className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg px-6 py-3 text-base"
-              >
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Check In Now
-              </Button>
-            ) : null}
+               <Badge className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-6 py-3 shadow-lg animate-pulse">
+                 <CheckCircle className="w-5 h-5 mr-2" />
+                 Checked In ✓
+               </Badge>
+             ) : memberGym ? (
+               <Button 
+                 onClick={() => setShowCheckIn(true)}
+                 className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 shadow-lg px-6 py-3 text-base"
+               >
+                 <CheckCircle className="w-5 h-5 mr-2" />
+                 Check In Now {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && `(${daysSinceCheckIn} days)`}
+               </Button>
+             ) : null}
           </div>
         </div>
       </div>
