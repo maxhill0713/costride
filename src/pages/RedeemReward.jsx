@@ -23,6 +23,11 @@ export default function RedeemReward() {
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' })
   });
 
+  const { data: completedChallenges = [] } = useQuery({
+    queryKey: ['completedChallenges'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' })
+  });
+
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards'],
     queryFn: () => base44.entities.Reward.list()
