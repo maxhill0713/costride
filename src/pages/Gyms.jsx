@@ -252,14 +252,143 @@ export default function Gyms() {
         {userGyms.length > 0 && (
           <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-6">
             <div className="max-w-6xl mx-auto">
+              {/* Stats Banner */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 rounded-2xl p-4 text-center">
+                  <div className="text-3xl font-black text-blue-300">{userGyms.length}</div>
+                  <div className="text-xs text-slate-400 mt-1">Active Memberships</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-2xl p-4 text-center">
+                  <div className="text-3xl font-black text-purple-300">
+                    {userGyms.reduce((sum, g) => sum + (g.members_count || 0), 0)}
+                  </div>
+                  <div className="text-xs text-slate-400 mt-1">Total Members</div>
+                </div>
+                <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-4 text-center">
+                  <div className="text-3xl font-black text-green-300">
+                    {(userGyms.reduce((sum, g) => sum + (g.rating || 0), 0) / userGyms.length).toFixed(1)}
+                  </div>
+                  <div className="text-xs text-slate-400 mt-1">Avg Rating</div>
+                </div>
+              </div>
+
+              {/* Gyms Grid */}
               {userGyms.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-slate-400">No gym memberships yet</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="grid md:grid-cols-2 gap-4">
                   {userGyms.map((gym) => (
-                    <GymCard key={gym.id} gym={gym} />
+                    <div key={gym.id} className="group relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                      <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md border-2 border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
+                        {/* Image Section with Overlay */}
+                        {gym.image_url && (
+                          <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                            <img 
+                              src={gym.image_url} 
+                              alt={gym.name} 
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                            />
+                            
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            
+                            {/* Quick Action Button */}
+                            <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transform scale-95 group-hover:scale-100 transition-transform">
+                                <Dumbbell className="w-4 h-4 mr-2" />
+                                Enter Gym
+                              </Button>
+                            </Link>
+
+                            {/* Badges */}
+                            <div className="absolute top-3 left-3 flex gap-2">
+                              {gym.verified && (
+                                <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                                  <BadgeCheck className="w-3 h-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                              <Badge className="bg-blue-500/90 text-white text-xs shadow-lg">
+                                Member
+                              </Badge>
+                            </div>
+
+                            {/* Heart & Edit */}
+                            <div className="absolute top-3 right-3 flex gap-2">
+                              <button
+                                onClick={() => toggleSave(gym.id)}
+                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              >
+                                <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+                              </button>
+                              {currentUser && currentUser.email === gym.owner_email && (
+                                <button
+                                  onClick={() => setEditingGym(gym)}
+                                  className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                                >
+                                  <Edit className="w-4 h-4 text-slate-300" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Content Section */}
+                        <div className="p-5 space-y-4">
+                          {/* Header */}
+                          <div>
+                            <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                              <MapPin className="w-4 h-4 flex-shrink-0" />
+                              <span className="line-clamp-1">{gym.address || gym.city}</span>
+                            </div>
+                          </div>
+
+                          {/* Stats Row */}
+                          <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
+                            <div className="flex items-center gap-4">
+                              {gym.rating && (
+                                <div className="flex items-center gap-1.5">
+                                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                  <span className="font-bold text-white text-sm">{gym.rating}/5</span>
+                                </div>
+                              )}
+                              {gym.members_count && (
+                                <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                                  <Users className="w-4 h-4" />
+                                  <span className="font-semibold">{gym.members_count}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {gym.type && (
+                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                                {gym.type}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Reward Offer */}
+                          {gym.reward_offer && (
+                            <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
+                              <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                              <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
+                            </div>
+                          )}
+
+                          {/* Price */}
+                          {gym.price && (
+                            <div className="flex items-baseline gap-1 pt-2">
+                              <span className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">£{gym.price}</span>
+                              <span className="text-sm text-slate-400">/month</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
