@@ -436,17 +436,17 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4">
           <Card 
             onClick={() => setShowJoinModal(true)}
-            className="p-6 bg-gradient-to-br from-slate-700/80 to-slate-800/80 border border-slate-600/40 text-slate-100 hover:shadow-lg transition-all cursor-pointer"
+            className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
           >
-            <CheckCircle className="w-10 h-10 mb-3 text-green-400" />
-            <h3 className="font-semibold text-base mb-1">Join with Code</h3>
-            <p className="text-sm text-slate-400">Instant gym access</p>
+            <CheckCircle className="w-10 h-10 mb-3" />
+            <h3 className="font-black text-lg mb-1">Join with Code</h3>
+            <p className="text-sm text-white/90">Instant gym access</p>
           </Card>
           <Link to={createPageUrl('Gyms')}>
-            <Card className="p-6 bg-gradient-to-br from-slate-700/80 to-slate-800/80 border border-slate-600/40 text-slate-100 hover:shadow-lg transition-all cursor-pointer">
-              <Trophy className="w-10 h-10 mb-3 text-blue-400" />
-              <h3 className="font-semibold text-base mb-1">View Gyms</h3>
-              <p className="text-sm text-slate-400">Explore communities</p>
+            <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
+              <Trophy className="w-10 h-10 mb-3" />
+              <h3 className="font-black text-lg mb-1">View Gyms</h3>
+              <p className="text-sm text-white/90">Explore communities</p>
             </Card>
           </Link>
         </div>
