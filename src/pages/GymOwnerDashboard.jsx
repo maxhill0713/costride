@@ -1615,45 +1615,40 @@ export default function GymOwnerDashboard() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {(() => {
                   const last7DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }));
-                  const last14DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 14), end: subDays(new Date(), 7) }));
                   const last30DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() }));
                   const previousMonthCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 60), end: subDays(new Date(), 30) }));
                   
                   return (
                     <>
-                      <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.last7Days')}</p>
-                        <p className="text-3xl font-black text-blue-600">{last7DaysCheckIns.length}</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.checkInsLabel')}</p>
+                      <div className="p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last7Days')}</p>
+                        <p className="text-3xl font-black text-blue-400">{last7DaysCheckIns.length}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
                       </div>
-                      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.last30Days')}</p>
-                        <p className="text-3xl font-black text-green-600">{last30DaysCheckIns.length}</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.checkInsLabel')}</p>
+                      <div className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last30Days')}</p>
+                        <p className="text-3xl font-black text-green-400">{last30DaysCheckIns.length}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
                       </div>
-                      <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.dailyAverage')}</p>
-                        <p className="text-3xl font-black text-purple-600">{Math.round(last30DaysCheckIns.length / 30)}</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.perDay')}</p>
+                      <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.dailyAverage')}</p>
+                        <p className="text-3xl font-black text-purple-400">{Math.round(last30DaysCheckIns.length / 30)}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.perDay')}</p>
                       </div>
-                      <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.vsPreviousMonth')}</p>
-                        <p className="text-3xl font-black text-orange-600">
+                      <div className="p-4 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl border border-orange-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.vsPreviousMonth')}</p>
+                        <p className="text-3xl font-black text-orange-400">
                           {previousMonthCheckIns.length > 0 ? 
                             (((last30DaysCheckIns.length - previousMonthCheckIns.length) / previousMonthCheckIns.length) * 100).toFixed(0) 
                             : 0}%
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.change')}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.change')}</p>
                       </div>
                     </>
                   );
                 })()}
               </div>
             </Card>
-
-            {/* Peak Hours Analysis */}
-            <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.peakHoursAnalysis')}</h3>
               <div className="space-y-3">
                 {(() => {
                   const hourlyData = {};
