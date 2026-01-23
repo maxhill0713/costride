@@ -92,6 +92,11 @@ export default function Profile() {
     enabled: !!currentUser
   });
 
+  const { data: allChallenges = [] } = useQuery({
+    queryKey: ['challenges'],
+    queryFn: () => base44.entities.Challenge.list()
+  });
+
   const claimRewardMutation = useMutation({
     mutationFn: async ({ reward, userId }) => {
       // Generate unique redemption code
