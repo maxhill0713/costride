@@ -444,8 +444,8 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <h3 className="font-black text-xl mb-2">Unlock Exclusive Rewards</h3>
-              <p className="text-slate-300 text-sm mb-4 leading-relaxed">
+              <h3 className="font-black text-2xl mb-2">Unlock Exclusive Rewards</h3>
+              <p className="text-slate-300 text-base mb-4 leading-relaxed">
                 Double rewards on check-ins, early access to drops, and premium-only benefits
               </p>
               <div className="mb-5">
