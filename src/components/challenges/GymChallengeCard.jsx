@@ -2,11 +2,11 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Users, Target, Building2 } from 'lucide-react';
+import { Dumbbell, Users, Target, Building2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 
-export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser }) {
+export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const totalDays = differenceInDays(new Date(challenge.end_date), new Date(challenge.start_date));
   const daysElapsed = totalDays - daysLeft;
@@ -86,18 +86,32 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
         </div>
 
-        {/* Join Button */}
-        <Button
-          onClick={() => onJoin && onJoin(challenge)}
-          disabled={isJoined}
-          className={`w-full font-bold transition-all duration-200 ${
-            isJoined 
-              ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
-          }`}
-        >
-          {isJoined ? '✓ Already Joined' : 'Join Challenge'}
-        </Button>
+        {/* Join Button / Delete Button */}
+        <div className="flex gap-2">
+          <Button
+            onClick={() => onJoin && onJoin(challenge)}
+            disabled={isJoined || isOwner}
+            className={`flex-1 font-bold transition-all duration-200 ${
+              isJoined 
+                ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
+                : isOwner
+                ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
+                : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
+            }`}
+          >
+            {isJoined ? '✓ Already Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
+          </Button>
+          {isOwner && onDelete && (
+            <Button
+              onClick={() => onDelete(challenge.id)}
+              variant="outline"
+              size="icon"
+              className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500"
+            >
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </Button>
+          )}
+        </div>
       </Card>
     </motion.div>
   );
