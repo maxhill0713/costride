@@ -386,10 +386,9 @@ export default function Profile() {
                 </div>
               )}
             </div>
-              )}
-            </div>
-            </div>
-            </div>
+          )}
+          </div>
+          </div>
 
             {/* Spacing */}
             <div className="h-6" />
