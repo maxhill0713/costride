@@ -30,11 +30,16 @@ export default function MemberSignup() {
   });
 
   const createMemberMutation = useMutation({
-    mutationFn: (memberData) => base44.entities.GymMember.create({
-      ...memberData,
-      name: currentUser.full_name,
-      join_date: new Date().toISOString().split('T')[0]
-    }),
+    mutationFn: async (memberData) => {
+      // Update user account type to member
+      await base44.auth.updateMe({ account_type: 'member' });
+      
+      return base44.entities.GymMember.create({
+        ...memberData,
+        name: currentUser.full_name,
+        join_date: new Date().toISOString().split('T')[0]
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       navigate(createPageUrl('Home'));
