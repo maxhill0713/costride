@@ -603,7 +603,7 @@ export default function Profile() {
                     <Flame className="w-4 h-4 text-orange-400" />
                     <span className="text-xs font-bold text-orange-400 uppercase">Current Streak</span>
                     </div>
-                    <div className="text-3xl font-black text-slate-200">{currentStreak}</div>
+                    <div className="text-4xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">{currentStreak}</div>
                     </div>
                     <div className="bg-purple-500/25 border border-purple-500/50 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
