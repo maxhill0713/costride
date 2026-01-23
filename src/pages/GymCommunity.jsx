@@ -32,7 +32,7 @@ import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
 import AppChallengeCard from '../components/challenges/AppChallengeCard';
 import GymChallengeCard from '../components/challenges/GymChallengeCard';
 import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
-import RateGymSection from '../components/gym/RateGymSection';
+
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 // i18n import removed - using default language
 
@@ -1221,8 +1221,7 @@ export default function GymCommunity() {
             )}
           </Card>
 
-          {/* Rate Gym Section */}
-          <RateGymSection gym={gym} currentUser={currentUser} isGymOwner={isGymOwner} />
+
 
           {/* Coaches Section */}
           <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-2 md:p-5">
