@@ -532,14 +532,16 @@ export default function GymOwnerDashboard() {
 
          {/* Retention Pro Upgrade */}
          <Link to={createPageUrl('Plus')} className="block mb-6">
-           <Card className="p-6 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 border-0 shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
+           <Card className="p-4 bg-slate-800/50 border border-purple-500/30 hover:border-purple-500/50 hover:bg-slate-800/70 transition-all cursor-pointer">
              <div className="flex items-center justify-between">
                <div>
-                 <h3 className="text-2xl font-black text-white mb-2">🚀 Retention Pro</h3>
-                 <p className="text-white/90 mb-2">Advanced member retention tools & analytics</p>
-                 <p className="text-white font-bold">From £49.99/month • Learn More →</p>
+                 <div className="flex items-center gap-2 mb-1">
+                   <Crown className="w-4 h-4 text-purple-400" />
+                   <h3 className="text-sm font-bold text-white">Retention Pro</h3>
+                 </div>
+                 <p className="text-xs text-slate-400">Advanced analytics & retention tools • From £49.99/month</p>
                </div>
-               <Star className="w-16 h-16 text-white/30" />
+               <span className="text-xs text-purple-400 font-medium">Learn More →</span>
              </div>
            </Card>
          </Link>
