@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown } from 'lucide-react';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import { useState } from 'react';
@@ -63,6 +63,12 @@ export default function Home() {
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
     enabled: !!currentUser
   });
 
@@ -314,6 +320,24 @@ export default function Home() {
                   Check In Now
                 </Button>
               </Link>
+            </div>
+          </Card>
+        )}
+
+        {/* Notifications Section */}
+        {notifications.length > 0 && (
+          <Card className="bg-slate-800/40 backdrop-blur-sm border border-blue-700/40 rounded-2xl p-4">
+            <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2">
+              <Bell className="w-4 h-4 text-blue-400" />
+              Recent Notifications
+            </h3>
+            <div className="space-y-2">
+              {notifications.slice(0, 3).map(notif => (
+                <div key={notif.id} className={`p-3 rounded-lg text-sm ${notif.read ? 'bg-slate-900/40' : 'bg-slate-900/60 border-l-2 border-blue-500'}`}>
+                  <div className="text-slate-200">{notif.title}</div>
+                  <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
+                </div>
+              ))}
             </div>
           </Card>
         )}
