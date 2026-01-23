@@ -174,10 +174,10 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-slate-100 mb-2">
+              <h1 className="text-5xl md:text-6xl font-black text-slate-100 mb-2">
                 Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
-              <p className="text-slate-400 text-sm">
+              <p className="text-slate-400 text-xs md:text-sm">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
             </div>
