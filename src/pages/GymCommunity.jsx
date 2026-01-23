@@ -1128,8 +1128,8 @@ export default function GymCommunity() {
             ) : (
               <div className="space-y-2 md:space-y-3">
                 {classes.map((gymClass) => (
-                  <div key={gymClass.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
-                    <div className="flex items-start gap-2 md:gap-3">
+                  <div key={gymClass.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                         <Target className="w-5 md:w-6 h-5 md:h-6 text-white" />
                       </div>
@@ -1158,6 +1158,20 @@ export default function GymCommunity() {
                         )}
                       </div>
                     </div>
+                    {showOwnerControls && (
+                      <Button
+                        onClick={() => {
+                          if (window.confirm('Delete this class?')) {
+                            deleteClassMutation.mutate(gymClass.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="icon"
+                        className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500 flex-shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
