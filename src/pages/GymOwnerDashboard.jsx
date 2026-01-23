@@ -819,6 +819,365 @@ export default function GymOwnerDashboard() {
               </div>
             </Card>
 
+            {/* Member Engagement Breakdown */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.memberEngagementLevels')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
+                  <p className="text-4xl font-black">
+                    {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
+                      acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+                      return acc;
+                    }, {})).filter(count => count >= 15).length}
+                  </p>
+                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth15')}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.active')}</p>
+                  <p className="text-4xl font-black">
+                    {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
+                      acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+                      return acc;
+                    }, {})).filter(count => count >= 8 && count < 15).length}
+                  </p>
+                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth8to14')}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-2xl">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.casual')}</p>
+                  <p className="text-4xl font-black">
+                    {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
+                      acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+                      return acc;
+                    }, {})).filter(count => count >= 1 && count < 8).length}
+                  </p>
+                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth1to7')}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.atRisk')}</p>
+                  <p className="text-4xl font-black">{atRiskMembers}</p>
+                  <p className="text-xs opacity-75">{t('dashboard.daysInactive')}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Member Retention & Growth */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.memberRetention')}</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.activeThisMonth')}</p>
+                    <p className="text-3xl font-black text-green-400">
+                      {new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.outOfTotal', { total: uniqueMembers })}</p>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-2xl border border-orange-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.inactive30Plus')}</p>
+                    <p className="text-3xl font-black text-orange-400">
+                      {(() => {
+                        const activeIds = new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id));
+                        const allMemberIds = new Set(checkIns.map(c => c.user_id));
+                        return allMemberIds.size - activeIds.size;
+                      })()}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.considerReaching')}</p>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.retentionRate')}</p>
+                    <p className="text-3xl font-black text-blue-400">
+                      {uniqueMembers > 0 ? Math.round((new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size / uniqueMembers) * 100) : 0}%
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.dayActiveRate')}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.dayOfWeekAnalysis')}</h3>
+                <div className="space-y-3">
+                  {(() => {
+                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dayData = {};
+                    checkIns.forEach(c => {
+                      const day = new Date(c.check_in_date).getDay();
+                      dayData[day] = (dayData[day] || 0) + 1;
+                    });
+                    const sortedDays = days.map((name, idx) => ({ name, count: dayData[idx] || 0, idx }))
+                      .sort((a, b) => b.count - a.count);
+
+                    return sortedDays.map(({ name, count, idx }, rank) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600/30">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-orange-400">#{rank + 1}</span>
+                          <span className="font-medium text-white">{name}</span>
+                        </div>
+                        <span className="text-xl font-black text-orange-400">{count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </Card>
+            </div>
+
+            {/* Member Check-in Trends */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.checkInTrends')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {(() => {
+                  const last7DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }));
+                  const last30DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() }));
+                  const previousMonthCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 60), end: subDays(new Date(), 30) }));
+
+                  return (
+                    <>
+                      <div className="p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last7Days')}</p>
+                        <p className="text-3xl font-black text-blue-400">{last7DaysCheckIns.length}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last30Days')}</p>
+                        <p className="text-3xl font-black text-green-400">{last30DaysCheckIns.length}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.dailyAverage')}</p>
+                        <p className="text-3xl font-black text-purple-400">{Math.round(last30DaysCheckIns.length / 30)}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.perDay')}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl border border-orange-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.vsPreviousMonth')}</p>
+                        <p className="text-3xl font-black text-orange-400">
+                          {previousMonthCheckIns.length > 0 ? 
+                            (((last30DaysCheckIns.length - previousMonthCheckIns.length) / previousMonthCheckIns.length) * 100).toFixed(0) 
+                            : 0}%
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.change')}</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </Card>
+
+            {/* Peak Hours Analysis */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.peakHoursAnalysis')}</h3>
+              <div className="space-y-3">
+                {(() => {
+                  const hourlyData = {};
+                  checkIns.forEach(c => {
+                    const hour = new Date(c.check_in_date).getHours();
+                    hourlyData[hour] = (hourlyData[hour] || 0) + 1;
+                  });
+                  const sorted = Object.entries(hourlyData)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 10);
+
+                  return sorted.map(([hour, count], idx) => {
+                    const h = parseInt(hour);
+                    const timeLabel = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+                    const endH = (h + 1) % 24;
+                    const endLabel = endH === 0 ? '12am' : endH < 12 ? `${endH}am` : endH === 12 ? '12pm' : `${endH - 12}pm`;
+
+                    return (
+                      <div key={hour} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600/30">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-purple-400">#{idx + 1}</span>
+                          <span className="font-medium text-white">{timeLabel} - {endLabel}</span>
+                        </div>
+                        <span className="text-xl font-black text-purple-400">{count}</span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </Card>
+
+            {/* First Visit vs Returning Members */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.newVsReturning')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-5 bg-green-500/20 rounded-2xl border border-green-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">{t('dashboard.firstTimeVisitors')}</span>
+                    <span className="text-3xl font-black text-green-400">
+                      {checkIns.filter(c => c.first_visit).length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('dashboard.newMembersDiscovering')}</p>
+                </div>
+                <div className="p-5 bg-blue-500/20 rounded-2xl border border-blue-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">{t('dashboard.returningMembers')}</span>
+                    <span className="text-3xl font-black text-blue-400">
+                      {checkIns.filter(c => !c.first_visit).length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('dashboard.loyalMembers')}</p>
+                </div>
+                <div className="p-5 bg-purple-500/20 rounded-2xl border border-purple-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">{t('dashboard.returnRate')}</span>
+                    <span className="text-3xl font-black text-purple-400">
+                      {checkIns.length > 0 ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100) : 0}%
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('dashboard.returnRateDesc')}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Average Visit Duration & Frequency */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Avg Visits per Member</h4>
+                <p className="text-5xl font-black text-purple-400">
+                  {uniqueMembers > 0 ? (checkIns.length / uniqueMembers).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">All-time average</p>
+              </Card>
+              <Card className="p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Monthly Average</h4>
+                <p className="text-5xl font-black text-blue-400">
+                  {uniqueMembers > 0 ? (last30Days / uniqueMembers).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">Visits per member (30d)</p>
+              </Card>
+              <Card className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Weekly Average</h4>
+                <p className="text-5xl font-black text-green-400">
+                  {activeMembersThisWeek > 0 ? (last7Days / activeMembersThisWeek).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">Visits per active member (7d)</p>
+              </Card>
+            </div>
+
+            {/* Retention Graphs Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Weekly Check-in Trend */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.weeklyCheckInTrend')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 11; i >= 0; i--) {
+                      const weekStart = subDays(new Date(), i * 7);
+                      const weekEnd = subDays(new Date(), (i - 1) * 7);
+                      const weekCheckIns = checkIns.filter(c => 
+                        isWithinInterval(new Date(c.check_in_date), { start: weekStart, end: weekEnd })
+                      );
+                      data.push({
+                        week: format(weekStart, 'MMM d'),
+                        checkIns: weekCheckIns.length
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="checkIns" stroke="#3b82f6" strokeWidth={2} name={t('dashboard.checkIns')} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.attendanceOverWeeks')}</p>
+              </Card>
+
+              {/* Challenge Participation Over Time */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.challengeParticipation')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthStart = subDays(new Date(), i * 30);
+                      const monthEnd = subDays(new Date(), (i - 1) * 30);
+                      const monthChallenges = challenges.filter(c => 
+                        isWithinInterval(new Date(c.start_date), { start: monthStart, end: monthEnd })
+                      );
+                      const totalParticipants = monthChallenges.reduce((sum, c) => sum + (c.participants?.length || 0), 0);
+                      data.push({
+                        month: format(monthStart, 'MMM'),
+                        participants: totalParticipants
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="participants" fill="#f59e0b" name={t('dashboard.participants')} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.engagementTrend')}</p>
+              </Card>
+
+              {/* Active Members Growth */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.activeMembersGrowth')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthEnd = subDays(new Date(), i * 30);
+                      const monthStart = subDays(monthEnd, 30);
+                      const activeMembers = new Set(
+                        checkIns.filter(c => 
+                          isWithinInterval(new Date(c.check_in_date), { start: monthStart, end: monthEnd })
+                        ).map(c => c.user_id)
+                      ).size;
+                      data.push({
+                        month: format(monthEnd, 'MMM'),
+                        members: activeMembers
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="members" stroke="#10b981" strokeWidth={2} name={t('dashboard.activeMembers')} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.membersWhoCheckedIn')}</p>
+              </Card>
+
+              {/* Rewards Redeemed */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.rewardsRedeemedChart')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const rewardClaims = {};
+                    rewards.forEach(reward => {
+                      const claimCount = reward.claimed_by?.length || 0;
+                      if (claimCount > 0) {
+                        rewardClaims[reward.title] = claimCount;
+                      }
+                    });
+                    return Object.entries(rewardClaims)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([title, claims]) => ({
+                        reward: title.length > 15 ? title.substring(0, 15) + '...' : title,
+                        claims
+                      }));
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="reward" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="claims" fill="#8b5cf6" name={t('dashboard.claims')} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.trackIncentive')}</p>
+              </Card>
+            </div>
+
             {/* Weekly Leaderboard */}
             <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <h3 className="text-xl font-bold text-white mb-4">{t('dashboard.weeklyLeaderboard')}</h3>
