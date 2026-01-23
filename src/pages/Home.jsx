@@ -176,11 +176,13 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">
-                  Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
-                </h1>
-                <p className="text-slate-400 text-xs md:text-sm">
-                  {format(new Date(), 'EEEE, MMMM d, yyyy')}
-                </p>
+                    Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
+                  </h1>
+                  {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
+                    <p className="text-slate-400 text-xs md:text-sm">
+                      Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
+                    </p>
+                  )}
               </div>
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
