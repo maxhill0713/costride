@@ -164,14 +164,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-8 shadow-xl">
+      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent mb-2">
+              <h1 className="text-3xl md:text-4xl font-black text-slate-100 mb-2">
                 Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
-              <p className="text-cyan-100 text-sm">
+              <p className="text-slate-400 text-sm">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
             </div>
