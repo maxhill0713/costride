@@ -303,11 +303,11 @@ export default function Home() {
                   <Calendar className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-100">
-                    {daysSinceCheckIn === 1 ? "Haven't checked in today" : `${daysSinceCheckIn} days since last check-in`}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Maintain your streak</p>
-                </div>
+                   <h3 className="font-semibold text-slate-100 text-base">
+                     {daysSinceCheckIn === 1 ? "Haven't checked in today" : `${daysSinceCheckIn} days since last check-in`}
+                   </h3>
+                   <p className="text-xs text-slate-400 mt-0.5">Maintain your streak</p>
+                 </div>
               </div>
               <Link to={createPageUrl('Gyms')}>
                 <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm">
