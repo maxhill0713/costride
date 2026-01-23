@@ -43,14 +43,13 @@ export default function Layout({ children, currentPageName }) {
   const primaryGymId = gymMemberships.length > 0 ? gymMemberships[0].gym_id : null;
 
   const navItems = isGymOwner ? [
-    { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
-    { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
-  ] : [
-    { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
-    { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
-    { name: 'Notifications', icon: Bell, page: 'Notifications', color: 'text-purple-500', badge: unreadCount },
-    { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
-  ];
+      { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
+      { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
+    ] : [
+      { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
+      { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
+      { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
+    ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
