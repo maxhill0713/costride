@@ -540,17 +540,17 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-cyan-600/20 to-cyan-500/5 backdrop-blur-sm border border-cyan-500/50 p-4 text-center shadow-md hover:from-cyan-600/30 transition-all">
-            <div className="text-2xl font-black text-cyan-200 mb-1">{stats.totalLifts}</div>
-            <div className="text-[10px] text-cyan-300 font-bold uppercase tracking-wide">Workouts</div>
+          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/10 transition-all">
+            <div className="text-2xl font-black text-slate-200 mb-1">{stats.totalLifts}</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-gradient-to-br from-pink-600/20 to-pink-500/5 backdrop-blur-sm border border-pink-500/50 p-4 text-center shadow-md hover:from-pink-600/30 transition-all">
-            <div className="text-2xl font-black text-pink-200 mb-1">{stats.personalRecords}</div>
-            <div className="text-[10px] text-pink-300 font-bold uppercase tracking-wide">PRs</div>
+          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/10 transition-all">
+            <div className="text-2xl font-black text-slate-200 mb-1">{stats.personalRecords}</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-gradient-to-br from-emerald-600/20 to-emerald-500/5 backdrop-blur-sm border border-emerald-500/50 p-4 text-center shadow-md hover:from-emerald-600/30 transition-all">
-            <div className="text-2xl font-black text-emerald-200 mb-1">{stats.weekStreak}</div>
-            <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-wide">Day Streak</div>
+          <Card className="bg-gradient-to-br from-orange-600/20 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-4 text-center shadow-md">
+            <div className="text-2xl font-black text-orange-200 mb-1">{stats.weekStreak}</div>
+            <div className="text-[10px] text-orange-300 font-bold uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 
