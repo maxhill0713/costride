@@ -480,9 +480,9 @@ export default function Profile() {
             <div className="flex items-center gap-2 mb-3">
               <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-purple-400 truncate">Best Streak</p>
-                <p className="text-2xl font-black text-purple-300">{longestStreak}</p>
-                <p className="text-xs text-purple-400 truncate">days ever</p>
+                <p className="text-xs font-medium text-purple-300 truncate">Best Streak</p>
+                <p className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">{longestStreak}</p>
+                <p className="text-xs text-purple-300 truncate">days ever</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
