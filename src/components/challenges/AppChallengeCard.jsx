@@ -79,7 +79,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
           <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
             <div 
-              className="h-full bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 transition-all duration-500 shadow-lg"
+              className="h-full bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 transition-all duration-500 shadow-lg"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
@@ -92,7 +92,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           className={`w-full font-bold transition-all duration-200 ${
             isJoined 
               ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-orange-500/20'
+              : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
           }`}
         >
           {isJoined ? '✓ Already Joined' : 'Join Challenge'}
