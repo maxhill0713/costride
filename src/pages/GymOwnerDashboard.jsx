@@ -1120,9 +1120,9 @@ export default function GymOwnerDashboard() {
               
               <div className="mb-6">
                 <h4 className="text-lg font-bold text-white mb-3">{t('dashboard.activeChallenges')}</h4>
-                {challenges.filter(c => c.status === 'active').length > 0 ? (
+                {challenges.filter(c => c.status === 'active' && c.gym_id === selectedGym?.id).length > 0 ? (
                   <div className="space-y-3">
-                    {challenges.filter(c => c.status === 'active').map(challenge => (
+                    {challenges.filter(c => c.status === 'active' && c.gym_id === selectedGym?.id).map(challenge => (
                      <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-2xl border-2 border-orange-400/50 shadow-lg shadow-orange-500/20">
                        <div className="flex items-start justify-between mb-2">
                          <div>
@@ -1137,12 +1137,48 @@ export default function GymOwnerDashboard() {
                        <div className="flex items-center gap-4 text-sm text-slate-200 mt-2">
                          <span>👥 {challenge.participants?.length || 0} {t('dashboard.participants')}</span>
                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                         {challenge.reward && <span>🎁 {challenge.reward}</span>}
                        </div>
                      </div>
                     ))}
                   </div>
                 ) : (
                   <p className="text-slate-400 text-center py-6">{t('dashboard.noActiveChallenges')}</p>
+                )}
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-white mb-3">All Gym Challenges</h4>
+                {challenges.filter(c => c.gym_id === selectedGym?.id).length > 0 ? (
+                  <div className="space-y-3">
+                    {challenges.filter(c => c.gym_id === selectedGym?.id).map(challenge => (
+                      <div key={challenge.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-white">{challenge.title}</h5>
+                            <p className="text-sm text-slate-300 mt-1">{challenge.description}</p>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <Badge className={
+                              challenge.status === 'active' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
+                              challenge.status === 'upcoming' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                              'bg-slate-600 text-slate-200 border-slate-500'
+                            }>
+                              {challenge.status}
+                            </Badge>
+                            <Badge className="bg-slate-600 text-slate-200 border-slate-500">{challenge.type.replace('_', ' ')}</Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-slate-400 mt-2">
+                          <span>👥 {challenge.participants?.length || 0} participants</span>
+                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                          {challenge.reward && <span>🎁 {challenge.reward}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-center py-6">No challenges created yet</p>
                 )}
               </div>
 
