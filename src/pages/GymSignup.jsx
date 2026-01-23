@@ -19,8 +19,6 @@ export default function GymSignup() {
   const [addressSearch, setAddressSearch] = useState('');
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
     name: '',
     address: '',
     city: '',
@@ -481,41 +479,9 @@ export default function GymSignup() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Step 1: Basic Info */}
             <div className={step === 1 ? '' : 'hidden'}>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Account & Basic Information</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Basic Information</h3>
               
               <div className="space-y-4">
-                <div>
-                  <Label className="text-gray-700 font-semibold">Email *</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="owner@gym.com"
-                    required
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <Label className="text-gray-700 font-semibold">Password *</Label>
-                    <a
-                      href="/auth/login"
-                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      Forgot Password?
-                    </a>
-                  </div>
-                  <Input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
-                  />
-                </div>
 
                 <div>
                   <Label className="text-gray-700 font-semibold">Gym Name *</Label>
