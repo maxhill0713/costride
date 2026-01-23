@@ -435,20 +435,21 @@ export default function Profile() {
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-xl">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0 shadow-md">
-                <Flame className="w-5 h-5 text-white" />
-              </div>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Flame className="w-5 h-5 text-white" />
+                </div>
                 <div className="min-w-0">
-                    <p className="text-xs font-medium text-cyan-300 truncate">Current Streak</p>
-                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                    <p className="text-xs text-cyan-300 truncate">days</p>
-                  </div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Current Streak</p>
+                  <p className="text-2xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">{currentStreak}</p>
+                  <p className="text-xs text-slate-400">days</p>
+                </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
                 <div className="text-center px-1 flex-shrink-0">
                   <span className="text-lg">❄️</span>
-                  <p className="text-xs text-cyan-300 font-bold">{currentUser.streak_freezes_available}</p>
+                  <p className="text-xs text-slate-300 font-bold">{currentUser.streak_freezes_available}</p>
                 </div>
               )}
             </div>
