@@ -281,8 +281,8 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="bg-gradient-to-b from-slate-900/80 to-slate-900/40 backdrop-blur-sm border-b-2 border-blue-700/40 relative pt-8 pb-8 px-3 md:px-4">
-        <div className="max-w-2xl mx-auto">
+      <div className="bg-gradient-to-b from-slate-900/80 to-slate-900/40 backdrop-blur-sm border-b border-blue-700/30 relative pt-8 pb-8 px-3 md:px-4">
+        <div className="max-w-4xl mx-auto">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center overflow-hidden shadow-lg ring-2 ring-white/30">
