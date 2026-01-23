@@ -716,18 +716,19 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-400" />
-                My Goals
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <h3 className="text-sm md:text-lg font-semibold text-white flex items-center gap-2">
+                <Target className="w-4 md:w-5 h-4 md:h-5 text-blue-400" />
+                <span className="hidden md:inline">My Goals</span>
+                <span className="md:hidden">Goals</span>
               </h3>
               <Button
                 onClick={() => setShowAddGoal(true)}
                 size="sm"
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl md:rounded-2xl shadow-lg text-xs md:text-sm px-2 md:px-4"
               >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Goal
+                <Plus className="w-3 md:w-4 h-3 md:h-4 mr-0 md:mr-1" />
+                <span className="hidden md:inline">Add Goal</span>
               </Button>
             </div>
 
