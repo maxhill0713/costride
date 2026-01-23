@@ -3,15 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { CheckCircle, XCircle, Gift, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Trophy, Flame, Gift, QrCode, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
 export default function RedeemReward() {
-  const [code, setCode] = useState('');
-  const [claimedBonus, setClaimedBonus] = useState(null);
-  const [status, setStatus] = useState('idle'); // idle, checking, valid, invalid, redeemed
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedReward, setSelectedReward] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -19,241 +18,274 @@ export default function RedeemReward() {
     queryFn: () => base44.auth.me()
   });
 
-  // Get code from URL if present
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const qrCode = urlParams.get('code');
-    if (qrCode) {
-      setCode(qrCode);
-      handleVerify(qrCode);
-    }
-  }, []);
+  const { data: challenges = [] } = useQuery({
+    queryKey: ['activeChallenges'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' })
+  });
 
-  const redeemMutation = useMutation({
-    mutationFn: async (bonusId) => {
-      return await base44.entities.ClaimedBonus.update(bonusId, {
-        redeemed: true,
-        redeemed_date: new Date().toISOString()
+  const { data: rewards = [] } = useQuery({
+    queryKey: ['rewards'],
+    queryFn: () => base44.entities.Reward.list()
+  });
+
+  const { data: claimedBonuses = [] } = useQuery({
+    queryKey: ['claimedBonuses', currentUser?.id],
+    queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser?.id }),
+    enabled: !!currentUser
+  });
+
+  const claimMutation = useMutation({
+    mutationFn: async (rewardId) => {
+      return await base44.entities.ClaimedBonus.create({
+        user_id: currentUser.id,
+        reward_id: rewardId,
+        offer_details: selectedReward.title,
+        redemption_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+        redeemed: false
       });
     },
     onSuccess: () => {
-      setStatus('redeemed');
       confetti({
-        particleCount: 150,
-        spread: 100,
+        particleCount: 100,
+        spread: 70,
         origin: { y: 0.6 },
-        colors: ['#10b981', '#06b6d4', '#3b82f6']
+        colors: ['#00E5FF', '#06b6d4', '#3b82f6']
       });
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
+      setShowQRModal(true);
     }
   });
 
-  const handleVerify = async (codeToVerify) => {
-    const verifyCode = codeToVerify || code;
-    if (!verifyCode) return;
+  const userChallengeProgress = challenges.map(challenge => {
+    const participants = challenge.participants || [];
+    const progress = Math.floor((participants.length / Math.max(participants.length, 5)) * 100);
+    return { ...challenge, progress, participantCount: participants.length };
+  }).sort((a, b) => b.progress - a.progress);
 
-    setStatus('checking');
-
-    try {
-      // Extract base code and timestamp from time-based code
-      const parts = verifyCode.split('-');
-      const baseCode = parts.slice(0, -1).join('-'); // Everything except last part
-      const timestampPart = parts[parts.length - 1]; // Last part is timestamp
-      
-      const allBonuses = await base44.entities.ClaimedBonus.list();
-      const bonus = allBonuses.find(b => {
-        const bonusCode = b.redemption_code || b.id.slice(0, 8).toUpperCase();
-        return bonusCode === baseCode;
-      });
-
-      if (!bonus) {
-        setStatus('invalid');
-        setClaimedBonus(null);
-        return;
-      }
-
-      // Verify timestamp is within 1 minute window
-      const codeMinute = parseInt(timestampPart, 36);
-      const currentMinute = Math.floor(Date.now() / 60000);
-      
-      if (Math.abs(currentMinute - codeMinute) > 0) {
-        setStatus('invalid');
-        setClaimedBonus(null);
-        return;
-      }
-
-      if (bonus.redeemed) {
-        setStatus('already_redeemed');
-        setClaimedBonus(bonus);
-        return;
-      }
-
-      setStatus('valid');
-      setClaimedBonus(bonus);
-    } catch (error) {
-      console.error('Verification error:', error);
-      setStatus('invalid');
-    }
-  };
-
-  const handleRedeem = () => {
-    if (claimedBonus && !claimedBonus.redeemed) {
-      redeemMutation.mutate(claimedBonus.id);
-    }
-  };
+  const unclaimedRewards = rewards.filter(r => r.active && !claimedBonuses.find(cb => cb.reward_id === r.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Gift className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-black text-white mb-2">Redeem Reward</h1>
-          <p className="text-slate-300">Enter the redemption code to verify</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-black text-white mb-2">Rewards & Challenges</h1>
+          <p className="text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
 
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 mb-6">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-slate-300 mb-2 block">
-                Redemption Code
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="Enter code..."
-                  className="bg-slate-800/50 border-slate-600 text-white rounded-xl"
-                  maxLength={20}
-                />
-                <Button
-                  onClick={() => handleVerify()}
-                  disabled={!code || status === 'checking'}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl"
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Stats Cards */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl hover:border-cyan-500/30 transition-all">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm mb-1">Active Challenges</p>
+                  <p className="text-3xl font-black text-white">{userChallengeProgress.length}</p>
+                </div>
+                <Trophy className="w-12 h-12 text-amber-500/40" />
               </div>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl hover:border-cyan-500/30 transition-all">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm mb-1">Rewards Available</p>
+                  <p className="text-3xl font-black text-white">{unclaimedRewards.length}</p>
+                </div>
+                <Gift className="w-12 h-12 text-cyan-500/40" />
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl hover:border-cyan-500/30 transition-all">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm mb-1">Claimed</p>
+                  <p className="text-3xl font-black text-white">{claimedBonuses.length}</p>
+                </div>
+                <CheckCircle className="w-12 h-12 text-green-500/40" />
+              </div>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Active Challenges Section */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <div className="mb-6">
+            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-3">
+              <Trophy className="w-6 h-6 text-amber-500" />
+              Active Challenges
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {userChallengeProgress.length === 0 ? (
+                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
+                  <p className="text-slate-400">No active challenges at the moment</p>
+                </Card>
+              ) : (
+                userChallengeProgress.map((challenge) => (
+                  <Card key={challenge.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-500/40 transition-all overflow-hidden group">
+                    <div className="relative">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-white mb-1">{challenge.title}</h3>
+                          <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
+                            {challenge.category}
+                          </Badge>
+                        </div>
+                        <Trophy className="w-6 h-6 text-amber-500" />
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-slate-400">{challenge.participantCount} participants</span>
+                          <span className="text-sm font-bold text-cyan-400">{challenge.progress}%</span>
+                        </div>
+                        <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${challenge.progress}%` }}
+                            transition={{ duration: 1, ease: 'easeOut' }}
+                            className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full shadow-lg shadow-cyan-500/50"
+                          />
+                        </div>
+                      </div>
+
+                      {challenge.reward && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Gift className="w-4 h-4 text-cyan-400" />
+                          <span className="text-slate-300">{challenge.reward}</span>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
-        </Card>
+        </motion.div>
 
-        <AnimatePresence mode="wait">
-          {status === 'checking' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300 p-8 text-center">
-                <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-                <p className="text-blue-900 font-semibold">Verifying code...</p>
-              </Card>
-            </motion.div>
-          )}
+        {/* My Rewards Section */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <div>
+            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-3">
+              <Gift className="w-6 h-6 text-cyan-500" />
+              My Rewards
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {unclaimedRewards.length === 0 ? (
+                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
+                  <p className="text-slate-400">No rewards available to claim right now</p>
+                </Card>
+              ) : (
+                unclaimedRewards.map((reward) => (
+                  <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-white mb-2">{reward.title}</h3>
+                        <p className="text-sm text-slate-400 mb-3">{reward.description}</p>
+                        <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs">
+                          {reward.type}
+                        </Badge>
+                      </div>
+                      <div className="text-2xl">{reward.icon}</div>
+                    </div>
 
-          {status === 'invalid' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300 p-8 text-center">
-                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <XCircle className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-black text-red-900 mb-2">Invalid Code</h3>
-                <p className="text-red-700">This redemption code is not valid</p>
-              </Card>
-            </motion.div>
-          )}
+                    <div className="pt-3 border-t border-slate-700/50">
+                      {reward.points_required > 0 && (
+                        <div className="mb-3 flex items-center gap-2 text-sm text-slate-400">
+                          <Flame className="w-4 h-4 text-orange-500" />
+                          <span>{reward.points_required} points</span>
+                        </div>
+                      )}
+                      <Button
+                        onClick={() => {
+                          setSelectedReward(reward);
+                          claimMutation.mutate(reward.id);
+                        }}
+                        disabled={claimMutation.isPending}
+                        className="w-full h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl transition-all"
+                      >
+                        {claimMutation.isPending ? 'Claiming...' : 'Claim Reward'}
+                      </Button>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+        </motion.div>
 
-          {status === 'already_redeemed' && claimedBonus && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300 p-8 text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <XCircle className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-black text-orange-900 mb-2">Already Redeemed</h3>
-                <p className="text-orange-700 mb-1">This reward was already redeemed</p>
-                <p className="text-sm text-orange-600">
-                  {new Date(claimedBonus.redeemed_date).toLocaleString()}
-                </p>
-              </Card>
-            </motion.div>
-          )}
-
-          {status === 'valid' && claimedBonus && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 p-6">
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-white" />
+        {/* Claimed Rewards History */}
+        {claimedBonuses.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8">
+            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-3">
+              <CheckCircle className="w-6 h-6 text-green-500" />
+              Claimed Rewards
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {claimedBonuses.map((bonus) => (
+                <Card key={bonus.id} className="bg-slate-800/40 backdrop-blur-xl border border-green-500/30 p-5 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white mb-1">{bonus.offer_details}</h3>
+                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+                        <Clock className="w-3 h-3" />
+                        <span>Claimed: {new Date(bonus.created_date).toLocaleDateString()}</span>
+                      </div>
+                      {bonus.redeemed && (
+                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-xs mt-2">
+                          ✓ Redeemed
+                        </Badge>
+                      )}
+                    </div>
+                    <CheckCircle className="w-6 h-6 text-green-500" />
                   </div>
-                  <h3 className="text-2xl font-black text-green-900 mb-2">Valid Reward</h3>
-                  <p className="text-green-700">Ready to redeem</p>
-                </div>
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </div>
 
-                <div className="bg-white rounded-2xl p-6 mb-6">
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-2">🎁</div>
-                    <h4 className="font-bold text-gray-900 text-lg">{claimedBonus.offer_details}</h4>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Claimed: {new Date(claimedBonus.created_date).toLocaleDateString()}
-                    </p>
+      {/* QR Code Modal */}
+      <AnimatePresence>
+        {showQRModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <Card className="bg-slate-900 border border-cyan-500/40 p-8 rounded-3xl max-w-md mx-auto text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <QrCode className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">Reward Claimed!</h3>
+                <p className="text-slate-400 mb-6">Show this QR code at redemption to claim your reward</p>
+                <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl mb-6">
+                  <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center mx-auto">
+                    <QrCode className="w-32 h-32 text-slate-900" />
                   </div>
                 </div>
-
                 <Button
-                  onClick={handleRedeem}
-                  disabled={redeemMutation.isPending}
-                  className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-2xl font-bold text-lg"
+                  onClick={() => setShowQRModal(false)}
+                  className="w-full h-11 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl"
                 >
-                  {redeemMutation.isPending ? 'Redeeming...' : 'Confirm Redemption'}
+                  Done
                 </Button>
               </Card>
             </motion.div>
-          )}
-
-          {status === 'redeemed' && claimedBonus && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-            >
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 p-8 text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200 }}
-                  className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <CheckCircle className="w-12 h-12 text-white" strokeWidth={3} />
-                </motion.div>
-                <h3 className="text-3xl font-black text-green-900 mb-2">Redeemed Successfully!</h3>
-                <p className="text-green-700 text-lg mb-6">The reward has been redeemed</p>
-                
-                <div className="bg-white rounded-2xl p-6">
-                  <div className="text-4xl mb-3">🎉</div>
-                  <h4 className="font-bold text-gray-900 text-lg mb-2">{claimedBonus.offer_details}</h4>
-                  <p className="text-sm text-gray-600">
-                    Redeemed: {new Date().toLocaleString()}
-                  </p>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
