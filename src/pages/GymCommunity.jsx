@@ -769,7 +769,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 shadow-2xl border-2 border-white/30 cursor-pointer hover:scale-105 hover:shadow-orange-500/40 transition-all duration-300">
+                    <Card className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 p-4 shadow-2xl border-2 border-yellow-300/50 cursor-pointer hover:scale-105 hover:shadow-orange-500/60 transition-all duration-300 animate-pulse">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
                           👀
@@ -800,7 +800,7 @@ export default function GymCommunity() {
                     }}
                     className="w-full"
                   >
-                    <Card className="bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-700 p-4 shadow-2xl border border-yellow-500/40 cursor-pointer hover:shadow-xl hover:shadow-yellow-600/40 transition-all rounded-xl">
+                    <Card className="bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 p-4 shadow-2xl border-2 border-yellow-300/60 cursor-pointer hover:shadow-xl hover:shadow-yellow-500/60 transition-all rounded-xl">
                       <div className="flex items-center gap-3">
                         <div className="text-3xl">🔥</div>
                         <div className="flex-1 text-left min-w-0">
@@ -949,9 +949,12 @@ export default function GymCommunity() {
           )}
 
           {/* Leaderboard Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/40 p-3 md:p-5 hover:border-slate-600/60 hover:shadow-lg hover:shadow-slate-900/50 transition-all duration-300">
+          <Card className="bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-blue-600/20 backdrop-blur-sm border-2 border-purple-500/30 p-3 md:p-5 shadow-lg shadow-purple-500/10 transition-all duration-300">
             <div className="flex items-center justify-between mb-2 md:mb-4">
-              <h3 className="text-base md:text-lg font-bold text-slate-100">Community Leaderboard</h3>
+              <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                Community Leaderboard
+              </h3>
             </div>
 
             <div className="flex gap-1 md:gap-2 mb-2 md:mb-4 overflow-x-auto pb-2">
@@ -959,7 +962,9 @@ export default function GymCommunity() {
                 variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('checkins')}
                   size="sm"
-                  className="rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
+                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 ${
+                    leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-0' : 'border-slate-600'
+                  }`}
                 >
                   <CheckCircle className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   <span className="hidden sm:inline">Weekly </span>Check-ins
@@ -968,7 +973,9 @@ export default function GymCommunity() {
                   variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('challenges')}
                   size="sm"
-                  className="rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
+                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 ${
+                    leaderboardView === 'challenges' ? 'bg-gradient-to-r from-purple-500 to-pink-500 border-0' : 'border-slate-600'
+                  }`}
                 >
                   <Trophy className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   <span className="hidden sm:inline">Challenges</span>
@@ -977,7 +984,9 @@ export default function GymCommunity() {
                   variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('streaks')}
                   size="sm"
-                  className="rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9"
+                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 ${
+                    leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 border-0' : 'border-slate-600'
+                  }`}
                 >
                   <Flame className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   Streaks
@@ -993,15 +1002,23 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
                   {checkInLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
-                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm ${
-                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
+                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
+                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
+                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
+                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
+                      'bg-slate-700/40 border-slate-600/30'
+                    }`}>
+                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
+                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
+                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
+                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
+                        'bg-slate-600'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-100 text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-[10px] md:text-xs text-slate-400">{member.count} check-ins</p>
+                        <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
+                        <p className="text-[10px] md:text-xs text-slate-300">{member.count} check-ins</p>
                       </div>
                       <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-400 flex-shrink-0" />
                     </div>
@@ -1019,17 +1036,25 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
                   {challengeLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
-                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm ${
-                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
+                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
+                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
+                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
+                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
+                      'bg-slate-700/40 border-slate-600/30'
+                    }`}>
+                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
+                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
+                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
+                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
+                        'bg-slate-600'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-100 text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-[10px] md:text-xs text-slate-400">{member.count} completed</p>
+                        <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
+                        <p className="text-[10px] md:text-xs text-slate-300">{member.count} completed</p>
                       </div>
-                      <Trophy className="w-4 md:w-5 h-4 md:h-5 text-purple-500 flex-shrink-0" />
+                      <Trophy className="w-4 md:w-5 h-4 md:h-5 text-purple-400 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -1045,17 +1070,25 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
                   {streakLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 rounded-xl border border-slate-600/50">
-                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm ${
-                        idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-600' : 'bg-slate-500'
+                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
+                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
+                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
+                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
+                      'bg-slate-700/40 border-slate-600/30'
+                    }`}>
+                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
+                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
+                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
+                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
+                        'bg-slate-600'
                       }`}>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-100 text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-[10px] md:text-xs text-slate-400">{member.streak}d streak</p>
+                        <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
+                        <p className="text-[10px] md:text-xs text-slate-300">{member.streak}d streak</p>
                       </div>
-                      <Flame className="w-4 md:w-5 h-4 md:h-5 text-orange-500 flex-shrink-0" />
+                      <Flame className="w-4 md:w-5 h-4 md:h-5 text-orange-400 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -1290,25 +1323,25 @@ export default function GymCommunity() {
           </Card>
 
           {/* Monthly Leaderboard Prizes */}
-          <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-blue-500/40 p-2 md:p-5">
-            <h3 className="font-bold text-white text-sm md:text-base mb-2 md:mb-3 flex items-center gap-1.5 md:gap-2">
-              <Award className="w-4 md:w-5 h-4 md:h-5 text-blue-400 flex-shrink-0" />
-              Monthly Leaderboard Prizes
-            </h3>
-            <div className="space-y-1.5 md:space-y-2">
-              <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 border-2 border-yellow-500/40 rounded-xl">
-                <div className="w-6 md:w-8 h-6 md:h-8 bg-yellow-500 rounded-full flex items-center justify-center font-black text-white text-xs md:text-sm flex-shrink-0">1</div>
-                <p className="text-xs md:text-sm font-medium text-white line-clamp-1">Free month + £50</p>
-              </div>
-              <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 border-2 border-gray-400/40 rounded-xl">
-                <div className="w-6 md:w-8 h-6 md:h-8 bg-gray-400 rounded-full flex items-center justify-center font-black text-white text-xs md:text-sm flex-shrink-0">2</div>
-                <p className="text-xs md:text-sm font-medium text-white line-clamp-1">50% off + £25</p>
-              </div>
-              <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-700/60 border-2 border-orange-600/40 rounded-xl">
-                <div className="w-6 md:w-8 h-6 md:h-8 bg-orange-600 rounded-full flex items-center justify-center font-black text-white text-xs md:text-sm flex-shrink-0">3</div>
-                <p className="text-xs md:text-sm font-medium text-white line-clamp-1">25% off + £10</p>
-              </div>
-            </div>
+          <Card className="bg-gradient-to-br from-purple-600/30 via-slate-800/80 to-pink-600/30 backdrop-blur-sm border-2 border-purple-500/50 p-2 md:p-5 shadow-lg shadow-purple-500/20">
+           <h3 className="font-bold text-white text-sm md:text-base mb-2 md:mb-3 flex items-center gap-1.5 md:gap-2">
+             <Award className="w-4 md:w-5 h-4 md:h-5 text-yellow-400 flex-shrink-0" />
+             Monthly Leaderboard Prizes
+           </h3>
+           <div className="space-y-1.5 md:space-y-2">
+             <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border-2 border-yellow-400/50 rounded-xl shadow-md shadow-yellow-500/20">
+               <div className="w-6 md:w-8 h-6 md:h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center font-black text-white text-xs md:text-sm flex-shrink-0 shadow-lg">1</div>
+               <p className="text-xs md:text-sm font-bold text-white line-clamp-1">Free month + £50</p>
+             </div>
+             <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gradient-to-r from-gray-400/30 to-gray-500/30 border-2 border-gray-400/50 rounded-xl shadow-md shadow-gray-400/20">
+               <div className="w-6 md:w-8 h-6 md:h-8 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center font-black text-white text-xs md:text-sm flex-shrink-0 shadow-lg">2</div>
+               <p className="text-xs md:text-sm font-bold text-white line-clamp-1">50% off + £25</p>
+             </div>
+             <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gradient-to-r from-orange-500/30 to-red-500/30 border-2 border-orange-500/50 rounded-xl shadow-md shadow-orange-500/20">
+               <div className="w-6 md:w-8 h-6 md:h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center font-black text-white text-xs md:text-sm flex-shrink-0 shadow-lg">3</div>
+               <p className="text-xs md:text-sm font-bold text-white line-clamp-1">25% off + £10</p>
+             </div>
+           </div>
           </Card>
 
 
