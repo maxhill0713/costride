@@ -927,16 +927,16 @@ export default function GymOwnerDashboard() {
               </div>
 
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-3">{t('dashboard.upcomingEvents')}</h4>
+                <h4 className="text-lg font-bold text-white mb-3">{t('dashboard.upcomingEvents')}</h4>
                 {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
                   <div className="space-y-3">
                     {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5).map(event => (
-                      <div key={event.id} className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
+                      <div key={event.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h5 className="font-bold text-gray-900">{event.title}</h5>
-                            <p className="text-sm text-gray-600 mt-1">{event.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
+                            <h5 className="font-bold text-white">{event.title}</h5>
+                            <p className="text-sm text-slate-300 mt-1">{event.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-sm text-slate-400">
                               <span>📅 {format(new Date(event.event_date), 'PPP')}</span>
                               <span>👥 {event.attendees || 0} {t('dashboard.attending')}</span>
                             </div>
@@ -949,7 +949,7 @@ export default function GymOwnerDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-6">{t('dashboard.noUpcomingEvents')}</p>
+                  <p className="text-slate-400 text-center py-6">{t('dashboard.noUpcomingEvents')}</p>
                 )}
               </div>
             </Card>
