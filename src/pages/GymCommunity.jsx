@@ -609,27 +609,19 @@ export default function GymCommunity() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
       {/* Header Background with Gym Hero Image */}
-      <div className="relative h-64 bg-black overflow-hidden">
+      <div className="relative h-48 bg-black overflow-hidden">
         {gym.image_url ? (
           <img 
             src={gym.image_url} 
             alt={gym.name} 
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-70"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950"></div>
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/80 to-transparent"></div>
-        
-        {/* Animated overlay pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.3) 0%, transparent 50%)',
-            animation: 'pulse 4s ease-in-out infinite'
-          }}></div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
 
         {/* Header Controls */}
         <div className="absolute top-4 right-4 flex gap-2">
@@ -662,58 +654,47 @@ export default function GymCommunity() {
         </div>
 
         {/* Gym Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-6 py-8">
-          <div className="max-w-4xl mx-auto flex items-end gap-6">
+        <div className="absolute bottom-0 left-0 right-0 px-6 py-6">
+          <div className="max-w-4xl mx-auto flex items-end gap-4">
             {/* Gym Logo */}
-            <div className="flex-shrink-0 relative group">
+            <div className="flex-shrink-0 relative">
               {gym.logo_url ? (
                 <button
                   onClick={() => showOwnerControls && setShowEditGymLogo(true)}
-                  className={`w-28 h-28 rounded-3xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border-4 border-white/20 overflow-hidden shadow-2xl transform transition-all duration-300 ${showOwnerControls ? 'hover:border-blue-400/60 hover:scale-105 cursor-pointer' : ''}`}
+                  className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 overflow-hidden shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
                 >
                   <img src={gym.logo_url} alt={gym.name} className="w-full h-full object-cover" />
                 </button>
               ) : (
                 <button
                   onClick={() => showOwnerControls && setShowEditGymLogo(true)}
-                  className={`w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-xl border-4 border-white/20 flex items-center justify-center shadow-2xl transform transition-all duration-300 ${showOwnerControls ? 'hover:border-blue-400/60 hover:scale-105 cursor-pointer' : ''}`}
+                  className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 flex items-center justify-center shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
                 >
-                  <Dumbbell className="w-12 h-12 text-white" />
+                  <Dumbbell className="w-10 h-10 text-white" />
                 </button>
               )}
               {showOwnerControls && (
                 <button
                   onClick={() => setShowEditGymLogo(true)}
-                  className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-2xl transition-all transform hover:scale-110 opacity-0 group-hover:opacity-100"
+                  className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-all"
                   title="Upload profile picture"
                 >
-                  <ImageIcon className="w-4 h-4 text-white" />
+                  <ImageIcon className="w-3 h-3 text-white" />
                 </button>
               )}
             </div>
 
             {/* Gym Name & Info */}
-            <div className="flex-1 text-left pb-2">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-4xl font-black text-white drop-shadow-2xl">{gym.name}</h1>
-                {gym.verified && (
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 rounded-full">
-                    <BadgeCheck className="w-5 h-5 text-blue-400 drop-shadow-lg" />
-                    <span className="text-xs font-bold text-blue-300">Verified</span>
-                  </div>
-                )}
+            <div className="flex-1 text-left pb-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-3xl font-black text-white drop-shadow-lg">{gym.name}</h1>
+                {gym.verified && <BadgeCheck className="w-6 h-6 text-white drop-shadow-lg" />}
               </div>
-              <p className="text-white/90 text-base font-semibold drop-shadow-lg mb-1.5">Your fitness community 💪</p>
-              <div className="flex items-center gap-4 text-sm text-white/80">
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-medium">{gym.city}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4" />
-                  <span className="font-medium">{checkIns.filter((c, i, a) => a.findIndex(x => x.user_id === c.user_id) === i).length} members</span>
-                </div>
-              </div>
+              <p className="text-white/90 text-sm font-medium drop-shadow-md">Your fitness community 💪</p>
+              <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
+                <MapPin className="w-3 h-3" />
+                {gym.city}
+              </p>
             </div>
           </div>
         </div>
@@ -723,49 +704,49 @@ export default function GymCommunity() {
       <Tabs defaultValue="feed" className="w-full overflow-x-hidden" onValueChange={(value) => {
         // Optional: Add analytics tracking here
       }}>
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-2xl border-b border-slate-700/50 shadow-2xl overflow-x-hidden">
-            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-16 overflow-x-auto md:overflow-x-visible">
+        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl border-b-2 border-blue-700/40 shadow-xl overflow-x-hidden">
+            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible">
             <TabsTrigger 
               value="feed" 
-              className="flex-1 data-[state=active]:bg-blue-500/10 data-[state=active]:border-b-4 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-[0_4px_20px_rgba(59,130,246,0.3)] rounded-none h-full text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-[0_2px_8px_rgba(96,165,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
-              <div className="flex flex-col items-center gap-1">
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-xs font-bold">Feed</span>
+              <div className="flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm font-bold">Feed</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="flex-1 data-[state=active]:bg-purple-500/10 data-[state=active]:border-b-4 data-[state=active]:border-purple-400 data-[state=active]:text-purple-400 data-[state=active]:shadow-[0_4px_20px_rgba(168,85,247,0.3)] rounded-none h-full text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-purple-400 data-[state=active]:text-purple-400 data-[state=active]:shadow-[0_2px_8px_rgba(192,132,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Trophy className="w-5 h-5" />
-                <span className="text-xs font-bold">Challenges</span>
+              <div className="flex items-center gap-1.5">
+                <Trophy className="w-4 h-4" />
+                <span className="text-sm font-bold">Challenges</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="events" 
-              className="flex-1 data-[state=active]:bg-orange-500/10 data-[state=active]:border-b-4 data-[state=active]:border-orange-400 data-[state=active]:text-orange-400 data-[state=active]:shadow-[0_4px_20px_rgba(251,146,60,0.3)] rounded-none h-full text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-orange-400 data-[state=active]:text-orange-400 data-[state=active]:shadow-[0_2px_8px_rgba(251,146,60,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Calendar className="w-5 h-5" />
-                <span className="text-xs font-bold">Events</span>
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm font-bold">Events</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="rewards" 
-              className="flex-1 data-[state=active]:bg-pink-500/10 data-[state=active]:border-b-4 data-[state=active]:border-pink-400 data-[state=active]:text-pink-400 data-[state=active]:shadow-[0_4px_20px_rgba(244,114,182,0.3)] rounded-none h-full text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-pink-400 data-[state=active]:text-pink-400 data-[state=active]:shadow-[0_2px_8px_rgba(244,114,182,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Gift className="w-5 h-5" />
-                <span className="text-xs font-bold">Rewards</span>
+              <div className="flex items-center gap-1.5">
+                <Gift className="w-4 h-4" />
+                <span className="text-sm font-bold">Rewards</span>
               </div>
             </TabsTrigger>
           </TabsList>
         </div>
 
       {/* Main Content Area - Vertical Scroll */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-24 w-full overflow-hidden">
+      <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
 
         {/* Feed Tab */}
         <TabsContent value="feed" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
@@ -875,19 +856,15 @@ export default function GymCommunity() {
           )}
           
           {posts.length === 0 ? (
-            <Card className="p-12 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border-2 border-dashed border-slate-600/40 hover:border-slate-500/60 transition-all duration-300">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
-                <MessageCircle className="w-10 h-10 text-slate-400" />
-              </div>
-              <p className="text-slate-100 font-bold text-lg mb-2">No community posts yet</p>
+            <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
+              <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
               <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
             </Card>
           ) : (
-            <div className="space-y-4">
-              {posts.slice(0, 10).map((post) => (
-                <GymPostCard key={post.id} post={post} gym={gym} />
-              ))}
-            </div>
+            posts.slice(0, 10).map((post) => (
+              <GymPostCard key={post.id} post={post} gym={gym} />
+            ))
           )}
         </TabsContent>
 
