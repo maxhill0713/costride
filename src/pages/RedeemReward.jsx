@@ -69,6 +69,21 @@ export default function RedeemReward() {
 
   const unclaimedRewards = rewards.filter(r => r.active && !claimedBonuses.find(cb => cb.reward_id === r.id));
 
+  // Convert completed challenges to claimable rewards
+  const completedChallengeRewards = completedChallenges
+    .filter(challenge => !claimedBonuses.find(cb => cb.challenge_id === challenge.id))
+    .map(challenge => ({
+      id: challenge.id,
+      title: challenge.title,
+      description: challenge.description,
+      type: 'challenge',
+      icon: '🏆',
+      reward: challenge.reward,
+      earnedText: `Completed: ${challenge.title}`,
+      isChallenge: true,
+      challengeId: challenge.id
+    }));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-3 md:p-6">
       <div className="max-w-6xl mx-auto">
