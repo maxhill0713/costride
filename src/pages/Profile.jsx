@@ -390,6 +390,9 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Spacing */}
+      <div className="h-4" />
+
       {/* Re-engagement Banner */}
       {daysSinceCheckIn !== null && daysSinceCheckIn >= 3 && currentStreak > 0 && (
         <div className="max-w-2xl mx-auto px-4 -mt-20 mb-4">
