@@ -247,10 +247,10 @@ export default function Home() {
               </h3>
               <div className="space-y-3">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-300">Weekly Gym Visits</span>
-                    <span className="text-sm font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
-                  </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-base text-slate-300">Weekly Gym Visits</span>
+                      <span className="text-base font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
+                    </div>
                   <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
                     <div 
                       className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
