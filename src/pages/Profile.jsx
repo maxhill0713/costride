@@ -610,7 +610,7 @@ export default function Profile() {
                         <Dumbbell className="w-4 h-4 text-purple-400" />
                     <span className="text-xs font-bold text-purple-400 uppercase">Workouts</span>
                     </div>
-                    <div className="text-3xl font-black text-slate-200">{stats.totalLifts}</div>
+                    <div className="text-4xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">{stats.totalLifts}</div>
                     </div>
                     <div className="bg-yellow-500/25 border border-yellow-500/50 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
