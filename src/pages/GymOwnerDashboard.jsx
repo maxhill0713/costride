@@ -1554,36 +1554,36 @@ export default function GymOwnerDashboard() {
               <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
                 <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.memberRetention')}</h3>
                 <div className="space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
-                    <p className="text-sm text-gray-600 mb-1">{t('dashboard.activeThisMonth')}</p>
-                    <p className="text-3xl font-black text-green-600">
+                  <div className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.activeThisMonth')}</p>
+                    <p className="text-3xl font-black text-green-400">
                       {new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{t('dashboard.outOfTotal', { total: uniqueMembers })}</p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.outOfTotal', { total: uniqueMembers })}</p>
                   </div>
-                  <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl">
-                    <p className="text-sm text-gray-600 mb-1">{t('dashboard.inactive30Plus')}</p>
-                    <p className="text-3xl font-black text-orange-600">
+                  <div className="p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-2xl border border-orange-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.inactive30Plus')}</p>
+                    <p className="text-3xl font-black text-orange-400">
                       {(() => {
                         const activeIds = new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id));
                         const allMemberIds = new Set(checkIns.map(c => c.user_id));
                         return allMemberIds.size - activeIds.size;
                       })()}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{t('dashboard.considerReaching')}</p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.considerReaching')}</p>
                   </div>
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl">
-                    <p className="text-sm text-gray-600 mb-1">{t('dashboard.retentionRate')}</p>
-                    <p className="text-3xl font-black text-blue-600">
+                  <div className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.retentionRate')}</p>
+                    <p className="text-3xl font-black text-blue-400">
                       {uniqueMembers > 0 ? Math.round((new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size / uniqueMembers) * 100) : 0}%
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{t('dashboard.dayActiveRate')}</p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.dayActiveRate')}</p>
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">{t('dashboard.dayOfWeekAnalysis')}</h3>
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.dayOfWeekAnalysis')}</h3>
                 <div className="space-y-3">
                   {(() => {
                     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1596,12 +1596,12 @@ export default function GymOwnerDashboard() {
                       .sort((a, b) => b.count - a.count);
                     
                     return sortedDays.map(({ name, count, idx }, rank) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl">
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600/30">
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-orange-600">#{rank + 1}</span>
-                          <span className="font-medium text-gray-900">{name}</span>
+                          <span className="font-bold text-orange-400">#{rank + 1}</span>
+                          <span className="font-medium text-white">{name}</span>
                         </div>
-                        <span className="text-xl font-black text-orange-600">{count}</span>
+                        <span className="text-xl font-black text-orange-400">{count}</span>
                       </div>
                     ));
                   })()}
@@ -1610,8 +1610,8 @@ export default function GymOwnerDashboard() {
             </div>
 
             {/* Member Check-in Trends */}
-            <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.checkInTrends')}</h3>
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.checkInTrends')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {(() => {
                   const last7DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }));
