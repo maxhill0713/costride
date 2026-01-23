@@ -413,10 +413,10 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         {/* Identity Card */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg overflow-hidden">
+        <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 mb-4 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">Your Identity</p>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
               <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent truncate`}>
                 {identityStatus.title}
               </h3>
@@ -426,28 +426,28 @@ export default function Profile() {
               <div className="text-4xl mb-2">🏆</div>
             </div>
           </div>
-          <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20 overflow-hidden">
-            <p className="text-xs text-cyan-300 font-bold mb-1">WHAT YOU'RE BECOMING</p>
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 overflow-hidden">
+           <p className="text-xs text-slate-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
             <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
 
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 shadow-lg overflow-hidden">
+          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Flame className="w-6 h-6 text-cyan-400 flex-shrink-0" />
                 <div className="min-w-0">
-                    <p className="text-xs font-medium text-cyan-300 truncate">Current Streak</p>
+                    <p className="text-xs font-medium text-slate-400 truncate">Current Streak</p>
                     <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                    <p className="text-xs text-cyan-300 truncate">days</p>
+                    <p className="text-xs text-slate-400 truncate">days</p>
                   </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
                 <div className="text-center px-1 flex-shrink-0">
                   <span className="text-lg">❄️</span>
-                  <p className="text-xs text-cyan-300 font-bold">{currentUser.streak_freezes_available}</p>
+                  <p className="text-xs text-slate-400 font-bold">{currentUser.streak_freezes_available}</p>
                 </div>
               )}
             </div>
@@ -462,7 +462,7 @@ export default function Profile() {
               </div>
             )}
             <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-cyan-300 mb-1 gap-2">
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-1 gap-2">
                 <span className="truncate">Next: {nextMilestone.name}</span>
                 <span className="flex-shrink-0">{currentStreak}/{nextMilestone.days}</span>
               </div>
@@ -470,23 +470,23 @@ export default function Profile() {
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 p-5 shadow-lg overflow-hidden">
+          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm overflow-hidden">
             <div className="flex items-center gap-2 mb-3">
               <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-purple-300 truncate">Best Streak</p>
-                <p className="text-2xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
-                <p className="text-xs text-purple-300 truncate">days ever</p>
+                <p className="text-xs font-medium text-slate-400 truncate">Best Streak</p>
+                <p className="text-2xl font-black text-slate-200">{longestStreak}</p>
+                <p className="text-xs text-slate-400 truncate">days ever</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
-              <div className="bg-purple-900/30 border border-purple-600/30 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-purple-300 line-clamp-1">💎 Keep going to beat your record!</p>
+              <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 overflow-hidden">
+                <p className="text-xs font-bold text-slate-300 line-clamp-1">💎 Keep going to beat your record!</p>
               </div>
             )}
             {currentStreak === longestStreak && currentStreak > 0 && (
-              <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-yellow-300 line-clamp-1">🔥 New personal record!</p>
+              <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 overflow-hidden">
+                <p className="text-xs font-bold text-slate-300 line-clamp-1">🔥 New personal record!</p>
               </div>
             )}
           </Card>
@@ -496,24 +496,24 @@ export default function Profile() {
 
         {/* Protection & Risk Info */}
         {currentStreak > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 shadow-lg">
-            <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-cyan-400" />
+          <Card className="p-5 mb-4 bg-white/5 backdrop-blur-sm border border-white/10 shadow-sm">
+            <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-slate-400" />
               What Happens If You Stop?
             </h3>
             <div className="space-y-3">
-              <div className="bg-slate-700/50 rounded-2xl p-3">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
                 <p className="text-xs text-slate-400 mb-1">Grace Period</p>
                 <p className="text-sm text-slate-200">You have a 2-day grace period. Miss 3 days and your {currentStreak}-day streak resets to 0.</p>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
-                <div className="bg-cyan-900/30 border border-cyan-600/30 rounded-2xl p-3">
-                  <p className="text-xs text-cyan-300 mb-1">❄️ Protection Available</p>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
+                   <p className="text-xs text-slate-400 mb-1">❄️ Protection Available</p>
                   <p className="text-sm text-slate-200">You have {currentUser.streak_freezes_available} streak freeze{currentUser.streak_freezes_available > 1 ? 's' : ''} to protect your progress if life gets busy.</p>
                 </div>
               )}
-              <div className="bg-orange-900/30 border border-orange-600/30 rounded-2xl p-3">
-                <p className="text-xs text-orange-300 mb-1">⚠️ What You'll Lose</p>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
+                <p className="text-xs text-slate-400 mb-1">⚠️ What You'll Lose</p>
                 <p className="text-sm text-slate-200">Your {currentStreak}-day streak and progress toward "{nextMilestone.name}" will be lost. You'll start from day 1.</p>
               </div>
             </div>
@@ -522,9 +522,9 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg overflow-hidden">
-            <h3 className="font-semibold bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+          <Card className="p-5 mb-4 bg-white/5 backdrop-blur-sm border border-white/10 shadow-sm overflow-hidden">
+            <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-slate-400 flex-shrink-0" />
               <span className="truncate">Milestones Unlocked</span>
             </h3>
             <div className="grid grid-cols-3 gap-2">
@@ -585,34 +585,34 @@ export default function Profile() {
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
             {/* Progress Stats */}
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
+            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm">
               <h3 className="font-semibold text-white mb-4">Your Progress</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-cyan-300 uppercase">Check-Ins</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase">Check-Ins</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userCheckIns.length}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-xs font-bold text-orange-300 uppercase">Current Streak</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase">Current Streak</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">{currentStreak}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Dumbbell className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-bold text-purple-300 uppercase">Workouts</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase">Workouts</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-300 uppercase">PRs</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase">PRs</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
                 </div>
@@ -621,7 +621,7 @@ export default function Profile() {
 
             {/* Gym Memberships - Compact */}
             {memberGyms.length > 0 && (
-              <div className="bg-slate-700/30 rounded-2xl p-3 border border-slate-600/30">
+              <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
                 <div className="flex items-center gap-2 mb-2">
                     <Building2 className="w-4 h-4 text-blue-400" />
                     <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
@@ -808,9 +808,9 @@ export default function Profile() {
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
+            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
                   {currentUser.dark_mode ? (
                     <Moon className="w-6 h-6 text-white" />
                   ) : (
@@ -854,7 +854,7 @@ export default function Profile() {
                     value={currentUser.units || 'imperial'} 
                     onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
                     >
-                    <SelectTrigger className="rounded-2xl border-2 border-slate-600 bg-slate-800/50 text-slate-100">
+                    <SelectTrigger className="rounded-2xl border border-white/20 bg-white/5 text-slate-100">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -866,9 +866,9 @@ export default function Profile() {
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
+            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -878,8 +878,8 @@ export default function Profile() {
               </div>
 
               <div className="space-y-4">
-                <div className="p-4 bg-slate-700/50 rounded-2xl">
-                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                   <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
                   <Input
                     type="email"
                     value={currentUser.email}
@@ -895,16 +895,16 @@ export default function Profile() {
                     type="password"
                     value="••••••••"
                     disabled
-                    className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
+                    className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
                   />
                   <p className="text-xs text-slate-400 mt-1">Contact support to reset your password</p>
                 </div>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
+            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
