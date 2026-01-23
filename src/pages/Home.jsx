@@ -235,28 +235,7 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Streak Status - One Line */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-4 shadow-lg">
-          <p className="text-center text-lg font-semibold">
-            {userStreak > 0 && daysSinceCheckIn === 0 ? (
-              <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                🔥 {userStreak}-day streak active
-              </span>
-            ) : userStreak > 0 && daysSinceCheckIn === 1 ? (
-              <span className="bg-gradient-to-r from-orange-300 to-red-300 bg-clip-text text-transparent">
-                ⚠️ Check in today to keep your streak
-              </span>
-            ) : currentUser?.streak_freeze_active ? (
-              <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                Streak frozen today ❄️
-              </span>
-            ) : (
-              <span className="bg-gradient-to-r from-slate-300 to-slate-400 bg-clip-text text-transparent">
-                Start your streak today 💪
-              </span>
-            )}
-          </p>
-        </Card>
+
 
         {/* Progress Tracker */}
         <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
