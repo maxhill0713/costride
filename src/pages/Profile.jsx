@@ -439,7 +439,7 @@ export default function Profile() {
         </Card>
 
         {/* Streak Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4">
           <Card className="bg-gradient-to-br from-orange-600/15 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-5 shadow-md overflow-hidden">
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
