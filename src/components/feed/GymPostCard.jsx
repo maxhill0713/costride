@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Edit, Loader2 } from 'lucide-react';
+import { Calendar, Edit, Loader2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 const REACTIONS = ['💪', '🔥', '👏', '💯', '⚡'];
 
-export default function GymPostCard({ post, gym }) {
+export default function GymPostCard({ post, gym, onDelete = null, isOwner = false }) {
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -57,6 +57,17 @@ export default function GymPostCard({ post, gym }) {
     },
     onError: () => {
       toast.error('Failed to update post');
+    }
+  });
+
+  const deletePostMutation = useMutation({
+    mutationFn: () => base44.entities.Post.delete(post.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('Post deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete post');
     }
   });
 
@@ -126,14 +137,29 @@ export default function GymPostCard({ post, gym }) {
             </p>
           </div>
           {isGymOwner && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowEditModal(true)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowEditModal(true)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if (window.confirm('Delete this post?')) {
+                    deletePostMutation.mutate();
+                  }
+                }}
+                disabled={deletePostMutation.isPending}
+                className="text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           )}
         </div>
 
