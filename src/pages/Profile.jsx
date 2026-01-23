@@ -497,12 +497,9 @@ export default function Profile() {
             )}
           </Card>
         </div>
-
-
-
-        {/* Protection & Risk Info */}
-        {currentStreak > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 shadow-md">
+{/* Protection & Risk Info */}
+{currentStreak > 0 && (
+  <Card className="p-5 bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 shadow-md">
             <h3 className="font-semibold text-red-300 mb-3 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-400" />
               What Happens If You Stop?
