@@ -1571,25 +1571,6 @@ export default function GymOwnerDashboard() {
               </Card>
             </div>
 
-            {/* Retention Pro - Subtle Upgrade */}
-            <Link to={createPageUrl('RetentionPro')}>
-              <Card className="p-5 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-700/50 hover:border-indigo-600/60 transition-all cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                      <Award className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white text-sm">Retention Pro</h4>
-                      <p className="text-xs text-slate-300">Automated member re-engagement tools</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline" className="bg-white/10 hover:bg-white/20 border-white/30 text-white text-xs">
-                    Learn More
-                  </Button>
-                </div>
-              </Card>
-            </Link>
 
           </TabsContent>
 
