@@ -413,22 +413,22 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         {/* Identity Card */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg overflow-hidden">
-          <div className="flex items-center justify-between gap-3 mb-3">
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-xl mb-4">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">Your Identity</p>
-              <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent truncate`}>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
+              <h3 className={`text-xl font-bold bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent mb-2`}>
                 {identityStatus.title}
               </h3>
-              <p className="text-sm text-slate-400 mt-1 line-clamp-2">{identityStatus.subtitle}</p>
+              <p className="text-sm text-slate-300">{identityStatus.subtitle}</p>
+              <div className="mt-3 pt-3 border-t border-slate-600/40">
+                <p className="text-xs text-slate-400 mb-1">Next milestone</p>
+                <p className="text-sm text-slate-200">{identityStatus.next}</p>
+              </div>
             </div>
-            <div className="text-right flex-shrink-0">
-              <div className="text-4xl mb-2">🏆</div>
-            </div>
-          </div>
-          <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20 overflow-hidden">
-            <p className="text-xs text-cyan-300 font-bold mb-1">WHAT YOU'RE BECOMING</p>
-            <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
 
