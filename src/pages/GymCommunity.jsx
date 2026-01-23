@@ -1391,19 +1391,19 @@ export default function GymCommunity() {
                           </div>
                           
                           {/* Progress Bar */}
-                           {!hasUserClaimed && (
-                             <div className="mt-1.5 md:mt-3">
-                               <div className="flex items-center justify-between mb-0.5 md:mb-1">
-                                 <span className="text-[10px] md:text-xs font-medium text-slate-300">
-                                   Progress
-                                 </span>
-                                 <span className="text-[10px] md:text-xs font-semibold text-purple-400">
-                                   {progress.current}/{progress.target}
-                                 </span>
-                               </div>
-                               <Progress value={progress.percentage} className="h-1.5 md:h-2" />
-                             </div>
-                           )}
+                          {!hasUserClaimed && (
+                            <div className="mt-1.5 md:mt-3">
+                              <div className="flex items-center justify-between mb-0.5 md:mb-1">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-300">
+                                  {progress.current} / {progress.target}
+                                </span>
+                                <span className="text-[10px] md:text-xs font-semibold text-purple-400">
+                                  {Math.round(progress.percentage)}%
+                                </span>
+                              </div>
+                              <Progress value={progress.percentage} className="h-1.5 md:h-2" />
+                            </div>
+                          )}
 
                           {currentUser && !showOwnerControls && (
                             <Button
