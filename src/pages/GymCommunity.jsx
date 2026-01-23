@@ -243,14 +243,22 @@ export default function GymCommunity() {
   });
 
   const createChallengeMutation = useMutation({
-    mutationFn: (challengeData) => base44.entities.Challenge.create({
-      ...challengeData,
-      gym_id: gymId,
-      gym_name: gym?.name
-    }),
-    onSuccess: () => {
+    mutationFn: (challengeData) => {
+      const fullData = {
+        ...challengeData,
+        gym_id: gymId,
+        gym_name: gym?.name
+      };
+      console.log('Creating challenge with data:', fullData);
+      return base44.entities.Challenge.create(fullData);
+    },
+    onSuccess: (response) => {
+      console.log('Challenge created successfully:', response);
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
       setShowCreateChallenge(false);
+    },
+    onError: (error) => {
+      console.error('Challenge creation failed:', error);
     }
   });
 
