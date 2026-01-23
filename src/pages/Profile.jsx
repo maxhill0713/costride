@@ -542,17 +542,17 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-cyan-600/20 to-cyan-500/5 backdrop-blur-sm border border-cyan-500/40 p-4 text-center shadow-md">
-            <div className="text-2xl font-black text-cyan-200 mb-1">{stats.totalLifts}</div>
-            <div className="text-[10px] text-cyan-300 font-bold uppercase tracking-wide">Workouts</div>
+          <Card className="bg-gradient-to-br from-blue-600/40 to-blue-500/20 backdrop-blur-sm border border-blue-500/50 p-4 text-center shadow-md">
+            <div className="text-2xl font-black text-blue-200 mb-1">{stats.totalLifts}</div>
+            <div className="text-[10px] text-blue-300 font-bold uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-gradient-to-br from-purple-600/20 to-purple-500/5 backdrop-blur-sm border border-purple-500/40 p-4 text-center shadow-md">
+          <Card className="bg-gradient-to-br from-purple-600/40 to-purple-500/20 backdrop-blur-sm border border-purple-500/50 p-4 text-center shadow-md">
             <div className="text-2xl font-black text-purple-200 mb-1">{stats.personalRecords}</div>
             <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-gradient-to-br from-orange-600/20 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-4 text-center shadow-md">
-            <div className="text-2xl font-black text-orange-200 mb-1">{stats.weekStreak}</div>
-            <div className="text-[10px] text-orange-300 font-bold uppercase tracking-wide">Day Streak</div>
+          <Card className="bg-gradient-to-br from-teal-600/40 to-teal-500/20 backdrop-blur-sm border border-teal-500/50 p-4 text-center shadow-md">
+            <div className="text-2xl font-black text-teal-200 mb-1">{stats.weekStreak}</div>
+            <div className="text-[10px] text-teal-300 font-bold uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 
