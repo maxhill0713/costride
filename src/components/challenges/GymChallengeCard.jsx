@@ -8,6 +8,9 @@ import { differenceInDays } from 'date-fns';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
+  const totalDays = differenceInDays(new Date(challenge.end_date), new Date(challenge.start_date));
+  const daysElapsed = totalDays - daysLeft;
+  const progressPercentage = totalDays > 0 ? (daysElapsed / totalDays) * 100 : 0;
   const participantCount = challenge.participants?.length || 0;
 
   return (
@@ -69,12 +72,17 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
         </div>
 
-        {/* Check-in Progress */}
-        <div className="mb-3 bg-gradient-to-r from-purple-500/12 to-pink-500/12 rounded-lg p-3 border border-purple-400/25">
-          <p className="text-[10px] font-bold text-purple-300 uppercase mb-2">Check-ins</p>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-bold text-white">{participantCount}</p>
-            <p className="text-xs text-slate-400">participants joined</p>
+        {/* Progress Bar */}
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-1.5">
+            <p className="text-xs font-bold text-slate-300">Time Progress</p>
+            <p className="text-xs text-slate-400 font-medium">{Math.round(progressPercentage)}%</p>
+          </div>
+          <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 transition-all duration-500 shadow-lg"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
 

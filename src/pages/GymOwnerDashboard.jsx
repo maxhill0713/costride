@@ -21,12 +21,14 @@ import ManageAmenitiesModal from '../components/gym/ManageAmenitiesModal';
 import EditBasicInfoModal from '../components/gym/EditBasicInfoModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import QRScanner from '../components/gym/QRScanner';
+import { useTranslation } from 'react-i18next';
 import QRCode from 'react-qr-code';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function GymOwnerDashboard() {
-  const t = (key) => key; // Translation placeholder
+  const { i18n, t } = useTranslation();
   const [selectedGym, setSelectedGym] = useState(null);
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
@@ -89,7 +91,12 @@ export default function GymOwnerDashboard() {
     }
   }, [myGyms, selectedGym]);
 
-
+  // Auto-switch language based on gym's language setting
+  React.useEffect(() => {
+    if (selectedGym?.language && i18n.language !== selectedGym.language) {
+      i18n.changeLanguage(selectedGym.language);
+    }
+  }, [selectedGym, i18n]);
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', selectedGym?.id],
@@ -643,7 +650,17 @@ export default function GymOwnerDashboard() {
 
         {/* Quick Actions */}
          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
-
+           <Button
+            onClick={() => setShowQRScanner(true)}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1">
+              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+            </div>
+            <span className="font-bold text-sm md:text-base text-white">Scan QR</span>
+          </Button>
           <Button
             onClick={() => setShowManageMembers(true)}
             className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
@@ -651,7 +668,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-1 border border-blue-500/30">
               <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-400" />
             </div>
-            <span className="font-bold text-sm md:text-base">Members</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
           </Button>
           <Button
             onClick={() => setShowManageRewards(true)}
@@ -660,7 +677,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-1 border border-purple-500/30">
               <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-400" />
             </div>
-            <span className="font-bold text-sm md:text-base">Rewards</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
           </Button>
           <Button
             onClick={() => setShowManageClasses(true)}
@@ -669,7 +686,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center mb-1 border border-green-500/30">
               <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-400" />
             </div>
-            <span className="font-bold text-sm md:text-base">Classes</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
           </Button>
           <Button
             onClick={() => setShowManageCoaches(true)}
@@ -678,7 +695,7 @@ export default function GymOwnerDashboard() {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-1 border border-orange-500/30">
               <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-400" />
             </div>
-            <span className="font-bold text-sm md:text-base">Coaches</span>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
           </Button>
         </div>
 
@@ -2280,7 +2297,10 @@ export default function GymOwnerDashboard() {
           gyms={gyms}
         />
 
-
+        <QRScanner
+          open={showQRScanner}
+          onClose={() => setShowQRScanner(false)}
+        />
 
         <ManageEquipmentModal
           open={showManageEquipment}
