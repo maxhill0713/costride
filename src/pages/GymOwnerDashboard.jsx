@@ -16,6 +16,7 @@ import ManageCoachesModal from '../components/gym/ManageCoachesModal';
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
+import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
@@ -38,6 +39,9 @@ export default function GymOwnerDashboard() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
   const [showQRCodeModal, setShowQRCodeModal] = useState(false);
+  const [showManageEquipment, setShowManageEquipment] = useState(false);
+  const [showManageAmenities, setShowManageAmenities] = useState(false);
+  const [showEditBasicInfo, setShowEditBasicInfo] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser, refetch: refetchUser } = useQuery({
@@ -226,6 +230,16 @@ export default function GymOwnerDashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setShowManagePhotos(false);
+    }
+  });
+
+  const updateGymMutation = useMutation({
+    mutationFn: (data) => base44.entities.Gym.update(selectedGym.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setShowManageEquipment(false);
+      setShowManageAmenities(false);
+      setShowEditBasicInfo(false);
     }
   });
 
@@ -1224,7 +1238,13 @@ export default function GymOwnerDashboard() {
               <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.gymProfileSetup')}</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="font-bold text-slate-300 mb-3 text-lg">{t('dashboard.basicInformation')}</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300 text-lg">{t('dashboard.basicInformation')}</h4>
+                    <Button onClick={() => setShowEditBasicInfo(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.gymName')}</label>
@@ -1246,7 +1266,13 @@ export default function GymOwnerDashboard() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-slate-300 mb-3">{t('dashboard.amenities')}</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300">{t('dashboard.amenities')}</h4>
+                    <Button onClick={() => setShowManageAmenities(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedGym?.amenities?.map((amenity, idx) => (
                       <Badge key={idx} variant="outline" className="bg-slate-700/50 text-slate-200 border-slate-600">{amenity}</Badge>
@@ -1255,7 +1281,13 @@ export default function GymOwnerDashboard() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-slate-300 mb-3">{t('dashboard.equipment')}</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300">{t('dashboard.equipment')}</h4>
+                    <Button onClick={() => setShowManageEquipment(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedGym?.equipment?.slice(0, 15).map((item, idx) => (
                       <Badge key={idx} variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-500/30">{item}</Badge>
@@ -2211,6 +2243,14 @@ export default function GymOwnerDashboard() {
         <QRScanner
           open={showQRScanner}
           onClose={() => setShowQRScanner(false)}
+        />
+
+        <ManageEquipmentModal
+          open={showManageEquipment}
+          onClose={() => setShowManageEquipment(false)}
+          gym={selectedGym}
+          onSave={(equipment) => updateGymMutation.mutate({ equipment })}
+          isLoading={updateGymMutation.isPending}
         />
 
         {/* QR Code Fullscreen Modal */}
