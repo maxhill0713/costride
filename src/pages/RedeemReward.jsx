@@ -40,11 +40,13 @@ export default function RedeemReward() {
   });
 
   const claimMutation = useMutation({
-    mutationFn: async (rewardId) => {
+    mutationFn: async (rewardData) => {
       return await base44.entities.ClaimedBonus.create({
         user_id: currentUser.id,
-        reward_id: rewardId,
-        offer_details: selectedReward.title,
+        reward_id: rewardData.isChallenge ? null : rewardData.id,
+        challenge_id: rewardData.isChallenge ? rewardData.id : null,
+        offer_details: rewardData.title,
+        earned_text: rewardData.earnedText || rewardData.title,
         redemption_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
         redeemed: false
       });
@@ -57,6 +59,7 @@ export default function RedeemReward() {
         colors: ['#00E5FF', '#06b6d4', '#3b82f6']
       });
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
+      queryClient.invalidateQueries({ queryKey: ['completedChallenges'] });
       setShowQRModal(true);
     }
   });
