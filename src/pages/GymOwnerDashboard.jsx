@@ -1647,36 +1647,6 @@ export default function GymOwnerDashboard() {
                 })()}
               </div>
             </Card>
-              <div className="space-y-3">
-                {(() => {
-                  const hourlyData = {};
-                  checkIns.forEach(c => {
-                    const hour = new Date(c.check_in_date).getHours();
-                    hourlyData[hour] = (hourlyData[hour] || 0) + 1;
-                  });
-                  const sorted = Object.entries(hourlyData)
-                    .sort(([, a], [, b]) => b - a)
-                    .slice(0, 10);
-                  
-                  return sorted.map(([hour, count], idx) => {
-                    const h = parseInt(hour);
-                    const timeLabel = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
-                    const endH = (h + 1) % 24;
-                    const endLabel = endH === 0 ? '12am' : endH < 12 ? `${endH}am` : endH === 12 ? '12pm' : `${endH - 12}pm`;
-                    
-                    return (
-                      <div key={hour} className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-purple-600">#{idx + 1}</span>
-                          <span className="font-medium text-gray-900">{timeLabel} - {endLabel}</span>
-                        </div>
-                        <span className="text-xl font-black text-purple-600">{count}</span>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </Card>
 
             {/* Reward Engagement */}
             <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
