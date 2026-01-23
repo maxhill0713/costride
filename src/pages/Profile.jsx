@@ -413,10 +413,10 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         {/* Identity Card */}
-        <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 mb-4 shadow-sm overflow-hidden">
+        <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-blue-500/20 p-5 mb-4 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
+              <p className="text-xs text-blue-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
               <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent truncate`}>
                 {identityStatus.title}
               </h3>
@@ -426,22 +426,22 @@ export default function Profile() {
               <div className="text-4xl mb-2">🏆</div>
             </div>
           </div>
-          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 overflow-hidden">
-           <p className="text-xs text-slate-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
+          <div className="bg-blue-500/10 rounded-2xl p-3 border border-blue-500/20 overflow-hidden">
+           <p className="text-xs text-blue-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
             <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
 
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm overflow-hidden">
+          <Card className="bg-gradient-to-br from-orange-500/10 to-white/[0.02] backdrop-blur-sm border border-orange-500/20 p-5 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Flame className="w-6 h-6 text-cyan-400 flex-shrink-0" />
+                <Flame className="w-6 h-6 text-orange-400 flex-shrink-0" />
                 <div className="min-w-0">
-                    <p className="text-xs font-medium text-slate-400 truncate">Current Streak</p>
-                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                    <p className="text-xs text-slate-400 truncate">days</p>
+                    <p className="text-xs font-medium text-orange-400 truncate">Current Streak</p>
+                    <p className="text-2xl font-black text-orange-300">{currentStreak}</p>
+                    <p className="text-xs text-orange-400 truncate">days</p>
                   </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
@@ -462,7 +462,7 @@ export default function Profile() {
               </div>
             )}
             <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1 gap-2">
+              <div className="flex items-center justify-between text-xs text-orange-400 mb-1 gap-2">
                 <span className="truncate">Next: {nextMilestone.name}</span>
                 <span className="flex-shrink-0">{currentStreak}/{nextMilestone.days}</span>
               </div>
@@ -474,9 +474,9 @@ export default function Profile() {
             <div className="flex items-center gap-2 mb-3">
               <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-400 truncate">Best Streak</p>
-                <p className="text-2xl font-black text-slate-200">{longestStreak}</p>
-                <p className="text-xs text-slate-400 truncate">days ever</p>
+                <p className="text-xs font-medium text-purple-400 truncate">Best Streak</p>
+                <p className="text-2xl font-black text-purple-300">{longestStreak}</p>
+                <p className="text-xs text-purple-400 truncate">days ever</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
@@ -496,9 +496,9 @@ export default function Profile() {
 
         {/* Protection & Risk Info */}
         {currentStreak > 0 && (
-          <Card className="p-5 mb-4 bg-white/5 backdrop-blur-sm border border-white/10 shadow-sm">
-            <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-slate-400" />
+          <Card className="p-5 mb-4 bg-gradient-to-br from-red-500/10 to-white/[0.02] backdrop-blur-sm border border-red-500/20 shadow-sm">
+            <h3 className="font-semibold text-red-300 mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400" />
               What Happens If You Stop?
             </h3>
             <div className="space-y-3">
@@ -522,9 +522,9 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 mb-4 bg-white/5 backdrop-blur-sm border border-white/10 shadow-sm overflow-hidden">
-            <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-slate-400 flex-shrink-0" />
+          <Card className="p-5 mb-4 bg-gradient-to-br from-yellow-500/10 to-white/[0.02] backdrop-blur-sm border border-yellow-500/20 shadow-sm overflow-hidden">
+            <h3 className="font-semibold text-yellow-300 mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
               <span className="truncate">Milestones Unlocked</span>
             </h3>
             <div className="grid grid-cols-3 gap-2">
@@ -540,17 +540,17 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/8 transition-colors">
-            <div className="text-2xl font-black text-slate-200 mb-1">{stats.totalLifts}</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Workouts</div>
+          <Card className="bg-gradient-to-br from-cyan-500/10 to-white/[0.02] backdrop-blur-sm border border-cyan-500/20 p-4 text-center shadow-sm hover:bg-cyan-500/15 transition-colors">
+            <div className="text-2xl font-black text-cyan-300 mb-1">{stats.totalLifts}</div>
+            <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/8 transition-colors">
-            <div className="text-2xl font-black text-slate-200 mb-1">{stats.personalRecords}</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">PRs</div>
+          <Card className="bg-gradient-to-br from-pink-500/10 to-white/[0.02] backdrop-blur-sm border border-pink-500/20 p-4 text-center shadow-sm hover:bg-pink-500/15 transition-colors">
+            <div className="text-2xl font-black text-pink-300 mb-1">{stats.personalRecords}</div>
+            <div className="text-[10px] text-pink-400 font-bold uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/8 transition-colors">
-            <div className="text-2xl font-black text-slate-200 mb-1">{stats.weekStreak}</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Day Streak</div>
+          <Card className="bg-gradient-to-br from-emerald-500/10 to-white/[0.02] backdrop-blur-sm border border-emerald-500/20 p-4 text-center shadow-sm hover:bg-emerald-500/15 transition-colors">
+            <div className="text-2xl font-black text-emerald-300 mb-1">{stats.weekStreak}</div>
+            <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 
@@ -585,34 +585,34 @@ export default function Profile() {
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
             {/* Progress Stats */}
-            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm">
+            <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-blue-500/20 p-5 shadow-sm">
               <h3 className="font-semibold text-white mb-4">Your Progress</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-slate-400 uppercase">Check-Ins</span>
+                    <span className="text-xs font-bold text-cyan-400 uppercase">Check-Ins</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userCheckIns.length}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-xs font-bold text-slate-400 uppercase">Current Streak</span>
+                    <span className="text-xs font-bold text-orange-400 uppercase">Current Streak</span>
                     </div>
                     <div className="text-3xl font-black text-slate-200">{currentStreak}</div>
                     </div>
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Dumbbell className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-bold text-slate-400 uppercase">Workouts</span>
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Dumbbell className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-bold text-purple-400 uppercase">Workouts</span>
                     </div>
                     <div className="text-3xl font-black text-slate-200">{stats.totalLifts}</div>
                     </div>
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-slate-400 uppercase">PRs</span>
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Trophy className="w-4 h-4 text-yellow-400" />
+                    <span className="text-xs font-bold text-yellow-400 uppercase">PRs</span>
                     </div>
                     <div className="text-3xl font-black text-slate-200">{stats.personalRecords}</div>
                     </div>
