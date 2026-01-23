@@ -471,13 +471,15 @@ export default function Profile() {
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 p-5 shadow-lg overflow-hidden">
-            <div className="flex items-center gap-2 mb-3">
-              <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-purple-300 truncate">Best Streak</p>
+          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Best Streak</p>
                 <p className="text-2xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
-                <p className="text-xs text-purple-300 truncate">days ever</p>
+                <p className="text-xs text-slate-400">days ever</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
