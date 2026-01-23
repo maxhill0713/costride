@@ -417,8 +417,8 @@ export default function Profile() {
         {/* Identity Card */}
         <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl mb-4 shadow-md">
           <div className="flex items-start gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${identityStatus.color.includes('gray') ? 'bg-slate-500/20 text-slate-400' : 'bg-blue-500/20 text-blue-400'}`}>
-              <Trophy className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-yellow-500/20">
+              <Trophy className="w-6 h-6 text-yellow-400" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className={`text-base font-semibold text-slate-100 mb-3`}>
