@@ -26,13 +26,7 @@ import QRCode from 'react-qr-code';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function GymOwnerDashboard() {
-  const t = (key) => {
-    const translations = {
-      'dashboard.title': 'Dashboard',
-      'dashboard.subtitle': 'Manage your gym operations',
-    };
-    return translations[key] || key;
-  };
+  const t = (key) => key; // Translation placeholder
   const [selectedGym, setSelectedGym] = useState(null);
   const [showManageRewards, setShowManageRewards] = useState(false);
   const [showManageClasses, setShowManageClasses] = useState(false);
