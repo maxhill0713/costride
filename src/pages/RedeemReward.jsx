@@ -120,24 +120,24 @@ export default function RedeemReward() {
                 </Card>
               ) : (
                 userChallengeProgress.map((challenge) => (
-                  <Card key={challenge.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-500/40 transition-all overflow-hidden group">
+                  <Card key={challenge.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-amber-500/40 transition-all overflow-hidden group">
                     <div className="relative">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-white mb-1">{challenge.title}</h3>
-                          <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
+                      <div className="flex items-start justify-between mb-2 md:mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{challenge.title}</h3>
+                          <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
                             {challenge.category}
                           </Badge>
                         </div>
-                        <Trophy className="w-6 h-6 text-amber-500" />
+                        <Trophy className="w-4 md:w-5 h-4 md:h-5 text-amber-500 flex-shrink-0 ml-2" />
                       </div>
 
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-slate-400">{challenge.participantCount} participants</span>
-                          <span className="text-sm font-bold text-cyan-400">{challenge.progress}%</span>
+                      <div className="mb-2 md:mb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] md:text-xs text-slate-400">{challenge.participantCount} in</span>
+                          <span className="text-xs md:text-sm font-bold text-cyan-400">{challenge.progress}%</span>
                         </div>
-                        <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                        <div className="h-1.5 md:h-2 bg-slate-700/50 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${challenge.progress}%` }}
@@ -148,9 +148,9 @@ export default function RedeemReward() {
                       </div>
 
                       {challenge.reward && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Gift className="w-4 h-4 text-cyan-400" />
-                          <span className="text-slate-300">{challenge.reward}</span>
+                        <div className="flex items-center gap-1.5 text-[10px] md:text-xs">
+                          <Gift className="w-3 md:w-4 h-3 md:h-4 text-cyan-400 flex-shrink-0" />
+                          <span className="text-slate-300 truncate">{challenge.reward}</span>
                         </div>
                       )}
                     </div>
