@@ -531,53 +531,18 @@ export default function GymOwnerDashboard() {
          </Card>
 
          {/* Retention Pro Upgrade */}
-         <Card className="mb-6 p-6 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 border-0 shadow-2xl">
-           <div className="flex items-center justify-between">
-             <div>
-               <h3 className="text-2xl font-black text-white mb-2">🚀 Retention Pro</h3>
-               <p className="text-white/90 mb-4">Advanced member retention tools & analytics</p>
-               <div className="flex gap-3">
-                 <Button
-                   onClick={async () => {
-                     try {
-                       // Replace with your actual Stripe price IDs
-                       const monthlyPriceId = 'price_monthly_retention_pro'; // Replace this
-                       const { data } = await base44.functions.invoke('createRetentionProCheckout', {
-                         priceId: monthlyPriceId,
-                         gymId: selectedGym?.id
-                       });
-                       if (data.url) window.location.href = data.url;
-                     } catch (error) {
-                       console.error(error);
-                     }
-                   }}
-                   className="bg-white text-purple-600 hover:bg-white/90 font-bold"
-                 >
-                   £49.99/month
-                 </Button>
-                 <Button
-                   onClick={async () => {
-                     try {
-                       // Replace with your actual Stripe price IDs
-                       const yearlyPriceId = 'price_yearly_retention_pro'; // Replace this
-                       const { data } = await base44.functions.invoke('createRetentionProCheckout', {
-                         priceId: yearlyPriceId,
-                         gymId: selectedGym?.id
-                       });
-                       if (data.url) window.location.href = data.url;
-                     } catch (error) {
-                       console.error(error);
-                     }
-                   }}
-                   className="bg-white text-purple-600 hover:bg-white/90 font-bold"
-                 >
-                   £499/year <span className="text-xs ml-1">(Save £100)</span>
-                 </Button>
+         <Link to={createPageUrl('Plus')} className="block mb-6">
+           <Card className="p-6 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 border-0 shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
+             <div className="flex items-center justify-between">
+               <div>
+                 <h3 className="text-2xl font-black text-white mb-2">🚀 Retention Pro</h3>
+                 <p className="text-white/90 mb-2">Advanced member retention tools & analytics</p>
+                 <p className="text-white font-bold">From £49.99/month • Learn More →</p>
                </div>
+               <Star className="w-16 h-16 text-white/30" />
              </div>
-             <Star className="w-16 h-16 text-white/30" />
-           </div>
-         </Card>
+           </Card>
+         </Link>
 
          {/* View My Gym */}
          <div className="mb-6">
