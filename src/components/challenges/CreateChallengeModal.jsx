@@ -9,8 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy, Loader2 } from 'lucide-react';
 
-export default function CreateChallengeModal({ open, onClose, gyms }) {
-  const queryClient = useQueryClient();
+export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLoading }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
