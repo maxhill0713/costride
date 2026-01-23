@@ -281,25 +281,25 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 pt-8 pb-24">
+      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 pt-4 pb-8">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/30">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center overflow-hidden shadow-lg ring-2 ring-white/30">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text text-transparent">
-                    {currentUser.full_name?.charAt(0)?.toUpperCase()}
-                  </span>
-                )}
+                   <span className="text-2xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                     {currentUser.full_name?.charAt(0)?.toUpperCase()}
+                   </span>
+                 )}
               </div>
               <div className="text-white drop-shadow-lg">
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-3xl font-black">{currentUser.full_name}</h1>
+                <div className="flex items-center gap-2">
+                   <h1 className="text-xl font-black">{currentUser.full_name}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
                 </div>
-                <p className="text-white/90 text-sm mt-1">{currentUser.email}</p>
+                <p className="text-white/90 text-xs">{currentUser.email}</p>
               </div>
             </div>
             {!isEditing ? (
@@ -411,7 +411,7 @@ export default function Profile() {
       )}
 
       {/* Stats Cards */}
-      <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
+      <div className="max-w-2xl mx-auto px-4 -mt-6 mb-6">
         {/* Identity Card */}
         <Card className="bg-gradient-to-br from-blue-600/15 to-blue-500/5 backdrop-blur-sm border border-blue-500/40 p-5 mb-4 shadow-md overflow-hidden">
           <div className="flex items-center justify-between gap-3 mb-3">
