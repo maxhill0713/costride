@@ -296,21 +296,21 @@ export default function Home() {
 
         {/* Check-in Reminder */}
         {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-          <Card className="bg-gradient-to-br from-slate-700/70 to-slate-800/70 border border-amber-500/40 p-5 backdrop-blur-sm">
+          <Card className="bg-gradient-to-br from-slate-700/70 to-slate-800/70 border border-red-500/40 p-5 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-amber-600/60 border border-amber-500/50 rounded-full flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-amber-300" />
+                <div className="w-12 h-12 bg-red-600/60 border border-red-500/50 rounded-full flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-red-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-amber-300">
+                  <h3 className="font-bold text-red-300">
                     {daysSinceCheckIn === 1 ? "Haven't seen you today!" : `${daysSinceCheckIn} days since last check-in`}
                   </h3>
-                  <p className="text-sm text-amber-300/80">Keep your streak alive! 🔥</p>
+                  <p className="text-sm text-red-300/80">Keep your streak alive! 🔥</p>
                 </div>
               </div>
               <Link to={createPageUrl('Gyms')}>
-                <Button className="bg-amber-600/80 hover:bg-amber-600 border border-amber-500/50 text-white rounded-2xl">
+                <Button className="bg-red-600/80 hover:bg-red-600 border border-red-500/50 text-white rounded-2xl">
                   Check In Now
                 </Button>
               </Link>
