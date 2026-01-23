@@ -327,7 +327,7 @@ export default function Home() {
             </h3>
             <div className="space-y-2">
               {notifications.slice(0, 3).map(notif => (
-                <div key={notif.id} className={`p-3 rounded-lg text-sm ${notif.read ? 'bg-slate-900/40' : 'bg-slate-900/60 border-l-2 border-blue-500'}`}>
+                <div key={notif.id} className={`p-3 rounded-lg text-base ${notif.read ? 'bg-slate-900/40' : 'bg-slate-900/60 border-l-2 border-blue-500'}`}>
                   <div className="text-slate-200">{notif.title}</div>
                   <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
                 </div>
