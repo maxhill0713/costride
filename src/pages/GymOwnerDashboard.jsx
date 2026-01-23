@@ -859,7 +859,7 @@ export default function GymOwnerDashboard() {
             <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.memberEngagementLevels')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl">
+                <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl shadow-lg shadow-green-500/30 border border-green-400/30">
                   <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
@@ -869,7 +869,7 @@ export default function GymOwnerDashboard() {
                   </p>
                   <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth15')}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl">
+                <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl shadow-lg shadow-blue-500/30 border border-blue-400/30">
                   <p className="text-sm mb-1 opacity-90">{t('dashboard.active')}</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
@@ -879,7 +879,7 @@ export default function GymOwnerDashboard() {
                   </p>
                   <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth8to14')}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-2xl">
+                <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-2xl shadow-lg shadow-yellow-500/30 border border-yellow-400/30">
                   <p className="text-sm mb-1 opacity-90">{t('dashboard.casual')}</p>
                   <p className="text-4xl font-black">
                     {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
@@ -889,7 +889,7 @@ export default function GymOwnerDashboard() {
                   </p>
                   <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth1to7')}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl">
+                <div className="p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl shadow-lg shadow-red-500/30 border border-red-400/30">
                   <p className="text-sm mb-1 opacity-90">{t('dashboard.atRisk')}</p>
                   <p className="text-4xl font-black">{atRiskMembers}</p>
                   <p className="text-xs opacity-75">{t('dashboard.daysInactive')}</p>
@@ -1021,8 +1021,11 @@ export default function GymOwnerDashboard() {
             </div>
 
             {/* Weekly Leaderboard */}
-            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
-              <h3 className="text-xl font-bold text-white mb-4">{t('dashboard.weeklyLeaderboard')}</h3>
+            <Card className="p-6 bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-pink-600/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/10">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-yellow-400" />
+                {t('dashboard.weeklyLeaderboard')}
+              </h3>
               <p className="text-slate-300 mb-4">{t('dashboard.topMembersThisWeek')}</p>
               <div className="space-y-3">
                 {Object.entries(
@@ -1041,15 +1044,25 @@ export default function GymOwnerDashboard() {
                       <Link 
                          key={name} 
                          to={createPageUrl('Leaderboard')}
-                         className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl hover:bg-slate-700 transition-colors cursor-pointer border border-slate-600"
+                         className={`flex items-center justify-between p-4 rounded-2xl hover:scale-[1.02] transition-all cursor-pointer border-2 ${
+                           idx === 0 ? 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border-yellow-400/50 shadow-md shadow-yellow-500/20' :
+                           idx === 1 ? 'bg-gradient-to-r from-gray-400/30 to-gray-500/30 border-gray-400/50 shadow-md shadow-gray-400/20' :
+                           idx === 2 ? 'bg-gradient-to-r from-orange-500/30 to-red-500/30 border-orange-500/50 shadow-md shadow-orange-500/20' :
+                           'bg-slate-700/40 border-slate-600/30'
+                         }`}
                        >
                          <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white">
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
+                             idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                             idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                             idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' :
+                             'bg-gradient-to-br from-blue-500 to-cyan-500'
+                           }`}>
                              {idx < 3 ? medals[idx] : idx + 1}
                            </div>
                            <span className="font-bold text-white">{name}</span>
                          </div>
-                         <Badge className="text-lg px-3 bg-slate-600 text-slate-100">{count} {t('dashboard.visits')}</Badge>
+                         <Badge className="text-lg px-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">{count} {t('dashboard.visits')}</Badge>
                        </Link>
                     );
                   })}
@@ -1057,28 +1070,31 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Reward Effectiveness */}
-            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
-              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.rewardEffectiveness')}</h3>
+            <Card className="p-8 bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-pink-600/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/10">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <Award className="w-7 h-7 text-pink-400" />
+                {t('dashboard.rewardEffectiveness')}
+              </h3>
               <div className="grid grid-cols-3 gap-6">
-                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600">
-                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.activeRewards')}</p>
-                  <p className="text-3xl font-black text-purple-400">{rewards.filter(r => r.active).length}</p>
+                <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
+                  <p className="text-sm text-slate-300 mb-1">{t('dashboard.activeRewards')}</p>
+                  <p className="text-3xl font-black text-purple-300">{rewards.filter(r => r.active).length}</p>
                 </div>
-                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600">
-                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.totalClaims')}</p>
-                  <p className="text-3xl font-black text-pink-400">
+                <div className="p-4 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-2xl border border-pink-500/30">
+                  <p className="text-sm text-slate-300 mb-1">{t('dashboard.totalClaims')}</p>
+                  <p className="text-3xl font-black text-pink-300">
                     {rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0)}
                   </p>
                 </div>
-                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600">
-                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.mostPopular')}</p>
-                  <p className="text-lg font-bold text-orange-400">
+                <div className="p-4 bg-gradient-to-br from-orange-500/20 to-amber-500/20 rounded-2xl border border-orange-500/30">
+                  <p className="text-sm text-slate-300 mb-1">{t('dashboard.mostPopular')}</p>
+                  <p className="text-lg font-bold text-orange-300">
                     {rewards.sort((a, b) => (b.claimed_by?.length || 0) - (a.claimed_by?.length || 0))[0]?.title || 'N/A'}
                   </p>
                 </div>
               </div>
               <div className="mt-4">
-                <Button onClick={() => setShowManageRewards(true)} variant="outline" className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                <Button onClick={() => setShowManageRewards(true)} variant="outline" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-white shadow-lg">
                   {t('dashboard.manageRewards')}
                 </Button>
               </div>
@@ -1107,19 +1123,22 @@ export default function GymOwnerDashboard() {
                 {challenges.filter(c => c.status === 'active').length > 0 ? (
                   <div className="space-y-3">
                     {challenges.filter(c => c.status === 'active').map(challenge => (
-                      <div key={challenge.id} className="p-4 bg-slate-700/50 rounded-2xl border-2 border-orange-500/40">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h5 className="font-bold text-white">{challenge.title}</h5>
-                            <p className="text-sm text-slate-300">{challenge.description}</p>
-                          </div>
-                          <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40">{challenge.type.replace('_', ' ')}</Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-300 mt-2">
-                          <span>👥 {challenge.participants?.length || 0} {t('dashboard.participants')}</span>
-                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
-                        </div>
-                      </div>
+                     <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-2xl border-2 border-orange-400/50 shadow-lg shadow-orange-500/20">
+                       <div className="flex items-start justify-between mb-2">
+                         <div>
+                           <h5 className="font-bold text-white flex items-center gap-2">
+                             <Trophy className="w-5 h-5 text-yellow-400" />
+                             {challenge.title}
+                           </h5>
+                           <p className="text-sm text-slate-200">{challenge.description}</p>
+                         </div>
+                         <Badge className="bg-gradient-to-r from-orange-400 to-red-500 text-white border-0">{challenge.type.replace('_', ' ')}</Badge>
+                       </div>
+                       <div className="flex items-center gap-4 text-sm text-slate-200 mt-2">
+                         <span>👥 {challenge.participants?.length || 0} {t('dashboard.participants')}</span>
+                         <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                       </div>
+                     </div>
                     ))}
                   </div>
                 ) : (
@@ -1208,22 +1227,22 @@ export default function GymOwnerDashboard() {
               </div>
 
               {rewards.length > 0 ? (
-                <div className="grid grid-cols-3 gap-6">
-                  {rewards.slice(0, 6).map(reward => (
-                    <div key={reward.id} className="p-5 bg-slate-700/50 rounded-2xl border-2 border-purple-500/40">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="text-4xl">{reward.icon || '🎁'}</div>
-                        <Badge className={reward.active ? 'bg-green-500/20 text-green-300 border border-green-500/40' : 'bg-gray-400/20 text-gray-300 border border-gray-500/40'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
-                      </div>
-                      <h4 className="font-bold text-white mb-1">{reward.title}</h4>
-                      <p className="text-sm text-slate-300 mb-3">{reward.description}</p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-purple-400 font-bold">{reward.value}</span>
-                        <span className="text-slate-400">{reward.claimed_by?.length || 0} claimed</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+               <div className="grid grid-cols-3 gap-6">
+                 {rewards.slice(0, 6).map(reward => (
+                   <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border-2 border-purple-400/50 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all">
+                     <div className="flex items-start justify-between mb-3">
+                       <div className="text-4xl">{reward.icon || '🎁'}</div>
+                       <Badge className={reward.active ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0' : 'bg-slate-600 text-slate-200 border border-slate-500'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
+                     </div>
+                     <h4 className="font-bold text-white mb-1">{reward.title}</h4>
+                     <p className="text-sm text-slate-200 mb-3">{reward.description}</p>
+                     <div className="flex items-center justify-between text-sm">
+                       <span className="text-pink-300 font-bold">{reward.value}</span>
+                       <span className="text-slate-300">{reward.claimed_by?.length || 0} claimed</span>
+                     </div>
+                   </div>
+                 ))}
+               </div>
               ) : (
                 <div className="text-center py-12">
                   <Award className="w-16 h-16 mx-auto text-slate-600 mb-3" />
