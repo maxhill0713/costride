@@ -175,23 +175,23 @@ export default function RedeemReward() {
                 </Card>
               ) : (
                 unclaimedRewards.map((reward) => (
-                  <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-white mb-2">{reward.title}</h3>
-                        <p className="text-sm text-slate-400 mb-3">{reward.description}</p>
-                        <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs">
+                  <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
+                        <p className="text-xs md:text-sm text-slate-400 mb-2 line-clamp-1">{reward.description}</p>
+                        <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] md:text-xs inline-block">
                           {reward.type}
                         </Badge>
                       </div>
-                      <div className="text-2xl">{reward.icon}</div>
+                      <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-700/50">
+                    <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
                       {reward.points_required > 0 && (
-                        <div className="mb-3 flex items-center gap-2 text-sm text-slate-400">
-                          <Flame className="w-4 h-4 text-orange-500" />
-                          <span>{reward.points_required} points</span>
+                        <div className="mb-2 flex items-center gap-1.5 text-xs md:text-sm text-slate-400">
+                          <Flame className="w-3 md:w-4 h-3 md:h-4 text-orange-500 flex-shrink-0" />
+                          <span>{reward.points_required} pts</span>
                         </div>
                       )}
                       <Button
@@ -200,9 +200,9 @@ export default function RedeemReward() {
                           claimMutation.mutate(reward.id);
                         }}
                         disabled={claimMutation.isPending}
-                        className="w-full h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl transition-all"
+                        className="w-full h-8 md:h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
                       >
-                        {claimMutation.isPending ? 'Claiming...' : 'Claim Reward'}
+                        {claimMutation.isPending ? 'Claiming...' : 'Claim'}
                       </Button>
                     </div>
                   </Card>
