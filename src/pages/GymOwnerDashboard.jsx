@@ -1045,7 +1045,7 @@ export default function GymOwnerDashboard() {
                          key={name} 
                          to={createPageUrl('Leaderboard')}
                          className={`flex items-center justify-between p-4 rounded-2xl hover:scale-[1.02] transition-all cursor-pointer border-2 ${
-                           idx === 0 ? 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border-yellow-400/50 shadow-md shadow-yellow-500/20' :
+                           idx === 0 ? 'bg-gradient-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 shadow-md shadow-amber-500/20' :
                            idx === 1 ? 'bg-gradient-to-r from-gray-400/30 to-gray-500/30 border-gray-400/50 shadow-md shadow-gray-400/20' :
                            idx === 2 ? 'bg-gradient-to-r from-orange-500/30 to-red-500/30 border-orange-500/50 shadow-md shadow-orange-500/20' :
                            'bg-slate-700/40 border-slate-600/30'
@@ -1053,7 +1053,7 @@ export default function GymOwnerDashboard() {
                        >
                          <div className="flex items-center gap-3">
                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
-                             idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                             idx === 0 ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
                              idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
                              idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' :
                              'bg-gradient-to-br from-blue-500 to-cyan-500'

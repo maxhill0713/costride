@@ -41,7 +41,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           {/* Stats */}
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             {challenge.reward && (
-              <Badge className="bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border border-yellow-400/50 text-yellow-200 text-[10px] font-bold shadow-sm shadow-yellow-500/20 animate-pulse">
+              <Badge className="bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 text-[10px] font-bold shadow-sm shadow-emerald-500/20 animate-pulse">
                 🎁 {challenge.reward}
               </Badge>
             )}
@@ -55,11 +55,11 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
 
           {/* Goal Info */}
-          <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg p-2 mb-2 border-2 border-amber-400/40 shadow-sm shadow-amber-500/20">
-            <p className="text-[10px] font-bold text-amber-200 uppercase mb-0.5 flex items-center gap-1">
+          <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg p-2 mb-2 border-2 border-indigo-400/40 shadow-sm shadow-indigo-500/20">
+            <p className="text-[10px] font-bold text-indigo-200 uppercase mb-0.5 flex items-center gap-1">
               🎯 Goal
             </p>
-            <p className="text-xs text-amber-100 font-bold">
+            <p className="text-xs text-indigo-100 font-bold">
               {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
               {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
               {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
@@ -77,7 +77,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
             </div>
             <div className="h-2 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
               <div 
-                className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 transition-all duration-300 shadow-lg shadow-amber-500/50"
+                className="h-full bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 transition-all duration-300 shadow-lg shadow-pink-500/50"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
