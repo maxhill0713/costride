@@ -470,7 +470,7 @@ export default function GymSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8 px-4">
-      <div className="absolute top-4 right-4">
+      <div className="fixed top-4 right-4 z-50">
         <LanguageSelector />
       </div>
       <div className="max-w-2xl mx-auto">
