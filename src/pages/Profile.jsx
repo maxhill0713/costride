@@ -617,7 +617,7 @@ export default function Profile() {
                         <Trophy className="w-4 h-4 text-yellow-400" />
                     <span className="text-xs font-bold text-yellow-400 uppercase">PRs</span>
                     </div>
-                    <div className="text-3xl font-black text-slate-200">{stats.personalRecords}</div>
+                    <div className="text-4xl font-black bg-gradient-to-r from-yellow-300 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">{stats.personalRecords}</div>
                     </div>
                     </div>
             </Card>
