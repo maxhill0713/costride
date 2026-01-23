@@ -1120,9 +1120,9 @@ export default function GymOwnerDashboard() {
               
               <div className="mb-6">
                 <h4 className="text-lg font-bold text-white mb-3">{t('dashboard.activeChallenges')}</h4>
-                {challenges.filter(c => c.status === 'active' && c.gym_id === selectedGym?.id).length > 0 ? (
+                {challenges.filter(c => c.status === 'active').length > 0 ? (
                   <div className="space-y-3">
-                    {challenges.filter(c => c.status === 'active' && c.gym_id === selectedGym?.id).map(challenge => (
+                    {challenges.filter(c => c.status === 'active').map(challenge => (
                      <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-2xl border-2 border-orange-400/50 shadow-lg shadow-orange-500/20">
                        <div className="flex items-start justify-between mb-2">
                          <div>
