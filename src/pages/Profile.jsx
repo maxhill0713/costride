@@ -279,9 +279,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 pt-8 pb-24 shadow-xl">
+      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 pt-8 pb-24">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">

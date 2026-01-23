@@ -8,10 +8,8 @@ import { Bell, BellOff, Flame, Trophy, Calendar, Target, CheckCircle2, AlertCirc
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { useTranslation } from 'react-i18next';
 
 export default function Notifications() {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -192,22 +190,21 @@ export default function Notifications() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-12 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMCAxMGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bS0xMCAwYzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTAgMTBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyek0yNiAzNGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bTEwIDBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
-        <div className="max-w-2xl mx-auto relative z-10">
+      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 py-8">
+        <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Bell className="w-7 h-7 text-white" />
+              <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center border border-blue-500/50">
+                <Bell className="w-6 h-6 text-blue-400" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-semibold bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">
-                  {t('notifications.title')}
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
+                  Notifications
                 </h1>
                 {unreadCount > 0 && (
-                  <p className="text-cyan-100 text-sm mt-1">{unreadCount} {t('notifications.unread')}</p>
+                  <p className="text-slate-400 text-sm mt-1">{unreadCount} unread</p>
                 )}
               </div>
             </div>
@@ -215,9 +212,9 @@ export default function Notifications() {
               <Button
                 onClick={() => markAllReadMutation.mutate()}
                 disabled={markAllReadMutation.isPending}
-                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white rounded-2xl shadow-lg"
+                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 rounded-xl"
               >
-                {t('notifications.markAllRead')}
+                Mark All Read
               </Button>
             )}
           </div>
@@ -229,8 +226,8 @@ export default function Notifications() {
         {notifications.length === 0 ? (
           <Card className="p-12 text-center border-2 border-dashed border-slate-600/50 rounded-3xl bg-gradient-to-br from-slate-700/50 to-slate-800/50">
             <BellOff className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-            <p className="text-slate-300 font-medium">{t('notifications.noNotifications')}</p>
-            <p className="text-sm text-slate-400 mt-1">{t('notifications.notifyUpdates')}</p>
+            <p className="text-slate-300 font-medium">No notifications yet</p>
+            <p className="text-sm text-slate-400 mt-1">We'll notify you about updates and important events</p>
           </Card>
         ) : (
           <div className="space-y-3">
@@ -273,7 +270,7 @@ export default function Notifications() {
                           {format(new Date(notification.created_date), 'MMM d, h:mm a')}
                         </span>
                         {!notification.read && (
-                          <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs shadow-lg shadow-cyan-500/30">{t('notifications.new')}</Badge>
+                          <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs shadow-lg shadow-cyan-500/30">New</Badge>
                         )}
                       </div>
                       
@@ -282,11 +279,11 @@ export default function Notifications() {
                         {notification.action_url && (
                           <Link to={notification.action_url}>
                             <Button
-                              size="sm"
-                              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl shadow-lg"
-                              onClick={() => markAsReadMutation.mutate(notification.id)}
+                             size="sm"
+                             className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl shadow-lg"
+                             onClick={() => markAsReadMutation.mutate(notification.id)}
                             >
-                              {t('notifications.takeAction')}
+                             View
                             </Button>
                           </Link>
                         )}
@@ -297,7 +294,7 @@ export default function Notifications() {
                             onClick={() => markAsReadMutation.mutate(notification.id)}
                             className="bg-slate-700/50 hover:bg-slate-700 border-cyan-700/50 text-cyan-300 rounded-2xl"
                           >
-                            {t('notifications.markAsRead')}
+                            Mark as Read
                           </Button>
                         )}
                       </div>
