@@ -76,7 +76,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1.5">
             <p className="text-xs font-bold text-slate-300">Time Progress</p>
-            <p className="text-xs text-slate-400 font-medium">{Math.round(progressPercentage)}%</p>
+            <p className="text-xs text-slate-400 font-medium">{daysElapsed}/{totalDays}</p>
           </div>
           <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
             <div 
