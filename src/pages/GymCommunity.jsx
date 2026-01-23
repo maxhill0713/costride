@@ -1556,12 +1556,15 @@ export default function GymCommunity() {
         />
 
         <CreateChallengeModal
-          open={showCreateChallenge}
-          onClose={() => setShowCreateChallenge(false)}
-          gyms={allGyms}
-          onSave={(data) => createChallengeMutation.mutate(data)}
-          isLoading={createChallengeMutation.isPending}
-        />
+                  open={showCreateChallenge}
+                  onClose={() => setShowCreateChallenge(false)}
+                  gyms={allGyms}
+                  onSave={(data) => {
+                    console.log('Challenge modal onSave called with:', data);
+                    createChallengeMutation.mutate(data);
+                  }}
+                  isLoading={createChallengeMutation.isPending}
+                />
 
       {/* Floating Action Button (FAB) - Check-in */}
       {isMember && (
