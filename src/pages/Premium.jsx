@@ -83,87 +83,84 @@ export default function Premium() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-16">
+      <div className="bg-gradient-to-b from-slate-900/50 to-transparent px-4 pt-8 pb-12 border-b border-blue-700/40">
         <div className="max-w-4xl mx-auto text-center">
-          <Crown className="w-16 h-16 mx-auto mb-4" />
-          <h1 className="text-4xl font-black mb-4">Unlock Premium Features</h1>
-          <p className="text-xl text-purple-100">
-            Take your fitness journey to the next level
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <Crown className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">Premium Membership</h1>
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+            Unlock exclusive rewards, early access to drops, and double your earnings
           </p>
         </div>
       </div>
 
       {/* User Plans */}
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid gap-8 max-w-md mx-auto">
+        <div className="grid gap-8 max-w-lg mx-auto">
           {userPlans.map((plan) => {
             const Icon = plan.icon;
             return (
-              <Card key={plan.id} className="relative overflow-hidden border-2 border-gray-200 hover:border-purple-400 transition-all">
-                <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${plan.color}`} />
+              <Card key={plan.id} className="relative overflow-hidden bg-gradient-to-br from-slate-800/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 shadow-lg">
                 <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-black text-gray-900">{plan.name}</h3>
-                      </div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg`}>
+                      <Icon className="w-7 h-7 text-white" />
                     </div>
-                    </div>
+                    <h3 className="text-2xl font-black text-white">{plan.name}</h3>
+                  </div>
 
-                    {/* Billing Cycle Toggle */}
-                    <div className="flex items-center justify-center gap-3 mb-6 p-1 bg-gray-100 rounded-2xl">
+                  {/* Billing Cycle Toggle */}
+                  <div className="flex items-center gap-2 mb-8 p-1 bg-slate-700/50 rounded-2xl border border-slate-600/30">
                     <button
                       onClick={() => setBillingCycle('monthly')}
-                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
+                      className={`flex-1 px-4 py-2 rounded-xl font-bold transition-all text-sm ${
                         billingCycle === 'monthly'
-                          ? 'bg-white text-gray-900 shadow-md'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                          : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
                       Monthly
                     </button>
                     <button
                       onClick={() => setBillingCycle('yearly')}
-                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
+                      className={`flex-1 px-4 py-2 rounded-xl font-bold transition-all text-sm ${
                         billingCycle === 'yearly'
-                          ? 'bg-white text-gray-900 shadow-md'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                          : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2">
                         Yearly
-                        <Badge className="bg-green-500 text-white text-xs">Save 17%</Badge>
+                        <Badge className="bg-green-500 text-white text-xs">17% OFF</Badge>
                       </div>
                     </button>
-                    </div>
+                  </div>
 
-                    <div className="mb-6">
+                  <div className="mb-8 bg-slate-700/30 rounded-2xl p-6 border border-slate-600/30">
                     {billingCycle === 'monthly' ? (
-                      <>
-                        <span className="text-5xl font-black text-gray-900">${plan.monthlyPrice}</span>
-                        <span className="text-gray-500">/month</span>
-                      </>
+                      <div>
+                        <span className="text-5xl font-black text-white">${plan.monthlyPrice}</span>
+                        <span className="text-slate-400 ml-2">/month</span>
+                      </div>
                     ) : (
-                      <>
-                        <span className="text-5xl font-black text-gray-900">${plan.yearlyPrice}</span>
-                        <span className="text-gray-500">/year</span>
-                        <div className="text-sm text-gray-600 mt-2">
-                          ${(plan.yearlyPrice / 12).toFixed(2)}/month • 2 MONTHS FREE
+                      <div>
+                        <span className="text-5xl font-black text-white">${plan.yearlyPrice}</span>
+                        <span className="text-slate-400 ml-2">/year</span>
+                        <div className="text-sm text-slate-300 mt-3">
+                          ${(plan.yearlyPrice / 12).toFixed(2)}/month • Save 2 months
                         </div>
-                      </>
+                      </div>
                     )}
-                    </div>
+                  </div>
 
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
+                      <li key={idx} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                        <span className="text-slate-300">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -171,7 +168,7 @@ export default function Premium() {
                   <Button
                     onClick={() => handleSubscribe(plan)}
                     disabled={hasActiveSub || checkoutMutation.isPending}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-bold h-14 rounded-2xl text-lg`}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-bold h-12 rounded-xl`}
                   >
                     {checkoutMutation.isPending ? 'Loading...' : hasActiveSub ? 'Current Plan' : 'Subscribe Now'}
                   </Button>
@@ -185,42 +182,43 @@ export default function Premium() {
 
 
       {/* Benefits Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
+      <div className="max-w-6xl mx-auto px-4 py-16 border-t border-blue-700/40">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-gray-900 mb-2">Why Go Premium?</h2>
+          <h2 className="text-3xl font-black text-white mb-3">What You Get</h2>
+          <p className="text-slate-400">Everything you need to maximize your fitness rewards</p>
         </div>
 
         <div className="grid md:grid-cols-4 gap-6">
-          <Card className="p-6 text-center border-2 border-gray-200">
-            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-              <Star className="w-6 h-6 text-purple-600" />
+          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-purple-500/40 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+              <Star className="w-6 h-6 text-purple-400" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Exclusive Rewards</h3>
-            <p className="text-sm text-gray-600">Premium-only discounts & limited drops</p>
+            <h3 className="font-bold text-white mb-2">Exclusive Rewards</h3>
+            <p className="text-sm text-slate-400">Premium-only discounts & limited drops</p>
           </Card>
 
-          <Card className="p-6 text-center border-2 border-gray-200">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-6 h-6 text-blue-600" />
+          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-blue-500/40 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-6 h-6 text-blue-400" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Double Rewards</h3>
-            <p className="text-sm text-gray-600">Earn 2x rewards on every check-in</p>
+            <h3 className="font-bold text-white mb-2">Double Rewards</h3>
+            <p className="text-sm text-slate-400">Earn 2x rewards on every check-in</p>
           </Card>
 
-          <Card className="p-6 text-center border-2 border-gray-200">
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-orange-600" />
+          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-orange-500/40 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
+              <Zap className="w-6 h-6 text-orange-400" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Early Access</h3>
-            <p className="text-sm text-gray-600">First to claim limited quantity rewards</p>
+            <h3 className="font-bold text-white mb-2">Early Access</h3>
+            <p className="text-sm text-slate-400">First to claim limited quantity rewards</p>
           </Card>
 
-          <Card className="p-6 text-center border-2 border-gray-200">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-6 h-6 text-green-600" />
+          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-green-500/40 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+              <Crown className="w-6 h-6 text-green-400" />
             </div>
-            <h3 className="font-bold text-gray-900 mb-2">Free Products</h3>
-            <p className="text-sm text-gray-600">Premium partner gifts & samples</p>
+            <h3 className="font-bold text-white mb-2">Free Products</h3>
+            <p className="text-sm text-slate-400">Premium partner gifts & samples</p>
           </Card>
         </div>
       </div>
