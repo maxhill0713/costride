@@ -997,37 +997,37 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Rewards Management */}
-            <Card className="p-8">
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">{t('dashboard.rewardsManagement')}</h3>
-                <Button onClick={() => setShowManageRewards(true)}>
+                <h3 className="text-2xl font-bold text-white">{t('dashboard.rewardsManagement')}</h3>
+                <Button onClick={() => setShowManageRewards(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
                   <Plus className="w-4 h-4 mr-2" />
                   {t('dashboard.addReward')}
                 </Button>
               </div>
-              
+
               {rewards.length > 0 ? (
                 <div className="grid grid-cols-3 gap-6">
                   {rewards.slice(0, 6).map(reward => (
-                    <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                    <div key={reward.id} className="p-5 bg-slate-700/50 rounded-2xl border-2 border-purple-500/40">
                       <div className="flex items-start justify-between mb-3">
                         <div className="text-4xl">{reward.icon || '🎁'}</div>
-                        <Badge className={reward.active ? 'bg-green-500' : 'bg-gray-400'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
+                        <Badge className={reward.active ? 'bg-green-500/20 text-green-300 border border-green-500/40' : 'bg-gray-400/20 text-gray-300 border border-gray-500/40'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
                       </div>
-                      <h4 className="font-bold text-gray-900 mb-1">{reward.title}</h4>
-                      <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
+                      <h4 className="font-bold text-white mb-1">{reward.title}</h4>
+                      <p className="text-sm text-slate-300 mb-3">{reward.description}</p>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-purple-600 font-bold">{reward.value}</span>
-                        <span className="text-gray-500">{reward.claimed_by?.length || 0} claimed</span>
+                        <span className="text-purple-400 font-bold">{reward.value}</span>
+                        <span className="text-slate-400">{reward.claimed_by?.length || 0} claimed</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <Award className="w-16 h-16 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500 mb-2">No rewards yet</p>
-                  <p className="text-sm text-gray-400">Create rewards to incentivize member engagement</p>
+                  <Award className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400 mb-2">No rewards yet</p>
+                  <p className="text-sm text-slate-500">Create rewards to incentivize member engagement</p>
                 </div>
               )}
             </Card>
