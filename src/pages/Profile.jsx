@@ -386,12 +386,13 @@ export default function Profile() {
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
+              )}
+            </div>
+            </div>
+            </div>
 
-      {/* Spacing */}
-      <div className="h-4" />
+            {/* Spacing */}
+            <div className="h-6" />
 
       {/* Re-engagement Banner */}
       {daysSinceCheckIn !== null && daysSinceCheckIn >= 3 && currentStreak > 0 && (
