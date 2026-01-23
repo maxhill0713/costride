@@ -341,7 +341,7 @@ export default function Home() {
         {/* Who Checked In Today */}
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent flex items-center gap-2">
+            <h2 className="text-2xl font-black bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent flex items-center gap-2">
               <Users className="w-6 h-6 text-blue-400" />
               Who's Training Today
             </h2>
