@@ -108,12 +108,12 @@ export default function RedeemReward() {
 
         {/* Active Challenges Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <div className="mb-6">
-            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-amber-500" />
-              Active Challenges
+          <div className="mb-5 md:mb-6">
+            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
+              <Trophy className="w-5 md:w-6 h-5 md:h-6 text-amber-500" />
+              Challenges
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {userChallengeProgress.length === 0 ? (
                 <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
                   <p className="text-slate-400">No active challenges at the moment</p>
