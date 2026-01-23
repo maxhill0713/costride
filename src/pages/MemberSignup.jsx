@@ -9,11 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { User, Camera, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import LanguageSelector from '../components/LanguageSelector';
-import { useTranslation } from 'react-i18next';
 
 export default function MemberSignup() {
-  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -68,19 +65,16 @@ export default function MemberSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSelector />
-      </div>
       <Card className="max-w-2xl w-full p-8 md:p-12 bg-white border-0 shadow-xl rounded-3xl">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
             <User className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-black text-gray-900 mb-3">
-            {t('memberSignup.title')}
+            Complete Your Profile
           </h1>
           <p className="text-gray-600 text-lg">
-            {t('memberSignup.subtitle')}
+            Let's personalize your fitness journey
           </p>
         </div>
 
@@ -110,13 +104,13 @@ export default function MemberSignup() {
                 />
               </label>
             </div>
-            {uploading && <p className="text-sm text-gray-500">{t('memberSignup.uploading')}</p>}
+            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
           </div>
 
           {/* Email */}
           <div>
             <Label htmlFor="email" className="text-gray-900 font-semibold mb-2 block">
-              {t('memberSignup.email')} *
+              Email *
             </Label>
             <Input
               id="email"
@@ -133,13 +127,13 @@ export default function MemberSignup() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label htmlFor="password" className="text-gray-900 font-semibold">
-                {t('memberSignup.password')} *
+                Password *
               </Label>
               <a
                 href="/auth/login"
                 className="text-xs text-blue-600 hover:text-blue-700 font-medium"
               >
-                {t('memberSignup.forgotPassword')}
+                Forgot Password?
               </a>
             </div>
             <Input
@@ -157,26 +151,26 @@ export default function MemberSignup() {
           {/* Name Display */}
           <div>
             <Label className="text-gray-900 font-semibold mb-2 block">
-              {t('memberSignup.yourName')}
+              Your Name
             </Label>
             <Input
               value={currentUser?.full_name || ''}
               disabled
               className="h-12 text-base bg-gray-50"
             />
-            <p className="text-xs text-gray-500 mt-1">{t('memberSignup.accountName')}</p>
+            <p className="text-xs text-gray-500 mt-1">This is your account name</p>
           </div>
 
           {/* Bio */}
           <div>
             <Label htmlFor="bio" className="text-gray-900 font-semibold mb-2 block">
-              {t('memberSignup.bio')}
+              Bio (Optional)
             </Label>
             <Textarea
               id="bio"
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder={t('memberSignup.bioPlaceholder')}
+              placeholder="Tell us about your fitness journey..."
               className="min-h-32 text-base"
             />
           </div>
@@ -189,7 +183,7 @@ export default function MemberSignup() {
               variant="outline"
               className="flex-1 h-14 text-base rounded-xl border-2"
             >
-              {t('memberSignup.skipForNow')}
+              Skip for Now
             </Button>
             <Button
               type="submit"
@@ -197,10 +191,10 @@ export default function MemberSignup() {
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold"
             >
               {createMemberMutation.isPending ? (
-                t('memberSignup.creatingProfile')
+                'Creating Profile...'
               ) : (
                 <>
-                  {t('memberSignup.completeSetup')}
+                  Complete Setup
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
