@@ -35,41 +35,9 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
     send_reminders: true
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Challenge.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['challenges'] });
-      onClose();
-      setFormData({
-        title: '',
-        description: '',
-        type: 'individual',
-        category: 'lifting',
-        gym_id: '',
-        gym_name: '',
-        competing_gym_id: '',
-        competing_gym_name: '',
-        exercise: 'bench_press',
-        goal_type: 'total_weight',
-        target_value: 0,
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
-        status: 'upcoming',
-        prize_pool: '',
-        entry_fee: 0,
-        max_participants: 0,
-        difficulty_level: 'intermediate',
-        rules: '',
-        rewards: { first: '', second: '', third: '' },
-        auto_start: true,
-        send_reminders: true
-      });
-    }
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    createMutation.mutate(formData);
+    onSave(formData);
   };
 
   return (
