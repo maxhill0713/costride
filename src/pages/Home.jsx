@@ -321,7 +321,7 @@ export default function Home() {
         {/* Notifications Section */}
         {notifications.length > 0 && (
           <Card className="bg-slate-800/40 backdrop-blur-sm border border-blue-700/40 rounded-2xl p-4">
-            <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2">
+            <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2 text-lg">
               <Bell className="w-4 h-4 text-blue-400" />
               Recent Notifications
             </h3>
