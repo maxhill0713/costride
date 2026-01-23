@@ -1084,27 +1084,27 @@ export default function GymCommunity() {
             </div>
             
             {classes.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No classes scheduled</p>
+              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                <p className="text-slate-400 text-sm">No classes scheduled</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
                 {classes.map((gymClass) => (
-                  <div key={gymClass.id} className="bg-gray-50 border border-gray-200 p-2 md:p-4 rounded-2xl">
+                  <div key={gymClass.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
                     <div className="flex items-start gap-2 md:gap-3">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                         <Target className="w-5 md:w-6 h-5 md:h-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm md:text-base mb-0.5 md:mb-1 line-clamp-1">{gymClass.name}</h4>
-                        <p className="text-xs text-gray-600 mb-1 md:mb-2 line-clamp-1">{gymClass.description}</p>
+                        <h4 className="font-semibold text-white text-sm md:text-base mb-0.5 md:mb-1 line-clamp-1">{gymClass.name}</h4>
+                        <p className="text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{gymClass.description}</p>
                         <div className="flex flex-wrap gap-1 mb-2">
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">
+                          <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
                             {gymClass.instructor}
                           </Badge>
                           {gymClass.duration_minutes && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs bg-slate-600/50 text-slate-200 border-slate-500">
                               {gymClass.duration_minutes} min
                             </Badge>
                           )}
@@ -1112,7 +1112,7 @@ export default function GymCommunity() {
                         {gymClass.schedule && gymClass.schedule.length > 0 && (
                           <div className="space-y-1">
                             {gymClass.schedule.map((slot, idx) => (
-                              <div key={idx} className="text-xs text-gray-600 flex items-center gap-1">
+                              <div key={idx} className="text-xs text-slate-300 flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 <span className="font-medium">{slot.day}</span> • <span>{slot.time}</span>
                               </div>
@@ -1144,9 +1144,9 @@ export default function GymCommunity() {
             </div>
             
             {events.filter(e => new Date(e.event_date) >= new Date()).length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No upcoming events</p>
+              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                <p className="text-slate-400 text-sm">No upcoming events</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
@@ -1185,14 +1185,14 @@ export default function GymCommunity() {
             </div>
             
             {coaches.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No coaches listed</p>
+              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                <p className="text-slate-400 text-sm">No coaches listed</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
                 {coaches.slice(0, 5).map((coach) => (
-                  <div key={coach.id} className="bg-gray-50 border border-gray-200 p-2 md:p-4 rounded-2xl">
+                  <div key={coach.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
                     <div className="flex items-start gap-2 md:gap-3">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {coach.avatar_url ? (
@@ -1203,19 +1203,19 @@ export default function GymCommunity() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
-                          <h4 className="font-semibold text-gray-900 text-sm md:text-base line-clamp-1">{coach.name}</h4>
+                          <h4 className="font-semibold text-white text-sm md:text-base line-clamp-1">{coach.name}</h4>
                           {coach.rating && (
                             <div className="flex items-center gap-0.5">
                               <Star className="w-2.5 md:w-3 h-2.5 md:h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                              <span className="text-[10px] md:text-xs font-bold">{coach.rating}</span>
+                              <span className="text-[10px] md:text-xs font-bold text-slate-200">{coach.rating}</span>
                             </div>
                           )}
                         </div>
-                        {coach.bio && <p className="text-[10px] md:text-xs text-gray-600 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
+                        {coach.bio && <p className="text-[10px] md:text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
                         {coach.specialties && coach.specialties.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {coach.specialties.map((specialty, idx) => (
-                              <Badge key={idx} className="bg-blue-100 text-blue-700 text-xs">{specialty}</Badge>
+                              <Badge key={idx} className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">{specialty}</Badge>
                             ))}
                           </div>
                         )}
@@ -1315,13 +1315,13 @@ export default function GymCommunity() {
 
           {/* Member Rewards */}
           {!isMember ? (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-700/40 p-2 md:p-5">
+            <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-2 md:p-5">
               <div className="text-center mb-2 md:mb-4">
                 <div className="w-12 md:w-16 h-12 md:h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
                   <Gift className="w-6 md:w-8 h-6 md:h-8 text-white" />
                 </div>
-                <h3 className="text-base md:text-xl font-bold text-purple-900 mb-1 md:mb-2">Member Rewards</h3>
-                <p className="text-xs md:text-sm text-purple-700">Join to unlock exclusive rewards!</p>
+                <h3 className="text-base md:text-xl font-bold text-white mb-1 md:mb-2">Member Rewards</h3>
+                <p className="text-xs md:text-sm text-slate-300">Join to unlock exclusive rewards!</p>
               </div>
               <Button
                 onClick={() => setShowJoinGymModal(true)}
@@ -1332,7 +1332,7 @@ export default function GymCommunity() {
               </Button>
               <button
                 onClick={() => setShowJoinGymModal(true)}
-                className="w-full text-sm text-purple-700 font-medium underline"
+                className="w-full text-sm text-purple-400 font-medium underline hover:text-purple-300"
               >
                 Already a member? Register here
               </button>
@@ -1361,26 +1361,26 @@ export default function GymCommunity() {
                   const progress = getRequirementProgress(reward.requirement, reward.created_date);
                   
                   return (
-                    <div key={reward.id} className={`border p-2 md:p-4 rounded-2xl ${
-                      meetsReq ? 'bg-gray-50 border-gray-200' : 'bg-gray-100 border-gray-300 opacity-60'
+                    <div key={reward.id} className={`border p-2 md:p-4 rounded-2xl transition-all ${
+                      meetsReq ? 'bg-slate-700/50 border-slate-600/40 hover:bg-slate-700/70' : 'bg-slate-800/60 border-slate-700/50 opacity-60'
                     }`}>
                       <div className="flex items-start gap-2 md:gap-3">
                         <div className="text-2xl md:text-3xl flex-shrink-0">{reward.icon || '🎁'}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-semibold text-gray-900 text-xs md:text-sm line-clamp-1">{reward.title}</h4>
+                            <h4 className="font-semibold text-white text-xs md:text-sm line-clamp-1">{reward.title}</h4>
                             {!meetsReq && (
-                              <Badge className="bg-gray-400 text-white text-xs">🔒 Locked</Badge>
+                              <Badge className="bg-slate-600 text-slate-200 text-xs">🔒 Locked</Badge>
                             )}
                           </div>
                           {reward.description && (
-                            <p className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1 line-clamp-1">{reward.description}</p>
+                            <p className="text-[10px] md:text-xs text-slate-300 mt-0.5 md:mt-1 line-clamp-1">{reward.description}</p>
                           )}
                           <div className="flex flex-wrap gap-1 mt-1 md:mt-2">
                             {reward.value && (
-                              <Badge className="bg-green-100 text-green-700 text-xs">{reward.value}</Badge>
+                              <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">{reward.value}</Badge>
                             )}
-                            <Badge variant="outline" className="capitalize text-xs">
+                            <Badge variant="outline" className="capitalize text-xs bg-slate-600/50 text-slate-200 border-slate-500">
                               {reward.requirement.replace('_', ' ')}
                             </Badge>
                           </div>
@@ -1389,10 +1389,10 @@ export default function GymCommunity() {
                           {!hasUserClaimed && (
                             <div className="mt-1.5 md:mt-3">
                               <div className="flex items-center justify-between mb-0.5 md:mb-1">
-                                <span className="text-[10px] md:text-xs font-medium text-gray-700">
+                                <span className="text-[10px] md:text-xs font-medium text-slate-300">
                                   {progress.current} / {progress.target}
                                 </span>
-                                <span className="text-[10px] md:text-xs font-semibold text-purple-600">
+                                <span className="text-[10px] md:text-xs font-semibold text-purple-400">
                                   {Math.round(progress.percentage)}%
                                 </span>
                               </div>
@@ -1417,7 +1417,7 @@ export default function GymCommunity() {
                                 hasUserClaimed 
                                   ? 'bg-green-500 text-white cursor-default' 
                                   : !meetsReq
-                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                                   : 'bg-purple-500 hover:bg-purple-600 text-white'
                               }`}
                             >
@@ -1435,11 +1435,11 @@ export default function GymCommunity() {
 
           {/* Manage Rewards Button for Gym Owners */}
           {showOwnerControls && rewards.filter(r => r.active).length === 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-700/40 p-2 md:p-5">
+            <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-2 md:p-5">
               <div className="text-center">
-                <Gift className="w-8 md:w-12 h-8 md:h-12 mx-auto mb-2 md:mb-3 text-purple-500" />
-                <h3 className="font-bold text-gray-900 text-sm md:text-base mb-1 md:mb-2">Create Member Rewards</h3>
-                <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-4">
+                <Gift className="w-8 md:w-12 h-8 md:h-12 mx-auto mb-2 md:mb-3 text-purple-400" />
+                <h3 className="font-bold text-white text-sm md:text-base mb-1 md:mb-2">Create Member Rewards</h3>
+                <p className="text-xs md:text-sm text-slate-300 mb-2 md:mb-4">
                   Motivate your members!
                 </p>
                 <Button
