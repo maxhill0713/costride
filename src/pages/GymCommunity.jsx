@@ -1559,6 +1559,8 @@ export default function GymCommunity() {
           open={showCreateChallenge}
           onClose={() => setShowCreateChallenge(false)}
           gyms={allGyms}
+          onSave={(data) => createChallengeMutation.mutate(data)}
+          isLoading={createChallengeMutation.isPending}
         />
 
       {/* Floating Action Button (FAB) - Check-in */}
