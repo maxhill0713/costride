@@ -279,7 +279,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Header */}
       <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
         <div className="max-w-2xl mx-auto">
