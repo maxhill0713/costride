@@ -445,9 +445,9 @@ export default function Profile() {
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Flame className="w-6 h-6 text-orange-400 flex-shrink-0" />
                 <div className="min-w-0">
-                    <p className="text-xs font-medium text-orange-400 truncate">Current Streak</p>
-                    <p className="text-2xl font-black text-orange-300">{currentStreak}</p>
-                    <p className="text-xs text-orange-400 truncate">days</p>
+                    <p className="text-xs font-medium text-orange-300 truncate">Current Streak</p>
+                    <p className="text-3xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">{currentStreak}</p>
+                    <p className="text-xs text-orange-300 truncate">days</p>
                   </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
