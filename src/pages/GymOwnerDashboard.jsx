@@ -1220,107 +1220,107 @@ export default function GymOwnerDashboard() {
 
           <TabsContent value="admin" className="space-y-8 mt-4 md:mt-6">
             {/* Gym Profile Setup */}
-            <Card className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.gymProfileSetup')}</h3>
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.gymProfileSetup')}</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="font-bold text-gray-700 mb-3 text-lg">{t('dashboard.basicInformation')}</h4>
+                  <h4 className="font-bold text-slate-300 mb-3 text-lg">{t('dashboard.basicInformation')}</h4>
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <label className="text-sm font-bold text-gray-500 uppercase">{t('dashboard.gymName')}</label>
-                      <p className="text-gray-900 font-medium mt-1">{selectedGym?.name}</p>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.gymName')}</label>
+                      <p className="text-white font-medium mt-1">{selectedGym?.name}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-bold text-gray-500 uppercase">{t('dashboard.type')}</label>
-                      <Badge className="capitalize mt-1">{selectedGym?.type}</Badge>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.type')}</label>
+                      <Badge className="capitalize mt-1 bg-slate-700 text-slate-200 border-slate-600">{selectedGym?.type}</Badge>
                     </div>
                     <div>
-                      <label className="text-sm font-bold text-gray-500 uppercase">{t('dashboard.location')}</label>
-                      <p className="text-gray-900 mt-1">{selectedGym?.address}, {selectedGym?.city} {selectedGym?.postcode}</p>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.location')}</label>
+                      <p className="text-white mt-1">{selectedGym?.address}, {selectedGym?.city} {selectedGym?.postcode}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-bold text-gray-500 uppercase">{t('dashboard.monthlyPrice')}</label>
-                      <p className="text-gray-900 font-bold mt-1">£{selectedGym?.price}/month</p>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.monthlyPrice')}</label>
+                      <p className="text-white font-bold mt-1">£{selectedGym?.price}/month</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-gray-700 mb-3">{t('dashboard.amenities')}</h4>
+                  <h4 className="font-bold text-slate-300 mb-3">{t('dashboard.amenities')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedGym?.amenities?.map((amenity, idx) => (
-                      <Badge key={idx} variant="outline">{amenity}</Badge>
+                      <Badge key={idx} variant="outline" className="bg-slate-700/50 text-slate-200 border-slate-600">{amenity}</Badge>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-gray-700 mb-3">{t('dashboard.equipment')}</h4>
+                  <h4 className="font-bold text-slate-300 mb-3">{t('dashboard.equipment')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedGym?.equipment?.slice(0, 15).map((item, idx) => (
-                      <Badge key={idx} variant="outline" className="bg-blue-50">{item}</Badge>
+                      <Badge key={idx} variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-500/30">{item}</Badge>
                     ))}
                     {selectedGym?.equipment?.length > 15 && (
-                      <Badge variant="outline">+{selectedGym.equipment.length - 15} {t('dashboard.more')}</Badge>
+                      <Badge variant="outline" className="bg-slate-700/50 text-slate-200 border-slate-600">+{selectedGym.equipment.length - 15} {t('dashboard.more')}</Badge>
                     )}
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-bold text-gray-700">{t('dashboard.photoGallery')}</h4>
-                    <Button onClick={() => setShowManagePhotos(true)} variant="outline" size="sm">
+                    <h4 className="font-bold text-slate-300">{t('dashboard.photoGallery')}</h4>
+                    <Button onClick={() => setShowManagePhotos(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
                       <ImageIcon className="w-4 h-4 mr-2" />
                       {t('dashboard.managePhotos')}
                     </Button>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {selectedGym?.gallery?.slice(0, 6).map((url, idx) => (
-                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-xl" />
+                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-xl border border-slate-700" />
                     ))}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                  <Button onClick={() => setShowManageClasses(true)} variant="outline" className="h-auto py-6 flex-col gap-3">
+                  <Button onClick={() => setShowManageClasses(true)} className="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white h-auto py-6 flex-col gap-3">
                     <Calendar className="w-8 h-8" />
                     <span className="font-bold text-base">{t('dashboard.manageClasses')}</span>
-                    <span className="text-sm text-gray-500">{classes.length} {t('dashboard.classes')}</span>
+                    <span className="text-sm text-slate-400">{classes.length} {t('dashboard.classes')}</span>
                   </Button>
-                  <Button onClick={() => setShowManageCoaches(true)} variant="outline" className="h-auto py-6 flex-col gap-3">
+                  <Button onClick={() => setShowManageCoaches(true)} className="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white h-auto py-6 flex-col gap-3">
                     <Target className="w-8 h-8" />
                     <span className="font-bold text-base">{t('dashboard.manageCoaches')}</span>
-                    <span className="text-sm text-gray-500">{coaches.length} {t('dashboard.coaches')}</span>
+                    <span className="text-sm text-slate-400">{coaches.length} {t('dashboard.coaches')}</span>
                   </Button>
-                  <Button onClick={() => setShowManageMembers(true)} variant="outline" className="h-auto py-6 flex-col gap-3">
+                  <Button onClick={() => setShowManageMembers(true)} className="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white h-auto py-6 flex-col gap-3">
                     <Users className="w-8 h-8" />
                     <span className="font-bold text-base">{t('dashboard.viewMembersBtn')}</span>
-                    <span className="text-sm text-gray-500">{uniqueMembers} {t('dashboard.members')}</span>
+                    <span className="text-sm text-slate-400">{uniqueMembers} {t('dashboard.members')}</span>
                   </Button>
                 </div>
               </div>
             </Card>
 
             {/* Admin Access */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.adminAccess')}</h3>
+            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-xl font-bold text-white mb-4">{t('dashboard.adminAccess')}</h3>
               <div className="space-y-3">
-                <div className="p-4 bg-gray-50 rounded-2xl">
-                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">{t('dashboard.ownerEmail')}</p>
-                  <p className="text-gray-900 font-medium">{selectedGym?.owner_email}</p>
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">{t('dashboard.ownerEmail')}</p>
+                  <p className="text-white font-medium">{selectedGym?.owner_email}</p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-2xl">
-                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">{t('dashboard.gymId')}</p>
-                  <p className="text-gray-900 font-mono text-sm">{selectedGym?.id}</p>
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">{t('dashboard.gymId')}</p>
+                  <p className="text-white font-mono text-sm">{selectedGym?.id}</p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-2xl">
-                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">{t('dashboard.verifiedStatus')}</p>
-                  <Badge className={selectedGym?.verified ? 'bg-green-500' : 'bg-gray-400'}>
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">{t('dashboard.verifiedStatus')}</p>
+                  <Badge className={selectedGym?.verified ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-slate-600 text-slate-200 border border-slate-500'}>
                     {selectedGym?.verified ? t('dashboard.verified') : t('dashboard.notVerified')}
                   </Badge>
                 </div>
                 <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
                     {t('dashboard.viewPublicGymPage')}
                   </Button>
                 </Link>
