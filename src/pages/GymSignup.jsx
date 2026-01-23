@@ -53,6 +53,10 @@ export default function GymSignup() {
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
+      
+      // Update user account type to gym_owner
+      await base44.auth.updateMe({ account_type: 'gym_owner' });
+      
       // Auto-detect language based on city if not set
       const gymLanguage = data.language || detectLanguageFromCity(data.city);
       return base44.entities.Gym.create({
