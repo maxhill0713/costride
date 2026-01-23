@@ -358,10 +358,10 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
           <Button
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={isLoading}
             className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold h-12 rounded-2xl"
           >
-            {createMutation.isPending ? (
+            {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               'Create Challenge'
