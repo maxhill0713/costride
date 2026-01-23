@@ -599,24 +599,24 @@ export default function Profile() {
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="w-4 h-4 text-orange-400" />
                     <span className="text-xs font-bold text-slate-400 uppercase">Current Streak</span>
-                  </div>
-                  <div className="text-3xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">{currentStreak}</div>
-                </div>
-                <div className="bg-slate-700/50 rounded-2xl p-4">
+                    </div>
+                    <div className="text-3xl font-black text-slate-200">{currentStreak}</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Dumbbell className="w-4 h-4 text-purple-400" />
                     <span className="text-xs font-bold text-slate-400 uppercase">Workouts</span>
-                  </div>
-                  <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
-                </div>
-                <div className="bg-slate-700/50 rounded-2xl p-4">
+                    </div>
+                    <div className="text-3xl font-black text-slate-200">{stats.totalLifts}</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="w-4 h-4 text-yellow-400" />
                     <span className="text-xs font-bold text-slate-400 uppercase">PRs</span>
-                  </div>
-                  <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
-                </div>
-              </div>
+                    </div>
+                    <div className="text-3xl font-black text-slate-200">{stats.personalRecords}</div>
+                    </div>
+                    </div>
             </Card>
 
             {/* Gym Memberships - Compact */}
@@ -770,10 +770,10 @@ export default function Profile() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
+                <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
                   <div className="flex items-center gap-3">
                     {currentUser.notifications_enabled ? (
-                      <Bell className="w-5 h-5 text-cyan-400" />
+                      <Bell className="w-5 h-5 text-slate-400" />
                     ) : (
                       <BellOff className="w-5 h-5 text-slate-500" />
                     )}
@@ -788,10 +788,10 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    {currentUser.email_notifications ? (
-                      <Bell className="w-5 h-5 text-green-400" />
+                <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+                   <div className="flex items-center gap-3">
+                     {currentUser.email_notifications ? (
+                       <Bell className="w-5 h-5 text-slate-400" />
                     ) : (
                       <BellOff className="w-5 h-5 text-slate-500" />
                     )}
@@ -842,9 +842,9 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="p-4 bg-slate-700/50 rounded-2xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Ruler className="w-5 h-5 text-purple-400" />
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Ruler className="w-5 h-5 text-slate-400" />
                     <div>
                       <Label className="text-sm font-bold text-slate-100">Unit System</Label>
                       <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
@@ -884,12 +884,12 @@ export default function Profile() {
                     type="email"
                     value={currentUser.email}
                     disabled
-                    className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
+                    className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
                   />
                   <p className="text-xs text-slate-400 mt-1">Contact support to change your email</p>
                 </div>
 
-                <div className="p-4 bg-slate-700/50 rounded-2xl">
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
                   <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Password</Label>
                   <Input
                     type="password"
@@ -913,10 +913,10 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  {currentUser.public_profile ? (
-                    <Globe className="w-5 h-5 text-green-400" />
+              <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+                 <div className="flex items-center gap-3">
+                   {currentUser.public_profile ? (
+                     <Globe className="w-5 h-5 text-slate-400" />
                   ) : (
                     <Lock className="w-5 h-5 text-slate-500" />
                   )}
