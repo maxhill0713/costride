@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, Clock, MapPin } from 'lucide-react';
+import { Calendar, Users, Clock, MapPin, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function EventCard({ event, onRSVP }) {
+export default function EventCard({ event, onRSVP, onDelete = null, isOwner = false }) {
   return (
     <Card className="overflow-hidden bg-white border-2 border-gray-100 hover:border-blue-200 transition-colors">
       {event.image_url && (
@@ -37,12 +37,25 @@ export default function EventCard({ event, onRSVP }) {
           </div>
         </div>
 
-        <Button 
-          onClick={() => onRSVP(event.id)}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl"
-        >
-          RSVP
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => onRSVP(event.id)}
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl"
+            disabled={isOwner}
+          >
+            {isOwner ? 'Your Event' : 'RSVP'}
+          </Button>
+          {isOwner && onDelete && (
+            <Button
+              onClick={() => onDelete(event.id)}
+              variant="outline"
+              size="icon"
+              className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500"
+            >
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
