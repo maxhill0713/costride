@@ -1681,7 +1681,7 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Reward Engagement */}
-            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.rewardEngagement')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(() => {
