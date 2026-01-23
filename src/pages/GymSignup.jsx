@@ -10,11 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import LanguageSelector from '../components/LanguageSelector';
-import { useTranslation } from 'react-i18next';
 
 export default function GymSignup() {
-  const { i18n } = useTranslation();
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [equipmentSearch, setEquipmentSearch] = useState('');
@@ -470,9 +467,6 @@ export default function GymSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8 px-4">
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSelector />
-      </div>
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center mx-auto mb-4">
