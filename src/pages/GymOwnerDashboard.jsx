@@ -955,10 +955,10 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Gym Feed Management */}
-            <Card className="p-6">
+            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">{t('dashboard.gymFeedManagement')}</h3>
-                <Button onClick={() => setShowCreatePost(true)}>
+                <h3 className="text-xl font-bold text-white">{t('dashboard.gymFeedManagement')}</h3>
+                <Button onClick={() => setShowCreatePost(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
                   <Plus className="w-4 h-4 mr-2" />
                   {t('dashboard.createPost')}
                 </Button>
@@ -966,21 +966,21 @@ export default function GymOwnerDashboard() {
               {posts.length > 0 ? (
                 <div className="space-y-4">
                   {posts.slice(0, 10).map(post => (
-                    <div key={post.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                    <div key={post.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
                           {post.member_name?.charAt(0)}
                         </div>
                         <div className="flex-1">
-                          <p className="font-bold text-gray-900">{post.member_name}</p>
-                          <p className="text-sm text-gray-500">{format(new Date(post.created_date), 'PPp')}</p>
+                          <p className="font-bold text-white">{post.member_name}</p>
+                          <p className="text-sm text-slate-400">{format(new Date(post.created_date), 'PPp')}</p>
                         </div>
                       </div>
-                      <p className="text-gray-900 mb-3">{post.content}</p>
+                      <p className="text-slate-200 mb-3">{post.content}</p>
                       {post.image_url && (
                         <img src={post.image_url} alt="Post" className="w-full rounded-xl mb-3" />
                       )}
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-4 text-sm text-slate-400">
                         <span>❤️ {post.likes || 0} {t('dashboard.likes')}</span>
                         <span>💬 {post.comments?.length || 0} {t('dashboard.comments')}</span>
                       </div>
@@ -989,9 +989,9 @@ export default function GymOwnerDashboard() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <Activity className="w-16 h-16 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500 mb-2">{t('dashboard.noActivityYet')}</p>
-                  <p className="text-sm text-gray-400">{t('dashboard.postsFromGym')}</p>
+                  <Activity className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400 mb-2">{t('dashboard.noActivityYet')}</p>
+                  <p className="text-sm text-slate-500">{t('dashboard.postsFromGym')}</p>
                 </div>
               )}
             </Card>
