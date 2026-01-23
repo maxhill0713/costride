@@ -365,7 +365,7 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-slate-100">{checkIn.user_name}</p>
+                    <p className="font-bold text-slate-100 text-base">{checkIn.user_name}</p>
                     <div className="flex items-center gap-2 text-sm text-slate-300">
                       <MapPin className="w-3 h-3" />
                       <span>{checkIn.gym_name}</span>
