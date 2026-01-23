@@ -41,23 +41,25 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           {/* Stats */}
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             {challenge.reward && (
-              <Badge className="bg-amber-900/40 border border-amber-700/40 text-amber-300 text-[10px] font-bold">
-                {challenge.reward}
+              <Badge className="bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border border-yellow-400/50 text-yellow-200 text-[10px] font-bold shadow-sm shadow-yellow-500/20 animate-pulse">
+                🎁 {challenge.reward}
               </Badge>
             )}
-            <Badge className="bg-slate-700/40 border border-slate-600/40 text-slate-300 text-[10px] font-semibold">
+            <Badge className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/40 text-purple-200 text-[10px] font-bold">
               <Users className="w-2.5 h-2.5 mr-0.5" />
               {participantCount}
             </Badge>
-            <Badge className="bg-slate-700/40 border border-slate-600/40 text-slate-300 text-[10px] font-semibold">
-              {daysLeft}d
+            <Badge className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-400/40 text-orange-200 text-[10px] font-bold">
+              ⏰ {daysLeft}d
             </Badge>
           </div>
 
           {/* Goal Info */}
-          <div className="bg-slate-700/30 rounded-lg p-2 mb-2 border border-slate-700/50">
-            <p className="text-[10px] font-bold text-slate-300 uppercase mb-0.5">Goal</p>
-            <p className="text-xs text-slate-400">
+          <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg p-2 mb-2 border-2 border-amber-400/40 shadow-sm shadow-amber-500/20">
+            <p className="text-[10px] font-bold text-amber-200 uppercase mb-0.5 flex items-center gap-1">
+              🎯 Goal
+            </p>
+            <p className="text-xs text-amber-100 font-bold">
               {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
               {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
               {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
@@ -68,12 +70,14 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           {/* Progress Bar */}
           <div className="mb-2">
             <div className="flex justify-between items-center mb-1">
-              <p className="text-[10px] font-semibold text-slate-400">Challenge Progress</p>
-              <p className="text-[10px] text-slate-500">{daysElapsed}/{totalDays} days</p>
+              <p className="text-[10px] font-bold text-slate-200 flex items-center gap-1">
+                ⚡ Progress
+              </p>
+              <p className="text-[10px] text-slate-400 font-bold">{daysElapsed}/{totalDays} days</p>
             </div>
-            <div className="h-1.5 bg-slate-700/40 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 transition-all duration-300 shadow-lg shadow-amber-500/50"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
