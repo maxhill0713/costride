@@ -277,6 +277,23 @@ export default function Home() {
           </div>
         </Card>
 
+        {/* Join a Gym Prompt - Show at top for new members */}
+        {gymMemberships.length === 0 && (
+          <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 backdrop-blur-sm border-0 p-6 rounded-2xl mb-6 shadow-lg">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-white text-lg mb-1">Get Started</h3>
+                <p className="text-blue-100 text-sm">Join a gym to start tracking your workouts and connect with the community</p>
+              </div>
+              <Link to={createPageUrl('Gyms')}>
+                <Button className="bg-white text-blue-600 hover:bg-blue-50 rounded-lg font-semibold whitespace-nowrap">
+                  Join Gym
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
+
         {/* Check-in Reminder */}
         {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
           <Card className="bg-slate-800/60 backdrop-blur-sm border border-amber-500/20 p-5 rounded-2xl">
