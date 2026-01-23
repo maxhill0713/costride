@@ -285,11 +285,11 @@ export default function Profile() {
         <div className="max-w-2xl mx-auto">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center overflow-hidden shadow-lg ring-2 ring-white/30">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center overflow-hidden shadow-lg ring-2 ring-white/30">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
-                   <span className="text-2xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                   <span className="text-2xl font-bold text-white">
                      {currentUser.full_name?.charAt(0)?.toUpperCase()}
                    </span>
                  )}
