@@ -65,15 +65,15 @@ export default function RedeemReward() {
   const unclaimedRewards = rewards.filter(r => r.active && !claimedBonuses.find(cb => cb.reward_id === r.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-3 md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-white mb-2">Rewards & Challenges</h1>
-          <p className="text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-4xl font-black text-white mb-1">Rewards & Challenges</h1>
+          <p className="text-xs md:text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
           {/* Stats Cards */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl hover:border-cyan-500/30 transition-all">
