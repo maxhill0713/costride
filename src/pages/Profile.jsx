@@ -542,20 +542,29 @@ export default function Profile() {
           </Card>
         )}
 
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="text-3xl font-black bg-gradient-to-br from-blue-400 to-cyan-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
-            <div className="text-xs text-cyan-300 font-bold mt-2 uppercase tracking-wide">Workouts</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="text-3xl font-black bg-gradient-to-br from-orange-400 to-red-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
-            <div className="text-xs text-orange-300 font-bold mt-2 uppercase tracking-wide">PRs</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="text-3xl font-black bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.weekStreak}</div>
-            <div className="text-xs text-purple-300 font-bold mt-2 uppercase tracking-wide">Day Streak</div>
-          </Card>
-        </div>
+        <div className="grid grid-cols-3 gap-3">
+           <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center">
+             <div className="flex items-center justify-center gap-2 mb-2">
+               <Dumbbell className="w-4 h-4 text-cyan-400" />
+               <div className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{stats.totalLifts}</div>
+             </div>
+             <div className="text-xs text-slate-400">Workouts</div>
+           </Card>
+           <Card className="bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-600/30 p-4 text-center">
+             <div className="flex items-center justify-center gap-2 mb-2">
+               <Award className="w-4 h-4 text-orange-400" />
+               <div className="text-2xl font-bold bg-gradient-to-r from-orange-300 to-red-300 bg-clip-text text-transparent">{stats.personalRecords}</div>
+             </div>
+             <div className="text-xs text-slate-400">PRs</div>
+           </Card>
+           <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-600/30 p-4 text-center">
+             <div className="flex items-center justify-center gap-2 mb-2">
+               <Flame className="w-4 h-4 text-purple-400" />
+               <div className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{stats.weekStreak}</div>
+             </div>
+             <div className="text-xs text-slate-400">Streak</div>
+           </Card>
+         </div>
 
 
       </div>
