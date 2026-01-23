@@ -2,10 +2,9 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Trophy, Sparkles, Users, Award } from 'lucide-react';
+import { Trophy, Users, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, differenceInDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 
 export default function AppChallengeCard({ challenge, onJoin, isJoined = false, currentUser }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
@@ -21,82 +20,83 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-slate-700 to-slate-800 backdrop-blur-sm border-2 border-amber-500/40 p-3 relative overflow-hidden shadow-lg shadow-amber-500/20">
-        {/* App Challenge Badge */}
-        <Badge className="absolute top-2 right-2 bg-amber-900/50 border border-amber-700/50 text-amber-200 text-[10px] font-bold">
-          <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-          APP
-        </Badge>
-
-        <div className="relative z-10">
-          {/* Icon */}
-          <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center mb-2 shadow-sm">
-            <Trophy className="w-5 h-5 text-amber-400" />
-          </div>
-
-          {/* Content */}
-          <h3 className="font-bold text-slate-100 mb-1 text-sm pr-12">{challenge.title}</h3>
-          <p className="text-xs text-slate-400 mb-2 line-clamp-2">{challenge.description}</p>
-
-          {/* Stats */}
-          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-            {challenge.reward && (
-              <Badge className="bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 text-[10px] font-bold shadow-sm shadow-emerald-500/20 animate-pulse">
-                🎁 {challenge.reward}
+      <Card className="p-4 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border-2 border-orange-500/30 hover:border-orange-400/50 transition-all duration-300 shadow-xl hover:shadow-orange-500/10">
+        {/* Header with Title and Reward */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/40 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-orange-400" />
+              </div>
+              <Badge className="bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold px-2">
+                APP CHALLENGE
               </Badge>
-            )}
-            <Badge className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/40 text-purple-200 text-[10px] font-bold">
-              <Users className="w-2.5 h-2.5 mr-0.5" />
-              {participantCount}
-            </Badge>
-            <Badge className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-400/40 text-orange-200 text-[10px] font-bold">
-              ⏰ {daysLeft}d
-            </Badge>
-          </div>
-
-          {/* Goal Info */}
-          <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg p-2 mb-2 border-2 border-indigo-400/40 shadow-sm shadow-indigo-500/20">
-            <p className="text-[10px] font-bold text-indigo-200 uppercase mb-0.5 flex items-center gap-1">
-              🎯 Goal
-            </p>
-            <p className="text-xs text-indigo-100 font-bold">
-              {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
-              {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
-              {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
-              {challenge.goal_type === 'participation' && 'Most active wins'}
-            </p>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-2">
-            <div className="flex justify-between items-center mb-1">
-              <p className="text-[10px] font-bold text-slate-200 flex items-center gap-1">
-                ⚡ Progress
-              </p>
-              <p className="text-[10px] text-slate-400 font-bold">{daysElapsed}/{totalDays} days</p>
             </div>
-            <div className="h-2 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
-              <div 
-                className="h-full bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 transition-all duration-300 shadow-lg shadow-pink-500/50"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
+            <h3 className="font-bold text-white mb-1 line-clamp-1">{challenge.title}</h3>
+            <p className="text-xs text-slate-400 line-clamp-2">{challenge.description}</p>
           </div>
-
-          {/* Action Button */}
-          <Button 
-            onClick={() => onJoin && onJoin(challenge)}
-            disabled={isJoined}
-            size="sm"
-            className={`w-full ${
-              isJoined 
-                ? 'bg-green-600/60 hover:bg-green-600/60 cursor-not-allowed text-green-100' 
-                : 'bg-amber-900/50 hover:bg-amber-900/70 border border-amber-700/50 text-amber-200'
-            } rounded-xl h-8 text-xs font-bold transition-colors`}
-          >
-            {isJoined ? '✓ Joined' : 'Join'}
-          </Button>
+          {challenge.reward && (
+            <div className="bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-400/30 rounded-lg px-2.5 py-1.5 text-center shadow-sm">
+              <p className="text-[9px] font-bold text-emerald-300 uppercase">Reward</p>
+              <p className="text-xs font-bold text-white mt-0.5">{challenge.reward}</p>
+            </div>
+          )}
         </div>
+
+        {/* Goal Card */}
+        <div className="bg-gradient-to-r from-indigo-500/12 to-purple-500/12 rounded-lg p-3 mb-3 border border-indigo-400/25">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-indigo-300 uppercase mb-1 flex items-center gap-1">
+                <Target className="w-3 h-3" />
+                Goal
+              </p>
+              <p className="text-sm text-white font-bold">
+                {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
+                {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
+                {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
+                {challenge.goal_type === 'participation' && 'Most active wins'}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <div className="text-center">
+                <p className="text-sm font-bold text-purple-300">{participantCount}</p>
+                <p className="text-[9px] text-slate-400">Players</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-bold text-orange-300">{daysLeft}d</p>
+                <p className="text-[9px] text-slate-400">Left</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-1.5">
+            <p className="text-xs font-bold text-slate-300">Time Progress</p>
+            <p className="text-xs text-slate-400 font-medium">{Math.round(progressPercentage)}%</p>
+          </div>
+          <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
+            <div 
+              className="h-full bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 transition-all duration-500 shadow-lg"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Join Button */}
+        <Button
+          onClick={() => onJoin && onJoin(challenge)}
+          disabled={isJoined}
+          className={`w-full font-bold transition-all duration-200 ${
+            isJoined 
+              ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-orange-500/20'
+          }`}
+        >
+          {isJoined ? '✓ Already Joined' : 'Join Challenge'}
+        </Button>
       </Card>
     </motion.div>
   );
