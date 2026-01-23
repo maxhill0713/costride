@@ -17,6 +17,8 @@ import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
 import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
 import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
+import ManageAmenitiesModal from '../components/gym/ManageAmenitiesModal';
+import EditBasicInfoModal from '../components/gym/EditBasicInfoModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
@@ -2248,8 +2250,24 @@ export default function GymOwnerDashboard() {
         <ManageEquipmentModal
           open={showManageEquipment}
           onClose={() => setShowManageEquipment(false)}
-          gym={selectedGym}
+          equipment={selectedGym?.equipment || []}
           onSave={(equipment) => updateGymMutation.mutate({ equipment })}
+          isLoading={updateGymMutation.isPending}
+        />
+
+        <ManageAmenitiesModal
+          open={showManageAmenities}
+          onClose={() => setShowManageAmenities(false)}
+          amenities={selectedGym?.amenities || []}
+          onSave={(amenities) => updateGymMutation.mutate({ amenities })}
+          isLoading={updateGymMutation.isPending}
+        />
+
+        <EditBasicInfoModal
+          open={showEditBasicInfo}
+          onClose={() => setShowEditBasicInfo(false)}
+          gym={selectedGym}
+          onSave={(data) => updateGymMutation.mutate(data)}
           isLoading={updateGymMutation.isPending}
         />
 
