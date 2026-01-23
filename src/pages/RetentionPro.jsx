@@ -7,11 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Award, Users, Bell, TrendingUp, CheckCircle, ArrowLeft, Zap, Target, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { toast } from 'sonner';
 
 export default function RetentionPro() {
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -105,25 +103,6 @@ export default function RetentionPro() {
     }
   ];
 
-  const handleCheckout = async (planName) => {
-    if (window.self !== window.top) {
-      toast.error('Checkout only works from the published app, not in preview');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data } = await base44.functions.invoke('createRetentionProCheckout', { plan: planName });
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Failed to start checkout. Please try again.');
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -196,11 +175,10 @@ export default function RetentionPro() {
                   ))}
                 </div>
                 <Button 
-                  onClick={() => handleCheckout(plan.name)}
-                  disabled={isLoading}
+                  onClick={() => setSelectedPlan(plan.name)}
                   className={`w-full ${plan.popular ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600' : 'bg-slate-700 hover:bg-slate-600'}`}
                 >
-                  {isLoading ? 'Loading...' : 'Get Started'}
+                  Get Started
                 </Button>
               </Card>
             ))}
