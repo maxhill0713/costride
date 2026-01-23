@@ -540,13 +540,13 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/10 transition-all">
-            <div className="text-2xl font-black text-slate-200 mb-1">{stats.totalLifts}</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Workouts</div>
+          <Card className="bg-gradient-to-br from-cyan-600/20 to-cyan-500/5 backdrop-blur-sm border border-cyan-500/40 p-4 text-center shadow-md">
+            <div className="text-2xl font-black text-cyan-200 mb-1">{stats.totalLifts}</div>
+            <div className="text-[10px] text-cyan-300 font-bold uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center shadow-sm hover:bg-white/10 transition-all">
-            <div className="text-2xl font-black text-slate-200 mb-1">{stats.personalRecords}</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">PRs</div>
+          <Card className="bg-gradient-to-br from-purple-600/20 to-purple-500/5 backdrop-blur-sm border border-purple-500/40 p-4 text-center shadow-md">
+            <div className="text-2xl font-black text-purple-200 mb-1">{stats.personalRecords}</div>
+            <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wide">PRs</div>
           </Card>
           <Card className="bg-gradient-to-br from-orange-600/20 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-4 text-center shadow-md">
             <div className="text-2xl font-black text-orange-200 mb-1">{stats.weekStreak}</div>
