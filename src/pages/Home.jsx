@@ -428,23 +428,31 @@ export default function Home() {
 
         {/* Premium Upgrade Card */}
         <Link to={createPageUrl('Premium')}>
-          <Card className="p-5 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-700 border-0 text-white hover:shadow-2xl hover:shadow-purple-500/50 transition-all cursor-pointer relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
+          <Card className="p-6 bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-900/80 backdrop-blur-sm border border-purple-600/40 text-white hover:border-purple-500/60 hover:shadow-lg hover:shadow-purple-500/20 transition-all cursor-pointer relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full -mr-20 -mt-20 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                <Badge className="bg-white/20 text-white border-0 font-bold px-3 py-1">
-                  <Trophy className="w-3 h-3 mr-1" />
-                  LIMITED OFFER
-                </Badge>
-                <Crown className="w-8 h-8" />
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      <Crown className="w-4 h-4" />
+                    </div>
+                    <Badge className="bg-purple-500/30 text-purple-200 border border-purple-500/50 font-bold text-xs">
+                      PREMIUM
+                    </Badge>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-black text-2xl mb-2">Go Premium for £4.99/mo</h3>
-              <p className="text-white/90 text-sm mb-4">
-                Unlock exclusive badges, advanced analytics, and priority features
+              <h3 className="font-black text-xl mb-2">Unlock Exclusive Rewards</h3>
+              <p className="text-slate-300 text-sm mb-4 leading-relaxed">
+                Double rewards on check-ins, early access to drops, and premium-only benefits
               </p>
-              <Button className="bg-white text-purple-600 hover:bg-white/90 font-bold rounded-xl">
-                Upgrade Now
+              <div className="mb-5">
+                <div className="text-3xl font-black text-white">£4.99<span className="text-base text-slate-400 font-semibold">/month</span></div>
+              </div>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl">
+                Start Premium
               </Button>
             </div>
           </Card>
