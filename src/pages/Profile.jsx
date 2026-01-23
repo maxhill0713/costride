@@ -413,7 +413,7 @@ export default function Profile() {
       )}
 
       {/* Stats Cards */}
-      <div className="max-w-2xl mx-auto px-4 -mt-6 mb-6">
+      <div className="max-w-4xl mx-auto px-4 -mt-4 mb-8 space-y-4">
         {/* Identity Card */}
         <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl mb-4 shadow-md">
           <div className="flex items-start gap-4">
