@@ -21,11 +21,9 @@ import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
-import { useTranslation } from 'react-i18next';
 
 
 export default function Profile() {
-  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -211,11 +209,11 @@ export default function Profile() {
 
   // Streak milestones
   const streakMilestones = [
-    { days: 7, name: t('profile.badges.warrior7'), icon: '🔥', color: 'from-orange-400 to-red-500' },
-    { days: 30, name: t('profile.badges.master30'), icon: '⚡', color: 'from-yellow-400 to-orange-500' },
-    { days: 50, name: t('profile.badges.unstoppable'), icon: '💪', color: 'from-purple-400 to-pink-500' },
-    { days: 100, name: t('profile.badges.champion100'), icon: '👑', color: 'from-blue-400 to-cyan-500' },
-    { days: 365, name: t('profile.badges.legend365'), icon: '🏆', color: 'from-green-400 to-emerald-500' }
+    { days: 7, name: '7 Day Warrior', icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { days: 30, name: 'Monthly Master', icon: '⚡', color: 'from-yellow-400 to-orange-500' },
+    { days: 50, name: 'Unstoppable', icon: '💪', color: 'from-purple-400 to-pink-500' },
+    { days: 100, name: 'Century Champion', icon: '👑', color: 'from-blue-400 to-cyan-500' },
+    { days: 365, name: 'Year Legend', icon: '🏆', color: 'from-green-400 to-emerald-500' }
   ];
 
   const nextMilestone = streakMilestones.find(m => m.days > currentStreak) || streakMilestones[streakMilestones.length - 1];
@@ -238,12 +236,12 @@ export default function Profile() {
     const prs = stats.personalRecords;
     const streak = currentStreak;
 
-    if (workouts < 5) return { title: t('profile.identity.beginner'), subtitle: t('profile.identity.beginnerSub'), next: t('profile.identity.beginnerNext'), color: 'from-gray-400 to-gray-500' };
-    if (workouts < 20) return { title: t('profile.identity.novice'), subtitle: t('profile.identity.noviceSub'), next: t('profile.identity.noviceNext'), color: 'from-blue-400 to-blue-500' };
-    if (workouts < 50) return { title: t('profile.identity.committed'), subtitle: t('profile.identity.committedSub'), next: t('profile.identity.committedNext'), color: 'from-purple-400 to-purple-500' };
-    if (streak < 30) return { title: t('profile.identity.dedicated'), subtitle: t('profile.identity.dedicatedSub'), next: t('profile.identity.dedicatedNext'), color: 'from-orange-400 to-orange-500' };
-    if (prs < 10) return { title: t('profile.identity.elite'), subtitle: t('profile.identity.eliteSub'), next: t('profile.identity.eliteNext'), color: 'from-cyan-400 to-cyan-500' };
-    return { title: t('profile.identity.champion'), subtitle: t('profile.identity.championSub'), next: t('profile.identity.championNext'), color: 'from-yellow-400 to-yellow-500' };
+    if (workouts < 5) return { title: 'Beginner', subtitle: 'Just Starting Out', next: 'Complete 5 workouts to become a Novice', color: 'from-gray-400 to-gray-500' };
+    if (workouts < 20) return { title: 'Novice Lifter', subtitle: 'Building Habits', next: 'Complete 20 workouts to become Committed', color: 'from-blue-400 to-blue-500' };
+    if (workouts < 50) return { title: 'Committed Athlete', subtitle: 'Making Progress', next: 'Complete 50 workouts to become Dedicated', color: 'from-purple-400 to-purple-500' };
+    if (streak < 30) return { title: 'Dedicated Athlete', subtitle: 'Showing Consistency', next: 'Reach 30-day streak to become Elite', color: 'from-orange-400 to-orange-500' };
+    if (prs < 10) return { title: 'Elite Performer', subtitle: 'Breaking Barriers', next: 'Achieve 10 PRs to become a Champion', color: 'from-cyan-400 to-cyan-500' };
+    return { title: 'Champion', subtitle: 'Peak Performance', next: 'Keep pushing your limits!', color: 'from-yellow-400 to-yellow-500' };
   };
 
   const identityStatus = getIdentityStatus();
@@ -251,11 +249,11 @@ export default function Profile() {
   // Risk Assessment
   const getStreakRisk = () => {
     if (!lastCheckIn) return null;
-    if (daysSinceCheckIn === 0) return { level: 'safe', message: t('profile.streakRisk.safe'), color: 'text-green-400' };
-    if (daysSinceCheckIn === 1) return { level: 'safe', message: t('profile.streakRisk.safe1day'), color: 'text-green-400' };
-    if (daysSinceCheckIn === 2) return { level: 'warning', message: t('profile.streakRisk.warning'), color: 'text-yellow-400' };
-    if (daysSinceCheckIn === 3) return { level: 'danger', message: t('profile.streakRisk.danger'), color: 'text-orange-400' };
-    return { level: 'lost', message: t('profile.streakRisk.lost'), color: 'text-red-400' };
+    if (daysSinceCheckIn === 0) return { level: 'safe', message: '✅ Safe: Checked in today', color: 'text-green-400' };
+    if (daysSinceCheckIn === 1) return { level: 'safe', message: '✅ Safe: 1 day since last check-in', color: 'text-green-400' };
+    if (daysSinceCheckIn === 2) return { level: 'warning', message: '⚠️ Warning: Check in today to keep your streak!', color: 'text-yellow-400' };
+    if (daysSinceCheckIn === 3) return { level: 'danger', message: '🔥 Danger: Streak expires tomorrow!', color: 'text-orange-400' };
+    return { level: 'lost', message: '❌ Streak Lost: Time to start fresh!', color: 'text-red-400' };
   };
 
   const streakRisk = getStreakRisk();
@@ -275,7 +273,7 @@ export default function Profile() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">{t('profile.loading')}</p>
+        <p className="text-gray-500">Loading profile...</p>
       </div>
     );
   }
@@ -349,26 +347,26 @@ export default function Profile() {
           {isEditing ? (
             <div className="space-y-3">
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">{t('profile.bio')}</label>
+                <label className="text-white text-sm font-medium mb-1 block">Bio</label>
                 <Textarea
                   value={editData.bio}
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                  placeholder={t('profile.bioPlaceholder')}
+                  placeholder="Tell us about yourself..."
                   className="bg-white/90 border-0 rounded-2xl text-gray-900"
                   rows={3}
                 />
               </div>
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">{t('profile.gymLocation')}</label>
+                <label className="text-white text-sm font-medium mb-1 block">Gym Location</label>
                 <Input
                   value={editData.gym_location}
                   onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
-                  placeholder={t('profile.gymLocationPlaceholder')}
+                  placeholder="e.g. Iron Paradise, Manchester"
                   className="bg-white/90 border-0 rounded-2xl text-gray-900"
                 />
               </div>
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">{t('profile.profilePhoto')}</label>
+                <label className="text-white text-sm font-medium mb-1 block">Profile Photo</label>
                 <Input
                   value={editData.avatar_url}
                   onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
@@ -402,10 +400,10 @@ export default function Profile() {
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-black text-lg mb-1 truncate">{t('profile.weMissYou')} 🔥</h3>
-                <p className="text-white/90 text-sm line-clamp-2">
-                  {t('profile.daysSince', { days: daysSinceCheckIn, streak: currentStreak })}
-                </p>
+                <h3 className="font-black text-lg mb-1 truncate">We Miss You! 🔥</h3>
+                  <p className="text-white/90 text-sm line-clamp-2">
+                    It's been {daysSinceCheckIn} days since your last check-in. Don't lose your {currentStreak}-day streak!
+                  </p>
               </div>
             </div>
           </Card>
@@ -418,7 +416,7 @@ export default function Profile() {
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-5 mb-4 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">{t('profile.yourIdentity')}</p>
+              <p className="text-xs text-cyan-300 font-bold uppercase tracking-wide mb-1">Your Identity</p>
               <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent truncate`}>
                 {identityStatus.title}
               </h3>
@@ -429,7 +427,7 @@ export default function Profile() {
             </div>
           </div>
           <div className="bg-slate-700/50 rounded-2xl p-3 border border-cyan-600/20 overflow-hidden">
-            <p className="text-xs text-cyan-300 font-bold mb-1">{t('profile.whatYoureBecoming')}</p>
+            <p className="text-xs text-cyan-300 font-bold mb-1">WHAT YOU'RE BECOMING</p>
             <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
@@ -441,10 +439,10 @@ export default function Profile() {
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Flame className="w-6 h-6 text-cyan-400 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-cyan-300 truncate">{t('profile.currentStreak')}</p>
-                  <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
-                  <p className="text-xs text-cyan-300 truncate">{t('profile.days')}</p>
-                </div>
+                    <p className="text-xs font-medium text-cyan-300 truncate">Current Streak</p>
+                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{currentStreak}</p>
+                    <p className="text-xs text-cyan-300 truncate">days</p>
+                  </div>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
                 <div className="text-center px-1 flex-shrink-0">
@@ -465,7 +463,7 @@ export default function Profile() {
             )}
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-cyan-300 mb-1 gap-2">
-                <span className="truncate">{t('profile.next')}: {nextMilestone.name}</span>
+                <span className="truncate">Next: {nextMilestone.name}</span>
                 <span className="flex-shrink-0">{currentStreak}/{nextMilestone.days}</span>
               </div>
               <Progress value={streakProgress} className="h-2 bg-slate-600" />
@@ -476,19 +474,19 @@ export default function Profile() {
             <div className="flex items-center gap-2 mb-3">
               <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-purple-300 truncate">{t('profile.bestStreak')}</p>
+                <p className="text-xs font-medium text-purple-300 truncate">Best Streak</p>
                 <p className="text-2xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{longestStreak}</p>
-                <p className="text-xs text-purple-300 truncate">{t('profile.daysEver')}</p>
+                <p className="text-xs text-purple-300 truncate">days ever</p>
               </div>
             </div>
             {currentStreak > 0 && longestStreak > currentStreak && (
               <div className="bg-purple-900/30 border border-purple-600/30 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-purple-300 line-clamp-1">💎 {t('profile.keepGoing')}</p>
+                <p className="text-xs font-bold text-purple-300 line-clamp-1">💎 Keep going to beat your record!</p>
               </div>
             )}
             {currentStreak === longestStreak && currentStreak > 0 && (
               <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-yellow-300 line-clamp-1">🔥 {t('profile.newRecord')}</p>
+                <p className="text-xs font-bold text-yellow-300 line-clamp-1">🔥 New personal record!</p>
               </div>
             )}
           </Card>
@@ -501,22 +499,22 @@ export default function Profile() {
           <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 shadow-lg">
             <h3 className="font-semibold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-cyan-400" />
-              {t('profile.whatHappens')}
+              What Happens If You Stop?
             </h3>
             <div className="space-y-3">
               <div className="bg-slate-700/50 rounded-2xl p-3">
-                <p className="text-xs text-slate-400 mb-1">{t('profile.gracePeriod')}</p>
-                <p className="text-sm text-slate-200">{t('profile.gracePeriodDesc', { streak: currentStreak })}</p>
+                <p className="text-xs text-slate-400 mb-1">Grace Period</p>
+                <p className="text-sm text-slate-200">You have a 2-day grace period. Miss 3 days and your {currentStreak}-day streak resets to 0.</p>
               </div>
               {currentUser?.streak_freezes_available > 0 && (
                 <div className="bg-cyan-900/30 border border-cyan-600/30 rounded-2xl p-3">
-                  <p className="text-xs text-cyan-300 mb-1">{t('profile.protection')}</p>
-                  <p className="text-sm text-slate-200">{t('profile.protectionDesc', { count: currentUser.streak_freezes_available, plural: currentUser.streak_freezes_available > 1 ? 's' : '' })}</p>
+                  <p className="text-xs text-cyan-300 mb-1">❄️ Protection Available</p>
+                  <p className="text-sm text-slate-200">You have {currentUser.streak_freezes_available} streak freeze{currentUser.streak_freezes_available > 1 ? 's' : ''} to protect your progress if life gets busy.</p>
                 </div>
               )}
               <div className="bg-orange-900/30 border border-orange-600/30 rounded-2xl p-3">
-                <p className="text-xs text-orange-300 mb-1">{t('profile.whatYouLose')}</p>
-                <p className="text-sm text-slate-200">{t('profile.whatYouLoseDesc', { streak: currentStreak, milestone: nextMilestone.name })}</p>
+                <p className="text-xs text-orange-300 mb-1">⚠️ What You'll Lose</p>
+                <p className="text-sm text-slate-200">Your {currentStreak}-day streak and progress toward "{nextMilestone.name}" will be lost. You'll start from day 1.</p>
               </div>
             </div>
           </Card>
@@ -527,7 +525,7 @@ export default function Profile() {
           <Card className="p-5 mb-4 bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-yellow-600/30 shadow-lg overflow-hidden">
             <h3 className="font-semibold bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-              <span className="truncate">{t('profile.milestonesUnlocked')}</span>
+              <span className="truncate">Milestones Unlocked</span>
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {earnedBadges.map((badge) => (
@@ -544,15 +542,15 @@ export default function Profile() {
         <div className="grid grid-cols-3 gap-4">
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-blue-400 to-cyan-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
-            <div className="text-xs text-cyan-300 font-bold mt-2 uppercase tracking-wide">{t('profile.workouts')}</div>
+            <div className="text-xs text-cyan-300 font-bold mt-2 uppercase tracking-wide">Workouts</div>
           </Card>
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-orange-400 to-red-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
-            <div className="text-xs text-orange-300 font-bold mt-2 uppercase tracking-wide">{t('profile.prs')}</div>
+            <div className="text-xs text-orange-300 font-bold mt-2 uppercase tracking-wide">PRs</div>
           </Card>
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 text-center shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div className="text-3xl font-black bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.weekStreak}</div>
-            <div className="text-xs text-purple-300 font-bold mt-2 uppercase tracking-wide">{t('profile.dayStreak')}</div>
+            <div className="text-xs text-purple-300 font-bold mt-2 uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 
@@ -588,33 +586,33 @@ export default function Profile() {
 
             {/* Progress Stats */}
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-5 shadow-lg">
-              <h3 className="font-semibold text-white mb-4">{t('profile.yourProgress')}</h3>
+              <h3 className="font-semibold text-white mb-4">Your Progress</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-cyan-300 uppercase">{t('profile.checkIns')}</span>
+                    <span className="text-xs font-bold text-cyan-300 uppercase">Check-Ins</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{userCheckIns.length}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-xs font-bold text-orange-300 uppercase">{t('profile.currentStreak')}</span>
+                    <span className="text-xs font-bold text-orange-300 uppercase">Current Streak</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">{currentStreak}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Dumbbell className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-bold text-purple-300 uppercase">{t('profile.workouts')}</span>
+                    <span className="text-xs font-bold text-purple-300 uppercase">Workouts</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{stats.totalLifts}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-300 uppercase">{t('profile.prs')}</span>
+                    <span className="text-xs font-bold text-yellow-300 uppercase">PRs</span>
                   </div>
                   <div className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{stats.personalRecords}</div>
                 </div>
@@ -625,9 +623,9 @@ export default function Profile() {
             {memberGyms.length > 0 && (
               <div className="bg-slate-700/30 rounded-2xl p-3 border border-slate-600/30">
                 <div className="flex items-center gap-2 mb-2">
-                  <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-xs font-bold text-slate-300">{t('profile.memberAt', { count: memberGyms.length, plural: memberGyms.length > 1 ? 's' : '' })}</span>
-                </div>
+                    <Building2 className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
+                  </div>
                 <div className="flex flex-wrap gap-2">
                   {memberGyms.map((gym) => (
                     <span 
