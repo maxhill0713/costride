@@ -415,22 +415,26 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-6 mb-6">
         {/* Identity Card */}
-        <Card className="bg-gradient-to-br from-slate-700/40 to-slate-600/20 backdrop-blur-sm border border-slate-500/40 p-5 mb-4 shadow-md overflow-hidden">
-          <div className="flex items-center justify-between gap-3 mb-3">
+        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl mb-4 shadow-md">
+          <div className="flex items-start gap-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${identityStatus.color.includes('gray') ? 'bg-slate-500/20 text-slate-400' : 'bg-blue-500/20 text-blue-400'}`}>
+              <Trophy className="w-6 h-6" />
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
-              <h3 className={`text-2xl font-black bg-gradient-to-r ${identityStatus.color} bg-clip-text text-transparent truncate`}>
+              <h3 className={`text-base font-semibold text-slate-100 mb-3`}>
                 {identityStatus.title}
               </h3>
-              <p className="text-sm text-slate-400 mt-1 line-clamp-2">{identityStatus.subtitle}</p>
+              <div className="space-y-2">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
+                  <p className="text-xs text-slate-400 font-bold mb-1">YOUR JOURNEY</p>
+                  <p className="text-sm text-slate-200 line-clamp-2">{identityStatus.subtitle}</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
+                  <p className="text-xs text-slate-400 font-bold mb-1">NEXT MILESTONE</p>
+                  <p className="text-sm text-slate-200 line-clamp-2">{identityStatus.next}</p>
+                </div>
+              </div>
             </div>
-            <div className="text-right flex-shrink-0">
-              <div className="text-4xl mb-2">🏆</div>
-            </div>
-          </div>
-          <div className="bg-slate-500/20 rounded-2xl p-3 border border-slate-500/50 overflow-hidden">
-           <p className="text-xs text-slate-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
-            <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
 
