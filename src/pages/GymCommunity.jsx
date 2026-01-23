@@ -138,7 +138,7 @@ export default function GymCommunity() {
   });
 
   // Only gym challenges now
-  const gymChallenges = challenges.filter(c => c.status === 'active');
+  const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
