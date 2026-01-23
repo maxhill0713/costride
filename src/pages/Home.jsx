@@ -309,29 +309,7 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Check-in Reminder */}
-        {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-amber-500/20 p-5 rounded-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                   <h3 className="font-semibold text-slate-100 text-sm">
-                     {daysSinceCheckIn === 1 ? "Haven't checked in today" : `${daysSinceCheckIn} days since last check-in`}
-                   </h3>
-                   <p className="text-xs text-slate-400 mt-0.5">Maintain your streak</p>
-                 </div>
-              </div>
-              <Link to={createPageUrl('Gyms')}>
-                <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm">
-                  Check In
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        )}
+
 
         {/* Notifications Section */}
         {notifications.length > 0 && (
