@@ -426,8 +426,8 @@ export default function Profile() {
               <div className="text-4xl mb-2">🏆</div>
             </div>
           </div>
-          <div className="bg-blue-500/20 rounded-2xl p-3 border border-blue-500/50 overflow-hidden">
-           <p className="text-xs text-blue-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
+          <div className="bg-slate-500/20 rounded-2xl p-3 border border-slate-500/50 overflow-hidden">
+           <p className="text-xs text-slate-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
             <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
         </Card>
