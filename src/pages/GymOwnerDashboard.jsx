@@ -433,29 +433,47 @@ export default function GymOwnerDashboard() {
              <h1 className="text-4xl md:text-6xl font-black text-white mb-2 md:mb-4 tracking-tight" style={{letterSpacing: '-0.5px'}}>{t('dashboard.title')}</h1>
              <p className="text-slate-400 text-sm md:text-base font-medium">{t('dashboard.subtitle')}</p>
            </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-stretch sm:items-center">
-            <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
-              <Button variant="outline" className="border-2 h-12 px-4 md:px-6 w-full">
-                <Users className="w-5 h-5 mr-2" />
-                {t('dashboard.memberView')}
-              </Button>
+
+          <div className="flex flex-col gap-3 items-stretch sm:items-end">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+              <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
+                <Button variant="outline" className="border-2 h-12 px-4 md:px-6 w-full">
+                  <Users className="w-5 h-5 mr-2" />
+                  {t('dashboard.memberView')}
+                </Button>
+              </Link>
+
+              {myGyms.length > 1 && (
+                <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
+                  {myGyms.map(gym => (
+                    <Button
+                      key={gym.id}
+                      variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedGym(gym)}
+                      className="whitespace-nowrap h-12 px-4 md:px-6"
+                    >
+                      {gym.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Retention Pro Upgrade */}
+            <Link to={createPageUrl('Plus')} className="block">
+              <Card className="p-3 bg-slate-800/50 border border-purple-500/30 hover:border-purple-500/50 hover:bg-slate-800/70 transition-all cursor-pointer">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <div>
+                      <h3 className="text-xs font-bold text-white">Retention Pro</h3>
+                      <p className="text-[10px] text-slate-400">Advanced tools • From £49.99/mo</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Learn More →</span>
+                </div>
+              </Card>
             </Link>
-            
-            {myGyms.length > 1 && (
-              <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
-                {myGyms.map(gym => (
-                  <Button
-                    key={gym.id}
-                    variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
-                    onClick={() => setSelectedGym(gym)}
-                    className="whitespace-nowrap h-12 px-4 md:px-6"
-                  >
-                    {gym.name}
-                  </Button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -530,21 +548,7 @@ export default function GymOwnerDashboard() {
            </div>
          </Card>
 
-         {/* Retention Pro Upgrade */}
-         <Link to={createPageUrl('Plus')} className="block mb-6">
-           <Card className="p-4 bg-slate-800/50 border border-purple-500/30 hover:border-purple-500/50 hover:bg-slate-800/70 transition-all cursor-pointer">
-             <div className="flex items-center justify-between">
-               <div>
-                 <div className="flex items-center gap-2 mb-1">
-                   <Crown className="w-4 h-4 text-purple-400" />
-                   <h3 className="text-sm font-bold text-white">Retention Pro</h3>
-                 </div>
-                 <p className="text-xs text-slate-400">Advanced analytics & retention tools • From £49.99/month</p>
-               </div>
-               <span className="text-xs text-purple-400 font-medium">Learn More →</span>
-             </div>
-           </Card>
-         </Link>
+
 
          {/* View My Gym */}
          <div className="mb-6">
