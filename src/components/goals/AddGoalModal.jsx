@@ -49,30 +49,30 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-sm md:max-w-md w-full mx-4">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Target className="w-6 h-6 text-blue-500" />
+          <DialogTitle className="text-lg md:text-2xl font-bold flex items-center gap-2">
+            <Target className="w-5 md:w-6 h-5 md:h-6 text-blue-500" />
             Set New Goal
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Goal Title *</Label>
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+          <div className="space-y-1 md:space-y-2">
+            <Label className="text-xs md:text-sm">Goal Title *</Label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g., Bench Press 300 lbs"
               required
-              className="rounded-2xl"
+              className="rounded-xl md:rounded-2xl text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Goal Type *</Label>
+          <div className="space-y-1 md:space-y-2">
+            <Label className="text-xs md:text-sm">Goal Type *</Label>
             <Select value={formData.goal_type} onValueChange={(value) => setFormData({ ...formData, goal_type: value, unit: value === 'numerical' ? 'lbs' : 'workouts' })}>
-              <SelectTrigger className="rounded-2xl">
+              <SelectTrigger className="rounded-xl md:rounded-2xl text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -83,22 +83,22 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Description</Label>
+          <div className="space-y-1 md:space-y-2">
+            <Label className="text-xs md:text-sm">Description</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Why this goal matters to you..."
-              className="rounded-2xl"
+              className="rounded-xl md:rounded-2xl text-sm"
               rows={2}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>
-                {formData.goal_type === 'numerical' && 'Target Value *'}
-                {formData.goal_type === 'frequency' && 'Times per Period *'}
+          <div className="grid grid-cols-2 gap-2 md:gap-4">
+            <div className="space-y-1 md:space-y-2">
+              <Label className="text-xs md:text-sm">
+                {formData.goal_type === 'numerical' && 'Target *'}
+                {formData.goal_type === 'frequency' && 'Times *'}
                 {formData.goal_type === 'consistency' && 'Days *'}
               </Label>
               <Input
@@ -107,16 +107,16 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                 onChange={(e) => setFormData({ ...formData, target_value: e.target.value })}
                 placeholder={formData.goal_type === 'numerical' ? '300' : formData.goal_type === 'frequency' ? '6' : '30'}
                 required
-                className="rounded-2xl"
+                className="rounded-xl md:rounded-2xl text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label>
+            <div className="space-y-1 md:space-y-2">
+              <Label className="text-xs md:text-sm">
                 {formData.goal_type === 'numerical' ? 'Unit *' : 'Period *'}
               </Label>
               {formData.goal_type === 'numerical' ? (
                 <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
-                  <SelectTrigger className="rounded-2xl">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -127,7 +127,7 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                 </Select>
               ) : (
                 <Select value={formData.frequency_period} onValueChange={(value) => setFormData({ ...formData, frequency_period: value })}>
-                  <SelectTrigger className="rounded-2xl">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -141,10 +141,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
           </div>
 
           {formData.goal_type === 'numerical' && (
-            <div className="space-y-2">
-              <Label>Exercise (Optional)</Label>
+            <div className="space-y-1 md:space-y-2">
+              <Label className="text-xs md:text-sm">Exercise (Optional)</Label>
               <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-                <SelectTrigger className="rounded-2xl">
+                <SelectTrigger className="rounded-xl md:rounded-2xl text-sm">
                   <SelectValue placeholder="Select exercise" />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,34 +159,34 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Deadline</Label>
+          <div className="space-y-1 md:space-y-2">
+            <Label className="text-xs md:text-sm">Deadline</Label>
             <Input
               type="date"
               value={formData.deadline}
               onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-              className="rounded-2xl"
+              className="rounded-xl md:rounded-2xl text-sm"
             />
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50 border-2 border-blue-200">
+          <div className="flex items-center gap-2 md:gap-3 p-2 md:p-4 rounded-xl md:rounded-2xl bg-blue-50 border-2 border-blue-200">
             <Checkbox
               id="reminder"
               checked={formData.reminder_enabled}
               onCheckedChange={(checked) => setFormData({ ...formData, reminder_enabled: checked })}
               className="border-blue-400"
             />
-            <Label htmlFor="reminder" className="text-blue-900 font-semibold cursor-pointer">
-              Send me weekly reminders
+            <Label htmlFor="reminder" className="text-xs md:text-sm text-blue-900 font-semibold cursor-pointer">
+              Weekly reminders
             </Label>
           </div>
 
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold h-12 rounded-2xl"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold h-10 md:h-12 rounded-xl md:rounded-2xl text-sm md:text-base"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Goal'}
+            {isLoading ? <Loader2 className="w-4 md:w-5 h-4 md:h-5 animate-spin" /> : 'Create Goal'}
           </Button>
         </form>
       </DialogContent>
