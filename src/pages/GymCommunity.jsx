@@ -237,6 +237,20 @@ export default function GymCommunity() {
     }
   });
 
+  const deleteChallengeMutation = useMutation({
+    mutationFn: (challengeId) => base44.entities.Challenge.delete(challengeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
+    }
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: (eventId) => base44.entities.Event.delete(eventId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', gymId] });
+    }
+  });
+
   const updateCoachMutation = useMutation({
     mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data),
     onSuccess: () => {
@@ -867,15 +881,15 @@ export default function GymCommunity() {
           )}
           
           {posts.length === 0 ? (
-            <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
-              <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
-              <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
-            </Card>
+          <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
+            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
+            <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
+            <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
+          </Card>
           ) : (
-            posts.slice(0, 10).map((post) => (
-              <GymPostCard key={post.id} post={post} gym={gym} />
-            ))
+          posts.slice(0, 10).map((post) => (
+            <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
+          ))
           )}
         </TabsContent>
 
@@ -917,6 +931,12 @@ export default function GymCommunity() {
                   onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
                   currentUser={currentUser}
                   disabled={showOwnerControls}
+                  isOwner={showOwnerControls}
+                  onDelete={showOwnerControls ? (challengeId) => {
+                    if (window.confirm('Delete this challenge?')) {
+                      deleteChallengeMutation.mutate(challengeId);
+                    }
+                  } : null}
                 />
               ))}
               </div>
@@ -1175,6 +1195,12 @@ export default function GymCommunity() {
                       const event = events.find(e => e.id === eventId);
                       rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
                     }}
+                    isOwner={showOwnerControls}
+                    onDelete={showOwnerControls ? (eventId) => {
+                      if (window.confirm('Delete this event?')) {
+                        deleteEventMutation.mutate(eventId);
+                      }
+                    } : null}
                   />
                 ))}
               </div>
