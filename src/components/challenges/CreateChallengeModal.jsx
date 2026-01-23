@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trophy, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLoading }) {
   const [formData, setFormData] = useState({
@@ -36,22 +37,18 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    console.log('Form submitted with data:', formData);
-    
     // Validate required fields
     if (!formData.title || !formData.end_date || !formData.goal_type) {
-      console.log('Validation failed - missing:', { title: !formData.title, end_date: !formData.end_date, goal_type: !formData.goal_type });
-      alert('Please fill in all required fields (Title and End Date required)');
+      toast.error('Please fill in Title and End Date');
       return;
     }
     
     if (formData.type === 'gym_vs_gym' && (!formData.gym_id || !formData.competing_gym_id)) {
-      console.log('Gym vs gym validation failed');
-      alert('Please select both gyms for Gym vs Gym challenges');
+      toast.error('Please select both gyms');
       return;
     }
     
-    console.log('Calling onSave with:', formData);
+    toast.loading('Creating challenge...');
     onSave(formData);
   };
 
