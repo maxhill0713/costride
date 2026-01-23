@@ -941,46 +941,7 @@ export default function GymOwnerDashboard() {
               </Card>
             </div>
 
-            {/* Member Check-in Trends */}
-            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
-              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.checkInTrends')}</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {(() => {
-                  const last7DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }));
-                  const last30DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() }));
-                  const previousMonthCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 60), end: subDays(new Date(), 30) }));
 
-                  return (
-                    <>
-                      <div className="p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
-                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last7Days')}</p>
-                        <p className="text-3xl font-black text-blue-400">{last7DaysCheckIns.length}</p>
-                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
-                      </div>
-                      <div className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
-                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last30Days')}</p>
-                        <p className="text-3xl font-black text-green-400">{last30DaysCheckIns.length}</p>
-                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
-                      </div>
-                      <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
-                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.dailyAverage')}</p>
-                        <p className="text-3xl font-black text-purple-400">{Math.round(last30DaysCheckIns.length / 30)}</p>
-                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.perDay')}</p>
-                      </div>
-                      <div className="p-4 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl border border-orange-500/30">
-                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.vsPreviousMonth')}</p>
-                        <p className="text-3xl font-black text-orange-400">
-                          {previousMonthCheckIns.length > 0 ? 
-                            (((last30DaysCheckIns.length - previousMonthCheckIns.length) / previousMonthCheckIns.length) * 100).toFixed(0) 
-                            : 0}%
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.change')}</p>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            </Card>
 
 
 
