@@ -162,7 +162,7 @@ export default function Home() {
   const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 px-4 py-8 shadow-xl">
         <div className="max-w-4xl mx-auto">
