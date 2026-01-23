@@ -465,7 +465,7 @@ export default function Home() {
             className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
           >
             <CheckCircle className="w-10 h-10 mb-3" />
-            <h3 className="font-black text-lg mb-1">Join with Code</h3>
+            <h3 className="font-black text-xl mb-1">Join with Code</h3>
             <p className="text-sm text-white/90">Instant gym access</p>
           </Card>
           <Link to={createPageUrl('Gyms')}>
