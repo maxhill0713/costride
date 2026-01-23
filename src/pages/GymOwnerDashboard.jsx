@@ -1350,9 +1350,166 @@ export default function GymOwnerDashboard() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
+            {/* Retention Graphs Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Weekly Check-in Trend */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.weeklyCheckInTrend')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 11; i >= 0; i--) {
+                      const weekStart = subDays(new Date(), i * 7);
+                      const weekEnd = subDays(new Date(), (i - 1) * 7);
+                      const weekCheckIns = checkIns.filter(c => 
+                        isWithinInterval(new Date(c.check_in_date), { start: weekStart, end: weekEnd })
+                      );
+                      data.push({
+                        week: format(weekStart, 'MMM d'),
+                        checkIns: weekCheckIns.length
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="checkIns" stroke="#3b82f6" strokeWidth={2} name={t('dashboard.checkIns')} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.attendanceOverWeeks')}</p>
+              </Card>
+
+              {/* Challenge Participation Over Time */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.challengeParticipation')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthStart = subDays(new Date(), i * 30);
+                      const monthEnd = subDays(new Date(), (i - 1) * 30);
+                      const monthChallenges = challenges.filter(c => 
+                        isWithinInterval(new Date(c.start_date), { start: monthStart, end: monthEnd })
+                      );
+                      const totalParticipants = monthChallenges.reduce((sum, c) => sum + (c.participants?.length || 0), 0);
+                      data.push({
+                        month: format(monthStart, 'MMM'),
+                        participants: totalParticipants
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="participants" fill="#f59e0b" name={t('dashboard.participants')} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.engagementTrend')}</p>
+              </Card>
+
+              {/* Active Members Growth */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.activeMembersGrowth')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthEnd = subDays(new Date(), i * 30);
+                      const monthStart = subDays(monthEnd, 30);
+                      const activeMembers = new Set(
+                        checkIns.filter(c => 
+                          isWithinInterval(new Date(c.check_in_date), { start: monthStart, end: monthEnd })
+                        ).map(c => c.user_id)
+                      ).size;
+                      data.push({
+                        month: format(monthEnd, 'MMM'),
+                        members: activeMembers
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="members" stroke="#10b981" strokeWidth={2} name={t('dashboard.activeMembers')} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.membersWhoCheckedIn')}</p>
+              </Card>
+
+              {/* Rewards Redeemed */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.rewardsRedeemedChart')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const rewardClaims = {};
+                    rewards.forEach(reward => {
+                      const claimCount = reward.claimed_by?.length || 0;
+                      if (claimCount > 0) {
+                        rewardClaims[reward.title] = claimCount;
+                      }
+                    });
+                    return Object.entries(rewardClaims)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([title, claims]) => ({
+                        reward: title.length > 15 ? title.substring(0, 15) + '...' : title,
+                        claims
+                      }));
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="reward" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="claims" fill="#8b5cf6" name={t('dashboard.claims')} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.trackIncentive')}</p>
+              </Card>
+            </div>
+
+            {/* Peak Hours Analysis */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.peakHoursAnalysis')}</h3>
+              <div className="space-y-3">
+                {(() => {
+                  const hourlyData = {};
+                  checkIns.forEach(c => {
+                    const hour = new Date(c.check_in_date).getHours();
+                    hourlyData[hour] = (hourlyData[hour] || 0) + 1;
+                  });
+                  const sorted = Object.entries(hourlyData)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 10);
+                  
+                  return sorted.map(([hour, count], idx) => {
+                    const h = parseInt(hour);
+                    const timeLabel = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+                    const endH = (h + 1) % 24;
+                    const endLabel = endH === 0 ? '12am' : endH < 12 ? `${endH}am` : endH === 12 ? '12pm' : `${endH - 12}pm`;
+                    
+                    return (
+                      <div key={hour} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600/30">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-purple-400">#{idx + 1}</span>
+                          <span className="font-medium text-white">{timeLabel} - {endLabel}</span>
+                        </div>
+                        <span className="text-xl font-black text-purple-400">{count}</span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </Card>
+
             {/* Member Engagement Breakdown */}
-            <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.memberEngagementLevels')}</h3>
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.memberEngagementLevels')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl">
                   <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
@@ -1394,8 +1551,8 @@ export default function GymOwnerDashboard() {
 
             {/* Member Retention & Growth */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">{t('dashboard.memberRetention')}</h3>
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.memberRetention')}</h3>
                 <div className="space-y-4">
                   <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
                     <p className="text-sm text-gray-600 mb-1">{t('dashboard.activeThisMonth')}</p>
