@@ -413,7 +413,7 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-16 mb-6">
         {/* Identity Card */}
-        <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-blue-500/20 p-5 mb-4 shadow-sm overflow-hidden">
+        <Card className="bg-gradient-to-br from-blue-600/15 to-blue-500/5 backdrop-blur-sm border border-blue-500/40 p-5 mb-4 shadow-md overflow-hidden">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
               <p className="text-xs text-blue-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
@@ -426,7 +426,7 @@ export default function Profile() {
               <div className="text-4xl mb-2">🏆</div>
             </div>
           </div>
-          <div className="bg-blue-500/10 rounded-2xl p-3 border border-blue-500/20 overflow-hidden">
+          <div className="bg-blue-500/20 rounded-2xl p-3 border border-blue-500/50 overflow-hidden">
            <p className="text-xs text-blue-400 font-bold mb-1">WHAT YOU'RE BECOMING</p>
             <p className="text-sm text-slate-200 line-clamp-3">{identityStatus.next}</p>
           </div>
@@ -434,7 +434,7 @@ export default function Profile() {
 
         {/* Streak Cards */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <Card className="bg-gradient-to-br from-orange-500/10 to-white/[0.02] backdrop-blur-sm border border-orange-500/20 p-5 shadow-sm overflow-hidden">
+          <Card className="bg-gradient-to-br from-orange-600/15 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-5 shadow-md overflow-hidden">
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Flame className="w-6 h-6 text-orange-400 flex-shrink-0" />
@@ -496,7 +496,7 @@ export default function Profile() {
 
         {/* Protection & Risk Info */}
         {currentStreak > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-red-500/10 to-white/[0.02] backdrop-blur-sm border border-red-500/20 shadow-sm">
+          <Card className="p-5 mb-4 bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 shadow-md">
             <h3 className="font-semibold text-red-300 mb-3 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-400" />
               What Happens If You Stop?
@@ -522,7 +522,7 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-yellow-500/10 to-white/[0.02] backdrop-blur-sm border border-yellow-500/20 shadow-sm overflow-hidden">
+          <Card className="p-5 mb-4 bg-gradient-to-br from-yellow-600/15 to-yellow-500/5 backdrop-blur-sm border border-yellow-500/40 shadow-md overflow-hidden">
             <h3 className="font-semibold text-yellow-300 mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
               <span className="truncate">Milestones Unlocked</span>
@@ -540,17 +540,17 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-cyan-500/10 to-white/[0.02] backdrop-blur-sm border border-cyan-500/20 p-4 text-center shadow-sm hover:bg-cyan-500/15 transition-colors">
-            <div className="text-2xl font-black text-cyan-300 mb-1">{stats.totalLifts}</div>
-            <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wide">Workouts</div>
+          <Card className="bg-gradient-to-br from-cyan-600/20 to-cyan-500/5 backdrop-blur-sm border border-cyan-500/50 p-4 text-center shadow-md hover:from-cyan-600/30 transition-all">
+            <div className="text-2xl font-black text-cyan-200 mb-1">{stats.totalLifts}</div>
+            <div className="text-[10px] text-cyan-300 font-bold uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-gradient-to-br from-pink-500/10 to-white/[0.02] backdrop-blur-sm border border-pink-500/20 p-4 text-center shadow-sm hover:bg-pink-500/15 transition-colors">
-            <div className="text-2xl font-black text-pink-300 mb-1">{stats.personalRecords}</div>
-            <div className="text-[10px] text-pink-400 font-bold uppercase tracking-wide">PRs</div>
+          <Card className="bg-gradient-to-br from-pink-600/20 to-pink-500/5 backdrop-blur-sm border border-pink-500/50 p-4 text-center shadow-md hover:from-pink-600/30 transition-all">
+            <div className="text-2xl font-black text-pink-200 mb-1">{stats.personalRecords}</div>
+            <div className="text-[10px] text-pink-300 font-bold uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-gradient-to-br from-emerald-500/10 to-white/[0.02] backdrop-blur-sm border border-emerald-500/20 p-4 text-center shadow-sm hover:bg-emerald-500/15 transition-colors">
-            <div className="text-2xl font-black text-emerald-300 mb-1">{stats.weekStreak}</div>
-            <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wide">Day Streak</div>
+          <Card className="bg-gradient-to-br from-emerald-600/20 to-emerald-500/5 backdrop-blur-sm border border-emerald-500/50 p-4 text-center shadow-md hover:from-emerald-600/30 transition-all">
+            <div className="text-2xl font-black text-emerald-200 mb-1">{stats.weekStreak}</div>
+            <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-wide">Day Streak</div>
           </Card>
         </div>
 
@@ -602,14 +602,14 @@ export default function Profile() {
                     </div>
                     <div className="text-3xl font-black text-slate-200">{currentStreak}</div>
                     </div>
-                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4">
+                    <div className="bg-purple-500/25 border border-purple-500/50 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Dumbbell className="w-4 h-4 text-purple-400" />
                     <span className="text-xs font-bold text-purple-400 uppercase">Workouts</span>
                     </div>
                     <div className="text-3xl font-black text-slate-200">{stats.totalLifts}</div>
                     </div>
-                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-4">
+                    <div className="bg-yellow-500/25 border border-yellow-500/50 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Trophy className="w-4 h-4 text-yellow-400" />
                     <span className="text-xs font-bold text-yellow-400 uppercase">PRs</span>
