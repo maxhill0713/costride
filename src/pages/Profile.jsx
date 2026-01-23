@@ -525,7 +525,7 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 mb-4 bg-gradient-to-br from-yellow-600/15 to-yellow-500/5 backdrop-blur-sm border border-yellow-500/40 shadow-md overflow-hidden">
+          <Card className="p-5 bg-gradient-to-br from-yellow-600/15 to-yellow-500/5 backdrop-blur-sm border border-yellow-500/40 shadow-md overflow-hidden">
             <h3 className="font-semibold text-yellow-300 mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
               <span className="truncate">Milestones Unlocked</span>
