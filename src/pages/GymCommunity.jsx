@@ -1067,15 +1067,15 @@ export default function GymCommunity() {
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* Classes Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-2 md:p-5">
+          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
-              <h3 className="text-base md:text-lg font-bold text-slate-100">Classes</h3>
+              <h3 className="text-base md:text-lg font-bold text-white">Classes</h3>
               {showOwnerControls && (
                 <Button
                   onClick={() => setShowManageClasses(true)}
                   size="sm"
                   variant="outline"
-                  className="rounded-2xl"
+                  className="rounded-2xl bg-slate-700 hover:bg-slate-600 border-slate-600 text-white"
                 >
                   <Edit className="w-3 h-3 mr-1" />
                   Manage
@@ -1084,27 +1084,27 @@ export default function GymCommunity() {
             </div>
             
             {classes.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No classes scheduled</p>
+              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                <p className="text-slate-400 text-sm">No classes scheduled</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
                 {classes.map((gymClass) => (
-                  <div key={gymClass.id} className="bg-gray-50 border border-gray-200 p-2 md:p-4 rounded-2xl">
+                  <div key={gymClass.id} className="bg-slate-700/50 border border-slate-600/30 p-2 md:p-4 rounded-2xl">
                     <div className="flex items-start gap-2 md:gap-3">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                         <Target className="w-5 md:w-6 h-5 md:h-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm md:text-base mb-0.5 md:mb-1 line-clamp-1">{gymClass.name}</h4>
-                        <p className="text-xs text-gray-600 mb-1 md:mb-2 line-clamp-1">{gymClass.description}</p>
+                        <h4 className="font-semibold text-white text-sm md:text-base mb-0.5 md:mb-1 line-clamp-1">{gymClass.name}</h4>
+                        <p className="text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{gymClass.description}</p>
                         <div className="flex flex-wrap gap-1 mb-2">
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">
+                          <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs">
                             {gymClass.instructor}
                           </Badge>
                           {gymClass.duration_minutes && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs bg-slate-700/50 text-slate-200 border-slate-600">
                               {gymClass.duration_minutes} min
                             </Badge>
                           )}
@@ -1112,7 +1112,7 @@ export default function GymCommunity() {
                         {gymClass.schedule && gymClass.schedule.length > 0 && (
                           <div className="space-y-1">
                             {gymClass.schedule.map((slot, idx) => (
-                              <div key={idx} className="text-xs text-gray-600 flex items-center gap-1">
+                              <div key={idx} className="text-xs text-slate-300 flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 <span className="font-medium">{slot.day}</span> • <span>{slot.time}</span>
                               </div>
@@ -1128,14 +1128,14 @@ export default function GymCommunity() {
           </Card>
 
           {/* Events Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-orange-500/40 p-2 md:p-5">
+          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
-              <h3 className="text-base md:text-lg font-bold text-slate-100">Upcoming Events</h3>
+              <h3 className="text-base md:text-lg font-bold text-white">Upcoming Events</h3>
               {showOwnerControls && (
                 <Button
                   onClick={() => setShowCreateEvent(true)}
                   size="sm"
-                  className="bg-blue-500 text-white rounded-2xl"
+                  className="bg-slate-700 hover:bg-slate-600 text-white rounded-2xl"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Create
@@ -1144,9 +1144,9 @@ export default function GymCommunity() {
             </div>
             
             {events.filter(e => new Date(e.event_date) >= new Date()).length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No upcoming events</p>
+              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                <p className="text-slate-400 text-sm">No upcoming events</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
@@ -1168,15 +1168,15 @@ export default function GymCommunity() {
           <RateGymSection gym={gym} currentUser={currentUser} isGymOwner={isGymOwner} />
 
           {/* Coaches Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-2 md:p-5">
+          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
-              <h3 className="text-base md:text-lg font-bold text-slate-100">Coaches</h3>
+              <h3 className="text-base md:text-lg font-bold text-white">Coaches</h3>
               {showOwnerControls && (
                 <Button
                   onClick={() => setShowManageCoaches(true)}
                   size="sm"
                   variant="outline"
-                  className="rounded-2xl"
+                  className="rounded-2xl bg-slate-700 hover:bg-slate-600 border-slate-600 text-white"
                 >
                   <Edit className="w-3 h-3 mr-1" />
                   Manage
@@ -1185,14 +1185,14 @@ export default function GymCommunity() {
             </div>
             
             {coaches.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">No coaches listed</p>
+              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                <p className="text-slate-400 text-sm">No coaches listed</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
                 {coaches.slice(0, 5).map((coach) => (
-                  <div key={coach.id} className="bg-gray-50 border border-gray-200 p-2 md:p-4 rounded-2xl">
+                  <div key={coach.id} className="bg-slate-700/50 border border-slate-600/30 p-2 md:p-4 rounded-2xl">
                     <div className="flex items-start gap-2 md:gap-3">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {coach.avatar_url ? (
@@ -1203,19 +1203,19 @@ export default function GymCommunity() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
-                          <h4 className="font-semibold text-gray-900 text-sm md:text-base line-clamp-1">{coach.name}</h4>
+                          <h4 className="font-semibold text-white text-sm md:text-base line-clamp-1">{coach.name}</h4>
                           {coach.rating && (
                             <div className="flex items-center gap-0.5">
                               <Star className="w-2.5 md:w-3 h-2.5 md:h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                              <span className="text-[10px] md:text-xs font-bold">{coach.rating}</span>
+                              <span className="text-[10px] md:text-xs font-bold text-slate-200">{coach.rating}</span>
                             </div>
                           )}
                         </div>
-                        {coach.bio && <p className="text-[10px] md:text-xs text-gray-600 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
+                        {coach.bio && <p className="text-[10px] md:text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
                         {coach.specialties && coach.specialties.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {coach.specialties.map((specialty, idx) => (
-                              <Badge key={idx} className="bg-blue-100 text-blue-700 text-xs">{specialty}</Badge>
+                              <Badge key={idx} className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">{specialty}</Badge>
                             ))}
                           </div>
                         )}
