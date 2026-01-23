@@ -130,13 +130,14 @@ export default function GymCommunity() {
     queryKey: ['challenges', gymId],
     queryFn: async () => {
       const allChallenges = await base44.entities.Challenge.list();
-      return allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
+      return allChallenges.filter(c => c.gym_id === gymId || c.is_app_challenge === true);
     },
     enabled: !!gymId
   });
 
-  // Only gym challenges on gym community page
-  const gymChallenges = challenges.filter(c => c.status === 'active');
+  // Separate app challenges from gym challenges
+  const appChallenges = challenges.filter(c => c.is_app_challenge === true && c.status === 'active');
+  const gymChallenges = challenges.filter(c => c.is_app_challenge !== true && c.status === 'active');
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
@@ -880,6 +881,35 @@ export default function GymCommunity() {
             </Button>
           )}
 
+          {/* App Challenges - Global community challenges */}
+          {appChallenges.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-yellow-500/40 p-2 md:p-5">
+            <div className="space-y-1.5 md:space-y-3">
+              <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+                <div className="w-6 md:w-8 h-6 md:h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <Trophy className="w-3 md:w-4 h-3 md:h-4 text-white" />
+                </div>
+                <h2 className="text-sm md:text-lg font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                  App Challenges
+                </h2>
+              </div>
+              <p className="text-xs md:text-sm text-slate-300 mb-2">
+                Join community-wide challenges! 🏆
+              </p>
+              {appChallenges.map((challenge) => (
+                <AppChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  isJoined={hasjoinedChallenge(challenge.id)}
+                  onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
+                  currentUser={currentUser}
+                  disabled={showOwnerControls}
+                />
+              ))}
+              </div>
+              </Card>
+              )}
+
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
             <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-cyan-500/40 p-2 md:p-5">
@@ -910,13 +940,11 @@ export default function GymCommunity() {
               )}
 
               {/* Empty State */}
-          {gymChallenges.length === 0 && (
+          {appChallenges.length === 0 && gymChallenges.length === 0 && (
             <Card className="bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 p-8 text-center">
               <Trophy className="w-16 h-16 mx-auto mb-3 text-slate-600" />
               <p className="text-slate-300 font-semibold mb-2">No Active Challenges</p>
-              <p className="text-sm text-slate-400">
-                {showOwnerControls ? 'Create a challenge to engage your members!' : 'Check back soon for new challenges!'}
-              </p>
+              <p className="text-sm text-slate-400">Check back soon for new challenges!</p>
             </Card>
           )}
 
