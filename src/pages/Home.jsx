@@ -174,10 +174,10 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-5xl md:text-6xl font-black text-slate-100 mb-2">
+              <h1 className="text-3xl md:text-4xl font-black text-slate-100 mb-2">
                 Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
-              <p className="text-slate-400 text-xs md:text-sm">
+              <p className="text-slate-400 text-sm">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
             </div>
@@ -214,7 +214,7 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Streak Status - One Line */}
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-cyan-600/30 p-4 shadow-lg">
-          <p className="text-center text-2xl font-bold">
+          <p className="text-center text-lg font-bold">
             {userStreak > 0 && daysSinceCheckIn === 0 ? (
               <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
                 🔥 {userStreak}-day streak active
@@ -242,15 +242,15 @@ export default function Home() {
               {isOnTrack ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-slate-100 mb-4">
+              <h3 className="text-lg font-semibold text-slate-100 mb-4">
                 {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost On Track' : 'Needs Attention'}
               </h3>
               <div className="space-y-3">
                 <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-base text-slate-300">Weekly Gym Visits</span>
-                      <span className="text-base font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
-                    </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-slate-300">Weekly Gym Visits</span>
+                    <span className="text-sm font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
+                  </div>
                   <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
                     <div 
                       className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
@@ -261,8 +261,8 @@ export default function Home() {
                 {goals.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-base text-slate-300">Goals Progress</span>
-                      <span className="text-base font-semibold text-slate-200">{progressPercentage}%</span>
+                      <span className="text-sm text-slate-300">Goals Progress</span>
+                      <span className="text-sm font-semibold text-slate-200">{progressPercentage}%</span>
                     </div>
                     <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
                       <div 
@@ -282,8 +282,8 @@ export default function Home() {
           <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 backdrop-blur-sm border-0 p-6 rounded-2xl mb-6 shadow-lg">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-white text-xl mb-1">Get Started</h3>
-                <p className="text-blue-100 text-base">Join a gym to start tracking your workouts and connect with the community</p>
+                <h3 className="font-bold text-white text-lg mb-1">Get Started</h3>
+                <p className="text-blue-100 text-sm">Join a gym to start tracking your workouts and connect with the community</p>
               </div>
               <Link to={createPageUrl('Gyms')}>
                 <Button className="bg-white text-blue-600 hover:bg-blue-50 rounded-lg font-semibold whitespace-nowrap">
@@ -303,11 +303,11 @@ export default function Home() {
                   <Calendar className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                   <h3 className="font-semibold text-slate-100 text-base">
-                     {daysSinceCheckIn === 1 ? "Haven't checked in today" : `${daysSinceCheckIn} days since last check-in`}
-                   </h3>
-                   <p className="text-xs text-slate-400 mt-0.5">Maintain your streak</p>
-                 </div>
+                  <h3 className="font-semibold text-slate-100">
+                    {daysSinceCheckIn === 1 ? "Haven't checked in today" : `${daysSinceCheckIn} days since last check-in`}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Maintain your streak</p>
+                </div>
               </div>
               <Link to={createPageUrl('Gyms')}>
                 <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm">
@@ -321,13 +321,13 @@ export default function Home() {
         {/* Notifications Section */}
         {notifications.length > 0 && (
           <Card className="bg-slate-800/40 backdrop-blur-sm border border-blue-700/40 rounded-2xl p-4">
-            <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2 text-lg">
+            <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2">
               <Bell className="w-4 h-4 text-blue-400" />
               Recent Notifications
             </h3>
             <div className="space-y-2">
               {notifications.slice(0, 3).map(notif => (
-                <div key={notif.id} className={`p-3 rounded-lg text-base ${notif.read ? 'bg-slate-900/40' : 'bg-slate-900/60 border-l-2 border-blue-500'}`}>
+                <div key={notif.id} className={`p-3 rounded-lg text-sm ${notif.read ? 'bg-slate-900/40' : 'bg-slate-900/60 border-l-2 border-blue-500'}`}>
                   <div className="text-slate-200">{notif.title}</div>
                   <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
                 </div>
@@ -341,7 +341,7 @@ export default function Home() {
         {/* Who Checked In Today */}
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-black bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent flex items-center gap-2">
+            <h2 className="text-xl font-black bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent flex items-center gap-2">
               <Users className="w-6 h-6 text-blue-400" />
               Who's Training Today
             </h2>
@@ -365,7 +365,7 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-slate-100 text-base">{checkIn.user_name}</p>
+                    <p className="font-bold text-slate-100">{checkIn.user_name}</p>
                     <div className="flex items-center gap-2 text-sm text-slate-300">
                       <MapPin className="w-3 h-3" />
                       <span>{checkIn.gym_name}</span>
