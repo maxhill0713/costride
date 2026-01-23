@@ -881,34 +881,7 @@ export default function GymCommunity() {
             </Button>
           )}
 
-          {/* App Challenges - Global community challenges */}
-          {appChallenges.length > 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-yellow-500/40 p-2 md:p-5">
-            <div className="space-y-1.5 md:space-y-3">
-              <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
-                <div className="w-6 md:w-8 h-6 md:h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center flex-shrink-0">
-                  <Trophy className="w-3 md:w-4 h-3 md:h-4 text-white" />
-                </div>
-                <h2 className="text-sm md:text-lg font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                  App Challenges
-                </h2>
-              </div>
-              <p className="text-xs md:text-sm text-slate-300 mb-2">
-                Join community-wide challenges! 🏆
-              </p>
-              {appChallenges.map((challenge) => (
-                <AppChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  isJoined={hasjoinedChallenge(challenge.id)}
-                  onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                  currentUser={currentUser}
-                  disabled={showOwnerControls}
-                />
-              ))}
-              </div>
-              </Card>
-              )}
+
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
