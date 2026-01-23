@@ -21,7 +21,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-3 relative overflow-hidden shadow-sm">
+      <Card className="bg-gradient-to-br from-slate-700 to-slate-800 backdrop-blur-sm border-2 border-blue-500/40 p-3 relative overflow-hidden shadow-lg shadow-blue-500/20">
         {/* Gym Badge */}
         <Badge className="absolute top-2 right-2 bg-blue-900/50 border border-blue-700/50 text-blue-200 text-[10px] font-semibold">
           <Building2 className="w-2.5 h-2.5 mr-0.5" />

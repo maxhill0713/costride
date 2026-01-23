@@ -21,7 +21,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 p-3 relative overflow-hidden shadow-sm">
+      <Card className="bg-gradient-to-br from-slate-700 to-slate-800 backdrop-blur-sm border-2 border-amber-500/40 p-3 relative overflow-hidden shadow-lg shadow-amber-500/20">
         {/* App Challenge Badge */}
         <Badge className="absolute top-2 right-2 bg-amber-900/50 border border-amber-700/50 text-amber-200 text-[10px] font-bold">
           <Sparkles className="w-2.5 h-2.5 mr-0.5" />
