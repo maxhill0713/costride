@@ -130,7 +130,9 @@ export default function GymCommunity() {
     queryKey: ['challenges', gymId],
     queryFn: async () => {
       const allChallenges = await base44.entities.Challenge.list();
-      return allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
+      const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
+      console.log('Challenges fetched:', filtered);
+      return filtered;
     },
     enabled: !!gymId
   });
