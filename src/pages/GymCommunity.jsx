@@ -912,13 +912,13 @@ export default function GymCommunity() {
               )}
 
               {/* Empty State */}
-          {appChallenges.length === 0 && gymChallenges.length === 0 && (
-            <Card className="bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 p-8 text-center">
-              <Trophy className="w-16 h-16 mx-auto mb-3 text-slate-600" />
-              <p className="text-slate-300 font-semibold mb-2">No Active Challenges</p>
-              <p className="text-sm text-slate-400">Check back soon for new challenges!</p>
-            </Card>
-          )}
+              {gymChallenges.length === 0 && (
+                <Card className="bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 p-8 text-center">
+                  <Trophy className="w-16 h-16 mx-auto mb-3 text-slate-600" />
+                  <p className="text-slate-300 font-semibold mb-2">No Active Challenges</p>
+                  <p className="text-sm text-slate-400">Check back soon for new challenges!</p>
+                </Card>
+              )}
 
           {/* Leaderboard Section */}
           <Card className="bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-blue-600/20 backdrop-blur-sm border-2 border-purple-500/30 p-3 md:p-5 shadow-lg shadow-purple-500/10 transition-all duration-300">
