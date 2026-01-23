@@ -1681,8 +1681,8 @@ export default function GymOwnerDashboard() {
             </Card>
 
             {/* Reward Engagement */}
-            <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.rewardEngagement')}</h3>
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.rewardEngagement')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(() => {
                   const totalRewardClaims = rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0);
@@ -1692,20 +1692,20 @@ export default function GymOwnerDashboard() {
                   
                   return (
                     <>
-                      <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.usersEarningRewards')}</p>
-                        <p className="text-4xl font-black text-purple-600">{percentEarning}%</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.ofMembers', { total: uniqueMembers })}</p>
+                      <div className="p-5 bg-purple-500/20 rounded-2xl border border-purple-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.usersEarningRewards')}</p>
+                        <p className="text-4xl font-black text-purple-400">{percentEarning}%</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.ofMembers', { total: uniqueMembers })}</p>
                       </div>
-                      <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalClaims')}</p>
-                        <p className="text-4xl font-black text-blue-600">{totalRewardClaims}</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.rewardsRedeemed')}</p>
+                      <div className="p-5 bg-blue-500/20 rounded-2xl border border-blue-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.totalClaims')}</p>
+                        <p className="text-4xl font-black text-blue-400">{totalRewardClaims}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.rewardsRedeemed')}</p>
                       </div>
-                      <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
-                        <p className="text-sm text-gray-600 mb-1">{t('dashboard.avgRewardsPerUser')}</p>
-                        <p className="text-4xl font-black text-green-600">{avgRewardsPerUser}</p>
-                        <p className="text-xs text-gray-500 mt-1">{t('dashboard.rewardsPerMember')}</p>
+                      <div className="p-5 bg-green-500/20 rounded-2xl border border-green-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.avgRewardsPerUser')}</p>
+                        <p className="text-4xl font-black text-green-400">{avgRewardsPerUser}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.rewardsPerMember')}</p>
                       </div>
                     </>
                   );
@@ -1715,32 +1715,28 @@ export default function GymOwnerDashboard() {
 
             {/* Average Visit Duration & Frequency */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
-                <h4 className="font-bold text-gray-700 mb-3">Avg Visits per Member</h4>
-                <p className="text-5xl font-black text-purple-600">
+              <Card className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Avg Visits per Member</h4>
+                <p className="text-5xl font-black text-purple-400">
                   {uniqueMembers > 0 ? (checkIns.length / uniqueMembers).toFixed(1) : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">All-time average</p>
+                <p className="text-sm text-slate-400 mt-2">All-time average</p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
-                <h4 className="font-bold text-gray-700 mb-3">Monthly Average</h4>
-                <p className="text-5xl font-black text-blue-600">
+              <Card className="p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Monthly Average</h4>
+                <p className="text-5xl font-black text-blue-400">
                   {uniqueMembers > 0 ? (last30Days / uniqueMembers).toFixed(1) : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">Visits per member (30d)</p>
+                <p className="text-sm text-slate-400 mt-2">Visits per member (30d)</p>
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50">
-                <h4 className="font-bold text-gray-700 mb-3">Weekly Average</h4>
-                <p className="text-5xl font-black text-green-600">
+              <Card className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Weekly Average</h4>
+                <p className="text-5xl font-black text-green-400">
                   {activeMembersThisWeek > 0 ? (last7Days / activeMembersThisWeek).toFixed(1) : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">Visits per active member (7d)</p>
+                <p className="text-sm text-slate-400 mt-2">Visits per active member (7d)</p>
               </Card>
             </div>
-
-            {/* Member Engagement Breakdown */}
-            <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.memberEngagementLevels')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl">
                   <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
