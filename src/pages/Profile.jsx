@@ -415,7 +415,7 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto px-4 -mt-6 mb-6">
         {/* Identity Card */}
-        <Card className="bg-gradient-to-br from-slate-600/15 to-slate-500/5 backdrop-blur-sm border border-slate-500/40 p-5 mb-4 shadow-md overflow-hidden">
+        <Card className="bg-gradient-to-br from-slate-700/40 to-slate-600/20 backdrop-blur-sm border border-slate-500/40 p-5 mb-4 shadow-md overflow-hidden">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1">Your Identity</p>
