@@ -89,12 +89,7 @@ export default function GymOwnerDashboard() {
     }
   }, [myGyms, selectedGym]);
 
-  // Auto-switch language based on gym's language setting
-  React.useEffect(() => {
-    if (selectedGym?.language && i18n.language !== selectedGym.language) {
-      i18n.changeLanguage(selectedGym.language);
-    }
-  }, [selectedGym, i18n]);
+
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', selectedGym?.id],
