@@ -91,11 +91,11 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             size="sm"
             className={`w-full ${
               isJoined 
-                ? 'bg-green-600/60 hover:bg-green-600/60 cursor-not-allowed text-green-100' 
-                : 'bg-blue-900/50 hover:bg-blue-900/70 border border-blue-700/50 text-blue-200'
-            } rounded-xl h-8 text-xs font-bold transition-colors`}
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-500 hover:to-emerald-500 cursor-not-allowed text-white shadow-lg shadow-green-500/30 border-0' 
+                : 'bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 border-0 text-white shadow-lg shadow-blue-500/40 hover:shadow-blue-500/60 hover:scale-105'
+            } rounded-xl h-8 text-xs font-black transition-all duration-200`}
           >
-            {isJoined ? '✓ Joined' : 'Join'}
+            {isJoined ? '✓ Joined' : '🚀 Join Challenge'}
           </Button>
         </div>
       </Card>
