@@ -390,7 +390,7 @@ export default function Home() {
         {todayLifts.length > 0 && (
           <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent flex items-center gap-2">
+              <h2 className="text-xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent flex items-center gap-2">
                 <Dumbbell className="w-6 h-6 text-purple-400" />
                 Today's Lifts
               </h2>
@@ -409,7 +409,7 @@ export default function Home() {
                       <Dumbbell className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-100 text-base">{lift.member_name}</p>
+                      <p className="font-bold text-slate-100">{lift.member_name}</p>
                       <p className="text-sm text-slate-300 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
                     </div>
                   </div>
@@ -444,8 +444,8 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <h3 className="font-black text-2xl mb-2">Unlock Exclusive Rewards</h3>
-              <p className="text-slate-300 text-base mb-4 leading-relaxed">
+              <h3 className="font-black text-xl mb-2">Unlock Exclusive Rewards</h3>
+              <p className="text-slate-300 text-sm mb-4 leading-relaxed">
                 Double rewards on check-ins, early access to drops, and premium-only benefits
               </p>
               <div className="mb-5">
@@ -465,13 +465,13 @@ export default function Home() {
             className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
           >
             <CheckCircle className="w-10 h-10 mb-3" />
-            <h3 className="font-black text-xl mb-1">Join with Code</h3>
+            <h3 className="font-black text-lg mb-1">Join with Code</h3>
             <p className="text-sm text-white/90">Instant gym access</p>
           </Card>
           <Link to={createPageUrl('Gyms')}>
             <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
               <Trophy className="w-10 h-10 mb-3" />
-              <h3 className="font-black text-xl mb-1">View Gyms</h3>
+              <h3 className="font-black text-lg mb-1">View Gyms</h3>
               <p className="text-sm text-white/90">Explore communities</p>
             </Card>
           </Link>
@@ -482,7 +482,7 @@ export default function Home() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-black text-gray-900">Quick Check-In</h2>
+                <h2 className="text-xl font-black text-gray-900">Quick Check-In</h2>
                 <Button variant="ghost" size="icon" onClick={() => setShowCheckIn(false)}>
                   <X className="w-5 h-5" />
                 </Button>
