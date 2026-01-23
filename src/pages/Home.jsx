@@ -261,8 +261,8 @@ export default function Home() {
                 {goals.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-300">Goals Progress</span>
-                      <span className="text-sm font-semibold text-slate-200">{progressPercentage}%</span>
+                      <span className="text-base text-slate-300">Goals Progress</span>
+                      <span className="text-base font-semibold text-slate-200">{progressPercentage}%</span>
                     </div>
                     <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
                       <div 
