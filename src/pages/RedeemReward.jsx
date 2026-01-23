@@ -73,38 +73,7 @@ export default function RedeemReward() {
           <p className="text-xs md:text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
 
-        <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
-          {/* Stats Cards */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/30 transition-all">
-              <div className="flex flex-col items-center text-center">
-                <Trophy className="w-6 md:w-8 h-6 md:h-8 text-amber-500/60 mb-1" />
-                <p className="text-slate-400 text-[10px] md:text-xs">Challenges</p>
-                <p className="text-xl md:text-2xl font-black text-white">{userChallengeProgress.length}</p>
-              </div>
-            </Card>
-          </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/30 transition-all">
-              <div className="flex flex-col items-center text-center">
-                <Gift className="w-6 md:w-8 h-6 md:h-8 text-cyan-500/60 mb-1" />
-                <p className="text-slate-400 text-[10px] md:text-xs">Available</p>
-                <p className="text-xl md:text-2xl font-black text-white">{unclaimedRewards.length}</p>
-              </div>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/30 transition-all">
-              <div className="flex flex-col items-center text-center">
-                <CheckCircle className="w-6 md:w-8 h-6 md:h-8 text-green-500/60 mb-1" />
-                <p className="text-slate-400 text-[10px] md:text-xs">Claimed</p>
-                <p className="text-xl md:text-2xl font-black text-white">{claimedBonuses.length}</p>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
 
         {/* Active Challenges Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
