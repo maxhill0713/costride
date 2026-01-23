@@ -164,11 +164,11 @@ export default function RedeemReward() {
         {/* My Rewards Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <div>
-            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-3">
-              <Gift className="w-6 h-6 text-cyan-500" />
-              My Rewards
+            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
+              <Gift className="w-5 md:w-6 h-5 md:h-6 text-cyan-500" />
+              Rewards
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {unclaimedRewards.length === 0 ? (
                 <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
                   <p className="text-slate-400">No rewards available to claim right now</p>
