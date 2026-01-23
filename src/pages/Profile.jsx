@@ -719,7 +719,7 @@ export default function Profile() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Target className="w-5 h-5 text-blue-400" />
-                {t('profile.myGoals')}
+                My Goals
               </h3>
               <Button
                 onClick={() => setShowAddGoal(true)}
@@ -727,20 +727,20 @@ export default function Profile() {
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                {t('profile.addGoal')}
+                Add Goal
               </Button>
             </div>
 
             {activeGoals.length === 0 ? (
               <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
                 <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-300 mb-2">{t('profile.noGoals')}</p>
+                <p className="text-slate-300 mb-2">No goals set yet</p>
                 <Button
                   onClick={() => setShowAddGoal(true)}
                   variant="outline"
                   size="sm"
                 >
-                  {t('profile.setFirstGoal')}
+                  Set Your First Goal
                 </Button>
               </Card>
             ) : (
@@ -763,8 +763,8 @@ export default function Profile() {
                   <Bell className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{t('profile.notifications')}</h3>
-                  <p className="text-sm text-slate-300">{t('profile.notificationDesc')}</p>
+                  <h3 className="text-lg font-semibold text-white">Notifications</h3>
+                  <p className="text-sm text-slate-300">Manage your notification preferences</p>
                 </div>
               </div>
 
@@ -777,8 +777,8 @@ export default function Profile() {
                       <BellOff className="w-5 h-5 text-slate-500" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">{t('profile.pushNotifications')}</Label>
-                      <p className="text-xs text-slate-400">{t('profile.pushDesc')}</p>
+                      <Label className="text-sm font-bold text-slate-100">Push Notifications</Label>
+                      <p className="text-xs text-slate-400">Get notified about challenges and updates</p>
                     </div>
                   </div>
                   <Switch
@@ -795,8 +795,8 @@ export default function Profile() {
                       <BellOff className="w-5 h-5 text-slate-500" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">{t('profile.emailNotifications')}</Label>
-                      <p className="text-xs text-slate-400">{t('profile.emailDesc')}</p>
+                      <Label className="text-sm font-bold text-slate-100">Email Notifications</Label>
+                      <p className="text-xs text-slate-400">Receive email updates and summaries</p>
                     </div>
                   </div>
                   <Switch
@@ -817,8 +817,8 @@ export default function Profile() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{t('profile.appearance')}</h3>
-                  <p className="text-sm text-slate-300">{t('profile.appearanceDesc')}</p>
+                  <h3 className="text-lg font-semibold text-white">Appearance</h3>
+                  <p className="text-sm text-slate-300">Customize your app experience</p>
                 </div>
               </div>
 
@@ -831,8 +831,8 @@ export default function Profile() {
                       <Sun className="w-5 h-5 text-orange-400" />
                     )}
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">{t('profile.darkMode')}</Label>
-                      <p className="text-xs text-slate-400">{t('profile.darkModeDesc')}</p>
+                      <Label className="text-sm font-bold text-slate-100">Dark Mode</Label>
+                      <p className="text-xs text-slate-400">Switch between light and dark theme</p>
                     </div>
                   </div>
                   <Switch
@@ -845,22 +845,22 @@ export default function Profile() {
                   <div className="flex items-center gap-3 mb-3">
                     <Ruler className="w-5 h-5 text-purple-400" />
                     <div>
-                      <Label className="text-sm font-bold text-slate-100">{t('profile.unitSystem')}</Label>
-                      <p className="text-xs text-slate-400">{t('profile.unitSystemDesc')}</p>
+                      <Label className="text-sm font-bold text-slate-100">Unit System</Label>
+                      <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
                     </div>
-                  </div>
-                  <Select 
+                    </div>
+                    <Select 
                     value={currentUser.units || 'imperial'} 
                     onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
-                  >
+                    >
                     <SelectTrigger className="rounded-2xl border-2 border-slate-600 bg-slate-800/50 text-slate-100">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="imperial">{t('profile.imperial')}</SelectItem>
-                      <SelectItem value="metric">{t('profile.metric')}</SelectItem>
+                      <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
+                      <SelectItem value="metric">Metric (kg, m)</SelectItem>
                     </SelectContent>
-                  </Select>
+                    </Select>
                 </div>
               </div>
             </Card>
@@ -871,32 +871,32 @@ export default function Profile() {
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{t('profile.accountDetails')}</h3>
-                  <p className="text-sm text-slate-300">{t('profile.accountDesc')}</p>
+                  <h3 className="text-lg font-semibold text-white">Account Details</h3>
+                  <p className="text-sm text-slate-300">Manage your email and password</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="p-4 bg-slate-700/50 rounded-2xl">
-                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">{t('profile.emailAddress')}</Label>
+                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
                   <Input
                     type="email"
                     value={currentUser.email}
                     disabled
                     className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
                   />
-                  <p className="text-xs text-slate-400 mt-1">{t('profile.contactSupport')}</p>
+                  <p className="text-xs text-slate-400 mt-1">Contact support to change your email</p>
                 </div>
 
                 <div className="p-4 bg-slate-700/50 rounded-2xl">
-                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">{t('profile.password')}</Label>
+                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Password</Label>
                   <Input
                     type="password"
                     value="••••••••"
                     disabled
                     className="bg-slate-800/50 border-slate-600 text-slate-100 rounded-xl"
                   />
-                  <p className="text-xs text-slate-400 mt-1">{t('profile.resetPassword')}</p>
+                  <p className="text-xs text-slate-400 mt-1">Contact support to reset your password</p>
                 </div>
               </div>
             </Card>
@@ -907,8 +907,8 @@ export default function Profile() {
                   <Lock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{t('profile.privacy')}</h3>
-                  <p className="text-sm text-slate-300">{t('profile.privacyDesc')}</p>
+                  <h3 className="text-lg font-semibold text-white">Privacy</h3>
+                  <p className="text-sm text-slate-300">Control your profile visibility</p>
                 </div>
               </div>
 
@@ -920,8 +920,8 @@ export default function Profile() {
                     <Lock className="w-5 h-5 text-slate-500" />
                   )}
                   <div>
-                    <Label className="text-sm font-bold text-slate-100">{t('profile.publicProfile')}</Label>
-                    <p className="text-xs text-slate-400">{t('profile.publicProfileDesc')}</p>
+                    <Label className="text-sm font-bold text-slate-100">Public Profile</Label>
+                    <p className="text-xs text-slate-400">Allow others to view your profile and stats</p>
                   </div>
                 </div>
                 <Switch
@@ -937,21 +937,21 @@ export default function Profile() {
                   <span className="text-white font-bold text-lg">!</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-red-900">{t('profile.dangerZone')}</h3>
-                  <p className="text-sm text-red-700">{t('profile.irreversibleActions')}</p>
+                    <h3 className="text-base font-bold text-red-900">Danger Zone</h3>
+                    <p className="text-sm text-red-700">Irreversible actions</p>
+                  </div>
                 </div>
-              </div>
-              <Button 
-                variant="outline" 
-                className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 rounded-2xl font-semibold"
-                onClick={() => {
-                  if (confirm(t('profile.logoutConfirm'))) {
-                    base44.auth.logout();
-                  }
-                }}
-              >
-                {t('profile.logout')}
-              </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 rounded-2xl font-semibold"
+                  onClick={() => {
+                    if (confirm('Are you sure you want to logout?')) {
+                      base44.auth.logout();
+                    }
+                  }}
+                >
+                  Logout
+                </Button>
             </Card>
           </TabsContent>
         </Tabs>
