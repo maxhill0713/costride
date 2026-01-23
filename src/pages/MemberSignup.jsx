@@ -68,7 +68,7 @@ export default function MemberSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
+      <div className="fixed top-4 right-4 z-50">
         <LanguageSelector />
       </div>
       <Card className="max-w-2xl w-full p-8 md:p-12 bg-white border-0 shadow-xl rounded-3xl">
