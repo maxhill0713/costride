@@ -214,28 +214,28 @@ export default function RedeemReward() {
 
         {/* Claimed Rewards History */}
         {claimedBonuses.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8">
-            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-              Claimed Rewards
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4 md:mt-6">
+            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
+              <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-green-500" />
+              Claimed
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {claimedBonuses.map((bonus) => (
-                <Card key={bonus.id} className="bg-slate-800/40 backdrop-blur-xl border border-green-500/30 p-5 rounded-2xl">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-white mb-1">{bonus.offer_details}</h3>
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
-                        <Clock className="w-3 h-3" />
-                        <span>Claimed: {new Date(bonus.created_date).toLocaleDateString()}</span>
+                <Card key={bonus.id} className="bg-slate-800/40 backdrop-blur-xl border border-green-500/30 p-3 md:p-4 rounded-xl md:rounded-2xl">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{bonus.offer_details}</h3>
+                      <div className="flex items-center gap-1.5 text-[10px] md:text-xs text-slate-400">
+                        <Clock className="w-3 h-3 flex-shrink-0" />
+                        <span>{new Date(bonus.created_date).toLocaleDateString()}</span>
                       </div>
                       {bonus.redeemed && (
-                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-xs mt-2">
+                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-[10px] md:text-xs mt-1.5 inline-block">
                           ✓ Redeemed
                         </Badge>
                       )}
                     </div>
-                    <CheckCircle className="w-6 h-6 text-green-500" />
+                    <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-500 flex-shrink-0 mt-0.5" />
                   </div>
                 </Card>
               ))}
