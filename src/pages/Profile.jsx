@@ -545,15 +545,15 @@ export default function Profile() {
         <div className="grid grid-cols-3 gap-3">
           <Card className="bg-gradient-to-br from-blue-600/40 to-blue-500/20 backdrop-blur-sm border border-blue-500/50 p-4 text-center shadow-md">
             <div className="text-3xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.totalLifts}</div>
-            <div className="text-[10px] text-blue-200 font-bold uppercase tracking-widest">Workouts</div>
+            <div className="text-[10px] text-blue-100 font-bold uppercase tracking-widest">Workouts</div>
           </Card>
           <Card className="bg-gradient-to-br from-purple-600/40 to-purple-500/20 backdrop-blur-sm border border-purple-500/50 p-4 text-center shadow-md">
             <div className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.personalRecords}</div>
-            <div className="text-[10px] text-purple-200 font-bold uppercase tracking-widest">PRs</div>
+            <div className="text-[10px] text-purple-100 font-bold uppercase tracking-widest">PRs</div>
           </Card>
           <Card className="bg-gradient-to-br from-teal-600/40 to-teal-500/20 backdrop-blur-sm border border-teal-500/50 p-4 text-center shadow-md">
             <div className="text-3xl font-black bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.weekStreak}</div>
-            <div className="text-[10px] text-teal-200 font-bold uppercase tracking-widest">Day Streak</div>
+            <div className="text-[10px] text-teal-100 font-bold uppercase tracking-widest">Day Streak</div>
           </Card>
         </div>
 
@@ -594,28 +594,28 @@ export default function Profile() {
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-cyan-400 uppercase">Check-Ins</span>
+                    <span className="text-xs font-bold text-cyan-300 uppercase">Check-Ins</span>
                   </div>
                   <div className="text-4xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent drop-shadow-lg">{userCheckIns.length}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-xs font-bold text-orange-400 uppercase">Current Streak</span>
+                    <span className="text-xs font-bold text-orange-300 uppercase">Current Streak</span>
                     </div>
                     <div className="text-4xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">{currentStreak}</div>
                     </div>
                     <div className="bg-purple-500/25 border border-purple-500/50 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Dumbbell className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-bold text-purple-400 uppercase">Workouts</span>
+                    <span className="text-xs font-bold text-purple-300 uppercase">Workouts</span>
                     </div>
                     <div className="text-4xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">{stats.totalLifts}</div>
                     </div>
                     <div className="bg-yellow-500/25 border border-yellow-500/50 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-400 uppercase">PRs</span>
+                    <span className="text-xs font-bold text-yellow-300 uppercase">PRs</span>
                     </div>
                     <div className="text-4xl font-black bg-gradient-to-r from-yellow-300 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">{stats.personalRecords}</div>
                     </div>
