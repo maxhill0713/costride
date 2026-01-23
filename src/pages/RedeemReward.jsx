@@ -155,53 +155,87 @@ export default function RedeemReward() {
 
         {/* My Rewards Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <div>
-            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
-              <Gift className="w-5 md:w-6 h-5 md:h-6 text-cyan-500" />
-              Rewards
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-              {unclaimedRewards.length === 0 ? (
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
-                  <p className="text-slate-400">No rewards available to claim right now</p>
-                </Card>
-              ) : (
-                unclaimedRewards.map((reward) => (
-                  <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
-                        <p className="text-xs md:text-sm text-slate-400 mb-2 line-clamp-1">{reward.description}</p>
-                        <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] md:text-xs inline-block">
-                          {reward.type}
-                        </Badge>
-                      </div>
-                      <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
-                    </div>
+         <div>
+           <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
+             <Gift className="w-5 md:w-6 h-5 md:h-6 text-cyan-500" />
+             Rewards
+           </h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+             {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
+               <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
+                 <p className="text-slate-400">No rewards available to claim right now</p>
+               </Card>
+             ) : (
+               <>
+                 {completedChallengeRewards.map((reward) => (
+                   <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
+                     <div className="flex items-start justify-between mb-2">
+                       <div className="flex-1 min-w-0">
+                         <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
+                         <p className="text-xs md:text-sm text-amber-400 mb-2 line-clamp-1">{reward.earnedText}</p>
+                         <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
+                           Challenge Reward
+                         </Badge>
+                       </div>
+                       <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
+                     </div>
 
-                    <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
-                      {reward.points_required > 0 && (
-                        <div className="mb-2 flex items-center gap-1.5 text-xs md:text-sm text-slate-400">
-                          <Flame className="w-3 md:w-4 h-3 md:h-4 text-orange-500 flex-shrink-0" />
-                          <span>{reward.points_required} pts</span>
-                        </div>
-                      )}
-                      <Button
-                        onClick={() => {
-                          setSelectedReward(reward);
-                          claimMutation.mutate(reward.id);
-                        }}
-                        disabled={claimMutation.isPending}
-                        className="w-full h-8 md:h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
-                      >
-                        {claimMutation.isPending ? 'Claiming...' : 'Claim'}
-                      </Button>
-                    </div>
-                  </Card>
-                ))
-              )}
-            </div>
-          </div>
+                     <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
+                       {reward.reward && (
+                         <div className="mb-2 text-xs md:text-sm text-slate-300">
+                           💝 {reward.reward}
+                         </div>
+                       )}
+                       <Button
+                         onClick={() => {
+                           setSelectedReward(reward);
+                           claimMutation.mutate(reward);
+                         }}
+                         disabled={claimMutation.isPending}
+                         className="w-full h-8 md:h-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
+                       >
+                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
+                       </Button>
+                     </div>
+                   </Card>
+                 ))}
+                 {unclaimedRewards.map((reward) => (
+                   <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
+                     <div className="flex items-start justify-between mb-2">
+                       <div className="flex-1 min-w-0">
+                         <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
+                         <p className="text-xs md:text-sm text-slate-400 mb-2 line-clamp-1">{reward.description}</p>
+                         <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] md:text-xs inline-block">
+                           {reward.type}
+                         </Badge>
+                       </div>
+                       <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
+                     </div>
+
+                     <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
+                       {reward.points_required > 0 && (
+                         <div className="mb-2 flex items-center gap-1.5 text-xs md:text-sm text-slate-400">
+                           <Flame className="w-3 md:w-4 h-3 md:h-4 text-orange-500 flex-shrink-0" />
+                           <span>{reward.points_required} pts</span>
+                         </div>
+                       )}
+                       <Button
+                         onClick={() => {
+                           setSelectedReward(reward);
+                           claimMutation.mutate(reward);
+                         }}
+                         disabled={claimMutation.isPending}
+                         className="w-full h-8 md:h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
+                       >
+                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
+                       </Button>
+                     </div>
+                   </Card>
+                 ))}
+               </>
+             )}
+           </div>
+         </div>
         </motion.div>
 
         {/* Claimed Rewards History */}
