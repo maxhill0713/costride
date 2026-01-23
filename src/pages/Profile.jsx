@@ -540,15 +540,15 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 text-center shadow-lg">
+          <Card className="bg-slate-800/40 border border-slate-700/60 p-4 text-center shadow-md">
             <div className="text-2xl font-black text-cyan-300 mb-1">{stats.totalLifts}</div>
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Workouts</div>
           </Card>
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 text-center shadow-lg">
+          <Card className="bg-slate-800/40 border border-slate-700/60 p-4 text-center shadow-md">
             <div className="text-2xl font-black text-orange-300 mb-1">{stats.personalRecords}</div>
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">PRs</div>
           </Card>
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 text-center shadow-lg">
+          <Card className="bg-slate-800/40 border border-slate-700/60 p-4 text-center shadow-md">
             <div className="text-2xl font-black text-purple-300 mb-1">{stats.weekStreak}</div>
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Day Streak</div>
           </Card>
