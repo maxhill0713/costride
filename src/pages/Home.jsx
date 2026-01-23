@@ -236,88 +236,65 @@ export default function Home() {
         </Card>
 
         {/* Progress Tracker */}
-        <Card className={`${isOnTrack ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300' : isAlmostOnTrack ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300' : 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300'} p-5 shadow-lg`}>
+        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
           <div className="flex items-start gap-4">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${isOnTrack ? 'bg-green-500' : isAlmostOnTrack ? 'bg-yellow-500' : 'bg-orange-500'}`}>
-              {isOnTrack ? <CheckCircle className="w-8 h-8 text-white" /> : <AlertCircle className="w-8 h-8 text-white" />}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isOnTrack ? 'bg-green-500/20 text-green-400' : isAlmostOnTrack ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
+              {isOnTrack ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
             </div>
             <div className="flex-1">
-              <h3 className={`text-xl font-black mb-2 ${isOnTrack ? 'text-green-900' : isAlmostOnTrack ? 'text-yellow-900' : 'text-orange-900'}`}>
-                {isOnTrack ? `🎉 You're On Track!` : isAlmostOnTrack ? `💪 You're Almost On Track` : `⚠️ You're Falling Behind`}
+              <h3 className="text-lg font-semibold text-slate-100 mb-4">
+                {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost On Track' : 'Needs Attention'}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : isAlmostOnTrack ? 'text-yellow-800' : 'text-orange-800'}`}>
-                      Weekly Gym Visits: {weeklyCheckIns.length}/{weeklyTarget}
-                    </span>
-                    <span className={`text-xs font-bold ${weeklyCheckIns.length >= weeklyTarget ? 'text-green-700' : 'text-orange-700'}`}>
-                      {weeklyCheckIns.length >= weeklyTarget ? `✓ Complete` : 'Incomplete'}
-                    </span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-slate-300">Weekly Gym Visits</span>
+                    <span className="text-sm font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
                   </div>
-                  <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                  <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-orange-500'} transition-all duration-500`}
+                      className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
                       style={{ width: `${Math.min((weeklyCheckIns.length / weeklyTarget) * 100, 100)}%` }}
                     />
                   </div>
                 </div>
                 {goals.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-sm font-semibold ${isOnTrack ? 'text-green-800' : isAlmostOnTrack ? 'text-yellow-800' : 'text-orange-800'}`}>
-                        Goals Progress: {goalsOnTrack}/{goals.length} on track
-                      </span>
-                      <span className={`text-xs font-bold ${goalsOnTrack >= goals.length * 0.5 ? 'text-green-700' : 'text-orange-700'}`}>
-                        {progressPercentage}%
-                      </span>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-slate-300">Goals Progress</span>
+                      <span className="text-sm font-semibold text-slate-200">{progressPercentage}%</span>
                     </div>
-                    <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                    <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
                       <div 
-                        className={`h-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-500' : 'bg-orange-500'} transition-all duration-500`}
+                        className={`h-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
                         style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
                   </div>
                 )}
               </div>
-              <p className={`text-sm mt-3 ${isOnTrack ? 'text-green-700' : isAlmostOnTrack ? 'text-yellow-700' : 'text-orange-700'}`}>
-                {isOnTrack 
-                  ? `Keep up the great work! You're crushing your fitness goals 💪` 
-                  : isAlmostOnTrack
-                  ? `You're so close! Complete one more to get fully on track 🔥`
-                  : `Don't give up! Get back on track by checking in at a gym today 🔥`}
-              </p>
-              {!isOnTrack && (
-                <Link to={createPageUrl('Gyms')} className="mt-3 inline-block">
-                  <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl">
-                    <Target className="w-4 h-4 mr-2" />
-                    Check In Now
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
         </Card>
 
         {/* Check-in Reminder */}
         {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-          <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 p-5">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-amber-500/20 p-5 rounded-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-orange-900">
-                    {daysSinceCheckIn === 1 ? "Haven't seen you today!" : `${daysSinceCheckIn} days since last check-in`}
+                  <h3 className="font-semibold text-slate-100">
+                    {daysSinceCheckIn === 1 ? "Haven't checked in today" : `${daysSinceCheckIn} days since last check-in`}
                   </h3>
-                  <p className="text-sm text-orange-700">Keep your streak alive! 🔥</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Maintain your streak</p>
                 </div>
               </div>
               <Link to={createPageUrl('Gyms')}>
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl">
-                  Check In Now
+                <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm">
+                  Check In
                 </Button>
               </Link>
             </div>
