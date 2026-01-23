@@ -242,7 +242,7 @@ export default function Home() {
               {isOnTrack ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-slate-100 mb-4">
+              <h3 className="text-xl font-semibold text-slate-100 mb-4">
                 {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost On Track' : 'Needs Attention'}
               </h3>
               <div className="space-y-3">
