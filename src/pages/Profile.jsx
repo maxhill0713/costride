@@ -415,7 +415,7 @@ export default function Profile() {
       {/* Stats Cards */}
       <div className="max-w-4xl mx-auto px-4 -mt-4 mb-8 space-y-4">
         {/* Identity Card */}
-        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl mb-4 shadow-md">
+        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-md">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-yellow-500/20">
               <Trophy className="w-6 h-6 text-yellow-400" />
