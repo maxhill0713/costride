@@ -1023,7 +1023,7 @@ export default function GymOwnerDashboard() {
             {/* Weekly Leaderboard */}
             <Card className="p-6 bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-pink-600/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/10">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-yellow-400" />
+                <Trophy className="w-6 h-6 text-cyan-400" />
                 {t('dashboard.weeklyLeaderboard')}
               </h3>
               <p className="text-slate-300 mb-4">{t('dashboard.topMembersThisWeek')}</p>
@@ -1127,7 +1127,7 @@ export default function GymOwnerDashboard() {
                        <div className="flex items-start justify-between mb-2">
                          <div>
                            <h5 className="font-bold text-white flex items-center gap-2">
-                             <Trophy className="w-5 h-5 text-yellow-400" />
+                             <Trophy className="w-5 h-5 text-cyan-400" />
                              {challenge.title}
                            </h5>
                            <p className="text-sm text-slate-200">{challenge.description}</p>

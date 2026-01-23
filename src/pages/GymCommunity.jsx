@@ -952,7 +952,7 @@ export default function GymCommunity() {
           <Card className="bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-blue-600/20 backdrop-blur-sm border-2 border-purple-500/30 p-3 md:p-5 shadow-lg shadow-purple-500/10 transition-all duration-300">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-400" />
+                <Trophy className="w-5 h-5 text-cyan-400" />
                 Community Leaderboard
               </h3>
             </div>
@@ -1325,7 +1325,7 @@ export default function GymCommunity() {
           {/* Monthly Leaderboard Prizes */}
           <Card className="bg-gradient-to-br from-purple-600/30 via-slate-800/80 to-pink-600/30 backdrop-blur-sm border-2 border-purple-500/50 p-2 md:p-5 shadow-lg shadow-purple-500/20">
            <h3 className="font-bold text-white text-sm md:text-base mb-2 md:mb-3 flex items-center gap-1.5 md:gap-2">
-             <Award className="w-4 md:w-5 h-4 md:h-5 text-yellow-400 flex-shrink-0" />
+             <Award className="w-4 md:w-5 h-4 md:h-5 text-emerald-400 flex-shrink-0" />
              Monthly Leaderboard Prizes
            </h3>
            <div className="space-y-1.5 md:space-y-2">
