@@ -35,6 +35,18 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.title || !formData.end_date || !formData.goal_type) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    if (formData.type === 'gym_vs_gym' && (!formData.gym_id || !formData.competing_gym_id)) {
+      alert('Please select both gyms for Gym vs Gym challenges');
+      return;
+    }
+    
     onSave(formData);
   };
 
