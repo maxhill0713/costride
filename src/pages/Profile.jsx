@@ -676,6 +676,46 @@ export default function Profile() {
             <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
           </TabsContent>
 
+          <TabsContent value="challenges" className="space-y-4">
+            {(() => {
+              const appChallenges = allChallenges.filter(c => c.is_app_challenge === true && c.status === 'active');
+              
+              return appChallenges.length === 0 ? (
+                <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
+                  <Trophy className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                  <p className="text-slate-300 mb-2">No active app challenges yet</p>
+                  <p className="text-xs text-slate-400">Check back soon!</p>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {appChallenges.map((challenge) => (
+                    <Card key={challenge.id} className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="font-bold text-white mb-1">{challenge.title}</h4>
+                          <p className="text-sm text-slate-300 mb-2">{challenge.description}</p>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className="bg-blue-500/40 text-blue-200 border-blue-500/50 text-xs">
+                              {challenge.goal_type.replace(/_/g, ' ')}
+                            </Badge>
+                            {challenge.reward && (
+                              <Badge className="bg-green-500/40 text-green-200 border-green-500/50 text-xs">
+                                🎁 {challenge.reward}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs whitespace-nowrap">
+                          {Math.ceil((new Date(challenge.end_date) - new Date()) / (1000 * 60 * 60 * 24))}d left
+                        </Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="goals" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
