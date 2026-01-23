@@ -71,7 +71,8 @@ export default function GymSignup() {
       toast.success('Your gym has been registered!');
     },
     onError: (error) => {
-      toast.error('Failed to register gym. Please try again.');
+      console.error('Gym registration error:', error);
+      toast.error(error?.message || 'Failed to register gym. Please try again.');
     }
   });
 
