@@ -564,11 +564,17 @@ export default function Profile() {
             <TabsTrigger value="progress" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               Progress
             </TabsTrigger>
-            <TabsTrigger value="challenges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
-              Challenges
+            <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+              Goals
             </TabsTrigger>
             <TabsTrigger value="rewards" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               Rewards
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+              Badges
+            </TabsTrigger>
+            <TabsTrigger value="challenges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+              Challenges
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               <Settings className="w-4 h-4" />
