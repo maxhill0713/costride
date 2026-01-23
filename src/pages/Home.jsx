@@ -409,7 +409,7 @@ export default function Home() {
                       <Dumbbell className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-100">{lift.member_name}</p>
+                      <p className="font-bold text-slate-100 text-base">{lift.member_name}</p>
                       <p className="text-sm text-slate-300 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
                     </div>
                   </div>
