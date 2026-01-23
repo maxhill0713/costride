@@ -421,17 +421,17 @@ export default function Profile() {
               <Trophy className="w-6 h-6 text-yellow-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className={`text-base font-semibold text-slate-100 mb-3`}>
+              <h3 className={`text-base font-semibold text-white mb-3`}>
                 {identityStatus.title}
               </h3>
               <div className="space-y-2">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
-                  <p className="text-xs text-slate-400 font-bold mb-1">YOUR JOURNEY</p>
-                  <p className="text-sm text-slate-200 line-clamp-2">{identityStatus.subtitle}</p>
+                  <p className="text-xs text-slate-300 font-bold mb-1">YOUR JOURNEY</p>
+                  <p className="text-sm text-white line-clamp-2">{identityStatus.subtitle}</p>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
-                  <p className="text-xs text-slate-400 font-bold mb-1">NEXT MILESTONE</p>
-                  <p className="text-sm text-slate-200 line-clamp-2">{identityStatus.next}</p>
+                  <p className="text-xs text-slate-300 font-bold mb-1">NEXT MILESTONE</p>
+                  <p className="text-sm text-white line-clamp-2">{identityStatus.next}</p>
                 </div>
               </div>
             </div>
@@ -589,7 +589,7 @@ export default function Profile() {
 
             {/* Progress Stats */}
             <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-blue-500/20 p-5 shadow-sm">
-              <h3 className="font-semibold text-white mb-4">Your Progress</h3>
+              <h3 className="font-bold text-xl text-white mb-4">Your Progress</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
