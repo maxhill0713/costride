@@ -114,7 +114,7 @@ export default function BrandDiscounts() {
         </div>
 
         {/* Redeem Code Section */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 mb-6 shadow-lg">
+        <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <Tag className="w-5 md:w-6 h-5 md:h-6 text-purple-400 flex-shrink-0" />
             <div className="min-w-0">
@@ -195,7 +195,7 @@ export default function BrandDiscounts() {
         {/* Tabs for Active Items */}
         {unusedCodes.length > 0 && (
           <Tabs defaultValue="all" className="mb-6">
-            <TabsList className="w-full bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 mb-4">
+            <TabsList className="w-full bg-slate-800/50 p-1 rounded-xl mb-4">
               <TabsTrigger value="all" className="flex-1">All ({unusedCodes.length})</TabsTrigger>
               <TabsTrigger value="discounts" className="flex-1">Discounts ({unusedDiscounts.length})</TabsTrigger>
               <TabsTrigger value="giftcards" className="flex-1">Gift Cards ({unusedGiftCards.length})</TabsTrigger>
@@ -328,7 +328,7 @@ export default function BrandDiscounts() {
               Redeemed ({usedCodes.length})
             </h3>
             <Tabs defaultValue="all">
-              <TabsList className="w-full bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-slate-600/30 mb-4">
+              <TabsList className="w-full bg-slate-800/50 p-1 rounded-xl mb-4">
                 <TabsTrigger value="all" className="flex-1">All ({usedCodes.length})</TabsTrigger>
                 <TabsTrigger value="discounts" className="flex-1">Discounts ({usedDiscounts.length})</TabsTrigger>
                 <TabsTrigger value="giftcards" className="flex-1">Gift Cards ({usedGiftCards.length})</TabsTrigger>
@@ -482,7 +482,7 @@ export default function BrandDiscounts() {
 
         {/* Empty State */}
         {unusedCodes.length === 0 && usedCodes.length === 0 && expiredCodes.length === 0 && (
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 md:p-12 text-center">
+        <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 md:p-12 text-center">
           <Gift className="w-12 md:w-16 h-12 md:h-16 text-slate-600 mx-auto mb-4" />
           <h3 className="text-lg md:text-xl font-bold text-white mb-2">No Codes Yet</h3>
           <p className="text-sm md:text-base text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>

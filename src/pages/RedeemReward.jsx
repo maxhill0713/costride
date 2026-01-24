@@ -90,10 +90,18 @@ export default function RedeemReward() {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 p-4 md:p-6 pb-24 md:pb-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
+      {/* Header */}
+      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">Rewards & Challenges</h1>
+          <p className="text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-3 md:px-4 py-6">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 hidden">
           <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Rewards & Challenges</h1>
           <p className="text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
@@ -150,7 +158,7 @@ export default function RedeemReward() {
               </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userChallengeProgress.length === 0 ? (
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
+                <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 col-span-2 text-center">
                   <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <p className="text-slate-400">No active challenges at the moment</p>
                 </Card>
@@ -163,7 +171,7 @@ export default function RedeemReward() {
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all overflow-hidden group relative">
+                    <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-amber-400/50 transition-all overflow-hidden group relative">
                       {/* Sparkle effect on hover */}
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -250,7 +258,7 @@ export default function RedeemReward() {
             ) : (
               <>
                 {completedChallengeRewards.map((reward) => (
-                  <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all group overflow-hidden">
+                  <Card key={reward.id} className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-amber-400/50 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
@@ -282,7 +290,7 @@ export default function RedeemReward() {
                    </Card>
                  ))}
                  {unclaimedRewards.map((reward) => (
-                   <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all group overflow-hidden">
+                   <Card key={reward.id} className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-cyan-400/50 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
@@ -329,7 +337,7 @@ export default function RedeemReward() {
                <Gift className="w-6 h-6 text-purple-400" />
                Brand Rewards
              </h2>
-             <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl text-center">
+             <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                  <Gift className="w-8 h-8 text-white" />
                </div>
@@ -354,7 +362,7 @@ export default function RedeemReward() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {claimedBonuses.map((bonus) => (
-                <Card key={bonus.id} className="bg-slate-800/40 backdrop-blur-xl border border-green-500/30 p-5 rounded-2xl hover:border-green-400/40 transition-all">
+                <Card key={bonus.id} className="bg-slate-800/80 backdrop-blur-md border border-green-500/30 rounded-2xl p-5 hover:border-green-400/40 transition-all">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{bonus.offer_details}</h3>

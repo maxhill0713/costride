@@ -229,7 +229,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="bg-gradient-to-b from-slate-900/80 to-slate-900/40 backdrop-blur-sm border-b border-blue-700/30 relative pt-8 pb-8 px-3 md:px-4">
+      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -509,19 +509,19 @@ export default function Profile() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 pb-8">
+      <div className="max-w-4xl mx-auto px-3 md:px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full mb-6 bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30 p-1.5 rounded-2xl shadow-sm overflow-x-auto gap-1">
-            <TabsTrigger value="progress" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+          <TabsList className="flex w-full mb-6 bg-slate-800/50 p-1 rounded-xl overflow-x-auto gap-1">
+            <TabsTrigger value="progress" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
               Progress
             </TabsTrigger>
-            <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+            <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
               Goals
             </TabsTrigger>
-            <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+            <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
               Badges
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
+            <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
               <Settings className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
