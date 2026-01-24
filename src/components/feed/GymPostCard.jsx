@@ -97,7 +97,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   }, {});
   const totalReactions = Object.keys(reactions).length;
   return (
-    <Card className="bg-white/95 backdrop-blur-sm border-2 border-gray-100 overflow-hidden hover:shadow-lg transition-all rounded-2xl">
+    <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-slate-700/50 overflow-hidden hover:shadow-lg transition-all rounded-2xl">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
@@ -111,8 +111,8 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
             )}
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-gray-900">{post.member_name}</h3>
-            <p className="text-[10px] text-gray-500">
+            <h3 className="text-xs font-semibold text-slate-100">{post.member_name}</h3>
+            <p className="text-[10px] text-slate-400">
               {format(new Date(post.created_date), 'MMM d')}
             </p>
           </div>
@@ -123,7 +123,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
               variant="ghost"
               size="icon"
               onClick={() => setShowEditModal(true)}
-              className="text-gray-500 hover:text-gray-700 h-7 w-7"
+              className="text-slate-400 hover:text-slate-200 h-7 w-7"
             >
               <Edit className="w-3 h-3" />
             </Button>
@@ -136,7 +136,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                 }
               }}
               disabled={deletePostMutation.isPending}
-              className="text-red-500 hover:text-red-700 h-7 w-7"
+              className="text-red-400 hover:text-red-300 h-7 w-7"
             >
               <Trash2 className="w-3 h-3" />
             </Button>
@@ -146,7 +146,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
       {/* Media */}
       {(post.video_url || post.image_url) && (
-        <div className="w-full bg-gray-100">
+        <div className="w-full bg-slate-900/50">
           {post.video_url ? (
             <video 
               src={post.video_url} 
@@ -176,7 +176,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
             {/* Reaction picker */}
             {showReactions && (
-              <div className="absolute bottom-full left-0 mb-2 p-2 bg-white rounded-xl shadow-2xl border border-gray-200 flex gap-2 z-10">
+              <div className="absolute bottom-full left-0 mb-2 p-2 bg-slate-700 rounded-xl shadow-2xl border border-slate-600 flex gap-2 z-10">
                 {REACTIONS.map((emoji) => (
                   <button
                     key={emoji}
@@ -196,7 +196,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
       {/* Likes Count */}
       {totalReactions > 0 && (
         <div className="px-3 py-1">
-          <p className="text-xs font-semibold text-gray-900">
+          <p className="text-xs font-semibold text-slate-100">
             {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
           </p>
         </div>
@@ -204,13 +204,13 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
       {/* Caption */}
       <div className="px-3 pb-2">
-        <p className="text-xs text-gray-900">
+        <p className="text-xs text-slate-200">
           <span className="font-semibold mr-1">{post.member_name}</span>
           {post.content}
         </p>
         
         {post.exercise && post.weight && (
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             {post.exercise.replace('_', ' ')} • {post.weight} lbs
           </p>
         )}
