@@ -93,7 +93,7 @@ export default function MemberSignup() {
                   <User className="w-16 h-16 text-gray-400" />
                 </div>
               )}
-              <label className="absolute bottom-0 right-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-600 transition-colors">
+              <label className="absolute bottom-0 right-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-700 transition-colors">
                 <Camera className="w-5 h-5 text-white" />
                 <input
                   type="file"
