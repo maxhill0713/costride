@@ -871,7 +871,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Feed Tab */}
-        <TabsContent value="feed" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
+        <TabsContent value="feed" className="space-y-0 mt-0 w-full overflow-hidden bg-white">
           {/* User's Position Banner */}
           {currentUser && checkInLeaderboard.length > 0 && (() => {
             const userPosition = checkInLeaderboard.findIndex(m => m.userId === currentUser.id);
@@ -978,14 +978,16 @@ export default function GymCommunity() {
           )}
           
           {posts.length === 0 ? (
-          <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
-            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
-            <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
-            <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
-          </Card>
+          <div className="p-8 text-center bg-white">
+            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+            <p className="text-gray-700 font-semibold mb-1">No community posts yet</p>
+            <p className="text-sm text-gray-500">Be the first to share your workout! 💪</p>
+          </div>
           ) : (
           posts.slice(0, 10).map((post) => (
-            <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
+            <div key={post.id} className="border-b-8 border-gray-100">
+              <GymPostCard post={post} gym={gym} isOwner={showOwnerControls} />
+            </div>
           ))
           )}
         </TabsContent>
