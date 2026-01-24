@@ -917,11 +917,11 @@ export default function GymCommunity() {
                   }}
                   className="text-xs text-blue-400 font-semibold hover:text-blue-300"
                 >
-                  View All →
+                  See All →
                 </button>
               </div>
               <div className="space-y-2">
-                {posts.slice(0, 2).map((post) => (
+                {posts.slice(0, 1).map((post) => (
                   <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
                 ))}
               </div>
