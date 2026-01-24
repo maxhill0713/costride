@@ -861,11 +861,16 @@ export default function GymCommunity() {
                 <h3 className="text-xs md:text-sm font-bold text-slate-100">In Gym Now</h3>
               </div>
               <p className="text-2xl md:text-3xl font-black text-white">
-                {checkIns.filter(c => {
-                  const checkInTime = new Date(c.check_in_date);
-                  const now = new Date();
-                  return (now - checkInTime) < 3 * 60 * 60 * 1000;
-                }).length}
+                {(() => {
+                  const usersInGym = new Set();
+                  checkIns.forEach(checkIn => {
+                    const hasCheckOut = checkOuts.some(c => c.user_id === checkIn.user_id && new Date(c.check_out_date) > new Date(checkIn.check_in_date));
+                    if (!hasCheckOut) {
+                      usersInGym.add(checkIn.user_id);
+                    }
+                  });
+                  return usersInGym.size;
+                })()}
               </p>
             </Card>
           </div>
