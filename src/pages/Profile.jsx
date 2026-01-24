@@ -3,14 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Gift, Building2, CheckCircle, Tag } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ClaimedRewardCard from '../components/rewards/ClaimedRewardCard';
+
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -70,11 +70,6 @@ export default function Profile() {
     queryFn: () => base44.entities.CheckIn.list('-check_in_date')
   });
 
-  const { data: allRewards = [] } = useQuery({
-    queryKey: ['rewards'],
-    queryFn: () => base44.entities.Reward.list()
-  });
-
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
@@ -86,42 +81,7 @@ export default function Profile() {
     queryFn: () => base44.entities.Gym.list()
   });
 
-  const { data: claimedBonuses = [] } = useQuery({
-    queryKey: ['claimedBonuses', currentUser?.id],
-    queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id }),
-    enabled: !!currentUser
-  });
 
-  const { data: allChallenges = [] } = useQuery({
-    queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list()
-  });
-
-  const claimRewardMutation = useMutation({
-    mutationFn: async ({ reward, userId }) => {
-      // Generate unique redemption code
-      const redemptionCode = `${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      
-      // Create ClaimedBonus record
-      await base44.entities.ClaimedBonus.create({
-        user_id: userId,
-        gym_id: reward.gym_id,
-        bonus_type: reward.type === 'discount' ? 'gym_offer' : 'free_day_pass',
-        offer_details: reward.title,
-        redemption_code: redemptionCode,
-        redeemed: false
-      });
-      
-      // Update reward claimed_by list
-      return base44.entities.Reward.update(reward.id, {
-        claimed_by: [...(reward.claimed_by || []), userId]
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rewards'] });
-      queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
-    }
-  });
 
   const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
   const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
@@ -129,19 +89,6 @@ export default function Profile() {
   // Get gyms user is a member of
   const memberGymIds = gymMemberships.map(m => m.gym_id);
   const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
-  
-  // Filter rewards for gyms user is a member of
-  const availableRewards = allRewards.filter(r => 
-    r.active && memberGymIds.includes(r.gym_id)
-  );
-
-  // User check-in count for reward eligibility
-  const userCheckInCount = userCheckIns.length;
-  const hasClaimedReward = (reward) => reward.claimed_by?.includes(currentUser?.id);
-  
-  // Get claimed rewards with their bonus records
-  const claimedRewards = availableRewards.filter(r => hasClaimedReward(r));
-  const unclaimedRewards = availableRewards.filter(r => !hasClaimedReward(r));
 
   React.useEffect(() => {
     if (currentUser) {
@@ -571,14 +518,8 @@ export default function Profile() {
             <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               Goals
             </TabsTrigger>
-            <TabsTrigger value="rewards" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
-              Rewards
-            </TabsTrigger>
             <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               Badges
-            </TabsTrigger>
-            <TabsTrigger value="challenges" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
-              Challenges
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all text-xs text-slate-400 px-2 py-2">
               <Settings className="w-4 h-4" />
@@ -646,79 +587,8 @@ export default function Profile() {
             )}
           </TabsContent>
 
-          <TabsContent value="rewards" className="space-y-4">
-            <Tabs defaultValue="gym" className="w-full">
-              <TabsList className="w-full bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm border border-blue-600/30">
-                <TabsTrigger value="gym" className="flex-1">In-Gym Rewards</TabsTrigger>
-                <TabsTrigger value="brand" className="flex-1">Brand Rewards</TabsTrigger>
-              </TabsList>
-
-              {/* In-Gym Rewards Tab */}
-              <TabsContent value="gym" className="space-y-4 mt-4">
-                <Link to={createPageUrl('GymRewards')}>
-                  <Card className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer">
-                    <Trophy className="w-10 h-10 mb-3" />
-                    <h3 className="font-black text-lg mb-1">In-Gym Rewards</h3>
-                    <p className="text-sm text-white/90">Free day passes and exclusive gym offers</p>
-                  </Card>
-                </Link>
-                </TabsContent>
-
-                {/* Brand Rewards Tab */}
-                <TabsContent value="brand" className="space-y-4 mt-4">
-                <Link to={createPageUrl('BrandDiscounts')}>
-                  <Card className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 border-0 text-white hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer">
-                    <Gift className="w-10 h-10 mb-3" />
-                    <h3 className="font-black text-lg mb-1">Brand Rewards</h3>
-                    <p className="text-sm text-white/90">Discount codes and gift cards from top brands</p>
-                  </Card>
-                </Link>
-                </TabsContent>
-                </Tabs>
-                </TabsContent>
-
           <TabsContent value="badges">
             <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
-          </TabsContent>
-
-          <TabsContent value="challenges" className="space-y-4">
-            {(() => {
-              const appChallenges = allChallenges.filter(c => c.is_app_challenge === true && c.status === 'active');
-              
-              return appChallenges.length === 0 ? (
-                <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
-                  <Trophy className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-300 mb-2">No active app challenges yet</p>
-                  <p className="text-xs text-slate-400">Check back soon!</p>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {appChallenges.map((challenge) => (
-                    <Card key={challenge.id} className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h4 className="font-bold text-white mb-1">{challenge.title}</h4>
-                          <p className="text-sm text-slate-300 mb-2">{challenge.description}</p>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge className="bg-blue-500/40 text-blue-200 border-blue-500/50 text-xs">
-                              {challenge.goal_type.replace(/_/g, ' ')}
-                            </Badge>
-                            {challenge.reward && (
-                              <Badge className="bg-green-500/40 text-green-200 border-green-500/50 text-xs">
-                                🎁 {challenge.reward}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs whitespace-nowrap">
-                          {Math.ceil((new Date(challenge.end_date) - new Date()) / (1000 * 60 * 60 * 24))}d left
-                        </Badge>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              );
-            })()}
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
