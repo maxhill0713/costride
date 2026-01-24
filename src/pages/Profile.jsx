@@ -364,7 +364,7 @@ export default function Profile() {
               <div className="flex-1 min-w-0">
                 <h3 className="font-black text-lg mb-1 truncate">We Miss You! 🔥</h3>
                   <p className="text-white/90 text-sm line-clamp-2">
-                    It's been {daysSinceCheckIn} days since your last check-in. Don't lose your {currentStreak}-day streak!
+                    One quick session keeps your progress going
                   </p>
               </div>
             </div>
