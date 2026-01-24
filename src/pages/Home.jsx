@@ -299,20 +299,20 @@ export default function Home() {
 
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <Card 
             onClick={() => setShowJoinModal(true)}
-            className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
+            className="p-5 bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 text-slate-300 hover:border-slate-500/60 hover:bg-slate-800/60 transition-all cursor-pointer"
           >
-            <CheckCircle className="w-10 h-10 mb-3" />
-            <h3 className="font-semibold text-sm mb-1">Join with Code</h3>
-            <p className="text-xs text-white/90">Instant gym access</p>
+            <CheckCircle className="w-8 h-8 mb-3 text-slate-400" />
+            <h3 className="font-medium text-sm mb-1 text-slate-200">Join with Code</h3>
+            <p className="text-xs text-slate-400">Instant gym access</p>
           </Card>
           <Link to={createPageUrl('Gyms')}>
-            <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
-              <Trophy className="w-10 h-10 mb-3" />
-              <h3 className="font-semibold text-sm mb-1">View Gyms</h3>
-              <p className="text-xs text-white/90">Explore communities</p>
+            <Card className="p-5 bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 text-slate-300 hover:border-slate-500/60 hover:bg-slate-800/60 transition-all cursor-pointer">
+              <Trophy className="w-8 h-8 mb-3 text-slate-400" />
+              <h3 className="font-medium text-sm mb-1 text-slate-200">View Gyms</h3>
+              <p className="text-xs text-slate-400">Explore communities</p>
             </Card>
           </Link>
         </div>
