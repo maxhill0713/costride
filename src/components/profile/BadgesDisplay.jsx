@@ -91,21 +91,21 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
       {/* Earned Badges */}
       {earnedBadges.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-yellow-400" />
             Earned Badges ({earnedBadges.length})
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {earnedBadges.map((badge) => {
               const Icon = badge.icon;
               return (
-                <Card key={badge.id} className="p-4 text-center bg-white border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg`}>
+                <Card key={badge.id} className="p-4 text-center bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
+                  <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg shadow-blue-500/20`}>
                     <Icon className="w-8 h-8 text-white" strokeWidth={2.5} />
                   </div>
-                  <h4 className="font-bold text-gray-900 text-sm mb-1">{badge.title}</h4>
-                  <p className="text-xs text-gray-600">{badge.description}</p>
-                  <Badge className="mt-2 bg-green-100 text-green-700 text-xs">
+                  <h4 className="font-bold text-white text-sm mb-1">{badge.title}</h4>
+                  <p className="text-xs text-slate-400">{badge.description}</p>
+                  <Badge className="mt-2 bg-green-500/20 text-green-300 border border-green-500/30 text-xs">
                     Earned ✓
                   </Badge>
                 </Card>
@@ -118,21 +118,21 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
       {/* Locked Badges */}
       {lockedBadges.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Star className="w-5 h-5 text-gray-400" />
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Star className="w-5 h-5 text-slate-400" />
             Locked Badges ({lockedBadges.length})
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {lockedBadges.map((badge) => {
               const Icon = badge.icon;
               return (
-                <Card key={badge.id} className="p-4 text-center bg-gray-50 border-2 border-dashed border-gray-300 opacity-60">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gray-200 flex items-center justify-center">
-                    <Icon className="w-8 h-8 text-gray-400" strokeWidth={2} />
+                <Card key={badge.id} className="p-4 text-center bg-slate-900/40 backdrop-blur-xl border border-dashed border-slate-700/50 opacity-60">
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-slate-700/50 flex items-center justify-center">
+                    <Icon className="w-8 h-8 text-slate-500" strokeWidth={2} />
                   </div>
-                  <h4 className="font-bold text-gray-600 text-sm mb-1">{badge.title}</h4>
-                  <p className="text-xs text-gray-500">{badge.description}</p>
-                  <Badge className="mt-2 bg-gray-200 text-gray-600 text-xs">
+                  <h4 className="font-bold text-slate-400 text-sm mb-1">{badge.title}</h4>
+                  <p className="text-xs text-slate-500">{badge.description}</p>
+                  <Badge className="mt-2 bg-slate-700/50 text-slate-400 border border-slate-600/50 text-xs">
                     Locked 🔒
                   </Badge>
                 </Card>
