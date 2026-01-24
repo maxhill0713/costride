@@ -21,6 +21,7 @@ import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
+import CheckInHeatmap from '../components/profile/CheckInHeatmap';
 
 
 export default function Profile() {
@@ -585,6 +586,8 @@ export default function Profile() {
           </TabsList>
 
           <TabsContent value="progress" className="space-y-4">
+            <CheckInHeatmap checkIns={userCheckIns} />
+            
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
             {/* Progress Stats */}
