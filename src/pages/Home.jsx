@@ -337,78 +337,7 @@ export default function Home() {
 
 
 
-        {/* Consistency Heatmap */}
-        <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-blue-400" />
-              Consistency Heatmap
-            </h2>
-            <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
-              Last 60 Days
-            </Badge>
-          </div>
-          
-          {(() => {
-            const days = 60;
-            const heatmapDays = [];
-            const today = new Date();
-            
-            for (let i = days - 1; i >= 0; i--) {
-              const date = new Date(today);
-              date.setDate(date.getDate() - i);
-              const dateStr = date.toISOString().split('T')[0];
-              const hasCheckedIn = userCheckIns.some(c => 
-                new Date(c.check_in_date).toISOString().split('T')[0] === dateStr
-              );
-              heatmapDays.push({ date, hasCheckedIn, dateStr });
-            }
-            
-            return (
-              <div className="space-y-4">
-                <div className="grid grid-cols-10 gap-1.5">
-                  {heatmapDays.map((day, i) => (
-                    <div
-                      key={i}
-                      className={`
-                        aspect-square rounded-lg transition-all duration-300 cursor-pointer
-                        ${day.hasCheckedIn 
-                          ? 'bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg shadow-green-500/50 animate-pulse' 
-                          : 'bg-slate-700/50 border border-slate-600/30'
-                        }
-                        hover:scale-110
-                      `}
-                      title={`${day.date.toLocaleDateString()} - ${day.hasCheckedIn ? 'Checked In ✓' : 'Missed'}`}
-                    />
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-slate-700/50 border border-slate-600/30 rounded" />
-                      <span>Missed</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded" />
-                      <span>Checked In</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-slate-400">Consistency Rate</p>
-                    <p className="text-xl font-bold text-green-400">
-                      {Math.round((userCheckIns.filter(c => {
-                        const checkDate = new Date(c.check_in_date);
-                        const daysAgo = Math.floor((today - checkDate) / (1000 * 60 * 60 * 24));
-                        return daysAgo <= 60;
-                      }).length / 60) * 100)}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </Card>
+
 
         {/* Today's Activity */}
         {todayLifts.length > 0 && (
