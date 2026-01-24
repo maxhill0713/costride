@@ -823,9 +823,6 @@ export default function GymCommunity() {
 
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
-          {/* Check-in Section */}
-          {!showOwnerControls && <CheckInButton gym={gym} />}
-
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
@@ -871,83 +868,7 @@ export default function GymCommunity() {
         </TabsContent>
 
         {/* Feed Tab */}
-        <TabsContent value="feed" className="space-y-0 mt-0 w-full overflow-hidden bg-white">
-          {/* User's Position Banner */}
-          {currentUser && checkInLeaderboard.length > 0 && (() => {
-            const userPosition = checkInLeaderboard.findIndex(m => m.userId === currentUser.id);
-            if (userPosition >= 0) {
-              const userCheckIns = checkInLeaderboard[userPosition].count;
-              const leaderCheckIns = checkInLeaderboard[0]?.count || 0;
-              const secondPlaceCheckIns = checkInLeaderboard[1]?.count || 0;
-              const diff = leaderCheckIns - userCheckIns;
-              
-              // Show banner if user is in top 5 and not in 1st place
-              if (userPosition > 0 && userPosition < 5) {
-                return (
-                  <button
-                    onClick={() => {
-                      const challengesTab = document.querySelector('[value="challenges"]');
-                      if (challengesTab) challengesTab.click();
-                    }}
-                    className="w-full"
-                  >
-                    <Card className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 p-4 shadow-2xl border-2 border-yellow-300/50 cursor-pointer hover:scale-105 hover:shadow-orange-500/60 transition-all duration-300 animate-pulse">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                          👀
-                        </div>
-                        <div className="flex-1 text-left">
-                          <p className="font-black text-white text-sm">
-                            You're #{userPosition + 1} this week
-                          </p>
-                          <p className="text-white/90 text-xs">
-                            {diff === 1 
-                              ? 'One more visit to take the lead 🔥' 
-                              : `${diff} more visits to reach #1`}
-                          </p>
-                        </div>
-                        <Flame className="w-6 h-6 text-white animate-pulse" />
-                      </div>
-                    </Card>
-                  </button>
-                );
-              } else if (userPosition === 0) {
-                // User is in 1st place
-                const lead = userCheckIns - secondPlaceCheckIns;
-                return (
-                  <button
-                    onClick={() => {
-                      const challengesTab = document.querySelector('[value="challenges"]');
-                      if (challengesTab) challengesTab.click();
-                    }}
-                    className="w-full"
-                  >
-                    <Card className="bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 p-4 shadow-2xl border-2 border-yellow-300/60 cursor-pointer hover:shadow-xl hover:shadow-yellow-500/60 transition-all rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="text-3xl">🔥</div>
-                        <div className="flex-1 text-left min-w-0">
-                          <p className="font-bold text-white text-sm">
-                            You're #1 this week!
-                          </p>
-                          <p className="text-white/90 text-xs truncate">
-                            {lead > 0 
-                              ? `Leading by ${lead} check-in${lead > 1 ? 's' : ''}` 
-                              : 'Stay consistent to keep the lead!'}
-                          </p>
-                        </div>
-                        <Trophy className="w-5 h-5 text-white flex-shrink-0" />
-                      </div>
-                    </Card>
-                  </button>
-                );
-              }
-            }
-            return null;
-          })()}
-
-          {/* Check-in Section - Only show if not owner in owner view */}
-           {!showOwnerControls && <CheckInButton gym={gym} />}
-
+        <TabsContent value="feed" className="space-y-2 mt-0 w-full overflow-hidden">
           {/* Upcoming Events This Week */}
            {upcomingEvents.length > 0 && (
              <div className="space-y-2 md:space-y-3">
@@ -978,50 +899,17 @@ export default function GymCommunity() {
           )}
           
           {posts.length === 0 ? (
-          <div className="p-8 text-center bg-white">
-            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-            <p className="text-gray-700 font-semibold mb-1">No community posts yet</p>
-            <p className="text-sm text-gray-500">Be the first to share your workout! 💪</p>
-          </div>
+          <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
+            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
+            <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
+            <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
+          </Card>
           ) : (
-          <div className="grid grid-cols-3 gap-1 p-1 bg-white">
-            {posts.slice(0, 30).map((post) => (
-              <button
-                key={post.id}
-                onClick={() => {
-                  // Open post detail modal or navigate
-                  window.postDetailId = post.id;
-                  const event = new CustomEvent('openPostDetail', { detail: post });
-                  window.dispatchEvent(event);
-                }}
-                className="aspect-square relative bg-gray-100 overflow-hidden group"
-              >
-                {post.image_url ? (
-                  <img 
-                    src={post.image_url} 
-                    alt="Post" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : post.video_url ? (
-                  <video 
-                    src={post.video_url}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 p-2">
-                    <p className="text-white text-xs font-semibold line-clamp-4 text-center">
-                      {post.content}
-                    </p>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="text-white text-xs font-semibold flex items-center gap-2">
-                    <span className="flex items-center gap-1">
-                      ❤️ {Object.keys(post.reactions || {}).length}
-                    </span>
-                  </div>
-                </div>
-              </button>
+          <div className="space-y-3">
+            {posts.slice(0, 10).map((post) => (
+              <div key={post.id} className="transform scale-90">
+                <GymPostCard post={post} gym={gym} isOwner={showOwnerControls} />
+              </div>
             ))}
           </div>
           )}
@@ -1525,20 +1413,6 @@ export default function GymCommunity() {
                   isLoading={createChallengeMutation.isPending}
                 />
 
-      {/* Floating Action Button (FAB) - Check-in */}
-      {isMember && (
-        <div className="fixed bottom-20 right-6 z-30 md:bottom-8">
-          <button
-            onClick={() => {
-              const checkInBtn = document.querySelector('[data-checkin-btn]');
-              if (checkInBtn) checkInBtn.click();
-            }}
-            className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-200 hover:shadow-blue-500/50"
-          >
-            <BadgeCheck className="w-8 h-8 text-white" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -97,22 +97,22 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   }, {});
   const totalReactions = Object.keys(reactions).length;
   return (
-    <Card className="bg-white border-0 overflow-hidden mb-0 rounded-none">
+    <Card className="bg-white/95 backdrop-blur-sm border-2 border-gray-100 overflow-hidden hover:shadow-lg transition-all rounded-2xl">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden">
             {post.member_avatar ? (
               <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-sm font-bold text-white">
+              <span className="text-xs font-bold text-white">
                 {post.member_name?.charAt(0)?.toUpperCase() || 'G'}
               </span>
             )}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">{post.member_name}</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-xs font-semibold text-gray-900">{post.member_name}</h3>
+            <p className="text-[10px] text-gray-500">
               {format(new Date(post.created_date), 'MMM d')}
             </p>
           </div>
@@ -123,9 +123,9 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
               variant="ghost"
               size="icon"
               onClick={() => setShowEditModal(true)}
-              className="text-gray-500 hover:text-gray-700 h-8 w-8"
+              className="text-gray-500 hover:text-gray-700 h-7 w-7"
             >
-              <Edit className="w-4 h-4" />
+              <Edit className="w-3 h-3" />
             </Button>
             <Button
               variant="ghost"
@@ -136,28 +136,28 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                 }
               }}
               disabled={deletePostMutation.isPending}
-              className="text-red-500 hover:text-red-700 h-8 w-8"
+              className="text-red-500 hover:text-red-700 h-7 w-7"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3 h-3" />
             </Button>
           </div>
         )}
       </div>
 
-      {/* Media - Full Width */}
+      {/* Media */}
       {(post.video_url || post.image_url) && (
-        <div className="w-full bg-black">
+        <div className="w-full bg-gray-100">
           {post.video_url ? (
             <video 
               src={post.video_url} 
               controls 
-              className="w-full max-h-[600px] object-cover"
+              className="w-full max-h-[300px] object-cover"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full object-cover"
+              className="w-full max-h-[300px] object-cover"
             />
           ) : null}
         </div>
@@ -169,7 +169,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
           <div className="relative">
             <button
               onClick={() => setShowReactions(!showReactions)}
-              className={`text-2xl transition-transform active:scale-90 ${userReaction ? '' : 'grayscale-[50%]'}`}
+              className={`text-xl transition-transform active:scale-90 ${userReaction ? '' : 'grayscale-[50%]'}`}
             >
               {userReaction || '❤️'}
             </button>
@@ -181,7 +181,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                   <button
                     key={emoji}
                     onClick={() => reactionMutation.mutate({ postId: post.id, emoji })}
-                    className="text-2xl hover:scale-125 transition-transform active:scale-110"
+                    className="text-xl hover:scale-125 transition-transform active:scale-110"
                     disabled={reactionMutation.isPending}
                   >
                     {emoji}
@@ -196,7 +196,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
       {/* Likes Count */}
       {totalReactions > 0 && (
         <div className="px-3 py-1">
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-xs font-semibold text-gray-900">
             {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
           </p>
         </div>
@@ -204,13 +204,13 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
       {/* Caption */}
       <div className="px-3 pb-2">
-        <p className="text-sm text-gray-900">
+        <p className="text-xs text-gray-900">
           <span className="font-semibold mr-1">{post.member_name}</span>
           {post.content}
         </p>
         
         {post.exercise && post.weight && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             {post.exercise.replace('_', ' ')} • {post.weight} lbs
           </p>
         )}
