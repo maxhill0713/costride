@@ -802,7 +802,7 @@ export default function GymCommunity() {
             >
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" />
-                <span className="text-sm font-bold">Challenges Available</span>
+                <span className="text-sm font-bold">Challenges</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
@@ -838,7 +838,7 @@ export default function GymCommunity() {
             <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/40 p-3 md:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-purple-400" />
-                <h3 className="text-xs md:text-sm font-bold text-slate-100">Challenges Available</h3>
+                <h3 className="text-xs md:text-sm font-bold text-slate-100">Challenges</h3>
               </div>
               <p className="text-2xl md:text-3xl font-black text-white">{gymChallenges.length}</p>
             </Card>
