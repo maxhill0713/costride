@@ -342,7 +342,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <Calendar className="w-6 h-6 text-blue-400" />
-              Your Consistency
+              Consistency Heatmap
             </h2>
             <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
               Last 60 Days
