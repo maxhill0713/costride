@@ -81,6 +81,11 @@ export default function Profile() {
     queryFn: () => base44.entities.Gym.list()
   });
 
+  const { data: allChallenges = [] } = useQuery({
+    queryKey: ['challenges'],
+    queryFn: () => base44.entities.Challenge.list()
+  });
+
 
 
   const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
@@ -170,12 +175,18 @@ export default function Profile() {
 
 
 
+  const completedChallenges = allChallenges.filter(c => 
+    c.status === 'completed' && 
+    c.participants?.includes(currentUser?.id)
+  ).length;
+
   const stats = {
     totalLifts: memberLifts.length,
     personalRecords: memberLifts.filter(l => l.is_pr).length,
     totalWeight: memberLifts.reduce((sum, l) => sum + (l.weight_lbs * (l.reps || 1)), 0),
     bestLift: Math.max(...memberLifts.map(l => l.weight_lbs), 0),
-    weekStreak: currentStreak
+    weekStreak: currentStreak,
+    challengesCompleted: completedChallenges
   };
 
   // Identity & Status Calculation
@@ -491,9 +502,9 @@ export default function Profile() {
         )}
 
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-blue-600/40 to-blue-500/20 backdrop-blur-sm border border-blue-500/50 p-4 text-center shadow-md">
-            <div className="text-3xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.totalLifts}</div>
-            <div className="text-[10px] text-blue-100 font-bold uppercase tracking-widest">Workouts</div>
+          <Card className="bg-gradient-to-br from-amber-600/40 to-amber-500/20 backdrop-blur-sm border border-amber-500/50 p-4 text-center shadow-md">
+            <div className="text-3xl font-black bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.challengesCompleted}</div>
+            <div className="text-[10px] text-amber-100 font-bold uppercase tracking-widest">Challenges</div>
           </Card>
           <Card className="bg-gradient-to-br from-purple-600/40 to-purple-500/20 backdrop-blur-sm border border-purple-500/50 p-4 text-center shadow-md">
             <div className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.personalRecords}</div>
