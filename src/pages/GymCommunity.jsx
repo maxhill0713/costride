@@ -720,57 +720,7 @@ export default function GymCommunity() {
                 <MapPin className="w-3 h-3" />
                 {gym.city}
               </p>
-              <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
-                <Users className="w-3 h-3" />
-                {gym.members_count || 0} members
-              </p>
-              
-              {/* Live Activity Sparkline */}
-              {(() => {
-                const now = new Date();
-                const last24Hours = checkIns.filter(c => {
-                  const checkInTime = new Date(c.check_in_date);
-                  return (now - checkInTime) < 24 * 60 * 60 * 1000;
-                });
-                
-                // Group check-ins into 2-hour buckets
-                const buckets = Array(12).fill(0);
-                last24Hours.forEach(c => {
-                  const checkInTime = new Date(c.check_in_date);
-                  const hoursAgo = (now - checkInTime) / (1000 * 60 * 60);
-                  const bucketIndex = Math.floor(hoursAgo / 2);
-                  if (bucketIndex < 12) {
-                    buckets[11 - bucketIndex]++;
-                  }
-                });
-                
-                const maxValue = Math.max(...buckets, 1);
-                const recentActivity = buckets.slice(-3).reduce((a, b) => a + b, 0);
-                const isQuiet = recentActivity < 2;
-                const isBusy = recentActivity >= 5;
-                
-                return (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex items-end gap-0.5 h-6">
-                      {buckets.map((count, i) => {
-                        const height = (count / maxValue) * 24;
-                        return (
-                          <div
-                            key={i}
-                            className={`w-1 rounded-sm transition-all ${
-                              count === 0 ? 'bg-white/20' : 'bg-gradient-to-t from-emerald-400 to-green-300'
-                            }`}
-                            style={{ height: `${Math.max(height, 2)}px` }}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div className="text-xs font-semibold text-white/90 drop-shadow-md">
-                      {isQuiet ? '😴 Quiet' : isBusy ? '🔥 Busy' : '💪 Active'}
-                    </div>
-                  </div>
-                );
-              })()}
+
             </div>
           </div>
         </div>
