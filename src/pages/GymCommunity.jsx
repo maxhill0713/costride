@@ -720,6 +720,10 @@ export default function GymCommunity() {
                 <MapPin className="w-3 h-3" />
                 {gym.city}
               </p>
+              <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
+                <Users className="w-3 h-3" />
+                {gym.members_count || 0} members
+              </p>
               
               {/* Live Activity Sparkline */}
               {(() => {
