@@ -567,22 +567,12 @@ export default function Profile() {
                   >
                     Month
                   </button>
-                  <button
-                    onClick={() => setHeatmapFilter('year')}
-                    className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
-                      heatmapFilter === 'year'
-                        ? 'bg-blue-500 text-white'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Year
-                  </button>
                 </div>
               </div>
               
               {(() => {
-                const days = heatmapFilter === 'week' ? 7 : heatmapFilter === 'month' ? 30 : 365;
-                const gridCols = heatmapFilter === 'week' ? 'grid-cols-7' : heatmapFilter === 'month' ? 'grid-cols-10' : 'grid-cols-20';
+                const days = heatmapFilter === 'week' ? 7 : 30;
+                const gridCols = heatmapFilter === 'week' ? 'grid-cols-7' : 'grid-cols-10';
                 const heatmapDays = [];
                 const today = new Date();
                 
