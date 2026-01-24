@@ -846,6 +846,19 @@ export default function GymCommunity() {
               </div>
               <p className="text-2xl md:text-3xl font-black text-white">{gymChallenges.length}</p>
             </Card>
+            <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Flame className="w-5 h-5 text-green-400" />
+                <h3 className="text-xs md:text-sm font-bold text-slate-100">In Gym Now</h3>
+              </div>
+              <p className="text-2xl md:text-3xl font-black text-white">
+                {checkIns.filter(c => {
+                  const checkInTime = new Date(c.check_in_date);
+                  const now = new Date();
+                  return (now - checkInTime) < 3 * 60 * 60 * 1000;
+                }).length}
+              </p>
+            </Card>
           </div>
 
           {/* Upcoming Events */}
