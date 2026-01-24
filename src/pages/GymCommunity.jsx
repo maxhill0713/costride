@@ -984,11 +984,46 @@ export default function GymCommunity() {
             <p className="text-sm text-gray-500">Be the first to share your workout! 💪</p>
           </div>
           ) : (
-          posts.slice(0, 10).map((post) => (
-            <div key={post.id} className="border-b-8 border-gray-100">
-              <GymPostCard post={post} gym={gym} isOwner={showOwnerControls} />
-            </div>
-          ))
+          <div className="grid grid-cols-3 gap-1 p-1 bg-white">
+            {posts.slice(0, 30).map((post) => (
+              <button
+                key={post.id}
+                onClick={() => {
+                  // Open post detail modal or navigate
+                  window.postDetailId = post.id;
+                  const event = new CustomEvent('openPostDetail', { detail: post });
+                  window.dispatchEvent(event);
+                }}
+                className="aspect-square relative bg-gray-100 overflow-hidden group"
+              >
+                {post.image_url ? (
+                  <img 
+                    src={post.image_url} 
+                    alt="Post" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : post.video_url ? (
+                  <video 
+                    src={post.video_url}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 p-2">
+                    <p className="text-white text-xs font-semibold line-clamp-4 text-center">
+                      {post.content}
+                    </p>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div className="text-white text-xs font-semibold flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      ❤️ {Object.keys(post.reactions || {}).length}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
           )}
         </TabsContent>
 
