@@ -305,7 +305,7 @@ export default function RedeemReward() {
          )}
 
          {/* Claimed Rewards History */}
-        {claimedBonuses.length > 0 && (
+        {claimedBonuses.length > 0 && activeSection !== 'brand' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4 md:mt-6">
             <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
               <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-green-500" />
