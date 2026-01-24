@@ -98,39 +98,42 @@ export default function RedeemReward() {
         </div>
 
         {/* Section Tabs */}
-        <div className="mb-6 flex gap-2 overflow-x-auto">
+        <div className="mb-6 grid grid-cols-3 gap-2">
           <button
             onClick={() => setActiveSection('challenges')}
-            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+            className={`px-2 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm transition-all ${
               activeSection === 'challenges'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
                 : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
             }`}
           >
-            <Trophy className="w-4 h-4 inline mr-2" />
-            Challenges
+            <Trophy className="w-4 h-4 inline mr-1 md:mr-2" />
+            <span className="hidden md:inline">Challenges</span>
+            <span className="md:hidden">Challenges</span>
           </button>
           <button
             onClick={() => setActiveSection('gym')}
-            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+            className={`px-2 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm transition-all ${
               activeSection === 'gym'
                 ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
                 : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-2" />
-            In-Gym Rewards
+            <Gift className="w-4 h-4 inline mr-1 md:mr-2" />
+            <span className="hidden md:inline">In-Gym Rewards</span>
+            <span className="md:hidden">Gym</span>
           </button>
           <button
             onClick={() => setActiveSection('brand')}
-            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+            className={`px-2 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm transition-all ${
               activeSection === 'brand'
                 ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
                 : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-2" />
-            Brand Rewards
+            <Gift className="w-4 h-4 inline mr-1 md:mr-2" />
+            <span className="hidden md:inline">Brand Rewards</span>
+            <span className="md:hidden">Brand</span>
           </button>
         </div>
 
