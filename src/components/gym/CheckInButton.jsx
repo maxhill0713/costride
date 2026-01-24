@@ -551,42 +551,7 @@ export default function CheckInButton({ gym }) {
         </div>
       )}
 
-      {/* Inactivity Warning */}
-      {isInactive && daysSinceLastCheckIn !== null && (
-        <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-2xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-orange-900">We miss you!</p>
-              <p className="text-sm text-orange-700">
-                It's been {daysSinceLastCheckIn} days since your last visit. Come back and continue your journey! 💪
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Check-in Stats */}
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
-            <div className="flex items-center gap-2 mb-1">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="text-xs font-bold text-blue-900 uppercase">Total Visits</span>
-            </div>
-            <div className="text-2xl font-black text-blue-900">{gymMembership ? checkIns.length : 0}</div>
-          </div>
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 border-2 border-orange-200">
-            <div className="flex items-center gap-2 mb-1">
-              <Flame className="w-4 h-4 text-orange-600" />
-              <span className="text-xs font-bold text-orange-900 uppercase">Streak</span>
-            </div>
-            <div className="text-2xl font-black text-orange-900">{gymMembership ? currentStreak : 0} days</div>
-          </div>
-        </div>
-      </div>
 
       {/* Check-in Button */}
       {!gymMembership ? (
