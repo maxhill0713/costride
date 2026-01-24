@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2 } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -779,6 +779,15 @@ export default function GymCommunity() {
         <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl border-b-2 border-blue-700/40 shadow-xl overflow-x-hidden">
             <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible">
             <TabsTrigger 
+              value="home" 
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-emerald-400 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_2px_8px_rgba(52,211,153,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
+            >
+              <div className="flex items-center gap-1.5">
+                <Home className="w-4 h-4" />
+                <span className="text-sm font-bold">Home</span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger 
               value="feed" 
               className="flex-1 data-[state=active]:bg-transparent data-[state=active]:border-b-3 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-[0_2px_8px_rgba(96,165,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
             >
@@ -819,6 +828,114 @@ export default function GymCommunity() {
 
       {/* Main Content Area - Vertical Scroll */}
       <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
+
+        {/* Home Tab */}
+        <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
+          {/* Check-in Section */}
+          {!showOwnerControls && <CheckInButton gym={gym} />}
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-2 md:gap-3">
+            <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                <h3 className="text-xs md:text-sm font-bold text-slate-100">Members</h3>
+              </div>
+              <p className="text-2xl md:text-3xl font-black text-white">{gym?.members_count || 0}</p>
+            </Card>
+            <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-5 h-5 text-purple-400" />
+                <h3 className="text-xs md:text-sm font-bold text-slate-100">Challenges</h3>
+              </div>
+              <p className="text-2xl md:text-3xl font-black text-white">{gymChallenges.length}</p>
+            </Card>
+          </div>
+
+          {/* Upcoming Events */}
+          {upcomingEvents.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-orange-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar className="w-5 h-5 text-orange-400" />
+                <h3 className="text-sm md:text-base font-bold text-slate-100">This Week</h3>
+              </div>
+              <div className="space-y-2">
+                {upcomingEvents.slice(0, 2).map((event) => (
+                  <WeeklyEventCard
+                    key={event.id}
+                    event={event}
+                    onRSVP={!showOwnerControls ? (eventId) => {
+                      const event = events.find(e => e.id === eventId);
+                      rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                    } : null}
+                    disabled={showOwnerControls}
+                  />
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Active Challenges Preview */}
+          {gymChallenges.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-cyan-500/40 p-3 md:p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-cyan-400" />
+                  <h3 className="text-sm md:text-base font-bold text-slate-100">Active Challenges</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    const challengesTab = document.querySelector('[value="challenges"]');
+                    if (challengesTab) challengesTab.click();
+                  }}
+                  className="text-xs text-cyan-400 font-semibold hover:text-cyan-300"
+                >
+                  View All →
+                </button>
+              </div>
+              <div className="space-y-2">
+                {gymChallenges.slice(0, 2).map((challenge) => (
+                  <GymChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    isJoined={hasjoinedChallenge(challenge.id)}
+                    onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
+                    currentUser={currentUser}
+                    disabled={showOwnerControls}
+                    isOwner={showOwnerControls}
+                    onDelete={null}
+                  />
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Recent Posts Preview */}
+          {posts.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-3 md:p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-blue-400" />
+                  <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    const feedTab = document.querySelector('[value="feed"]');
+                    if (feedTab) feedTab.click();
+                  }}
+                  className="text-xs text-blue-400 font-semibold hover:text-blue-300"
+                >
+                  View All →
+                </button>
+              </div>
+              <div className="space-y-2">
+                {posts.slice(0, 2).map((post) => (
+                  <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
+                ))}
+              </div>
+            </Card>
+          )}
+        </TabsContent>
 
         {/* Feed Tab */}
         <TabsContent value="feed" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
