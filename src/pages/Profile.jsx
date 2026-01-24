@@ -572,12 +572,11 @@ export default function Profile() {
                         <div
                           key={i}
                           className={`
-                            aspect-square rounded-lg transition-all duration-300 cursor-pointer
+                            aspect-square rounded-lg cursor-pointer
                             ${day.hasCheckedIn 
-                              ? 'bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg shadow-green-500/50 animate-pulse' 
-                              : 'bg-slate-700/50 border border-slate-600/30'
+                              ? 'bg-emerald-500' 
+                              : 'bg-slate-700/50 border border-slate-600/30 hover:bg-slate-600/60 transition-colors duration-150'
                             }
-                            hover:scale-110
                           `}
                           title={`${day.date.toLocaleDateString()} - ${day.hasCheckedIn ? 'Checked In ✓' : 'Missed'}`}
                         />
@@ -597,12 +596,11 @@ export default function Profile() {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-slate-400">Consistency Rate</p>
-                        <p className="text-xl font-bold text-green-400">
-                          {Math.round((userCheckIns.filter(c => {
-                            const checkDate = new Date(c.check_in_date);
-                            const daysAgo = Math.floor((today - checkDate) / (1000 * 60 * 60 * 24));
-                            return daysAgo <= 60;
-                          }).length / 60) * 100)}%
+                        <p className="text-xl font-bold text-emerald-400">
+                          {(() => {
+                            const checkInsInLast60Days = heatmapDays.filter(d => d.hasCheckedIn).length;
+                            return Math.round((checkInsInLast60Days / 60) * 100);
+                          })()}%
                         </p>
                       </div>
                     </div>
