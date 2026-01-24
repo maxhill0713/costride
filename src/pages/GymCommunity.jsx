@@ -857,7 +857,7 @@ export default function GymCommunity() {
                   const usersInGym = new Set();
                   checkIns.forEach(checkIn => {
                     const checkInTime = new Date(checkIn.check_in_date);
-                    if ((now - checkInTime) < 3 * 60 * 60 * 1000) {
+                    if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
                       usersInGym.add(checkIn.user_id);
                     }
                   });
