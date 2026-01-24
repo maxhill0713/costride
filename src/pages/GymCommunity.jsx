@@ -90,6 +90,15 @@ export default function GymCommunity() {
     enabled: !!gymId
   });
 
+  const { data: checkOuts = [] } = useQuery({
+    queryKey: ['checkOuts', gymId],
+    queryFn: async () => {
+      const allCheckOuts = await base44.entities.CheckOut.list('-check_out_date');
+      return allCheckOuts.filter(c => c.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
     queryFn: async () => {
