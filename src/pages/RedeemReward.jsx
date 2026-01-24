@@ -292,7 +292,7 @@ export default function RedeemReward() {
                Brand Rewards
              </h2>
              <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl text-center">
-               <p className="text-slate-400 mb-4">Coming soon! Earn discount codes and gift cards from top brands.</p>
+               <p className="text-slate-400 mb-4">Earn brand rewards with Go Fattie Premium</p>
                <Button
                  onClick={() => window.location.href = '/pages/BrandDiscounts'}
                  className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
