@@ -298,6 +298,25 @@ export default function Home() {
 
 
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card 
+            onClick={() => setShowJoinModal(true)}
+            className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
+          >
+            <CheckCircle className="w-10 h-10 mb-3" />
+            <h3 className="font-semibold text-sm mb-1">Join with Code</h3>
+            <p className="text-xs text-white/90">Instant gym access</p>
+          </Card>
+          <Link to={createPageUrl('Gyms')}>
+            <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
+              <Trophy className="w-10 h-10 mb-3" />
+              <h3 className="font-semibold text-sm mb-1">View Gyms</h3>
+              <p className="text-xs text-white/90">Explore communities</p>
+            </Card>
+          </Link>
+        </div>
+
         {/* Notifications Section */}
         {notifications.length > 0 && (
           <Card className="bg-slate-800/40 backdrop-blur-sm border border-blue-700/40 rounded-2xl p-4">
@@ -437,25 +456,6 @@ export default function Home() {
             </div>
           </Card>
         </Link>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card 
-            onClick={() => setShowJoinModal(true)}
-            className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white hover:shadow-xl hover:shadow-green-500/30 transition-all cursor-pointer"
-          >
-            <CheckCircle className="w-10 h-10 mb-3" />
-            <h3 className="font-semibold text-sm mb-1">Join with Code</h3>
-            <p className="text-xs text-white/90">Instant gym access</p>
-          </Card>
-          <Link to={createPageUrl('Gyms')}>
-            <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all cursor-pointer">
-              <Trophy className="w-10 h-10 mb-3" />
-              <h3 className="font-semibold text-sm mb-1">View Gyms</h3>
-              <p className="text-xs text-white/90">Explore communities</p>
-            </Card>
-          </Link>
-        </div>
 
         {/* Check-in Modal */}
         {showCheckIn && memberGym && (
