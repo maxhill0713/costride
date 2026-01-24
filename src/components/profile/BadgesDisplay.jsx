@@ -99,13 +99,13 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
             {earnedBadges.map((badge) => {
               const Icon = badge.icon;
               return (
-                <Card key={badge.id} className="p-4 text-center bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
-                  <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg shadow-blue-500/20`}>
-                    <Icon className="w-8 h-8 text-white" strokeWidth={2.5} />
+                <Card key={badge.id} className="p-4 text-center bg-slate-800/40 backdrop-blur-xl border border-amber-500/50 hover:border-amber-400/70 hover:shadow-xl hover:shadow-amber-500/30 transition-all">
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-600 to-yellow-600 flex items-center justify-center shadow-xl shadow-amber-500/50 ring-2 ring-amber-400/30">
+                    <Icon className="w-8 h-8 text-white drop-shadow-lg" strokeWidth={2.5} />
                   </div>
-                  <h4 className="font-bold text-white text-sm mb-1">{badge.title}</h4>
+                  <h4 className="font-bold text-amber-300 text-sm mb-1">{badge.title}</h4>
                   <p className="text-xs text-slate-400">{badge.description}</p>
-                  <Badge className="mt-2 bg-green-500/20 text-green-300 border border-green-500/30 text-xs">
+                  <Badge className="mt-2 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs shadow-sm shadow-amber-500/20">
                     Earned ✓
                   </Badge>
                 </Card>
