@@ -867,66 +867,7 @@ export default function GymCommunity() {
             </Card>
           )}
 
-          {/* Active Challenges Preview */}
-          {gymChallenges.length > 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-cyan-500/40 p-3 md:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-cyan-400" />
-                  <h3 className="text-sm md:text-base font-bold text-slate-100">Active Challenges</h3>
-                </div>
-                <button
-                  onClick={() => {
-                    const challengesTab = document.querySelector('[value="challenges"]');
-                    if (challengesTab) challengesTab.click();
-                  }}
-                  className="text-xs text-cyan-400 font-semibold hover:text-cyan-300"
-                >
-                  View All →
-                </button>
-              </div>
-              <div className="space-y-2">
-                {gymChallenges.slice(0, 2).map((challenge) => (
-                  <GymChallengeCard
-                    key={challenge.id}
-                    challenge={challenge}
-                    isJoined={hasjoinedChallenge(challenge.id)}
-                    onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                    currentUser={currentUser}
-                    disabled={showOwnerControls}
-                    isOwner={showOwnerControls}
-                    onDelete={null}
-                  />
-                ))}
-              </div>
-            </Card>
-          )}
 
-          {/* Recent Posts Preview */}
-          {posts.length > 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-3 md:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 text-blue-400" />
-                  <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
-                </div>
-                <button
-                  onClick={() => {
-                    const feedTab = document.querySelector('[value="feed"]');
-                    if (feedTab) feedTab.click();
-                  }}
-                  className="text-xs text-blue-400 font-semibold hover:text-blue-300"
-                >
-                  See All →
-                </button>
-              </div>
-              <div className="space-y-2">
-                {posts.slice(0, 1).map((post) => (
-                  <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
-                ))}
-              </div>
-            </Card>
-          )}
         </TabsContent>
 
         {/* Feed Tab */}
