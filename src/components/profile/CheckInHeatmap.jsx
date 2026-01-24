@@ -120,10 +120,10 @@ export default function CheckInHeatmap({ checkIns = [] }) {
                       <div
                         key={dayOfWeek}
                         title={`${format(day, 'MMM d, yyyy')}${isCheckedIn ? ' ✓ Checked In' : ''}`}
-                        className={`w-3.5 h-3.5 rounded-sm transition-colors duration-200 cursor-pointer ${
+                        className={`w-3.5 h-3.5 rounded-sm cursor-pointer ${
                           isCheckedIn
-                            ? 'bg-emerald-500 hover:bg-emerald-400 shadow-sm'
-                            : 'bg-slate-700/40 hover:bg-slate-600/60'
+                            ? 'bg-emerald-500/90'
+                            : 'bg-slate-700/40 hover:bg-slate-600/60 transition-colors duration-150'
                         } ${isToday ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-slate-800' : ''}`}
                       />
                     );
