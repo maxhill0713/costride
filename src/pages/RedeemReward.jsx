@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Trophy, Flame, Gift, QrCode, Clock } from 'lucide-react';
+import { CheckCircle, Trophy, Flame, Gift, QrCode, Clock, Zap, Star, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
@@ -155,41 +155,76 @@ export default function RedeemReward() {
                 </Card>
               ) : (
                 userChallengeProgress.map((challenge) => (
-                  <Card key={challenge.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all overflow-hidden group">
-                    <div className="relative">
-                      <div className="flex items-start justify-between mb-2 md:mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{challenge.title}</h3>
-                          <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
-                            {challenge.category}
-                          </Badge>
-                        </div>
-                        <Trophy className="w-4 md:w-5 h-4 md:h-5 text-amber-500 flex-shrink-0 ml-2" />
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all overflow-hidden group relative">
+                      {/* Sparkle effect on hover */}
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
                       </div>
+                      
+                      <div className="relative">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-white mb-2 text-sm md:text-base truncate">{challenge.title}</h3>
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
+                                {challenge.category}
+                              </Badge>
+                              {challenge.progress >= 75 && (
+                                <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-[10px] md:text-xs inline-flex items-center gap-1">
+                                  <Star className="w-3 h-3" />
+                                  Hot
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-amber-500/30">
+                            <Trophy className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
 
-                      <div className="mb-2 md:mb-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] md:text-xs text-slate-400">{challenge.participantCount} in</span>
-                          <span className="text-xs md:text-sm font-bold text-cyan-400">{challenge.progress}%</span>
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-slate-400 flex items-center gap-1">
+                              <Target className="w-3 h-3" />
+                              {challenge.participantCount} competing
+                            </span>
+                            <span className="text-sm font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                              {challenge.progress}%
+                            </span>
+                          </div>
+                          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden relative">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${challenge.progress}%` }}
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                              className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 rounded-full shadow-lg shadow-cyan-500/50 relative overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                            </motion.div>
+                          </div>
                         </div>
-                        <div className="h-1.5 md:h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${challenge.progress}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                            className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full shadow-lg shadow-cyan-500/50"
-                          />
-                        </div>
+
+                        {challenge.reward && (
+                          <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Gift className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] text-slate-400 mb-0.5">Reward</p>
+                              <p className="text-xs font-bold text-green-400 truncate">{challenge.reward}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      {challenge.reward && (
-                        <div className="flex items-center gap-1.5 text-[10px] md:text-xs">
-                          <Gift className="w-3 md:w-4 h-3 md:h-4 text-cyan-400 flex-shrink-0" />
-                          <span className="text-slate-300 truncate">{challenge.reward}</span>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
+                    </Card>
+                  </motion.div>
                 ))
               )}
             </div>
