@@ -11,6 +11,7 @@ import confetti from 'canvas-confetti';
 export default function RedeemReward() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
+  const [activeSection, setActiveSection] = useState('challenges');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -96,15 +97,53 @@ export default function RedeemReward() {
           <p className="text-xs md:text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
 
+        {/* Section Tabs */}
+        <div className="mb-6 flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveSection('challenges')}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+              activeSection === 'challenges'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
+                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
+            }`}
+          >
+            <Trophy className="w-4 h-4 inline mr-2" />
+            Challenges
+          </button>
+          <button
+            onClick={() => setActiveSection('gym')}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+              activeSection === 'gym'
+                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
+                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
+            }`}
+          >
+            <Gift className="w-4 h-4 inline mr-2" />
+            In-Gym Rewards
+          </button>
+          <button
+            onClick={() => setActiveSection('brand')}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+              activeSection === 'brand'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
+            }`}
+          >
+            <Gift className="w-4 h-4 inline mr-2" />
+            Brand Rewards
+          </button>
+        </div>
+
 
 
         {/* Active Challenges Section */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <div className="mb-5 md:mb-6">
-            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
-              <Trophy className="w-5 md:w-6 h-5 md:h-6 text-amber-500" />
-              Challenges
-            </h2>
+        {activeSection === 'challenges' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <div className="mb-5 md:mb-6">
+              <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
+                <Trophy className="w-5 md:w-6 h-5 md:h-6 text-amber-500" />
+                Challenges
+              </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {userChallengeProgress.length === 0 ? (
                 <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
@@ -152,9 +191,11 @@ export default function RedeemReward() {
             </div>
           </div>
         </motion.div>
+        )}
 
-        {/* My Rewards Section */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        {/* In-Gym Rewards Section */}
+        {activeSection === 'gym' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
          <div>
            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
              <Gift className="w-5 md:w-6 h-5 md:h-6 text-cyan-500" />
@@ -236,9 +277,31 @@ export default function RedeemReward() {
              )}
            </div>
          </div>
-        </motion.div>
+         </motion.div>
+         )}
 
-        {/* Claimed Rewards History */}
+         {/* Brand Rewards Section */}
+         {activeSection === 'brand' && (
+         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+           <div>
+             <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
+               <Gift className="w-5 md:w-6 h-5 md:h-6 text-purple-500" />
+               Brand Rewards
+             </h2>
+             <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl text-center">
+               <p className="text-slate-400 mb-4">Coming soon! Earn discount codes and gift cards from top brands.</p>
+               <Button
+                 onClick={() => window.location.href = '/pages/BrandDiscounts'}
+                 className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
+               >
+                 View Brand Discounts
+               </Button>
+             </Card>
+           </div>
+         </motion.div>
+         )}
+
+         {/* Claimed Rewards History */}
         {claimedBonuses.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4 md:mt-6">
             <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
