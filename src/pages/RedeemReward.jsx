@@ -89,49 +89,49 @@ export default function RedeemReward() {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-3 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 p-4 md:p-6 pb-24 md:pb-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-2xl md:text-4xl font-black text-white mb-1">Rewards & Challenges</h1>
-          <p className="text-xs md:text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
+        <div className="mb-6">
+          <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Rewards & Challenges</h1>
+          <p className="text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
 
         {/* Section Tabs */}
-        <div className="mb-6 grid grid-cols-3 gap-2">
+        <div className="mb-6 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('challenges')}
-            className={`px-2 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
               activeSection === 'challenges'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
-                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20 scale-105'
+                : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Trophy className="w-4 h-4 inline mr-1 md:mr-2" />
+            <Trophy className="w-4 h-4 inline mr-1.5" />
             <span className="hidden md:inline">Challenges</span>
             <span className="md:hidden">Challenges</span>
           </button>
           <button
             onClick={() => setActiveSection('gym')}
-            className={`px-2 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
               activeSection === 'gym'
-                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
-                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-105'
+                : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-1 md:mr-2" />
+            <Gift className="w-4 h-4 inline mr-1.5" />
             <span className="hidden md:inline">In-Gym Rewards</span>
             <span className="md:hidden">Gym</span>
           </button>
           <button
             onClick={() => setActiveSection('brand')}
-            className={`px-2 md:px-6 py-3 rounded-xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
               activeSection === 'brand'
-                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
-                : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/20 scale-105'
+                : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-1 md:mr-2" />
+            <Gift className="w-4 h-4 inline mr-1.5" />
             <span className="hidden md:inline">Brand Rewards</span>
             <span className="md:hidden">Brand</span>
           </button>
@@ -142,19 +142,20 @@ export default function RedeemReward() {
         {/* Active Challenges Section */}
         {activeSection === 'challenges' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="mb-5 md:mb-6">
-              <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
-                <Trophy className="w-5 md:w-6 h-5 md:h-6 text-amber-500" />
-                Challenges
+            <div className="mb-6">
+              <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-amber-400" />
+                Active Challenges
               </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userChallengeProgress.length === 0 ? (
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
+                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
+                  <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <p className="text-slate-400">No active challenges at the moment</p>
                 </Card>
               ) : (
                 userChallengeProgress.map((challenge) => (
-                  <Card key={challenge.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-amber-500/40 transition-all overflow-hidden group">
+                  <Card key={challenge.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all overflow-hidden group">
                     <div className="relative">
                       <div className="flex items-start justify-between mb-2 md:mb-3">
                         <div className="flex-1 min-w-0">
@@ -198,21 +199,22 @@ export default function RedeemReward() {
 
         {/* In-Gym Rewards Section */}
         {activeSection === 'gym' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-         <div>
-           <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
-             <Gift className="w-5 md:w-6 h-5 md:h-6 text-cyan-500" />
-             Rewards
-           </h2>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-             {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
-               <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl col-span-2 text-center">
-                 <p className="text-slate-400">No rewards available to claim right now</p>
-               </Card>
-             ) : (
-               <>
-                 {completedChallengeRewards.map((reward) => (
-                   <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
+         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div>
+          <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+            <Gift className="w-6 h-6 text-cyan-400" />
+            Available Rewards
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
+              <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
+                <Gift className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-400">No rewards available to claim right now</p>
+              </Card>
+            ) : (
+              <>
+                {completedChallengeRewards.map((reward) => (
+                  <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
@@ -244,7 +246,7 @@ export default function RedeemReward() {
                    </Card>
                  ))}
                  {unclaimedRewards.map((reward) => (
-                   <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-3 md:p-4 rounded-xl md:rounded-2xl hover:border-cyan-500/40 transition-all group overflow-hidden">
+                   <Card key={reward.id} className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-5 rounded-2xl hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
@@ -287,15 +289,18 @@ export default function RedeemReward() {
          {activeSection === 'brand' && (
          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
            <div>
-             <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
-               <Gift className="w-5 md:w-6 h-5 md:h-6 text-purple-500" />
+             <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+               <Gift className="w-6 h-6 text-purple-400" />
                Brand Rewards
              </h2>
-             <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl text-center">
-               <p className="text-slate-400 mb-4">Earn brand rewards with Go Fattie Premium</p>
+             <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl text-center">
+               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                 <Gift className="w-8 h-8 text-white" />
+               </div>
+               <p className="text-lg text-slate-300 mb-6">Earn brand rewards with Go Fattie Premium</p>
                <Button
                  onClick={() => window.location.href = '/pages/BrandDiscounts'}
-                 className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
+                 className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-xl h-12"
                >
                  View Brand Discounts
                </Button>
@@ -306,14 +311,14 @@ export default function RedeemReward() {
 
          {/* Claimed Rewards History */}
         {claimedBonuses.length > 0 && activeSection !== 'brand' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4 md:mt-6">
-            <h2 className="text-lg md:text-2xl font-black text-white mb-2 md:mb-3 flex items-center gap-2">
-              <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-green-500" />
-              Claimed
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8">
+            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-400" />
+              Claimed Rewards
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {claimedBonuses.map((bonus) => (
-                <Card key={bonus.id} className="bg-slate-800/40 backdrop-blur-xl border border-green-500/30 p-3 md:p-4 rounded-xl md:rounded-2xl">
+                <Card key={bonus.id} className="bg-slate-800/40 backdrop-blur-xl border border-green-500/30 p-5 rounded-2xl hover:border-green-400/40 transition-all">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{bonus.offer_details}</h3>
@@ -350,20 +355,20 @@ export default function RedeemReward() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
             >
-              <Card className="bg-slate-900 border border-cyan-500/40 p-8 rounded-3xl max-w-md mx-auto text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <QrCode className="w-8 h-8 text-white" />
+              <Card className="bg-slate-900/95 backdrop-blur-xl border border-cyan-500/40 p-8 rounded-3xl max-w-md mx-auto text-center shadow-2xl shadow-cyan-500/20">
+                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-cyan-500/30">
+                  <QrCode className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">Reward Claimed!</h3>
-                <p className="text-slate-400 mb-6">Show this QR code at redemption to claim your reward</p>
-                <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl mb-6">
-                  <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center mx-auto">
+                <h3 className="text-3xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-3">Reward Claimed!</h3>
+                <p className="text-slate-400 mb-8 text-lg">Show this QR code at redemption to claim your reward</p>
+                <div className="bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl mb-8">
+                  <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                     <QrCode className="w-32 h-32 text-slate-900" />
                   </div>
                 </div>
                 <Button
                   onClick={() => setShowQRModal(false)}
-                  className="w-full h-11 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl"
+                  className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20"
                 >
                   Done
                 </Button>
