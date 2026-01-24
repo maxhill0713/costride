@@ -831,7 +831,7 @@ export default function GymCommunity() {
             <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-5 h-5 text-blue-400" />
-                <h3 className="text-xs md:text-sm font-bold text-slate-100">Members</h3>
+                <h3 className="text-xs md:text-sm font-bold text-slate-100">Member Count</h3>
               </div>
               <p className="text-2xl md:text-3xl font-black text-white">{gym?.members_count || 0}</p>
             </Card>
