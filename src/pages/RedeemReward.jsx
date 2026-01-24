@@ -67,8 +67,9 @@ export default function RedeemReward() {
 
   const userChallengeProgress = challenges.map(challenge => {
     const participants = challenge.participants || [];
-    const progress = Math.floor((participants.length / Math.max(participants.length, 5)) * 100);
-    return { ...challenge, progress, participantCount: participants.length };
+    const targetValue = challenge.target_value || 10;
+    const progress = Math.floor((participants.length / targetValue) * 100);
+    return { ...challenge, progress, participantCount: participants.length, targetValue };
   }).sort((a, b) => b.progress - a.progress);
 
   const unclaimedRewards = rewards.filter(r => r.active && !claimedBonuses.find(cb => cb.reward_id === r.id));
@@ -193,10 +194,10 @@ export default function RedeemReward() {
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs text-slate-400 flex items-center gap-1">
                               <Target className="w-3 h-3" />
-                              {challenge.participantCount} competing
+                              Progress
                             </span>
                             <span className="text-sm font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                              {challenge.progress}%
+                              {challenge.participantCount}/{challenge.targetValue}
                             </span>
                           </div>
                           <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden relative">
