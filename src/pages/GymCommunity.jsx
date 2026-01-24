@@ -90,15 +90,6 @@ export default function GymCommunity() {
     enabled: !!gymId
   });
 
-  const { data: checkOuts = [] } = useQuery({
-    queryKey: ['checkOuts', gymId],
-    queryFn: async () => {
-      const allCheckOuts = await base44.entities.CheckOut.list('-check_out_date');
-      return allCheckOuts.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
-  });
-
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
     queryFn: async () => {
@@ -862,10 +853,11 @@ export default function GymCommunity() {
               </div>
               <p className="text-2xl md:text-3xl font-black text-white">
                 {(() => {
+                  const now = new Date();
                   const usersInGym = new Set();
                   checkIns.forEach(checkIn => {
-                    const hasCheckOut = checkOuts.some(c => c.user_id === checkIn.user_id && new Date(c.check_out_date) > new Date(checkIn.check_in_date));
-                    if (!hasCheckOut) {
+                    const checkInTime = new Date(checkIn.check_in_date);
+                    if ((now - checkInTime) < 3 * 60 * 60 * 1000) {
                       usersInGym.add(checkIn.user_id);
                     }
                   });
