@@ -29,6 +29,7 @@ export default function Profile() {
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
+  const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
 
   const updateSettingsMutation = useMutation({
@@ -540,18 +541,48 @@ export default function Profile() {
           <TabsContent value="progress" className="space-y-4">
             {/* Consistency Heatmap */}
             <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 gap-3">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Calendar className="w-6 h-6 text-blue-400" />
                   Consistency Heatmap
                 </h2>
-                <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
-                  Last 60 Days
-                </Badge>
+                <div className="flex gap-1.5 bg-slate-700/50 p-1 rounded-lg">
+                  <button
+                    onClick={() => setHeatmapFilter('week')}
+                    className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                      heatmapFilter === 'week'
+                        ? 'bg-blue-500 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Week
+                  </button>
+                  <button
+                    onClick={() => setHeatmapFilter('month')}
+                    className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                      heatmapFilter === 'month'
+                        ? 'bg-blue-500 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Month
+                  </button>
+                  <button
+                    onClick={() => setHeatmapFilter('year')}
+                    className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                      heatmapFilter === 'year'
+                        ? 'bg-blue-500 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Year
+                  </button>
+                </div>
               </div>
               
               {(() => {
-                const days = 60;
+                const days = heatmapFilter === 'week' ? 7 : heatmapFilter === 'month' ? 30 : 365;
+                const gridCols = heatmapFilter === 'week' ? 'grid-cols-7' : heatmapFilter === 'month' ? 'grid-cols-10' : 'grid-cols-20';
                 const heatmapDays = [];
                 const today = new Date();
                 
@@ -567,7 +598,7 @@ export default function Profile() {
                 
                 return (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-10 gap-1.5">
+                    <div className={`grid ${gridCols} gap-1.5`}>
                       {heatmapDays.map((day, i) => (
                         <div
                           key={i}
@@ -590,7 +621,7 @@ export default function Profile() {
                           <span>Missed</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded" />
+                          <div className="w-3 h-3 bg-emerald-500 rounded" />
                           <span>Checked In</span>
                         </div>
                       </div>
@@ -598,8 +629,8 @@ export default function Profile() {
                         <p className="text-xs text-slate-400">Consistency Rate</p>
                         <p className="text-xl font-bold text-emerald-400">
                           {(() => {
-                            const checkInsInLast60Days = heatmapDays.filter(d => d.hasCheckedIn).length;
-                            return Math.round((checkInsInLast60Days / 60) * 100);
+                            const checkInsInPeriod = heatmapDays.filter(d => d.hasCheckedIn).length;
+                            return Math.round((checkInsInPeriod / days) * 100);
                           })()}%
                         </p>
                       </div>
