@@ -823,6 +823,9 @@ export default function GymCommunity() {
 
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
+          {/* Check-in Section */}
+          {!showOwnerControls && <CheckInButton gym={gym} />}
+
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
