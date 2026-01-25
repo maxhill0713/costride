@@ -629,7 +629,8 @@ export default function GymSignup() {
               <Button
                 type="button"
                 onClick={() => setStep(2)}
-                className="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12"
+                disabled={!formData.email || !formData.password || !formData.name || !formData.address || !formData.city}
+                className="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next Step
               </Button>
