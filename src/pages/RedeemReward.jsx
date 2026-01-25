@@ -19,9 +19,24 @@ export default function RedeemReward() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: challenges = [] } = useQuery({
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  const gymIds = gymMemberships.map(m => m.gym_id);
+
+  const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' })
+  });
+
+  // Filter to only show challenges from gyms the user is a member of, and where they are a participant
+  const challenges = allChallenges.filter(challenge => {
+    const isFromUserGym = gymIds.includes(challenge.gym_id) || challenge.is_app_challenge;
+    const isParticipant = challenge.participants?.includes(currentUser?.id);
+    return isFromUserGym && isParticipant;
   });
 
   const { data: completedChallenges = [] } = useQuery({
