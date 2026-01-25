@@ -900,12 +900,12 @@ export default function GymCommunity() {
             </Card>
           )}
 
-          {/* Active Challenges */}
+          {/* New Challenges */}
           {gymChallenges.length > 0 && (
             <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-3 md:p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Trophy className="w-5 h-5 text-purple-400" />
-                <h3 className="text-sm md:text-base font-bold text-slate-100">Active Challenges</h3>
+                <h3 className="text-sm md:text-base font-bold text-slate-100">New Challenges</h3>
               </div>
               <div className="space-y-2">
                 {gymChallenges.slice(0, 2).map((challenge) => (
@@ -932,7 +932,7 @@ export default function GymCommunity() {
                 <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
               </div>
               <div className="space-y-2">
-                {posts.slice(0, 2).map((post) => (
+                {posts.slice(0, 1).map((post) => (
                   <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
                 ))}
               </div>
