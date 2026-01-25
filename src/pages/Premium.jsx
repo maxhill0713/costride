@@ -63,7 +63,7 @@ export default function Premium() {
       icon: Crown,
       color: 'from-purple-500 to-pink-500',
       features: [
-        'Unlock brand rewards - earn double the rewards',
+        'Access to brand rewards',
         'Exclusive discounts & limited drops',
         'Free products from premium partners',
         'Early access + priority redemption',
