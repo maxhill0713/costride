@@ -197,8 +197,7 @@ export default function Onboarding() {
             <div className="flex justify-center gap-4">
               <Button
                 onClick={() => setStep(1)}
-                variant="outline"
-                className="px-8 py-6 text-lg rounded-2xl border-2 border-slate-600 text-slate-200 hover:bg-slate-700/50"
+                className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-6 text-lg rounded-2xl border-0"
               >
                 Back
               </Button>
