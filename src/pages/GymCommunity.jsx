@@ -797,11 +797,11 @@ export default function GymCommunity() {
               <p className="text-2xl md:text-3xl font-black text-white">{gymChallenges.length}</p>
             </Card>
             <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/40 p-3 md:p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Flame className="w-5 h-5 text-green-400" />
-                <h3 className="text-xs md:text-sm font-bold text-slate-100">In Gym Now</h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-black text-white">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-green-400" />
+                  <h3 className="text-xs md:text-sm font-bold text-slate-100">In Gym Now</h3>
+                </div>
                 {(() => {
                   const now = new Date();
                   const usersInGym = new Set();
@@ -811,9 +811,48 @@ export default function GymCommunity() {
                       usersInGym.add(checkIn.user_id);
                     }
                   });
-                  return usersInGym.size;
+                  const count = usersInGym.size;
+                  const vibe = count === 0 ? { text: 'Empty', color: 'text-slate-400', emoji: '💤' } :
+                               count <= 3 ? { text: 'Quiet', color: 'text-blue-400', emoji: '🧘' } :
+                               count <= 8 ? { text: 'Moderate', color: 'text-green-400', emoji: '💪' } :
+                               count <= 15 ? { text: 'Energetic', color: 'text-orange-400', emoji: '🔥' } :
+                               { text: 'Packed', color: 'text-red-400', emoji: '⚡' };
+                  return (
+                    <Badge className={`${vibe.color} bg-slate-700/50 border-slate-600 text-[10px] px-2 py-0`}>
+                      {vibe.emoji} {vibe.text}
+                    </Badge>
+                  );
                 })()}
-              </p>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl md:text-3xl font-black text-white">
+                  {(() => {
+                    const now = new Date();
+                    const usersInGym = new Set();
+                    checkIns.forEach(checkIn => {
+                      const checkInTime = new Date(checkIn.check_in_date);
+                      if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
+                        usersInGym.add(checkIn.user_id);
+                      }
+                    });
+                    return usersInGym.size;
+                  })()}
+                </p>
+                <p className="text-xs text-slate-300">
+                  {(() => {
+                    const now = new Date();
+                    const usersInGym = new Set();
+                    checkIns.forEach(checkIn => {
+                      const checkInTime = new Date(checkIn.check_in_date);
+                      if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
+                        usersInGym.add(checkIn.user_id);
+                      }
+                    });
+                    return usersInGym.size === 1 ? 'member' : 'members';
+                  })()}
+                </p>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">Great time to train!</p>
             </Card>
           </div>
 
