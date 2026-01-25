@@ -151,13 +151,13 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
             <video 
               src={post.video_url} 
               controls 
-              className="w-full max-h-[300px] md:max-h-[500px] object-cover"
+              className="w-full max-h-[300px] md:max-h-none object-contain"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full max-h-[300px] md:max-h-[500px] object-cover"
+              className="w-full max-h-[300px] md:max-h-none object-contain"
             />
           ) : null}
         </div>
