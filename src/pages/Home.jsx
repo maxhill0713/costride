@@ -399,7 +399,7 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-base mb-2">Unlock Exclusive Rewards</h3>
               <p className="text-slate-300 text-xs mb-4 leading-relaxed">
-                Double rewards on check-ins, early access to drops, and premium-only benefits
+                Access to brand rewards
               </p>
               <div className="mb-5">
                 <div className="text-2xl font-bold text-white">£4.99<span className="text-sm text-slate-400 font-semibold">/month</span></div>
