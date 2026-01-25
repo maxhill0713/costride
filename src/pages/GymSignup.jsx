@@ -780,8 +780,7 @@ export default function GymSignup() {
                 <Button
                   type="button"
                   onClick={() => setStep(1)}
-                  variant="outline"
-                  className="flex-1 rounded-2xl h-12 font-semibold border-slate-600 text-slate-200 hover:bg-slate-700/50"
+                  className="flex-1 rounded-2xl h-12 font-semibold bg-slate-700 hover:bg-slate-600 text-white border-0"
                 >
                   Back
                 </Button>
