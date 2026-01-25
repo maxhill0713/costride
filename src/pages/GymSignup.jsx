@@ -474,7 +474,7 @@ export default function GymSignup() {
             <Dumbbell className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-black text-white mb-2">Register Your Gym</h1>
-          <p className="text-slate-300">Join our community and attract new members</p>
+          <p className="text-slate-300">Join our community and now build yours</p>
         </div>
 
         <Card className="p-6 bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50">
