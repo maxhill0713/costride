@@ -64,16 +64,16 @@ export default function MemberSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full p-8 md:p-12 bg-white border-0 shadow-xl rounded-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
+      <Card className="max-w-2xl w-full p-8 md:p-12 bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50 shadow-xl rounded-3xl">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
             <User className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-black text-gray-900 mb-3">
+          <h1 className="text-4xl font-black text-white mb-3">
             Complete Your Profile
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-slate-300 text-lg">
             Let's personalize your fitness journey
           </p>
         </div>
@@ -89,8 +89,8 @@ export default function MemberSignup() {
                   className="w-32 h-32 rounded-full object-cover border-4 border-blue-200"
                 />
               ) : (
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-4 border-gray-300">
-                  <User className="w-16 h-16 text-gray-400" />
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border-4 border-slate-600">
+                  <User className="w-16 h-16 text-slate-400" />
                 </div>
               )}
               <label className="absolute bottom-0 right-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-700 transition-colors">
@@ -104,12 +104,12 @@ export default function MemberSignup() {
                 />
               </label>
             </div>
-            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+            {uploading && <p className="text-sm text-slate-400">Uploading...</p>}
           </div>
 
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-gray-900 font-semibold mb-2 block">
+            <Label htmlFor="email" className="text-white font-semibold mb-2 block">
               Email *
             </Label>
             <Input
@@ -119,19 +119,19 @@ export default function MemberSignup() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="your@email.com"
               required
-              className="h-12 text-base"
+              className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"
             />
           </div>
 
           {/* Password */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="password" className="text-gray-900 font-semibold">
+              <Label htmlFor="password" className="text-white font-semibold">
                 Password *
               </Label>
               <a
                 href="/auth/login"
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                className="text-xs text-blue-400 hover:text-blue-300 font-medium"
               >
                 Forgot Password?
               </a>
@@ -144,26 +144,26 @@ export default function MemberSignup() {
               placeholder="••••••••"
               required
               minLength={6}
-              className="h-12 text-base"
+              className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"
             />
           </div>
 
           {/* Name Display */}
           <div>
-            <Label className="text-gray-900 font-semibold mb-2 block">
+            <Label className="text-white font-semibold mb-2 block">
               Your Name
             </Label>
             <Input
               value={currentUser?.full_name || ''}
               disabled
-              className="h-12 text-base bg-gray-50"
+              className="h-12 text-base bg-slate-700/30 border-slate-600 text-slate-400"
             />
-            <p className="text-xs text-gray-500 mt-1">This is your account name</p>
+            <p className="text-xs text-slate-400 mt-1">This is your account name</p>
           </div>
 
           {/* Bio */}
           <div>
-            <Label htmlFor="bio" className="text-gray-900 font-semibold mb-2 block">
+            <Label htmlFor="bio" className="text-white font-semibold mb-2 block">
               Bio (Optional)
             </Label>
             <Textarea
@@ -171,7 +171,7 @@ export default function MemberSignup() {
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               placeholder="Tell us about your fitness journey..."
-              className="min-h-32 text-base"
+              className="min-h-32 text-base bg-slate-700/50 border-slate-600 text-white"
             />
           </div>
 
@@ -181,7 +181,7 @@ export default function MemberSignup() {
               type="button"
               onClick={() => navigate(createPageUrl('Home'))}
               variant="outline"
-              className="flex-1 h-14 text-base rounded-xl border-2"
+              className="flex-1 h-14 text-base rounded-xl border-2 border-slate-600 text-slate-200 hover:bg-slate-700/50"
             >
               Skip for Now
             </Button>

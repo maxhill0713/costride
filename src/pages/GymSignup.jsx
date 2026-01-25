@@ -446,13 +446,13 @@ export default function GymSignup() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-12 h-12 text-green-600" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="w-12 h-12 text-green-400" />
           </div>
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Registration Successful!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-black text-white mb-2">Registration Successful!</h2>
+          <p className="text-slate-300 mb-6">
             Your gym has been submitted for review. We'll verify your details and get back to you within 24 hours.
           </p>
           <Button 
@@ -467,41 +467,41 @@ export default function GymSignup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center mx-auto mb-4">
             <Dumbbell className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 mb-2">Register Your Gym</h1>
-          <p className="text-gray-600">Join our community and attract new members</p>
+          <h1 className="text-3xl font-black text-white mb-2">Register Your Gym</h1>
+          <p className="text-slate-300">Join our community and attract new members</p>
         </div>
 
-        <Card className="p-6">
+        <Card className="p-6 bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Step 1: Basic Info */}
             <div className={step === 1 ? '' : 'hidden'}>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Account & Basic Information</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Account & Basic Information</h3>
               
               <div className="space-y-4">
                 <div>
-                  <Label className="text-gray-700 font-semibold">Email *</Label>
+                  <Label className="text-white font-semibold">Email *</Label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="owner@gym.com"
                     required
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-gray-700 font-semibold">Password *</Label>
+                    <Label className="text-white font-semibold">Password *</Label>
                     <a
                       href="/auth/login"
-                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium"
                     >
                       Forgot Password?
                     </a>
@@ -513,35 +513,35 @@ export default function GymSignup() {
                     placeholder="••••••••"
                     required
                     minLength={6}
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Gym Name *</Label>
+                  <Label className="text-white font-semibold">Gym Name *</Label>
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Iron Paradise Gym"
                     required
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Address *</Label>
+                  <Label className="text-white font-semibold">Address *</Label>
                   <Input
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     placeholder="123 Muscle Street"
                     required
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
-                    <Label className="text-gray-700 font-semibold">City *</Label>
+                    <Label className="text-white font-semibold">City *</Label>
                     <Input
                       value={formData.city}
                       onChange={(e) => {
@@ -552,10 +552,10 @@ export default function GymSignup() {
                       onFocus={() => setShowAddressSuggestions(true)}
                       placeholder="London"
                       required
-                      className="mt-1 rounded-2xl border-2 border-gray-200"
+                      className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                     />
                     {showAddressSuggestions && addressSearch && filteredCities.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
                         {filteredCities.map(city => (
                           <button
                             key={city}
@@ -564,7 +564,7 @@ export default function GymSignup() {
                               setFormData({ ...formData, city });
                               setShowAddressSuggestions(false);
                             }}
-                            className="w-full text-left px-4 py-2 hover:bg-blue-50 first:rounded-t-2xl last:rounded-b-2xl transition-colors"
+                            className="w-full text-left px-4 py-2 text-white hover:bg-slate-700 first:rounded-t-2xl last:rounded-b-2xl transition-colors"
                           >
                             {city}
                           </button>
@@ -573,20 +573,20 @@ export default function GymSignup() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-gray-700 font-semibold">Postcode</Label>
+                    <Label className="text-white font-semibold">Postcode</Label>
                     <Input
                       value={formData.postcode}
                       onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
                       placeholder="SW1A 1AA"
-                      className="mt-1 rounded-2xl border-2 border-gray-200"
+                      className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Gym Type *</Label>
+                  <Label className="text-white font-semibold">Gym Type *</Label>
                   <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-gray-200">
+                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -601,9 +601,9 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Community Language *</Label>
+                  <Label className="text-white font-semibold">Community Language *</Label>
                   <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
-                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-gray-200">
+                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -611,17 +611,17 @@ export default function GymSignup() {
                       <SelectItem value="es">🇪🇸 Español</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-gray-500 mt-1">Language for your gym's community</p>
+                  <p className="text-xs text-slate-400 mt-1">Language for your gym's community</p>
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Monthly Price (£)</Label>
+                  <Label className="text-white font-semibold">Monthly Price (£)</Label>
                   <Input
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="29.99"
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
                 </div>
               </div>
@@ -637,12 +637,12 @@ export default function GymSignup() {
 
             {/* Step 2: Amenities & Equipment */}
             <div className={step === 2 ? '' : 'hidden'}>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Specializations & Details</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Gym Specializations & Details</h3>
               
               <div className="space-y-6">
                 <div>
-                  <Label className="text-gray-700 font-semibold mb-2 block">Gym Specializations</Label>
-                  <p className="text-sm text-gray-600 mb-3">What does your gym specialize in? (Select all that apply)</p>
+                  <Label className="text-white font-semibold mb-2 block">Gym Specializations</Label>
+                  <p className="text-sm text-slate-300 mb-3">What does your gym specialize in? (Select all that apply)</p>
                   <div className="grid grid-cols-2 gap-2">
                     {specializationOptions.map((spec) => (
                       <Button
@@ -663,7 +663,7 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold mb-2 block">Amenities</Label>
+                  <Label className="text-white font-semibold mb-2 block">Amenities</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {amenitiesOptions.map((amenity) => (
                       <Button
@@ -680,8 +680,8 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold mb-2 block">Gym Equipment</Label>
-                  <p className="text-sm text-gray-600 mb-3">Select equipment or add your own</p>
+                  <Label className="text-white font-semibold mb-2 block">Gym Equipment</Label>
+                  <p className="text-sm text-slate-300 mb-3">Select equipment or add your own</p>
                   
                   {/* Custom Equipment Input */}
                   <div className="mb-3 flex gap-2">
@@ -690,7 +690,7 @@ export default function GymSignup() {
                       onChange={(e) => setCustomEquipment(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomEquipment())}
                       placeholder="Type custom equipment name..."
-                      className="rounded-2xl border-2 border-gray-200"
+                      className="rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                     />
                     <Button
                       type="button"
@@ -707,11 +707,11 @@ export default function GymSignup() {
                     value={equipmentSearch}
                     onChange={(e) => setEquipmentSearch(e.target.value)}
                     placeholder="Search equipment..."
-                    className="mb-3 rounded-2xl border-2 border-gray-200"
+                    className="mb-3 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
 
                   {/* Equipment List */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto p-2 border-2 border-gray-200 rounded-2xl">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto p-2 border-2 border-slate-600 rounded-2xl bg-slate-900/30">
                     {filteredEquipment.map((equipment) => (
                       <Button
                         key={equipment}
@@ -729,14 +729,14 @@ export default function GymSignup() {
                       </Button>
                     ))}
                     {filteredEquipment.length === 0 && (
-                      <p className="col-span-2 text-center text-gray-500 py-4">No equipment found</p>
+                      <p className="col-span-2 text-center text-slate-400 py-4">No equipment found</p>
                     )}
                   </div>
 
                   {/* Selected Count */}
                   {formData.equipment.length > 0 && (
-                    <div className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-2xl">
-                      <p className="text-sm font-bold text-green-900 mb-2">
+                    <div className="mt-3 p-3 bg-green-500/20 border-2 border-green-500/40 rounded-2xl">
+                      <p className="text-sm font-bold text-green-300 mb-2">
                         ✓ {formData.equipment.length} equipment item{formData.equipment.length !== 1 ? 's' : ''} selected
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -755,23 +755,23 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Special Offer</Label>
+                  <Label className="text-white font-semibold">Special Offer</Label>
                   <Input
                     value={formData.reward_offer}
                     onChange={(e) => setFormData({ ...formData, reward_offer: e.target.value })}
                     placeholder="£5 Free Day Pass"
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Attract new members with a special offer</p>
+                  <p className="text-xs text-slate-400 mt-1">Attract new members with a special offer</p>
                 </div>
 
                 <div>
-                  <Label className="text-gray-700 font-semibold">Gym Image URL</Label>
+                  <Label className="text-white font-semibold">Gym Image URL</Label>
                   <Input
                     value={formData.image_url}
                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                     placeholder="https://..."
-                    className="mt-1 rounded-2xl border-2 border-gray-200"
+                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
                 </div>
               </div>
@@ -781,7 +781,7 @@ export default function GymSignup() {
                   type="button"
                   onClick={() => setStep(1)}
                   variant="outline"
-                  className="flex-1 rounded-2xl h-12 font-semibold"
+                  className="flex-1 rounded-2xl h-12 font-semibold border-slate-600 text-slate-200 hover:bg-slate-700/50"
                 >
                   Back
                 </Button>
