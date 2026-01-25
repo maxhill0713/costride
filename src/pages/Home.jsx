@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
+import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -53,6 +54,14 @@ export default function Home() {
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
     queryFn: () => base44.entities.Challenge.list('-created_date')
+  });
+
+  const { data: weeklyChallenges = [] } = useQuery({
+    queryKey: ['weeklyChallenges'],
+    queryFn: () => base44.entities.Challenge.filter({ 
+      category: 'weekly',
+      is_app_challenge: true 
+    }, '-created_date', 2)
   });
 
   const { data: lifts = [] } = useQuery({
@@ -297,6 +306,25 @@ export default function Home() {
         )}
 
 
+
+        {/* Weekly Challenges */}
+        {weeklyChallenges.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-purple-400" />
+              Weekly Challenges
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {weeklyChallenges.map(challenge => (
+                <WeeklyChallengeCard 
+                  key={challenge.id} 
+                  challenge={challenge} 
+                  currentUser={currentUser}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
