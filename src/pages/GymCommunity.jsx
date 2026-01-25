@@ -54,6 +54,7 @@ export default function GymCommunity() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [activeTab, setActiveTab] = useState('feed');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -727,9 +728,7 @@ export default function GymCommunity() {
       </div>
 
       {/* Horizontal Tab Menu - 10% of screen */}
-      <Tabs defaultValue="feed" className="w-full overflow-x-hidden" onValueChange={(value) => {
-        // Optional: Add analytics tracking here
-      }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
         <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl border-b-2 border-blue-700/40 shadow-xl overflow-x-hidden">
             <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible">
             <TabsTrigger 
