@@ -883,9 +883,7 @@ export default function GymCommunity() {
           ) : (
           <div className="space-y-3">
             {posts.slice(0, 10).map((post) => (
-              <div key={post.id} className="transform scale-90">
-                <GymPostCard post={post} gym={gym} isOwner={showOwnerControls} />
-              </div>
+              <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
             ))}
           </div>
           )}
