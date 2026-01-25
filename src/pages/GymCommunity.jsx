@@ -927,9 +927,14 @@ export default function GymCommunity() {
           {/* Recent Posts */}
           {posts.length > 0 && (
             <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-3 md:p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <MessageCircle className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-blue-400" />
+                  <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
+                </div>
+                <TabsTrigger value="feed" className="text-xs text-blue-400 hover:text-blue-300 underline px-0 h-auto bg-transparent">
+                  View All →
+                </TabsTrigger>
               </div>
               <div className="space-y-2">
                 {posts.slice(0, 1).map((post) => (
