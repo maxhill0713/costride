@@ -176,19 +176,11 @@ export default function MemberSignup() {
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-4 pt-4">
-            <Button
-              type="button"
-              onClick={() => navigate(createPageUrl('Home'))}
-              variant="outline"
-              className="flex-1 h-14 text-base rounded-xl border-2 border-slate-600 text-slate-200 hover:bg-slate-700/50"
-            >
-              Skip for Now
-            </Button>
+          <div className="pt-4">
             <Button
               type="submit"
               disabled={createMemberMutation.isPending}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold"
             >
               {createMemberMutation.isPending ? (
                 'Creating Profile...'
