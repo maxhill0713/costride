@@ -900,6 +900,44 @@ export default function GymCommunity() {
             </Card>
           )}
 
+          {/* Active Challenges */}
+          {gymChallenges.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="w-5 h-5 text-purple-400" />
+                <h3 className="text-sm md:text-base font-bold text-slate-100">Active Challenges</h3>
+              </div>
+              <div className="space-y-2">
+                {gymChallenges.slice(0, 2).map((challenge) => (
+                  <GymChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    isJoined={hasjoinedChallenge(challenge.id)}
+                    onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
+                    currentUser={currentUser}
+                    disabled={showOwnerControls}
+                    isOwner={showOwnerControls}
+                    onDelete={null}
+                  />
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Recent Posts */}
+          {posts.length > 0 && (
+            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <MessageCircle className="w-5 h-5 text-blue-400" />
+                <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
+              </div>
+              <div className="space-y-2">
+                {posts.slice(0, 2).map((post) => (
+                  <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
+                ))}
+              </div>
+            </Card>
+          )}
 
         </TabsContent>
 
