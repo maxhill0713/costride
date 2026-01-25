@@ -932,9 +932,12 @@ export default function GymCommunity() {
                   <MessageCircle className="w-5 h-5 text-blue-400" />
                   <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
                 </div>
-                <TabsTrigger value="feed" className="text-xs text-blue-400 hover:text-blue-300 underline px-0 h-auto bg-transparent">
+                <button 
+                  onClick={() => setActiveTab('feed')}
+                  className="text-xs text-blue-400 hover:text-blue-300 underline"
+                >
                   View All →
-                </TabsTrigger>
+                </button>
               </div>
               <div className="space-y-2">
                 {posts.slice(0, 1).map((post) => (
