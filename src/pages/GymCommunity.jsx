@@ -812,11 +812,11 @@ export default function GymCommunity() {
                     }
                   });
                   const count = usersInGym.size;
-                  const vibe = count === 0 ? { text: 'Empty', color: 'text-slate-400', emoji: '💤' } :
-                               count <= 3 ? { text: 'Quiet', color: 'text-blue-400', emoji: '🧘' } :
-                               count <= 8 ? { text: 'Moderate', color: 'text-green-400', emoji: '💪' } :
+                  const vibe = count === 0 ? { text: 'Peaceful', color: 'text-blue-400', emoji: '🧘' } :
+                               count <= 3 ? { text: 'Focused', color: 'text-cyan-400', emoji: '🎯' } :
+                               count <= 8 ? { text: 'Active', color: 'text-green-400', emoji: '💪' } :
                                count <= 15 ? { text: 'Energetic', color: 'text-orange-400', emoji: '🔥' } :
-                               { text: 'Packed', color: 'text-red-400', emoji: '⚡' };
+                               { text: 'Buzzing', color: 'text-purple-400', emoji: '⚡' };
                   return (
                     <Badge className={`${vibe.color} bg-slate-700/50 border-slate-600 text-[10px] px-2 py-0`}>
                       {vibe.emoji} {vibe.text}
