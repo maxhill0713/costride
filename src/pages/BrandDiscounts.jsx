@@ -5,9 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle, CreditCard, ArrowLeft } from 'lucide-react';
+import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle, CreditCard, ArrowLeft, Trophy, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { format, differenceInDays } from 'date-fns';
 
 export default function BrandDiscounts() {
   const [redeemCode, setRedeemCode] = useState('');
@@ -25,6 +26,37 @@ export default function BrandDiscounts() {
     queryFn: () => base44.entities.BrandDiscountCode.filter({ assigned_to: currentUser.id }),
     enabled: !!currentUser
   });
+
+  const { data: challengeParticipants = [] } = useQuery({
+    queryKey: ['challengeParticipants', currentUser?.id],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser
+  });
+
+  const { data: allChallenges = [] } = useQuery({
+    queryKey: ['challenges'],
+    queryFn: () => base44.entities.Challenge.list()
+  });
+
+  const { data: rewards = [] } = useQuery({
+    queryKey: ['rewards'],
+    queryFn: () => base44.entities.Reward.list()
+  });
+
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser
+  });
+
+  // Get user's joined challenges
+  const userChallenges = challengeParticipants
+    .map(cp => allChallenges.find(c => c.id === cp.challenge_id))
+    .filter(Boolean);
+
+  // Get gym rewards from user's gyms
+  const userGymIds = gymMemberships.map(gm => gm.gym_id);
+  const gymRewards = rewards.filter(r => userGymIds.includes(r.gym_id));
 
   const redeemMutation = useMutation({
     mutationFn: async (code) => {
@@ -109,9 +141,142 @@ export default function BrandDiscounts() {
           <div className="w-12 md:w-16 h-12 md:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Gift className="w-6 md:w-8 h-6 md:h-8 text-white" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-white mb-2">Brand Discounts</h1>
-          <p className="text-sm md:text-base text-slate-300">Redeem exclusive discount codes from our partners</p>
+          <h1 className="text-2xl md:text-3xl font-black text-white mb-2">Rewards & Challenges</h1>
+          <p className="text-sm md:text-base text-slate-300">Track your challenges and rewards</p>
         </div>
+
+        {/* Main Tabs */}
+        <Tabs defaultValue="challenges" className="mb-6">
+          <TabsList className="w-full bg-slate-800/50 p-1 rounded-xl mb-6">
+            <TabsTrigger value="challenges" className="flex-1">
+              <Trophy className="w-4 h-4 mr-2" />
+              Challenges
+            </TabsTrigger>
+            <TabsTrigger value="gym-rewards" className="flex-1">
+              <Target className="w-4 h-4 mr-2" />
+              Gym Rewards
+            </TabsTrigger>
+            <TabsTrigger value="brand-rewards" className="flex-1">
+              <Gift className="w-4 h-4 mr-2" />
+              Brand Rewards
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Challenges Tab */}
+          <TabsContent value="challenges">
+            {userChallenges.length > 0 ? (
+              <div className="space-y-3">
+                {userChallenges.map((challenge) => {
+                  const participant = challengeParticipants.find(cp => cp.challenge_id === challenge.id);
+                  const progress = participant?.progress || 0;
+                  const progressPercentage = challenge.target_value ? (progress / challenge.target_value) * 100 : 0;
+                  const daysLeft = challenge.end_date ? differenceInDays(new Date(challenge.end_date), new Date()) : 0;
+                  
+                  return (
+                    <Card key={challenge.id} className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 p-5">
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-bold text-white text-base">{challenge.title}</h4>
+                          {challenge.status === 'active' && (
+                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        {challenge.description && (
+                          <p className="text-sm text-slate-300 mb-2">{challenge.description}</p>
+                        )}
+                        {challenge.reward && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <Gift className="w-4 h-4 text-yellow-400" />
+                            <span className="text-sm text-yellow-400 font-semibold">{challenge.reward}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-slate-400">Progress</span>
+                          <span className="text-xs font-semibold text-slate-200">
+                            {progress} / {challenge.target_value}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                            style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-slate-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {daysLeft > 0 ? `${daysLeft} days left` : 'Ending soon'}
+                        </div>
+                        {challenge.category && (
+                          <span className="capitalize">{challenge.category.replace('_', ' ')}</span>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-12 text-center">
+                <Trophy className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">No Active Challenges</h3>
+                <p className="text-slate-300">Join challenges from your gym community to see them here!</p>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Gym Rewards Tab */}
+          <TabsContent value="gym-rewards">
+            {gymRewards.length > 0 ? (
+              <div className="space-y-3">
+                {gymRewards.map((reward) => (
+                  <Card key={reward.id} className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Target className="w-5 h-5 text-orange-600" />
+                          <h4 className="font-bold text-gray-900">{reward.title}</h4>
+                          {reward.value && (
+                            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+                              {reward.value}
+                            </span>
+                          )}
+                        </div>
+                        {reward.description && (
+                          <p className="text-sm text-gray-600 mb-2">{reward.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span className="capitalize">{reward.type?.replace('_', ' ')}</span>
+                          {reward.points_required > 0 && (
+                            <span>{reward.points_required} points required</span>
+                          )}
+                          {reward.requirement !== 'points' && reward.requirement !== 'none' && (
+                            <span className="capitalize">{reward.requirement.replace('_', ' ')}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-12 text-center">
+                <Target className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">No Gym Rewards</h3>
+                <p className="text-slate-300">Join a gym to see available rewards!</p>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Brand Rewards Tab */}
+          <TabsContent value="brand-rewards">
 
         {/* Redeem Code Section */}
         <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 mb-6">
@@ -488,6 +653,8 @@ export default function BrandDiscounts() {
           <p className="text-sm md:text-base text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
         </Card>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
