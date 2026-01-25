@@ -175,7 +175,7 @@ export default function RedeemReward() {
               {userChallengeProgress.length === 0 ? (
                 <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 col-span-2 text-center">
                   <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-400">No active challenges at the moment</p>
+                  <p className="text-slate-400">Join gym community challenges to get started</p>
                 </Card>
               ) : (
                 userChallengeProgress.map((challenge) => (
