@@ -854,6 +854,27 @@ export default function GymCommunity() {
               </div>
               <p className="text-[10px] text-slate-400 mt-1">Great time to train!</p>
             </Card>
+            <Card className="bg-gradient-to-br from-orange-500/20 to-amber-500/20 border-2 border-orange-500/40 p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="w-5 h-5 text-orange-400" />
+                <h3 className="text-xs md:text-sm font-bold text-slate-100">Your Progress</h3>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs text-slate-300 mb-1">Times Visited</p>
+                  <p className="text-xl md:text-2xl font-black text-white">
+                    {currentUser ? checkIns.filter(c => c.user_id === currentUser.id).length : 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-300 mb-1">Current Streak</p>
+                  <p className="text-xl md:text-2xl font-black text-white flex items-center gap-1">
+                    {currentUser ? calculateCurrentStreak(checkIns.filter(c => c.user_id === currentUser.id)) : 0}
+                    <Flame className="w-4 h-4 text-orange-400" />
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
 
           {/* Upcoming Events */}
