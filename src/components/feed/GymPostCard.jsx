@@ -99,33 +99,33 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   return (
     <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-slate-700/50 overflow-hidden hover:shadow-lg transition-all rounded-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden">
             {post.member_avatar ? (
               <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-xs font-bold text-white">
+              <span className="text-sm md:text-base font-bold text-white">
                 {post.member_name?.charAt(0)?.toUpperCase() || 'G'}
               </span>
             )}
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-slate-100">{post.member_name}</h3>
-            <p className="text-[10px] text-slate-400">
+            <h3 className="text-sm md:text-base font-semibold text-slate-100">{post.member_name}</h3>
+            <p className="text-xs md:text-sm text-slate-400">
               {format(new Date(post.created_date), 'MMM d')}
             </p>
           </div>
         </div>
         {isGymOwner && (
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowEditModal(true)}
-              className="text-slate-400 hover:text-slate-200 h-7 w-7"
+              className="text-slate-400 hover:text-slate-200 h-8 w-8 md:h-10 md:w-10"
             >
-              <Edit className="w-3 h-3" />
+              <Edit className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
             <Button
               variant="ghost"
@@ -136,9 +136,9 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                 }
               }}
               disabled={deletePostMutation.isPending}
-              className="text-red-400 hover:text-red-300 h-7 w-7"
+              className="text-red-400 hover:text-red-300 h-8 w-8 md:h-10 md:w-10"
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         )}
@@ -151,37 +151,37 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
             <video 
               src={post.video_url} 
               controls 
-              className="w-full max-h-[300px] object-cover"
+              className="w-full max-h-[300px] md:max-h-[500px] object-cover"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full max-h-[300px] object-cover"
+              className="w-full max-h-[300px] md:max-h-[500px] object-cover"
             />
           ) : null}
         </div>
       )}
 
       {/* Action Buttons */}
-      <div className="px-3 pt-2">
+      <div className="px-4 md:px-6 pt-3 md:pt-4">
         {currentUser && (
           <div className="relative">
             <button
               onClick={() => setShowReactions(!showReactions)}
-              className={`text-xl transition-transform active:scale-90 ${userReaction ? '' : 'grayscale-[50%]'}`}
+              className={`text-2xl md:text-3xl transition-transform active:scale-90 ${userReaction ? '' : 'grayscale-[50%]'}`}
             >
               {userReaction || '❤️'}
             </button>
 
             {/* Reaction picker */}
             {showReactions && (
-              <div className="absolute bottom-full left-0 mb-2 p-2 bg-slate-700 rounded-xl shadow-2xl border border-slate-600 flex gap-2 z-10">
+              <div className="absolute bottom-full left-0 mb-2 p-2 md:p-3 bg-slate-700 rounded-xl shadow-2xl border border-slate-600 flex gap-2 md:gap-3 z-10">
                 {REACTIONS.map((emoji) => (
                   <button
                     key={emoji}
                     onClick={() => reactionMutation.mutate({ postId: post.id, emoji })}
-                    className="text-xl hover:scale-125 transition-transform active:scale-110"
+                    className="text-2xl md:text-3xl hover:scale-125 transition-transform active:scale-110"
                     disabled={reactionMutation.isPending}
                   >
                     {emoji}
@@ -195,22 +195,22 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
       {/* Likes Count */}
       {totalReactions > 0 && (
-        <div className="px-3 py-1">
-          <p className="text-xs font-semibold text-slate-100">
+        <div className="px-4 md:px-6 py-2">
+          <p className="text-sm md:text-base font-semibold text-slate-100">
             {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
           </p>
         </div>
       )}
 
       {/* Caption */}
-      <div className="px-3 pb-2">
-        <p className="text-xs text-slate-200">
+      <div className="px-4 md:px-6 pb-3 md:pb-4">
+        <p className="text-sm md:text-base text-slate-200 leading-relaxed">
           <span className="font-semibold mr-1">{post.member_name}</span>
           {post.content}
         </p>
         
         {post.exercise && post.weight && (
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-sm md:text-base text-slate-400 mt-2">
             {post.exercise.replace('_', ' ')} • {post.weight} lbs
           </p>
         )}

@@ -773,7 +773,7 @@ export default function GymCommunity() {
         </div>
 
       {/* Main Content Area - Vertical Scroll */}
-      <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
+      <div className="max-w-full md:max-w-6xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
 
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
