@@ -121,8 +121,8 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-      <Card className="max-w-4xl w-full p-8 md:p-12 bg-white/95 backdrop-blur-sm border-2 border-gray-200 rounded-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
+      <Card className="max-w-4xl w-full p-8 md:p-12 bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50 rounded-3xl">
         {/* Step 1: Account Type Selection */}
         {step === 1 && (
           <>
@@ -130,10 +130,10 @@ export default function Onboarding() {
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
                 <Target className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
                 Welcome to Gofattie{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-slate-300 text-lg">
                 The ultimate fitness community platform
               </p>
             </div>
@@ -146,17 +146,17 @@ export default function Onboarding() {
                   <Card
                     key={type.id}
                     onClick={() => setSelectedAccountType(type.id)}
-                    className={`p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+                    className={`p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 bg-slate-700/50 backdrop-blur-sm ${
                       isSelected
-                        ? 'border-4 border-blue-500 shadow-lg scale-105'
-                        : 'border-2 border-gray-200 hover:border-blue-300'
+                        ? 'border-4 border-blue-500 shadow-lg shadow-blue-500/30 scale-105'
+                        : 'border-2 border-slate-600/40 hover:border-blue-400/50'
                     }`}
                   >
                     <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-6 mx-auto`}>
                       <Icon className="w-10 h-10 text-white" strokeWidth={2.5} />
                     </div>
-                    <h3 className="font-bold text-xl text-gray-900 text-center mb-3">{type.title}</h3>
-                    <p className="text-sm text-gray-600 text-center">{type.description}</p>
+                    <h3 className="font-bold text-xl text-white text-center mb-3">{type.title}</h3>
+                    <p className="text-sm text-slate-300 text-center">{type.description}</p>
                     {isSelected && (
                       <div className="mt-4 flex justify-center">
                         <Badge className="bg-blue-500 text-white">Selected ✓</Badge>
@@ -186,10 +186,10 @@ export default function Onboarding() {
               <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
                 <Building2 className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
                 Ready to register your gym?
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-slate-300 text-lg">
                 Let's get your gym set up on the platform
               </p>
             </div>
@@ -220,10 +220,10 @@ export default function Onboarding() {
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
                 <Target className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
                 What's your main fitness goal?
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-slate-300 text-lg">
                 This helps us personalize your experience
               </p>
             </div>
@@ -236,17 +236,17 @@ export default function Onboarding() {
               <Card
                 key={goal.id}
                 onClick={() => setSelectedGoal(goal.id)}
-                className={`p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+                className={`p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 bg-slate-700/50 backdrop-blur-sm ${
                   isSelected
-                    ? 'border-4 border-blue-500 shadow-lg scale-105'
-                    : 'border-2 border-gray-200 hover:border-blue-300'
+                    ? 'border-4 border-blue-500 shadow-lg shadow-blue-500/30 scale-105'
+                    : 'border-2 border-slate-600/40 hover:border-blue-400/50'
                 }`}
               >
                 <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${goal.color} flex items-center justify-center mb-4 mx-auto`}>
                   <Icon className="w-7 h-7 text-white" strokeWidth={2.5} />
                 </div>
-                <h3 className="font-bold text-gray-900 text-center mb-2">{goal.title}</h3>
-                <p className="text-sm text-gray-600 text-center">{goal.description}</p>
+                <h3 className="font-bold text-white text-center mb-2">{goal.title}</h3>
+                <p className="text-sm text-slate-300 text-center">{goal.description}</p>
                 {isSelected && (
                   <div className="mt-3 flex justify-center">
                     <Badge className="bg-blue-500 text-white">Selected ✓</Badge>
@@ -261,7 +261,7 @@ export default function Onboarding() {
               <Button
                 onClick={() => setStep(1)}
                 variant="outline"
-                className="px-8 py-6 text-lg rounded-2xl border-2"
+                className="px-8 py-6 text-lg rounded-2xl border-2 border-slate-600 text-slate-200 hover:bg-slate-700/50"
               >
                 Back
               </Button>
