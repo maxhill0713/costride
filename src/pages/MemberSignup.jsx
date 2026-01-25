@@ -186,7 +186,7 @@ export default function MemberSignup() {
             </Button>
             <Button
               type="submit"
-              disabled={createMemberMutation.isPending || !formData.email || !formData.password}
+              disabled={createMemberMutation.isPending || !formData.email || !formData.password || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold disabled:opacity-50"
             >
               {createMemberMutation.isPending ? (
