@@ -97,7 +97,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   }, {});
   const totalReactions = Object.keys(reactions).length;
   return (
-    <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-slate-700/50 overflow-hidden hover:shadow-lg transition-all rounded-2xl">
+    <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-slate-700/50 overflow-hidden hover:shadow-lg transition-all rounded-2xl w-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
         <div className="flex items-center gap-3">
@@ -146,18 +146,18 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
       {/* Media */}
       {(post.video_url || post.image_url) && (
-        <div className="w-full bg-slate-900/50">
+        <div className="w-full bg-slate-900/50 overflow-hidden">
           {post.video_url ? (
             <video 
               src={post.video_url} 
               controls 
-              className="w-full max-h-[300px] md:max-h-[400px] object-cover"
+              className="w-full h-auto max-h-[300px] md:max-h-[400px] object-cover"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full max-h-[300px] md:max-h-[400px] object-cover"
+              className="w-full h-auto max-h-[300px] md:max-h-[400px] object-cover"
             />
           ) : null}
         </div>
