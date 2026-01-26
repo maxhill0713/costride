@@ -259,6 +259,34 @@ export default function Profile() {
                    <h1 className="text-xl font-black">{currentUser.full_name}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
                 </div>
+                {/* Equipped Badges */}
+                {currentUser?.equipped_badges?.length > 0 && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    {currentUser.equipped_badges.map((badgeId) => {
+                      const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
+                                   [
+                                     { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+                                     { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+                                     { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+                                     { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+                                     { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+                                     { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+                                     { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+                                     { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
+                                   ].find(b => b.id === badgeId);
+                      if (!badge) return null;
+                      return (
+                        <div 
+                          key={badgeId}
+                          className={`w-8 h-8 rounded-full bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-white/40`}
+                          title={badge.name || badgeId}
+                        >
+                          <span className="text-sm">{badge.icon}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
             {!isEditing ? (
