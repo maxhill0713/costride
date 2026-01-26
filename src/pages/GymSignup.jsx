@@ -471,10 +471,10 @@ export default function GymSignup() {
             Your gym has been submitted for review. We'll verify your details and get back to you within 24 hours.
           </p>
           <Button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = createPageUrl('GymOwnerDashboard')}
             className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12"
           >
-            Back to Home
+            Go to Dashboard
           </Button>
         </Card>
       </div>
