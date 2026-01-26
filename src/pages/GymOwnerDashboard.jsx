@@ -602,6 +602,14 @@ export default function GymOwnerDashboard() {
                 </Button>
               </Link>
 
+              <Button 
+                onClick={() => base44.auth.logout()} 
+                variant="outline" 
+                className="border-2 h-12 px-4 md:px-6 w-full sm:w-auto text-red-500 hover:bg-red-50 border-red-300"
+              >
+                Log out
+              </Button>
+
               {myGyms.length > 1 && (
                 <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
                   {myGyms.map(gym => (
