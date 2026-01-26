@@ -90,7 +90,12 @@ export default function Premium() {
           <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <Crown className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">Premium Membership</h1>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <h1 className="text-3xl md:text-4xl font-black text-white">Premium Membership</h1>
+            <Badge className="bg-amber-500 text-amber-950 font-bold text-sm px-3 py-1.5 animate-pulse">
+              COMING SOON
+            </Badge>
+          </div>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Unlock exclusive rewards, early access to drops, and double your earnings
           </p>
@@ -167,10 +172,10 @@ export default function Premium() {
 
                   <Button
                     onClick={() => handleSubscribe(plan)}
-                    disabled={hasActiveSub || checkoutMutation.isPending}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-bold h-12 rounded-xl`}
+                    disabled={true}
+                    className={`w-full bg-gradient-to-r ${plan.color} opacity-60 cursor-not-allowed text-white font-bold h-12 rounded-xl`}
                   >
-                    {checkoutMutation.isPending ? 'Loading...' : hasActiveSub ? 'Current Plan' : 'Subscribe Now'}
+                    Coming Soon
                   </Button>
                 </div>
               </Card>

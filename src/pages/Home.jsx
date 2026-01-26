@@ -430,6 +430,9 @@ export default function Home() {
                     <Badge className="bg-purple-500/30 text-purple-200 border border-purple-500/50 font-bold text-xs">
                       PREMIUM
                     </Badge>
+                    <Badge className="bg-amber-500 text-amber-950 font-bold text-[10px] px-2 py-0.5 animate-pulse">
+                      COMING SOON
+                    </Badge>
                   </div>
                 </div>
               </div>
