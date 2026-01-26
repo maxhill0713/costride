@@ -519,6 +519,23 @@ export default function Gyms() {
                                 <Edit className="w-4 h-4 text-slate-300" />
                               </button>
                             )}
+                            {currentUser && currentUser.email !== gym.owner_email && currentUser.account_type === 'gym_owner' && (
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await base44.functions.invoke('reassignGym', { gymName: gym.name });
+                                    queryClient.invalidateQueries({ queryKey: ['gyms'] });
+                                    queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+                                  } catch (err) {
+                                    console.error('Error claiming gym:', err);
+                                  }
+                                }}
+                                className="w-9 h-9 rounded-xl bg-green-600/80 backdrop-blur-md flex items-center justify-center hover:bg-green-700 transition-all hover:scale-110"
+                                title="Claim this gym"
+                              >
+                                <Plus className="w-4 h-4 text-white" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       )}
