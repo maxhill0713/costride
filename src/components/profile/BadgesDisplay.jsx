@@ -114,12 +114,12 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
     <div className="space-y-6">
       {/* Equipped Badges Showcase */}
       {equippedBadgeDetails.length > 0 && (
-        <Card className="p-6 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border-2 border-amber-400/50 shadow-2xl">
-          <h3 className="text-xl font-black text-amber-300 mb-4 flex items-center gap-2">
-            <Crown className="w-6 h-6 text-amber-400" />
+        <Card className="p-4 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border-2 border-amber-400/50 shadow-2xl">
+          <h3 className="text-sm font-black text-amber-300 mb-3 flex items-center gap-2">
+            <Crown className="w-4 h-4 text-amber-400" />
             Showcase (Max 3)
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {equippedBadgeDetails.map((badge) => {
               const Icon = badge.icon;
               return (
@@ -127,20 +127,20 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
                   key={badge.id}
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className={`relative p-4 rounded-2xl bg-gradient-to-br ${badge.color} border-2 border-white/40 shadow-2xl`}
+                  className={`relative p-3 rounded-xl bg-gradient-to-br ${badge.color} border-2 border-white/40 shadow-xl`}
                 >
-                  <div className="absolute top-2 right-2 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center shadow-lg">
-                    <Check className="w-4 h-4 text-amber-900" strokeWidth={3} />
+                  <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-lg">
+                    <Check className="w-3 h-3 text-amber-900" strokeWidth={3} />
                   </div>
-                  <div className="w-14 h-14 mx-auto mb-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-xl ring-2 ring-white/40">
-                    <Icon className="w-7 h-7 text-white drop-shadow-2xl" strokeWidth={2.5} />
+                  <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-xl ring-2 ring-white/40">
+                    <Icon className="w-5 h-5 text-white drop-shadow-2xl" strokeWidth={2.5} />
                   </div>
-                  <h4 className="font-black text-white text-xs text-center drop-shadow-lg line-clamp-1">{badge.title}</h4>
+                  <h4 className="font-black text-white text-[10px] text-center drop-shadow-lg line-clamp-1">{badge.title}</h4>
                 </motion.div>
               );
             })}
           </div>
-          <p className="text-xs text-amber-200/80 text-center mt-3 font-medium">
+          <p className="text-[10px] text-amber-200/80 text-center mt-2 font-medium">
             ✨ Click badges below to equip/unequip them
           </p>
         </Card>
