@@ -37,74 +37,68 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="bg-gradient-to-br from-slate-950/95 via-yellow-950/30 to-slate-950/95 backdrop-blur-md border-2 border-yellow-600/50 rounded-2xl p-5 hover:border-yellow-500/80 hover:shadow-2xl hover:shadow-yellow-600/20 transition-all overflow-hidden relative group">
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/5 via-transparent to-yellow-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
+      <Card className="bg-slate-800/50 backdrop-blur-sm border border-slate-600/40 rounded-xl p-5 hover:border-slate-500/60 hover:bg-slate-800/60 transition-all overflow-hidden relative group">
         {/* Timer Badge */}
-        <div className="absolute top-3 right-3 z-10">
-          <Badge className="bg-yellow-600/30 text-yellow-300 border border-yellow-600/60 text-xs font-bold shadow-lg backdrop-blur-sm">
+        <div className="absolute top-4 right-4 z-10">
+          <Badge className={`text-xs font-semibold ${isExpired ? 'bg-slate-700/50 text-slate-400' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}`}>
             <Clock className="w-3 h-3 mr-1" />
-            {isExpired ? 'Expired' : `${daysLeft}d left`}
+            {isExpired ? 'Ended' : `${daysLeft}d left`}
           </Badge>
         </div>
 
         <div className="flex items-start gap-4 mb-4 relative z-10">
-          <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 via-yellow-600 to-amber-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xl shadow-yellow-600/50 border border-yellow-500/30">
-            <Trophy className="w-7 h-7 text-black" />
+          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
+            <Trophy className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-black text-white text-base mb-1.5 pr-20 tracking-tight">{challenge.title}</h3>
-            <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{challenge.description}</p>
+            <h3 className="font-bold text-slate-100 text-base mb-1 pr-20">{challenge.title}</h3>
+            <p className="text-xs text-slate-400 line-clamp-2">{challenge.description}</p>
           </div>
         </div>
 
         {/* Progress */}
         <div className="mb-4 relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
-              <Target className="w-3.5 h-3.5" />
+            <span className="text-xs text-slate-400 font-medium">
               Community Progress
             </span>
-            <span className="text-sm font-black text-yellow-400 tabular-nums">
+            <span className="text-sm font-bold text-slate-200">
               {participantCount}/{targetValue}
             </span>
           </div>
-          <div className="h-3 bg-black/70 rounded-full overflow-hidden border border-yellow-900/40 shadow-inner">
+          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-yellow-500 via-yellow-600 to-amber-600 rounded-full relative shadow-lg shadow-yellow-600/50"
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/20 to-transparent" />
-            </motion.div>
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+            />
           </div>
         </div>
 
-        {/* Badge Reward */}
-        <div className="bg-gradient-to-r from-black/80 via-yellow-900/20 to-black/80 border-2 border-yellow-700/50 rounded-xl p-3 mb-4 flex items-center gap-3 relative z-10 shadow-lg">
-          <div className="text-3xl">🏅</div>
+        {/* Reward */}
+        <div className="bg-slate-700/30 border border-slate-600/40 rounded-lg p-3 mb-4 flex items-center gap-3 relative z-10">
+          <div className="text-2xl">🏆</div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] text-yellow-600 font-bold uppercase tracking-wide mb-0.5">Reward</p>
-            <p className="text-sm font-black text-yellow-400 leading-tight">{challenge.reward || 'Weekly Warrior Badge'}</p>
+            <p className="text-xs text-slate-500 font-medium mb-0.5">Reward</p>
+            <p className="text-sm font-semibold text-slate-200">{challenge.reward || 'Weekly Warrior Badge'}</p>
           </div>
         </div>
 
         {/* Action Button */}
         <div className="relative z-10">
           {isParticipant ? (
-            <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-bold py-3 bg-green-950/30 border-2 border-green-600/40 rounded-xl">
-              <CheckCircle className="w-5 h-5" />
-              Joined Challenge
+            <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-semibold py-2.5 bg-green-900/20 border border-green-600/30 rounded-lg">
+              <CheckCircle className="w-4 h-4" />
+              Participating
             </div>
           ) : (
             <Button
               onClick={() => joinMutation.mutate()}
               disabled={joinMutation.isPending || isExpired}
-              className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:via-yellow-400 hover:to-yellow-500 text-black font-black rounded-xl h-11 border-2 border-yellow-400/50 shadow-xl shadow-yellow-600/30 hover:shadow-yellow-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-lg h-10 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {joinMutation.isPending ? 'Joining...' : isExpired ? 'Expired' : 'Join Challenge'}
+              {joinMutation.isPending ? 'Joining...' : isExpired ? 'Challenge Ended' : 'Join Challenge'}
             </Button>
           )}
         </div>
