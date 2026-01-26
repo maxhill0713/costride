@@ -34,6 +34,7 @@ export default function Plus() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [billingCycle, setBillingCycle] = useState('yearly'); // 'monthly' or 'yearly'
+  const [paymentMethod, setPaymentMethod] = useState('direct'); // 'direct' or 'link'
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -53,7 +54,34 @@ export default function Plus() {
     enabled: !!currentUser
   });
 
-  const handleSubscribe = async () => {
+  const handleSubscribeDirectPayment = async () => {
+    setIsLoading(true);
+    try {
+      const priceId = billingCycle === 'yearly' 
+        ? 'price_1SsCqKBzxbKKg1zZ5INp9GWN'
+        : 'price_1SsCKCBzxbKKg1zZmWxN4zTI';
+
+      const response = await base44.functions.invoke('createDirectPayment', {
+        priceId,
+        subscriptionType: 'gym_pro'
+      });
+
+      if (response.data.clientSecret) {
+        // Handle direct payment flow
+        toast.success('Redirecting to payment...');
+        window.location.href = response.data.redirectUrl;
+      } else {
+        toast.error('Failed to create payment');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Failed to start payment');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubscribeWithLink = async () => {
     // Check if running in iframe
     if (window.self !== window.top) {
       toast.error('Checkout only works from published app', {
@@ -189,20 +217,47 @@ export default function Plus() {
               ))}
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="space-y-2 mb-4">
+              <label className="text-xs font-semibold text-white">Payment Method</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPaymentMethod('direct')}
+                  className={`flex-1 px-3 py-2 rounded-lg font-bold text-xs transition-all ${
+                    paymentMethod === 'direct' 
+                      ? 'bg-white text-purple-600 shadow-lg' 
+                      : 'bg-purple-400/30 text-white hover:bg-purple-400/40'
+                  }`}
+                >
+                  Pay without Link
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('link')}
+                  className={`flex-1 px-3 py-2 rounded-lg font-bold text-xs transition-all ${
+                    paymentMethod === 'link' 
+                      ? 'bg-white text-purple-600 shadow-lg' 
+                      : 'bg-purple-400/30 text-white hover:bg-purple-400/40'
+                  }`}
+                >
+                  Pay with Link
+                </button>
+              </div>
+            </div>
+
             <Button 
-              onClick={handleSubscribe}
+              onClick={paymentMethod === 'direct' ? handleSubscribeDirectPayment : handleSubscribeWithLink}
               disabled={isLoading || isSubscribed}
               className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-10 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {isLoading ? (
-               <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Loading
-               </>
+                <>
+                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                   Loading
+                </>
               ) : isSubscribed ? (
-               '✓ Subscribed'
+                '✓ Subscribed'
               ) : (
-               'Subscribe Now'
+                'Subscribe Now'
               )}
             </Button>
             {!isSubscribed && (
