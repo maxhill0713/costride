@@ -416,39 +416,37 @@ export default function Home() {
         )}
 
         {/* Premium Upgrade Card */}
-        <Link to={createPageUrl('Premium')}>
-          <Card className="p-6 bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-900/80 backdrop-blur-sm border border-purple-600/40 text-white hover:border-purple-500/60 hover:shadow-lg hover:shadow-purple-500/20 transition-all cursor-pointer relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full -mr-20 -mt-20 blur-2xl" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                      <Crown className="w-4 h-4" />
-                    </div>
-                    <Badge className="bg-purple-500/30 text-purple-200 border border-purple-500/50 font-bold text-xs">
-                      PREMIUM
-                    </Badge>
-                    <Badge className="bg-amber-500 text-amber-950 font-bold text-[10px] px-2 py-0.5 animate-pulse">
-                      COMING SOON
-                    </Badge>
+        <Card className="p-6 bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-900/80 backdrop-blur-sm border border-purple-600/40 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full -mr-20 -mt-20 blur-2xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Crown className="w-4 h-4" />
                   </div>
+                  <Badge className="bg-purple-500/30 text-purple-200 border border-purple-500/50 font-bold text-xs">
+                    PREMIUM
+                  </Badge>
+                  <Badge className="bg-amber-500 text-amber-950 font-bold text-[10px] px-2 py-0.5 animate-pulse">
+                    COMING SOON
+                  </Badge>
                 </div>
               </div>
-              <h3 className="font-bold text-base mb-2">Unlock Exclusive Rewards</h3>
-              <p className="text-slate-300 text-xs mb-4 leading-relaxed">
-                Access to brand rewards
-              </p>
-              <div className="mb-5">
-                <div className="text-2xl font-bold text-white">£4.99<span className="text-sm text-slate-400 font-semibold">/month</span></div>
-              </div>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl">
-                Start Premium
-              </Button>
             </div>
-          </Card>
-        </Link>
+            <h3 className="font-bold text-base mb-2">Unlock Exclusive Rewards</h3>
+            <p className="text-slate-300 text-xs mb-4 leading-relaxed">
+              Access to brand rewards
+            </p>
+            <div className="mb-5">
+              <div className="text-2xl font-bold text-white">£4.99<span className="text-sm text-slate-400 font-semibold">/month</span></div>
+            </div>
+            <Button disabled className="w-full bg-gradient-to-r from-purple-600 to-pink-600 opacity-60 cursor-not-allowed text-white font-bold rounded-xl">
+              Coming Soon
+            </Button>
+          </div>
+        </Card>
 
         {/* Check-in Modal */}
         {showCheckIn && memberGym && (
