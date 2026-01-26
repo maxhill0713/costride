@@ -144,20 +144,38 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
             <Star className="w-5 h-5 text-slate-400" />
             Locked Badges ({lockedBadges.length})
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {lockedBadges.map((badge) => {
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {lockedBadges.map((badge, index) => {
               const Icon = badge.icon;
               return (
-                <Card key={badge.id} className="p-4 text-center bg-slate-900/40 backdrop-blur-xl border border-dashed border-slate-700/50 opacity-60">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-slate-700/50 flex items-center justify-center">
-                    <Icon className="w-8 h-8 text-slate-500" strokeWidth={2} />
-                  </div>
-                  <h4 className="font-bold text-slate-400 text-sm mb-1">{badge.title}</h4>
-                  <p className="text-xs text-slate-500">{badge.description}</p>
-                  <Badge className="mt-2 bg-slate-700/50 text-slate-400 border border-slate-600/50 text-xs">
-                    Locked 🔒
-                  </Badge>
-                </Card>
+                <motion.div
+                  key={badge.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <Card className="p-5 text-center bg-slate-900/60 backdrop-blur-xl border-2 border-dashed border-slate-600/40 relative overflow-hidden group cursor-not-allowed">
+                    {/* Silhouette effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50" />
+                    
+                    {/* Badge icon */}
+                    <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-slate-800/50 flex items-center justify-center shadow-lg ring-2 ring-slate-700/30 relative opacity-50">
+                      <Icon className="w-10 h-10 text-slate-500" strokeWidth={2} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-3xl opacity-60">🔒</span>
+                      </div>
+                    </div>
+                    
+                    <h4 className="font-bold text-slate-400 text-base mb-1 relative z-10">{badge.title}</h4>
+                    <p className="text-xs text-slate-500 font-medium relative z-10">{badge.description}</p>
+                    
+                    <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 shadow-lg relative z-10">
+                      <span className="text-xs font-semibold text-slate-400">Keep Going</span>
+                      <span className="text-sm">💪</span>
+                    </div>
+                  </Card>
+                </motion.div>
               );
             })}
           </div>
