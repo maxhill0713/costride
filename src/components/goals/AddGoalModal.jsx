@@ -74,10 +74,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
           <div className="space-y-1.5 md:space-y-2">
             <Label className="text-xs md:text-sm font-bold text-slate-300">Goal Type *</Label>
             <Select value={formData.goal_type} onValueChange={(value) => setFormData({ ...formData, goal_type: value, unit: value === 'numerical' ? 'lbs' : 'workouts' })}>
-              <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
+              <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/80 border-2 border-slate-500/60 text-white hover:border-blue-500/60 transition-colors">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent className="bg-slate-800 border-2 border-slate-600">
                 <SelectItem value="numerical">Numerical (e.g., lift 300 lbs)</SelectItem>
                 <SelectItem value="frequency">Frequency (e.g., 6 workouts per week)</SelectItem>
                 <SelectItem value="consistency">Consistency (e.g., 30 day streak)</SelectItem>
@@ -118,10 +118,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
               </Label>
               {formData.goal_type === 'numerical' ? (
                 <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/80 border-2 border-slate-500/60 text-white hover:border-blue-500/60 transition-colors">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectContent className="bg-slate-800 border-2 border-slate-600">
                     <SelectItem value="lbs">lbs</SelectItem>
                     <SelectItem value="kg">kg</SelectItem>
                     <SelectItem value="reps">reps</SelectItem>
@@ -129,10 +129,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                 </Select>
               ) : (
                 <Select value={formData.frequency_period} onValueChange={(value) => setFormData({ ...formData, frequency_period: value })}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/80 border-2 border-slate-500/60 text-white hover:border-blue-500/60 transition-colors">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectContent className="bg-slate-800 border-2 border-slate-600">
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="weekly">Weekly</SelectItem>
                     <SelectItem value="monthly">Monthly</SelectItem>
@@ -146,10 +146,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
             <div className="space-y-1.5 md:space-y-2">
               <Label className="text-xs md:text-sm font-bold text-slate-300">Exercise (Optional)</Label>
               <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-                <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
+                <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/80 border-2 border-slate-500/60 text-white hover:border-blue-500/60 transition-colors">
                   <SelectValue placeholder="Select exercise" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
+                <SelectContent className="bg-slate-800 border-2 border-slate-600">
                   <SelectItem value="bench_press">Bench Press</SelectItem>
                   <SelectItem value="squat">Squat</SelectItem>
                   <SelectItem value="deadlift">Deadlift</SelectItem>
