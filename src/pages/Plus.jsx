@@ -100,9 +100,9 @@ export default function Plus() {
             <Crown className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">
-            {t('plus.title')}
+            Gym Pro
           </h1>
-          <p className="text-sm text-slate-300">{t('plus.subtitle')}</p>
+          <p className="text-sm text-slate-300">Advanced tools to grow your gym</p>
         </div>
 
         {/* Pricing Cards */}
@@ -110,8 +110,8 @@ export default function Plus() {
           {/* Basic Plan */}
           <Card className="bg-slate-800/80 backdrop-blur-sm border-2 border-slate-600/50 p-4 hover:shadow-xl transition-all">
             <div className="text-center mb-3">
-              <h2 className="text-lg font-bold text-white mb-0.5">{t('plus.basic.title')}</h2>
-              <div className="text-2xl font-black text-white mb-0.5">{t('plus.basic.price')}</div>
+              <h2 className="text-lg font-bold text-white mb-0.5">Basic</h2>
+              <div className="text-2xl font-black text-white mb-0.5">Free</div>
               <p className="text-xs text-slate-300">Essential gym management</p>
             </div>
             
@@ -130,7 +130,7 @@ export default function Plus() {
               className="w-full h-9 rounded-lg font-bold border-2 border-slate-500 text-slate-200 hover:bg-slate-700 text-xs"
               disabled
             >
-              {isSubscribed ? t('plus.yourPlan') : t('plus.currentPlan')}
+              {isSubscribed ? 'Your Plan' : 'Current Plan'}
             </Button>
           </Card>
 
@@ -143,7 +143,7 @@ export default function Plus() {
             </div>
             
             <div className="text-center mb-4">
-              <h2 className="text-xl font-bold mb-2">{t('plus.pro.title')}</h2>
+              <h2 className="text-xl font-bold mb-2">Pro</h2>
               
               {/* Billing Toggle */}
               <div className="flex items-center justify-center gap-2 mb-3">
@@ -195,14 +195,14 @@ export default function Plus() {
               className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold h-10 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {isLoading ? (
-                <>
+               <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  {t('common.loading')}
-                </>
+                  Loading
+               </>
               ) : isSubscribed ? (
-                '✓ Subscribed'
+               '✓ Subscribed'
               ) : (
-                t('plus.subscribeNow')
+               'Subscribe Now'
               )}
             </Button>
             {!isSubscribed && (
