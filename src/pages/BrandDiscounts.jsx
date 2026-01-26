@@ -5,11 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle, CreditCard, ArrowLeft, Trophy, Target, Clock } from 'lucide-react';
+import { Gift, Tag, Calendar, CheckCircle, XCircle, AlertCircle, CreditCard, ArrowLeft, Trophy, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { format, differenceInDays } from 'date-fns';
-import { Progress } from '@/components/ui/progress';
 
 export default function BrandDiscounts() {
   const [redeemCode, setRedeemCode] = useState('');
@@ -170,104 +169,57 @@ export default function BrandDiscounts() {
                 {userChallenges.map((challenge) => {
                   const participant = challengeParticipants.find(cp => cp.challenge_id === challenge.id);
                   const progress = participant?.progress || 0;
-                  const progressPercentage = challenge.target_value ? Math.min((progress / challenge.target_value) * 100, 100) : 0;
+                  const progressPercentage = challenge.target_value ? (progress / challenge.target_value) * 100 : 0;
                   const daysLeft = challenge.end_date ? differenceInDays(new Date(challenge.end_date), new Date()) : 0;
                   
-                  // Calculate time progress for visual effect
-                  const startDate = new Date(challenge.start_date);
-                  const endDate = new Date(challenge.end_date);
-                  const totalDuration = endDate - startDate;
-                  const elapsed = new Date() - startDate;
-                  const timeProgress = Math.min((elapsed / totalDuration) * 100, 100);
-
                   return (
-                    <motion.div
-                      key={challenge.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 overflow-hidden">
-                        {/* Progress Background */}
-                        <div 
-                          className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 transition-all duration-500"
-                          style={{ width: `${timeProgress}%` }}
-                        />
-                        
-                        <div className="relative p-4">
-                          {/* Header */}
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-start gap-3 flex-1">
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                                <Trophy className="w-5 h-5 text-white" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-white text-base mb-1">{challenge.title}</h4>
-                                {challenge.description && (
-                                  <p className="text-sm text-slate-300 mb-2">{challenge.description}</p>
-                                )}
-                              </div>
-                            </div>
-                            {challenge.status === 'active' && (
-                              <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">
-                                Active
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Reward */}
-                          {challenge.reward && (
-                            <div className="flex items-center gap-2 mb-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2">
-                              <Gift className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-                              <span className="text-sm text-yellow-400 font-semibold">{challenge.reward}</span>
-                            </div>
+                    <Card key={challenge.id} className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 p-5">
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-bold text-white text-base">{challenge.title}</h4>
+                          {challenge.status === 'active' && (
+                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">
+                              Active
+                            </span>
                           )}
-                          
-                          {/* Progress Section */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-slate-400">Progress</span>
-                              <span className="font-bold text-white">
-                                {progress} / {challenge.target_value}
-                              </span>
-                            </div>
-                            
-                            <div className="relative">
-                              <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${progressPercentage}%` }}
-                                  transition={{ duration: 1, ease: "easeOut" }}
-                                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 relative"
-                                >
-                                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                                </motion.div>
-                              </div>
-                              <span className="absolute -top-6 right-0 text-xs font-bold text-purple-400">
-                                {Math.round(progressPercentage)}%
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Bottom Info */}
-                          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-700/50">
-                            <div className="flex items-center gap-1 text-xs text-slate-400">
-                              <Clock className="w-3 h-3 flex-shrink-0" />
-                              {daysLeft > 0 ? (
-                                <span className="font-semibold text-orange-400">{daysLeft} days left</span>
-                              ) : (
-                                <span className="font-semibold text-red-400">Ending soon</span>
-                              )}
-                            </div>
-                            {challenge.category && (
-                              <span className="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-full capitalize">
-                                {challenge.category.replace('_', ' ')}
-                              </span>
-                            )}
-                          </div>
                         </div>
-                      </Card>
-                    </motion.div>
+                        {challenge.description && (
+                          <p className="text-sm text-slate-300 mb-2">{challenge.description}</p>
+                        )}
+                        {challenge.reward && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <Gift className="w-4 h-4 text-yellow-400" />
+                            <span className="text-sm text-yellow-400 font-semibold">{challenge.reward}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-slate-400">Progress</span>
+                          <span className="text-xs font-semibold text-slate-200">
+                            {progress} / {challenge.target_value}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                            style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-slate-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {daysLeft > 0 ? `${daysLeft} days left` : 'Ending soon'}
+                        </div>
+                        {challenge.category && (
+                          <span className="capitalize">{challenge.category.replace('_', ' ')}</span>
+                        )}
+                      </div>
+                    </Card>
                   );
                 })}
               </div>
