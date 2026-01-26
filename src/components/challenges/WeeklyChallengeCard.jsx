@@ -40,14 +40,14 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       <Card className="bg-slate-800/50 backdrop-blur-sm border border-slate-600/40 rounded-xl p-5 hover:border-slate-500/60 hover:bg-slate-800/60 transition-all overflow-hidden relative group">
         {/* Timer Badge */}
         <div className="absolute top-4 right-4 z-10">
-          <Badge className={`text-xs font-semibold ${isExpired ? 'bg-slate-700/50 text-slate-400' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}`}>
+          <Badge className={`text-xs font-semibold ${isExpired ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' : 'bg-green-500/20 text-green-300 border border-green-500/40'}`}>
             <Clock className="w-3 h-3 mr-1" />
             {isExpired ? 'Ended' : `${daysLeft}d left`}
           </Badge>
         </div>
 
         <div className="flex items-start gap-4 mb-4 relative z-10">
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
+          <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg ${isExpired ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-green-500 to-emerald-600'}`}>
             <Trophy className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -71,7 +71,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+              className={`h-full rounded-full ${isExpired ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-green-500 to-emerald-500'}`}
             />
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
             <Button
               onClick={() => joinMutation.mutate()}
               disabled={joinMutation.isPending || isExpired}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-lg h-10 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full text-white font-semibold rounded-lg h-10 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${isExpired ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'}`}
             >
               {joinMutation.isPending ? 'Joining...' : isExpired ? 'Challenge Ended' : 'Join Challenge'}
             </Button>
