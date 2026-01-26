@@ -27,6 +27,17 @@ export default function CheckInButton({ gym }) {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', currentUser?.id],
+    queryFn: () => base44.entities.Subscription.filter({ 
+      user_id: currentUser.id,
+      status: 'active'
+    }),
+    enabled: !!currentUser
+  });
+
+  const isPremium = subscription && subscription.length > 0;
+
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gym?.id],
     queryFn: async () => {
@@ -130,10 +141,15 @@ export default function CheckInButton({ gym }) {
         console.error('Error updating goals:', error);
       }
 
-      // Show streak in toast
+      // Show streak in toast with premium bonus
       if (streak > 1) {
         toast.success(`✅ Checked in! You're on a ${streak}-day streak 🔥`, {
-          description: 'Keep it going! One day at a time.',
+          description: isPremium ? '+20 points (Premium 2x Bonus) 🌟' : '+10 points',
+          duration: 4000
+        });
+      } else if (isPremium) {
+        toast.success('✅ Checked in!', {
+          description: '+20 points (Premium 2x Bonus) 🌟',
           duration: 4000
         });
       }
@@ -399,7 +415,8 @@ export default function CheckInButton({ gym }) {
         gym_id: gym.id,
         gym_name: gym.name,
         check_in_date: new Date().toISOString(),
-        first_visit: checkIns.length === 0
+        first_visit: checkIns.length === 0,
+        points_earned: isPremium ? 20 : 10 // Double points for premium
       });
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {

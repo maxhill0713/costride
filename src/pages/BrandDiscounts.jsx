@@ -21,6 +21,17 @@ export default function BrandDiscounts() {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', currentUser?.id],
+    queryFn: () => base44.entities.Subscription.filter({ 
+      user_id: currentUser.id,
+      status: 'active'
+    }),
+    enabled: !!currentUser
+  });
+
+  const isPremium = subscription && subscription.length > 0;
+
   const { data: userCodes = [] } = useQuery({
     queryKey: ['brandDiscountCodes', currentUser?.id],
     queryFn: () => base44.entities.BrandDiscountCode.filter({ assigned_to: currentUser.id }),
@@ -277,6 +288,21 @@ export default function BrandDiscounts() {
 
           {/* Brand Rewards Tab */}
           <TabsContent value="brand-rewards">
+            {!isPremium ? (
+              <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-500/50 rounded-2xl p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Gift className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Premium Members Only</h3>
+                <p className="text-slate-300 mb-6">Unlock exclusive brand rewards, discounts, and free products with Premium</p>
+                <Button
+                  onClick={() => window.location.href = '/pages/Premium'}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl h-12 px-8"
+                >
+                  Upgrade to Premium
+                </Button>
+              </Card>
+            ) : (
 
         {/* Redeem Code Section */}
         <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 mb-6">
@@ -653,6 +679,7 @@ export default function BrandDiscounts() {
           <p className="text-sm md:text-base text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
         </Card>
         )}
+            )}
           </TabsContent>
         </Tabs>
       </div>

@@ -19,6 +19,17 @@ export default function RedeemReward() {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', currentUser?.id],
+    queryFn: () => base44.entities.Subscription.filter({ 
+      user_id: currentUser.id,
+      status: 'active'
+    }),
+    enabled: !!currentUser
+  });
+
+  const isPremium = subscription && subscription.length > 0;
+
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
@@ -86,7 +97,13 @@ export default function RedeemReward() {
     return { ...challenge, progress, participantCount: participants.length, targetValue };
   }).sort((a, b) => b.progress - a.progress);
 
-  const unclaimedRewards = rewards.filter(r => r.active && !claimedBonuses.find(cb => cb.reward_id === r.id));
+  // Filter rewards - only show premium_only rewards to premium users
+  const unclaimedRewards = rewards.filter(r => {
+    if (!r.active) return false;
+    if (claimedBonuses.find(cb => cb.reward_id === r.id)) return false;
+    if (r.premium_only && !isPremium) return false;
+    return true;
+  });
 
   // Convert completed challenges to claimable rewards
   const completedChallengeRewards = completedChallenges
@@ -307,7 +324,14 @@ export default function RedeemReward() {
                    <Card key={reward.id} className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-cyan-400/50 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
-                         <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
+                         <div className="flex items-center gap-2 mb-1">
+                           <h3 className="font-bold text-white text-sm md:text-base truncate">{reward.title}</h3>
+                           {reward.premium_only && (
+                             <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px]">
+                               👑 Premium
+                             </Badge>
+                           )}
+                         </div>
                          <p className="text-xs md:text-sm text-slate-400 mb-2 line-clamp-1">{reward.description}</p>
                          <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] md:text-xs inline-block">
                            {reward.type}
