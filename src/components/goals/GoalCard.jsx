@@ -56,22 +56,26 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
   };
 
   return (
-    <Card className={`p-5 border-2 ${isCompleted ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'}`}>
+    <Card className={`p-5 rounded-2xl backdrop-blur-md border ${
+      isCompleted 
+        ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/30 border-green-500/40' 
+        : 'bg-gradient-to-br from-slate-800/60 to-slate-900/60 border-slate-600/40'
+    }`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-900' : 'text-gray-900'}`}>
+            <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
               {goal.title}
             </h3>
             {isCompleted && (
-              <CheckCircle2 className="w-5 h-5 text-green-500" />
+              <CheckCircle2 className="w-5 h-5 text-green-400" />
             )}
           </div>
           {goal.description && (
-            <p className="text-sm text-gray-600 mb-2">{goal.description}</p>
+            <p className="text-sm text-slate-300 mb-2">{goal.description}</p>
           )}
           {goal.exercise && (
-            <Badge className="capitalize text-xs">{goal.exercise.replace('_', ' ')}</Badge>
+            <Badge className="capitalize text-xs bg-blue-500/20 text-blue-300 border border-blue-500/40">{goal.exercise.replace('_', ' ')}</Badge>
           )}
         </div>
         <div className="flex gap-1">
@@ -79,7 +83,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
             variant="ghost"
             size="icon"
             onClick={() => onToggleReminder(goal)}
-            className={goal.reminder_enabled ? 'text-blue-500' : 'text-gray-400'}
+            className={goal.reminder_enabled ? 'text-blue-400 hover:bg-blue-500/20' : 'text-slate-500 hover:bg-slate-700/50'}
           >
             {goal.reminder_enabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
           </Button>
@@ -87,7 +91,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
             variant="ghost"
             size="icon"
             onClick={() => onDelete(goal.id)}
-            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
@@ -97,21 +101,21 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
       <div className="space-y-3">
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-700 font-medium">
+            <span className="text-slate-200 font-medium">
               {getGoalDisplay()}
             </span>
-            <span className="text-gray-500 font-bold">{Math.round(progress)}%</span>
+            <span className="text-slate-400 font-bold">{Math.round(progress)}%</span>
           </div>
-          <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-slate-700/50 rounded-full overflow-hidden">
             <div 
-              className={`h-full ${isCompleted ? 'bg-green-500' : 'bg-gradient-to-r from-blue-400 to-purple-500'}`}
+              className={`h-full ${isCompleted ? 'bg-green-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'}`}
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {goal.deadline && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-slate-300">
             <Calendar className="w-4 h-4" />
             <span>Deadline: {format(new Date(goal.deadline), 'MMM d, yyyy')}</span>
           </div>
@@ -125,7 +129,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                   type="number"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  className="rounded-xl"
+                  className="rounded-xl bg-slate-700/50 border-slate-600/50 text-white"
                   step={increment}
                 />
                 <Button
@@ -142,7 +146,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                     setIsEditing(false);
                     setEditValue(goal.current_value);
                   }}
-                  className="rounded-xl"
+                  className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50"
                 >
                   Cancel
                 </Button>
@@ -154,14 +158,14 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                     size="sm"
                     variant="outline"
                     onClick={() => handleQuickUpdate(-increment)}
-                    className="rounded-xl"
+                    className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50"
                   >
                     <Minus className="w-3 h-3" />
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => handleQuickUpdate(increment)}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl font-semibold"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-semibold shadow-lg"
                   >
                     <Plus className="w-4 h-4 mr-1" />
                     Add {increment} {goal.unit || ''}
@@ -170,7 +174,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                     size="sm"
                     variant="outline"
                     onClick={() => setIsEditing(true)}
-                    className="rounded-xl"
+                    className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50"
                   >
                     <Edit3 className="w-3 h-3" />
                   </Button>
@@ -182,7 +186,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                       const updatedMilestones = goal.milestones?.map(m => ({ ...m, reached: true })) || [];
                       onUpdate(goal, goal.current_value, 'completed', updatedMilestones);
                     }}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white rounded-xl"
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1" />
                     Mark Complete
