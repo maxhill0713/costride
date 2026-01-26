@@ -303,7 +303,7 @@ export default function BrandDiscounts() {
                 </Button>
               </Card>
             ) : (
-
+              <>
         {/* Redeem Code Section */}
         <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
@@ -679,6 +679,7 @@ export default function BrandDiscounts() {
           <p className="text-sm md:text-base text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
         </Card>
         )}
+              </>
           )}
           </TabsContent>
         </Tabs>
