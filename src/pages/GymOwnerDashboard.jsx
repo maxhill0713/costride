@@ -176,6 +176,7 @@ export default function GymOwnerDashboard() {
   const [showManageEquipment, setShowManageEquipment] = useState(false);
   const [showManageAmenities, setShowManageAmenities] = useState(false);
   const [showEditBasicInfo, setShowEditBasicInfo] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser, refetch: refetchUser } = useQuery({
@@ -425,6 +426,15 @@ export default function GymOwnerDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
+    }
+  });
+
+  const deleteGymMutation = useMutation({
+    mutationFn: () => base44.entities.Gym.delete(selectedGym.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setShowDeleteConfirm(false);
+      window.location.href = createPageUrl('Gyms');
     }
   });
 
@@ -1547,6 +1557,24 @@ export default function GymOwnerDashboard() {
                 </Link>
               </div>
             </Card>
+
+            {/* Delete Gym */}
+            <Card className="p-6 bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-700/50">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red-400" />
+                Delete Gym
+              </h3>
+              <p className="text-slate-300 text-sm mb-4">
+                Permanently delete this gym and all associated data. This action cannot be undone.
+              </p>
+              <Button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Gym
+              </Button>
+            </Card>
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
@@ -2457,6 +2485,40 @@ export default function GymOwnerDashboard() {
           onSave={(data) => updateGymMutation.mutate(data)}
           isLoading={updateGymMutation.isPending}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent className="bg-slate-900 border border-red-700/50">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
+                <Trash2 className="w-6 h-6 text-red-400" />
+                Delete Gym Permanently?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-300">
+                This will permanently delete <span className="font-bold text-white">{selectedGym?.name}</span> and all associated data including:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>All check-in history</li>
+                  <li>Rewards and classes</li>
+                  <li>Events and challenges</li>
+                  <li>Member relationships</li>
+                </ul>
+                <p className="mt-3 font-bold text-red-400">This action cannot be undone.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteGymMutation.mutate()}
+                disabled={deleteGymMutation.isPending}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleteGymMutation.isPending ? 'Deleting...' : 'Delete Permanently'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* QR Code Fullscreen Modal */}
         {showQRCodeModal && (
