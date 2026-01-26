@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Flame, Calendar, Target, Users, TrendingUp, Award, Crown, Star, Zap } from 'lucide-react';
+import { Trophy, Flame, Calendar, Target, Users, TrendingUp, Award, Crown, Star, Zap, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
 const BADGE_LIBRARY = [
   {
@@ -76,6 +77,8 @@ const BADGE_LIBRARY = [
 ];
 
 export default function BadgesDisplay({ user, checkIns = [] }) {
+  const [equippedBadges, setEquippedBadges] = React.useState(user?.equipped_badges || []);
+  
   // Calculate stats from actual data
   const userStats = {
     total_check_ins: checkIns.length,
@@ -87,8 +90,62 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
   const earnedBadges = BADGE_LIBRARY.filter(badge => badge.requirement(userStats));
   const lockedBadges = BADGE_LIBRARY.filter(badge => !badge.requirement(userStats));
 
+  const handleEquipBadge = async (badgeId) => {
+    let newEquipped = [...equippedBadges];
+    
+    if (newEquipped.includes(badgeId)) {
+      // Unequip
+      newEquipped = newEquipped.filter(id => id !== badgeId);
+    } else {
+      // Equip (max 3)
+      if (newEquipped.length >= 3) {
+        newEquipped.shift(); // Remove oldest
+      }
+      newEquipped.push(badgeId);
+    }
+    
+    setEquippedBadges(newEquipped);
+    await base44.auth.updateMe({ equipped_badges: newEquipped });
+  };
+
+  const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
+
   return (
     <div className="space-y-6">
+      {/* Equipped Badges Showcase */}
+      {equippedBadgeDetails.length > 0 && (
+        <Card className="p-6 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border-2 border-amber-400/50 shadow-2xl">
+          <h3 className="text-xl font-black text-amber-300 mb-4 flex items-center gap-2">
+            <Crown className="w-6 h-6 text-amber-400" />
+            Showcase (Max 3)
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            {equippedBadgeDetails.map((badge) => {
+              const Icon = badge.icon;
+              return (
+                <motion.div
+                  key={badge.id}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className={`relative p-4 rounded-2xl bg-gradient-to-br ${badge.color} border-2 border-white/40 shadow-2xl`}
+                >
+                  <div className="absolute top-2 right-2 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center shadow-lg">
+                    <Check className="w-4 h-4 text-amber-900" strokeWidth={3} />
+                  </div>
+                  <div className="w-14 h-14 mx-auto mb-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-xl ring-2 ring-white/40">
+                    <Icon className="w-7 h-7 text-white drop-shadow-2xl" strokeWidth={2.5} />
+                  </div>
+                  <h4 className="font-black text-white text-xs text-center drop-shadow-lg line-clamp-1">{badge.title}</h4>
+                </motion.div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-amber-200/80 text-center mt-3 font-medium">
+            ✨ Click badges below to equip/unequip them
+          </p>
+        </Card>
+      )}
+
       {/* Earned Badges */}
       {earnedBadges.length > 0 && (
         <div>
@@ -99,6 +156,7 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {earnedBadges.map((badge, index) => {
               const Icon = badge.icon;
+              const isEquipped = equippedBadges.includes(badge.id);
               return (
                 <motion.div
                   key={badge.id}
@@ -107,8 +165,16 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
                   transition={{ delay: index * 0.1, duration: 0.5, type: "spring" }}
                   whileHover={{ scale: 1.05, rotate: 2 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => handleEquipBadge(badge.id)}
                 >
-                  <Card className={`p-5 text-center bg-gradient-to-br ${badge.color} border-2 border-white/30 hover:border-white/60 shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden group cursor-pointer`}>
+                  <Card className={`p-5 text-center bg-gradient-to-br ${badge.color} border-2 ${isEquipped ? 'border-amber-400 ring-4 ring-amber-400/50' : 'border-white/30 hover:border-white/60'} shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden group cursor-pointer`}>
+                    {/* Equipped indicator */}
+                    {isEquipped && (
+                      <div className="absolute top-2 right-2 w-7 h-7 bg-amber-400 rounded-full flex items-center justify-center shadow-lg z-20 animate-pulse">
+                        <Check className="w-4 h-4 text-amber-900" strokeWidth={3} />
+                      </div>
+                    )}
+                    
                     {/* Sparkle effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     
@@ -126,8 +192,8 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
                     <p className="text-xs text-white/90 font-medium drop-shadow">{badge.description}</p>
                     
                     <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/30 backdrop-blur-sm border border-white/40 shadow-lg">
-                      <span className="text-xs font-bold text-white drop-shadow">Unlocked</span>
-                      <span className="text-sm">✨</span>
+                      <span className="text-xs font-bold text-white drop-shadow">{isEquipped ? 'Equipped' : 'Tap to Equip'}</span>
+                      <span className="text-sm">{isEquipped ? '⭐' : '✨'}</span>
                     </div>
                   </Card>
                 </motion.div>
