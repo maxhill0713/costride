@@ -605,7 +605,7 @@ export default function GymOwnerDashboard() {
               <Button 
                 onClick={() => base44.auth.logout()} 
                 variant="outline" 
-                className="border-2 h-12 px-4 md:px-6 text-red-500 hover:bg-red-50 border-red-300"
+                className="border-2 h-12 px-4 md:px-6 w-full sm:w-auto text-red-500 hover:bg-red-50 border-red-300"
               >
                 Log out
               </Button>
