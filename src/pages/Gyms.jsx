@@ -42,7 +42,7 @@ export default function Gyms() {
     enabled: !!currentUser
   });
 
-  const { data: gyms = [] } = useQuery({
+  const { data: gyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
     queryFn: () => base44.entities.Gym.list()
   });
@@ -456,7 +456,12 @@ export default function Gyms() {
             </div>
 
             {/* Gyms Grid */}
-            {filteredGyms.length === 0 ? (
+            {gymsLoading ? (
+              <div className="text-center py-12">
+                <div className="w-12 h-12 mx-auto mb-3 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin" />
+                <p className="text-slate-400">Loading gyms...</p>
+              </div>
+            ) : filteredGyms.length === 0 ? (
               <div className="text-center py-12">
                 <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                 <p className="text-slate-400">No gyms found</p>
