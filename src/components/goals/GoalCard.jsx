@@ -231,99 +231,88 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
 
         {!isCompleted && (
           <div className="space-y-2">
-            {isEditing ? (
-              <div className="bg-slate-900/40 border border-slate-700/50 rounded-xl p-3">
-                <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Set Value</label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="rounded-xl bg-slate-700/50 border-slate-600/50 text-white"
-                    step={increment}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleManualUpdate}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-semibold"
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditValue(goal.current_value);
-                    }}
-                    className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+            {/* Auto-updated goals (consistency/frequency) - no manual controls */}
+            {(goal.goal_type === 'consistency' || goal.goal_type === 'frequency') ? (
+              <div className="bg-slate-900/40 border border-slate-700/50 rounded-xl p-4 text-center">
+                <Zap className="w-8 h-8 mx-auto mb-2 text-cyan-400" />
+                <p className="text-sm text-slate-400 font-semibold">
+                  Auto-tracked from check-ins
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Keep checking in at your gym to progress!
+                </p>
               </div>
             ) : (
-              <>
-                {/* Quick Actions */}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleQuickUpdate(-increment)}
-                    className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50 px-3"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleQuickUpdate(increment)}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-bold shadow-lg"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add {increment} {goal.unit || ''}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                    className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50 px-3"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                  </Button>
-                </div>
-                
-                {/* Quick Milestone Buttons */}
-                {progress < 100 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {[25, 50, 75].filter(p => p > progress).slice(0, 3).map(percent => (
-                      <Button
-                        key={percent}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleQuickSetPercent(percent)}
-                        className="rounded-lg border-slate-600/50 text-slate-400 hover:bg-slate-700/50 hover:text-cyan-400 text-xs font-semibold"
-                      >
-                        → {percent}%
-                      </Button>
-                    ))}
+              /* Manual update for numerical goals */
+              isEditing ? (
+                <div className="bg-slate-900/40 border border-slate-700/50 rounded-xl p-3">
+                  <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Set Value</label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="rounded-xl bg-slate-700/50 border-slate-600/50 text-white"
+                      step={increment}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleManualUpdate}
+                      className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-semibold"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditValue(goal.current_value);
+                      }}
+                      className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50"
+                    >
+                      Cancel
+                    </Button>
                   </div>
-                )}
-                
-                {progress >= 100 && (
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-                      const updatedMilestones = goal.milestones?.map(m => ({ ...m, reached: true })) || [];
-                      onUpdate(goal, goal.current_value, 'completed', updatedMilestones);
-                    }}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg font-bold text-sm h-11"
-                  >
-                    <CheckCircle2 className="w-5 h-5 mr-2" />
-                    Mark Complete 🎉
-                  </Button>
-                )}
-              </>
+                </div>
+              ) : (
+                <>
+                  {/* Quick Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleQuickUpdate(increment)}
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-bold shadow-lg"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add {increment} {goal.unit || ''}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsEditing(true)}
+                      className="rounded-xl border-slate-600 text-slate-300 hover:bg-slate-700/50 px-3"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </>
+              )
+            )}
+            
+            {progress >= 100 && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                  const updatedMilestones = goal.milestones?.map(m => ({ ...m, reached: true })) || [];
+                  onUpdate(goal, goal.current_value, 'completed', updatedMilestones);
+                }}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg font-bold text-sm h-11"
+              >
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+                Mark Complete 🎉
+              </Button>
             )}
           </div>
         )}
