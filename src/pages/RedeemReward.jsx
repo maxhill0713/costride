@@ -32,11 +32,10 @@ export default function RedeemReward() {
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' })
   });
 
-  // Filter to only show challenges from gyms the user is a member of, and where they are a participant
+  // Show all challenges where the user is a participant (from any source - home, gym, etc.)
   const challenges = allChallenges.filter(challenge => {
-    const isFromUserGym = gymIds.includes(challenge.gym_id) || challenge.is_app_challenge;
     const isParticipant = challenge.participants?.includes(currentUser?.id);
-    return isFromUserGym && isParticipant;
+    return isParticipant;
   });
 
   const { data: completedChallenges = [] } = useQuery({
