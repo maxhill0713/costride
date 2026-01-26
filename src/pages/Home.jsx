@@ -330,27 +330,25 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-3">
           <Card 
             onClick={() => setShowJoinModal(true)}
-            className="p-5 bg-gradient-to-br from-slate-950/95 via-green-950/40 to-slate-950/95 backdrop-blur-sm border-2 border-green-600/50 text-slate-300 hover:border-green-500/80 hover:shadow-xl hover:shadow-green-600/20 transition-all cursor-pointer group relative overflow-hidden"
+            className="p-4 bg-slate-800/50 backdrop-blur-sm border border-slate-600/30 hover:bg-slate-800/70 hover:border-slate-500/50 transition-all cursor-pointer"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 via-transparent to-green-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative z-10">
-              <div className="w-10 h-10 mb-3 bg-gradient-to-br from-green-500 via-green-600 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-green-600/50">
-                <CheckCircle className="w-5 h-5 text-black" />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-white" />
               </div>
-              <h3 className="font-black text-sm mb-1 text-white tracking-tight">Join with Code</h3>
-              <p className="text-xs text-slate-400">Instant gym access</p>
+              <h3 className="font-semibold text-sm text-slate-100">Join with Code</h3>
             </div>
+            <p className="text-xs text-slate-400 ml-13">Enter your gym's code</p>
           </Card>
           <Link to={createPageUrl('Gyms')}>
-            <Card className="p-5 bg-gradient-to-br from-slate-950/95 via-yellow-950/30 to-slate-950/95 backdrop-blur-sm border-2 border-yellow-600/40 text-slate-300 hover:border-yellow-500/60 hover:shadow-xl hover:shadow-yellow-600/20 transition-all cursor-pointer group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/5 via-transparent to-yellow-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10">
-                <div className="w-10 h-10 mb-3 bg-gradient-to-br from-yellow-500 via-yellow-600 to-amber-700 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-600/50">
-                  <Trophy className="w-5 h-5 text-black" />
+            <Card className="p-4 bg-slate-800/50 backdrop-blur-sm border border-slate-600/30 hover:bg-slate-800/70 hover:border-slate-500/50 transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="font-black text-sm mb-1 text-white tracking-tight">View Gyms</h3>
-                <p className="text-xs text-slate-400">Explore communities</p>
+                <h3 className="font-semibold text-sm text-slate-100">View Gyms</h3>
               </div>
+              <p className="text-xs text-slate-400 ml-13">Explore communities</p>
             </Card>
           </Link>
         </div>
