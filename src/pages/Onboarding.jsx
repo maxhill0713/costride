@@ -31,18 +31,17 @@ export default function Onboarding() {
   const selectAccountTypeMutation = useMutation({
     mutationFn: (accountType) => base44.auth.updateMe({
       account_type: accountType
-    }),
-    onSuccess: (_, accountType) => {
-      if (accountType === 'gym_owner') {
-        navigate(createPageUrl('GymSignup'));
-      } else {
-        navigate(createPageUrl('MemberSignup'));
-      }
-    }
+    })
   });
 
   const handleSelectType = (typeId) => {
     selectAccountTypeMutation.mutate(typeId);
+    // Navigate immediately
+    if (typeId === 'gym_owner') {
+      navigate(createPageUrl('GymSignup'));
+    } else {
+      navigate(createPageUrl('MemberSignup'));
+    }
   };
 
   return (
