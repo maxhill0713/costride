@@ -56,7 +56,7 @@ export default function GymSignup() {
       
       // Auto-detect language based on city if not set
       const gymLanguage = data.language || detectLanguageFromCity(data.city);
-      return base44.entities.Gym.create({
+      const gym = await base44.entities.Gym.create({
         ...data,
         language: gymLanguage,
         owner_email: user.email,
@@ -64,9 +64,24 @@ export default function GymSignup() {
         rating: 0,
         members_count: 0
       });
+
+      // Create gym membership for the owner
+      await base44.entities.GymMembership.create({
+        user_id: user.id,
+        user_name: user.full_name,
+        user_email: user.email,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        status: 'active',
+        join_date: new Date().toISOString().split('T')[0],
+        membership_type: 'lifetime'
+      });
+
+      return gym;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       setSubmitted(true);
       toast.success('Your gym has been registered!');
     },
