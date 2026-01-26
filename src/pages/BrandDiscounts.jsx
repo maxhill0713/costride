@@ -679,7 +679,7 @@ export default function BrandDiscounts() {
           <p className="text-sm md:text-base text-slate-300 mb-4">You don't have any discount codes. Enter a code above to get started!</p>
         </Card>
         )}
-            )}
+          )}
           </TabsContent>
         </Tabs>
       </div>
