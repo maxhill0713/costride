@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -1006,27 +1006,31 @@ export default function Profile() {
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">!</span>
+            <Card className="bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
+                  <LogOut className="w-6 h-6 text-red-400" />
                 </div>
                 <div>
-                    <h3 className="text-base font-bold text-red-900">Danger Zone</h3>
-                    <p className="text-sm text-red-700">Irreversible actions</p>
-                  </div>
+                  <h3 className="text-lg font-semibold text-white">Account & Session</h3>
+                  <p className="text-sm text-slate-300">Manage your login session</p>
                 </div>
+              </div>
+
+              <div className="space-y-3">
                 <Button 
-                  variant="outline" 
-                  className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 rounded-2xl font-semibold"
+                  className="w-full bg-red-600 hover:bg-red-700 text-white rounded-2xl font-semibold h-10 flex items-center gap-2"
                   onClick={() => {
                     if (confirm('Are you sure you want to logout?')) {
                       base44.auth.logout();
                     }
                   }}
                 >
+                  <LogOut className="w-4 h-4" />
                   Logout
                 </Button>
+                <p className="text-xs text-slate-400 text-center">You will be logged out from all sessions</p>
+              </div>
             </Card>
           </TabsContent>
         </Tabs>
