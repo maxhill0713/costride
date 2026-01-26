@@ -37,17 +37,17 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 hover:border-purple-400/50 transition-all overflow-hidden relative">
+      <Card className="bg-gradient-to-br from-orange-900/40 to-red-900/40 backdrop-blur-md border border-orange-500/30 rounded-2xl p-4 hover:border-orange-400/50 transition-all overflow-hidden relative">
         {/* Timer Badge */}
         <div className="absolute top-3 right-3">
-          <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs">
+          <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs">
             <Clock className="w-3 h-3 mr-1" />
             {isExpired ? 'Expired' : `${daysLeft}d left`}
           </Badge>
         </div>
 
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
             <Trophy className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -63,7 +63,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               <Target className="w-3 h-3" />
               Community Progress
             </span>
-            <span className="text-xs font-bold text-purple-300">
+            <span className="text-xs font-bold text-orange-300">
               {participantCount}/{targetValue}
             </span>
           </div>
@@ -72,7 +72,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.8 }}
-              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+              className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
             />
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           <div className="text-2xl">🏅</div>
           <div className="flex-1 min-w-0">
             <p className="text-xs text-slate-400">Complete to earn</p>
-            <p className="text-xs font-bold text-purple-300">{challenge.reward || 'Weekly Warrior Badge'}</p>
+            <p className="text-xs font-bold text-orange-300">{challenge.reward || 'Weekly Warrior Badge'}</p>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           <Button
             onClick={() => joinMutation.mutate()}
             disabled={joinMutation.isPending || isExpired}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-lg h-9"
+            className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-lg h-9"
           >
             {joinMutation.isPending ? 'Joining...' : isExpired ? 'Expired' : 'Join Challenge'}
           </Button>
