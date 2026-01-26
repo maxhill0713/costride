@@ -77,10 +77,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
               <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                <SelectItem value="numerical">Numerical (e.g., lift 300 lbs)</SelectItem>
-                <SelectItem value="frequency">Frequency (e.g., 6 workouts per week)</SelectItem>
-                <SelectItem value="consistency">Consistency (e.g., 30 day streak)</SelectItem>
+              <SelectContent className="bg-slate-800 border-slate-600 text-white">
+                <SelectItem value="numerical" className="text-white font-semibold">Numerical (e.g., lift 300 lbs)</SelectItem>
+                <SelectItem value="frequency" className="text-white font-semibold">Frequency (e.g., 6 workouts per week)</SelectItem>
+                <SelectItem value="consistency" className="text-white font-semibold">Consistency (e.g., 30 day streak)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -121,10 +121,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                   <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
-                    <SelectItem value="lbs">lbs</SelectItem>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="reps">reps</SelectItem>
+                  <SelectContent className="bg-slate-800 border-slate-600 text-white">
+                    <SelectItem value="lbs" className="text-white font-semibold">lbs</SelectItem>
+                    <SelectItem value="kg" className="text-white font-semibold">kg</SelectItem>
+                    <SelectItem value="reps" className="text-white font-semibold">reps</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
@@ -132,10 +132,10 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                   <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectContent className="bg-slate-800 border-slate-600 text-white">
+                    <SelectItem value="daily" className="text-white font-semibold">Daily</SelectItem>
+                    <SelectItem value="weekly" className="text-white font-semibold">Weekly</SelectItem>
+                    <SelectItem value="monthly" className="text-white font-semibold">Monthly</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -149,13 +149,13 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                 <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
                   <SelectValue placeholder="Select exercise" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="bench_press">Bench Press</SelectItem>
-                  <SelectItem value="squat">Squat</SelectItem>
-                  <SelectItem value="deadlift">Deadlift</SelectItem>
-                  <SelectItem value="overhead_press">Overhead Press</SelectItem>
-                  <SelectItem value="barbell_row">Barbell Row</SelectItem>
-                  <SelectItem value="power_clean">Power Clean</SelectItem>
+                <SelectContent className="bg-slate-800 border-slate-600 text-white">
+                  <SelectItem value="bench_press" className="text-white font-semibold">Bench Press</SelectItem>
+                  <SelectItem value="squat" className="text-white font-semibold">Squat</SelectItem>
+                  <SelectItem value="deadlift" className="text-white font-semibold">Deadlift</SelectItem>
+                  <SelectItem value="overhead_press" className="text-white font-semibold">Overhead Press</SelectItem>
+                  <SelectItem value="barbell_row" className="text-white font-semibold">Barbell Row</SelectItem>
+                  <SelectItem value="power_clean" className="text-white font-semibold">Power Clean</SelectItem>
                 </SelectContent>
               </Select>
             </div>
