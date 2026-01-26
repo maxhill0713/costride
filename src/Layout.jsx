@@ -84,13 +84,13 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
               </Link>
-            );
-            })}
-            </div>
-            </nav>
-            )}
+              );
+              })}
+              </div>
+              </nav>
+              )}
 
-            {/* Side Navigation for Desktop */}
+              {/* Side Navigation for Desktop */}
             {!hideNavigation && (
             <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8">
