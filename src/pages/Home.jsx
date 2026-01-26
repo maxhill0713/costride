@@ -38,9 +38,9 @@ export default function Home() {
     ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
     : null;
 
-  // Redirect to onboarding if not completed
+  // Redirect to onboarding if not completed and no account_type set
   useEffect(() => {
-    if (currentUser && !currentUser.onboarding_completed) {
+    if (currentUser && !currentUser.account_type) {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser, navigate]);
