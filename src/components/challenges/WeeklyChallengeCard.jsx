@@ -34,73 +34,80 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ scale: 1.02, y: -4 }}
+      transition={{ duration: 0.3 }}
     >
-      <Card className="bg-gradient-to-br from-black/80 to-yellow-900/40 backdrop-blur-md border border-yellow-600/40 rounded-2xl p-4 hover:border-yellow-500/60 transition-all overflow-hidden relative">
+      <Card className="bg-gradient-to-br from-slate-950/95 via-yellow-950/30 to-slate-950/95 backdrop-blur-md border-2 border-yellow-600/50 rounded-2xl p-5 hover:border-yellow-500/80 hover:shadow-2xl hover:shadow-yellow-600/20 transition-all overflow-hidden relative group">
+        {/* Glow Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/5 via-transparent to-yellow-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
         {/* Timer Badge */}
-        <div className="absolute top-3 right-3">
-          <Badge className="bg-yellow-600/20 text-yellow-400 border border-yellow-600/40 text-xs">
+        <div className="absolute top-3 right-3 z-10">
+          <Badge className="bg-yellow-600/30 text-yellow-300 border border-yellow-600/60 text-xs font-bold shadow-lg backdrop-blur-sm">
             <Clock className="w-3 h-3 mr-1" />
             {isExpired ? 'Expired' : `${daysLeft}d left`}
           </Badge>
         </div>
 
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-yellow-600 to-amber-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-            <Trophy className="w-6 h-6 text-black" />
+        <div className="flex items-start gap-4 mb-4 relative z-10">
+          <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 via-yellow-600 to-amber-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xl shadow-yellow-600/50 border border-yellow-500/30">
+            <Trophy className="w-7 h-7 text-black" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-white text-base mb-1 pr-20">{challenge.title}</h3>
-            <p className="text-xs text-slate-400 line-clamp-2">{challenge.description}</p>
+            <h3 className="font-black text-white text-base mb-1.5 pr-20 tracking-tight">{challenge.title}</h3>
+            <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{challenge.description}</p>
           </div>
         </div>
 
         {/* Progress */}
-        <div className="mb-3">
+        <div className="mb-4 relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <Target className="w-3 h-3" />
+            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
+              <Target className="w-3.5 h-3.5" />
               Community Progress
             </span>
-            <span className="text-xs font-bold text-yellow-400">
+            <span className="text-sm font-black text-yellow-400 tabular-nums">
               {participantCount}/{targetValue}
             </span>
           </div>
-          <div className="h-2 bg-black/50 rounded-full overflow-hidden">
+          <div className="h-3 bg-black/70 rounded-full overflow-hidden border border-yellow-900/40 shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.8 }}
-              className="h-full bg-gradient-to-r from-yellow-600 to-amber-500 rounded-full"
-            />
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-yellow-500 via-yellow-600 to-amber-600 rounded-full relative shadow-lg shadow-yellow-600/50"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/20 to-transparent" />
+            </motion.div>
           </div>
         </div>
 
         {/* Badge Reward */}
-        <div className="bg-black/50 border border-yellow-700/50 rounded-lg p-2 mb-3 flex items-center gap-2">
-          <div className="text-2xl">🏅</div>
+        <div className="bg-gradient-to-r from-black/80 via-yellow-900/20 to-black/80 border-2 border-yellow-700/50 rounded-xl p-3 mb-4 flex items-center gap-3 relative z-10 shadow-lg">
+          <div className="text-3xl">🏅</div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-slate-400">Complete to earn</p>
-            <p className="text-xs font-bold text-yellow-400">{challenge.reward || 'Weekly Warrior Badge'}</p>
+            <p className="text-[10px] text-yellow-600 font-bold uppercase tracking-wide mb-0.5">Reward</p>
+            <p className="text-sm font-black text-yellow-400 leading-tight">{challenge.reward || 'Weekly Warrior Badge'}</p>
           </div>
         </div>
 
         {/* Action Button */}
-        {isParticipant ? (
-          <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-semibold py-2">
-            <CheckCircle className="w-4 h-4" />
-            Joined
-          </div>
-        ) : (
-          <Button
-            onClick={() => joinMutation.mutate()}
-            disabled={joinMutation.isPending || isExpired}
-            className="w-full bg-gradient-to-r from-black to-yellow-600 hover:from-black hover:to-yellow-700 text-yellow-400 font-bold rounded-lg h-9 border border-yellow-600/40"
-          >
-            {joinMutation.isPending ? 'Joining...' : isExpired ? 'Expired' : 'Join Challenge'}
-          </Button>
-        )}
+        <div className="relative z-10">
+          {isParticipant ? (
+            <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-bold py-3 bg-green-950/30 border-2 border-green-600/40 rounded-xl">
+              <CheckCircle className="w-5 h-5" />
+              Joined Challenge
+            </div>
+          ) : (
+            <Button
+              onClick={() => joinMutation.mutate()}
+              disabled={joinMutation.isPending || isExpired}
+              className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:via-yellow-400 hover:to-yellow-500 text-black font-black rounded-xl h-11 border-2 border-yellow-400/50 shadow-xl shadow-yellow-600/30 hover:shadow-yellow-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {joinMutation.isPending ? 'Joining...' : isExpired ? 'Expired' : 'Join Challenge'}
+            </Button>
+          )}
+        </div>
       </Card>
     </motion.div>
   );
