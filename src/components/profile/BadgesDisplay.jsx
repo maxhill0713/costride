@@ -96,20 +96,41 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
             <Trophy className="w-5 h-5 text-yellow-400" />
             Earned Badges ({earnedBadges.length})
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {earnedBadges.map((badge) => {
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {earnedBadges.map((badge, index) => {
               const Icon = badge.icon;
               return (
-                <Card key={badge.id} className="p-4 text-center bg-slate-800/40 backdrop-blur-xl border border-amber-500/50 hover:border-amber-400/70 hover:shadow-xl hover:shadow-amber-500/30 transition-all">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-600 to-yellow-600 flex items-center justify-center shadow-xl shadow-amber-500/50 ring-2 ring-amber-400/30">
-                    <Icon className="w-8 h-8 text-white drop-shadow-lg" strokeWidth={2.5} />
-                  </div>
-                  <h4 className="font-bold text-amber-300 text-sm mb-1">{badge.title}</h4>
-                  <p className="text-xs text-slate-400">{badge.description}</p>
-                  <Badge className="mt-2 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs shadow-sm shadow-amber-500/20">
-                    Earned ✓
-                  </Badge>
-                </Card>
+                <motion.div
+                  key={badge.id}
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.5, type: "spring" }}
+                  whileHover={{ scale: 1.05, rotate: 2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Card className={`p-5 text-center bg-gradient-to-br ${badge.color} border-2 border-white/30 hover:border-white/60 shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden group cursor-pointer`}>
+                    {/* Sparkle effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                    
+                    {/* Badge icon */}
+                    <motion.div 
+                      className="w-20 h-20 mx-auto mb-3 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl ring-4 ring-white/40 relative"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse" />
+                      <Icon className="w-10 h-10 text-white drop-shadow-2xl z-10" strokeWidth={2.5} />
+                    </motion.div>
+                    
+                    <h4 className="font-black text-white text-base mb-1 drop-shadow-lg">{badge.title}</h4>
+                    <p className="text-xs text-white/90 font-medium drop-shadow">{badge.description}</p>
+                    
+                    <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/30 backdrop-blur-sm border border-white/40 shadow-lg">
+                      <span className="text-xs font-bold text-white drop-shadow">Unlocked</span>
+                      <span className="text-sm">✨</span>
+                    </div>
+                  </Card>
+                </motion.div>
               );
             })}
           </div>
