@@ -233,13 +233,10 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
           <div className="space-y-2">
             {/* Auto-updated goals (consistency/frequency) - no manual controls */}
             {(goal.goal_type === 'consistency' || goal.goal_type === 'frequency') ? (
-              <div className="bg-slate-900/40 border border-slate-700/50 rounded-xl p-4 text-center">
-                <Zap className="w-8 h-8 mx-auto mb-2 text-cyan-400" />
-                <p className="text-sm text-slate-400 font-semibold">
+              <div className="bg-slate-900/40 border border-slate-700/50 rounded-lg p-2 text-center">
+                <p className="text-xs text-slate-400 font-semibold flex items-center justify-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-cyan-400" />
                   Auto-tracked from check-ins
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Keep checking in at your gym to progress!
                 </p>
               </div>
             ) : (
