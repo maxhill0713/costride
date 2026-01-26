@@ -693,44 +693,113 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
-            <div className="flex items-center justify-between mb-4 gap-2">
-              <h3 className="text-sm md:text-lg font-semibold text-white flex items-center gap-2">
-                <Target className="w-4 md:w-5 h-4 md:h-5 text-blue-400" />
-                <span className="hidden md:inline">My Goals</span>
-                <span className="md:hidden">Goals</span>
-              </h3>
-              <Button
-                onClick={() => setShowAddGoal(true)}
-                size="sm"
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl md:rounded-2xl shadow-lg text-xs md:text-sm px-2 md:px-4"
-              >
-                <Plus className="w-3 md:w-4 h-3 md:h-4 mr-0 md:mr-1" />
-                <span className="hidden md:inline">Add Goal</span>
-              </Button>
+            {/* Goals Header */}
+            <div className="bg-gradient-to-br from-slate-800/80 via-blue-900/40 to-slate-900/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center justify-between mb-4 gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">My Goals</h3>
+                    <p className="text-xs text-slate-400">Track your fitness milestones</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setShowAddGoal(true)}
+                  size="sm"
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg font-semibold"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  <span className="hidden md:inline">New Goal</span>
+                  <span className="md:hidden">Add</span>
+                </Button>
+              </div>
+
+              {/* Goals Overview Stats */}
+              {goals.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
+                    <div className="text-2xl font-black text-blue-400">{goals.filter(g => g.status === 'active').length}</div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Active</div>
+                  </div>
+                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
+                    <div className="text-2xl font-black text-green-400">{goals.filter(g => g.status === 'completed').length}</div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Completed</div>
+                  </div>
+                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
+                    <div className="text-2xl font-black text-purple-400">
+                      {goals.filter(g => g.status === 'active').length > 0 
+                        ? Math.round(goals.filter(g => g.status === 'active').reduce((sum, g) => sum + ((g.current_value / g.target_value) * 100), 0) / goals.filter(g => g.status === 'active').length)
+                        : 0}%
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Avg Progress</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {activeGoals.length === 0 ? (
-              <Card className="p-8 text-center border-2 border-dashed border-slate-600/50 bg-gradient-to-br from-slate-700/50 to-slate-800/50">
-                <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-300 mb-2">No goals set yet</p>
-                <Button
-                  onClick={() => setShowAddGoal(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Set Your First Goal
-                </Button>
+              <Card className="bg-gradient-to-br from-slate-800/60 via-slate-900/60 to-slate-800/60 backdrop-blur-sm border-2 border-dashed border-slate-600/50 p-10 text-center rounded-2xl">
+                <div className="max-w-sm mx-auto">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center">
+                    <Target className="w-10 h-10 text-blue-400" />
+                  </div>
+                  <h4 className="text-lg font-bold text-white mb-2">No Active Goals</h4>
+                  <p className="text-slate-400 text-sm mb-5 leading-relaxed">
+                    Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.
+                  </p>
+                  <Button
+                    onClick={() => setShowAddGoal(true)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Goal
+                  </Button>
+                </div>
               </Card>
             ) : (
-              activeGoals.map(goal => (
-                <GoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onUpdate={handleUpdateGoal}
-                  onDelete={(id) => deleteGoalMutation.mutate(id)}
-                  onToggleReminder={handleToggleReminder}
-                />
-              ))
+              <div className="space-y-3">
+                {activeGoals.map(goal => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onUpdate={handleUpdateGoal}
+                    onDelete={(id) => deleteGoalMutation.mutate(id)}
+                    onToggleReminder={handleToggleReminder}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Completed Goals Section */}
+            {goals.filter(g => g.status === 'completed').length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Completed Goals ({goals.filter(g => g.status === 'completed').length})
+                </h4>
+                <div className="space-y-2">
+                  {goals.filter(g => g.status === 'completed').slice(0, 3).map(goal => (
+                    <Card key={goal.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-white text-sm truncate">{goal.title}</h5>
+                          <p className="text-xs text-slate-400">
+                            {goal.target_value} {goal.unit} achieved
+                          </p>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">
+                          ✓ Done
+                        </Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             )}
           </TabsContent>
 
