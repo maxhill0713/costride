@@ -248,14 +248,26 @@ export default function Home() {
         {(() => {
           const weeklyCheckInsAll = allCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
           const userCheckInCounts = {};
+          const userNames = {};
+          
           weeklyCheckInsAll.forEach(c => {
             userCheckInCounts[c.user_id] = (userCheckInCounts[c.user_id] || 0) + 1;
+            if (!userNames[c.user_id]) {
+              userNames[c.user_id] = c.user_name;
+            }
           });
+          
           const sortedUsers = Object.entries(userCheckInCounts)
             .sort((a, b) => b[1] - a[1])
-            .map(([userId], index) => ({ userId, rank: index + 1 }));
+            .map(([userId, count], index) => ({ 
+              userId, 
+              rank: index + 1, 
+              count,
+              name: userNames[userId] 
+            }));
           
           const userRank = sortedUsers.find(u => u.userId === currentUser?.id);
+          const top3 = sortedUsers.slice(0, 3);
           
           if (userRank && userRank.rank <= 3) {
             const positionText = userRank.rank === 1 ? 'number one' : userRank.rank === 2 ? 'number two' : 'number three';
@@ -274,6 +286,35 @@ export default function Home() {
                     {currentUser.full_name?.split(' ')[0]} is {positionText} this week!
                   </p>
                   <Trophy className="w-6 h-6 text-white" />
+                </div>
+              </Card>
+            );
+          } else if (top3.length > 0) {
+            return (
+              <Card className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-slate-600/40 p-5">
+                <h3 className="text-sm font-semibold text-slate-300 mb-3 text-center flex items-center justify-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  This Week's Leaders
+                </h3>
+                <div className="space-y-2">
+                  {top3.map((user, idx) => {
+                    const emoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                    const textColor = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : 'text-orange-300';
+                    
+                    return (
+                      <div key={user.userId} className="flex items-center justify-between bg-slate-900/40 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{emoji}</span>
+                          <span className={`font-semibold text-sm ${textColor}`}>
+                            {user.name?.split(' ')[0] || 'User'}
+                          </span>
+                        </div>
+                        <Badge className="bg-slate-700 text-slate-200 text-xs">
+                          {user.count} check-ins
+                        </Badge>
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
             );
