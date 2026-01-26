@@ -244,6 +244,43 @@ export default function Home() {
           </Card>
         </div>
 
+        {/* Top 3 Leaderboard Badge */}
+        {(() => {
+          const weeklyCheckInsAll = allCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
+          const userCheckInCounts = {};
+          weeklyCheckInsAll.forEach(c => {
+            userCheckInCounts[c.user_id] = (userCheckInCounts[c.user_id] || 0) + 1;
+          });
+          const sortedUsers = Object.entries(userCheckInCounts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([userId], index) => ({ userId, rank: index + 1 }));
+          
+          const userRank = sortedUsers.find(u => u.userId === currentUser?.id);
+          
+          if (userRank && userRank.rank <= 3) {
+            const positionText = userRank.rank === 1 ? 'number one' : userRank.rank === 2 ? 'number two' : 'number three';
+            const gradientClass = userRank.rank === 1 
+              ? 'from-amber-500 to-yellow-500' 
+              : userRank.rank === 2 
+              ? 'from-slate-400 to-slate-300' 
+              : 'from-orange-600 to-amber-700';
+            const iconEmoji = userRank.rank === 1 ? '🥇' : userRank.rank === 2 ? '🥈' : '🥉';
+
+            return (
+              <Card className={`bg-gradient-to-r ${gradientClass} border-0 p-5 text-center shadow-xl animate-pulse`}>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-3xl">{iconEmoji}</span>
+                  <p className="text-white font-bold text-base">
+                    {currentUser.full_name?.split(' ')[0]} is {positionText} this week!
+                  </p>
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+              </Card>
+            );
+          }
+          return null;
+        })()}
+
 
 
         {/* Progress Tracker */}
