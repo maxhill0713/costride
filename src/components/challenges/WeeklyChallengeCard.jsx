@@ -37,9 +37,9 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="bg-gradient-to-br from-slate-950/95 via-yellow-950/30 to-slate-950/95 backdrop-blur-md border-2 border-yellow-600/50 rounded-2xl p-5 hover:border-yellow-500/80 hover:shadow-2xl hover:shadow-yellow-600/20 transition-all overflow-hidden relative group">
+      <Card className="bg-gradient-to-br from-black via-yellow-900/20 to-black backdrop-blur-md border-2 border-yellow-600/60 rounded-2xl p-5 hover:border-yellow-500 hover:shadow-2xl hover:shadow-yellow-500/30 transition-all overflow-hidden relative group">
         {/* Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/5 via-transparent to-yellow-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Timer Badge */}
         <div className="absolute top-3 right-3 z-10">
@@ -50,19 +50,19 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
         </div>
 
         <div className="flex items-start gap-4 mb-4 relative z-10">
-          <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 via-yellow-600 to-amber-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xl shadow-yellow-600/50 border border-yellow-500/30">
+          <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xl shadow-yellow-500/50 border-2 border-yellow-400/40">
             <Trophy className="w-7 h-7 text-black" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-black text-white text-base mb-1.5 pr-20 tracking-tight">{challenge.title}</h3>
-            <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{challenge.description}</p>
+            <h3 className="font-black text-yellow-400 text-base mb-1.5 pr-20 tracking-tight">{challenge.title}</h3>
+            <p className="text-xs text-yellow-600/80 line-clamp-2 leading-relaxed">{challenge.description}</p>
           </div>
         </div>
 
         {/* Progress */}
         <div className="mb-4 relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
+            <span className="text-xs text-yellow-500 flex items-center gap-1.5 font-semibold">
               <Target className="w-3.5 h-3.5" />
               Community Progress
             </span>
@@ -70,12 +70,12 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               {participantCount}/{targetValue}
             </span>
           </div>
-          <div className="h-3 bg-black/70 rounded-full overflow-hidden border border-yellow-900/40 shadow-inner">
+          <div className="h-3 bg-black rounded-full overflow-hidden border-2 border-yellow-600/40 shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-yellow-500 via-yellow-600 to-amber-600 rounded-full relative shadow-lg shadow-yellow-600/50"
+              className="h-full bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full relative shadow-lg shadow-yellow-500/50"
             >
               <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/20 to-transparent" />
             </motion.div>
