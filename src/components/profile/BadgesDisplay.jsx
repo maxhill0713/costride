@@ -2,6 +2,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Flame, Calendar, Target, Users, TrendingUp, Award, Crown, Star, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const BADGE_LIBRARY = [
   {
