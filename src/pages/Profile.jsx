@@ -240,69 +240,124 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Header Section */}
-      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center overflow-hidden shadow-lg ring-2 ring-white/30">
+      {/* Hero Header */}
+      <div className="relative bg-gradient-to-b from-slate-800/80 to-transparent border-b border-white/10">
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/20">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
-                   <span className="text-2xl font-bold text-white">
-                     {currentUser.full_name?.charAt(0)?.toUpperCase()}
-                   </span>
-                 )}
-              </div>
-              <div className="text-white drop-shadow-lg">
-                <div className="flex items-center gap-2">
-                   <h1 className="text-xl font-black">{currentUser.full_name}</h1>
-                  <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
-                </div>
-                {/* Equipped Badges */}
-                {currentUser?.equipped_badges?.length > 0 && (
-                  <div className="flex items-center gap-1.5 mt-2">
-                    {currentUser.equipped_badges.map((badgeId) => {
-                      const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
-                                   [
-                                     { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-                                     { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-                                     { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-                                     { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-                                     { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-                                     { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-                                     { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
-                                     { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
-                                   ].find(b => b.id === badgeId);
-                      if (!badge) return null;
-                      return (
-                        <div 
-                          key={badgeId}
-                          className={`w-8 h-8 rounded-full bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-white/40`}
-                          title={badge.name || badgeId}
-                        >
-                          <span className="text-sm">{badge.icon}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <span className="text-4xl font-bold text-white">
+                    {currentUser.full_name?.charAt(0)?.toUpperCase()}
+                  </span>
                 )}
               </div>
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg ring-4 ring-slate-900">
+                <Flame className="w-5 h-5 text-white" />
+              </div>
             </div>
+
+            {/* Profile Info */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-black text-white">{currentUser.full_name}</h1>
+                <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
+              </div>
+              
+              {/* Equipped Badges */}
+              {currentUser?.equipped_badges?.length > 0 && (
+                <div className="flex items-center gap-2 mb-3">
+                  {currentUser.equipped_badges.map((badgeId) => {
+                    const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
+                                 [
+                                   { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+                                   { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+                                   { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+                                   { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+                                   { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+                                   { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+                                   { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+                                   { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
+                                 ].find(b => b.id === badgeId);
+                    if (!badge) return null;
+                    return (
+                      <div 
+                        key={badgeId}
+                        className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-white/30`}
+                        title={badge.name || badgeId}
+                      >
+                        <span className="text-base">{badge.icon}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Bio & Location */}
+              {isEditing ? (
+                <div className="space-y-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div>
+                    <label className="text-white text-xs font-bold mb-2 block uppercase tracking-wide">Bio</label>
+                    <Textarea
+                      value={editData.bio}
+                      onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                      placeholder="Tell us about yourself..."
+                      className="bg-white/90 border-0 rounded-xl text-gray-900"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-white text-xs font-bold mb-2 block uppercase tracking-wide">Gym Location</label>
+                    <Input
+                      value={editData.gym_location}
+                      onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
+                      placeholder="e.g. Iron Paradise, Manchester"
+                      className="bg-white/90 border-0 rounded-xl text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-white text-xs font-bold mb-2 block uppercase tracking-wide">Profile Photo URL</label>
+                    <Input
+                      value={editData.avatar_url}
+                      onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
+                      placeholder="https://..."
+                      className="bg-white/90 border-0 rounded-xl text-gray-900"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {currentUser.bio && (
+                    <p className="text-white/80 text-sm leading-relaxed max-w-2xl">{currentUser.bio}</p>
+                  )}
+                  {currentUser.gym_location && (
+                    <div className="flex items-center gap-2 text-white/70">
+                      <MapPin className="w-4 h-4" />
+                      <span className="text-sm">{currentUser.gym_location}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
             {!isEditing ? (
               <div className="flex gap-2">
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="icon" 
-                  className="text-white hover:bg-white/20 rounded-full"
+                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white rounded-xl"
                   onClick={() => setActiveTab('settings')}
                 >
                   <Settings className="w-5 h-5" />
                 </Button>
                 <Button 
-                  variant="ghost" 
+                  variant="outline"
                   size="icon" 
-                  className="text-white hover:bg-white/20 rounded-full"
+                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white rounded-xl"
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit2 className="w-5 h-5" />
@@ -311,72 +366,26 @@ export default function Profile() {
             ) : (
               <div className="flex gap-2">
                 <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-white hover:bg-white/20"
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white rounded-xl"
                   onClick={handleSave}
                 >
-                  <Save className="w-5 h-5" />
+                  <Save className="w-4 h-4 mr-2" />
+                  Save
                 </Button>
                 <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-white hover:bg-white/20"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white rounded-xl"
                   onClick={() => setIsEditing(false)}
                 >
-                  <X className="w-5 h-5" />
+                  Cancel
                 </Button>
               </div>
             )}
           </div>
-
-          {/* Bio & Location */}
-          {isEditing ? (
-            <div className="space-y-3">
-              <div>
-                <label className="text-white text-sm font-medium mb-1 block">Bio</label>
-                <Textarea
-                  value={editData.bio}
-                  onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                  placeholder="Tell us about yourself..."
-                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="text-white text-sm font-medium mb-1 block">Gym Location</label>
-                <Input
-                  value={editData.gym_location}
-                  onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
-                  placeholder="e.g. Iron Paradise, Manchester"
-                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
-                />
-              </div>
-              <div>
-                <label className="text-white text-sm font-medium mb-1 block">Profile Photo</label>
-                <Input
-                  value={editData.avatar_url}
-                  onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
-                  placeholder="https://..."
-                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {currentUser.bio && (
-                <p className="text-white/90 text-sm leading-relaxed">{currentUser.bio}</p>
-              )}
-              {currentUser.gym_location && (
-                <div className="flex items-center gap-2 text-white/90">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{currentUser.gym_location}</span>
-                </div>
-              )}
-            </div>
-          )}
-          </div>
-          </div>
+        </div>
+      </div>
 
             {/* Spacing */}
             <div className="h-6" />
@@ -400,87 +409,125 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="max-w-4xl mx-auto px-4 -mt-4 mb-8 space-y-4">
+      {/* Main Stats Overview */}
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 backdrop-blur-sm border border-cyan-500/30 p-5 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+              <Flame className="w-6 h-6 text-cyan-400" />
+            </div>
+            <div className="text-3xl font-black text-cyan-300 mb-1">{currentStreak}</div>
+            <div className="text-xs text-cyan-200/70 font-medium uppercase tracking-wide">Day Streak</div>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm border border-purple-500/30 p-5 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-purple-400" />
+            </div>
+            <div className="text-3xl font-black text-purple-300 mb-1">{userCheckIns.length}</div>
+            <div className="text-xs text-purple-200/70 font-medium uppercase tracking-wide">Total Visits</div>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 backdrop-blur-sm border border-amber-500/30 p-5 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-amber-500/20 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-amber-400" />
+            </div>
+            <div className="text-3xl font-black text-amber-300 mb-1">{stats.challengesCompleted}</div>
+            <div className="text-xs text-amber-200/70 font-medium uppercase tracking-wide">Challenges</div>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 backdrop-blur-sm border border-green-500/30 p-5 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-green-400" />
+            </div>
+            <div className="text-3xl font-black text-green-300 mb-1">{stats.personalRecords}</div>
+            <div className="text-xs text-green-200/70 font-medium uppercase tracking-wide">PRs</div>
+          </Card>
+        </div>
+
         {/* Identity Card */}
-        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-md">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-yellow-500/20">
-              <Trophy className="w-6 h-6 text-yellow-400" />
+        <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-xl">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+              <Trophy className="w-7 h-7 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className={`text-base font-semibold text-white mb-3`}>
-                {identityStatus.title}
-              </h3>
-              <div className="space-y-2">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
-                  <p className="text-xs text-slate-300 font-bold mb-1">YOUR JOURNEY</p>
-                  <p className="text-sm text-white line-clamp-2">{identityStatus.subtitle}</p>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
-                  <p className="text-xs text-slate-300 font-bold mb-1">NEXT MILESTONE</p>
-                  <p className="text-sm text-white line-clamp-2">{identityStatus.next}</p>
-                </div>
-              </div>
+            <div>
+              <h3 className="text-xl font-black text-white mb-1">{identityStatus.title}</h3>
+              <p className="text-sm text-slate-400">{identityStatus.subtitle}</p>
             </div>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-xs text-slate-400 font-bold mb-1 uppercase tracking-wide">Next Milestone</p>
+            <p className="text-sm text-white">{identityStatus.next}</p>
           </div>
         </Card>
 
         {/* Streak Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-gradient-to-br from-orange-600/15 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-5 shadow-md overflow-hidden">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Flame className="w-6 h-6 text-orange-400 flex-shrink-0" />
-                <div className="min-w-0">
-                    <p className="text-xs font-medium text-orange-300 truncate">Current Streak</p>
-                    <p className="text-3xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">{currentStreak}</p>
-                    <p className="text-xs text-orange-300 truncate">days</p>
-                  </div>
-              </div>
-              {currentUser?.streak_freezes_available > 0 && (
-                <div className="text-center px-1 flex-shrink-0">
-                  <span className="text-lg">❄️</span>
-                  <p className="text-xs text-slate-400 font-bold">{currentUser.streak_freezes_available}</p>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card className="bg-gradient-to-br from-orange-600/20 to-red-600/20 backdrop-blur-sm border border-orange-500/40 p-6 shadow-xl">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-xs font-bold text-orange-300 uppercase tracking-wide mb-2">Current Streak</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent">{currentStreak}</span>
+                  <span className="text-lg font-bold text-orange-300">days</span>
                 </div>
-              )}
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/20 flex items-center justify-center">
+                <Flame className="w-7 h-7 text-orange-400" />
+              </div>
             </div>
+            
             {streakRisk && (
-              <div className={`mt-2 px-2 py-1.5 rounded-lg overflow-hidden ${
+              <div className={`mb-3 px-3 py-2 rounded-xl ${
                 streakRisk.level === 'safe' ? 'bg-green-900/30 border border-green-600/30' :
                 streakRisk.level === 'warning' ? 'bg-yellow-900/30 border border-yellow-600/30' :
                 streakRisk.level === 'danger' ? 'bg-orange-900/30 border border-orange-600/30' :
                 'bg-red-900/30 border border-red-600/30'
               }`}>
-                <p className={`text-xs font-bold ${streakRisk.color} line-clamp-2`}>{streakRisk.message}</p>
+                <p className={`text-xs font-bold ${streakRisk.color}`}>{streakRisk.message}</p>
               </div>
             )}
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-orange-400 mb-1 gap-2">
-                <span className="truncate">Next: {nextMilestone.name}</span>
-                <span className="flex-shrink-0">{currentStreak}/{nextMilestone.days}</span>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-orange-300">
+                <span>Next: {nextMilestone.name}</span>
+                <span className="font-bold">{currentStreak}/{nextMilestone.days}</span>
               </div>
-              <Progress value={streakProgress} className="h-2 bg-slate-600" />
+              <Progress value={streakProgress} className="h-2.5 bg-orange-900/30" />
             </div>
+            
+            {currentUser?.streak_freezes_available > 0 && (
+              <div className="mt-3 flex items-center gap-2 text-xs text-orange-200 bg-white/5 rounded-lg px-3 py-2">
+                <span className="text-base">❄️</span>
+                <span>{currentUser.streak_freezes_available} freeze{currentUser.streak_freezes_available > 1 ? 's' : ''} available</span>
+              </div>
+            )}
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 mb-3">
-              <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-purple-300 truncate">Best Streak</p>
-                <p className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">{longestStreak}</p>
-                <p className="text-xs text-purple-300 truncate">days ever</p>
+          <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm border border-purple-500/40 p-6 shadow-xl">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-2">Best Streak</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak}</span>
+                  <span className="text-lg font-bold text-purple-300">days</span>
+                </div>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center">
+                <Trophy className="w-7 h-7 text-purple-400" />
               </div>
             </div>
+            
             {currentStreak > 0 && longestStreak > currentStreak && (
-              <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-slate-300 line-clamp-1">💎 Keep going to beat your record!</p>
+              <div className="bg-white/10 border border-white/20 rounded-xl px-3 py-2">
+                <p className="text-xs font-bold text-purple-200">💎 {longestStreak - currentStreak} days to beat your record!</p>
               </div>
             )}
             {currentStreak === longestStreak && currentStreak > 0 && (
-              <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-slate-300 line-clamp-1">🔥 New personal record!</p>
+              <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-400/40 rounded-xl px-3 py-2">
+                <p className="text-xs font-bold text-purple-100">🔥 New personal record!</p>
               </div>
             )}
           </Card>
@@ -530,39 +577,27 @@ export default function Profile() {
           </Card>
         )}
 
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-amber-600/40 to-amber-500/20 backdrop-blur-sm border border-amber-500/50 p-4 text-center shadow-md">
-            <div className="text-3xl font-black bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.challengesCompleted}</div>
-            <div className="text-[10px] text-amber-100 font-bold uppercase tracking-widest">Challenges Completed</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-600/40 to-purple-500/20 backdrop-blur-sm border border-purple-500/50 p-4 text-center shadow-md">
-            <div className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.personalRecords}</div>
-            <div className="text-[10px] text-purple-100 font-bold uppercase tracking-widest">PRs</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-teal-600/40 to-teal-500/20 backdrop-blur-sm border border-teal-500/50 p-4 text-center shadow-md">
-            <div className="text-3xl font-black bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.weekStreak}</div>
-            <div className="text-[10px] text-teal-100 font-bold uppercase tracking-widest">Day Streak</div>
-          </Card>
-        </div>
-
-
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-3 md:px-4 pb-8">
+      <div className="max-w-5xl mx-auto px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full mb-6 bg-slate-800/50 p-1 rounded-xl overflow-x-auto gap-1">
-            <TabsTrigger value="progress" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+          <TabsList className="flex w-full mb-8 bg-slate-800/60 backdrop-blur-sm p-1.5 rounded-2xl border border-slate-700/40 shadow-lg">
+            <TabsTrigger value="progress" className="flex-1 rounded-xl font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all text-sm text-slate-400 px-4 py-3 hover:text-slate-200">
+              <TrendingUp className="w-4 h-4 mr-2" />
               Progress
             </TabsTrigger>
-            <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+            <TabsTrigger value="goals" className="flex-1 rounded-xl font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all text-sm text-slate-400 px-4 py-3 hover:text-slate-200">
+              <Target className="w-4 h-4 mr-2" />
               Goals
             </TabsTrigger>
-            <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+            <TabsTrigger value="badges" className="flex-1 rounded-xl font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all text-sm text-slate-400 px-4 py-3 hover:text-slate-200">
+              <Award className="w-4 h-4 mr-2" />
               Badges
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-              <Settings className="w-4 h-4" />
+            <TabsTrigger value="settings" className="flex-1 rounded-xl font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all text-sm text-slate-400 px-4 py-3 hover:text-slate-200">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
             </TabsTrigger>
           </TabsList>
 
