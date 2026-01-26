@@ -8,8 +8,6 @@ import { base44 } from '@/api/base44Client';
 import PageTransition from './components/PageTransition';
 
 export default function Layout({ children, currentPageName }) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => ({
