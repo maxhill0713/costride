@@ -61,32 +61,6 @@ export default function Layout({ children, currentPageName }) {
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
 
-            if (item.isDropdown) {
-              return (
-                <DropdownMenu key={item.name} open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      aria-label={item.name}
-                      className="relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 rounded-2xl active:scale-95 text-slate-400"
-                    >
-                      <div className="relative">
-                        <item.icon className="w-6 h-6" strokeWidth={2} />
-                      </div>
-                      <span className="text-[10px] font-semibold leading-none">{item.name}</span>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" side="top" className="mb-2">
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('GymSignup')} className="flex items-center gap-2">
-                        <Plus className="w-4 h-4 text-green-500" />
-                        <span>Register Your Gym</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              );
-            }
-
             return (
               <Link
                 key={item.page}
