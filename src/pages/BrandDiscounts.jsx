@@ -18,7 +18,7 @@ export default function BrandDiscounts() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me().catch(() => null)
   });
 
   const { data: subscription } = useQuery({
