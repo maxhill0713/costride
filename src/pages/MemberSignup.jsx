@@ -14,6 +14,7 @@ export default function MemberSignup() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    name: '',
     bio: '',
     avatar_url: ''
   });
@@ -31,9 +32,14 @@ export default function MemberSignup() {
       // Update user account type to member
       await base44.auth.updateMe({ account_type: 'member' });
       
+      // Update user's full_name if they provided one
+      if (memberData.name) {
+        await base44.auth.updateMe({ full_name: memberData.name });
+      }
+      
       return base44.entities.GymMember.create({
         ...memberData,
-        name: currentUser.full_name,
+        name: memberData.name || currentUser.full_name,
         join_date: new Date().toISOString().split('T')[0]
       });
     },
@@ -148,17 +154,20 @@ export default function MemberSignup() {
             />
           </div>
 
-          {/* Name Display */}
+          {/* Name Input */}
           <div>
-            <Label className="text-white font-semibold mb-2 block">
-              Your Name
+            <Label htmlFor="name" className="text-white font-semibold mb-2 block">
+              Your Name *
             </Label>
             <Input
-              value={currentUser?.full_name || ''}
-              disabled
-              className="h-12 text-base bg-slate-700/30 border-slate-600 text-slate-400"
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter your full name"
+              required
+              className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"
             />
-            <p className="text-xs text-slate-400 mt-1">This is your account name</p>
           </div>
 
           {/* Bio */}
@@ -186,7 +195,7 @@ export default function MemberSignup() {
             </Button>
             <Button
               type="submit"
-              disabled={createMemberMutation.isPending || !formData.email || !formData.password || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
+              disabled={createMemberMutation.isPending || !formData.email || !formData.password || !formData.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold disabled:opacity-50"
             >
               {createMemberMutation.isPending ? (
