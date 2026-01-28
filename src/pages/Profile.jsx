@@ -623,6 +623,8 @@ export default function Profile() {
               checkIns={userCheckIns}
               workoutSplit={currentUser?.workout_split}
               weeklyGoal={currentUser?.weekly_goal}
+              trainingDays={currentUser?.training_days}
+              customWorkoutTypes={currentUser?.custom_workout_types || {}}
             />
             
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
