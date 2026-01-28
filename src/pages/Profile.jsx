@@ -241,27 +241,27 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
+      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 bg-gradient-to-b from-slate-800/40 to-transparent">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center overflow-hidden shadow-lg ring-2 ring-white/30">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-5">
+              <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
-                   <span className="text-2xl font-bold text-white">
+                   <span className="text-3xl font-semibold text-white tracking-tight">
                      {currentUser.full_name?.charAt(0)?.toUpperCase()}
                    </span>
                  )}
               </div>
-              <div className="text-white drop-shadow-lg">
-                <div className="flex items-center gap-2">
-                   <h1 className="text-xl font-black">{currentUser.full_name}</h1>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                   <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white">{currentUser.full_name}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
                 </div>
                 {/* Equipped Badges */}
                 {currentUser?.equipped_badges?.length > 0 && (
-                  <div className="flex items-center gap-1.5 mt-2">
+                  <div className="flex items-center gap-2 mt-3">
                     {currentUser.equipped_badges.map((badgeId) => {
                       const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
                                    [
@@ -278,10 +278,10 @@ export default function Profile() {
                       return (
                         <div 
                           key={badgeId}
-                          className={`w-8 h-8 rounded-full bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-white/40`}
+                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40`}
                           title={badge.name || badgeId}
                         >
-                          <span className="text-sm">{badge.icon}</span>
+                          <span className="text-base">{badge.icon}</span>
                         </div>
                       );
                     })}
@@ -294,7 +294,7 @@ export default function Profile() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-white hover:bg-white/20 rounded-full"
+                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
                   onClick={() => setActiveTab('settings')}
                 >
                   <Settings className="w-5 h-5" />
@@ -302,7 +302,7 @@ export default function Profile() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-white hover:bg-white/20 rounded-full"
+                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit2 className="w-5 h-5" />
@@ -313,7 +313,7 @@ export default function Profile() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-white hover:bg-white/20"
+                  className="text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-xl"
                   onClick={handleSave}
                 >
                   <Save className="w-5 h-5" />
@@ -321,7 +321,7 @@ export default function Profile() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-white hover:bg-white/20"
+                  className="text-slate-400 hover:text-white hover:bg-slate-700/60 rounded-xl"
                   onClick={() => setIsEditing(false)}
                 >
                   <X className="w-5 h-5" />
@@ -332,45 +332,45 @@ export default function Profile() {
 
           {/* Bio & Location */}
           {isEditing ? (
-            <div className="space-y-3">
+            <div className="space-y-4 mt-4">
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">Bio</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Bio</label>
                 <Textarea
                   value={editData.bio}
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                   placeholder="Tell us about yourself..."
-                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
+                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
                   rows={3}
                 />
               </div>
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">Gym Location</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Gym Location</label>
                 <Input
                   value={editData.gym_location}
                   onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
                   placeholder="e.g. Iron Paradise, Manchester"
-                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
+                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
                 />
               </div>
               <div>
-                <label className="text-white text-sm font-medium mb-1 block">Profile Photo</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Profile Photo</label>
                 <Input
                   value={editData.avatar_url}
                   onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
                   placeholder="https://..."
-                  className="bg-white/90 border-0 rounded-2xl text-gray-900"
+                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
                 />
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3 mt-4">
               {currentUser.bio && (
-                <p className="text-white/90 text-sm leading-relaxed">{currentUser.bio}</p>
+                <p className="text-slate-300 text-sm leading-relaxed font-light max-w-2xl">{currentUser.bio}</p>
               )}
               {currentUser.gym_location && (
-                <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center gap-2 text-slate-400">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{currentUser.gym_location}</span>
+                  <span className="text-sm font-light">{currentUser.gym_location}</span>
                 </div>
               )}
             </div>
