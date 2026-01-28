@@ -41,19 +41,14 @@ export default function TodayWorkout({ currentUser }) {
 
   return (
     <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
-      <div className="flex items-center gap-2 mb-2">
-        <Dumbbell className="w-4 h-4 text-indigo-400" />
-        <h3 className="text-sm font-bold text-white">Today's Workout</h3>
-      </div>
-
-      {/* Workout Title */}
-      <div className="mb-3">
-        <h2 className="text-base font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-0.5">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <Dumbbell className="w-4 h-4 text-indigo-400" />
+          <h3 className="text-sm font-bold text-white">Today's Workout</h3>
+        </div>
+        <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
           {todayWorkout.name}
         </h2>
-        <p className="text-[10px] text-slate-400">
-          {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-        </p>
       </div>
 
       {/* Exercises */}
