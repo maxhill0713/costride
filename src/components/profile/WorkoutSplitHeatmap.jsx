@@ -11,7 +11,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
         'Push': 'bg-gradient-to-br from-red-500 to-red-600 shadow-sm',
         'Pull': 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm',
         'Legs': 'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
-        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
+        'Rest': 'bg-white/90 shadow-sm'
       }
     },
     upper_lower: {
@@ -20,7 +20,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
       colors: {
         'Upper': 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm',
         'Lower': 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-sm',
-        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
+        'Rest': 'bg-white/90 shadow-sm'
       }
     },
     full_body: {
@@ -28,7 +28,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
       schedule: ['Full Body', 'Rest', 'Full Body', 'Rest', 'Full Body', 'Rest', 'Rest'],
       colors: {
         'Full Body': 'bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-sm',
-        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
+        'Rest': 'bg-white/90 shadow-sm'
       }
     },
     bro_split: {
@@ -40,7 +40,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
         'Shoulders': 'bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-sm',
         'Arms': 'bg-gradient-to-br from-pink-500 to-pink-600 shadow-sm',
         'Legs': 'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
-        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
+        'Rest': 'bg-white/90 shadow-sm'
       }
     }
   };
