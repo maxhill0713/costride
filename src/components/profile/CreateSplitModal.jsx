@@ -174,14 +174,15 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       type="button"
                       onClick={() => toggleDay(dayNumber)}
                       className={`
-                        p-3 rounded-lg border-2 transition-all font-semibold text-sm
+                        p-3 rounded-lg border-2 transition-all font-semibold text-sm flex flex-col items-center gap-1
                         ${isSelected 
                           ? 'bg-indigo-500 border-indigo-400 text-white' 
-                          : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500'
+                          : 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:border-amber-400'
                         }
                       `}
                     >
-                      {day}
+                      <span>{day}</span>
+                      {!isSelected && <span className="text-[9px] opacity-70">Rest</span>}
                     </button>
                   );
                 })}
