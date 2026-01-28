@@ -216,9 +216,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Button
-              variant="outline"
               onClick={onClose}
-              className="flex-1 h-12 border-slate-600 text-slate-300 hover:bg-slate-800 rounded-xl font-bold"
+              className="flex-1 h-12 bg-slate-800/60 border-2 border-slate-700/50 text-slate-300 hover:bg-slate-700/60 hover:border-slate-600 rounded-xl font-bold transition-all"
             >
               Cancel
             </Button>
