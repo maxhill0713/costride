@@ -227,33 +227,6 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Check-In Card */}
-        {memberGym && daysSinceCheckIn !== 0 && (
-          <Card className={`p-6 border-0 shadow-xl ${
-            daysSinceCheckIn >= 3
-              ? 'bg-gradient-to-r from-orange-600 to-red-600'
-              : 'bg-gradient-to-r from-blue-600 to-cyan-600'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-bold text-lg mb-1">Ready to Check In?</h3>
-                <p className="text-white/90 text-sm">
-                  {daysSinceCheckIn === 1 
-                    ? '1 day since your last visit' 
-                    : `${daysSinceCheckIn} days since your last visit`}
-                </p>
-              </div>
-              <Button 
-                onClick={() => setShowCheckIn(true)}
-                className="bg-white hover:bg-white/90 text-slate-900 font-bold shadow-lg"
-              >
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Check In
-              </Button>
-            </div>
-          </Card>
-        )}
-
         {/* Stats Bar */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center">
