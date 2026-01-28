@@ -268,6 +268,11 @@ export default function Home() {
           <TodayWorkout currentUser={currentUser} />
         )}
 
+        {/* Update Weight Card */}
+        {currentUser && (
+          <UpdateWeightCard currentUser={currentUser} />
+        )}
+
         {/* Progress Tracker */}
         <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
           <div className="flex items-start gap-4">
