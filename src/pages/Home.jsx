@@ -15,6 +15,7 @@ import { createPageUrl } from '../utils';
 
 export default function Home() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   
@@ -240,8 +241,12 @@ export default function Home() {
               <button
                 key={days}
                 onClick={async () => {
-                  await base44.auth.updateMe({ weekly_goal: days });
-                  window.location.reload();
+                  try {
+                    await base44.auth.updateMe({ weekly_goal: days });
+                    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+                  } catch (error) {
+                    console.error('Failed to update weekly goal:', error);
+                  }
                 }}
                 className={`p-3 rounded-xl border-2 transition-all ${
                   currentUser?.weekly_goal === days
