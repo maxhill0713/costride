@@ -45,7 +45,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     }
   };
 
-  const { weeks, splitInfo, hasCheckIn, today } = useMemo(() => {
+  const { weeks, splitInfo, hasCheckIn, today, customSplitName } = useMemo(() => {
     const today = new Date();
     const daysToShow = 28; // 4 weeks for compact view
     const startDate = subDays(today, daysToShow - 1);
@@ -76,11 +76,25 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     };
     
     // Get split info
-    const splitInfo = workoutSplit && splitSchedules[workoutSplit] 
+    let splitInfo = workoutSplit && splitSchedules[workoutSplit] 
       ? splitSchedules[workoutSplit]
       : null;
     
-    return { weeks, splitInfo, hasCheckIn, today };
+    // Handle custom split
+    let customSplitName = null;
+    if (workoutSplit === 'custom') {
+      customSplitName = 'Custom Split';
+      splitInfo = {
+        name: customSplitName,
+        schedule: ['Train', 'Train', 'Rest', 'Train', 'Train', 'Rest', 'Rest'],
+        colors: {
+          'Train': 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm',
+          'Rest': 'bg-white/90 shadow-sm'
+        }
+      };
+    }
+    
+    return { weeks, splitInfo, hasCheckIn, today, customSplitName };
   }, [checkIns, workoutSplit]);
   
   // Calculate expected workout day based on split

@@ -11,6 +11,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [selectedSplit, setSelectedSplit] = useState(currentUser?.workout_split || '');
   const [weeklyGoal, setWeeklyGoal] = useState(currentUser?.weekly_goal || 3);
   const [selectedDays, setSelectedDays] = useState(currentUser?.training_days || [1, 3, 5]); // Default Mon, Wed, Fri
+  const [customSplitName, setCustomSplitName] = useState(currentUser?.custom_split_name || '');
   const queryClient = useQueryClient();
 
   const updateSplitMutation = useMutation({
@@ -60,15 +61,30 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       gradient: 'from-pink-500 via-yellow-500 to-green-500',
       recommended: 5,
       defaultDays: [1, 2, 3, 4, 5] // Mon-Fri
+    },
+    {
+      id: 'custom',
+      name: 'Custom Split',
+      description: 'Create your own personalized training schedule',
+      schedule: ['Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Rest'],
+      gradient: 'from-violet-500 via-fuchsia-500 to-pink-500',
+      recommended: 4,
+      defaultDays: [1, 2, 4, 5]
     }
   ];
 
   const handleSave = () => {
-    updateSplitMutation.mutate({
+    const data = {
       workout_split: selectedSplit,
       weekly_goal: weeklyGoal,
       training_days: selectedDays
-    });
+    };
+    
+    if (selectedSplit === 'custom') {
+      data.custom_split_name = customSplitName || 'Custom Split';
+    }
+    
+    updateSplitMutation.mutate(data);
   };
 
   const toggleDay = (day) => {
@@ -147,6 +163,28 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
             ))}
           </div>
 
+          {/* Custom Split Name */}
+          {selectedSplit === 'custom' && (
+            <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
+              <Label className="text-white flex items-center gap-2 mb-4 text-base font-bold">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                  <Dumbbell className="w-4 h-4 text-violet-400" />
+                </div>
+                Name Your Split
+              </Label>
+              <input
+                type="text"
+                value={customSplitName}
+                onChange={(e) => setCustomSplitName(e.target.value)}
+                placeholder="e.g., Upper/Lower 2x, My Custom Routine"
+                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              />
+              <p className="text-xs text-slate-400 mt-3">
+                Give your custom split a name to easily identify it
+              </p>
+            </div>
+          )}
+
           {/* Weekly Goal */}
           {selectedSplit && (
             <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
@@ -223,8 +261,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!selectedSplit || updateSplitMutation.isPending}
-              className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all"
+              disabled={!selectedSplit || (selectedSplit === 'custom' && !customSplitName.trim()) || updateSplitMutation.isPending}
+              className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {updateSplitMutation.isPending ? 'Saving...' : 'Save Split'}
             </Button>
