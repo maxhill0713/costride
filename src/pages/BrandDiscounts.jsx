@@ -71,11 +71,7 @@ export default function BrandDiscounts() {
 
   const redeemMutation = useMutation({
     mutationFn: async (code) => {
-      const allCodes = await base44.entities.BrandDiscountCode.list();
-      const discountCode = allCodes.find(c => 
-        c.code.toLowerCase() === code.toLowerCase() && 
-        (c.assigned_to === currentUser.id || !c.assigned_to)
-      );
+      const discountCode = userCodes.find(c => c.code.toLowerCase() === code.toLowerCase());
 
       if (!discountCode) {
         throw new Error('Invalid code');
