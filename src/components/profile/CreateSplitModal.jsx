@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [selectedSplit, setSelectedSplit] = useState(currentUser?.workout_split || '');
   const [weeklyGoal, setWeeklyGoal] = useState(currentUser?.weekly_goal || 3);
+  const [selectedDays, setSelectedDays] = useState(currentUser?.training_days || [1, 3, 5]); // Default Mon, Wed, Fri
   const queryClient = useQueryClient();
 
   const updateSplitMutation = useMutation({
@@ -61,9 +62,20 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const handleSave = () => {
     updateSplitMutation.mutate({
       workout_split: selectedSplit,
-      weekly_goal: weeklyGoal
+      weekly_goal: weeklyGoal,
+      training_days: selectedDays
     });
   };
+
+  const toggleDay = (day) => {
+    if (selectedDays.includes(day)) {
+      setSelectedDays(selectedDays.filter(d => d !== day));
+    } else {
+      setSelectedDays([...selectedDays, day].sort((a, b) => a - b));
+    }
+  };
+
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -141,6 +153,41 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               </div>
               <p className="text-xs text-slate-400 mt-2">
                 How many times per week do you plan to train?
+              </p>
+            </div>
+          )}
+
+          {/* Training Days Selection */}
+          {selectedSplit && (
+            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+              <Label className="text-white flex items-center gap-2 mb-3">
+                <Calendar className="w-4 h-4 text-blue-400" />
+                Select Your Training Days
+              </Label>
+              <div className="grid grid-cols-7 gap-2">
+                {dayNames.map((day, index) => {
+                  const dayNumber = index + 1;
+                  const isSelected = selectedDays.includes(dayNumber);
+                  return (
+                    <button
+                      key={dayNumber}
+                      type="button"
+                      onClick={() => toggleDay(dayNumber)}
+                      className={`
+                        p-3 rounded-lg border-2 transition-all font-semibold text-sm
+                        ${isSelected 
+                          ? 'bg-indigo-500 border-indigo-400 text-white' 
+                          : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500'
+                        }
+                      `}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                {selectedDays.length} {selectedDays.length === 1 ? 'day' : 'days'} selected
               </p>
             </div>
           )}
