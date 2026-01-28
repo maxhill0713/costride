@@ -263,6 +263,7 @@ export default function Home() {
               checkIns={userCheckIns}
               workoutSplit={currentUser?.workout_split}
               weeklyGoal={currentUser?.weekly_goal}
+              trainingDays={currentUser?.training_days}
             />
           </Card>
         ) : (

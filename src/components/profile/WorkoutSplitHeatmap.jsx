@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek } from 'date-fns';
 
-export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3 }) {
+export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [] }) {
   // Define split schedules
   const splitSchedules = {
     ppl: {
@@ -87,7 +87,22 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
   const getExpectedWorkout = (day) => {
     if (!splitInfo) return null;
     
-    // Find the first check-in to use as reference point
+    // If custom training days are set, use them
+    if (trainingDays && trainingDays.length > 0) {
+      const dayOfWeek = day.getDay();
+      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert Sunday from 0 to 7
+      
+      if (trainingDays.includes(adjustedDay)) {
+        // This is a training day - assign a workout type
+        const trainingDayIndex = trainingDays.indexOf(adjustedDay);
+        const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
+        return workoutTypes[trainingDayIndex % workoutTypes.length];
+      } else {
+        return 'Rest';
+      }
+    }
+    
+    // Otherwise use default schedule
     const firstCheckIn = checkIns.length > 0 
       ? new Date(checkIns[checkIns.length - 1].check_in_date)
       : startOfWeek(today, { weekStartsOn: 1 });
