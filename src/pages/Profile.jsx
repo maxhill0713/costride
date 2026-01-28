@@ -335,6 +335,14 @@ export default function Profile() {
                   variant="ghost" 
                   size="icon" 
                   className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
+                  onClick={() => setShowEditAvatar(true)}
+                >
+                  <Camera className="w-5 h-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
                   onClick={() => setActiveTab('settings')}
                 >
                   <Settings className="w-5 h-5" />
