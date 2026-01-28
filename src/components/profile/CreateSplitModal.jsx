@@ -83,17 +83,24 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-slate-700/50 shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
-            <Dumbbell className="w-6 h-6 text-indigo-400" />
-            Choose Your Training Split
-          </DialogTitle>
+          <div className="text-center space-y-2 pb-4 border-b border-slate-700/50">
+            <div className="w-14 h-14 mx-auto bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Dumbbell className="w-7 h-7 text-white" />
+            </div>
+            <DialogTitle className="text-3xl font-black text-white">
+              Choose Your Training Split
+            </DialogTitle>
+            <p className="text-slate-400 text-sm">
+              Select a program that matches your goals and schedule
+            </p>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+        <div className="space-y-6 mt-6">
           {/* Split Options */}
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {splits.map((split) => (
               <div
                 key={split.id}
@@ -103,32 +110,33 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   setSelectedDays(split.defaultDays);
                 }}
                 className={`
-                  p-4 rounded-xl border-2 cursor-pointer transition-all
+                  p-5 rounded-2xl border-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]
                   ${selectedSplit === split.id 
-                    ? 'border-indigo-500 bg-indigo-500/10 ring-2 ring-indigo-500/50' 
-                    : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                    ? 'border-indigo-500 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-indigo-500/20 ring-2 ring-indigo-500/50 shadow-lg shadow-indigo-500/20' 
+                    : 'border-slate-700/50 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/60'
                   }
                 `}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1">{split.name}</h3>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white mb-1.5">{split.name}</h3>
                     <p className="text-sm text-slate-400">{split.description}</p>
                   </div>
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50 text-xs text-slate-300">
-                    <Calendar className="w-3 h-3" />
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-700/60 text-xs font-bold text-slate-200 border border-slate-600/40">
+                    <Calendar className="w-3.5 h-3.5" />
                     {split.recommended}x/week
                   </div>
                 </div>
 
                 {/* Schedule Preview */}
-                <div className="flex gap-1">
+                <div className="flex gap-2">
                   {split.schedule.map((day, i) => (
                     <div
                       key={i}
                       className={`
-                        flex-1 h-8 rounded flex items-center justify-center text-[10px] font-bold text-white
-                        bg-gradient-to-br ${split.gradient} opacity-80
+                        flex-1 h-10 rounded-lg flex items-center justify-center text-xs font-bold text-white
+                        bg-gradient-to-br ${split.gradient} shadow-md
+                        ${selectedSplit === split.id ? 'shadow-lg' : 'opacity-70'}
                       `}
                     >
                       {day.slice(0, 1)}
@@ -141,9 +149,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
           {/* Weekly Goal */}
           {selectedSplit && (
-            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-              <Label className="text-white flex items-center gap-2 mb-3">
-                <Target className="w-4 h-4 text-emerald-400" />
+            <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
+              <Label className="text-white flex items-center gap-2 mb-4 text-base font-bold">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-emerald-400" />
+                </div>
                 Weekly Training Goal
               </Label>
               <div className="flex items-center gap-4">
@@ -153,13 +163,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   max="7"
                   value={weeklyGoal}
                   onChange={(e) => setWeeklyGoal(Number(e.target.value))}
-                  className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  className="flex-1 h-3 bg-slate-700 rounded-full appearance-none cursor-pointer accent-indigo-500"
                 />
-                <div className="text-2xl font-bold text-indigo-400 w-16 text-center">
+                <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 w-20 text-center">
                   {weeklyGoal}x
                 </div>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
+              <p className="text-xs text-slate-400 mt-3">
                 How many times per week do you plan to train?
               </p>
             </div>
@@ -167,9 +177,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
           {/* Training Days Selection */}
           {selectedSplit && (
-            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-              <Label className="text-white flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4 text-blue-400" />
+            <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
+              <Label className="text-white flex items-center gap-2 mb-4 text-base font-bold">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-blue-400" />
+                </div>
                 Select Your Training Days
               </Label>
               <div className="grid grid-cols-7 gap-2">
@@ -182,38 +194,38 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       type="button"
                       onClick={() => toggleDay(dayNumber)}
                       className={`
-                        p-3 rounded-lg border-2 transition-all font-semibold text-sm flex flex-col items-center gap-1
+                        p-3 rounded-xl border-2 transition-all font-bold text-sm flex flex-col items-center gap-1 hover:scale-105 active:scale-95
                         ${isSelected 
-                          ? 'bg-indigo-500 border-indigo-400 text-white' 
-                          : 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:border-amber-400'
+                          ? 'bg-gradient-to-br from-indigo-500 to-purple-600 border-indigo-400/50 text-white shadow-lg shadow-indigo-500/30' 
+                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:border-slate-500 hover:text-slate-300'
                         }
                       `}
                     >
                       <span>{day}</span>
-                      {!isSelected && <span className="text-[9px] opacity-70">Rest</span>}
+                      {!isSelected && <span className="text-[9px] opacity-60">Rest</span>}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-xs text-slate-400 mt-2">
-                {selectedDays.length} {selectedDays.length === 1 ? 'day' : 'days'} selected
+              <p className="text-xs text-slate-400 mt-3 font-medium">
+                {selectedDays.length} {selectedDays.length === 1 ? 'day' : 'days'} selected • {7 - selectedDays.length} rest {7 - selectedDays.length === 1 ? 'day' : 'days'}
               </p>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="flex-1 h-12 border-slate-600 text-slate-300 hover:bg-slate-800 rounded-xl font-bold"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={!selectedSplit || updateSplitMutation.isPending}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+              className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all"
             >
               {updateSplitMutation.isPending ? 'Saving...' : 'Save Split'}
             </Button>
