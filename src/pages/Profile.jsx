@@ -619,13 +619,28 @@ export default function Profile() {
 
           <TabsContent value="progress" className="space-y-4">
             {/* Workout Split Heatmap */}
-            <WorkoutSplitHeatmap 
-              checkIns={userCheckIns}
-              workoutSplit={currentUser?.workout_split}
-              weeklyGoal={currentUser?.weekly_goal}
-              trainingDays={currentUser?.training_days}
-              customWorkoutTypes={currentUser?.custom_workout_types || {}}
-            />
+            <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
+              <div className="flex items-center gap-2 mb-3">
+                <Dumbbell className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+              </div>
+
+              <button
+                onClick={() => setShowSplitModal(true)}
+                className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+              >
+                <Calendar className="w-3 h-3" />
+                Edit Your Split
+              </button>
+
+              <WorkoutSplitHeatmap 
+                checkIns={userCheckIns}
+                workoutSplit={currentUser?.workout_split}
+                weeklyGoal={currentUser?.weekly_goal}
+                trainingDays={currentUser?.training_days}
+                customWorkoutTypes={currentUser?.custom_workout_types || {}}
+              />
+            </Card>
             
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
