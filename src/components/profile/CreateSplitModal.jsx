@@ -254,6 +254,62 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               />
                             ))}
                           </div>
+                          
+                          {/* Exercise Details */}
+                          <div className="pl-11 mt-2 space-y-1.5">
+                            <div className="grid grid-cols-3 gap-1.5">
+                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Exercise</div>
+                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Sets x Reps</div>
+                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Weight</div>
+                            </div>
+                            {(workoutType.exercises || [{ exercise: '', setsReps: '', weight: '' }]).map((ex, exIndex) => (
+                              <div key={exIndex} className="grid grid-cols-3 gap-1.5">
+                                <input
+                                  type="text"
+                                  value={ex.exercise || ''}
+                                  onChange={(e) => {
+                                    const exercises = workoutType.exercises || [{ exercise: '', setsReps: '', weight: '' }];
+                                    exercises[exIndex] = { ...exercises[exIndex], exercise: e.target.value };
+                                    updateWorkoutType(day, 'exercises', exercises);
+                                  }}
+                                  placeholder="e.g., Bench"
+                                  className="px-2 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                                />
+                                <input
+                                  type="text"
+                                  value={ex.setsReps || ''}
+                                  onChange={(e) => {
+                                    const exercises = workoutType.exercises || [{ exercise: '', setsReps: '', weight: '' }];
+                                    exercises[exIndex] = { ...exercises[exIndex], setsReps: e.target.value };
+                                    updateWorkoutType(day, 'exercises', exercises);
+                                  }}
+                                  placeholder="e.g., 3x10"
+                                  className="px-2 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                                />
+                                <input
+                                  type="text"
+                                  value={ex.weight || ''}
+                                  onChange={(e) => {
+                                    const exercises = workoutType.exercises || [{ exercise: '', setsReps: '', weight: '' }];
+                                    exercises[exIndex] = { ...exercises[exIndex], weight: e.target.value };
+                                    updateWorkoutType(day, 'exercises', exercises);
+                                  }}
+                                  placeholder="e.g., 60kg"
+                                  className="px-2 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-[10px] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                                />
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const exercises = workoutType.exercises || [];
+                                updateWorkoutType(day, 'exercises', [...exercises, { exercise: '', setsReps: '', weight: '' }]);
+                              }}
+                              className="text-[10px] text-violet-400 hover:text-violet-300 font-medium"
+                            >
+                              + Add Exercise
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
