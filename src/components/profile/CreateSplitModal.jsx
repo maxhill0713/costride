@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dumbbell, Calendar, Target } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -12,6 +13,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [weeklyGoal, setWeeklyGoal] = useState(currentUser?.weekly_goal || 3);
   const [selectedDays, setSelectedDays] = useState(currentUser?.training_days || [1, 3, 5]); // Default Mon, Wed, Fri
   const [customSplitName, setCustomSplitName] = useState(currentUser?.custom_split_name || '');
+  const [customWorkoutTypes, setCustomWorkoutTypes] = useState(currentUser?.custom_workout_types || {});
   const queryClient = useQueryClient();
 
   const updateSplitMutation = useMutation({
@@ -82,6 +84,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     
     if (selectedSplit === 'custom') {
       data.custom_split_name = customSplitName || 'Custom Split';
+      data.custom_workout_types = customWorkoutTypes;
     }
     
     updateSplitMutation.mutate(data);
@@ -90,9 +93,34 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const toggleDay = (day) => {
     if (selectedDays.includes(day)) {
       setSelectedDays(selectedDays.filter(d => d !== day));
+      // Remove workout type for this day
+      const newTypes = { ...customWorkoutTypes };
+      delete newTypes[day];
+      setCustomWorkoutTypes(newTypes);
     } else {
       setSelectedDays([...selectedDays, day].sort((a, b) => a - b));
     }
+  };
+
+  const workoutColorOptions = [
+    { name: 'Purple', gradient: 'from-purple-500 to-purple-600', value: 'purple' },
+    { name: 'Blue', gradient: 'from-blue-500 to-blue-600', value: 'blue' },
+    { name: 'Green', gradient: 'from-green-500 to-green-600', value: 'green' },
+    { name: 'Red', gradient: 'from-red-500 to-red-600', value: 'red' },
+    { name: 'Orange', gradient: 'from-orange-500 to-orange-600', value: 'orange' },
+    { name: 'Pink', gradient: 'from-pink-500 to-pink-600', value: 'pink' },
+    { name: 'Yellow', gradient: 'from-yellow-500 to-yellow-600', value: 'yellow' },
+    { name: 'Cyan', gradient: 'from-cyan-500 to-cyan-600', value: 'cyan' },
+  ];
+
+  const updateWorkoutType = (day, field, value) => {
+    setCustomWorkoutTypes(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value
+      }
+    }));
   };
 
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -165,23 +193,78 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
           {/* Custom Split Name */}
           {selectedSplit === 'custom' && (
-            <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
-              <Label className="text-white flex items-center gap-2 mb-4 text-base font-bold">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
-                  <Dumbbell className="w-4 h-4 text-violet-400" />
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
+                <Label className="text-white flex items-center gap-2 mb-4 text-base font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                    <Dumbbell className="w-4 h-4 text-violet-400" />
+                  </div>
+                  Name Your Split
+                </Label>
+                <input
+                  type="text"
+                  value={customSplitName}
+                  onChange={(e) => setCustomSplitName(e.target.value)}
+                  placeholder="e.g., Upper/Lower 2x, My Custom Routine"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                />
+                <p className="text-xs text-slate-400 mt-3">
+                  Give your custom split a name to easily identify it
+                </p>
+              </div>
+
+              {/* Customize Each Training Day */}
+              {selectedDays.length > 0 && (
+                <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
+                  <Label className="text-white flex items-center gap-2 mb-4 text-base font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-fuchsia-500/20 flex items-center justify-center">
+                      <Target className="w-4 h-4 text-fuchsia-400" />
+                    </div>
+                    Customize Training Days
+                  </Label>
+                  <div className="space-y-3">
+                    {selectedDays.map((day) => {
+                      const dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day - 1];
+                      const workoutType = customWorkoutTypes[day] || { name: '', color: 'purple' };
+                      const selectedColor = workoutColorOptions.find(c => c.value === workoutType.color) || workoutColorOptions[0];
+                      
+                      return (
+                        <div key={day} className="flex gap-3 items-center">
+                          <div className="w-12 h-12 rounded-xl bg-slate-700/40 flex items-center justify-center border border-slate-600/40 flex-shrink-0">
+                            <span className="text-xs font-bold text-white">{dayName}</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={workoutType.name || ''}
+                            onChange={(e) => updateWorkoutType(day, 'name', e.target.value)}
+                            placeholder="e.g., Upper Body, Push, Legs"
+                            className="flex-1 px-3 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                          />
+                          <div className="flex gap-1">
+                            {workoutColorOptions.slice(0, 4).map((color) => (
+                              <button
+                                key={color.value}
+                                type="button"
+                                onClick={() => updateWorkoutType(day, 'color', color.value)}
+                                className={`
+                                  w-8 h-8 rounded-lg bg-gradient-to-br ${color.gradient} transition-all
+                                  ${workoutType.color === color.value 
+                                    ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800 scale-110' 
+                                    : 'opacity-50 hover:opacity-100 hover:scale-105'
+                                  }
+                                `}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-3">
+                    Name each training day and pick a color to visualize it on your heatmap
+                  </p>
                 </div>
-                Name Your Split
-              </Label>
-              <input
-                type="text"
-                value={customSplitName}
-                onChange={(e) => setCustomSplitName(e.target.value)}
-                placeholder="e.g., Upper/Lower 2x, My Custom Routine"
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-              />
-              <p className="text-xs text-slate-400 mt-3">
-                Give your custom split a name to easily identify it
-              </p>
+              )}
             </div>
           )}
 

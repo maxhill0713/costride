@@ -88,13 +88,30 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     let customSplitName = null;
     if (workoutSplit === 'custom') {
       customSplitName = 'Custom Split';
+      
+      // Build schedule and colors from custom workout types
+      const schedule = [];
+      const colors = { 'Rest': 'bg-white/90 shadow-sm' };
+      
+      // If user has custom workout types, use them
+      if (trainingDays && trainingDays.length > 0) {
+        for (let i = 1; i <= 7; i++) {
+          if (trainingDays.includes(i)) {
+            schedule.push('Train');
+          } else {
+            schedule.push('Rest');
+          }
+        }
+        colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
+      } else {
+        schedule.push('Train', 'Train', 'Rest', 'Train', 'Train', 'Rest', 'Rest');
+        colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
+      }
+      
       splitInfo = {
         name: customSplitName,
-        schedule: ['Train', 'Train', 'Rest', 'Train', 'Train', 'Rest', 'Rest'],
-        colors: {
-          'Train': 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm',
-          'Rest': 'bg-white/90 shadow-sm'
-        }
+        schedule,
+        colors
       };
     }
     
