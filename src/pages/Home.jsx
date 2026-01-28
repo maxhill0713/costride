@@ -179,11 +179,11 @@ export default function Home() {
           <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-2">
+                <h1 className="text-3xl md:text-4xl font-medium tracking-[-0.02em] text-white mb-2 leading-tight">
                     Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}
                   </h1>
                   {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-                    <p className="text-slate-400 text-sm font-light">
+                    <p className="text-slate-400 text-sm font-normal tracking-[-0.01em]">
                       Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
                     </p>
                   )}
