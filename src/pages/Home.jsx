@@ -254,18 +254,10 @@ export default function Home() {
         )}
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center">
+        <div className="flex justify-center">
+          <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center w-32">
             <div className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
             <div className="text-xs text-slate-400 mt-1">Day Streak</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-600/30 p-4 text-center">
-            <div className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{userCheckIns.length}</div>
-            <div className="text-xs text-slate-400 mt-1">Total Visits</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 border border-green-600/30 p-4 text-center">
-            <div className="text-2xl font-bold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">{weeklyCheckIns.length}</div>
-            <div className="text-xs text-slate-400 mt-1">This Week</div>
           </Card>
         </div>
 
