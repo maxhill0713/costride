@@ -34,8 +34,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       description: 'Create your own personalized training schedule',
       schedule: ['Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Rest'],
       gradient: 'from-violet-500 via-fuchsia-500 to-pink-500',
-      recommended: 4,
-      defaultDays: [1, 2, 4, 5]
+      recommended: 6,
+      defaultDays: [1, 2, 4, 5, 6, 7]
     },
     {
       id: 'ppl',
