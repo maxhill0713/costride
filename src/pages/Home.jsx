@@ -227,6 +227,30 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Check-In Button */}
+        {memberGym && daysSinceCheckIn !== 0 && (
+          <Button 
+            onClick={() => setShowCheckIn(true)}
+            className={`w-full text-white border-0 shadow-lg py-6 text-lg font-bold ${
+              daysSinceCheckIn === null || daysSinceCheckIn === 0
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
+                : daysSinceCheckIn >= 3
+                ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'
+                : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
+            }`}
+          >
+            <CheckCircle className="w-6 h-6 mr-3" />
+            Check In Now
+          </Button>
+        )}
+        
+        {daysSinceCheckIn === 0 && (
+          <Badge className="w-full justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white text-base px-6 py-4 shadow-lg">
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Checked In Today ✓
+          </Badge>
+        )}
+
         {/* Stats Bar */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center">
