@@ -147,14 +147,45 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
   // Calculate expected workout day based on split
   const getExpectedWorkout = (day) => {
     if (!splitInfo) return null;
-    
-    // If custom training days are set, use them
+
+    // For custom splits, flow continuously across weeks
+    if (workoutSplit === 'custom' && trainingDays && trainingDays.length > 0) {
+      const firstCheckIn = checkIns.length > 0 
+        ? new Date(checkIns[checkIns.length - 1].check_in_date)
+        : startOfWeek(today, { weekStartsOn: 1 });
+
+      const daysDiff = Math.floor((day - firstCheckIn) / (1000 * 60 * 60 * 24));
+      const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
+
+      // Count how many training days have passed
+      let trainingDaysPassed = 0;
+      for (let i = 0; i < daysDiff; i++) {
+        const checkDay = new Date(firstCheckIn);
+        checkDay.setDate(checkDay.getDate() + i);
+        const checkDayOfWeek = checkDay.getDay();
+        const adjustedCheckDay = checkDayOfWeek === 0 ? 7 : checkDayOfWeek;
+        if (trainingDays.includes(adjustedCheckDay)) {
+          trainingDaysPassed++;
+        }
+      }
+
+      const dayOfWeek = day.getDay();
+      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+      if (trainingDays.includes(adjustedDay)) {
+        // This is a training day - use continuous flow
+        return workoutTypes[trainingDaysPassed % workoutTypes.length];
+      } else {
+        return 'Rest';
+      }
+    }
+
+    // If custom training days are set (non-custom splits), use them
     if (trainingDays && trainingDays.length > 0) {
       const dayOfWeek = day.getDay();
-      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert Sunday from 0 to 7
-      
+      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+
       if (trainingDays.includes(adjustedDay)) {
-        // This is a training day - assign a workout type
         const trainingDayIndex = trainingDays.indexOf(adjustedDay);
         const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
         return workoutTypes[trainingDayIndex % workoutTypes.length];
@@ -162,15 +193,15 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
         return 'Rest';
       }
     }
-    
-    // Otherwise use default schedule
+
+    // Otherwise use default schedule (resets weekly)
     const firstCheckIn = checkIns.length > 0 
       ? new Date(checkIns[checkIns.length - 1].check_in_date)
       : startOfWeek(today, { weekStartsOn: 1 });
-    
+
     const daysDiff = Math.floor((day - firstCheckIn) / (1000 * 60 * 60 * 24));
     const scheduleIndex = ((daysDiff % 7) + 7) % 7;
-    
+
     return splitInfo.schedule[scheduleIndex];
   };
 
