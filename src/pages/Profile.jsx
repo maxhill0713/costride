@@ -251,13 +251,18 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 bg-gradient-to-b from-slate-800/40 to-transparent overflow-hidden">
+      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden">
         {/* Hero Background */}
         {currentUser.hero_image_url && (
-          <div className="absolute inset-0 z-0">
-            <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-20" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/60 to-slate-900" />
-          </div>
+          <>
+            <div className="absolute inset-0 z-0">
+              <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-20" />
+            </div>
+            <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
+          </>
+        )}
+        {!currentUser.hero_image_url && (
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 to-transparent" />
         )}
         
         {/* Edit Hero Button */}
