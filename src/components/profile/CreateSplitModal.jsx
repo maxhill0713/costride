@@ -31,7 +31,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       description: 'Push, Pull, Legs - Classic 6-day split',
       schedule: ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest'],
       gradient: 'from-red-500 via-blue-500 to-green-500',
-      recommended: 6
+      recommended: 6,
+      defaultDays: [1, 2, 3, 4, 5, 6] // Mon-Sat
     },
     {
       id: 'upper_lower',
@@ -39,7 +40,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       description: 'Alternate between upper and lower body',
       schedule: ['Upper', 'Lower', 'Rest', 'Upper', 'Lower', 'Rest', 'Rest'],
       gradient: 'from-purple-500 to-orange-500',
-      recommended: 4
+      recommended: 4,
+      defaultDays: [1, 2, 4, 5] // Mon, Tue, Thu, Fri
     },
     {
       id: 'full_body',
@@ -47,7 +49,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       description: 'Train everything each session',
       schedule: ['Full Body', 'Rest', 'Full Body', 'Rest', 'Full Body', 'Rest', 'Rest'],
       gradient: 'from-cyan-500 to-blue-500',
-      recommended: 3
+      recommended: 3,
+      defaultDays: [1, 3, 5] // Mon, Wed, Fri
     },
     {
       id: 'bro_split',
@@ -55,7 +58,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       description: 'One muscle group per day',
       schedule: ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Rest', 'Rest'],
       gradient: 'from-pink-500 via-yellow-500 to-green-500',
-      recommended: 5
+      recommended: 5,
+      defaultDays: [1, 2, 3, 4, 5] // Mon-Fri
     }
   ];
 
@@ -93,7 +97,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
             {splits.map((split) => (
               <div
                 key={split.id}
-                onClick={() => setSelectedSplit(split.id)}
+                onClick={() => {
+                  setSelectedSplit(split.id);
+                  setWeeklyGoal(split.recommended);
+                  setSelectedDays(split.defaultDays);
+                }}
                 className={`
                   p-4 rounded-xl border-2 cursor-pointer transition-all
                   ${selectedSplit === split.id 
