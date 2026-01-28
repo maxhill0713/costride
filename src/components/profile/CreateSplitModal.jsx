@@ -27,6 +27,15 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   const splits = [
     {
+      id: 'custom',
+      name: 'Custom Split',
+      description: 'Create your own personalized training schedule',
+      schedule: ['Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Rest'],
+      gradient: 'from-violet-500 via-fuchsia-500 to-pink-500',
+      recommended: 4,
+      defaultDays: [1, 2, 4, 5]
+    },
+    {
       id: 'ppl',
       name: 'Push/Pull/Legs',
       description: 'Push, Pull, Legs - Classic 6-day split',
@@ -61,15 +70,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       gradient: 'from-pink-500 via-yellow-500 to-green-500',
       recommended: 5,
       defaultDays: [1, 2, 3, 4, 5] // Mon-Fri
-    },
-    {
-      id: 'custom',
-      name: 'Custom Split',
-      description: 'Create your own personalized training schedule',
-      schedule: ['Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Custom', 'Rest'],
-      gradient: 'from-violet-500 via-fuchsia-500 to-pink-500',
-      recommended: 4,
-      defaultDays: [1, 2, 4, 5]
     }
   ];
 
