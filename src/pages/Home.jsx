@@ -146,7 +146,7 @@ export default function Home() {
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
   const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
-  const weeklyTarget = 3; // Target: 3 gym visits per week
+  const weeklyTarget = currentUser?.weekly_goal || 3; // Use user's routine goal or default to 3
   
   // Calculate goal progress
   const goalsOnTrack = goals.filter(g => {
@@ -223,6 +223,47 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Create Your Routine */}
+        <Card className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-600/30 p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Your Routine</h3>
+              <p className="text-xs text-slate-400">How many days per week do you train?</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-4 gap-2">
+            {[3, 4, 5, 6].map(days => (
+              <button
+                key={days}
+                onClick={async () => {
+                  await base44.auth.updateMe({ weekly_goal: days });
+                  window.location.reload();
+                }}
+                className={`p-3 rounded-xl border-2 transition-all ${
+                  currentUser?.weekly_goal === days
+                    ? 'bg-indigo-500 border-indigo-400 text-white'
+                    : 'bg-slate-800/60 border-slate-600/40 text-slate-300 hover:border-indigo-500/50'
+                }`}
+              >
+                <div className="text-2xl font-bold">{days}</div>
+                <div className="text-[10px] opacity-80">days</div>
+              </button>
+            ))}
+          </div>
+          
+          {currentUser?.weekly_goal && (
+            <div className="mt-4 p-3 bg-indigo-500/20 border border-indigo-500/30 rounded-xl">
+              <p className="text-xs text-indigo-200 text-center">
+                You're aiming for <strong>{currentUser.weekly_goal} workouts</strong> per week
+              </p>
+            </div>
+          )}
+        </Card>
+
         {/* Stats Bar */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center">
