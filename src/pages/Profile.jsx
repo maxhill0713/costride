@@ -256,7 +256,7 @@ export default function Profile() {
               </div>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                   <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white">{currentUser.full_name}</h1>
+                   <h1 className="text-2xl md:text-3xl font-medium tracking-[-0.02em] text-white leading-tight">{currentUser.full_name}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
                 </div>
                 {/* Equipped Badges */}
@@ -334,7 +334,7 @@ export default function Profile() {
           {isEditing ? (
             <div className="space-y-4 mt-4">
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Bio</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Bio</label>
                 <Textarea
                   value={editData.bio}
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
@@ -344,7 +344,7 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Gym Location</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
                 <Input
                   value={editData.gym_location}
                   onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
@@ -353,7 +353,7 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Profile Photo</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Profile Photo</label>
                 <Input
                   value={editData.avatar_url}
                   onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
@@ -365,12 +365,12 @@ export default function Profile() {
           ) : (
             <div className="space-y-3 mt-4">
               {currentUser.bio && (
-                <p className="text-slate-300 text-sm leading-relaxed font-light max-w-2xl">{currentUser.bio}</p>
+                <p className="text-slate-300 text-sm leading-relaxed font-normal max-w-2xl tracking-[-0.01em]">{currentUser.bio}</p>
               )}
               {currentUser.gym_location && (
                 <div className="flex items-center gap-2 text-slate-400">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm font-light">{currentUser.gym_location}</span>
+                  <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                 </div>
               )}
             </div>
