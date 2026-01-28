@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek } from 'date-fns';
+import { format, subDays, subWeeks, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek } from 'date-fns';
 
 export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [] }) {
   const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
@@ -48,10 +48,13 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
 
   const { weeks, splitInfo, hasCheckIn, today, customSplitName } = useMemo(() => {
     const today = new Date();
-    const daysToShow = timeRange === 'weekly' ? 28 : 90; // 4 weeks or ~3 months
-    const startDate = subDays(today, daysToShow - 1);
+    const weeksToShow = timeRange === 'weekly' ? 4 : 12; // 4 weeks or 12 weeks
     
-    const allDays = eachDayOfInterval({ start: startDate, end: today });
+    // Start from the beginning of the week (Monday)
+    const endDate = endOfWeek(today, { weekStartsOn: 1 });
+    const startDate = startOfWeek(subWeeks(endDate, weeksToShow - 1), { weekStartsOn: 1 });
+    
+    const allDays = eachDayOfInterval({ start: startDate, end: endDate });
     
     // Group days by week (starting Monday)
     const weeks = [];
