@@ -335,14 +335,6 @@ export default function Profile() {
                   variant="ghost" 
                   size="icon" 
                   className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
-                  onClick={() => setShowEditAvatar(true)}
-                >
-                  <Camera className="w-5 h-5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
                   onClick={() => setActiveTab('settings')}
                 >
                   <Settings className="w-5 h-5" />
@@ -402,12 +394,21 @@ export default function Profile() {
               </div>
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Profile Photo</label>
-                <Input
-                  value={editData.avatar_url}
-                  onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
-                  placeholder="https://..."
-                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={editData.avatar_url}
+                    onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
+                    placeholder="https://..."
+                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => setShowEditAvatar(true)}
+                    className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl px-4"
+                  >
+                    <Camera className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
