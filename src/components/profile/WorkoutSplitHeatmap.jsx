@@ -8,39 +8,39 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
       name: 'Push/Pull/Legs',
       schedule: ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest'],
       colors: {
-        'Push': 'bg-red-500',
-        'Pull': 'bg-blue-500',
-        'Legs': 'bg-green-500',
-        'Rest': 'bg-slate-600/40'
+        'Push': 'bg-gradient-to-br from-red-500 to-red-600 shadow-sm',
+        'Pull': 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm',
+        'Legs': 'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
+        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
       }
     },
     upper_lower: {
       name: 'Upper/Lower',
       schedule: ['Upper', 'Lower', 'Rest', 'Upper', 'Lower', 'Rest', 'Rest'],
       colors: {
-        'Upper': 'bg-purple-500',
-        'Lower': 'bg-orange-500',
-        'Rest': 'bg-slate-600/40'
+        'Upper': 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm',
+        'Lower': 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-sm',
+        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
       }
     },
     full_body: {
       name: 'Full Body',
       schedule: ['Full Body', 'Rest', 'Full Body', 'Rest', 'Full Body', 'Rest', 'Rest'],
       colors: {
-        'Full Body': 'bg-cyan-500',
-        'Rest': 'bg-slate-600/40'
+        'Full Body': 'bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-sm',
+        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
       }
     },
     bro_split: {
       name: 'Bro Split',
       schedule: ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Rest', 'Rest'],
       colors: {
-        'Chest': 'bg-red-500',
-        'Back': 'bg-blue-500',
-        'Shoulders': 'bg-yellow-500',
-        'Arms': 'bg-pink-500',
-        'Legs': 'bg-green-500',
-        'Rest': 'bg-slate-600/40'
+        'Chest': 'bg-gradient-to-br from-red-500 to-red-600 shadow-sm',
+        'Back': 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm',
+        'Shoulders': 'bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-sm',
+        'Arms': 'bg-gradient-to-br from-pink-500 to-pink-600 shadow-sm',
+        'Legs': 'bg-gradient-to-br from-green-500 to-green-600 shadow-sm',
+        'Rest': 'bg-gradient-to-br from-amber-500/70 to-orange-500/70'
       }
     }
   };
@@ -116,11 +116,11 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     <div className="space-y-3">
       {/* Split Legend - Compact */}
       {splitInfo && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {Object.entries(splitInfo.colors).map(([name, color]) => (
-            <div key={name} className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded ${color}`} />
-              <span className="text-[10px] text-slate-400">{name}</span>
+            <div key={name} className="flex items-center gap-1.5">
+              <div className={`w-2.5 h-2.5 rounded-sm ${color}`} />
+              <span className="text-[10px] text-slate-300 font-medium">{name}</span>
             </div>
           ))}
         </div>
@@ -145,26 +145,26 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
               const isToday = isSameDay(day, today);
               const isFuture = day > today;
               const expectedWorkout = getExpectedWorkout(day);
-              const expectedColor = splitInfo?.colors[expectedWorkout] || 'bg-slate-600/40';
+              const expectedColor = splitInfo?.colors[expectedWorkout] || 'bg-slate-700/50';
               
               return (
                 <div
                   key={dayIndex}
                   title={`${format(day, 'MMM d')}${expectedWorkout ? ` - ${expectedWorkout}` : ''}${isCheckedIn ? ' ✓' : ''}`}
                   className={`
-                    aspect-square rounded cursor-pointer relative
-                    transition-all duration-200
+                    aspect-square rounded-md cursor-pointer relative overflow-hidden
+                    transition-all duration-200 hover:scale-105
                     ${isFuture ? 'opacity-20' : ''}
                     ${isCheckedIn 
-                      ? splitInfo ? expectedColor : 'bg-emerald-500'
-                      : 'bg-slate-700/40 border border-slate-600/30'
+                      ? splitInfo ? expectedColor : 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm'
+                      : 'bg-slate-700/30 border border-slate-600/40 hover:bg-slate-600/40'
                     }
-                    ${isToday ? 'ring-1 ring-blue-400' : ''}
+                    ${isToday ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-slate-800' : ''}
                   `}
                 >
                   {isCheckedIn && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                      <svg className="w-2.5 h-2.5 text-white drop-shadow" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
