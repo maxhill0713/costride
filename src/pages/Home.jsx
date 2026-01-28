@@ -246,18 +246,19 @@ export default function Home() {
         {/* Compact Split Heatmap */}
         {currentUser?.workout_split ? (
           <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Dumbbell className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-              </div>
-              <button
-                onClick={() => setShowSplitModal(true)}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
-              >
-                Edit
-              </button>
+            <div className="flex items-center gap-2 mb-3">
+              <Dumbbell className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
             </div>
+
+            <button
+              onClick={() => setShowSplitModal(true)}
+              className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+            >
+              <Calendar className="w-3 h-3" />
+              Edit Your Split
+            </button>
+
             <WorkoutSplitHeatmap 
               checkIns={userCheckIns}
               workoutSplit={currentUser?.workout_split}
