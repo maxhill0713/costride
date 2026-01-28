@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut, Camera } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,12 +22,14 @@ import BadgesDisplay from '../components/profile/BadgesDisplay';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
 import CheckInHeatmap from '../components/profile/CheckInHeatmap';
+import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [showEditHero, setShowEditHero] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
@@ -110,6 +112,14 @@ export default function Profile() {
     await base44.auth.updateMe(editData);
     setIsEditing(false);
   };
+
+  const updateHeroMutation = useMutation({
+    mutationFn: (hero_image_url) => base44.auth.updateMe({ hero_image_url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      setShowEditHero(false);
+    }
+  });
 
   const createGoalMutation = useMutation({
     mutationFn: (data) => base44.entities.Goal.create(data),
@@ -241,8 +251,24 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 bg-gradient-to-b from-slate-800/40 to-transparent">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 bg-gradient-to-b from-slate-800/40 to-transparent overflow-hidden">
+        {/* Hero Background */}
+        {currentUser.hero_image_url && (
+          <div className="absolute inset-0 z-0">
+            <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/60 to-slate-900" />
+          </div>
+        )}
+        
+        {/* Edit Hero Button */}
+        <button
+          onClick={() => setShowEditHero(true)}
+          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-xl bg-slate-800/80 backdrop-blur-md border border-slate-600/50 flex items-center justify-center hover:bg-slate-700/80 transition-all"
+        >
+          <Camera className="w-4 h-4 text-slate-300" />
+        </button>
+        
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-5">
               <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
@@ -1043,6 +1069,14 @@ export default function Profile() {
         onSave={(data) => createGoalMutation.mutate(data)}
         currentUser={currentUser}
         isLoading={createGoalMutation.isPending}
+      />
+
+      <EditHeroImageModal
+        open={showEditHero}
+        onClose={() => setShowEditHero(false)}
+        currentImageUrl={currentUser?.hero_image_url}
+        onSave={(hero_image_url) => updateHeroMutation.mutate(hero_image_url)}
+        isLoading={updateHeroMutation.isPending}
       />
     </div>
   );
