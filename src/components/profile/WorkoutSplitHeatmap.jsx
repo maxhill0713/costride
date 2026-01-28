@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { format, subDays, subWeeks, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek } from 'date-fns';
 
-export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [] }) {
+export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {} }) {
   const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
   // Define split schedules
   const splitSchedules = {
@@ -88,13 +88,39 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     let customSplitName = null;
     if (workoutSplit === 'custom') {
       customSplitName = 'Custom Split';
-      
+
       // Build schedule and colors from custom workout types
       const schedule = [];
       const colors = { 'Rest': 'bg-white/90 shadow-sm' };
-      
+
+      // Color mapping for custom workout types
+      const colorGradients = {
+        purple: 'from-purple-500 to-purple-600',
+        blue: 'from-blue-500 to-blue-600',
+        green: 'from-green-500 to-green-600',
+        red: 'from-red-500 to-red-600',
+        orange: 'from-orange-500 to-orange-600',
+        pink: 'from-pink-500 to-pink-600',
+        yellow: 'from-yellow-500 to-yellow-600',
+        cyan: 'from-cyan-500 to-cyan-600',
+      };
+
       // If user has custom workout types, use them
-      if (trainingDays && trainingDays.length > 0) {
+      if (trainingDays && trainingDays.length > 0 && Object.keys(customWorkoutTypes).length > 0) {
+        for (let i = 1; i <= 7; i++) {
+          if (trainingDays.includes(i) && customWorkoutTypes[i]) {
+            const workoutName = customWorkoutTypes[i].name || 'Train';
+            const workoutColor = customWorkoutTypes[i].color || 'purple';
+            schedule.push(workoutName);
+            colors[workoutName] = `bg-gradient-to-br ${colorGradients[workoutColor]} shadow-sm`;
+          } else if (trainingDays.includes(i)) {
+            schedule.push('Train');
+            colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
+          } else {
+            schedule.push('Rest');
+          }
+        }
+      } else if (trainingDays && trainingDays.length > 0) {
         for (let i = 1; i <= 7; i++) {
           if (trainingDays.includes(i)) {
             schedule.push('Train');
@@ -107,7 +133,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
         schedule.push('Train', 'Train', 'Rest', 'Train', 'Train', 'Rest', 'Rest');
         colors['Train'] = 'bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-sm';
       }
-      
+
       splitInfo = {
         name: customSplitName,
         schedule,
