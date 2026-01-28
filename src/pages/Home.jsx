@@ -174,23 +174,23 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Header */}
-      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-700/40 px-4 py-8">
+      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-10">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">
-                    Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}! 👋
+                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-2">
+                    Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}
                   </h1>
                   {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-                    <p className="text-slate-400 text-xs md:text-sm">
+                    <p className="text-slate-400 text-sm font-light">
                       Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
                     </p>
                   )}
               </div>
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
-                  <Button className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 backdrop-blur-sm">
+                  <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
                     <Trophy className="w-4 h-4 mr-2" />
                     Admin View
                   </Button>
