@@ -1,24 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Dumbbell, Edit2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dumbbell, Edit2, Check, X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function TodayWorkout({ currentUser }) {
-  const [editingExercise, setEditingExercise] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
+  const [editReps, setEditReps] = useState('');
   const queryClient = useQueryClient();
-
-  const updateWeightMutation = useMutation({
-    mutationFn: async (data) => {
-      await base44.auth.updateMe(data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['currentUser']);
-      setEditingExercise(null);
-    }
-  });
 
   const today = useMemo(() => new Date(), []);
   const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc
@@ -46,6 +38,43 @@ export default function TodayWorkout({ currentUser }) {
   };
 
   const todayWorkout = getTodayWorkout();
+
+  const updateWorkoutMutation = useMutation({
+    mutationFn: async (updatedExercises) => {
+      const updatedWorkout = {
+        ...currentUser.custom_workout_types,
+        [adjustedDay]: {
+          ...currentUser.custom_workout_types[adjustedDay],
+          exercises: updatedExercises
+        }
+      };
+      await base44.auth.updateMe({ custom_workout_types: updatedWorkout });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['currentUser']);
+      setEditingIndex(null);
+    }
+  });
+
+  const handleEdit = (index, exercise) => {
+    setEditingIndex(index);
+    setEditWeight(exercise.weight || '');
+    setEditReps(exercise.setsReps || '');
+  };
+
+  const handleSave = (index) => {
+    const updatedExercises = [...todayWorkout.exercises];
+    updatedExercises[index] = {
+      ...updatedExercises[index],
+      weight: editWeight,
+      setsReps: editReps
+    };
+    updateWorkoutMutation.mutate(updatedExercises);
+  };
+
+  const handleCancel = () => {
+    setEditingIndex(null);
+  };
 
   if (!todayWorkout) {
     return (
@@ -80,63 +109,68 @@ export default function TodayWorkout({ currentUser }) {
 
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className="grid grid-cols-3 gap-2 p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 group">
-              <div className="text-xs font-semibold text-white">
-                {exercise.exercise || '-'}
-              </div>
-              <div className="text-sm text-slate-300">
-                {exercise.setsReps || '-'}
-              </div>
-              <div className="flex items-center justify-between gap-1">
-                {editingExercise === index ? (
-                  <div className="flex gap-1 w-full">
-                    <input
+            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-3 gap-2'}`}>
+              {editingIndex === index ? (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-white mb-2">{exercise.exercise}</div>
+                  <div className="flex gap-2">
+                    <Input
                       type="text"
+                      placeholder="Sets x Reps"
+                      value={editReps}
+                      onChange={(e) => setEditReps(e.target.value)}
+                      className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Weight"
                       value={editWeight}
                       onChange={(e) => setEditWeight(e.target.value)}
-                      placeholder="Weight"
-                      className="flex-1 px-1.5 py-1 bg-slate-600 border border-slate-500 rounded text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
                     />
+                  </div>
+                  <div className="flex gap-1">
                     <Button
-                      size="icon"
-                      className="h-6 w-6 p-0 bg-green-600 hover:bg-green-700"
-                      onClick={() => {
-                        const newExercises = [...todayWorkout.exercises];
-                        newExercises[index] = { ...newExercises[index], weight: editWeight };
-                        const newWorkoutTypes = { ...currentUser.custom_workout_types };
-                        newWorkoutTypes[adjustedDay] = { ...newWorkoutTypes[adjustedDay], exercises: newExercises };
-                        updateWeightMutation.mutate({ custom_workout_types: newWorkoutTypes });
-                      }}
-                      disabled={updateWeightMutation.isPending}
+                      onClick={() => handleSave(index)}
+                      size="sm"
+                      disabled={updateWorkoutMutation.isPending}
+                      className="flex-1 bg-green-600 hover:bg-green-700 h-7"
                     >
                       <Check className="w-3 h-3" />
                     </Button>
                     <Button
-                      size="icon"
+                      onClick={handleCancel}
+                      size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 text-slate-400 hover:text-slate-300"
-                      onClick={() => setEditingExercise(null)}
+                      className="flex-1 text-slate-300 h-7"
                     >
                       <X className="w-3 h-3" />
                     </Button>
                   </div>
-                ) : (
-                  <>
-                    <span className="text-sm text-slate-300">{exercise.weight || '-'}</span>
+                </div>
+              ) : (
+                <>
+                  <div className="text-xs font-semibold text-white">
+                    {exercise.exercise || '-'}
+                  </div>
+                  <div className="text-sm text-slate-300">
+                    {exercise.setsReps || '-'}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-300">
+                      {exercise.weight || '-'}
+                    </span>
                     <Button
+                      onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
-                      className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-200 transition-opacity"
-                      onClick={() => {
-                        setEditingExercise(index);
-                        setEditWeight(exercise.weight || '');
-                      }}
+                      className="w-5 h-5 text-slate-400 hover:text-white"
                     >
                       <Edit2 className="w-3 h-3" />
                     </Button>
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
