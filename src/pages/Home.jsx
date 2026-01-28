@@ -8,6 +8,7 @@ import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, Map
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
+import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -364,6 +365,21 @@ export default function Home() {
             <div className="text-xs text-slate-400 mt-1">This Week</div>
           </Card>
         </div>
+
+        {/* Compact Split Heatmap */}
+        {currentUser?.workout_split && (
+          <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
+            <div className="flex items-center gap-2 mb-3">
+              <Dumbbell className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+            </div>
+            <WorkoutSplitHeatmap 
+              checkIns={userCheckIns}
+              workoutSplit={currentUser?.workout_split}
+              weeklyGoal={currentUser?.weekly_goal}
+            />
+          </Card>
+        )}
 
 
 
