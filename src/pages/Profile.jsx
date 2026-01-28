@@ -30,6 +30,7 @@ export default function Profile() {
   const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showEditHero, setShowEditHero] = useState(false);
+  const [showEditAvatar, setShowEditAvatar] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
@@ -118,6 +119,14 @@ export default function Profile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowEditHero(false);
+    }
+  });
+
+  const updateAvatarMutation = useMutation({
+    mutationFn: (avatar_url) => base44.auth.updateMe({ avatar_url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      setShowEditAvatar(false);
     }
   });
 
@@ -276,7 +285,7 @@ export default function Profile() {
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-5">
-              <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
+              <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 group">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
                 ) : (
@@ -284,6 +293,12 @@ export default function Profile() {
                      {currentUser.full_name?.charAt(0)?.toUpperCase()}
                    </span>
                  )}
+                 <button
+                   onClick={() => setShowEditAvatar(true)}
+                   className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                 >
+                   <Camera className="w-5 h-5 text-white" />
+                 </button>
               </div>
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -1082,6 +1097,14 @@ export default function Profile() {
         currentImageUrl={currentUser?.hero_image_url}
         onSave={(hero_image_url) => updateHeroMutation.mutate(hero_image_url)}
         isLoading={updateHeroMutation.isPending}
+      />
+
+      <EditHeroImageModal
+        open={showEditAvatar}
+        onClose={() => setShowEditAvatar(false)}
+        currentImageUrl={currentUser?.avatar_url}
+        onSave={(avatar_url) => updateAvatarMutation.mutate(avatar_url)}
+        isLoading={updateAvatarMutation.isPending}
       />
     </div>
   );
