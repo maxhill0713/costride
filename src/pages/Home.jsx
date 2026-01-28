@@ -8,7 +8,8 @@ import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, Map
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
-
+import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
+import CreateSplitModal from '../components/profile/CreateSplitModal';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -19,7 +20,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-
+  const [showSplitModal, setShowSplitModal] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -259,7 +260,44 @@ export default function Home() {
 
 
 
+        {/* Compact Split Heatmap */}
+        {currentUser?.workout_split ? (
+          <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
+            <div className="flex items-center gap-2 mb-3">
+              <Dumbbell className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+            </div>
 
+            <button
+              onClick={() => setShowSplitModal(true)}
+              className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+            >
+              <Calendar className="w-3 h-3" />
+              Edit Your Split
+            </button>
+
+            <WorkoutSplitHeatmap 
+              checkIns={userCheckIns}
+              workoutSplit={currentUser?.workout_split}
+              weeklyGoal={currentUser?.weekly_goal}
+              trainingDays={currentUser?.training_days}
+            />
+          </Card>
+        ) : (
+          <Card className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-600/30 p-6 rounded-2xl text-center">
+            <Dumbbell className="w-10 h-10 text-indigo-400 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-white mb-2">Create Your Training Split</h3>
+            <p className="text-sm text-slate-300 mb-4">
+              Set up your workout routine to track consistency
+            </p>
+            <Button
+              onClick={() => setShowSplitModal(true)}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+            >
+              Get Started
+            </Button>
+          </Card>
+        )}
 
 
 
@@ -565,7 +603,12 @@ export default function Home() {
           currentUser={currentUser}
         />
 
-
+        {/* Create Split Modal */}
+        <CreateSplitModal
+          isOpen={showSplitModal}
+          onClose={() => setShowSplitModal(false)}
+          currentUser={currentUser}
+        />
       </div>
     </div>
   );
