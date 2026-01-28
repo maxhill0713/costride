@@ -256,7 +256,7 @@ export default function Profile() {
         {currentUser.hero_image_url && (
           <>
             <div className="absolute inset-0 z-0">
-              <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-20" />
+              <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-50" />
             </div>
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
           </>
