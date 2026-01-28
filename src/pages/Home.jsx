@@ -20,6 +20,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showSplitModal, setShowSplitModal] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -705,6 +706,13 @@ export default function Home() {
         <JoinWithCodeModal 
           open={showJoinModal} 
           onClose={() => setShowJoinModal(false)} 
+          currentUser={currentUser}
+        />
+
+        {/* Create Split Modal */}
+        <CreateSplitModal
+          isOpen={showSplitModal}
+          onClose={() => setShowSplitModal(false)}
           currentUser={currentUser}
         />
       </div>
