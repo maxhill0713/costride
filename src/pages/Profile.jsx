@@ -24,6 +24,7 @@ import ConsistencyJourney from '../components/profile/ConsistencyJourney';
 import CheckInHeatmap from '../components/profile/CheckInHeatmap';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
+import CreateSplitModal from '../components/profile/CreateSplitModal';
 
 
 export default function Profile() {
@@ -32,6 +33,7 @@ export default function Profile() {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showEditHero, setShowEditHero] = useState(false);
   const [showEditAvatar, setShowEditAvatar] = useState(false);
+  const [showSplitModal, setShowSplitModal] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
@@ -1042,6 +1044,12 @@ export default function Profile() {
         currentImageUrl={currentUser?.avatar_url}
         onSave={(avatar_url) => updateAvatarMutation.mutate(avatar_url)}
         isLoading={updateAvatarMutation.isPending}
+      />
+
+      <CreateSplitModal
+        isOpen={showSplitModal}
+        onClose={() => setShowSplitModal(false)}
+        currentUser={currentUser}
       />
     </div>
   );
