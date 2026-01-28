@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { format, subDays, eachDayOfInterval, isSameDay, startOfWeek } from 'date-fns';
 
 export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [] }) {
+  const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
   // Define split schedules
   const splitSchedules = {
     ppl: {
@@ -47,7 +48,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
 
   const { weeks, splitInfo, hasCheckIn, today, customSplitName } = useMemo(() => {
     const today = new Date();
-    const daysToShow = 28; // 4 weeks for compact view
+    const daysToShow = timeRange === 'weekly' ? 28 : 90; // 4 weeks or ~3 months
     const startDate = subDays(today, daysToShow - 1);
     
     const allDays = eachDayOfInterval({ start: startDate, end: today });
@@ -95,7 +96,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     }
     
     return { weeks, splitInfo, hasCheckIn, today, customSplitName };
-  }, [checkIns, workoutSplit]);
+  }, [checkIns, workoutSplit, timeRange]);
   
   // Calculate expected workout day based on split
   const getExpectedWorkout = (day) => {
@@ -143,20 +144,50 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
 
   return (
     <div className="space-y-3">
-      {/* Split Info Header - Mobile Optimized */}
-      {splitInfo && (
-        <div>
-          <h4 className="text-sm font-semibold text-white mb-2">{splitInfo.name}</h4>
-          <div className="flex flex-wrap gap-1.5">
-            {Object.entries(splitInfo.colors).map(([name, color]) => (
-              <div key={name} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/30 border border-slate-600/30">
-                <div className={`w-2.5 h-2.5 rounded ${color}`} />
-                <span className="text-[10px] text-slate-200 font-medium">{name}</span>
-              </div>
-            ))}
+      {/* Header with Filter */}
+      <div className="flex items-center justify-between">
+        {splitInfo && (
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-2">{splitInfo.name}</h4>
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(splitInfo.colors).map(([name, color]) => (
+                <div key={name} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/30 border border-slate-600/30">
+                  <div className={`w-2.5 h-2.5 rounded ${color}`} />
+                  <span className="text-[10px] text-slate-200 font-medium">{name}</span>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+        
+        {/* Time Range Toggle */}
+        <div className="flex gap-1 bg-slate-800/60 rounded-lg p-1 border border-slate-700/40">
+          <button
+            onClick={() => setTimeRange('weekly')}
+            className={`
+              px-3 py-1.5 rounded-md text-xs font-bold transition-all
+              ${timeRange === 'weekly'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+              }
+            `}
+          >
+            4W
+          </button>
+          <button
+            onClick={() => setTimeRange('monthly')}
+            className={`
+              px-3 py-1.5 rounded-md text-xs font-bold transition-all
+              ${timeRange === 'monthly'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+              }
+            `}
+          >
+            3M
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Mobile-Optimized Heatmap Grid */}
       <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
