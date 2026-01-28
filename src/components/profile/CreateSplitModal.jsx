@@ -222,35 +222,37 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     </div>
                     Customize Training Days
                   </Label>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {selectedDays.map((day) => {
                       const dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day - 1];
                       const workoutType = customWorkoutTypes[day] || { name: '', color: 'purple' };
                       const selectedColor = workoutColorOptions.find(c => c.value === workoutType.color) || workoutColorOptions[0];
                       
                       return (
-                        <div key={day} className="flex gap-3 items-center">
-                          <div className="w-12 h-12 rounded-xl bg-slate-700/40 flex items-center justify-center border border-slate-600/40 flex-shrink-0">
-                            <span className="text-xs font-bold text-white">{dayName}</span>
+                        <div key={day} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 rounded-lg bg-slate-700/40 flex items-center justify-center border border-slate-600/40 flex-shrink-0">
+                              <span className="text-xs font-bold text-white">{dayName}</span>
+                            </div>
+                            <input
+                              type="text"
+                              value={workoutType.name || ''}
+                              onChange={(e) => updateWorkoutType(day, 'name', e.target.value)}
+                              placeholder="e.g., Upper, Push, Legs"
+                              className="flex-1 px-3 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                            />
                           </div>
-                          <input
-                            type="text"
-                            value={workoutType.name || ''}
-                            onChange={(e) => updateWorkoutType(day, 'name', e.target.value)}
-                            placeholder="e.g., Upper Body, Push, Legs"
-                            className="flex-1 px-3 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                          />
-                          <div className="flex gap-1">
-                            {workoutColorOptions.slice(0, 4).map((color) => (
+                          <div className="flex gap-1.5 pl-12">
+                            {workoutColorOptions.map((color) => (
                               <button
                                 key={color.value}
                                 type="button"
                                 onClick={() => updateWorkoutType(day, 'color', color.value)}
                                 className={`
-                                  w-8 h-8 rounded-lg bg-gradient-to-br ${color.gradient} transition-all
+                                  w-9 h-9 rounded-lg bg-gradient-to-br ${color.gradient} transition-all flex-shrink-0
                                   ${workoutType.color === color.value 
-                                    ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800 scale-110' 
-                                    : 'opacity-50 hover:opacity-100 hover:scale-105'
+                                    ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-800 scale-105' 
+                                    : 'opacity-40 hover:opacity-100 active:scale-95'
                                   }
                                 `}
                               />
@@ -338,14 +340,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           <div className="flex gap-3 pt-2">
             <Button
               onClick={onClose}
-              className="flex-1 h-12 bg-slate-800/60 border-2 border-slate-700/50 text-slate-300 hover:bg-slate-700/60 hover:border-slate-600 rounded-xl font-bold transition-all"
+              className="flex-1 h-11 bg-slate-800/60 border-2 border-slate-700/50 text-slate-300 hover:bg-slate-700/60 hover:border-slate-600 rounded-xl font-bold transition-all text-sm"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={!selectedSplit || (selectedSplit === 'custom' && !customSplitName.trim()) || updateSplitMutation.isPending}
-              className="flex-1 h-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 h-11 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {updateSplitMutation.isPending ? 'Saving...' : 'Save Split'}
             </Button>
