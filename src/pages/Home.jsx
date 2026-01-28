@@ -8,6 +8,7 @@ import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, Map
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
+import TodayWorkout from '../components/profile/TodayWorkout';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
@@ -260,6 +261,11 @@ export default function Home() {
 
 
 
+
+        {/* Today's Workout */}
+        {currentUser?.workout_split && (
+          <TodayWorkout currentUser={currentUser} />
+        )}
 
         {/* Progress Tracker */}
         <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
