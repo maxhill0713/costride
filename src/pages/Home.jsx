@@ -178,28 +178,33 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Header */}
-      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-10">
+      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-2">
-                    Welcome back{currentUser ? `, ${currentUser.full_name?.split(' ')[0]}` : ''}
-                  </h1>
-                  {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-                    <p className="text-slate-400 text-sm font-light">
-                      Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
-                    </p>
-                  )}
+                {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
+                  <p className="text-slate-400 text-sm font-light">
+                    Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
+                  </p>
+                )}
               </div>
-              {currentUser?.account_type === 'gym_owner' && (
-                <Link to={createPageUrl('GymOwnerDashboard')}>
-                  <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Admin View
-                  </Button>
-                </Link>
-              )}
+              <div className="flex items-center gap-3">
+                {currentUser?.account_type === 'gym_owner' && (
+                  <Link to={createPageUrl('GymOwnerDashboard')}>
+                    <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Admin View
+                    </Button>
+                  </Link>
+                )}
+                <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-4 py-2 text-center">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-5 h-5 text-orange-400" />
+                    <div className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
+                  </div>
+                </Card>
+              </div>
             </div>
 
             {daysSinceCheckIn === 0 ? (
@@ -253,13 +258,7 @@ export default function Home() {
           </>
         )}
 
-        {/* Stats Bar */}
-        <div className="flex justify-center">
-          <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 p-4 text-center w-32">
-            <div className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
-            <div className="text-xs text-slate-400 mt-1">Day Streak</div>
-          </Card>
-        </div>
+
 
         {/* Compact Split Heatmap */}
         {currentUser?.workout_split ? (
