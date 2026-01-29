@@ -51,8 +51,11 @@ export default function GymSignup() {
     mutationFn: async (data) => {
       const user = await base44.auth.me();
       
-      // Update user account type to gym_owner
-      await base44.auth.updateMe({ account_type: 'gym_owner' });
+      // Update user account type to gym_owner and mark onboarding as complete
+      await base44.auth.updateMe({ 
+        account_type: 'gym_owner',
+        onboarding_completed: true 
+      });
       
       // Generate unique join code
       const generateCode = async () => {

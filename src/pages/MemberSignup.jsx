@@ -29,19 +29,26 @@ export default function MemberSignup() {
 
   const createMemberMutation = useMutation({
     mutationFn: async (memberData) => {
-      // Update user account type to member
-      await base44.auth.updateMe({ account_type: 'member' });
+      // Update user account type to member and mark onboarding as complete
+      const updates = { 
+        account_type: 'personal',
+        onboarding_completed: true 
+      };
       
       // Update user's full_name if they provided one
       if (memberData.name) {
-        await base44.auth.updateMe({ full_name: memberData.name });
+        updates.full_name = memberData.name;
       }
       
-      return base44.entities.GymMember.create({
-        ...memberData,
-        name: memberData.name || currentUser.full_name,
-        join_date: new Date().toISOString().split('T')[0]
-      });
+      if (memberData.bio) {
+        updates.bio = memberData.bio;
+      }
+      
+      if (memberData.avatar_url) {
+        updates.avatar_url = memberData.avatar_url;
+      }
+      
+      await base44.auth.updateMe(updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });

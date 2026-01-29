@@ -25,6 +25,13 @@ export default function Home() {
     queryFn: () => base44.auth.me()
   });
 
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser, navigate]);
+
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
