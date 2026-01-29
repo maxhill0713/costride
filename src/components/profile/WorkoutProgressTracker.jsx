@@ -102,18 +102,18 @@ export default function WorkoutProgressTracker({ currentUser }) {
   }
 
   return (
-    <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
-      <div className="space-y-3 mb-4">
+    <Card className="bg-slate-800/60 border border-slate-600/40 p-3 rounded-2xl">
+      <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-purple-400" />
-          <h3 className="text-sm font-bold text-white">Workout Progress</h3>
+          <Activity className="w-3.5 h-3.5 text-purple-400" />
+          <h3 className="text-xs font-bold text-white">Workout Progress</h3>
         </div>
         
         {/* Filters */}
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {splitDays.length > 0 && (
             <Select value={selectedDay} onValueChange={setSelectedDay}>
-              <SelectTrigger className="flex-1 h-7 text-xs bg-slate-700/50 border-slate-600/40 text-white">
+              <SelectTrigger className="flex-1 h-6 text-[10px] bg-slate-700/50 border-slate-600/40 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -128,7 +128,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
           )}
           {workoutNames.length > 1 && (
             <Select value={selectedWorkout} onValueChange={setSelectedWorkout}>
-              <SelectTrigger className="flex-1 h-7 text-xs bg-slate-700/50 border-slate-600/40 text-white">
+              <SelectTrigger className="flex-1 h-6 text-[10px] bg-slate-700/50 border-slate-600/40 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -143,42 +143,42 @@ export default function WorkoutProgressTracker({ currentUser }) {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-slate-700/50 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-purple-400">{workoutLogs.length}</div>
-          <div className="text-[9px] text-slate-400 font-medium">Total Logs</div>
+      <div className="grid grid-cols-3 gap-1.5 mb-3">
+        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
+          <div className="text-base font-bold text-purple-400">{workoutLogs.length}</div>
+          <div className="text-[8px] text-slate-400 font-medium">Logs</div>
         </div>
-        <div className="bg-slate-700/50 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-green-400">
+        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
+          <div className="text-base font-bold text-green-400">
             {exerciseProgress.filter(e => e.progress?.direction === 'up').length}
           </div>
-          <div className="text-[9px] text-slate-400 font-medium">Improved</div>
+          <div className="text-[8px] text-slate-400 font-medium">Up</div>
         </div>
-        <div className="bg-slate-700/50 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-blue-400">
+        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
+          <div className="text-base font-bold text-blue-400">
             {new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size}
           </div>
-          <div className="text-[9px] text-slate-400 font-medium">Exercises</div>
+          <div className="text-[8px] text-slate-400 font-medium">Exercises</div>
         </div>
       </div>
 
       {/* Exercise Progress List */}
-      <div className="space-y-2">
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-          Exercise Progress
+      <div className="space-y-1.5">
+        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+          Exercises
         </div>
         {exerciseProgress.length === 0 ? (
-          <div className="p-3 bg-slate-700/50 rounded-lg text-center">
-            <p className="text-slate-400 text-xs">No exercises logged yet</p>
+          <div className="p-2 bg-slate-700/50 rounded-lg text-center">
+            <p className="text-slate-400 text-[10px]">No exercises logged yet</p>
           </div>
         ) : (
-          exerciseProgress.map((exercise, index) => (
-            <div key={index} className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xs font-semibold text-white">{exercise.name}</span>
+          exerciseProgress.slice(0, 5).map((exercise, index) => (
+            <div key={index} className="p-2 bg-slate-700/50 rounded-lg border border-slate-600/30">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <span className="text-[10px] font-semibold text-white">{exercise.name}</span>
                 {exercise.progress && (
                   <Badge 
-                    className={`text-[10px] px-1.5 py-0 ${
+                    className={`text-[9px] px-1 py-0 ${
                       exercise.progress.direction === 'up' 
                         ? 'bg-green-500/20 text-green-400 border-green-500/30' 
                         : exercise.progress.direction === 'down'
@@ -186,48 +186,29 @@ export default function WorkoutProgressTracker({ currentUser }) {
                         : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
                     }`}
                   >
-                    {exercise.progress.direction === 'up' && <TrendingUp className="w-2.5 h-2.5 mr-0.5" />}
-                    {exercise.progress.direction === 'down' && <TrendingDown className="w-2.5 h-2.5 mr-0.5" />}
+                    {exercise.progress.direction === 'up' && <TrendingUp className="w-2 h-2 mr-0.5" />}
+                    {exercise.progress.direction === 'down' && <TrendingDown className="w-2 h-2 mr-0.5" />}
                     {exercise.progress.change > 0 ? '+' : ''}{exercise.progress.change}
                   </Badge>
                 )}
               </div>
               
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 gap-2 text-[10px]">
                 <div>
-                  <div className="text-[10px] text-slate-400 mb-0.5">Current</div>
+                  <div className="text-[8px] text-slate-400 mb-0.5">Current</div>
                   <div className="font-semibold text-slate-200">
                     {exercise.latest.weight} × {exercise.latest.setsReps}
-                  </div>
-                  <div className="text-[9px] text-slate-500">
-                    {new Date(exercise.latest.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                 </div>
                 {exercise.previous && (
                   <div>
-                    <div className="text-[10px] text-slate-400 mb-0.5">Previous</div>
+                    <div className="text-[8px] text-slate-400 mb-0.5">Previous</div>
                     <div className="font-medium text-slate-300">
                       {exercise.previous.weight} × {exercise.previous.setsReps}
-                    </div>
-                    <div className="text-[9px] text-slate-500">
-                      {new Date(exercise.previous.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* History indicator */}
-              {exercise.history.length > 2 && (
-                <div className="mt-2 pt-2 border-t border-slate-600/30">
-                  <div className="flex items-center justify-between text-[10px] text-slate-400">
-                    <span>{exercise.history.length} sessions tracked</span>
-                    <div className="flex items-center gap-1">
-                      <span>View history</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           ))
         )}
