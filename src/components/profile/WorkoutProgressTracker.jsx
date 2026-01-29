@@ -227,7 +227,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
                 )}
                 {exercise.progressFromFirst && (
                   <div>
-                    <div className="text-[8px] text-slate-400 mb-0.5">From Start</div>
+                    <div className="text-[8px] text-slate-400 mb-0.5">First Workout</div>
                     <Badge 
                       className={`text-[9px] px-1 py-0 ${
                         exercise.progressFromFirst.direction === 'up' 
