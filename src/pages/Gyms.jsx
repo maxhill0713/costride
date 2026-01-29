@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, LogIn } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, LogIn, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function Gyms() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function Gyms() {
   const [editingGym, setEditingGym] = useState(null);
   const [showJoinWithCode, setShowJoinWithCode] = useState(false);
   const [savedGyms, setSavedGyms] = useState([]);
+  const [equipmentGym, setEquipmentGym] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -299,8 +301,17 @@ export default function Gyms() {
                               </Badge>
                             </div>
 
-                            {/* Heart & Edit */}
+                            {/* Info, Heart & Edit */}
                             <div className="absolute top-3 right-3 flex gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setEquipmentGym(gym);
+                                }}
+                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              >
+                                <Info className="w-4 h-4 text-slate-300" />
+                              </button>
                               <button
                                 onClick={() => toggleSave(gym.id)}
                                 className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
@@ -486,8 +497,17 @@ export default function Gyms() {
                             )}
                           </div>
 
-                          {/* Heart & Edit */}
+                          {/* Info, Heart & Edit */}
                           <div className="absolute top-3 right-3 flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setEquipmentGym(gym);
+                              }}
+                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            >
+                              <Info className="w-4 h-4 text-slate-300" />
+                            </button>
                             <button
                               onClick={() => toggleSave(gym.id)}
                               className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
@@ -579,6 +599,37 @@ export default function Gyms() {
         onClose={() => setShowJoinWithCode(false)}
         currentUser={currentUser}
       />
+
+      <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Dumbbell className="w-5 h-5 text-blue-400" />
+              {equipmentGym?.name} - Equipment
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2">
+                {equipmentGym.equipment.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/50"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span className="text-slate-200">{item}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No equipment information available</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
