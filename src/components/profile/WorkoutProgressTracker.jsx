@@ -163,7 +163,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
         </div>
         <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
           <div className="text-base font-bold text-green-400">
-            {exerciseProgress.filter(e => e.progress?.direction === 'up').length}
+            {exerciseProgress.filter(e => e.progressFromPrevious?.direction === 'up').length}
           </div>
           <div className="text-[8px] text-slate-400 font-medium">Up</div>
         </div>
