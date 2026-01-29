@@ -2,8 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dumbbell, Edit2, Check, X } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown } from 'lucide-react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function TodayWorkout({ currentUser }) {
@@ -38,6 +39,23 @@ export default function TodayWorkout({ currentUser }) {
   };
 
   const todayWorkout = getTodayWorkout();
+
+  // Fetch last week's workout log
+  const { data: previousWorkouts = [] } = useQuery({
+    queryKey: ['workoutLog', currentUser?.id, adjustedDay],
+    queryFn: async () => {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const logs = await base44.entities.WorkoutLog.filter({
+        user_id: currentUser.id,
+        day_of_week: adjustedDay
+      });
+      return logs.filter(log => new Date(log.completed_date) >= oneWeekAgo);
+    },
+    enabled: !!currentUser?.id
+  });
+
+  const lastWorkout = previousWorkouts.length > 0 ? previousWorkouts[previousWorkouts.length - 1] : null;
 
   const updateWorkoutMutation = useMutation({
     mutationFn: async (updatedExercises) => {
@@ -76,6 +94,45 @@ export default function TodayWorkout({ currentUser }) {
     setEditingIndex(null);
   };
 
+  const logWorkoutMutation = useMutation({
+    mutationFn: async () => {
+      await base44.entities.WorkoutLog.create({
+        user_id: currentUser.id,
+        workout_name: todayWorkout.name,
+        day_of_week: adjustedDay,
+        exercises: todayWorkout.exercises,
+        completed_date: new Date().toISOString().split('T')[0]
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['workoutLog']);
+    }
+  });
+
+  const getProgressIndicator = (exercise, index) => {
+    if (!lastWorkout?.exercises?.[index]) return null;
+    
+    const lastWeight = parseFloat(lastWorkout.exercises[index].weight) || 0;
+    const currentWeight = parseFloat(exercise.weight) || 0;
+    
+    if (currentWeight > lastWeight) {
+      return (
+        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] px-1.5 py-0">
+          <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+          +{(currentWeight - lastWeight).toFixed(1)}
+        </Badge>
+      );
+    } else if (currentWeight < lastWeight) {
+      return (
+        <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px] px-1.5 py-0">
+          <TrendingDown className="w-2.5 h-2.5 mr-0.5" />
+          {(currentWeight - lastWeight).toFixed(1)}
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   if (!todayWorkout) {
     return (
       <Card className="bg-slate-800/60 border border-slate-600/40 p-6 rounded-2xl text-center">
@@ -87,21 +144,48 @@ export default function TodayWorkout({ currentUser }) {
 
   return (
     <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <Dumbbell className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-sm font-bold text-white">Today's Workout</h3>
+      <div className="space-y-2 mb-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Dumbbell className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-sm font-bold text-white">Today's Workout</h3>
+          </div>
+          <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            {todayWorkout.name}
+          </h2>
         </div>
-        <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-          {todayWorkout.name}
-        </h2>
+        {lastWorkout && (
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] text-slate-400">
+              Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
+            </p>
+            <Button
+              onClick={() => logWorkoutMutation.mutate()}
+              disabled={logWorkoutMutation.isPending}
+              size="sm"
+              className="h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700"
+            >
+              Log Completed
+            </Button>
+          </div>
+        )}
+        {!lastWorkout && todayWorkout.exercises.length > 0 && (
+          <Button
+            onClick={() => logWorkoutMutation.mutate()}
+            disabled={logWorkoutMutation.isPending}
+            size="sm"
+            className="h-6 text-[10px] w-full bg-indigo-600 hover:bg-indigo-700"
+          >
+            Log Completed
+          </Button>
+        )}
       </div>
 
       {/* Exercises */}
       {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
         <div className="space-y-2">
           {/* Headers */}
-          <div className="grid grid-cols-3 gap-2 mb-1.5">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Exercise</div>
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Sets x Reps</div>
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Weight</div>
@@ -109,10 +193,17 @@ export default function TodayWorkout({ currentUser }) {
 
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-3 gap-2'}`}>
+            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
               {editingIndex === index ? (
                 <div className="space-y-2">
-                  <div className="text-xs font-semibold text-white mb-2">{exercise.exercise}</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold text-white">{exercise.exercise}</div>
+                    {lastWorkout?.exercises?.[index] && (
+                      <div className="text-[9px] text-slate-400">
+                        Last: {lastWorkout.exercises[index].weight}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Input
                       type="text"
@@ -150,21 +241,31 @@ export default function TodayWorkout({ currentUser }) {
                 </div>
               ) : (
                 <>
-                  <div className="text-xs font-semibold text-white">
-                    {exercise.exercise || '-'}
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-xs font-semibold text-white">
+                      {exercise.exercise || '-'}
+                    </div>
+                    {lastWorkout?.exercises?.[index] && (
+                      <div className="text-[9px] text-slate-400">
+                        Last: {lastWorkout.exercises[index].weight}
+                      </div>
+                    )}
                   </div>
                   <div className="text-sm text-slate-300">
                     {exercise.setsReps || '-'}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-300">
-                      {exercise.weight || '-'}
-                    </span>
+                  <div className="flex items-center gap-2 justify-end">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-slate-300">
+                        {exercise.weight || '-'}
+                      </span>
+                      {getProgressIndicator(exercise, index)}
+                    </div>
                     <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
-                      className="w-5 h-5 text-slate-400 hover:text-white"
+                      className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
                     >
                       <Edit2 className="w-3 h-3" />
                     </Button>
