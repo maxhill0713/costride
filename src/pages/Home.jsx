@@ -474,45 +474,7 @@ export default function Home() {
 
 
 
-        {/* Today's Activity */}
-        {todayLifts.length > 0 && (
-          <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 rounded-3xl shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent flex items-center gap-2">
-                <Dumbbell className="w-6 h-6 text-purple-400" />
-                Today's Lifts
-              </h2>
-              <Link to={createPageUrl('Leaderboard')}>
-                <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300">
-                  View All
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {todayLifts.map((lift) => (
-                <div key={lift.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-700/60 via-purple-900/40 to-pink-900/40 rounded-2xl border border-slate-600/40">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                      <Dumbbell className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-100 text-sm">{lift.member_name}</p>
-                      <p className="text-xs text-slate-300 capitalize">{lift.exercise?.replace(/_/g, ' ')}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-base font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{lift.weight_lbs}</p>
-                    <p className="text-xs text-slate-500">lbs {lift.reps && `× ${lift.reps}`}</p>
-                    {lift.is_pr && (
-                      <Badge className="bg-red-500 text-white text-xs mt-1">PR! 🔥</Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
+
 
         {/* Premium Upgrade Card */}
         <Card className="p-6 bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-900/80 backdrop-blur-sm border border-purple-600/40 text-white relative overflow-hidden">
