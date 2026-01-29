@@ -161,30 +161,40 @@ export default function TodayWorkout({ currentUser }) {
             {todayWorkout.name}
           </h2>
         </div>
-        {lastWorkout && (
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] text-slate-400">
-              Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
-            </p>
-            <Button
-              onClick={() => logWorkoutMutation.mutate()}
-              disabled={logWorkoutMutation.isPending}
-              size="sm"
-              className="h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700"
-            >
-              Log Completed
-            </Button>
+        {alreadyLoggedToday ? (
+          <div className="text-center py-1">
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">
+              ✓ Logged Today
+            </Badge>
           </div>
-        )}
-        {!lastWorkout && todayWorkout.exercises.length > 0 && (
-          <Button
-            onClick={() => logWorkoutMutation.mutate()}
-            disabled={logWorkoutMutation.isPending}
-            size="sm"
-            className="h-6 text-[10px] w-full bg-indigo-600 hover:bg-indigo-700"
-          >
-            Log Completed
-          </Button>
+        ) : (
+          <>
+            {lastWorkout && (
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-slate-400">
+                  Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
+                </p>
+                <Button
+                  onClick={() => logWorkoutMutation.mutate()}
+                  disabled={logWorkoutMutation.isPending}
+                  size="sm"
+                  className="h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Log Completed
+                </Button>
+              </div>
+            )}
+            {!lastWorkout && todayWorkout.exercises.length > 0 && (
+              <Button
+                onClick={() => logWorkoutMutation.mutate()}
+                disabled={logWorkoutMutation.isPending}
+                size="sm"
+                className="h-6 text-[10px] w-full bg-indigo-600 hover:bg-indigo-700"
+              >
+                Log Completed
+              </Button>
+            )}
+          </>
         )}
       </div>
 
