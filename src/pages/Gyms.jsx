@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, LogIn } from 'lucide-react';
@@ -8,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 
 export default function Gyms() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [maxDistance, setMaxDistance] = useState('all');
@@ -27,6 +28,13 @@ export default function Gyms() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => null)
   });
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser, navigate]);
 
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
