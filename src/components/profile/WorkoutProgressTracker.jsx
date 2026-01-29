@@ -209,13 +209,6 @@ export default function WorkoutProgressTracker({ currentUser }) {
               </div>
               
               <div className="grid grid-cols-3 gap-2 text-[10px]">
-                <div>
-                  <div className="text-[8px] text-slate-400 mb-0.5">Current</div>
-                  <div className="font-bold text-white text-sm">
-                    {exercise.latest.weight}kg
-                  </div>
-                  <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
-                </div>
                 {exercise.previous && (
                   <div>
                     <div className="text-[8px] text-slate-400 mb-0.5">Previous</div>
@@ -225,20 +218,20 @@ export default function WorkoutProgressTracker({ currentUser }) {
                     <div className="text-[9px] text-slate-400">{exercise.previous.setsReps}</div>
                   </div>
                 )}
-                {exercise.progressFromFirst && (
+                <div>
+                  <div className="text-[8px] text-slate-400 mb-0.5">Current</div>
+                  <div className="font-bold text-white text-sm">
+                    {exercise.latest.weight}kg
+                  </div>
+                  <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
+                </div>
+                {exercise.first && exercise.progressFromFirst && (
                   <div>
                     <div className="text-[8px] text-slate-400 mb-0.5">First Workout</div>
-                    <Badge 
-                      className={`text-[9px] px-1 py-0 ${
-                        exercise.progressFromFirst.direction === 'up' 
-                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
-                          : exercise.progressFromFirst.direction === 'down'
-                          ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                          : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                      }`}
-                    >
-                      {exercise.progressFromFirst.change > 0 ? '+' : ''}{exercise.progressFromFirst.change}kg
-                    </Badge>
+                    <div className="font-semibold text-slate-300 text-sm">
+                      {exercise.first.weight}kg
+                    </div>
+                    <div className="text-[9px] text-slate-400">{exercise.first.setsReps}</div>
                   </div>
                 )}
               </div>
