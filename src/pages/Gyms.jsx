@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, LogIn, Info } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, LogIn, Info, Images } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ export default function Gyms() {
   const [showJoinWithCode, setShowJoinWithCode] = useState(false);
   const [savedGyms, setSavedGyms] = useState([]);
   const [equipmentGym, setEquipmentGym] = useState(null);
+  const [galleryGym, setGalleryGym] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -301,8 +302,17 @@ export default function Gyms() {
                               </Badge>
                             </div>
 
-                            {/* Info, Heart & Edit */}
+                            {/* Icons: Gallery, Info, Heart & Edit */}
                             <div className="absolute top-3 right-3 flex gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setGalleryGym(gym);
+                                }}
+                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              >
+                                <Images className="w-4 h-4 text-slate-300" />
+                              </button>
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
@@ -497,8 +507,17 @@ export default function Gyms() {
                             )}
                           </div>
 
-                          {/* Info, Heart & Edit */}
+                          {/* Icons: Gallery, Info, Heart & Edit */}
                           <div className="absolute top-3 right-3 flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setGalleryGym(gym);
+                              }}
+                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            >
+                              <Images className="w-4 h-4 text-slate-300" />
+                            </button>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -625,6 +644,40 @@ export default function Gyms() {
               <div className="text-center py-8 text-slate-400">
                 <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No equipment information available</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!galleryGym} onOpenChange={() => setGalleryGym(null)}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Images className="w-5 h-5 text-blue-400" />
+              {galleryGym?.name} - Gallery
+            </DialogTitle>
+          </DialogHeader>
+          <div>
+            {galleryGym?.gallery && galleryGym.gallery.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {galleryGym.gallery.map((imageUrl, idx) => (
+                  <div
+                    key={idx}
+                    className="aspect-square rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600/50"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`${galleryGym.name} photo ${idx + 1}`}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-400">
+                <Images className="w-16 h-16 mx-auto mb-3 opacity-50" />
+                <p>No photos available</p>
               </div>
             )}
           </div>
