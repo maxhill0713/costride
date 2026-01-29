@@ -255,26 +255,6 @@ export default function Gyms() {
         {userGyms.length > 0 && (
           <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-6">
             <div className="max-w-6xl mx-auto">
-              {/* Stats Banner */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 rounded-2xl p-4 text-center">
-                  <div className="text-3xl font-black text-blue-300">{userGyms.length}</div>
-                  <div className="text-xs text-slate-400 mt-1">Active Memberships</div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-2xl p-4 text-center">
-                  <div className="text-3xl font-black text-purple-300">
-                    {userGyms.reduce((sum, g) => sum + (g.members_count || 0), 0)}
-                  </div>
-                  <div className="text-xs text-slate-400 mt-1">Total Members</div>
-                </div>
-                <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-4 text-center">
-                  <div className="text-3xl font-black text-green-300">
-                    {(userGyms.reduce((sum, g) => sum + (g.rating || 0), 0) / userGyms.length).toFixed(1)}
-                  </div>
-                  <div className="text-xs text-slate-400 mt-1">Avg Rating</div>
-                </div>
-              </div>
-
               {/* Gyms Grid */}
               {userGyms.length === 0 ? (
                 <div className="text-center py-12">
