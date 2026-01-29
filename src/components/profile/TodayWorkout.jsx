@@ -201,12 +201,12 @@ export default function TodayWorkout({ currentUser }) {
 
       {/* Exercises */}
       {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {/* Headers */}
-          <div className="grid grid-cols-[1fr_auto_auto] gap-3 mb-2">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
+          <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
           </div>
 
           {/* Exercise Rows */}
