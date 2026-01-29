@@ -702,7 +702,29 @@ export default function GymOwnerDashboard() {
              ) : (
                <Button
                  onClick={async () => {
-                   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                   // Generate unique 6-character code
+                   const generateCode = async () => {
+                     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                     let code;
+                     let isUnique = false;
+                     let attempts = 0;
+
+                     while (!isUnique && attempts < 10) {
+                       code = '';
+                       for (let i = 0; i < 6; i++) {
+                         code += chars.charAt(Math.floor(Math.random() * chars.length));
+                       }
+
+                       // Check if code already exists
+                       const existing = await base44.entities.Gym.filter({ join_code: code });
+                       isUnique = existing.length === 0;
+                       attempts++;
+                     }
+
+                     return code;
+                   };
+
+                   const code = await generateCode();
                    await base44.entities.Gym.update(selectedGym.id, { join_code: code });
                    queryClient.invalidateQueries({ queryKey: ['gyms'] });
                  }}
