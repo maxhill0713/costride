@@ -259,22 +259,22 @@ export default function TodayWorkout({ currentUser }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col gap-0.5">
-                    <div className="text-xs font-semibold text-white">
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-semibold text-white leading-tight">
                       {exercise.exercise || '-'}
                     </div>
                     {lastWorkout?.exercises?.[index] && (
-                      <div className="text-[9px] text-slate-400">
-                        Last: {lastWorkout.exercises[index].weight}
+                      <div className="text-xs text-slate-400 font-medium">
+                        Last: {lastWorkout.exercises[index].weight}kg
                       </div>
                     )}
                   </div>
-                  <div className="text-sm text-slate-300">
+                  <div className="text-sm font-medium text-slate-200">
                     {exercise.setsReps || '-'}
                   </div>
                   <div className="flex items-center gap-2 justify-end">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm text-slate-300">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-semibold text-white">
                         {exercise.weight || '-'}
                       </span>
                       {getProgressIndicator(exercise, index)}
@@ -283,9 +283,9 @@ export default function TodayWorkout({ currentUser }) {
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
-                      className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
+                      className="w-6 h-6 text-slate-400 hover:text-white shrink-0"
                     >
-                      <Edit2 className="w-3 h-3" />
+                      <Edit2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </>
