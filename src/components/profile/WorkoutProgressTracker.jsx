@@ -68,13 +68,24 @@ export default function WorkoutProgressTracker({ currentUser }) {
       
       const latest = records[records.length - 1];
       const previous = records[records.length - 2];
+      const first = records[0];
       
-      let progress = null;
+      let progressFromPrevious = null;
       if (previous && latest) {
         const change = latest.weight - previous.weight;
-        progress = {
+        progressFromPrevious = {
           change,
           percentage: previous.weight > 0 ? ((change / previous.weight) * 100).toFixed(1) : 0,
+          direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same'
+        };
+      }
+
+      let progressFromFirst = null;
+      if (first && latest && records.length > 1 && first !== latest) {
+        const change = latest.weight - first.weight;
+        progressFromFirst = {
+          change,
+          percentage: first.weight > 0 ? ((change / first.weight) * 100).toFixed(1) : 0,
           direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same'
         };
       }
@@ -83,7 +94,9 @@ export default function WorkoutProgressTracker({ currentUser }) {
         name: exerciseName,
         latest,
         previous,
-        progress,
+        first,
+        progressFromPrevious,
+        progressFromFirst,
         history: records
       };
     }).filter(ex => ex.latest);
