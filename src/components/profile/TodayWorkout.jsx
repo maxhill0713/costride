@@ -100,6 +100,9 @@ export default function TodayWorkout({ currentUser }) {
 
   const logWorkoutMutation = useMutation({
     mutationFn: async () => {
+      if (alreadyLoggedToday) {
+        throw new Error('You have already logged this workout today');
+      }
       await base44.entities.WorkoutLog.create({
         user_id: currentUser.id,
         workout_name: todayWorkout.name,
