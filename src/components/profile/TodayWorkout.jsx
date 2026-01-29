@@ -150,7 +150,7 @@ export default function TodayWorkout({ currentUser }) {
   }
 
   return (
-    <Card className="bg-slate-800/60 border border-slate-600/40 p-5 rounded-2xl">
+    <Card className="bg-slate-800/30 backdrop-blur-xl border border-slate-600/20 shadow-2xl shadow-slate-900/50 p-5 rounded-2xl">
       <div className="space-y-3 mb-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
