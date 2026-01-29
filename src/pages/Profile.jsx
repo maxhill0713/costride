@@ -515,29 +515,8 @@ export default function Profile() {
           </Card>
         </div>
 
-        {/* Identity Card */}
-        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl shadow-md">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-yellow-500/20">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className={`text-base font-semibold text-white mb-3`}>
-                {identityStatus.title}
-              </h3>
-              <div className="space-y-2">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
-                  <p className="text-xs text-slate-300 font-bold mb-1">YOUR JOURNEY</p>
-                  <p className="text-sm text-white line-clamp-2">{identityStatus.subtitle}</p>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 overflow-hidden">
-                  <p className="text-xs text-slate-300 font-bold mb-1">NEXT MILESTONE</p>
-                  <p className="text-sm text-white line-clamp-2">{identityStatus.next}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+        {/* Consistency Journey */}
+        <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
 {/* Protection & Risk Info */}
 {currentStreak > 0 && (
