@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Share2, X, Crown, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, subDays, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
@@ -185,10 +185,19 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.auth.me()
   });
 
+  const navigate = useNavigate();
+
   // Auto-refetch on mount to get latest user data
   React.useEffect(() => {
     refetchUser();
   }, []);
+
+  // Redirect to onboarding if not completed
+  React.useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser, navigate]);
 
   const { data: gyms = [] } = useQuery({
     queryKey: ['gyms'],
