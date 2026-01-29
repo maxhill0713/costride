@@ -161,6 +161,7 @@ export default function TodayWorkout({ currentUser }) {
             {todayWorkout.name}
           </h2>
         </div>
+        <p className="text-[10px] text-slate-400 italic">Log your lifts to track progress</p>
         {alreadyLoggedToday ? (
           <div className="text-center py-1">
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">
