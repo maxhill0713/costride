@@ -189,24 +189,26 @@ export default function WorkoutProgressTracker({ currentUser }) {
             <div key={index} className="p-2 bg-slate-700/50 rounded-lg border border-slate-600/30">
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <span className="text-[10px] font-semibold text-white">{exercise.name}</span>
-                {exercise.progress && (
-                  <Badge 
-                    className={`text-[9px] px-1 py-0 ${
-                      exercise.progress.direction === 'up' 
-                        ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                        : exercise.progress.direction === 'down'
-                        ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                        : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                    }`}
-                  >
-                    {exercise.progress.direction === 'up' && <TrendingUp className="w-2 h-2 mr-0.5" />}
-                    {exercise.progress.direction === 'down' && <TrendingDown className="w-2 h-2 mr-0.5" />}
-                    {exercise.progress.change > 0 ? '+' : ''}{exercise.progress.change}
-                  </Badge>
-                )}
+                <div className="flex gap-1">
+                  {exercise.progressFromPrevious && (
+                    <Badge 
+                      className={`text-[9px] px-1 py-0 ${
+                        exercise.progressFromPrevious.direction === 'up' 
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                          : exercise.progressFromPrevious.direction === 'down'
+                          ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                          : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                      }`}
+                    >
+                      {exercise.progressFromPrevious.direction === 'up' && <TrendingUp className="w-2 h-2 mr-0.5" />}
+                      {exercise.progressFromPrevious.direction === 'down' && <TrendingDown className="w-2 h-2 mr-0.5" />}
+                      {exercise.progressFromPrevious.change > 0 ? '+' : ''}{exercise.progressFromPrevious.change}
+                    </Badge>
+                  )}
+                </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div className="grid grid-cols-3 gap-2 text-[10px]">
                 <div>
                   <div className="text-[8px] text-slate-400 mb-0.5">Current</div>
                   <div className="font-bold text-white text-sm">
@@ -221,6 +223,22 @@ export default function WorkoutProgressTracker({ currentUser }) {
                       {exercise.previous.weight}kg
                     </div>
                     <div className="text-[9px] text-slate-400">{exercise.previous.setsReps}</div>
+                  </div>
+                )}
+                {exercise.progressFromFirst && (
+                  <div>
+                    <div className="text-[8px] text-slate-400 mb-0.5">From Start</div>
+                    <Badge 
+                      className={`text-[9px] px-1 py-0 ${
+                        exercise.progressFromFirst.direction === 'up' 
+                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
+                          : exercise.progressFromFirst.direction === 'down'
+                          ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                          : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                      }`}
+                    >
+                      {exercise.progressFromFirst.change > 0 ? '+' : ''}{exercise.progressFromFirst.change}kg
+                    </Badge>
                   </div>
                 )}
               </div>
