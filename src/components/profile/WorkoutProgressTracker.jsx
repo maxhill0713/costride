@@ -91,24 +91,6 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
   const exerciseProgress = getExerciseProgress();
 
-  // Calculate overall metrics
-  const metrics = {
-    totalVolume: filteredLogs.reduce((sum, log) => {
-      return sum + (log.exercises?.reduce((exSum, ex) => {
-        const weight = parseFloat(ex.weight) || 0;
-        const sets = parseInt(ex.setsReps?.split('x')[0]) || 1;
-        const reps = parseInt(ex.setsReps?.split('x')[1]) || 1;
-        return exSum + (weight * sets * reps);
-      }, 0) || 0);
-    }, 0),
-    avgImprovement: exerciseProgress.filter(e => e.progress?.direction === 'up').length > 0
-      ? (exerciseProgress.filter(e => e.progress?.direction === 'up').reduce((sum, e) => sum + e.progress.change, 0) / 
-         exerciseProgress.filter(e => e.progress?.direction === 'up').length).toFixed(1)
-      : 0,
-    totalExercises: new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size,
-    workoutFrequency: filteredLogs.length
-  };
-
   if (workoutLogs.length === 0) {
     return (
       <Card className="bg-slate-800/60 border border-slate-600/40 p-6 rounded-2xl text-center">
@@ -160,23 +142,23 @@ export default function WorkoutProgressTracker({ currentUser }) {
         </div>
       </div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-2 gap-1.5 mb-3">
-        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg p-2 border border-purple-500/30">
-          <div className="text-[8px] text-purple-300 font-medium mb-0.5">Total Volume</div>
-          <div className="text-sm font-bold text-white">{(metrics.totalVolume / 1000).toFixed(1)}k kg</div>
+      {/* Summary Stats */}
+      <div className="grid grid-cols-3 gap-1.5 mb-3">
+        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
+          <div className="text-base font-bold text-purple-400">{workoutLogs.length}</div>
+          <div className="text-[8px] text-slate-400 font-medium">Logs</div>
         </div>
-        <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg p-2 border border-green-500/30">
-          <div className="text-[8px] text-green-300 font-medium mb-0.5">Avg Improvement</div>
-          <div className="text-sm font-bold text-white">+{metrics.avgImprovement} kg</div>
+        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
+          <div className="text-base font-bold text-green-400">
+            {exerciseProgress.filter(e => e.progress?.direction === 'up').length}
+          </div>
+          <div className="text-[8px] text-slate-400 font-medium">Up</div>
         </div>
-        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg p-2 border border-blue-500/30">
-          <div className="text-[8px] text-blue-300 font-medium mb-0.5">Exercises</div>
-          <div className="text-sm font-bold text-white">{metrics.totalExercises}</div>
-        </div>
-        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-lg p-2 border border-orange-500/30">
-          <div className="text-[8px] text-orange-300 font-medium mb-0.5">Sessions</div>
-          <div className="text-sm font-bold text-white">{metrics.workoutFrequency}</div>
+        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
+          <div className="text-base font-bold text-blue-400">
+            {new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size}
+          </div>
+          <div className="text-[8px] text-slate-400 font-medium">Exercises</div>
         </div>
       </div>
 
