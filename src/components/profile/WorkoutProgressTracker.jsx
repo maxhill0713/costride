@@ -209,6 +209,15 @@ export default function WorkoutProgressTracker({ currentUser }) {
               </div>
               
               <div className="grid grid-cols-3 gap-2 text-[10px]">
+                {exercise.first && exercise.progressFromFirst && (
+                  <div>
+                    <div className="text-[8px] text-slate-400 mb-0.5">First Workout</div>
+                    <div className="font-semibold text-slate-300 text-sm">
+                      {exercise.first.weight}kg
+                    </div>
+                    <div className="text-[9px] text-slate-400">{exercise.first.setsReps}</div>
+                  </div>
+                )}
                 {exercise.previous && (
                   <div>
                     <div className="text-[8px] text-slate-400 mb-0.5">Previous</div>
@@ -225,15 +234,6 @@ export default function WorkoutProgressTracker({ currentUser }) {
                   </div>
                   <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
                 </div>
-                {exercise.first && exercise.progressFromFirst && (
-                  <div>
-                    <div className="text-[8px] text-slate-400 mb-0.5">First Workout</div>
-                    <div className="font-semibold text-slate-300 text-sm">
-                      {exercise.first.weight}kg
-                    </div>
-                    <div className="text-[9px] text-slate-400">{exercise.first.setsReps}</div>
-                  </div>
-                )}
               </div>
             </div>
           ))
