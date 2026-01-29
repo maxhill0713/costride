@@ -196,16 +196,18 @@ export default function WorkoutProgressTracker({ currentUser }) {
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 <div>
                   <div className="text-[8px] text-slate-400 mb-0.5">Current</div>
-                  <div className="font-semibold text-slate-200">
-                    {exercise.latest.weight} × {exercise.latest.setsReps}
+                  <div className="font-bold text-white text-sm">
+                    {exercise.latest.weight}kg
                   </div>
+                  <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
                 </div>
                 {exercise.previous && (
                   <div>
                     <div className="text-[8px] text-slate-400 mb-0.5">Previous</div>
-                    <div className="font-medium text-slate-300">
-                      {exercise.previous.weight} × {exercise.previous.setsReps}
+                    <div className="font-semibold text-slate-300 text-sm">
+                      {exercise.previous.weight}kg
                     </div>
+                    <div className="text-[9px] text-slate-400">{exercise.previous.setsReps}</div>
                   </div>
                 )}
               </div>
