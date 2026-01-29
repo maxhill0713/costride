@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function WorkoutProgressTracker({ currentUser }) {
   const [selectedWorkout, setSelectedWorkout] = useState('all');
+  const [selectedDay, setSelectedDay] = useState('all');
 
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
@@ -31,10 +32,18 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
   const workoutNames = Object.keys(workoutGroups);
 
+  // Get unique days from user's split
+  const splitDays = currentUser?.custom_workout_types ? Object.keys(currentUser.custom_workout_types).map(Number).sort() : [];
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
   // Filter logs based on selection
-  const filteredLogs = selectedWorkout === 'all' 
-    ? workoutLogs 
-    : workoutLogs.filter(log => log.workout_name === selectedWorkout);
+  let filteredLogs = workoutLogs;
+  if (selectedWorkout !== 'all') {
+    filteredLogs = filteredLogs.filter(log => log.workout_name === selectedWorkout);
+  }
+  if (selectedDay !== 'all') {
+    filteredLogs = filteredLogs.filter(log => log.day_of_week === parseInt(selectedDay));
+  }
 
   // Calculate progress for each exercise
   const getExerciseProgress = () => {
@@ -94,24 +103,43 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
   return (
     <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
-      <div className="flex items-center justify-between gap-2 mb-4">
+      <div className="space-y-3 mb-4">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-purple-400" />
           <h3 className="text-sm font-bold text-white">Workout Progress</h3>
         </div>
-        {workoutNames.length > 1 && (
-          <Select value={selectedWorkout} onValueChange={setSelectedWorkout}>
-            <SelectTrigger className="w-32 h-7 text-xs bg-slate-700/50 border-slate-600/40 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Workouts</SelectItem>
-              {workoutNames.map(name => (
-                <SelectItem key={name} value={name}>{name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        
+        {/* Filters */}
+        <div className="flex gap-2">
+          {splitDays.length > 0 && (
+            <Select value={selectedDay} onValueChange={setSelectedDay}>
+              <SelectTrigger className="flex-1 h-7 text-xs bg-slate-700/50 border-slate-600/40 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Days</SelectItem>
+                {splitDays.map(day => (
+                  <SelectItem key={day} value={day.toString()}>
+                    {dayNames[day - 1]} - {currentUser.custom_workout_types[day]?.name || 'Training'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {workoutNames.length > 1 && (
+            <Select value={selectedWorkout} onValueChange={setSelectedWorkout}>
+              <SelectTrigger className="flex-1 h-7 text-xs bg-slate-700/50 border-slate-600/40 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Workouts</SelectItem>
+                {workoutNames.map(name => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {/* Summary Stats */}
