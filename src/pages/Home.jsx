@@ -211,27 +211,6 @@ export default function Home() {
                 </Card>
               </div>
             </div>
-
-            {daysSinceCheckIn === 0 ? (
-               <Badge className="w-fit bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm px-6 py-3 shadow-lg animate-pulse">
-                 <CheckCircle className="w-5 h-5 mr-2" />
-                 Checked In ✓
-               </Badge>
-             ) : memberGym ? (
-               <Button 
-                 onClick={() => setShowCheckIn(true)}
-                 className={`w-fit text-white border-0 shadow-lg px-6 py-3 text-base ${
-                   daysSinceCheckIn === null || daysSinceCheckIn === 0
-                     ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
-                     : daysSinceCheckIn >= 3
-                     ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'
-                     : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
-                 }`}
-               >
-                 <CheckCircle className="w-5 h-5 mr-2" />
-                 Check In Now
-               </Button>
-             ) : null}
           </div>
         </div>
       </div>
