@@ -25,6 +25,7 @@ import CheckInHeatmap from '../components/profile/CheckInHeatmap';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
+import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 
 
 export default function Profile() {
@@ -645,6 +646,9 @@ export default function Profile() {
             </Card>
             
             <ConsistencyJourney totalCheckIns={userCheckIns.length} />
+
+            {/* Workout Progress Tracker */}
+            <WorkoutProgressTracker currentUser={currentUser} />
 
             {/* Progress Stats */}
             <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-blue-500/20 p-5 shadow-sm">
