@@ -294,8 +294,8 @@ export default function TodayWorkout({ currentUser }) {
           ))}
         </div>
       ) : (
-        <div className="p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
-          <p className="text-slate-400 text-xs">Rest day - No exercises scheduled</p>
+        <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
+          <p className="text-slate-300 text-sm font-medium">Rest day - No exercises scheduled</p>
         </div>
       )}
     </Card>
