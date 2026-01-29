@@ -601,23 +601,23 @@ export default function Gyms() {
       />
 
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Dumbbell className="w-5 h-5 text-blue-400" />
               {equipmentGym?.name} - Equipment
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+          <div className="space-y-3">
             {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ? (
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {equipmentGym.equipment.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/50"
+                    className="flex items-center gap-2 p-2 bg-slate-700/50 rounded-lg border border-slate-600/50"
                   >
-                    <div className="w-2 h-2 rounded-full bg-blue-400" />
-                    <span className="text-slate-200">{item}</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                    <span className="text-slate-200 text-sm">{item}</span>
                   </div>
                 ))}
               </div>
