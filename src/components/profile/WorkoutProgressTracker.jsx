@@ -120,7 +120,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
                 <SelectItem value="all">All Days</SelectItem>
                 {splitDays.map(day => (
                   <SelectItem key={day} value={day.toString()}>
-                    {dayNames[day - 1]} - {currentUser.custom_workout_types[day]?.name || 'Training'}
+                    {currentUser.custom_workout_types[day]?.name || 'Training'}
                   </SelectItem>
                 ))}
               </SelectContent>
