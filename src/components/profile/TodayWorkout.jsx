@@ -163,8 +163,8 @@ export default function TodayWorkout({ currentUser }) {
         </div>
         <p className="text-xs text-slate-400 leading-relaxed">Log your lifts to track progress</p>
         {alreadyLoggedToday ? (
-          <div className="text-center py-1">
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">
+          <div className="text-center py-1.5">
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs font-semibold px-3 py-1">
               ✓ Logged Today
             </Badge>
           </div>
@@ -172,14 +172,14 @@ export default function TodayWorkout({ currentUser }) {
           <>
             {lastWorkout && (
               <div className="flex items-center justify-between">
-                <p className="text-[10px] text-slate-400">
+                <p className="text-xs text-slate-400 font-medium">
                   Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
                 </p>
                 <Button
                   onClick={() => logWorkoutMutation.mutate()}
                   disabled={logWorkoutMutation.isPending}
                   size="sm"
-                  className="h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700"
+                  className="h-7 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700"
                 >
                   Log Completed
                 </Button>
@@ -190,7 +190,7 @@ export default function TodayWorkout({ currentUser }) {
                 onClick={() => logWorkoutMutation.mutate()}
                 disabled={logWorkoutMutation.isPending}
                 size="sm"
-                className="h-6 text-[10px] w-full bg-indigo-600 hover:bg-indigo-700"
+                className="h-7 text-xs font-semibold w-full bg-indigo-600 hover:bg-indigo-700"
               >
                 Log Completed
               </Button>
