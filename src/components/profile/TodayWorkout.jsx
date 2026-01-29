@@ -56,6 +56,10 @@ export default function TodayWorkout({ currentUser }) {
   });
 
   const lastWorkout = previousWorkouts.length > 0 ? previousWorkouts[previousWorkouts.length - 1] : null;
+  
+  // Check if workout already logged today
+  const todayDate = new Date().toISOString().split('T')[0];
+  const alreadyLoggedToday = previousWorkouts.some(log => log.completed_date === todayDate);
 
   const updateWorkoutMutation = useMutation({
     mutationFn: async (updatedExercises) => {
