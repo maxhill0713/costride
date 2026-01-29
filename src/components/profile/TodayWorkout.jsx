@@ -211,14 +211,14 @@ export default function TodayWorkout({ currentUser }) {
 
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
+            <div key={index} className={`p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-3 items-center'}`}>
               {editingIndex === index ? (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs font-semibold text-white">{exercise.exercise}</div>
+                    <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
                     {lastWorkout?.exercises?.[index] && (
-                      <div className="text-[9px] text-slate-400">
-                        Last: {lastWorkout.exercises[index].weight}
+                      <div className="text-xs text-slate-400 font-medium">
+                        Last: {lastWorkout.exercises[index].weight}kg
                       </div>
                     )}
                   </div>
