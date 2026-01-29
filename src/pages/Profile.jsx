@@ -623,8 +623,6 @@ export default function Profile() {
                 customWorkoutTypes={currentUser?.custom_workout_types || {}}
               />
             </Card>
-            
-            <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
             {/* Workout Progress Tracker */}
             <WorkoutProgressTracker currentUser={currentUser} />
