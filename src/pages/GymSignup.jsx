@@ -54,12 +54,37 @@ export default function GymSignup() {
       // Update user account type to gym_owner
       await base44.auth.updateMe({ account_type: 'gym_owner' });
       
+      // Generate unique join code
+      const generateCode = async () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code;
+        let isUnique = false;
+        let attempts = 0;
+
+        while (!isUnique && attempts < 10) {
+          code = '';
+          for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          
+          // Check if code already exists
+          const existing = await base44.entities.Gym.filter({ join_code: code });
+          isUnique = existing.length === 0;
+          attempts++;
+        }
+
+        return code;
+      };
+
+      const joinCode = await generateCode();
+      
       // Auto-detect language based on city if not set
       const gymLanguage = data.language || detectLanguageFromCity(data.city);
       const gym = await base44.entities.Gym.create({
         ...data,
         language: gymLanguage,
         owner_email: user.email,
+        join_code: joinCode,
         verified: false,
         rating: 0,
         members_count: 0
