@@ -124,15 +124,15 @@ export default function TodayWorkout({ currentUser }) {
     
     if (currentWeight > lastWeight) {
       return (
-        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] px-1.5 py-0">
-          <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs font-semibold px-2 py-0.5">
+          <TrendingUp className="w-3 h-3 mr-0.5" />
           +{(currentWeight - lastWeight).toFixed(1)}
         </Badge>
       );
     } else if (currentWeight < lastWeight) {
       return (
-        <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px] px-1.5 py-0">
-          <TrendingDown className="w-2.5 h-2.5 mr-0.5" />
+        <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs font-semibold px-2 py-0.5">
+          <TrendingDown className="w-3 h-3 mr-0.5" />
           {(currentWeight - lastWeight).toFixed(1)}
         </Badge>
       );
