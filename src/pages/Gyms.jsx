@@ -86,12 +86,7 @@ export default function Gyms() {
     );
   };
 
-  // Auto-redirect if user has exactly 1 gym
-  React.useEffect(() => {
-    if (userGyms.length === 1 && gyms.length > 0) {
-      window.location.href = createPageUrl('GymCommunity') + '?id=' + userGyms[0].id;
-    }
-  }, [userGyms, gyms]);
+
 
   const GymCard = ({ gym }) => {
     const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
