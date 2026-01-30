@@ -195,12 +195,9 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <span className="text-xl font-bold text-orange-400">{userStreak}</span>
-                <div className="relative w-8 h-8">
-                  <Flame className="w-8 h-8 text-orange-500 fill-orange-500" />
-                  <Dumbbell className="w-5 h-5 text-slate-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-[-30deg]" />
-                </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-6 h-6 text-cyan-400 fill-cyan-400" />
+                <span className="text-lg font-bold text-slate-200">Level {Math.floor(userStreak / 10) + 1}</span>
               </div>
               <div className="flex-1 text-center px-4">
                 <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
