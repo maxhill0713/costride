@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut, Camera } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut, Camera, Gift } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -591,6 +591,9 @@ export default function Profile() {
             <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
               Goals
             </TabsTrigger>
+            <TabsTrigger value="challenges" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+              Challenges
+            </TabsTrigger>
             <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
               Badges
             </TabsTrigger>
@@ -677,6 +680,127 @@ export default function Profile() {
                     >
                       {gym.name}
                     </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="challenges" className="space-y-4">
+            <div className="bg-gradient-to-br from-slate-800/80 via-amber-900/40 to-slate-900/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Active Challenges</h3>
+                  <p className="text-xs text-slate-400">Challenges you've joined</p>
+                </div>
+              </div>
+
+              {allChallenges.filter(c => c.participants?.includes(currentUser?.id) && c.status === 'active').length === 0 ? (
+                <Card className="bg-slate-800/60 border-2 border-dashed border-slate-600/50 p-10 text-center rounded-2xl">
+                  <div className="max-w-sm mx-auto">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center">
+                      <Trophy className="w-10 h-10 text-amber-400" />
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-2">No Active Challenges</h4>
+                    <p className="text-slate-400 text-sm mb-5 leading-relaxed">
+                      Join challenges from your gym community to start competing and earning rewards.
+                    </p>
+                    <Link to={createPageUrl('Gyms')}>
+                      <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl shadow-lg font-semibold">
+                        <Trophy className="w-4 h-4 mr-2" />
+                        Explore Gym Challenges
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {allChallenges.filter(c => c.participants?.includes(currentUser?.id) && c.status === 'active').map(challenge => {
+                    const participantCount = challenge.participants?.length || 0;
+                    const targetValue = challenge.target_value || 10;
+                    const progress = Math.min((participantCount / targetValue) * 100, 100);
+
+                    return (
+                      <Card key={challenge.id} className="bg-slate-800/60 border border-slate-600/40 p-5 rounded-2xl hover:border-amber-500/40 transition-all">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-white text-base mb-1 truncate">{challenge.title}</h4>
+                            <p className="text-sm text-slate-400 mb-2 line-clamp-2">{challenge.description}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
+                                {challenge.category}
+                              </Badge>
+                              {challenge.gym_name && (
+                                <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">
+                                  {challenge.gym_name}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                            <Trophy className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-slate-400">Progress</span>
+                            <span className="text-sm font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">
+                              {participantCount}/{targetValue}
+                            </span>
+                          </div>
+                          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {challenge.reward && (
+                          <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Gift className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-slate-400">Reward</p>
+                              <p className="text-sm font-bold text-green-400 truncate">{challenge.reward}</p>
+                            </div>
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Completed Challenges */}
+            {allChallenges.filter(c => c.participants?.includes(currentUser?.id) && c.status === 'completed').length > 0 && (
+              <div>
+                <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Completed ({allChallenges.filter(c => c.participants?.includes(currentUser?.id) && c.status === 'completed').length})
+                </h4>
+                <div className="space-y-2">
+                  {allChallenges.filter(c => c.participants?.includes(currentUser?.id) && c.status === 'completed').slice(0, 3).map(challenge => (
+                    <Card key={challenge.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Trophy className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-white text-sm truncate">{challenge.title}</h5>
+                          <p className="text-xs text-slate-400">{challenge.reward || 'Challenge completed'}</p>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">
+                          ✓ Done
+                        </Badge>
+                      </div>
+                    </Card>
                   ))}
                 </div>
               </div>
