@@ -246,6 +246,73 @@ export default function GymCommunity() {
     }
   });
 
+  const { data: lifts = [] } = useQuery({
+    queryKey: ['lifts'],
+    queryFn: () => base44.entities.Lift.list('-lift_date')
+  });
+
+  const logLiftMutation = useMutation({
+    mutationFn: async (liftData) => {
+      const userLifts = lifts.filter(l => 
+        l.member_id === currentUser.id && 
+        l.exercise === liftData.exercise
+      );
+      const previousBest = userLifts.length > 0 
+        ? Math.max(...userLifts.map(l => l.weight_lbs)) 
+        : 0;
+      
+      const isPR = liftData.weight_lbs > previousBest;
+      const weightIncrease = previousBest > 0 ? liftData.weight_lbs - previousBest : 0;
+
+      const newLift = await base44.entities.Lift.create({
+        ...liftData,
+        is_pr: isPR
+      });
+
+      // Notify friends about PR or weight increase
+      if (isPR || weightIncrease > 0) {
+        try {
+          const friends = await base44.entities.Friend.filter({ 
+            friend_id: currentUser.id, 
+            status: 'accepted' 
+          });
+          
+          const exerciseName = liftData.exercise.replace(/_/g, ' ');
+          
+          for (const friend of friends) {
+            if (isPR) {
+              await base44.entities.Notification.create({
+                user_id: friend.user_id,
+                type: 'friend_activity',
+                title: `🎉 ${currentUser.full_name?.split(' ')[0]} hit a PR!`,
+                message: `${currentUser.full_name?.split(' ')[0]} lifted ${liftData.weight_lbs}lbs on ${exerciseName}!`,
+                icon: '🎉',
+                action_url: '/Friends'
+              });
+            } else if (weightIncrease >= 5) {
+              await base44.entities.Notification.create({
+                user_id: friend.user_id,
+                type: 'friend_activity',
+                title: `💪 ${currentUser.full_name?.split(' ')[0]} added +${weightIncrease}lbs!`,
+                message: `${currentUser.full_name?.split(' ')[0]} increased their ${exerciseName} to ${liftData.weight_lbs}lbs`,
+                icon: '💪',
+                action_url: '/Friends'
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error notifying friends:', error);
+        }
+      }
+
+      return newLift;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lifts'] });
+      setShowLogLift(false);
+    }
+  });
+
   const deleteEventMutation = useMutation({
     mutationFn: (eventId) => base44.entities.Event.delete(eventId),
     onSuccess: () => {
