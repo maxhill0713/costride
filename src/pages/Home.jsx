@@ -187,7 +187,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
             <div className="text-center mb-2">
-              <h1 className="text-xl font-semibold tracking-tight bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
+              <h1 className="text-xl font-semibold tracking-tight text-slate-100">
                 The gym's waiting for you
               </h1>
             </div>
