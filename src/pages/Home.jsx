@@ -202,9 +202,11 @@ export default function Home() {
                 </div>
                 <div className="text-[10px] text-slate-400 text-center">day streak</div>
               </Card>
-              <h1 className="text-sm font-semibold tracking-tight text-slate-100 whitespace-nowrap flex-1 text-center px-4">
-                The gym's waiting for you
-              </h1>
+              <div className="flex-1 text-center px-4">
+                <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+                  CoStride
+                </h1>
+              </div>
               <Link to={createPageUrl('Friends')}>
                 <Button 
                   variant="ghost" 
