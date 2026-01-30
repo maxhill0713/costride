@@ -183,13 +183,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Header */}
-      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
+      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col gap-4">
-            <div className="text-center mb-2">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-1">
+          <div className="flex flex-col gap-6">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2 tracking-tight">
                 The gym's waiting for you
               </h1>
+              <p className="text-slate-400 text-sm font-medium">Start your journey today</p>
             </div>
             <div className="flex items-center justify-between">
               <div>
