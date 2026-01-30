@@ -192,35 +192,46 @@ export default function Friends() {
               </h2>
             </div>
 
-            {notifications.length === 0 ? (
-              <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
-                <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
-                <p className="text-sm text-slate-400">
-                  Add friends to see their check-ins, PRs, and streaks!
-                </p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {notifications.map(notif => (
-                  <Card 
-                    key={notif.id}
-                    className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 hover:border-blue-500/50 transition-all"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-2xl">{notif.icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-white text-sm">{notif.title}</h4>
-                        <p className="text-xs text-slate-400 mt-1">{notif.message}</p>
-                        <p className="text-xs text-slate-500 mt-2">
-                          {formatDistanceToNow(new Date(notif.created_date), { addSuffix: true })}
-                        </p>
+            {(() => {
+              const friendActivityNotifications = notifications.filter(n => n.type === 'friend_activity');
+              const hasCheckedInToday = currentUserCheckIns.length > 0 && 
+                differenceInDays(new Date(), new Date(currentUserCheckIns[0].check_in_date)) === 0;
+
+              return friendActivityNotifications.length === 0 ? (
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
+                  <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                  <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
+                  <p className="text-sm text-slate-400">
+                    Add friends to see their check-ins, PRs, and streaks!
+                  </p>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {friendActivityNotifications.map(notif => (
+                    <Card 
+                      key={notif.id}
+                      className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 hover:border-blue-500/50 transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="text-2xl">{notif.icon}</div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-white text-sm">{notif.title}</h4>
+                          <p className="text-xs text-slate-400 mt-1">{notif.message}</p>
+                          {!hasCheckedInToday && notif.title?.includes('checked in') && (
+                            <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs">
+                              It's your turn! 🔥
+                            </Badge>
+                          )}
+                          <p className="text-xs text-slate-500 mt-2">
+                            {formatDistanceToNow(new Date(notif.created_date), { addSuffix: true })}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+                    </Card>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Friends List - 1/3 width */}
