@@ -185,7 +185,7 @@ export default function TodayWorkout({ currentUser }) {
                   size="sm"
                   className="h-6 text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-700 px-3"
                 >
-                  Log Completed
+                  Log Workout
                 </Button>
               </div>
             )}
@@ -196,7 +196,7 @@ export default function TodayWorkout({ currentUser }) {
                 size="sm"
                 className="h-6 text-[10px] font-semibold w-full bg-indigo-600 hover:bg-indigo-700"
               >
-                Log Completed
+                Log Workout
               </Button>
             )}
           </>
