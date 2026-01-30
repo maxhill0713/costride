@@ -180,8 +180,8 @@ export default function Friends() {
             </h1>
             
             {/* Friends Dropdown in Header */}
-            <div className="relative flex items-center gap-2">
-              <div className="relative">
+            <div className="flex items-center gap-2">
+              <div className="relative z-50">
                 <button
                   onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
