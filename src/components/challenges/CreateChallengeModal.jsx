@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Loader2 } from 'lucide-react';
+import { Trophy, Loader2, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLoading }) {
@@ -30,6 +30,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
     difficulty_level: 'intermediate',
     rules: '',
     rewards: { first: '', second: '', third: '' },
+    reward: '',
     auto_start: true,
     send_reminders: true
   });
@@ -251,7 +252,19 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
             </div>
           </div>
 
-
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Gift className="w-4 h-4 text-orange-500" />
+              Reward (Optional)
+            </Label>
+            <Input
+              value={formData.reward}
+              onChange={(e) => setFormData({ ...formData, reward: e.target.value })}
+              placeholder="e.g., Free protein shake, £10 gift card, Free personal training session"
+              className="rounded-2xl"
+            />
+            <p className="text-xs text-gray-500">Offer a reward for completing this challenge</p>
+          </div>
 
           <Button
             type="submit"
