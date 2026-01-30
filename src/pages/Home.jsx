@@ -217,14 +217,7 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-                  <p className="text-slate-400 text-sm font-light">
-                    Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
-                  </p>
-                )}
-              </div>
+            <div className="flex items-center justify-end">
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
                   <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
