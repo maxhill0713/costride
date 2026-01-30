@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X } from 'lucide-react';
+import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X, ChevronDown } from 'lucide-react';
 import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -15,6 +15,7 @@ export default function Friends() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showFriendsDropdown, setShowFriendsDropdown] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -163,8 +164,8 @@ export default function Friends() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between">
             <Link to={createPageUrl('Home')}>
               <Button 
                 variant="ghost" 
@@ -175,17 +176,93 @@ export default function Friends() {
               </Button>
             </Link>
             <h1 className="text-xl font-semibold tracking-tight text-slate-100">
-              Friends
+              Friend Activity
             </h1>
-            <div className="w-10" />
+            
+            {/* Friends Dropdown in Header */}
+            <div className="relative flex items-center gap-2">
+              <div className="relative">
+                <button
+                  onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm font-semibold">
+                    {friends.length > 0 ? `${friends.length} Friends` : 'Friends'}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showFriendsDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showFriendsDropdown && (
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-40">
+                    <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
+                      {friends.length === 0 ? (
+                        <p className="text-center text-slate-400 text-sm py-4">No friends yet</p>
+                      ) : (
+                        friendsWithActivity.map(friend => {
+                          const { activity } = friend;
+                          return (
+                            <div
+                              key={friend.id}
+                              className="p-3 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
+                            >
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
+                                  {friend.friend_avatar ? (
+                                    <img src={friend.friend_avatar} alt={friend.friend_name} className="w-full h-full object-cover rounded-lg" />
+                                  ) : (
+                                    <span className="text-xs font-semibold text-white">
+                                      {friend.friend_name?.charAt(0)?.toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-white text-xs truncate">{friend.friend_name}</p>
+                                  {activity.daysSinceCheckIn === 0 && (
+                                    <Badge className="bg-green-500/20 text-green-300 border-green-500/40 text-[10px] mt-1">
+                                      Checked in
+                                    </Badge>
+                                  )}
+                                  {activity.streak >= 7 && (
+                                    <div className="flex items-center gap-0.5 mt-0.5">
+                                      <Flame className="w-2 h-2 text-orange-400" />
+                                      <span className="text-[10px] text-orange-300">{activity.streak}d</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeFriendMutation.mutate(friend.friend_id)}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0"
+                              >
+                                <UserMinus className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={() => setShowAddModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+                size="sm"
+              >
+                <UserPlus className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Notifications Feed - 2/3 width */}
-          <div className="lg:col-span-2">
+        <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-slate-100">
                 Friend Activity
