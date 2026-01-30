@@ -186,11 +186,11 @@ export default function Home() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
-            <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4">
-              <p className="text-center text-base font-medium text-slate-200">
+            <div className="text-center mb-2">
+              <h1 className="text-xl font-semibold tracking-tight text-slate-100">
                 The gym's waiting for you
-              </p>
-            </Card>
+              </h1>
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
