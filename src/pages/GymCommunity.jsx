@@ -1492,7 +1492,7 @@ export default function GymCommunity() {
                                 className="p-1 hover:bg-slate-700 rounded transition-colors flex-shrink-0"
                                 title="Copy email"
                               >
-                                <Copy className={`w-4 h-4 ${copied ? 'text-green-400' : 'text-slate-400'}`} />
+                                <Copy className={`w-4 h-4 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} />
                               </button>
                             </div>
                           </PopoverContent>
