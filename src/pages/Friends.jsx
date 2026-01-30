@@ -302,7 +302,6 @@ export default function Friends() {
             </div>
           );
         })()}
-      </div>
 
         {/* Add Friend Modal */}
         {showAddModal && (
