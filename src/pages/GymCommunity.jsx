@@ -1439,38 +1439,68 @@ export default function GymCommunity() {
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
-                {coaches.slice(0, 5).map((coach) => (
-                  <div key={coach.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
-                    <div className="flex items-start gap-2 md:gap-3">
-                      <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {coach.avatar_url ? (
-                          <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-lg font-bold text-white">{coach.name.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
-                          <h4 className="font-semibold text-white text-sm md:text-base line-clamp-1">{coach.name}</h4>
-                          {coach.rating && (
-                            <div className="flex items-center gap-0.5">
-                              <Star className="w-2.5 md:w-3 h-2.5 md:h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                              <span className="text-[10px] md:text-xs font-bold text-slate-200">{coach.rating}</span>
+                {coaches.slice(0, 5).map((coach) => {
+                  const [copied, setCopied] = useState(false);
+                  const handleCopyEmail = () => {
+                    navigator.clipboard.writeText(coach.user_email);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  };
+
+                  return (
+                    <div key={coach.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
+                      <div className="flex items-start gap-2 md:gap-3">
+                        <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {coach.avatar_url ? (
+                            <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-lg font-bold text-white">{coach.name.charAt(0)}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
+                            <h4 className="font-semibold text-white text-sm md:text-base line-clamp-1">{coach.name}</h4>
+                            {coach.rating && (
+                              <div className="flex items-center gap-0.5">
+                                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                                <span className="text-[10px] md:text-xs font-bold text-slate-200">{coach.rating}</span>
+                              </div>
+                            )}
+                          </div>
+                          {coach.bio && <p className="text-[10px] md:text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
+                          {coach.specialties && coach.specialties.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {coach.specialties.map((specialty, idx) => (
+                                <Badge key={idx} className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">{specialty}</Badge>
+                              ))}
                             </div>
                           )}
                         </div>
-                        {coach.bio && <p className="text-[10px] md:text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
-                        {coach.specialties && coach.specialties.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {coach.specialties.map((specialty, idx) => (
-                              <Badge key={idx} className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">{specialty}</Badge>
-                            ))}
-                          </div>
-                        )}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="flex-shrink-0 p-2 hover:bg-slate-600/50 rounded-lg transition-colors">
+                              <Mail className="w-4 h-4 text-blue-400 hover:text-blue-300" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-3 bg-slate-800 border-slate-700">
+                            <div className="flex items-center gap-2">
+                              <a href={`mailto:${coach.user_email}`} className="text-blue-400 hover:text-blue-300 text-sm font-medium break-all flex-1">
+                                {coach.user_email}
+                              </a>
+                              <button
+                                onClick={handleCopyEmail}
+                                className="p-1 hover:bg-slate-700 rounded transition-colors flex-shrink-0"
+                                title="Copy email"
+                              >
+                                <Copy className={`w-4 h-4 ${copied ? 'text-green-400' : 'text-slate-400'}`} />
+                              </button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </Card>
