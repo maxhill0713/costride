@@ -348,6 +348,12 @@ export default function GymCommunity() {
 
   const joinChallengeMutation = useMutation({
     mutationFn: async (challenge) => {
+      // Update Challenge participants array first
+      const currentParticipants = challenge.participants || [];
+      await base44.entities.Challenge.update(challenge.id, {
+        participants: [...currentParticipants, currentUser.id]
+      });
+      
       // Create ChallengeParticipant record
       await base44.entities.ChallengeParticipant.create({
         user_id: currentUser.id,
@@ -357,15 +363,10 @@ export default function GymCommunity() {
         progress: 0,
         completed: false
       });
-      
-      // Update Challenge participants array
-      const currentParticipants = challenge.participants || [];
-      await base44.entities.Challenge.update(challenge.id, {
-        participants: [...currentParticipants, currentUser.id]
-      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
       queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });
       // Create notification
