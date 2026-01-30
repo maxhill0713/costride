@@ -40,7 +40,10 @@ export default function RedeemReward() {
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' })
+    queryFn: async () => {
+      const challenges = await base44.entities.Challenge.list();
+      return challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
+    }
   });
 
   // Show all challenges where the user is a participant (from any source - home, gym, etc.)
