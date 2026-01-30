@@ -56,7 +56,6 @@ export default function GymCommunity() {
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
-  const [showLogLift, setShowLogLift] = useState(false);
   const [copiedCoachId, setCopiedCoachId] = useState(null);
 
   const { data: currentUser } = useQuery({
