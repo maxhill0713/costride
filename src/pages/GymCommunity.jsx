@@ -1441,11 +1441,10 @@ export default function GymCommunity() {
             ) : (
               <div className="space-y-2 md:space-y-3">
                 {coaches.slice(0, 5).map((coach) => {
-                  const [copied, setCopied] = useState(false);
                   const handleCopyEmail = () => {
                     navigator.clipboard.writeText(coach.user_email);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
+                    setCopiedCoachId(coach.id);
+                    setTimeout(() => setCopiedCoachId(null), 2000);
                   };
 
                   return (
