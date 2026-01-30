@@ -685,43 +685,123 @@ export default function Profile() {
               const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
 
               return (
-                <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isOnTrack ? 'bg-green-500/20 text-green-400' : isAlmostOnTrack ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {isOnTrack ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-base font-semibold text-slate-100 mb-4">
-                        {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost On Track' : 'Needs Attention'}
-                      </h3>
-                      <div className="space-y-3">
+                <Card className={`relative overflow-hidden backdrop-blur-sm border p-6 rounded-2xl ${
+                  isOnTrack 
+                    ? 'bg-gradient-to-br from-green-600/15 to-emerald-500/5 border-green-500/40' 
+                    : isAlmostOnTrack 
+                    ? 'bg-gradient-to-br from-amber-600/15 to-orange-500/5 border-amber-500/40' 
+                    : 'bg-gradient-to-br from-red-600/15 to-rose-500/5 border-red-500/40'
+                }`}>
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-5">
+                    <div className="absolute inset-0" style={{
+                      backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                      backgroundSize: '24px 24px'
+                    }} />
+                  </div>
+
+                  <div className="relative">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${
+                          isOnTrack 
+                            ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                            : isAlmostOnTrack 
+                            ? 'bg-gradient-to-br from-amber-500 to-orange-600' 
+                            : 'bg-gradient-to-br from-red-500 to-rose-600'
+                        }`}>
+                          {isOnTrack ? (
+                            <CheckCircle className="w-7 h-7 text-white" />
+                          ) : (
+                            <TrendingUp className="w-7 h-7 text-white" />
+                          )}
+                        </div>
                         <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-slate-300">Weekly Gym Visits</span>
-                            <span className="text-sm font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
+                          <h3 className={`text-lg font-black mb-1 ${
+                            isOnTrack ? 'text-green-300' : isAlmostOnTrack ? 'text-amber-300' : 'text-red-300'
+                          }`}>
+                            {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost There' : 'Needs Attention'}
+                          </h3>
+                          <p className="text-xs text-slate-400 font-medium">
+                            {isOnTrack 
+                              ? 'Crushing your fitness goals this week' 
+                              : isAlmostOnTrack 
+                              ? 'One more push to hit your weekly targets' 
+                              : 'Time to get back on track'}
+                          </p>
+                        </div>
+                      </div>
+                      {isAlmostOnTrack && (
+                        <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold">
+                          🔥 Close
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Weekly Visits */}
+                      <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-400' : 'bg-amber-400'}`} />
+                            <span className="text-sm font-bold text-slate-200">Weekly Gym Visits</span>
                           </div>
-                          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
-                              style={{ width: `${Math.min((weeklyCheckIns.length / weeklyTarget) * 100, 100)}%` }}
-                            />
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-black ${weeklyCheckIns.length >= weeklyTarget ? 'text-green-400' : 'text-amber-400'}`}>
+                              {weeklyCheckIns.length}
+                            </span>
+                            <span className="text-sm font-medium text-slate-400">/ {weeklyTarget}</span>
                           </div>
                         </div>
-                        {goals.length > 0 && (
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm text-slate-300">Goals Progress</span>
-                              <span className="text-sm font-semibold text-slate-200">{progressPercentage}%</span>
-                            </div>
-                            <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
-                                style={{ width: `${progressPercentage}%` }}
-                              />
-                            </div>
-                          </div>
+                        <div className="relative h-2.5 bg-slate-700/50 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-700 ${
+                              weeklyCheckIns.length >= weeklyTarget 
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                                : 'bg-gradient-to-r from-amber-500 to-orange-500'
+                            }`}
+                            style={{ width: `${Math.min((weeklyCheckIns.length / weeklyTarget) * 100, 100)}%` }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                        </div>
+                        {weeklyCheckIns.length < weeklyTarget && (
+                          <p className="text-xs text-slate-400 mt-2 font-medium">
+                            {weeklyTarget - weeklyCheckIns.length} more visit{weeklyTarget - weeklyCheckIns.length !== 1 ? 's' : ''} needed this week
+                          </p>
                         )}
                       </div>
+
+                      {/* Goals Progress */}
+                      {goals.length > 0 && (
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-400' : 'bg-amber-400'}`} />
+                              <span className="text-sm font-bold text-slate-200">Active Goals</span>
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className={`text-2xl font-black ${goalsOnTrack >= goals.length * 0.5 ? 'text-green-400' : 'text-amber-400'}`}>
+                                {goalsOnTrack}
+                              </span>
+                              <span className="text-sm font-medium text-slate-400">/ {goals.length}</span>
+                            </div>
+                          </div>
+                          <div className="relative h-2.5 bg-slate-700/50 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all duration-700 ${
+                                goalsOnTrack >= goals.length * 0.5 
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                                  : 'bg-gradient-to-r from-amber-500 to-orange-500'
+                              }`}
+                              style={{ width: `${progressPercentage}%` }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2 font-medium">
+                            {goalsOnTrack} goal{goalsOnTrack !== 1 ? 's' : ''} on track • {progressPercentage}% average progress
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>
