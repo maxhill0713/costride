@@ -688,6 +688,81 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
+            {/* Progress Tracker */}
+            {(() => {
+              const startOfThisWeek = new Date();
+              startOfThisWeek.setDate(startOfThisWeek.getDate() - startOfThisWeek.getDay() + 1);
+              startOfThisWeek.setHours(0, 0, 0, 0);
+              
+              const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
+              const weeklyTarget = currentUser?.weekly_goal || 3;
+              
+              const goalsOnTrack = goals.filter(g => {
+                const progress = (g.current_value / g.target_value) * 100;
+                const daysUntilDeadline = g.deadline ? Math.floor((new Date(g.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+                
+                if (!daysUntilDeadline || daysUntilDeadline < 0) return progress >= 80;
+                
+                const totalDuration = g.deadline ? Math.floor((new Date(g.deadline) - new Date(g.created_date || new Date())) / (1000 * 60 * 60 * 24)) : 30;
+                const daysPassed = totalDuration - daysUntilDeadline;
+                const expectedProgress = (daysPassed / totalDuration) * 100;
+                
+                return progress >= expectedProgress * 0.8;
+              }).length;
+              
+              const weeklyComplete = weeklyCheckIns.length >= weeklyTarget;
+              const goalsComplete = goals.length === 0 || goalsOnTrack >= goals.length * 0.5;
+              const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
+              const totalCount = goals.length > 0 ? 2 : 1;
+              
+              const isOnTrack = completedCount === totalCount;
+              const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
+              const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
+
+              return (
+                <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isOnTrack ? 'bg-green-500/20 text-green-400' : isAlmostOnTrack ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
+                      {isOnTrack ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base font-semibold text-slate-100 mb-4">
+                        {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost On Track' : 'Needs Attention'}
+                      </h3>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-slate-300">Weekly Gym Visits</span>
+                            <span className="text-sm font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
+                          </div>
+                          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
+                              style={{ width: `${Math.min((weeklyCheckIns.length / weeklyTarget) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                        {goals.length > 0 && (
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm text-slate-300">Goals Progress</span>
+                              <span className="text-sm font-semibold text-slate-200">{progressPercentage}%</span>
+                            </div>
+                            <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
+                                style={{ width: `${progressPercentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })()}
+
             {/* Goals Header */}
             <div className="bg-gradient-to-br from-slate-800/80 via-blue-900/40 to-slate-900/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-5 shadow-lg">
               <div className="flex items-center justify-between mb-4 gap-3">

@@ -258,47 +258,7 @@ export default function Home() {
           <TodayWorkout currentUser={currentUser} />
         )}
 
-        {/* Progress Tracker */}
-        <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 p-6 rounded-2xl">
-          <div className="flex items-start gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isOnTrack ? 'bg-green-500/20 text-green-400' : isAlmostOnTrack ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
-              {isOnTrack ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-base font-semibold text-slate-100 mb-4">
-                {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost On Track' : 'Needs Attention'}
-              </h3>
-              <div className="space-y-3">
-                <div>
-                    <div className="flex items-center justify-between mb-2">
-                       <span className="text-sm text-slate-300">Weekly Gym Visits</span>
-                       <span className="text-sm font-semibold text-slate-200">{weeklyCheckIns.length} / {weeklyTarget}</span>
-                    </div>
-                  <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${weeklyCheckIns.length >= weeklyTarget ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
-                      style={{ width: `${Math.min((weeklyCheckIns.length / weeklyTarget) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-                {goals.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                       <span className="text-sm text-slate-300">Goals Progress</span>
-                       <span className="text-sm font-semibold text-slate-200">{progressPercentage}%</span>
-                    </div>
-                    <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full ${goalsOnTrack >= goals.length * 0.5 ? 'bg-green-500' : 'bg-amber-500'} transition-all duration-500`}
-                        style={{ width: `${progressPercentage}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
+
 
         {/* Top 3 Leaderboard Badge */}
         {(() => {
