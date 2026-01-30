@@ -40,7 +40,7 @@ export default function TodayWorkout({ currentUser }) {
 
   const todayWorkout = getTodayWorkout();
 
-  // Fetch last week's workout log
+  // Fetch workout logs
   const { data: previousWorkouts = [] } = useQuery({
     queryKey: ['workoutLog', currentUser?.id, adjustedDay],
     queryFn: async () => {
@@ -55,10 +55,14 @@ export default function TodayWorkout({ currentUser }) {
     enabled: !!currentUser?.id
   });
 
-  const lastWorkout = previousWorkouts.length > 0 ? previousWorkouts[previousWorkouts.length - 1] : null;
+  // Get today's date for comparison
+  const todayDate = new Date().toISOString().split('T')[0];
+  
+  // Filter out today's logs when getting last workout (for comparison)
+  const previousWorkoutsExcludingToday = previousWorkouts.filter(log => log.completed_date !== todayDate);
+  const lastWorkout = previousWorkoutsExcludingToday.length > 0 ? previousWorkoutsExcludingToday[previousWorkoutsExcludingToday.length - 1] : null;
   
   // Check if workout already logged today
-  const todayDate = new Date().toISOString().split('T')[0];
   const alreadyLoggedToday = previousWorkouts.some(log => log.completed_date === todayDate);
 
   const updateWorkoutMutation = useMutation({
