@@ -186,10 +186,10 @@ export default function Home() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
-            <div className="text-center mb-2">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent mb-1">
+            <div className="text-center">
+              <p className="text-sm font-medium text-slate-300/90">
                 The gym's waiting for you
-              </h1>
+              </p>
             </div>
             <div className="flex items-center justify-between">
               <div>
