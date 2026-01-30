@@ -194,7 +194,7 @@ export default function Home() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-4 py-2 text-center">
                 <div className="flex items-center gap-2">
                   <Flame className="w-5 h-5 text-orange-400" />
@@ -204,7 +204,7 @@ export default function Home() {
                   </div>
                 </div>
               </Card>
-              <h1 className="text-xl font-semibold tracking-tight text-slate-100">
+              <h1 className="text-base font-semibold tracking-tight text-slate-100 whitespace-nowrap">
                 The gym's waiting for you
               </h1>
               <Link to={createPageUrl('Friends')}>
