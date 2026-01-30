@@ -37,7 +37,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="bg-slate-800/50 backdrop-blur-sm border border-slate-600/40 rounded-xl p-5 hover:border-slate-500/60 hover:bg-slate-800/60 transition-all overflow-hidden relative group">
+      <Card className="bg-slate-900/70 backdrop-blur-sm border border-purple-500/30 rounded-xl p-5 hover:border-purple-500/50 hover:bg-slate-900/80 transition-all overflow-hidden relative group">
         {/* Timer Badge */}
         <div className="absolute top-4 right-4 z-10">
           <Badge className={`text-xs font-semibold ${isExpired ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' : 'bg-green-500/20 text-green-300 border border-green-500/40'}`}>
