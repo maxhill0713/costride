@@ -146,7 +146,7 @@ export default function TodayWorkout({ currentUser }) {
 
   if (!todayWorkout) {
     return (
-      <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 text-center">
+      <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-4 text-center">
         <Dumbbell className="w-8 h-8 text-slate-400 mx-auto mb-2" />
         <p className="text-slate-300 font-semibold text-xs">No workout split configured yet</p>
       </Card>
@@ -154,7 +154,7 @@ export default function TodayWorkout({ currentUser }) {
   }
 
   return (
-    <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5">
+    <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-5">
       <div className="space-y-2 mb-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
