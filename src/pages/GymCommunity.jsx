@@ -347,17 +347,27 @@ export default function GymCommunity() {
   });
 
   const joinChallengeMutation = useMutation({
-    mutationFn: (challenge) =>
-      base44.entities.ChallengeParticipant.create({
+    mutationFn: async (challenge) => {
+      // Create ChallengeParticipant record
+      await base44.entities.ChallengeParticipant.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         challenge_id: challenge.id,
         challenge_title: challenge.title,
         progress: 0,
         completed: false
-      }),
+      });
+      
+      // Update Challenge participants array
+      const currentParticipants = challenge.participants || [];
+      await base44.entities.Challenge.update(challenge.id, {
+        participants: [...currentParticipants, currentUser.id]
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });
       // Create notification
       base44.entities.Notification.create({
         user_id: currentUser.id,
