@@ -1534,14 +1534,6 @@ export default function GymCommunity() {
                   isLoading={createChallengeMutation.isPending}
                 />
 
-        <LogLiftModal
-          open={showLogLift}
-          onClose={() => setShowLogLift(false)}
-          onSuccess={(liftData) => logLiftMutation.mutate(liftData)}
-          gym={gym}
-          currentUser={currentUser}
-        />
-
-    </div>
+        </div>
   );
 }
