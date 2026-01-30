@@ -1,15 +1,21 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X } from 'lucide-react';
 import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
 
 export default function Friends() {
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
@@ -24,9 +30,63 @@ export default function Friends() {
     enabled: !!currentUser
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: showAddModal
+  });
+
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
     queryFn: () => base44.entities.CheckIn.list('-check_in_date')
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: async (friendUser) => {
+      await base44.entities.Friend.create({
+        user_id: currentUser.id,
+        friend_id: friendUser.id,
+        friend_name: friendUser.full_name,
+        friend_avatar: friendUser.avatar_url,
+        status: 'accepted'
+      });
+      await base44.entities.Friend.create({
+        user_id: friendUser.id,
+        friend_id: currentUser.id,
+        friend_name: currentUser.full_name,
+        friend_avatar: currentUser.avatar_url,
+        status: 'accepted'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friends']);
+      toast.success('Friend added!');
+      setShowAddModal(false);
+      setSearchQuery('');
+    }
+  });
+
+  const removeFriendMutation = useMutation({
+    mutationFn: async (friendId) => {
+      const friendships = await base44.entities.Friend.filter({
+        user_id: currentUser.id,
+        friend_id: friendId
+      });
+      if (friendships.length > 0) {
+        await base44.entities.Friend.delete(friendships[0].id);
+      }
+      const reverseFriendships = await base44.entities.Friend.filter({
+        user_id: friendId,
+        friend_id: currentUser.id
+      });
+      if (reverseFriendships.length > 0) {
+        await base44.entities.Friend.delete(reverseFriendships[0].id);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friends']);
+      toast.success('Friend removed');
+    }
   });
 
   const calculateStreak = (checkIns) => {
@@ -55,8 +115,13 @@ export default function Friends() {
     return streak;
   };
 
-  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
-  const userStreak = calculateStreak(userCheckIns);
+  const friendIds = friends.map(f => f.friend_id);
+  const searchResults = allUsers.filter(user => 
+    user.id !== currentUser?.id &&
+    !friendIds.includes(user.id) &&
+    (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+  ).slice(0, 5);
 
   const getFriendActivity = (friendId) => {
     const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
@@ -106,35 +171,22 @@ export default function Friends() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Your Stats */}
-        <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5">
-          <h3 className="text-sm font-bold text-slate-200 mb-3">Your Stats</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-700/50 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-orange-400" />
-                <span className="text-xs text-slate-300">Streak</span>
-              </div>
-              <div className="text-2xl font-bold text-orange-300">{userStreak}</div>
-            </div>
-            <div className="bg-slate-700/50 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <CheckCircle className="w-4 h-4 text-green-400" />
-                <span className="text-xs text-slate-300">Check-ins</span>
-              </div>
-              <div className="text-2xl font-bold text-green-300">{userCheckIns.length}</div>
-            </div>
-          </div>
-        </Card>
-
         {/* Friends Activity */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-400" />
-              Friend Activity
-            </h2>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-400" />
+            Friends ({friends.length})
+          </h2>
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+            size="sm"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Add Friend
+          </Button>
+        </div>
 
           {friends.length === 0 ? (
             <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
@@ -207,12 +259,22 @@ export default function Friends() {
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 text-slate-300">
-                          <TrendingUp className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm font-semibold">{activity.totalCheckIns}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 text-slate-300">
+                            <TrendingUp className="w-4 h-4 text-blue-400" />
+                            <span className="text-sm font-semibold">{activity.totalCheckIns}</span>
+                          </div>
+                          <p className="text-xs text-slate-400">check-ins</p>
                         </div>
-                        <p className="text-xs text-slate-400">check-ins</p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeFriendMutation.mutate(friend.friend_id)}
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                        >
+                          <UserMinus className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -221,6 +283,83 @@ export default function Friends() {
             </div>
           )}
         </div>
+
+        {/* Add Friend Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-white">Add Friend</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setSearchQuery('');
+                  }}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {searchQuery.length < 2 ? (
+                  <p className="text-center text-slate-400 text-sm py-8">
+                    Type at least 2 characters to search
+                  </p>
+                ) : searchResults.length === 0 ? (
+                  <p className="text-center text-slate-400 text-sm py-8">
+                    No users found
+                  </p>
+                ) : (
+                  searchResults.map(user => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" />
+                          ) : (
+                            <span className="text-sm font-semibold text-white">
+                              {user.full_name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-white text-sm">{user.full_name}</div>
+                          <div className="text-xs text-slate-400">{user.email}</div>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => addFriendMutation.mutate(user)}
+                        disabled={addFriendMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
