@@ -85,6 +85,27 @@ export default function CheckInButton({ gym }) {
       queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['goals'] });
+
+      // Notify friends
+      try {
+        const friends = await base44.entities.Friend.filter({ 
+          friend_id: currentUser.id, 
+          status: 'accepted' 
+        });
+        
+        for (const friend of friends) {
+          await base44.entities.Notification.create({
+            user_id: friend.user_id,
+            type: 'friend_activity',
+            title: `${currentUser.full_name?.split(' ')[0]} checked in! 💪`,
+            message: `Your friend just checked in at ${gym.name}. It's your turn!`,
+            icon: '💪',
+            action_url: '/Friends'
+          });
+        }
+      } catch (error) {
+        console.error('Error notifying friends:', error);
+      }
       
       // Check for milestones
       const totalVisits = checkIns.length + 1;
@@ -211,6 +232,27 @@ export default function CheckInButton({ gym }) {
           icon: '🔥',
           points: 50
         });
+
+        // Notify friends
+        try {
+          const friends = await base44.entities.Friend.filter({ 
+            friend_id: currentUser.id, 
+            status: 'accepted' 
+          });
+          
+          for (const friend of friends) {
+            await base44.entities.Notification.create({
+              user_id: friend.user_id,
+              type: 'friend_activity',
+              title: `🔥 ${currentUser.full_name?.split(' ')[0]} hit 10 total visits!`,
+              message: `${currentUser.full_name?.split(' ')[0]} is building serious consistency!`,
+              icon: '🎯',
+              action_url: '/Friends'
+            });
+          }
+        } catch (error) {
+          console.error('Error notifying friends:', error);
+        }
       } else if (totalVisits === 30) {
         confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
         toast.success('🏆 30 visits! You\'re a Gym Regular!', {
@@ -244,6 +286,27 @@ export default function CheckInButton({ gym }) {
           message: 'You\'re on fire! Keep the momentum going and watch your progress soar.',
           icon: '🔥'
         });
+
+        // Notify friends
+        try {
+          const friends = await base44.entities.Friend.filter({ 
+            friend_id: currentUser.id, 
+            status: 'accepted' 
+          });
+          
+          for (const friend of friends) {
+            await base44.entities.Notification.create({
+              user_id: friend.user_id,
+              type: 'friend_activity',
+              title: `🔥 ${currentUser.full_name?.split(' ')[0]} hit a 7-day streak!`,
+              message: `${currentUser.full_name?.split(' ')[0]} has been on fire with 7 consecutive days!`,
+              icon: '🔥',
+              action_url: '/Friends'
+            });
+          }
+        } catch (error) {
+          console.error('Error notifying friends:', error);
+        }
       } else if (streak === 30) {
         confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
         toast.success('⚡ 30 DAY STREAK!', {
