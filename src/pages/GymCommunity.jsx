@@ -20,7 +20,7 @@ import CheckInButton from '../components/gym/CheckInButton';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
 import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
-import LogLiftModal from '../components/lifts/LogLiftModal';
+
 import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
