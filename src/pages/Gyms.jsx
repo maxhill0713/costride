@@ -191,7 +191,7 @@ export default function Gyms() {
             )}
 
             {/* Price */}
-            {gym.price && (
+            {gym.price && parseInt(gym.price) > 0 && (
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-blue-400">£{gym.price}</span>
                 <span className="text-xs text-slate-400">/month</span>
