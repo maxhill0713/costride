@@ -400,22 +400,22 @@ export default function Home() {
 
 
         {/* Notifications Section */}
-        {notifications.length > 0 && (
-          <Card className="bg-slate-800/40 backdrop-blur-sm border border-blue-700/40 rounded-2xl p-4">
-            <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2 text-sm">
-              <Bell className="w-4 h-4 text-blue-400" />
-              Recent Notifications
-            </h3>
-            <div className="space-y-2">
-              {notifications.slice(0, 3).map(notif => (
-                <div key={notif.id} className={`p-3 rounded-lg text-sm ${notif.read ? 'bg-slate-900/40' : 'bg-slate-900/60 border-l-2 border-blue-500'}`}>
-                  <div className="text-slate-200">{notif.title}</div>
-                  <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
+         {notifications.length > 0 && (
+           <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-4">
+             <h3 className="text-slate-100 font-semibold mb-3 flex items-center gap-2 text-sm">
+               <Bell className="w-4 h-4 text-blue-400" />
+               Recent Notifications
+             </h3>
+             <div className="space-y-2">
+               {notifications.slice(0, 3).map(notif => (
+                 <div key={notif.id} className={`p-3 rounded-lg text-sm border ${notif.read ? 'bg-slate-700/30 border-slate-600/40' : 'bg-slate-700/50 border-blue-500/40'}`}>
+                   <div className="text-slate-200">{notif.title}</div>
+                   <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
+                 </div>
+               ))}
+             </div>
+           </Card>
+         )}
 
 
 
