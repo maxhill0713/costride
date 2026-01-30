@@ -194,15 +194,15 @@ export default function Home() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-4">
-              <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-4 py-2">
-                <div className="flex items-center gap-3">
-                  <div className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
-                  <Flame className="w-10 h-10 text-orange-400" />
+            <div className="flex items-center justify-between">
+              <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-2 py-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="text-base font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
+                  <Flame className="w-8 h-8 text-orange-400" />
                 </div>
-                <div className="text-xs text-slate-400 text-center">day streak</div>
+                <div className="text-[10px] text-slate-400 text-center">day streak</div>
               </Card>
-              <h1 className="text-base font-semibold tracking-tight text-slate-100 whitespace-nowrap">
+              <h1 className="text-sm font-semibold tracking-tight text-slate-100 whitespace-nowrap flex-1 text-center px-4">
                 The gym's waiting for you
               </h1>
               <Link to={createPageUrl('Friends')}>
