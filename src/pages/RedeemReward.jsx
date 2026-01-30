@@ -110,7 +110,14 @@ export default function RedeemReward() {
 
   // Convert completed challenges to claimable rewards
   const completedChallengeRewards = completedChallenges
-    .filter(challenge => !claimedBonuses.find(cb => cb.challenge_id === challenge.id))
+    .filter(challenge => {
+      // Only show challenges the user participated in AND haven't claimed yet
+      const isWinner = challenge.winner_id === currentUser?.id;
+      const isParticipant = challenge.participants?.includes(currentUser?.id);
+      const notClaimed = !claimedBonuses.find(cb => cb.challenge_id === challenge.id);
+      
+      return (isWinner || isParticipant) && notClaimed;
+    })
     .map(challenge => ({
       id: challenge.id,
       title: challenge.title,
@@ -120,7 +127,8 @@ export default function RedeemReward() {
       reward: challenge.reward,
       earnedText: `Completed: ${challenge.title}`,
       isChallenge: true,
-      challengeId: challenge.id
+      challengeId: challenge.id,
+      gym_id: challenge.gym_id
     }));
 
   return (
