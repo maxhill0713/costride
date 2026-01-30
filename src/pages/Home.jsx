@@ -424,7 +424,7 @@ export default function Home() {
 
 
         {/* Premium Upgrade Card */}
-        <Card className="p-6 bg-gradient-to-br from-slate-800/80 via-purple-900/40 to-slate-900/80 backdrop-blur-sm border border-purple-600/40 text-white relative overflow-hidden">
+         <Card className="p-6 bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full -mr-20 -mt-20 blur-2xl" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
           <div className="relative z-10">
