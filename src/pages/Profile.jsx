@@ -627,41 +627,6 @@ export default function Profile() {
             {/* Workout Progress Tracker */}
             <WorkoutProgressTracker currentUser={currentUser} />
 
-            {/* Progress Stats */}
-            <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-blue-500/20 p-5 shadow-sm">
-              <h3 className="font-bold text-xl text-white mb-4">Your Progress</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-700/50 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-cyan-300 uppercase">Check-Ins</span>
-                  </div>
-                  <div className="text-4xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent drop-shadow-lg">{userCheckIns.length}</div>
-                </div>
-                <div className="bg-slate-700/50 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-xs font-bold text-orange-300 uppercase">Current Streak</span>
-                    </div>
-                    <div className="text-4xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">{currentStreak}</div>
-                    </div>
-                    <div className="bg-purple-500/25 border border-purple-500/50 rounded-2xl p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Dumbbell className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-bold text-purple-300 uppercase">Workouts</span>
-                    </div>
-                    <div className="text-4xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">{stats.totalLifts}</div>
-                    </div>
-                    <div className="bg-yellow-500/25 border border-yellow-500/50 rounded-2xl p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-300 uppercase">PRs</span>
-                    </div>
-                    <div className="text-4xl font-black bg-gradient-to-r from-yellow-300 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">{stats.personalRecords}</div>
-                    </div>
-                    </div>
-            </Card>
-
             {/* Gym Memberships - Compact */}
             {memberGyms.length > 0 && (
               <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
