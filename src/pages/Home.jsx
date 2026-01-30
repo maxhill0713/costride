@@ -182,6 +182,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Activity Status Banner */}
+      {daysSinceCheckIn !== null && daysSinceCheckIn >= 3 && (
+        <div className="bg-gradient-to-r from-orange-600/80 to-red-600/80 backdrop-blur-sm border-b border-orange-500/40 px-4 py-3">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-white text-sm font-semibold">
+              The gym's waiting for you
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Hero Header */}
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
