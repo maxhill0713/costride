@@ -211,9 +211,10 @@ export default function Home() {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
+                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl transition-all duration-300 hover:scale-110 relative group"
                 >
-                  <Users className="w-5 h-5" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-blue-500/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Users className="w-5 h-5 relative z-10 group-hover:animate-bounce" />
                 </Button>
               </Link>
             </div>
