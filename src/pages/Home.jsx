@@ -255,6 +255,11 @@ export default function Home() {
                 Check In Now
               </Button>
             )}
+            {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
+              <p className="text-slate-400 text-sm font-light text-center">
+                Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
+              </p>
+            )}
           </>
         )}
 
