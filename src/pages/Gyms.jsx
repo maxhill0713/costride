@@ -124,6 +124,12 @@ export default function Gyms() {
               {/* Action buttons */}
               <div className="absolute top-3 right-3 flex gap-2">
                 <button
+                  onClick={() => setEquipmentGym(gym)}
+                  className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors"
+                >
+                  <Dumbbell className="w-4 h-4 text-slate-300" />
+                </button>
+                <button
                   onClick={() => toggleSave(gym.id)}
                   className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors"
                 >
