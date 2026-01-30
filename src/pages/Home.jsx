@@ -186,8 +186,8 @@ export default function Home() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
-            <Card className="bg-gradient-to-r from-blue-900/50 via-slate-800/50 to-indigo-900/50 backdrop-blur-sm border border-blue-600/30 rounded-xl p-4 shadow-lg">
-              <p className="text-center text-base font-semibold text-slate-100">
+            <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4">
+              <p className="text-center text-base font-medium text-slate-200">
                 The gym's waiting for you
               </p>
             </Card>
