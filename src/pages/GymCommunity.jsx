@@ -55,6 +55,7 @@ export default function GymCommunity() {
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
+  const [showLogLift, setShowLogLift] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -790,6 +791,17 @@ export default function GymCommunity() {
           {/* Check-in Section */}
           {!showOwnerControls && <CheckInButton gym={gym} />}
 
+          {/* Log Lift Button */}
+          {!showOwnerControls && isMember && (
+            <Button
+              onClick={() => setShowLogLift(true)}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl py-4 shadow-lg"
+            >
+              <Dumbbell className="w-5 h-5 mr-2" />
+              Log Your Lift
+            </Button>
+          )}
+
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
@@ -1502,6 +1514,14 @@ export default function GymCommunity() {
                   }}
                   isLoading={createChallengeMutation.isPending}
                 />
+
+        <LogLiftModal
+          open={showLogLift}
+          onClose={() => setShowLogLift(false)}
+          onSuccess={(liftData) => logLiftMutation.mutate(liftData)}
+          gym={gym}
+          currentUser={currentUser}
+        />
 
     </div>
   );
