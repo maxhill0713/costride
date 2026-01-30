@@ -102,7 +102,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
                 : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
             }`}
           >
-            {userHasJoined ? '✓ Already Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
+            {userHasJoined ? '✓ Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
           </Button>
           {isOwner && onDelete && (
             <Button
