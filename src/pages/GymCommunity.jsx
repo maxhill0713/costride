@@ -914,7 +914,7 @@ export default function GymCommunity() {
 
           {/* New Challenges */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-3 md:p-4">
+            <Card className="bg-slate-900/70 backdrop-blur-sm border border-purple-500/30 p-3 md:p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Trophy className="w-5 h-5 text-purple-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">New Challenges</h3>
@@ -938,7 +938,7 @@ export default function GymCommunity() {
 
           {/* Recent Posts */}
           {posts.length > 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-3 md:p-4">
+            <Card className="bg-slate-900/70 backdrop-blur-sm border border-blue-500/30 p-3 md:p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 text-blue-400" />
@@ -1024,7 +1024,7 @@ export default function GymCommunity() {
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-cyan-500/40 p-2 md:p-5">
+            <Card className="bg-slate-900/70 backdrop-blur-sm border border-cyan-500/30 p-2 md:p-5">
             <div className="space-y-1.5 md:space-y-3">
               <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
                 <div className="w-6 md:w-8 h-6 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center flex-shrink-0">
