@@ -211,7 +211,10 @@ export default function Home() {
                 <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-4 py-2 text-center">
                   <div className="flex items-center gap-2">
                     <Flame className="w-5 h-5 text-orange-400" />
-                    <div className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
+                    <div>
+                      <div className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
+                      <div className="text-xs text-slate-400">day streak</div>
+                    </div>
                   </div>
                 </Card>
               </div>
