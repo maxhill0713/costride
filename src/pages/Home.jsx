@@ -203,7 +203,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex-1 text-center px-4">
-                <h1 className="text-2xl font-black bg-gradient-to-r from-white via-gray-300 to-gray-800 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
                   CoStride
                 </h1>
               </div>
