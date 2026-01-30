@@ -12,6 +12,9 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
   const daysElapsed = totalDays - daysLeft;
   const progressPercentage = totalDays > 0 ? (daysElapsed / totalDays) * 100 : 0;
   const participantCount = challenge.participants?.length || 0;
+  
+  // Check if user has joined by checking if their ID is in participants array
+  const userHasJoined = currentUser ? (challenge.participants || []).includes(currentUser.id) : false;
 
   return (
     <motion.div
@@ -90,16 +93,16 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
         <div className="flex gap-2">
           <Button
             onClick={() => onJoin && onJoin(challenge)}
-            disabled={isJoined || isOwner}
+            disabled={userHasJoined || isOwner}
             className={`flex-1 font-bold transition-all duration-200 ${
-              isJoined 
+              userHasJoined 
                 ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
                 : isOwner
                 ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
                 : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
             }`}
           >
-            {isJoined ? '✓ Already Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
+            {userHasJoined ? '✓ Already Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
           </Button>
           {isOwner && onDelete && (
             <Button
