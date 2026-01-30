@@ -213,7 +213,7 @@ export default function RedeemReward() {
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-amber-400/50 transition-all overflow-hidden group relative">
+                    <Card className="bg-slate-900/70 backdrop-blur-md border border-amber-500/30 rounded-2xl p-5 hover:border-amber-400/50 transition-all overflow-hidden group relative">
                       {/* Sparkle effect on hover */}
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -300,7 +300,7 @@ export default function RedeemReward() {
             ) : (
               <>
                 {completedChallengeRewards.map((reward) => (
-                  <Card key={reward.id} className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-amber-400/50 transition-all group overflow-hidden">
+                  <Card key={reward.id} className="bg-slate-900/70 backdrop-blur-md border border-amber-500/30 rounded-2xl p-5 hover:border-amber-400/50 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
@@ -332,7 +332,7 @@ export default function RedeemReward() {
                    </Card>
                  ))}
                  {unclaimedRewards.map((reward) => (
-                   <Card key={reward.id} className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 hover:border-cyan-400/50 transition-all group overflow-hidden">
+                   <Card key={reward.id} className="bg-slate-900/70 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 hover:border-cyan-400/50 transition-all group overflow-hidden">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <div className="flex items-center gap-2 mb-1">
