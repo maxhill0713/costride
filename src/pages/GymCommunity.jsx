@@ -857,20 +857,9 @@ export default function GymCommunity() {
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* Check-in Section */}
-          {!showOwnerControls && <CheckInButton gym={gym} />}
+           {!showOwnerControls && <CheckInButton gym={gym} />}
 
-          {/* Log Lift Button */}
-          {!showOwnerControls && isMember && (
-            <Button
-              onClick={() => setShowLogLift(true)}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl py-4 shadow-lg"
-            >
-              <Dumbbell className="w-5 h-5 mr-2" />
-              Log Your Lift
-            </Button>
-          )}
-
-          {/* Quick Stats */}
+           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
               <div className="flex items-center gap-2 mb-2">
