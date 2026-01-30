@@ -1218,7 +1218,7 @@ export default function GymCommunity() {
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* Classes Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-blue-500/40 p-2 md:p-5">
+          <Card className="bg-slate-900/70 backdrop-blur-sm border border-blue-500/30 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Classes</h3>
               {showOwnerControls && (
@@ -1293,7 +1293,7 @@ export default function GymCommunity() {
           </Card>
 
           {/* Events Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-orange-500/40 p-2 md:p-5">
+          <Card className="bg-slate-900/70 backdrop-blur-sm border border-orange-500/30 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Upcoming Events</h3>
               {showOwnerControls && (
@@ -1338,7 +1338,7 @@ export default function GymCommunity() {
 
 
           {/* Coaches Section */}
-          <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-purple-500/40 p-2 md:p-5">
+          <Card className="bg-slate-900/70 backdrop-blur-sm border border-purple-500/30 p-2 md:p-5">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Coaches</h3>
               {showOwnerControls && (
