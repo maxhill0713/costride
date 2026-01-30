@@ -101,8 +101,16 @@ export default function Home() {
   const calculateStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     
-    let streak = 1;
     const today = startOfDay(new Date());
+    const lastCheckInDate = startOfDay(new Date(checkIns[0].check_in_date));
+    const daysSinceLastCheckIn = differenceInDays(today, lastCheckInDate);
+    
+    // If last check-in was more than 1 day ago, streak is broken (reset to 0)
+    if (daysSinceLastCheckIn > 1) {
+      return 0;
+    }
+    
+    let streak = 1;
     
     for (let i = 0; i < checkIns.length - 1; i++) {
       const current = startOfDay(new Date(checkIns[i].check_in_date));
