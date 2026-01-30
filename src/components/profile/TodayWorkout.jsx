@@ -220,9 +220,13 @@ export default function TodayWorkout({ currentUser }) {
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
-                    {lastWorkout?.exercises?.[index] && (
+                    {lastWorkout?.exercises?.[index] ? (
                       <div className="text-xs text-slate-400 font-medium">
                         Last: {lastWorkout.exercises[index].weight}kg
+                      </div>
+                    ) : (
+                      <div className="text-xs text-blue-400 font-medium">
+                        First Lift
                       </div>
                     )}
                   </div>
@@ -267,9 +271,13 @@ export default function TodayWorkout({ currentUser }) {
                     <div className="text-xs font-semibold text-white leading-tight">
                       {exercise.exercise || '-'}
                     </div>
-                    {lastWorkout?.exercises?.[index] && (
+                    {lastWorkout?.exercises?.[index] ? (
                       <div className="text-[10px] text-slate-400 font-medium">
                         Last: {lastWorkout.exercises[index].weight}kg
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-blue-400 font-medium">
+                        First Lift
                       </div>
                     )}
                   </div>
@@ -281,7 +289,7 @@ export default function TodayWorkout({ currentUser }) {
                       <span className="text-xs font-semibold text-white">
                         {exercise.weight || '-'}
                       </span>
-                      {getProgressIndicator(exercise, index)}
+                      {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                     </div>
                     <Button
                       onClick={() => handleEdit(index, exercise)}
