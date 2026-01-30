@@ -195,7 +195,7 @@ export default function Friends() {
 
                 {/* Dropdown Menu */}
                 {showFriendsDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-50">
+                  <div className="fixed top-20 right-4 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-50">
                     <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
                       {friends.length === 0 ? (
                         <p className="text-center text-slate-400 text-sm py-4">No friends yet</p>
