@@ -180,25 +180,8 @@ export default function Home() {
   const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
   const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
 
-  // Determine if user is active (checked in within last 2 days)
-  const isActive = daysSinceCheckIn !== null && daysSinceCheckIn <= 2;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Activity Status Banner */}
-      <div className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border-b border-slate-600/40 px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center">
-            <h2 className={`text-lg font-bold ${isActive ? 'text-green-400' : 'text-orange-400'} mb-1`}>
-              {isActive ? 'Active member' : 'User inactive'}
-            </h2>
-            <p className="text-slate-300 text-sm">
-              {isActive ? "You're part of today's crew" : "The gym's waiting for you"}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Hero Header */}
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
