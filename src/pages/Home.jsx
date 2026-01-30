@@ -195,13 +195,13 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-2 py-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="text-base font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
-                  <Flame className="w-8 h-8 text-orange-400" />
+              <div className="flex items-center gap-1">
+                <span className="text-xl font-bold text-orange-400">{userStreak}</span>
+                <div className="relative w-8 h-8">
+                  <Flame className="w-8 h-8 text-orange-500 fill-orange-500" />
+                  <Dumbbell className="w-5 h-5 text-slate-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-[-30deg]" />
                 </div>
-                <div className="text-[10px] text-slate-400 text-center">day streak</div>
-              </Card>
+              </div>
               <div className="flex-1 text-center px-4">
                 <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
                   CoStride
