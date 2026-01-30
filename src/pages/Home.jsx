@@ -194,10 +194,20 @@ export default function Home() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
-            <div className="text-center mb-2">
+            <div className="flex items-center justify-between">
+              <Link to={createPageUrl('Friends')}>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
+                >
+                  <Users className="w-5 h-5" />
+                </Button>
+              </Link>
               <h1 className="text-xl font-semibold tracking-tight text-slate-100">
                 The gym's waiting for you
               </h1>
+              <div className="w-10" />
             </div>
             <div className="flex items-center justify-between">
               <div>
