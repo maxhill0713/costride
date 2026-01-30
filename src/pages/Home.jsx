@@ -195,7 +195,15 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <div className="w-10" />
+              <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-4 py-2 text-center">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-orange-400" />
+                  <div>
+                    <div className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
+                    <div className="text-xs text-slate-400">day streak</div>
+                  </div>
+                </div>
+              </Card>
               <h1 className="text-xl font-semibold tracking-tight text-slate-100">
                 The gym's waiting for you
               </h1>
@@ -217,25 +225,14 @@ export default function Home() {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <Card className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-600/30 px-4 py-2 text-center">
-                  <div className="flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-400" />
-                    <div>
-                      <div className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{userStreak}</div>
-                      <div className="text-xs text-slate-400">day streak</div>
-                    </div>
-                  </div>
-                </Card>
-                {currentUser?.account_type === 'gym_owner' && (
-                  <Link to={createPageUrl('GymOwnerDashboard')}>
-                    <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
-                      <Trophy className="w-4 h-4 mr-2" />
-                      Admin View
-                    </Button>
-                  </Link>
-                )}
-              </div>
+              {currentUser?.account_type === 'gym_owner' && (
+                <Link to={createPageUrl('GymOwnerDashboard')}>
+                  <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Admin View
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
