@@ -601,7 +601,7 @@ export default function Profile() {
 
           <TabsContent value="progress" className="space-y-4">
             {/* Workout Split Heatmap */}
-            <Card className="bg-slate-800/60 border border-slate-600/40 p-4 rounded-2xl">
+            <Card className="bg-slate-900/70 border border-indigo-500/30 p-4 rounded-2xl">
               <div className="flex items-center gap-2 mb-3">
                 <Dumbbell className="w-4 h-4 text-indigo-400" />
                 <h3 className="text-sm font-bold text-white">Your Split Progress</h3>

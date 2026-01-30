@@ -106,7 +106,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
   if (workoutLogs.length === 0) {
     return (
-      <Card className="bg-slate-800/60 border border-slate-600/40 p-6 rounded-2xl text-center">
+      <Card className="bg-slate-900/70 border border-purple-500/30 p-6 rounded-2xl text-center">
         <Activity className="w-10 h-10 text-slate-400 mx-auto mb-3" />
         <p className="text-slate-400 font-medium">No workout logs yet</p>
         <p className="text-slate-500 text-sm mt-1">Complete a workout to track your progress</p>
@@ -115,7 +115,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
   }
 
   return (
-    <Card className="bg-slate-800/60 border border-slate-600/40 p-3 rounded-2xl">
+    <Card className="bg-slate-900/70 border border-purple-500/30 p-3 rounded-2xl">
       <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2">
           <Activity className="w-3.5 h-3.5 text-purple-400" />
