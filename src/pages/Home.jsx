@@ -328,8 +328,8 @@ export default function Home() {
             );
           } else if (top3.length > 0) {
             return (
-              <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-amber-500/40 p-4">
-                <h3 className="text-sm font-semibold text-slate-100 mb-3 text-center flex items-center justify-center gap-2">
+              <Card className="bg-slate-900/70 backdrop-blur-sm border border-amber-500/30 p-4">
+                <h3 className="text-sm font-semibold text-slate-200 mb-3 text-center flex items-center justify-center gap-2">
                   <Trophy className="w-4 h-4 text-amber-400" />
                   This Week's Leaders
                 </h3>
@@ -337,16 +337,16 @@ export default function Home() {
                   {top3.map((user, idx) => {
                     const emoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
                     const textColor = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : 'text-orange-300';
-                    
+
                     return (
-                      <div key={user.userId} className="flex items-center justify-between bg-slate-700/50 border border-slate-600/40 rounded-lg px-3 py-2 hover:bg-slate-700/70 transition-all">
+                      <div key={user.userId} className="flex items-center justify-between bg-slate-800/40 border border-slate-700/30 rounded-lg px-3 py-2 hover:bg-slate-800/60 transition-all">
                         <div className="flex items-center gap-2">
                           <span className="text-xl">{emoji}</span>
                           <span className={`font-semibold text-sm ${textColor}`}>
                             {user.name?.split(' ')[0] || 'User'}
                           </span>
                         </div>
-                        <Badge className="bg-slate-600/50 text-slate-200 border-slate-500 text-xs">
+                        <Badge className="bg-slate-700/30 text-slate-200 border-slate-600 text-xs">
                           {user.count} check-ins
                         </Badge>
                       </div>
