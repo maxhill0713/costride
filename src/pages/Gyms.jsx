@@ -531,7 +531,7 @@ export default function Gyms() {
                               }}
                               className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
                             >
-                              <Info className="w-4 h-4 text-slate-300" />
+                              <Dumbbell className="w-4 h-4 text-slate-300" />
                             </button>
                             <button
                               onClick={() => toggleSave(gym.id)}
