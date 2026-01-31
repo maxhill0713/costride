@@ -36,12 +36,6 @@ export default function Profile() {
   const [showEditAvatar, setShowEditAvatar] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
-
-  const { data: userPosts = [] } = useQuery({
-    queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
-    enabled: !!currentUser
-  });
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
 
