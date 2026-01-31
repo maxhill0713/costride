@@ -68,6 +68,7 @@ import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
+import AdminGyms from './pages/AdminGyms';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +94,7 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "UserProfile": UserProfile,
+    "AdminGyms": AdminGyms,
 }
 
 export const pagesConfig = {
