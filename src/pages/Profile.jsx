@@ -625,7 +625,7 @@ export default function Profile() {
               <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
             </TabsContent>
 
-          <TabsContent value="goals" className="space-y-4">
+            <TabsContent value="goals" className="space-y-4">
             {/* Progress Tracker */}
             {(() => {
               const startOfThisWeek = new Date();
