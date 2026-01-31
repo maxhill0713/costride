@@ -573,57 +573,57 @@ export default function Profile() {
                 </Card>
               </div>
 
-              {/* Workout Split Heatmap */}
-            <Card className="bg-slate-900/70 border border-indigo-500/30 p-4 rounded-2xl">
-              <div className="flex items-center gap-2 mb-3">
-                <Dumbbell className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-              </div>
-
-              <button
-                onClick={() => setShowSplitModal(true)}
-                className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
-              >
-                <Calendar className="w-3 h-3" />
-                Edit Your Split
-              </button>
-
-              <WorkoutSplitHeatmap 
-                checkIns={userCheckIns}
-                workoutSplit={currentUser?.workout_split}
-                weeklyGoal={currentUser?.weekly_goal}
-                trainingDays={currentUser?.training_days}
-                customWorkoutTypes={currentUser?.custom_workout_types || {}}
-              />
-            </Card>
-
-            {/* Workout Progress Tracker */}
-            <WorkoutProgressTracker currentUser={currentUser} />
-
-            {/* Gym Memberships - Compact */}
-            {memberGyms.length > 0 && (
-              <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                    <Building2 className="w-4 h-4 text-blue-400" />
-                    <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
-                  </div>
-                <div className="flex flex-wrap gap-2">
-                  {memberGyms.map((gym) => (
-                    <span 
-                      key={gym.id}
-                      className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-medium"
-                    >
-                      {gym.name}
-                    </span>
-                  ))}
+                {/* Workout Split Heatmap */}
+              <Card className="bg-slate-900/70 border border-indigo-500/30 p-4 rounded-2xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Dumbbell className="w-4 h-4 text-indigo-400" />
+                  <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
                 </div>
-              </div>
-            )}
-          </TabsContent>
 
-          <TabsContent value="badges">
-            <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
-          </TabsContent>
+                <button
+                  onClick={() => setShowSplitModal(true)}
+                  className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+                >
+                  <Calendar className="w-3 h-3" />
+                  Edit Your Split
+                </button>
+
+                <WorkoutSplitHeatmap 
+                  checkIns={userCheckIns}
+                  workoutSplit={currentUser?.workout_split}
+                  weeklyGoal={currentUser?.weekly_goal}
+                  trainingDays={currentUser?.training_days}
+                  customWorkoutTypes={currentUser?.custom_workout_types || {}}
+                />
+              </Card>
+
+              {/* Workout Progress Tracker */}
+              <WorkoutProgressTracker currentUser={currentUser} />
+
+              {/* Gym Memberships - Compact */}
+              {memberGyms.length > 0 && (
+                <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                  <div className="flex items-center gap-2 mb-2">
+                      <Building2 className="w-4 h-4 text-blue-400" />
+                      <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
+                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {memberGyms.map((gym) => (
+                      <span 
+                        key={gym.id}
+                        className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-medium"
+                      >
+                        {gym.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="badges">
+              <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
+            </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
             {/* Progress Tracker */}
