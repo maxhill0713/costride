@@ -288,7 +288,7 @@ export default function Profile() {
         
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-5 flex-1">
               <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
@@ -298,7 +298,7 @@ export default function Profile() {
                    </span>
                  )}
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                    <h1 className="text-2xl md:text-3xl font-medium tracking-[-0.02em] text-white leading-tight">{currentUser.full_name}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
@@ -331,6 +331,24 @@ export default function Profile() {
                     })}
                   </div>
                 )}
+              </div>
+              
+              {/* Check-in Count and Best Streak */}
+              <div className="hidden md:flex flex-col gap-3">
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3 min-w-[140px]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-medium text-slate-400">Total Check-ins</span>
+                  </div>
+                  <p className="text-2xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
+                </div>
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3 min-w-[140px]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Trophy className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-medium text-slate-400">Best Streak</span>
+                  </div>
+                  <p className="text-2xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak} days</p>
+                </div>
               </div>
             </div>
             {!isEditing ? (
@@ -421,25 +439,22 @@ export default function Profile() {
                 <p className="text-slate-300 text-sm leading-relaxed font-normal max-w-2xl tracking-[-0.01em]">{currentUser.bio}</p>
               )}
               {currentUser.gym_location && (
-                <div className="flex items-center gap-2 text-slate-400 mb-4">
+                <div className="flex items-center gap-2 text-slate-400">
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                 </div>
               )}
               
-              {/* Divider */}
-              <div className="border-t border-slate-700/50 my-4" />
-              
-              {/* Check-in Count and Best Streak */}
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-4">
+              {/* Check-in Count and Best Streak - Mobile */}
+              <div className="grid grid-cols-2 gap-3 mt-4 md:hidden">
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-4 h-4 text-blue-400" />
                     <span className="text-xs font-medium text-slate-400">Total Check-ins</span>
                   </div>
                   <p className="text-2xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
                 </div>
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-4">
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Trophy className="w-4 h-4 text-purple-400" />
                     <span className="text-xs font-medium text-slate-400">Best Streak</span>
