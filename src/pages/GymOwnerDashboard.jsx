@@ -206,6 +206,8 @@ export default function GymOwnerDashboard() {
   });
 
   const myGyms = gyms.filter(g => g.owner_email === currentUser?.email);
+  const approvedGyms = myGyms.filter(g => g.status === 'approved');
+  const pendingGyms = myGyms.filter(g => g.status === 'pending');
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['allCheckIns'],
@@ -229,10 +231,10 @@ export default function GymOwnerDashboard() {
   });
 
   React.useEffect(() => {
-    if (myGyms.length > 0 && !selectedGym) {
-      setSelectedGym(myGyms[0]);
+    if (approvedGyms.length > 0 && !selectedGym) {
+      setSelectedGym(approvedGyms[0]);
     }
-  }, [myGyms, selectedGym]);
+  }, [approvedGyms, selectedGym]);
 
   // Auto-switch language based on gym's language setting
   React.useEffect(() => {
@@ -464,16 +466,37 @@ export default function GymOwnerDashboard() {
   //   );
   // }
 
+  // Show pending approval message if gym is pending
+  if (approvedGyms.length === 0 && pendingGyms.length > 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-yellow-500/40">
+          <Clock className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">Gym Pending Approval</h2>
+          <p className="text-slate-300 mb-4">
+            Your gym <span className="font-bold text-yellow-400">{pendingGyms[0].name}</span> is currently under review. 
+            You'll be notified once it's approved and can access your dashboard.
+          </p>
+          <Link to={createPageUrl('Home')}>
+            <Button className="bg-slate-700 hover:bg-slate-600 text-white">
+              Back to Home
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   if (myGyms.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 text-center max-w-md">
-          <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.noGymsRegistered')}</h2>
-          <p className="text-gray-600 mb-4">{t('dashboard.haventRegistered')}</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-slate-600/40">
+          <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">No Gyms Registered</h2>
+          <p className="text-slate-300 mb-4">Register your gym to start managing it</p>
           <Link to={createPageUrl('GymSignup')}>
             <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
-              {t('dashboard.registerYourGym')}
+              Register Your Gym
             </Button>
           </Link>
         </Card>
@@ -619,9 +642,9 @@ export default function GymOwnerDashboard() {
                 Log out
               </Button>
 
-              {myGyms.length > 1 && (
+              {approvedGyms.length > 1 && (
                 <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
-                  {myGyms.map(gym => (
+                  {approvedGyms.map(gym => (
                     <Button
                       key={gym.id}
                       variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
