@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut, Camera } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut, Camera, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -278,13 +278,21 @@ export default function Profile() {
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 to-transparent" />
         )}
         
-        {/* Edit Hero Button */}
-        <button
-          onClick={() => setShowEditHero(true)}
-          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-xl bg-slate-800/80 backdrop-blur-md border border-slate-600/50 flex items-center justify-center hover:bg-slate-700/80 transition-all"
-        >
-          <Camera className="w-4 h-4 text-slate-300" />
-        </button>
+        {/* Top Right Icons */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="w-9 h-9 flex items-center justify-center hover:bg-slate-700/40 rounded-xl transition-all"
+          >
+            <Settings className="w-5 h-5 text-slate-300" />
+          </button>
+          <button
+            onClick={() => setShowEditHero(true)}
+            className="w-9 h-9 rounded-xl bg-slate-800/80 backdrop-blur-md border border-slate-600/50 flex items-center justify-center hover:bg-slate-700/80 transition-all"
+          >
+            <Camera className="w-4 h-4 text-slate-300" />
+          </button>
+        </div>
         
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="flex items-start justify-between mb-6">
@@ -352,24 +360,14 @@ export default function Profile() {
               </div>
             </div>
             {!isEditing ? (
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
-                  onClick={() => setActiveTab('settings')}
-                >
-                  <Settings className="w-5 h-5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Edit2 className="w-5 h-5" />
-                </Button>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="w-5 h-5" />
+              </Button>
             ) : (
               <div className="flex gap-2">
                 <Button 
@@ -479,8 +477,8 @@ export default function Profile() {
               <TabsTrigger value="badges" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
                 Badges
               </TabsTrigger>
-              <TabsTrigger value="settings" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                <Settings className="w-4 h-4" />
+              <TabsTrigger value="posts" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                Posts
               </TabsTrigger>
             </TabsList>
 
@@ -598,6 +596,52 @@ export default function Profile() {
 
             <TabsContent value="badges">
               <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
+            </TabsContent>
+
+            <TabsContent value="posts" className="space-y-4">
+              {(() => {
+                const { data: userPosts = [] } = useQuery({
+                  queryKey: ['userPosts', currentUser?.id],
+                  queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
+                  enabled: !!currentUser
+                });
+
+                if (userPosts.length === 0) {
+                  return (
+                    <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
+                      <div className="max-w-sm mx-auto">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
+                          <FileText className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <h4 className="text-lg font-bold text-white mb-2">No Posts Yet</h4>
+                        <p className="text-slate-400 text-sm">
+                          Share your fitness journey with friends or your gym community!
+                        </p>
+                      </div>
+                    </Card>
+                  );
+                }
+
+                return (
+                  <div className="space-y-3">
+                    {userPosts.map((post) => (
+                      <Card key={post.id} className="bg-slate-800/40 border border-slate-600/40 rounded-xl overflow-hidden">
+                        {post.image_url && (
+                          <img src={post.image_url} alt="" className="w-full h-48 object-cover" />
+                        )}
+                        <div className="p-4">
+                          <p className="text-sm text-slate-200 mb-3">{post.content}</p>
+                          <div className="flex items-center gap-4 text-xs text-slate-400">
+                            <span>❤️ {post.likes || 0}</span>
+                            <span>💬 {post.comments?.length || 0}</span>
+                            <span className="ml-auto">{new Date(post.created_date).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                );
+              })()}
             </TabsContent>
 
             <TabsContent value="goals" className="space-y-4">
