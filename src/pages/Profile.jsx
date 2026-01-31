@@ -270,8 +270,8 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden">
-        {/* Hero Background */}
+      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent">
+        {/* Hero Background - Only if custom image is set */}
         {currentUser.hero_image_url && (
           <>
             <div className="absolute inset-0 z-0">
@@ -279,9 +279,6 @@ export default function Profile() {
             </div>
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
           </>
-        )}
-        {!currentUser.hero_image_url && (
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 to-transparent" />
         )}
         
         {/* Top Right Icons */}
