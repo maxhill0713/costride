@@ -429,34 +429,29 @@ export default function Profile() {
             </div>
           )}
 
+          {/* Divider */}
+          <div className="border-t border-slate-700/50 my-6" />
+
           {/* Tabs Section */}
-          <div className="mt-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="flex w-full bg-slate-800/50 p-1 rounded-xl gap-1">
-                <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                  Progress
-                </TabsTrigger>
-                <TabsTrigger value="goals" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                  Goals
-                </TabsTrigger>
-                <TabsTrigger value="badges" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                  Badges
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                  <Settings className="w-4 h-4" />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          </div>
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="flex w-full bg-slate-800/50 p-1 rounded-xl gap-1 mb-4">
+              <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                Progress
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                Goals
+              </TabsTrigger>
+              <TabsTrigger value="badges" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                Badges
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                <Settings className="w-4 h-4" />
+              </TabsTrigger>
+            </TabsList>
 
-
-
-      {/* Stats Cards */}
-      <div className="max-w-4xl mx-auto px-4 -mt-4 mb-8 space-y-4">
-        {/* Streak Cards */}
-        <div className="grid grid-cols-2 gap-4">
+            <TabsContent value="progress" className="space-y-4 mt-0">
+              {/* Streak Cards */}
+              <div className="grid grid-cols-2 gap-4">
           <Card className="bg-gradient-to-br from-orange-600/15 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-5 shadow-md overflow-hidden">
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
