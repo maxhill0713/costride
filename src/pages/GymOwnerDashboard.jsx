@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -7,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Share2, X, Crown, Trash2 } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Share2, X, Crown, Trash2, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, subDays, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
@@ -676,6 +677,68 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
 
+         {/* View My Gym */}
+         <div className="mb-6">
+           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="block">
+             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-6 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
+               <Dumbbell className="w-8 h-8" />
+               <span className="font-black text-lg">{t('dashboard.viewMyGym')}</span>
+               <span className="text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
+             </Button>
+           </Link>
+         </div>
+
+        <Tabs defaultValue="snapshot" className="w-full mb-8">
+           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 bg-slate-800/50 border border-slate-700 backdrop-blur-sm p-1 md:p-1.5 rounded-xl h-auto md:h-14 shadow-xl gap-1">
+             <TabsTrigger value="snapshot" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📊 {t('dashboard.snapshot')}
+             </TabsTrigger>
+             <TabsTrigger value="engagement" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               🔥 {t('dashboard.engagement')}
+             </TabsTrigger>
+             <TabsTrigger value="content" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📸 {t('dashboard.content')}
+             </TabsTrigger>
+             <TabsTrigger value="admin" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               ⚙️ {t('dashboard.admin')}
+             </TabsTrigger>
+             <TabsTrigger value="insights" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📈 {t('dashboard.insights')}
+             </TabsTrigger>
+           </TabsList>
+
+          <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
+            {/* The existing code for snapshot-like data is moved outside the tabs as per the outline's reordering. */}
+            {/* This tab is currently empty or awaiting new content. */}
+            <Card className="p-6 text-center text-slate-400">Snapshot content coming soon!</Card>
+          </TabsContent>
+
+          <TabsContent value="engagement" className="space-y-8 mt-4 md:mt-6">
+            {/* The existing code for engagement-like data is moved outside the tabs as per the outline's reordering. */}
+            {/* This tab is currently empty or awaiting new content. */}
+            <Card className="p-6 text-center text-slate-400">Engagement insights coming soon!</Card>
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
+            {/* The existing code for content management is moved outside the tabs as per the outline's reordering. */}
+            {/* This tab is currently empty or awaiting new content. */}
+            <Card className="p-6 text-center text-slate-400">Content management features coming soon!</Card>
+          </TabsContent>
+
+          <TabsContent value="admin" className="space-y-8 mt-4 md:mt-6">
+            {/* The existing code for admin controls is moved outside the tabs as per the outline's reordering. */}
+            {/* This tab is currently empty or awaiting new content. */}
+            <Card className="p-6 text-center text-slate-400">Admin settings coming soon!</Card>
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
+            {/* The existing code for insights is moved outside the tabs as per the outline's reordering. */}
+            {/* This tab is currently empty or awaiting new content. */}
+            <Card className="p-6 text-center text-slate-400">Detailed insights coming soon!</Card>
+          </TabsContent>
+
+        </Tabs>
+
         {/* Gym Join Code with QR Code - Compact Version */}
          <Card className="p-4 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-xl">
            <div className="flex items-center gap-3">
@@ -768,19 +831,6 @@ export default function GymOwnerDashboard() {
              )}
            </div>
          </Card>
-
-
-
-         {/* View My Gym */}
-         <div className="mb-6">
-           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="block">
-             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-6 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
-               <Dumbbell className="w-8 h-8" />
-               <span className="font-black text-lg">{t('dashboard.viewMyGym')}</span>
-               <span className="text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
-             </Button>
-           </Link>
-         </div>
 
          {/* At-Risk Alert */}
         {atRiskMembers > 0 && (
