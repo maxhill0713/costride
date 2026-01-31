@@ -51,6 +51,12 @@ export default function Profile() {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: userPosts = [] } = useQuery({
+    queryKey: ['userPosts', currentUser?.id],
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
+    enabled: !!currentUser
+  });
+
   // Apply dark mode to document
   useEffect(() => {
     if (currentUser?.dark_mode) {
