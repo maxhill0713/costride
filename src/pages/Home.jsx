@@ -214,7 +214,7 @@ export default function Home() {
                   className="relative rounded-xl transition-all duration-300 hover:scale-125 group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-300 group-hover:blur-lg" />
-                  <Users className="w-9 h-9 relative z-10 text-cyan-400 group-hover:text-cyan-300 transition-all duration-300" />
+                  <Users className="w-8 h-8 relative z-10 text-cyan-400 group-hover:text-cyan-300 transition-all duration-300" />
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
                 </Button>
               </Link>
