@@ -434,24 +434,7 @@ export default function Profile() {
             {/* Spacing */}
             <div className="h-6" />
 
-      {/* Re-engagement Banner */}
-      {daysSinceCheckIn !== null && daysSinceCheckIn >= 3 && currentStreak > 0 && (
-        <div className="max-w-4xl mx-auto px-4 -mt-16 mb-6">
-          <Card className="bg-gradient-to-r from-orange-500 to-red-500 border-0 p-5 text-white shadow-2xl animate-pulse overflow-hidden">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-black text-lg mb-1 truncate">We Miss You! 🔥</h3>
-                  <p className="text-white/90 text-sm line-clamp-2">
-                    One quick session keeps your progress going
-                  </p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+
 
       {/* Stats Cards */}
       <div className="max-w-4xl mx-auto px-4 -mt-4 mb-8 space-y-4">
