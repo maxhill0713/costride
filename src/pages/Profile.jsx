@@ -342,20 +342,20 @@ export default function Profile() {
               </div>
               
               {/* Check-in Count and Best Streak */}
-              <div className="hidden md:flex flex-col gap-3">
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3 min-w-[140px]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-4 h-4 text-blue-400" />
-                    <span className="text-xs font-medium text-slate-400">Total Check-ins</span>
+              <div className="hidden md:flex flex-col gap-2">
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2 min-w-[120px]">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Calendar className="w-3 h-3 text-blue-400" />
+                    <span className="text-[10px] font-medium text-slate-400">Check-ins</span>
                   </div>
-                  <p className="text-2xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
+                  <p className="text-xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
                 </div>
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3 min-w-[140px]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Trophy className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-medium text-slate-400">Best Streak</span>
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2 min-w-[120px]">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Trophy className="w-3 h-3 text-purple-400" />
+                    <span className="text-[10px] font-medium text-slate-400">Best Streak</span>
                   </div>
-                  <p className="text-2xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak} days</p>
+                  <p className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak}</p>
                 </div>
               </div>
             </div>
@@ -444,20 +444,20 @@ export default function Profile() {
               )}
               
               {/* Check-in Count and Best Streak - Mobile */}
-              <div className="grid grid-cols-2 gap-3 mt-4 md:hidden">
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-4 h-4 text-blue-400" />
-                    <span className="text-xs font-medium text-slate-400">Total Check-ins</span>
+              <div className="grid grid-cols-2 gap-2 mt-4 md:hidden">
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Calendar className="w-3 h-3 text-blue-400" />
+                    <span className="text-[10px] font-medium text-slate-400">Check-ins</span>
                   </div>
-                  <p className="text-2xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
+                  <p className="text-xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
                 </div>
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Trophy className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs font-medium text-slate-400">Best Streak</span>
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Trophy className="w-3 h-3 text-purple-400" />
+                    <span className="text-[10px] font-medium text-slate-400">Best Streak</span>
                   </div>
-                  <p className="text-2xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak} days</p>
+                  <p className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak}</p>
                 </div>
               </div>
             </div>
