@@ -1022,9 +1022,10 @@ export default function Profile() {
                 <p className="text-xs text-slate-400 text-center">You will be logged out from all sessions</p>
               </div>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+            </TabsContent>
+          </Tabs>
+          </div>
+          </div>
 
       <AddGoalModal
         open={showAddGoal}
