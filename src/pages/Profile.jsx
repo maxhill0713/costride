@@ -428,11 +428,28 @@ export default function Profile() {
               )}
             </div>
           )}
-          </div>
-          </div>
 
-            {/* Spacing */}
-            <div className="h-6" />
+          {/* Tabs Section */}
+          <div className="mt-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="flex w-full bg-slate-800/50 p-1 rounded-xl gap-1">
+                <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                  Progress
+                </TabsTrigger>
+                <TabsTrigger value="goals" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                  Goals
+                </TabsTrigger>
+                <TabsTrigger value="badges" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                  Badges
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                  <Settings className="w-4 h-4" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          </div>
+          </div>
 
 
 
