@@ -95,7 +95,37 @@ export default function TodayWorkout({ currentUser }) {
       weight: editWeight,
       setsReps: editReps
     };
-    updateWorkoutMutation.mutate(updatedExercises);
+
+    // Find all other days with the same workout name and update them too
+    const updatedWorkoutTypes = { ...currentUser.custom_workout_types };
+    const currentWorkoutName = todayWorkout.name;
+
+    Object.keys(updatedWorkoutTypes).forEach(dayKey => {
+      const workout = updatedWorkoutTypes[dayKey];
+      if (workout.name === currentWorkoutName && parseInt(dayKey) !== adjustedDay) {
+        // Update the same exercise in this duplicate day
+        if (workout.exercises?.[index]?.exercise === updatedExercises[index].exercise) {
+          updatedWorkoutTypes[dayKey] = {
+            ...workout,
+            exercises: workout.exercises.map((ex, i) => 
+              i === index ? { ...ex, weight: editWeight, setsReps: editReps } : ex
+            )
+          };
+        }
+      }
+    });
+
+    // Update current day
+    updatedWorkoutTypes[adjustedDay] = {
+      ...currentUser.custom_workout_types[adjustedDay],
+      exercises: updatedExercises
+    };
+
+    // Save all changes
+    base44.auth.updateMe({ custom_workout_types: updatedWorkoutTypes }).then(() => {
+      queryClient.invalidateQueries(['currentUser']);
+      setEditingIndex(null);
+    });
   };
 
   const handleCancel = () => {
