@@ -421,16 +421,36 @@ export default function Profile() {
                 <p className="text-slate-300 text-sm leading-relaxed font-normal max-w-2xl tracking-[-0.01em]">{currentUser.bio}</p>
               )}
               {currentUser.gym_location && (
-                <div className="flex items-center gap-2 text-slate-400">
+                <div className="flex items-center gap-2 text-slate-400 mb-4">
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                 </div>
               )}
+              
+              {/* Divider */}
+              <div className="border-t border-slate-700/50 my-4" />
+              
+              {/* Check-in Count and Best Streak */}
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-medium text-slate-400">Total Check-ins</span>
+                  </div>
+                  <p className="text-2xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
+                </div>
+                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Trophy className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-medium text-slate-400">Best Streak</span>
+                  </div>
+                  <p className="text-2xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak} days</p>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Divider */}
-          <div className="border-t border-slate-700/50 my-6" />
+
 
           {/* Tabs Section */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -450,66 +470,6 @@ export default function Profile() {
             </TabsList>
 
             <TabsContent value="progress" className="space-y-4 mt-0">
-              {/* Streak Cards */}
-              <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-gradient-to-br from-orange-600/15 to-orange-500/5 backdrop-blur-sm border border-orange-500/40 p-5 shadow-md overflow-hidden">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Flame className="w-6 h-6 text-orange-400 flex-shrink-0" />
-                <div className="min-w-0">
-                    <p className="text-xs font-medium text-orange-300 truncate">Current Streak</p>
-                    <p className="text-3xl font-black bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">{currentStreak}</p>
-                    <p className="text-xs text-orange-300 truncate">days</p>
-                  </div>
-              </div>
-              {currentUser?.streak_freezes_available > 0 && (
-                <div className="text-center px-1 flex-shrink-0">
-                  <span className="text-lg">❄️</span>
-                  <p className="text-xs text-slate-400 font-bold">{currentUser.streak_freezes_available}</p>
-                </div>
-              )}
-            </div>
-            {streakRisk && (
-              <div className={`mt-2 px-2 py-1.5 rounded-lg overflow-hidden ${
-                streakRisk.level === 'safe' ? 'bg-green-900/30 border border-green-600/30' :
-                streakRisk.level === 'warning' ? 'bg-yellow-900/30 border border-yellow-600/30' :
-                streakRisk.level === 'danger' ? 'bg-orange-900/30 border border-orange-600/30' :
-                'bg-red-900/30 border border-red-600/30'
-              }`}>
-                <p className={`text-xs font-bold ${streakRisk.color} line-clamp-2`}>{streakRisk.message}</p>
-              </div>
-            )}
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-orange-400 mb-1 gap-2">
-                <span className="truncate">Next: {nextMilestone.name}</span>
-                <span className="flex-shrink-0">{currentStreak}/{nextMilestone.days}</span>
-              </div>
-              <Progress value={streakProgress} className="h-2 bg-slate-600" />
-            </div>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 mb-3">
-              <Trophy className="w-6 h-6 text-purple-400 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-purple-300 truncate">Best Streak</p>
-                <p className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-lg">{longestStreak}</p>
-                <p className="text-xs text-purple-300 truncate">days ever</p>
-              </div>
-            </div>
-            {currentStreak > 0 && longestStreak > currentStreak && (
-              <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-slate-300 line-clamp-1">💎 Keep going to beat your record!</p>
-              </div>
-            )}
-            {currentStreak === longestStreak && currentStreak > 0 && (
-              <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 overflow-hidden">
-                <p className="text-xs font-bold text-slate-300 line-clamp-1">🔥 New personal record!</p>
-              </div>
-            )}
-          </Card>
-        </div>
-
         {/* Consistency Journey */}
         <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
