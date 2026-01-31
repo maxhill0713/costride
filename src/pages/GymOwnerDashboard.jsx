@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -708,33 +707,295 @@ export default function GymOwnerDashboard() {
            </TabsList>
 
           <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
-            {/* The existing code for snapshot-like data is moved outside the tabs as per the outline's reordering. */}
-            {/* This tab is currently empty or awaiting new content. */}
-            <Card className="p-6 text-center text-slate-400">Snapshot content coming soon!</Card>
+            {/* Check-ins Today */}
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black text-white mb-2">{t('dashboard.checkInsToday')}</h3>
+                  <p className="text-slate-400">{todayCheckIns} {t('dashboard.membersCheckedIn')}</p>
+                </div>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-blue-500/30">
+                  <Activity className="w-8 h-8 text-blue-400" />
+                </div>
+              </div>
+            </Card>
+
+            {/* What to Do Next */}
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-xl md:text-2xl font-black text-white mb-6">{t('dashboard.whatToDoNext')}</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-700/50 border border-slate-600/50 hover:border-blue-500/50 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center border border-orange-500/30 flex-shrink-0">
+                    <Bell className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white mb-1">{t('dashboard.reachOutAtRisk')}</h4>
+                    <p className="text-sm text-slate-400 mb-3">{t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}</p>
+                    <Button size="sm" onClick={() => setShowManageMembers(true)} className="bg-slate-600 hover:bg-slate-500">
+                      {t('dashboard.viewMembers')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-700/50 border border-slate-600/50 hover:border-blue-500/50 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30 flex-shrink-0">
+                    <Plus className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white mb-1">{t('dashboard.shareGymUpdates')}</h4>
+                    <p className="text-sm text-slate-400 mb-3">{t('dashboard.keepMembersEngaged')}</p>
+                    <Button size="sm" onClick={() => setShowCreatePost(true)} className="bg-slate-600 hover:bg-slate-500">
+                      {t('dashboard.createPost')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-700/50 border border-slate-600/50 hover:border-blue-500/50 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30 flex-shrink-0">
+                    <Trophy className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white mb-1">{t('dashboard.createChallenge')}</h4>
+                    <p className="text-sm text-slate-400 mb-3">{t('dashboard.boostEngagement')}</p>
+                    <Button size="sm" onClick={() => setShowCreateChallenge(true)} className="bg-slate-600 hover:bg-slate-500">
+                      {t('dashboard.createChallengeBtn')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Activity Log */}
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-xl md:text-2xl font-black text-white mb-6">{t('dashboard.activityLog')}</h3>
+              {checkIns.slice(0, 10).length > 0 ? (
+                <div className="space-y-3">
+                  {checkIns.slice(0, 10).map((checkIn, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 border border-slate-600/50">
+                      <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                      <span className="text-white font-medium">{checkIn.user_name || 'Member'}</span>
+                      <span className="text-slate-400 text-sm">{t('dashboard.checkedIn')}</span>
+                      <span className="text-slate-500 text-sm ml-auto">{format(new Date(checkIn.check_in_date), 'HH:mm')}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-400 text-center py-8">{t('dashboard.noActivityLast7Days')}</p>
+              )}
+            </Card>
           </TabsContent>
 
           <TabsContent value="engagement" className="space-y-8 mt-4 md:mt-6">
-            {/* The existing code for engagement-like data is moved outside the tabs as per the outline's reordering. */}
-            {/* This tab is currently empty or awaiting new content. */}
-            <Card className="p-6 text-center text-slate-400">Engagement insights coming soon!</Card>
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-xl md:text-2xl font-black text-white mb-6">{t('dashboard.engagementOverview')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.totalMembers')}</p>
+                  <p className="text-3xl font-black text-white">{uniqueMembers}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.active7days')}</p>
+                  <p className="text-3xl font-black text-white">{activeMembersThisWeek}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.totalCheckIns')}</p>
+                  <p className="text-3xl font-black text-white">{checkIns.length}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.prsLogged')}</p>
+                  <p className="text-3xl font-black text-white">{lifts.filter(l => l.is_pr).length}</p>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
-            {/* The existing code for content management is moved outside the tabs as per the outline's reordering. */}
-            {/* This tab is currently empty or awaiting new content. */}
-            <Card className="p-6 text-center text-slate-400">Content management features coming soon!</Card>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+                <h3 className="text-xl font-black text-white mb-4">{t('dashboard.challengesEvents')}</h3>
+                <div className="space-y-4 mb-4">
+                  <div className="p-4 rounded-lg bg-slate-700/50 border border-slate-600/50">
+                    <p className="text-slate-400 text-sm mb-1">{t('dashboard.activeChallenges')}</p>
+                    <p className="text-2xl font-black text-white">{challenges.filter(c => c.status === 'active').length}</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-slate-700/50 border border-slate-600/50">
+                    <p className="text-slate-400 text-sm mb-1">{t('dashboard.upcomingEvents')}</p>
+                    <p className="text-2xl font-black text-white">{events.filter(e => new Date(e.event_date) > new Date()).length}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowCreateChallenge(true)} className="flex-1 bg-slate-600 hover:bg-slate-500">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Challenge
+                  </Button>
+                  <Button onClick={() => setShowCreateEvent(true)} className="flex-1 bg-slate-600 hover:bg-slate-500">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Event
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+                <h3 className="text-xl font-black text-white mb-4">{t('dashboard.gymFeedManagement')}</h3>
+                <div className="space-y-3 mb-4">
+                  {posts.slice(0, 3).length > 0 ? (
+                    posts.slice(0, 3).map((post, idx) => (
+                      <div key={idx} className="p-3 rounded-lg bg-slate-700/50 border border-slate-600/50">
+                        <p className="text-white font-medium text-sm">{post.member_name}</p>
+                        <p className="text-slate-400 text-xs line-clamp-2">{post.content}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-slate-400 text-center py-4">{t('dashboard.noActivityYet')}</p>
+                  )}
+                </div>
+                <Button onClick={() => setShowCreatePost(true)} className="w-full bg-slate-600 hover:bg-slate-500">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('dashboard.createPost')}
+                </Button>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="admin" className="space-y-8 mt-4 md:mt-6">
-            {/* The existing code for admin controls is moved outside the tabs as per the outline's reordering. */}
-            {/* This tab is currently empty or awaiting new content. */}
-            <Card className="p-6 text-center text-slate-400">Admin settings coming soon!</Card>
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-xl md:text-2xl font-black text-white mb-6">{t('dashboard.gymProfileSetup')}</h3>
+              
+              <div className="space-y-6">
+                <div className="p-6 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold text-white">{t('dashboard.basicInformation')}</h4>
+                    <Button size="sm" onClick={() => setShowEditBasicInfo(true)} variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-slate-400 text-sm mb-1">{t('dashboard.gymName')}</p>
+                      <p className="text-white font-medium">{selectedGym?.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm mb-1">{t('dashboard.type')}</p>
+                      <p className="text-white font-medium">{selectedGym?.type}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm mb-1">{t('dashboard.location')}</p>
+                      <p className="text-white font-medium">{selectedGym?.city}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm mb-1">{t('dashboard.monthlyPrice')}</p>
+                      <p className="text-white font-medium">{selectedGym?.price || 'Not set'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="p-6 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-bold text-white">{t('dashboard.amenities')}</h4>
+                      <Button size="sm" onClick={() => setShowManageAmenities(true)} variant="ghost">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-slate-400">{selectedGym?.amenities?.length || 0} {t('dashboard.amenities')}</p>
+                  </div>
+
+                  <div className="p-6 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-bold text-white">{t('dashboard.equipment')}</h4>
+                      <Button size="sm" onClick={() => setShowManageEquipment(true)} variant="ghost">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-slate-400">{selectedGym?.equipment?.length || 0} {t('dashboard.equipment')}</p>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-bold text-white">{t('dashboard.photoGallery')}</h4>
+                    <Button size="sm" onClick={() => setShowManagePhotos(true)} variant="outline">
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      {t('dashboard.managePhotos')}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedGym?.gallery?.slice(0, 6).map((photo, idx) => (
+                      <img key={idx} src={photo} alt="Gym" className="w-full h-24 object-cover rounded-lg" />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="p-6 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-bold text-white">{t('dashboard.manageClasses')}</h4>
+                      <Button size="sm" onClick={() => setShowManageClasses(true)} variant="ghost">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-slate-400">{classes.length} {t('dashboard.classes')}</p>
+                  </div>
+
+                  <div className="p-6 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-bold text-white">{t('dashboard.manageCoaches')}</h4>
+                      <Button size="sm" onClick={() => setShowManageCoaches(true)} variant="ghost">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-slate-400">{coaches.length} {t('dashboard.coaches')}</p>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-xl bg-red-500/10 border border-red-500/30">
+                  <h4 className="text-lg font-bold text-red-400 mb-2">Danger Zone</h4>
+                  <p className="text-slate-400 text-sm mb-4">Permanently delete this gym and all associated data</p>
+                  <Button 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Gym
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
-            {/* The existing code for insights is moved outside the tabs as per the outline's reordering. */}
-            {/* This tab is currently empty or awaiting new content. */}
-            <Card className="p-6 text-center text-slate-400">Detailed insights coming soon!</Card>
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-xl md:text-2xl font-black text-white mb-6">{t('dashboard.checkInTrends')}</h3>
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.last7Days')}</p>
+                  <p className="text-3xl font-black text-white">{last7Days}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('dashboard.checkInsLabel')}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.last30Days')}</p>
+                  <p className="text-3xl font-black text-white">{last30Days}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('dashboard.checkInsLabel')}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <p className="text-slate-400 text-sm mb-2">{t('dashboard.dailyAverage')}</p>
+                  <p className="text-3xl font-black text-white">{(last30Days / 30).toFixed(1)}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('dashboard.perDay')}</p>
+                </div>
+              </div>
+              
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={checkInsByDay}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="day" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569' }} />
+                  <Bar dataKey="checkIns" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
           </TabsContent>
 
         </Tabs>
