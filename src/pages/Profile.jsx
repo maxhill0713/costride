@@ -819,9 +819,9 @@ export default function Profile() {
                 </div>
               </div>
             )}
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="settings" className="space-y-4">
+            <TabsContent value="settings" className="space-y-4">
             <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
