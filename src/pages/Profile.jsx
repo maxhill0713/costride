@@ -36,6 +36,12 @@ export default function Profile() {
   const [showEditAvatar, setShowEditAvatar] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [activeTab, setActiveTab] = useState('progress');
+
+  const { data: userPosts = [] } = useQuery({
+    queryKey: ['userPosts', currentUser?.id],
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
+    enabled: !!currentUser
+  });
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
 
@@ -599,49 +605,37 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
-              {(() => {
-                const { data: userPosts = [] } = useQuery({
-                  queryKey: ['userPosts', currentUser?.id],
-                  queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
-                  enabled: !!currentUser
-                });
-
-                if (userPosts.length === 0) {
-                  return (
-                    <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
-                      <div className="max-w-sm mx-auto">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
-                          <FileText className="w-8 h-8 text-slate-400" />
+              {userPosts.length === 0 ? (
+                <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
+                  <div className="max-w-sm mx-auto">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
+                      <FileText className="w-8 h-8 text-slate-400" />
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-2">No Posts Yet</h4>
+                    <p className="text-slate-400 text-sm">
+                      Share your fitness journey with friends or your gym community!
+                    </p>
+                  </div>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {userPosts.map((post) => (
+                    <Card key={post.id} className="bg-slate-800/40 border border-slate-600/40 rounded-xl overflow-hidden">
+                      {post.image_url && (
+                        <img src={post.image_url} alt="" className="w-full h-48 object-cover" />
+                      )}
+                      <div className="p-4">
+                        <p className="text-sm text-slate-200 mb-3">{post.content}</p>
+                        <div className="flex items-center gap-4 text-xs text-slate-400">
+                          <span>❤️ {post.likes || 0}</span>
+                          <span>💬 {post.comments?.length || 0}</span>
+                          <span className="ml-auto">{new Date(post.created_date).toLocaleDateString()}</span>
                         </div>
-                        <h4 className="text-lg font-bold text-white mb-2">No Posts Yet</h4>
-                        <p className="text-slate-400 text-sm">
-                          Share your fitness journey with friends or your gym community!
-                        </p>
                       </div>
                     </Card>
-                  );
-                }
-
-                return (
-                  <div className="space-y-3">
-                    {userPosts.map((post) => (
-                      <Card key={post.id} className="bg-slate-800/40 border border-slate-600/40 rounded-xl overflow-hidden">
-                        {post.image_url && (
-                          <img src={post.image_url} alt="" className="w-full h-48 object-cover" />
-                        )}
-                        <div className="p-4">
-                          <p className="text-sm text-slate-200 mb-3">{post.content}</p>
-                          <div className="flex items-center gap-4 text-xs text-slate-400">
-                            <span>❤️ {post.likes || 0}</span>
-                            <span>💬 {post.comments?.length || 0}</span>
-                            <span className="ml-auto">{new Date(post.created_date).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                );
-              })()}
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="goals" className="space-y-4">
