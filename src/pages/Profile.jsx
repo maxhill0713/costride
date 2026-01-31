@@ -584,21 +584,6 @@ export default function Profile() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-3 md:px-4 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full mb-6 bg-slate-800/50 p-1 rounded-xl overflow-x-auto gap-1">
-            <TabsTrigger value="progress" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-              Progress
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-              Goals
-            </TabsTrigger>
-            <TabsTrigger value="badges" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-              Badges
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex-1 min-w-fit rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-              <Settings className="w-4 h-4" />
-            </TabsTrigger>
-          </TabsList>
-
           <TabsContent value="progress" className="space-y-4">
             {/* Workout Split Heatmap */}
             <Card className="bg-slate-900/70 border border-indigo-500/30 p-4 rounded-2xl">
