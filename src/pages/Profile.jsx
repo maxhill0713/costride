@@ -672,7 +672,7 @@ export default function Profile() {
                       <h3 className={`text-sm font-bold ${
                         isOnTrack ? 'text-green-300' : isAlmostOnTrack ? 'text-amber-300' : 'text-red-300'
                       }`}>
-                        {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost There' : 'Needs Attention'}
+                        {isOnTrack ? 'On Track' : isAlmostOnTrack ? 'Almost There' : 'Keep Pushing'}
                       </h3>
                       <p className="text-xs text-slate-400">
                         {isOnTrack ? 'Keep it up!' : isAlmostOnTrack ? 'One more push' : 'Time to refocus'}
@@ -713,7 +713,7 @@ export default function Profile() {
             })()}
 
             {/* Goals Header */}
-            <div className="bg-gradient-to-br from-slate-800/80 via-blue-900/40 to-slate-900/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-5 shadow-lg">
+            <div className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5 shadow-lg">
               <div className="flex items-center justify-between mb-4 gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
