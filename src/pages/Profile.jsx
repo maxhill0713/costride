@@ -457,20 +457,7 @@ export default function Profile() {
           </Card>
         )}
 
-              <div className="grid grid-cols-3 gap-3">
-                <Card className="bg-gradient-to-br from-amber-600/40 to-amber-500/20 backdrop-blur-sm border border-amber-500/50 p-4 text-center shadow-md">
-                  <div className="text-3xl font-black bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.challengesCompleted}</div>
-                  <div className="text-[10px] text-amber-100 font-bold uppercase tracking-widest">Challenges Completed</div>
-                </Card>
-                <Card className="bg-gradient-to-br from-purple-600/40 to-purple-500/20 backdrop-blur-sm border border-purple-500/50 p-4 text-center shadow-md">
-                  <div className="text-3xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.personalRecords}</div>
-                  <div className="text-[10px] text-purple-100 font-bold uppercase tracking-widest">PRs</div>
-                </Card>
-                <Card className="bg-gradient-to-br from-teal-600/40 to-teal-500/20 backdrop-blur-sm border border-teal-500/50 p-4 text-center shadow-md">
-                  <div className="text-3xl font-black bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent mb-1 drop-shadow-lg">{stats.weekStreak}</div>
-                  <div className="text-[10px] text-teal-100 font-bold uppercase tracking-widest">Day Streak</div>
-                </Card>
-              </div>
+
 
                 {/* Workout Split Heatmap */}
               <Card className="bg-slate-900/70 border border-indigo-500/30 p-4 rounded-2xl">
