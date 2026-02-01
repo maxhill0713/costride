@@ -178,7 +178,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
         </div>
 
         {/* Join Button / Delete Button - Gamified */}
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           <motion.div 
             whileHover={!userHasJoined && !isOwner ? { scale: 1.02 } : {}}
             whileTap={!userHasJoined && !isOwner ? { scale: 0.98 } : {}}
@@ -187,29 +187,29 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             <Button
               onClick={handleJoinClick}
               disabled={userHasJoined || isOwner}
-              className={`w-full font-black text-sm h-12 transition-all duration-200 ${
+              className={`w-full font-black text-[11px] h-9 transition-all duration-200 ${
                 userHasJoined 
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white cursor-default shadow-lg shadow-green-500/30 border-2 border-green-400/50' 
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white cursor-default border border-green-400/50' 
                   : isOwner
-                  ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-slate-300 cursor-not-allowed border-2 border-slate-600'
-                  : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-xl hover:shadow-green-500/40 border-2 border-green-400/50 animate-pulse'
+                  ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-slate-300 cursor-not-allowed border border-slate-600'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-green-500/30 border border-green-400/50 animate-pulse'
               }`}
             >
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5">
                 {userHasJoined ? (
                   <>
-                    <Award className="w-5 h-5" />
-                    <span>✓ JOINED • Earn {difficulty.points} XP</span>
+                    <Award className="w-3.5 h-3.5" />
+                    <span>✓ JOINED</span>
                   </>
                 ) : isOwner ? (
                   <>
-                    <Trophy className="w-5 h-5" />
+                    <Trophy className="w-3.5 h-3.5" />
                     <span>👑 YOUR CHALLENGE</span>
                   </>
                 ) : (
                   <>
-                    <Flame className="w-5 h-5 animate-bounce" />
-                    <span>JOIN NOW • Win {difficulty.points} XP</span>
+                    <Flame className="w-3.5 h-3.5" />
+                    <span>JOIN • {difficulty.points} XP</span>
                   </>
                 )}
               </span>
@@ -220,9 +220,9 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
               onClick={() => onDelete(challenge.id)}
               variant="outline"
               size="icon"
-              className="border-2 border-red-500/50 hover:bg-red-500/20 hover:border-red-500 h-12 w-12"
+              className="border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 h-9 w-9"
             >
-              <Trash2 className="w-5 h-5 text-red-500" />
+              <Trash2 className="w-3.5 h-3.5 text-red-500" />
             </Button>
           )}
         </div>
