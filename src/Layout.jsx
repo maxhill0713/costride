@@ -64,12 +64,12 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page) + (item.params || '')}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 rounded-2xl active:scale-95
-                  ${isActive ? 'text-white bg-slate-800/60' : 'text-slate-400'}
+                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 active:scale-95
+                  ${isActive ? 'text-white' : 'text-slate-400'}
                 `}
               >
                 {isActive && (
-                  <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-8 h-1 ${item.color.replace('text-', 'bg-')} rounded-full`} />
+                  <div className={`absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full`} />
                 )}
                 <div className="relative">
                   <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
