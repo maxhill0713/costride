@@ -515,11 +515,14 @@ export default function Profile() {
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
-                      <Calendar className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-blue-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Calendar className="w-4 h-4 text-blue-400 relative group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg" />
+                      </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                       <div className="text-2xl font-bold text-white">{userCheckIns.length}</div>
-                      {userCheckIns.length >= 10 && <span className="text-xs text-blue-400">🎯</span>}
+                      {userCheckIns.length >= 10 && <span className="text-xs text-blue-400 animate-pulse">🎯</span>}
                     </div>
                   </div>
                 </Card>
@@ -529,7 +532,10 @@ export default function Profile() {
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
-                      <Flame className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-orange-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Flame className="w-4 h-4 text-orange-400 relative group-hover:scale-125 transition-all duration-300 drop-shadow-lg group-hover:drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
+                      </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                       <div className="text-2xl font-bold text-white">{longestStreak}</div>
@@ -543,11 +549,14 @@ export default function Profile() {
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Challenges</span>
-                      <Trophy className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Trophy className="w-4 h-4 text-purple-400 relative group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-lg" />
+                      </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                       <div className="text-2xl font-bold text-white">{completedChallenges}</div>
-                      {completedChallenges > 0 && <span className="text-xs text-purple-400">🏆</span>}
+                      {completedChallenges > 0 && <span className="text-xs text-purple-400 animate-pulse">🏆</span>}
                     </div>
                   </div>
                 </Card>
@@ -557,11 +566,14 @@ export default function Profile() {
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Total Lifts</span>
-                      <Dumbbell className="w-4 h-4 text-green-400 group-hover:scale-110 transition-transform" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-green-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Dumbbell className="w-4 h-4 text-green-400 relative group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 drop-shadow-lg" />
+                      </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                       <div className="text-2xl font-bold text-white">{stats.totalLifts}</div>
-                      {stats.totalLifts >= 100 && <span className="text-xs text-green-400">💪</span>}
+                      {stats.totalLifts >= 100 && <span className="text-xs text-green-400 animate-pulse">💪</span>}
                     </div>
                   </div>
                 </Card>
@@ -571,11 +583,14 @@ export default function Profile() {
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">PRs</span>
-                      <Award className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-amber-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Award className="w-4 h-4 text-amber-400 relative group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg group-hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+                      </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                       <div className="text-2xl font-bold text-white">{stats.personalRecords}</div>
-                      {stats.personalRecords >= 5 && <span className="text-xs text-amber-400">⭐</span>}
+                      {stats.personalRecords >= 5 && <span className="text-xs text-amber-400 animate-pulse">⭐</span>}
                     </div>
                   </div>
                 </Card>
@@ -585,7 +600,10 @@ export default function Profile() {
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Lift</span>
-                      <BarChart3 className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-cyan-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <BarChart3 className="w-4 h-4 text-cyan-400 relative group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300 drop-shadow-lg" />
+                      </div>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <div className="text-2xl font-bold text-white">{stats.bestLift}</div>
