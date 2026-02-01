@@ -412,32 +412,6 @@ export default function Profile() {
         {/* Consistency Journey */}
         <ConsistencyJourney totalCheckIns={userCheckIns.length} />
 
-{/* Protection & Risk Info */}
-{currentStreak > 0 && (
-  <Card className="p-5 bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 shadow-md">
-            <h3 className="font-semibold text-red-300 mb-3 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              What Happens If You Stop?
-            </h3>
-            <div className="space-y-3">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
-                <p className="text-xs text-slate-400 mb-1">Grace Period</p>
-                <p className="text-sm text-slate-200">You have a 2-day grace period. Miss 3 days and your {currentStreak}-day streak resets to 0.</p>
-              </div>
-              {currentUser?.streak_freezes_available > 0 && (
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
-                   <p className="text-xs text-slate-400 mb-1">❄️ Protection Available</p>
-                  <p className="text-sm text-slate-200">You have {currentUser.streak_freezes_available} streak freeze{currentUser.streak_freezes_available > 1 ? 's' : ''} to protect your progress if life gets busy.</p>
-                </div>
-              )}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
-                <p className="text-xs text-slate-400 mb-1">⚠️ What You'll Lose</p>
-                <p className="text-sm text-slate-200">Your {currentStreak}-day streak and progress toward "{nextMilestone.name}" will be lost. You'll start from day 1.</p>
-              </div>
-            </div>
-          </Card>
-        )}
-
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
           <Card className="p-5 bg-gradient-to-br from-yellow-600/15 to-yellow-500/5 backdrop-blur-sm border border-yellow-500/40 shadow-md overflow-hidden">

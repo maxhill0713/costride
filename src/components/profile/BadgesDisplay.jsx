@@ -204,10 +204,10 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="p-3 text-center bg-slate-900/40 backdrop-blur-sm border border-dashed border-slate-700/40 relative overflow-hidden cursor-not-allowed">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800/30 to-slate-900/30" />
+                  <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-dashed border-slate-700/50 relative overflow-hidden cursor-not-allowed">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50" />
                     
-                    <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-slate-800/30 flex items-center justify-center shadow-sm relative opacity-40">
+                    <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-slate-800/50 flex items-center justify-center shadow-sm relative opacity-40">
                       <Icon className="w-5 h-5 text-slate-500" strokeWidth={2} />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-sm">🔒</span>
