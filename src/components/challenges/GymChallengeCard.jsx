@@ -126,45 +126,94 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
         </div>
 
-        {/* Goal Card */}
-        <div className="bg-gradient-to-r from-blue-500/12 to-cyan-500/12 rounded-lg p-3 mb-3 border border-blue-400/25">
-          <div className="flex items-center justify-between">
+        {/* Goal Card - Gamified */}
+        <div className="bg-gradient-to-r from-blue-500/15 to-cyan-500/15 rounded-xl p-4 mb-3 border-2 border-blue-400/30 shadow-lg relative overflow-hidden">
+          {/* Shine effect */}
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+          
+          <div className="flex items-center justify-between relative z-10">
             <div className="flex-1">
-              <p className="text-[10px] font-bold text-blue-300 uppercase mb-1 flex items-center gap-1">
-                <Target className="w-3 h-3" />
-                Goal
+              <p className="text-[10px] font-black text-blue-300 uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
+                <Target className="w-4 h-4" />
+                Mission Objective
               </p>
-              <p className="text-sm text-white font-bold">
+              <p className="text-base text-white font-black flex items-center gap-2">
+                <span className="text-2xl">{
+                  challenge.goal_type === 'most_check_ins' ? '✓' :
+                  challenge.goal_type === 'longest_streak' ? '🔥' :
+                  challenge.goal_type === 'total_weight' ? '💪' : '🎯'
+                }</span>
                 {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
                 {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
                 {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
                 {challenge.goal_type === 'participation' && 'Most active wins'}
               </p>
             </div>
-            <div className="flex gap-3">
-              <div className="text-center">
-                <p className="text-sm font-bold text-cyan-300">{participantCount}</p>
-                <p className="text-[9px] text-slate-400">Players</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-bold text-purple-300">{daysLeft}d</p>
-                <p className="text-[9px] text-slate-400">Left</p>
-              </div>
+            <div className="flex gap-4">
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                className="text-center bg-slate-800/60 border border-cyan-400/30 rounded-xl px-3 py-2 min-w-[60px]"
+              >
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <Users className="w-3.5 h-3.5 text-cyan-400" />
+                  <p className="text-base font-black text-cyan-300">{participantCount}</p>
+                </div>
+                <p className="text-[9px] text-slate-400 font-bold uppercase">Players</p>
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                className="text-center bg-slate-800/60 border border-purple-400/30 rounded-xl px-3 py-2 min-w-[60px]"
+              >
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <Clock className="w-3.5 h-3.5 text-purple-400" />
+                  <p className="text-base font-black text-purple-300">{daysLeft}</p>
+                </div>
+                <p className="text-[9px] text-slate-400 font-bold uppercase">Days</p>
+              </motion.div>
             </div>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1.5">
-            <p className="text-xs font-bold text-slate-300">Time Progress</p>
-            <p className="text-xs text-slate-400 font-medium">{Math.round(progressPercentage)}%</p>
+        {/* Progress Bar - Enhanced */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-cyan-400" />
+              <p className="text-xs font-black text-slate-300 uppercase">Challenge Progress</p>
+            </div>
+            <motion.p 
+              key={progressPercentage}
+              initial={{ scale: 1.5, color: '#22d3ee' }}
+              animate={{ scale: 1, color: '#94a3b8' }}
+              className="text-sm text-slate-400 font-black"
+            >
+              {Math.round(progressPercentage)}%
+            </motion.p>
           </div>
-          <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 transition-all duration-500 shadow-lg"
-              style={{ width: `${progressPercentage}%` }}
-            />
+          <div className="relative h-3 bg-slate-800/80 rounded-full overflow-hidden border-2 border-slate-700/50 shadow-inner">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercentage}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 shadow-lg relative"
+            >
+              {/* Animated shine effect on progress bar */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+            </motion.div>
+            {/* Milestone markers */}
+            <div className="absolute inset-0 flex justify-between px-1">
+              {[25, 50, 75].map(milestone => (
+                <div 
+                  key={milestone}
+                  className="w-0.5 h-full bg-slate-600/50"
+                  style={{ marginLeft: `${milestone}%` }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between mt-1.5 px-1">
+            <p className="text-[9px] text-slate-500 font-bold">START</p>
+            <p className="text-[9px] text-slate-500 font-bold">FINISH</p>
           </div>
         </div>
 
