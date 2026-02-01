@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, Flame, Trophy, AlertCircle, Building2, CheckCircle, LogOut, Camera, FileText } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Progress } from '@/components/ui/progress';
 import AddGoalModal from '../components/goals/AddGoalModal';
@@ -38,13 +35,6 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('progress');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const queryClient = useQueryClient();
-
-  const updateSettingsMutation = useMutation({
-    mutationFn: (settings) => base44.auth.updateMe(settings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    }
-  });
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -283,18 +273,13 @@ export default function Profile() {
         
         {/* Top Right Icons */}
         <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('settings')}
-            className="w-9 h-9 flex items-center justify-center hover:bg-slate-700/40 rounded-xl transition-all"
-          >
-            <Settings className="w-5 h-5 text-slate-300" />
-          </button>
-          <button
-            onClick={() => setShowEditHero(true)}
-            className="w-9 h-9 rounded-xl bg-slate-800/80 backdrop-blur-md border border-slate-600/50 flex items-center justify-center hover:bg-slate-700/80 transition-all"
-          >
-            <Camera className="w-4 h-4 text-slate-300" />
-          </button>
+          <Link to={createPageUrl('Settings')}>
+            <button
+              className="w-9 h-9 rounded-xl bg-slate-800/80 backdrop-blur-md border border-slate-600/50 flex items-center justify-center hover:bg-slate-700/80 transition-all"
+            >
+              <Settings className="w-5 h-5 text-slate-300" />
+            </button>
+          </Link>
         </div>
         
         <div className="max-w-4xl mx-auto relative z-10">
@@ -486,6 +471,7 @@ export default function Profile() {
                 Posts
               </TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="progress" className="space-y-4 mt-0">
         {/* Consistency Journey */}
@@ -831,209 +817,6 @@ export default function Profile() {
                 </div>
               </div>
             )}
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-4">
-            <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
-                  <Bell className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Notifications</h3>
-                  <p className="text-sm text-slate-300">Manage your notification preferences</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    {currentUser.notifications_enabled ? (
-                      <Bell className="w-5 h-5 text-slate-400" />
-                    ) : (
-                      <BellOff className="w-5 h-5 text-slate-500" />
-                    )}
-                    <div>
-                      <Label className="text-sm font-bold text-slate-100">Push Notifications</Label>
-                      <p className="text-xs text-slate-400">Get notified about challenges and updates</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={currentUser.notifications_enabled ?? true}
-                    onCheckedChange={(checked) => updateSettingsMutation.mutate({ notifications_enabled: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
-                   <div className="flex items-center gap-3">
-                     {currentUser.email_notifications ? (
-                       <Bell className="w-5 h-5 text-slate-400" />
-                    ) : (
-                      <BellOff className="w-5 h-5 text-slate-500" />
-                    )}
-                    <div>
-                      <Label className="text-sm font-bold text-slate-100">Email Notifications</Label>
-                      <p className="text-xs text-slate-400">Receive email updates and summaries</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={currentUser.email_notifications ?? true}
-                    onCheckedChange={(checked) => updateSettingsMutation.mutate({ email_notifications: checked })}
-                  />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-                  {currentUser.dark_mode ? (
-                    <Moon className="w-6 h-6 text-white" />
-                  ) : (
-                    <Sun className="w-6 h-6 text-white" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Appearance</h3>
-                  <p className="text-sm text-slate-300">Customize your app experience</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    {currentUser.dark_mode ? (
-                      <Moon className="w-5 h-5 text-indigo-400" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-orange-400" />
-                    )}
-                    <div>
-                      <Label className="text-sm font-bold text-slate-100">Dark Mode</Label>
-                      <p className="text-xs text-slate-400">Switch between light and dark theme</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={currentUser.dark_mode ?? false}
-                    onCheckedChange={(checked) => updateSettingsMutation.mutate({ dark_mode: checked })}
-                  />
-                </div>
-
-                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Ruler className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <Label className="text-sm font-bold text-slate-100">Unit System</Label>
-                      <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
-                    </div>
-                    </div>
-                    <Select 
-                    value={currentUser.units || 'imperial'} 
-                    onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
-                    >
-                    <SelectTrigger className="rounded-2xl border border-white/20 bg-white/5 text-slate-100">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
-                      <SelectItem value="metric">Metric (kg, m)</SelectItem>
-                    </SelectContent>
-                    </Select>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-                  <Lock className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Account Details</h3>
-                  <p className="text-sm text-slate-300">Manage your email and password</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                   <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
-                  <Input
-                    type="email"
-                    value={currentUser.email}
-                    disabled
-                    className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-                  />
-                  <p className="text-xs text-slate-400 mt-1">Contact support to change your email</p>
-                </div>
-
-                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                  <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Password</Label>
-                  <Input
-                    type="password"
-                    value="••••••••"
-                    disabled
-                    className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-                  />
-                  <p className="text-xs text-slate-400 mt-1">Contact support to reset your password</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-                  <Lock className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Privacy</h3>
-                  <p className="text-sm text-slate-300">Control your profile visibility</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
-                 <div className="flex items-center gap-3">
-                   {currentUser.public_profile ? (
-                     <Globe className="w-5 h-5 text-slate-400" />
-                  ) : (
-                    <Lock className="w-5 h-5 text-slate-500" />
-                  )}
-                  <div>
-                    <Label className="text-sm font-bold text-slate-100">Public Profile</Label>
-                    <p className="text-xs text-slate-400">Allow others to view your profile and stats</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={currentUser.public_profile ?? true}
-                  onCheckedChange={(checked) => updateSettingsMutation.mutate({ public_profile: checked })}
-                />
-              </div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-                  <LogOut className="w-6 h-6 text-red-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Account & Session</h3>
-                  <p className="text-sm text-slate-300">Manage your login session</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Button 
-                  className="w-full bg-red-600 hover:bg-red-700 text-white rounded-2xl font-semibold h-10 flex items-center gap-2"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to logout?')) {
-                      base44.auth.logout();
-                    }
-                  }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  Logout
-                </Button>
-                <p className="text-xs text-slate-400 text-center">You will be logged out from all sessions</p>
-              </div>
-            </Card>
             </TabsContent>
         </Tabs>
       </div>
