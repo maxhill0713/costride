@@ -560,28 +560,6 @@ export default function Profile() {
                 </Card>
               </div>
 
-              {/* Additional Stats */}
-              <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 p-5 rounded-2xl">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-blue-400" />
-                  Performance Overview
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                    <span className="text-sm text-slate-300">Total Weight Moved</span>
-                    <span className="text-lg font-black text-white">{stats.totalWeight.toLocaleString()} lbs</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                    <span className="text-sm text-slate-300">Current Streak</span>
-                    <span className="text-lg font-black text-white">{currentStreak} days</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                    <span className="text-sm text-slate-300">Active Gym Memberships</span>
-                    <span className="text-lg font-black text-white">{gymMemberships.length}</span>
-                  </div>
-                </div>
-              </Card>
-
               {/* Badges Section */}
               <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
             </TabsContent>
