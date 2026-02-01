@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut } from 'lucide-react';
+import { ArrowLeft, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut, User, Camera, Image } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,6 +50,94 @@ export default function Settings() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+        {/* Profile */}
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Profile</h3>
+              <p className="text-sm text-slate-300">Customize your profile appearance</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Profile Picture */}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
+                  {currentUser.avatar_url ? (
+                    <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-semibold text-white">
+                      {currentUser.full_name?.charAt(0)?.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <Label className="text-sm font-bold text-slate-100">Profile Picture</Label>
+                  <p className="text-xs text-slate-400">Upload a photo or enter a URL</p>
+                </div>
+              </div>
+              <Input
+                type="text"
+                value={currentUser.avatar_url || ''}
+                onChange={(e) => updateSettingsMutation.mutate({ avatar_url: e.target.value })}
+                placeholder="https://example.com/photo.jpg"
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
+              />
+            </div>
+
+            {/* Banner Image */}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="flex items-center gap-3 mb-3">
+                <Image className="w-5 h-5 text-slate-400" />
+                <div>
+                  <Label className="text-sm font-bold text-slate-100">Banner Image</Label>
+                  <p className="text-xs text-slate-400">Customize your profile header background</p>
+                </div>
+              </div>
+              {currentUser.hero_image_url && (
+                <div className="mb-3 rounded-xl overflow-hidden h-20">
+                  <img src={currentUser.hero_image_url} alt="Banner" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <Input
+                type="text"
+                value={currentUser.hero_image_url || ''}
+                onChange={(e) => updateSettingsMutation.mutate({ hero_image_url: e.target.value })}
+                placeholder="https://example.com/banner.jpg"
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
+              />
+            </div>
+
+            {/* Display Name */}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Display Name</Label>
+              <Input
+                type="text"
+                value={currentUser.full_name || ''}
+                onChange={(e) => updateSettingsMutation.mutate({ full_name: e.target.value })}
+                placeholder="Your name"
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
+              />
+            </div>
+
+            {/* Bio */}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
+              <Textarea
+                value={currentUser.bio || ''}
+                onChange={(e) => updateSettingsMutation.mutate({ bio: e.target.value })}
+                placeholder="Tell us about yourself..."
+                rows={3}
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
+              />
+            </div>
+          </div>
+        </Card>
+
         {/* Notifications */}
         <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-6">
