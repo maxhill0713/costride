@@ -212,23 +212,23 @@ export default function Gyms() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Section */}
-      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
+      <div className="relative pt-4 pb-3 px-3 md:px-4 border-b border-blue-700/40">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center border border-blue-500/50">
-                <Dumbbell className="w-6 h-6 text-blue-400" />
+              <div className="w-10 h-10 bg-blue-600/30 rounded-xl flex items-center justify-center border border-blue-500/50">
+                <Dumbbell className="w-5 h-5 text-blue-400" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-100">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
                 {userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
               </h1>
             </div>
             <Button 
               onClick={() => setShowJoinWithCode(true)}
-              className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl"
+              className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm"
             >
               <Key className="w-4 h-4" />
-              Join with Code
+              <span className="hidden sm:inline">Join with Code</span>
             </Button>
           </div>
         </div>
@@ -239,11 +239,11 @@ export default function Gyms() {
         {/* Tab List */}
         <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4">
           <div className="max-w-6xl mx-auto">
-            <TabsList className="w-screen md:w-full flex justify-center bg-transparent p-0 h-14 gap-8 border-0 overflow-x-auto md:overflow-x-visible">
+            <TabsList className="w-screen md:w-full flex justify-center bg-transparent p-0 h-12 gap-8 border-0 overflow-x-auto md:overflow-x-visible">
               {userGyms.length > 0 && (
                 <TabsTrigger 
                   value="my-gyms" 
-                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent"
+                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   My Gyms
@@ -251,7 +251,7 @@ export default function Gyms() {
               )}
               <TabsTrigger 
                 value="explore" 
-                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent"
+                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
               >
                 <MapPin className="w-4 h-4 mr-2" />
                 Explore
@@ -262,7 +262,7 @@ export default function Gyms() {
 
         {/* My Gyms Tab */}
         {userGyms.length > 0 && (
-          <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-6">
+          <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
             <div className="max-w-6xl mx-auto">
               {/* Gyms Grid */}
               {userGyms.length === 0 ? (
@@ -407,10 +407,10 @@ export default function Gyms() {
         )}
 
         {/* Explore Tab */}
-         <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-6">
+         <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-4">
           <div className="max-w-6xl mx-auto">
             {/* Search & Filters */}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 mb-4">
               <Input
                 placeholder="Search by name or city..."
                 value={searchQuery}
