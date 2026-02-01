@@ -109,18 +109,17 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
         </div>
 
         {/* Goal Card - Gamified */}
-        <div className="bg-gradient-to-r from-blue-500/15 to-cyan-500/15 rounded-xl p-4 mb-3 border-2 border-blue-400/30 shadow-lg relative overflow-hidden">
-          {/* Shine effect */}
+        <div className="bg-gradient-to-r from-blue-500/15 to-cyan-500/15 rounded-lg p-2.5 mb-2 border border-blue-400/30 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
           
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex-1">
-              <p className="text-[10px] font-black text-blue-300 uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
-                <Target className="w-4 h-4" />
-                Mission Objective
+          <div className="flex items-center justify-between relative z-10 gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-black text-blue-300 uppercase mb-1 flex items-center gap-1">
+                <Target className="w-3 h-3" />
+                Goal
               </p>
-              <p className="text-base text-white font-black flex items-center gap-2">
-                <span className="text-2xl">{
+              <p className="text-xs text-white font-black flex items-center gap-1.5 truncate">
+                <span className="text-base">{
                   challenge.goal_type === 'most_check_ins' ? '✓' :
                   challenge.goal_type === 'longest_streak' ? '🔥' :
                   challenge.goal_type === 'total_weight' ? '💪' : '🎯'
@@ -131,27 +130,21 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
                 {challenge.goal_type === 'participation' && 'Most active wins'}
               </p>
             </div>
-            <div className="flex gap-4">
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                className="text-center bg-slate-800/60 border border-cyan-400/30 rounded-xl px-3 py-2 min-w-[60px]"
-              >
-                <div className="flex items-center justify-center gap-1 mb-0.5">
-                  <Users className="w-3.5 h-3.5 text-cyan-400" />
-                  <p className="text-base font-black text-cyan-300">{participantCount}</p>
+            <div className="flex gap-2">
+              <div className="text-center bg-slate-800/60 border border-cyan-400/30 rounded-lg px-2 py-1">
+                <div className="flex items-center justify-center gap-0.5">
+                  <Users className="w-2.5 h-2.5 text-cyan-400" />
+                  <p className="text-xs font-black text-cyan-300">{participantCount}</p>
                 </div>
-                <p className="text-[9px] text-slate-400 font-bold uppercase">Players</p>
-              </motion.div>
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                className="text-center bg-slate-800/60 border border-purple-400/30 rounded-xl px-3 py-2 min-w-[60px]"
-              >
-                <div className="flex items-center justify-center gap-1 mb-0.5">
-                  <Clock className="w-3.5 h-3.5 text-purple-400" />
-                  <p className="text-base font-black text-purple-300">{daysLeft}</p>
+                <p className="text-[8px] text-slate-400 font-bold">Players</p>
+              </div>
+              <div className="text-center bg-slate-800/60 border border-purple-400/30 rounded-lg px-2 py-1">
+                <div className="flex items-center justify-center gap-0.5">
+                  <Clock className="w-2.5 h-2.5 text-purple-400" />
+                  <p className="text-xs font-black text-purple-300">{daysLeft}</p>
                 </div>
-                <p className="text-[9px] text-slate-400 font-bold uppercase">Days</p>
-              </motion.div>
+                <p className="text-[8px] text-slate-400 font-bold">Days</p>
+              </div>
             </div>
           </div>
         </div>
