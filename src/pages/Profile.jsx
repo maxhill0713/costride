@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -461,6 +461,9 @@ export default function Profile() {
               <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
                 Progress
               </TabsTrigger>
+              <TabsTrigger value="stats" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
+                Stats
+              </TabsTrigger>
               <TabsTrigger value="goals" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
                 Goals
               </TabsTrigger>
@@ -583,6 +586,69 @@ export default function Profile() {
                   </div>
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="stats" className="space-y-4">
+              {/* Key Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <Card className="bg-gradient-to-br from-blue-600/30 to-blue-500/10 backdrop-blur-sm border border-blue-500/40 p-5 text-center shadow-lg">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 text-blue-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-1">{userCheckIns.length}</div>
+                  <div className="text-xs text-blue-200 font-bold uppercase tracking-wide">Total Check-ins</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-orange-600/30 to-orange-500/10 backdrop-blur-sm border border-orange-500/40 p-5 text-center shadow-lg">
+                  <Flame className="w-8 h-8 mx-auto mb-2 text-orange-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-orange-200 to-red-200 bg-clip-text text-transparent mb-1">{longestStreak}</div>
+                  <div className="text-xs text-orange-200 font-bold uppercase tracking-wide">Best Streak</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-600/30 to-purple-500/10 backdrop-blur-sm border border-purple-500/40 p-5 text-center shadow-lg">
+                  <Trophy className="w-8 h-8 mx-auto mb-2 text-purple-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent mb-1">{completedChallenges}</div>
+                  <div className="text-xs text-purple-200 font-bold uppercase tracking-wide">Challenges Won</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-green-600/30 to-green-500/10 backdrop-blur-sm border border-green-500/40 p-5 text-center shadow-lg">
+                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-green-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-green-200 to-emerald-200 bg-clip-text text-transparent mb-1">{stats.totalLifts}</div>
+                  <div className="text-xs text-green-200 font-bold uppercase tracking-wide">Total Lifts</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-amber-600/30 to-amber-500/10 backdrop-blur-sm border border-amber-500/40 p-5 text-center shadow-lg">
+                  <Award className="w-8 h-8 mx-auto mb-2 text-amber-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-amber-200 to-yellow-200 bg-clip-text text-transparent mb-1">{stats.personalRecords}</div>
+                  <div className="text-xs text-amber-200 font-bold uppercase tracking-wide">Personal Records</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-cyan-600/30 to-cyan-500/10 backdrop-blur-sm border border-cyan-500/40 p-5 text-center shadow-lg">
+                  <BarChart3 className="w-8 h-8 mx-auto mb-2 text-cyan-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-1">{stats.bestLift}</div>
+                  <div className="text-xs text-cyan-200 font-bold uppercase tracking-wide">Best Lift (lbs)</div>
+                </Card>
+              </div>
+
+              {/* Additional Stats */}
+              <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 p-5 rounded-2xl">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-blue-400" />
+                  Performance Overview
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                    <span className="text-sm text-slate-300">Total Weight Moved</span>
+                    <span className="text-lg font-black text-white">{stats.totalWeight.toLocaleString()} lbs</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                    <span className="text-sm text-slate-300">Current Streak</span>
+                    <span className="text-lg font-black text-white">{currentStreak} days</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                    <span className="text-sm text-slate-300">Active Gym Memberships</span>
+                    <span className="text-lg font-black text-white">{gymMemberships.length}</span>
+                  </div>
+                </div>
+              </Card>
             </TabsContent>
 
             <TabsContent value="badges">
