@@ -64,7 +64,7 @@ export default function ConsistencyJourney({ totalCheckIns }) {
   const nextStage = getNextStageName();
 
   return (
-    <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 p-5 rounded-2xl shadow-md">
+    <Card className="bg-slate-900/60 backdrop-blur-sm border border-slate-700/40 p-5 rounded-2xl shadow-md">
       <div className="flex items-center gap-3 mb-4">
         <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentStage.color} flex items-center justify-center shadow-lg`}>
           <Award className="w-5 h-5 text-white" />
