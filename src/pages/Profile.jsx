@@ -522,7 +522,7 @@ export default function Profile() {
 
             <TabsContent value="stats" className="space-y-4">
               {/* Key Stats Grid */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <Card className="bg-gradient-to-br from-blue-600/30 to-blue-500/10 backdrop-blur-sm border border-blue-500/40 p-5 text-center shadow-lg">
                   <Calendar className="w-8 h-8 mx-auto mb-2 text-blue-300" />
                   <div className="text-4xl font-black bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-1">{userCheckIns.length}</div>
@@ -535,10 +535,28 @@ export default function Profile() {
                   <div className="text-xs text-orange-200 font-bold uppercase tracking-wide">Best Streak</div>
                 </Card>
 
+                <Card className="bg-gradient-to-br from-purple-600/30 to-purple-500/10 backdrop-blur-sm border border-purple-500/40 p-5 text-center shadow-lg">
+                  <Trophy className="w-8 h-8 mx-auto mb-2 text-purple-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent mb-1">{completedChallenges}</div>
+                  <div className="text-xs text-purple-200 font-bold uppercase tracking-wide">Challenges Won</div>
+                </Card>
+
                 <Card className="bg-gradient-to-br from-green-600/30 to-green-500/10 backdrop-blur-sm border border-green-500/40 p-5 text-center shadow-lg">
                   <Dumbbell className="w-8 h-8 mx-auto mb-2 text-green-300" />
                   <div className="text-4xl font-black bg-gradient-to-r from-green-200 to-emerald-200 bg-clip-text text-transparent mb-1">{stats.totalLifts}</div>
                   <div className="text-xs text-green-200 font-bold uppercase tracking-wide">Total Lifts</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-amber-600/30 to-amber-500/10 backdrop-blur-sm border border-amber-500/40 p-5 text-center shadow-lg">
+                  <Award className="w-8 h-8 mx-auto mb-2 text-amber-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-amber-200 to-yellow-200 bg-clip-text text-transparent mb-1">{stats.personalRecords}</div>
+                  <div className="text-xs text-amber-200 font-bold uppercase tracking-wide">Personal Records</div>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-cyan-600/30 to-cyan-500/10 backdrop-blur-sm border border-cyan-500/40 p-5 text-center shadow-lg">
+                  <BarChart3 className="w-8 h-8 mx-auto mb-2 text-cyan-300" />
+                  <div className="text-4xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-1">{stats.bestLift}</div>
+                  <div className="text-xs text-cyan-200 font-bold uppercase tracking-wide">Best Lift (lbs)</div>
                 </Card>
               </div>
 
