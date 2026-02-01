@@ -166,7 +166,7 @@ export default function Friends() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between">
-            <Link to={createPageUrl('Home')}>
+            <Link to={createPageUrl('Home')} className="absolute left-4 top-6">
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -175,27 +175,24 @@ export default function Friends() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-100">
+            <h1 className="text-xl font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
               Friend Activity
             </h1>
             
             {/* Friends Dropdown in Header */}
             <div className="flex items-center gap-2">
-              <div className="relative z-50">
+              <div className="relative">
                 <button
                   onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
                 >
                   <Users className="w-4 h-4" />
-                  <span className="text-sm font-semibold">
-                    {friends.length > 0 ? `${friends.length} Friends` : 'Friends'}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showFriendsDropdown ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFriendsDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Dropdown Menu */}
                 {showFriendsDropdown && (
-                  <div className="absolute -right-2 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50">
+                  <div className="absolute -right-2 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-[9999]">
                     <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
                       {friends.length === 0 ? (
                         <p className="text-center text-slate-400 text-sm py-4">No friends yet</p>
