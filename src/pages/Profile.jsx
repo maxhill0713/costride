@@ -509,41 +509,53 @@ export default function Profile() {
 
             <TabsContent value="stats" className="space-y-4">
               {/* Key Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <Card className="bg-gradient-to-br from-blue-600/30 to-blue-500/10 backdrop-blur-sm border border-blue-500/40 p-5 text-center shadow-lg">
-                  <Calendar className="w-8 h-8 mx-auto mb-2 text-blue-300" />
-                  <div className="text-4xl font-black bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent mb-1">{userCheckIns.length}</div>
-                  <div className="text-xs text-blue-200 font-bold uppercase tracking-wide">Total Check-ins</div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Calendar className="w-4 h-4 text-blue-400" />
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{userCheckIns.length}</div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-600/30 to-orange-500/10 backdrop-blur-sm border border-orange-500/40 p-5 text-center shadow-lg">
-                  <Flame className="w-8 h-8 mx-auto mb-2 text-orange-300" />
-                  <div className="text-4xl font-black bg-gradient-to-r from-orange-200 to-red-200 bg-clip-text text-transparent mb-1">{longestStreak}</div>
-                  <div className="text-xs text-orange-200 font-bold uppercase tracking-wide">Best Streak</div>
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Flame className="w-4 h-4 text-orange-400" />
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{longestStreak}</div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-purple-600/30 to-purple-500/10 backdrop-blur-sm border border-purple-500/40 p-5 text-center shadow-lg">
-                  <Trophy className="w-8 h-8 mx-auto mb-2 text-purple-300" />
-                  <div className="text-4xl font-black bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent mb-1">{completedChallenges}</div>
-                  <div className="text-xs text-purple-200 font-bold uppercase tracking-wide">Challenges Won</div>
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Trophy className="w-4 h-4 text-purple-400" />
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Challenges</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{completedChallenges}</div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-green-600/30 to-green-500/10 backdrop-blur-sm border border-green-500/40 p-5 text-center shadow-lg">
-                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-green-300" />
-                  <div className="text-4xl font-black bg-gradient-to-r from-green-200 to-emerald-200 bg-clip-text text-transparent mb-1">{stats.totalLifts}</div>
-                  <div className="text-xs text-green-200 font-bold uppercase tracking-wide">Total Lifts</div>
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Dumbbell className="w-4 h-4 text-green-400" />
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Total Lifts</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.totalLifts}</div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-amber-600/30 to-amber-500/10 backdrop-blur-sm border border-amber-500/40 p-5 text-center shadow-lg">
-                  <Award className="w-8 h-8 mx-auto mb-2 text-amber-300" />
-                  <div className="text-4xl font-black bg-gradient-to-r from-amber-200 to-yellow-200 bg-clip-text text-transparent mb-1">{stats.personalRecords}</div>
-                  <div className="text-xs text-amber-200 font-bold uppercase tracking-wide">Personal Records</div>
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Award className="w-4 h-4 text-amber-400" />
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">PRs</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.personalRecords}</div>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-cyan-600/30 to-cyan-500/10 backdrop-blur-sm border border-cyan-500/40 p-5 text-center shadow-lg">
-                  <BarChart3 className="w-8 h-8 mx-auto mb-2 text-cyan-300" />
-                  <div className="text-4xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-1">{stats.bestLift}</div>
-                  <div className="text-xs text-cyan-200 font-bold uppercase tracking-wide">Best Lift (lbs)</div>
+                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <BarChart3 className="w-4 h-4 text-cyan-400" />
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Lift</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.bestLift}<span className="text-sm text-slate-400 ml-1">lbs</span></div>
                 </Card>
               </div>
 
