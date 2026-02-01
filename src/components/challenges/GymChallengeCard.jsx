@@ -55,7 +55,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="relative p-4 bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm border-2 border-blue-500/40 hover:border-blue-400/60 transition-all duration-300 shadow-2xl hover:shadow-blue-500/20 overflow-hidden">
+      <Card className="relative p-3 bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm border-2 border-blue-500/40 hover:border-blue-400/60 transition-all duration-300 shadow-2xl hover:shadow-blue-500/20 overflow-hidden">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
