@@ -465,11 +465,13 @@ export default function Profile() {
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-
-
-          {/* Tabs Section */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      {/* Main Content Section */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6">
+        {/* Tabs Section */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="flex w-full bg-slate-800/50 p-1 rounded-xl gap-1 mb-4">
               <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
                 Progress
@@ -1033,8 +1035,7 @@ export default function Profile() {
               </div>
             </Card>
             </TabsContent>
-          </Tabs>
-        </div>
+        </Tabs>
       </div>
 
       <AddGoalModal
