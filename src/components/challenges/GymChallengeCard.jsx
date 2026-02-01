@@ -2,9 +2,10 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Users, Target, Building2, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Dumbbell, Users, Target, Building2, Trash2, Trophy, Flame, Zap, Award, Clock, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
+import confetti from 'canvas-confetti';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
@@ -15,6 +16,37 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
   
   // Check if user has joined by checking if their ID is in participants array
   const userHasJoined = currentUser ? (challenge.participants || []).includes(currentUser.id) : false;
+  
+  // Gamification elements
+  const getDifficultyLevel = () => {
+    if (challenge.target_value <= 5) return { label: 'Easy', color: 'from-green-400 to-emerald-500', icon: '🌟', points: 100 };
+    if (challenge.target_value <= 15) return { label: 'Medium', color: 'from-yellow-400 to-orange-500', icon: '⚡', points: 250 };
+    if (challenge.target_value <= 30) return { label: 'Hard', color: 'from-orange-400 to-red-500', icon: '🔥', points: 500 };
+    return { label: 'Legendary', color: 'from-purple-400 to-pink-500', icon: '👑', points: 1000 };
+  };
+  
+  const difficulty = getDifficultyLevel();
+  
+  const getUrgencyStatus = () => {
+    if (daysLeft <= 1) return { label: 'ENDS SOON!', color: 'from-red-500 to-orange-500', pulse: true };
+    if (daysLeft <= 3) return { label: 'Hurry!', color: 'from-orange-400 to-yellow-500', pulse: true };
+    if (daysLeft <= 7) return { label: 'Act Fast', color: 'from-yellow-400 to-amber-500', pulse: false };
+    return null;
+  };
+  
+  const urgency = getUrgencyStatus();
+  
+  const handleJoinClick = () => {
+    if (onJoin) {
+      onJoin(challenge);
+      // Confetti effect
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    }
+  };
 
   return (
     <motion.div
