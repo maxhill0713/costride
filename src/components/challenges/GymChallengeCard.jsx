@@ -217,29 +217,52 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
         </div>
 
-        {/* Join Button / Delete Button */}
+        {/* Join Button / Delete Button - Gamified */}
         <div className="flex gap-2">
-          <Button
-            onClick={() => onJoin && onJoin(challenge)}
-            disabled={userHasJoined || isOwner}
-            className={`flex-1 font-bold transition-all duration-200 ${
-              userHasJoined 
-                ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
-                : isOwner
-                ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
-            }`}
+          <motion.div 
+            whileHover={!userHasJoined && !isOwner ? { scale: 1.02 } : {}}
+            whileTap={!userHasJoined && !isOwner ? { scale: 0.98 } : {}}
+            className="flex-1"
           >
-            {userHasJoined ? '✓ Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
-          </Button>
+            <Button
+              onClick={handleJoinClick}
+              disabled={userHasJoined || isOwner}
+              className={`w-full font-black text-sm h-12 transition-all duration-200 ${
+                userHasJoined 
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white cursor-default shadow-lg shadow-green-500/30 border-2 border-green-400/50' 
+                  : isOwner
+                  ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-slate-300 cursor-not-allowed border-2 border-slate-600'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-xl hover:shadow-green-500/40 border-2 border-green-400/50 animate-pulse'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                {userHasJoined ? (
+                  <>
+                    <Award className="w-5 h-5" />
+                    <span>✓ JOINED • Earn {difficulty.points} XP</span>
+                  </>
+                ) : isOwner ? (
+                  <>
+                    <Trophy className="w-5 h-5" />
+                    <span>👑 YOUR CHALLENGE</span>
+                  </>
+                ) : (
+                  <>
+                    <Flame className="w-5 h-5 animate-bounce" />
+                    <span>JOIN NOW • Win {difficulty.points} XP</span>
+                  </>
+                )}
+              </span>
+            </Button>
+          </motion.div>
           {isOwner && onDelete && (
             <Button
               onClick={() => onDelete(challenge.id)}
               variant="outline"
               size="icon"
-              className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500"
+              className="border-2 border-red-500/50 hover:bg-red-500/20 hover:border-red-500 h-12 w-12"
             >
-              <Trash2 className="w-4 h-4 text-red-500" />
+              <Trash2 className="w-5 h-5 text-red-500" />
             </Button>
           )}
         </div>
