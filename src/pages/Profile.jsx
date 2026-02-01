@@ -111,6 +111,7 @@ export default function Profile() {
 
   const handleSave = async () => {
     await base44.auth.updateMe(editData);
+    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     setIsEditing(false);
   };
 
