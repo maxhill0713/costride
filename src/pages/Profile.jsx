@@ -510,52 +510,88 @@ export default function Profile() {
             <TabsContent value="stats" className="space-y-4">
               {/* Key Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Calendar className="w-4 h-4 text-blue-400" />
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
+                <Card className="group relative bg-gradient-to-br from-blue-500/10 to-cyan-500/5 backdrop-blur-sm border border-blue-500/30 p-3 rounded-xl hover:border-blue-400/50 transition-all cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-blue-300/80 font-semibold uppercase tracking-wide">Check-ins</span>
+                      <Calendar className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <div className="text-2xl font-bold text-white">{userCheckIns.length}</div>
+                      {userCheckIns.length >= 10 && <span className="text-xs text-blue-400">🎯</span>}
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-white">{userCheckIns.length}</div>
                 </Card>
 
-                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Flame className="w-4 h-4 text-orange-400" />
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
+                <Card className="group relative bg-gradient-to-br from-orange-500/10 to-red-500/5 backdrop-blur-sm border border-orange-500/30 p-3 rounded-xl hover:border-orange-400/50 transition-all cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-orange-300/80 font-semibold uppercase tracking-wide">Best Streak</span>
+                      <Flame className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <div className="text-2xl font-bold text-white">{longestStreak}</div>
+                      <span className="text-xs text-orange-300">days</span>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-white">{longestStreak}</div>
                 </Card>
 
-                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Trophy className="w-4 h-4 text-purple-400" />
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Challenges</span>
+                <Card className="group relative bg-gradient-to-br from-purple-500/10 to-pink-500/5 backdrop-blur-sm border border-purple-500/30 p-3 rounded-xl hover:border-purple-400/50 transition-all cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-purple-300/80 font-semibold uppercase tracking-wide">Challenges</span>
+                      <Trophy className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <div className="text-2xl font-bold text-white">{completedChallenges}</div>
+                      {completedChallenges > 0 && <span className="text-xs text-purple-400">🏆</span>}
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-white">{completedChallenges}</div>
                 </Card>
 
-                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Dumbbell className="w-4 h-4 text-green-400" />
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Total Lifts</span>
+                <Card className="group relative bg-gradient-to-br from-green-500/10 to-emerald-500/5 backdrop-blur-sm border border-green-500/30 p-3 rounded-xl hover:border-green-400/50 transition-all cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-green-300/80 font-semibold uppercase tracking-wide">Total Lifts</span>
+                      <Dumbbell className="w-4 h-4 text-green-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <div className="text-2xl font-bold text-white">{stats.totalLifts}</div>
+                      {stats.totalLifts >= 100 && <span className="text-xs text-green-400">💪</span>}
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-white">{stats.totalLifts}</div>
                 </Card>
 
-                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Award className="w-4 h-4 text-amber-400" />
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">PRs</span>
+                <Card className="group relative bg-gradient-to-br from-amber-500/10 to-yellow-500/5 backdrop-blur-sm border border-amber-500/30 p-3 rounded-xl hover:border-amber-400/50 transition-all cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-amber-300/80 font-semibold uppercase tracking-wide">PRs</span>
+                      <Award className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <div className="text-2xl font-bold text-white">{stats.personalRecords}</div>
+                      {stats.personalRecords >= 5 && <span className="text-xs text-amber-400">⭐</span>}
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-white">{stats.personalRecords}</div>
                 </Card>
 
-                <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 p-3 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <BarChart3 className="w-4 h-4 text-cyan-400" />
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Lift</span>
+                <Card className="group relative bg-gradient-to-br from-cyan-500/10 to-blue-500/5 backdrop-blur-sm border border-cyan-500/30 p-3 rounded-xl hover:border-cyan-400/50 transition-all cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-cyan-300/80 font-semibold uppercase tracking-wide">Best Lift</span>
+                      <BarChart3 className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <div className="text-2xl font-bold text-white">{stats.bestLift}</div>
+                      <span className="text-xs text-cyan-300">lbs</span>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-white">{stats.bestLift}<span className="text-sm text-slate-400 ml-1">lbs</span></div>
                 </Card>
               </div>
 
