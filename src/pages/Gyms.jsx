@@ -195,14 +195,6 @@ export default function Gyms() {
                 <span className="text-sm font-medium text-orange-200 line-clamp-1">{gym.reward_offer}</span>
               </div>
             )}
-
-            {/* Price */}
-            {gym.price && parseInt(gym.price) > 0 && (
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-blue-400">£{gym.price}</span>
-                <span className="text-xs text-slate-400">/month</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -228,7 +220,7 @@ export default function Gyms() {
               className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm"
             >
               <Key className="w-4 h-4" />
-              <span className="hidden sm:inline">Join with Code</span>
+              Join with Code
             </Button>
           </div>
         </div>
@@ -386,14 +378,6 @@ export default function Gyms() {
                             <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
                               <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
                               <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
-                            </div>
-                          )}
-
-                          {/* Price */}
-                          {gym.price && parseInt(gym.price) > 0 && (
-                            <div className="flex items-baseline gap-1 pt-2">
-                              <span className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">£{gym.price}</span>
-                              <span className="text-sm text-slate-400">/month</span>
                             </div>
                           )}
                         </div>
@@ -591,14 +575,6 @@ export default function Gyms() {
                           <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
                             <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
                             <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
-                          </div>
-                        )}
-
-                        {/* Price */}
-                        {gym.price && parseInt(gym.price) > 0 && (
-                          <div className="flex items-baseline gap-1 pt-2">
-                            <span className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">£{gym.price}</span>
-                            <span className="text-sm text-slate-400">/month</span>
                           </div>
                         )}
                       </div>
