@@ -150,45 +150,30 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
         </div>
 
         {/* Progress Bar - Enhanced */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-cyan-400" />
-              <p className="text-xs font-black text-slate-300 uppercase">Challenge Progress</p>
-            </div>
+        <div className="mb-2.5">
+          <div className="flex justify-between items-center mb-1">
+            <p className="text-[9px] font-black text-slate-300 uppercase flex items-center gap-1">
+              <TrendingUp className="w-3 h-3 text-cyan-400" />
+              Progress
+            </p>
             <motion.p 
               key={progressPercentage}
               initial={{ scale: 1.5, color: '#22d3ee' }}
               animate={{ scale: 1, color: '#94a3b8' }}
-              className="text-sm text-slate-400 font-black"
+              className="text-[10px] text-slate-400 font-black"
             >
               {Math.round(progressPercentage)}%
             </motion.p>
           </div>
-          <div className="relative h-3 bg-slate-800/80 rounded-full overflow-hidden border-2 border-slate-700/50 shadow-inner">
+          <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 shadow-lg relative"
+              className="h-full bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 relative"
             >
-              {/* Animated shine effect on progress bar */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
             </motion.div>
-            {/* Milestone markers */}
-            <div className="absolute inset-0 flex justify-between px-1">
-              {[25, 50, 75].map(milestone => (
-                <div 
-                  key={milestone}
-                  className="w-0.5 h-full bg-slate-600/50"
-                  style={{ marginLeft: `${milestone}%` }}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-between mt-1.5 px-1">
-            <p className="text-[9px] text-slate-500 font-bold">START</p>
-            <p className="text-[9px] text-slate-500 font-bold">FINISH</p>
           </div>
         </div>
 
