@@ -260,7 +260,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header Section */}
-      <div className="relative pt-10 pb-8 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent">
+      <div className="relative pt-6 pb-4 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent">
         {/* Hero Background - Only if custom image is set */}
         {currentUser.hero_image_url && (
           <>
@@ -283,7 +283,7 @@ export default function Profile() {
         </div>
         
         <div className="max-w-4xl mx-auto relative z-10">
-          <div className="flex items-start justify-between mb-6">
+          <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-5 flex-1">
               <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
                 {currentUser.avatar_url ? (
@@ -328,59 +328,12 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-              
-              {/* Check-in Count and Best Streak */}
-              <div className="hidden md:flex flex-col gap-2">
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2 min-w-[120px]">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Calendar className="w-3 h-3 text-blue-400" />
-                    <span className="text-[10px] font-medium text-slate-400">Check-ins</span>
-                  </div>
-                  <p className="text-xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
-                </div>
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2 min-w-[120px]">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Trophy className="w-3 h-3 text-purple-400" />
-                    <span className="text-[10px] font-medium text-slate-400">Best Streak</span>
-                  </div>
-                  <p className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak}</p>
-                </div>
-              </div>
             </div>
-            {!isEditing ? (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 className="w-5 h-5" />
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-xl"
-                  onClick={handleSave}
-                >
-                  <Save className="w-5 h-5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-slate-400 hover:text-white hover:bg-slate-700/60 rounded-xl"
-                  onClick={() => setIsEditing(false)}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Bio & Location */}
           {isEditing ? (
-            <div className="space-y-4 mt-4">
+            <div className="space-y-3 mt-2">
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Bio</label>
                 <Textarea
@@ -420,7 +373,7 @@ export default function Profile() {
               </div>
             </div>
           ) : (
-            <div className="space-y-3 mt-4">
+            <div className="space-y-2 mt-2">
               {currentUser.bio && (
                 <p className="text-slate-300 text-sm leading-relaxed font-normal max-w-2xl tracking-[-0.01em]">{currentUser.bio}</p>
               )}
@@ -430,24 +383,6 @@ export default function Profile() {
                   <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                 </div>
               )}
-              
-              {/* Check-in Count and Best Streak - Mobile */}
-              <div className="grid grid-cols-2 gap-2 mt-4 md:hidden">
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Calendar className="w-3 h-3 text-blue-400" />
-                    <span className="text-[10px] font-medium text-slate-400">Check-ins</span>
-                  </div>
-                  <p className="text-xl font-black bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">{userCheckIns.length}</p>
-                </div>
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-lg p-2">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Trophy className="w-3 h-3 text-purple-400" />
-                    <span className="text-[10px] font-medium text-slate-400">Best Streak</span>
-                  </div>
-                  <p className="text-xl font-black bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">{longestStreak}</p>
-                </div>
-              </div>
             </div>
           )}
         </div>
