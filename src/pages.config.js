@@ -68,8 +68,8 @@ import Profile from './pages/Profile';
 import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
-import UserProfile from './pages/UserProfile';
 import Settings from './pages/Settings';
+import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -95,8 +95,8 @@ export const PAGES = {
     "RedeemReward": RedeemReward,
     "Routines": Routines,
     "Search": Search,
-    "UserProfile": UserProfile,
     "Settings": Settings,
+    "UserProfile": UserProfile,
 }
 
 export const pagesConfig = {

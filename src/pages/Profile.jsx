@@ -272,7 +272,7 @@ export default function Profile() {
         )}
         
         {/* Top Right Icons */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
           <Link to={createPageUrl('Settings')}>
             <button
               className="w-9 h-9 rounded-xl bg-slate-800/80 backdrop-blur-md border border-slate-600/50 flex items-center justify-center hover:bg-slate-700/80 transition-all"
