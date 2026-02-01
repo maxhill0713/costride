@@ -742,11 +742,11 @@ export default function GymCommunity() {
 
       {/* Horizontal Tab Menu - 10% of screen */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl shadow-xl overflow-x-hidden">
-            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible">
+        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl overflow-x-hidden">
+            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible border-0">
             <TabsTrigger 
               value="home" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_2px_8px_rgba(52,211,153,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-emerald-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
             >
               <div className="flex items-center gap-1.5">
                 <Home className="w-4 h-4" />
@@ -755,7 +755,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="feed" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 data-[state=active]:shadow-[0_2px_8px_rgba(96,165,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
             >
               <div className="flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4" />
@@ -764,7 +764,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 data-[state=active]:shadow-[0_2px_8px_rgba(192,132,250,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
             >
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" />
@@ -773,7 +773,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="events" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-orange-400 data-[state=active]:shadow-[0_2px_8px_rgba(251,146,60,0.2)] rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-orange-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
             >
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
