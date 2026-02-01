@@ -68,10 +68,10 @@ export default function Layout({ children, currentPageName }) {
                   ${isActive ? 'text-white' : 'text-slate-400'}
                 `}
               >
+                {isActive && (
+                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg`} />
+                )}
                 <div className="relative">
-                  {isActive && (
-                    <div className={`absolute -top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 ${item.color.replace('text-', 'bg-')} rounded-full shadow-lg z-10`} />
-                  )}
                   <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 && (
                     <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900">
