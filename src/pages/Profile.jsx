@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3 } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,9 @@ export default function Profile() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [activeTab, setActiveTab] = useState('stats');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [postContent, setPostContent] = useState('');
+  const [postImage, setPostImage] = useState('');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -150,6 +153,28 @@ export default function Profile() {
     mutationFn: (id) => base44.entities.Goal.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
+    }
+  });
+
+  const createPostMutation = useMutation({
+    mutationFn: async (data) => {
+      const postData = {
+        member_id: currentUser.id,
+        member_name: currentUser.full_name,
+        member_avatar: currentUser.avatar_url,
+        content: data.content,
+        image_url: data.image_url || null,
+        likes: 0,
+        comments: [],
+        reactions: {}
+      };
+      return base44.entities.Post.create(postData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+      setShowCreatePost(false);
+      setPostContent('');
+      setPostImage('');
     }
   });
 
@@ -593,6 +618,15 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
+              {/* Create Post Button */}
+              <Button
+                onClick={() => setShowCreatePost(true)}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Post
+              </Button>
+
               {userPosts.length === 0 ? (
                 <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                   <div className="max-w-sm mx-auto">
@@ -768,6 +802,72 @@ export default function Profile() {
         onClose={() => setShowSplitModal(false)}
         currentUser={currentUser}
       />
+
+      {/* Create Post Modal */}
+      {showCreatePost && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Create Post</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setShowCreatePost(false);
+                  setPostContent('');
+                  setPostImage('');
+                }}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <Textarea
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                placeholder="What's on your mind?"
+                className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 min-h-[120px]"
+              />
+
+              <div>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Image URL (optional)</label>
+                <div className="flex gap-2">
+                  <Input
+                    value={postImage}
+                    onChange={(e) => setPostImage(e.target.value)}
+                    placeholder="https://..."
+                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="border-slate-600/40 text-slate-300 hover:bg-slate-700/50"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {postImage && (
+                <div className="rounded-xl overflow-hidden border border-slate-600/40">
+                  <img src={postImage} alt="Preview" className="w-full h-48 object-cover" />
+                </div>
+              )}
+
+              <Button
+                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage })}
+                disabled={!postContent.trim() || createPostMutation.isPending}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
+              >
+                {createPostMutation.isPending ? 'Posting...' : 'Post'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
