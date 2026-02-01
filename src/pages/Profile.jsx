@@ -37,6 +37,7 @@ export default function Profile() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState('');
+  const [postVideo, setPostVideo] = useState('');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -164,6 +165,7 @@ export default function Profile() {
         member_avatar: currentUser.avatar_url,
         content: data.content,
         image_url: data.image_url || null,
+        video_url: data.video_url || null,
         likes: 0,
         comments: [],
         reactions: {}
@@ -175,6 +177,7 @@ export default function Profile() {
       setShowCreatePost(false);
       setPostContent('');
       setPostImage('');
+      setPostVideo('');
     }
   });
 
@@ -646,6 +649,9 @@ export default function Profile() {
                       {post.image_url && (
                         <img src={post.image_url} alt="" className="w-full h-48 object-cover" />
                       )}
+                      {post.video_url && (
+                        <video src={post.video_url} controls className="w-full h-64 bg-black" />
+                      )}
                       <div className="p-4">
                         <p className="text-sm text-slate-200 mb-3">{post.content}</p>
                         <div className="flex items-center gap-4 text-xs text-slate-400">
@@ -816,6 +822,7 @@ export default function Profile() {
                   setShowCreatePost(false);
                   setPostContent('');
                   setPostImage('');
+                  setPostVideo('');
                 }}
                 className="text-slate-400 hover:text-white"
               >
@@ -833,22 +840,22 @@ export default function Profile() {
 
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">Image URL (optional)</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={postImage}
-                    onChange={(e) => setPostImage(e.target.value)}
-                    placeholder="https://..."
-                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="border-slate-600/40 text-slate-300 hover:bg-slate-700/50"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                  </Button>
-                </div>
+                <Input
+                  value={postImage}
+                  onChange={(e) => setPostImage(e.target.value)}
+                  placeholder="https://..."
+                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Video URL (optional)</label>
+                <Input
+                  value={postVideo}
+                  onChange={(e) => setPostVideo(e.target.value)}
+                  placeholder="https://..."
+                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
+                />
               </div>
 
               {postImage && (
@@ -857,8 +864,14 @@ export default function Profile() {
                 </div>
               )}
 
+              {postVideo && (
+                <div className="rounded-xl overflow-hidden border border-slate-600/40">
+                  <video src={postVideo} controls className="w-full h-64 bg-black" />
+                </div>
+              )}
+
               <Button
-                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage })}
+                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo })}
                 disabled={!postContent.trim() || createPostMutation.isPending}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
               >
