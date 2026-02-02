@@ -110,9 +110,9 @@ export default function UserProfile() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pb-8">
       {/* Header */}
       <div className="bg-gradient-to-br from-blue-600 to-cyan-500 px-4 py-8 relative">
-        <Link to={createPageUrl('Home')} className="absolute top-4 left-4">
-          <Button variant="ghost" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-full">
-            <ChevronLeft className="w-5 h-5" />
+        <Link to={createPageUrl('Friends')} className="absolute top-2 left-2 z-10">
+          <Button variant="ghost" size="icon" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-full w-8 h-8">
+            <ChevronLeft className="w-4 h-4" />
           </Button>
         </Link>
 
