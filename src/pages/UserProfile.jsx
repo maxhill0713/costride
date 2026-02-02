@@ -121,43 +121,123 @@ export default function UserProfile() {
 
   const earnedBadges = streakMilestones.filter(m => longestStreak >= m.days);
 
+  // Streak milestones for badges
+  const streakMilestones = [
+    { days: 7, name: '7 Day Warrior', icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { days: 30, name: 'Monthly Master', icon: '⚡', color: 'from-yellow-400 to-orange-500' },
+    { days: 50, name: 'Unstoppable', icon: '💪', color: 'from-purple-400 to-pink-500' },
+    { days: 100, name: 'Century Champion', icon: '👑', color: 'from-blue-400 to-cyan-500' },
+    { days: 365, name: 'Year Legend', icon: '🏆', color: 'from-green-400 to-emerald-500' }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pb-8">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-cyan-500 px-4 py-8 relative">
-        <Link to={createPageUrl('Friends')} className="absolute top-2 left-2 z-10">
-          <Button variant="ghost" size="icon" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-full w-8 h-8">
-            <ChevronLeft className="w-4 h-4" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-8">
+      {/* Header with Hero Banner */}
+      <div className="relative pt-6 pb-4 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent">
+        {/* Hero Background */}
+        {viewingUser.hero_image_url ? (
+          <>
+            <div className="absolute inset-0 z-0">
+              <img src={viewingUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-50" />
+            </div>
+            <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
+          </>
+        ) : (
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-600/30 to-cyan-500/20" />
+        )}
+
+        {/* Back Button */}
+        <Link to={createPageUrl('Friends')} className="absolute top-3 left-3 z-20">
+          <Button variant="ghost" className="bg-slate-800/80 backdrop-blur-md border border-slate-600/50 hover:bg-slate-700/80 text-white rounded-xl w-10 h-10 p-0">
+            <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center overflow-hidden border-4 border-white/30">
+        <div className="max-w-4xl mx-auto relative z-10 pt-8">
+          <div className="flex items-start gap-5">
+            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
               {viewingUser.avatar_url ? (
                 <img src={viewingUser.avatar_url} alt={viewingUser.full_name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl font-black text-white">
+                <span className="text-3xl font-semibold text-white tracking-tight">
                   {viewingUser.full_name?.charAt(0).toUpperCase() || 'U'}
                 </span>
               )}
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-black text-white mb-1">{viewingUser.full_name}</h1>
-              {viewingUser.bio && <p className="text-white/90 mb-2">{viewingUser.bio}</p>}
-              {viewingUser.location && (
-                <p className="text-white/80 text-sm">{viewingUser.location}</p>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl md:text-3xl font-medium tracking-[-0.02em] text-white leading-tight">{viewingUser.full_name}</h1>
+                <StatusBadge checkIns={checkIns} streak={currentStreak} size="lg" />
+              </div>
+              
+              {/* Equipped Badges */}
+              {viewingUser?.equipped_badges?.length > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  {viewingUser.equipped_badges.map((badgeId) => {
+                    const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
+                                 [
+                                   { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+                                   { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+                                   { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+                                   { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+                                   { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+                                   { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+                                   { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+                                   { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
+                                 ].find(b => b.id === badgeId);
+                    if (!badge) return null;
+                    return (
+                      <div 
+                        key={badgeId}
+                        className={`w-8 h-8 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40`}
+                        title={badge.name || badgeId}
+                      >
+                        <span className="text-sm">{badge.icon}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-              <div className="flex gap-2 mt-2">
+
+              {/* Bio */}
+              {viewingUser.bio && (
+                <p className="text-slate-300 text-sm leading-relaxed mt-2 max-w-xl">{viewingUser.bio}</p>
+              )}
+              
+              {/* Location */}
+              {viewingUser.gym_location && (
+                <div className="flex items-center gap-2 text-slate-400 mt-2">
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm">{viewingUser.gym_location}</span>
+                </div>
+              )}
+
+              {/* Gym Memberships */}
+              {memberGyms.length > 0 && (
+                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  <Building2 className="w-4 h-4 text-blue-400" />
+                  {memberGyms.map((gym) => (
+                    <Badge 
+                      key={gym.id}
+                      className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
+                    >
+                      {gym.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-3">
                 {isOwnProfile ? (
                   <Link to={createPageUrl('Profile')}>
-                    <Button size="sm" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-2xl">
+                    <Button size="sm" className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
                       Edit Profile
                     </Button>
                   </Link>
                 ) : (
                   <Link to={`${createPageUrl('Messages')}?userId=${userId}`}>
-                    <Button size="sm" className="bg-white/20 backdrop-blur hover:bg-white/30 text-white rounded-2xl">
+                    <Button size="sm" className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
                       <MessageCircle className="w-4 h-4 mr-1" />
                       Message
                     </Button>
