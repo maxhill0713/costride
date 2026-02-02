@@ -7,7 +7,6 @@ import { base44 } from '@/api/base44Client';
 
 import PageTransition from './components/PageTransition';
 import ErrorBoundary from './components/ErrorBoundary';
-import MobileHeader from './components/MobileHeader';
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -87,13 +86,10 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
-      {/* Mobile Header with Back Button */}
-      <MobileHeader currentPageName={currentPageName} />
-
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation && (
         <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-center min-h-[64px] px-2">
+          <div className="flex justify-around items-center h-16 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
 
@@ -104,7 +100,7 @@ export default function Layout({ children, currentPageName }) {
                 onClick={(e) => handleTabClick(item, e)}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 active:scale-95 min-h-[44px]
+                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 active:scale-95
                   ${isActive ? 'text-white' : 'text-slate-400'}
                 `}
               >
