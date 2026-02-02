@@ -1435,7 +1435,7 @@ export default function GymCommunity() {
       </div>
       </Tabs>
 
-      <CreateEventModal
+        <CreateEventModal
           open={showCreateEvent}
           onClose={() => setShowCreateEvent(false)}
           onSave={(data) => createEventMutation.mutate(data)}
@@ -1537,8 +1537,7 @@ export default function GymCommunity() {
                   }}
                   isLoading={createChallengeMutation.isPending}
                 />
-
-        </div>
+      </div>
       </div>
     </PullToRefresh>
   );
