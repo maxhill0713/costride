@@ -5,10 +5,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Flame, Award, TrendingUp, Calendar, Dumbbell, ChevronLeft, MessageCircle } from 'lucide-react';
+import { Trophy, Flame, Award, TrendingUp, Calendar, Dumbbell, ChevronLeft, MessageCircle, MapPin, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import StatusBadge from '../components/profile/StatusBadge';
 
 export default function UserProfile() {
   const urlParams = new URLSearchParams(window.location.search);
