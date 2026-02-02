@@ -478,7 +478,7 @@ export default function Friends() {
 
                       {/* Post Content Preview */}
                       {activity.type === 'post' && activity.content && (
-                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{activity.content}</p>
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">{activity.content}</p>
                       )}
                     </div>
 
