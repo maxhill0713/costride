@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -220,8 +221,11 @@ export default function Home() {
   const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Hero Header */}
+    <PullToRefresh onRefresh={async () => {
+      await queryClient.invalidateQueries();
+    }}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        {/* Hero Header */}
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4">
@@ -561,6 +565,6 @@ export default function Home() {
            currentUser={currentUser}
          />
       </div>
-    </div>
+    </PullToRefresh>
   );
 }
