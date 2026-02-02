@@ -35,6 +35,7 @@ import GymChallengeCard from '../components/challenges/GymChallengeCard';
 import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
+import PullToRefresh from '../components/PullToRefresh';
 // i18n import removed - using default language
 
 export default function GymCommunity() {
@@ -648,8 +649,11 @@ export default function GymCommunity() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
-      {/* Header Background with Gym Hero Image */}
+    <PullToRefresh onRefresh={async () => {
+      await queryClient.invalidateQueries();
+    }}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+        {/* Header Background with Gym Hero Image */}
       <div className="relative h-48 bg-black overflow-hidden">
         {gym.image_url ? (
           <img 
@@ -1535,5 +1539,7 @@ export default function GymCommunity() {
                 />
 
         </div>
+      </div>
+    </PullToRefresh>
   );
 }
