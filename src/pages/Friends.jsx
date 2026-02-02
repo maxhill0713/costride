@@ -10,12 +10,14 @@ import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import PostViewModal from '../components/feed/PostViewModal';
 
 export default function Friends() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFriendsDropdown, setShowFriendsDropdown] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -406,29 +408,35 @@ export default function Friends() {
             {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
-                className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl"
+                onClick={() => {
+                  if (activity.type === 'post') {
+                    const fullPost = allPosts.find(p => p.id === activity.id.replace('post-', ''));
+                    setSelectedPost({ post: fullPost, friendName: activity.friendName, friendAvatar: activity.friendAvatar, friendId: activity.friendId });
+                  }
+                }}
+                className={`bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl ${activity.type === 'post' ? 'cursor-pointer' : ''}`}
               >
                 <div className="p-3">
                   <div className="flex items-center gap-3">
-                    {/* Profile Photo */}
+                     {/* Profile Photo */}
                     <Link 
-                     to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                     className="flex-shrink-0"
-                     onClick={(e) => e.stopPropagation()}
+                      to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                      className="flex-shrink-0"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                     {activity.friendAvatar ? (
-                       <img 
-                         src={activity.friendAvatar} 
-                         alt={activity.friendName} 
-                         className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" 
-                       />
-                     ) : (
-                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
-                         <span className="text-white font-bold text-sm">
-                           {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
-                         </span>
-                       </div>
-                     )}
+                      {activity.friendAvatar ? (
+                        <img 
+                          src={activity.friendAvatar} 
+                          alt={activity.friendName} 
+                          className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" 
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
+                          <span className="text-white font-bold text-sm">
+                            {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                      )}
                     </Link>
 
                     {/* Activity Content */}
@@ -439,13 +447,13 @@ export default function Friends() {
                         <span className="text-slate-300">{activity.message}</span>
                         {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
                       </p>
-                      
+
                       {/* Timestamp and badges inline */}
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] text-slate-500">
                           {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
                         </span>
-                        
+
                         {/* Milestone Badge */}
                         {activity.type === 'milestone' && (
                           <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
@@ -468,42 +476,30 @@ export default function Friends() {
                         )}
                       </div>
 
-                      {/* Post Content - expandable for posts */}
+                      {/* Post Content Preview */}
                       {activity.type === 'post' && activity.content && (
-                        <div className="mt-2">
-                          <p className="text-sm text-slate-300">{activity.content}</p>
-                          {(activity.imageUrl || activity.videoUrl) && (
-                            <div className="mt-2">
-                              {activity.videoUrl ? (
-                                <video 
-                                  src={activity.videoUrl} 
-                                  controls 
-                                  className="w-full rounded-lg max-h-64 bg-slate-900"
-                                />
-                              ) : (
-                                <img 
-                                  src={activity.imageUrl} 
-                                  alt="" 
-                                  className="w-full rounded-lg object-cover max-h-80" 
-                                />
-                              )}
-                            </div>
-                          )}
-                          {(activity.likes > 0 || activity.comments?.length > 0) && (
-                            <div className="flex items-center gap-4 mt-2 text-slate-400 text-xs">
-                              <div className="flex items-center gap-1">
-                                <Heart className="w-3 h-3" />
-                                <span>{activity.likes || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageCircle className="w-3 h-3" />
-                                <span>{activity.comments?.length || 0}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{activity.content}</p>
                       )}
                     </div>
+
+                    {/* Post Media Thumbnail */}
+                    {activity.type === 'post' && (activity.imageUrl || activity.videoUrl) && (
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-700">
+                          {activity.videoUrl ? (
+                            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                              <span className="text-white text-xs">▶</span>
+                            </div>
+                          ) : (
+                            <img 
+                              src={activity.imageUrl} 
+                              alt="" 
+                              className="w-full h-full object-cover" 
+                            />
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -527,6 +523,18 @@ export default function Friends() {
               </div>
             </div>
           </Card>
+        )}
+
+        {/* Post View Modal */}
+        {selectedPost && (
+          <PostViewModal
+            post={selectedPost.post}
+            friendName={selectedPost.friendName}
+            friendAvatar={selectedPost.friendAvatar}
+            friendId={selectedPost.friendId}
+            open={!!selectedPost}
+            onClose={() => setSelectedPost(null)}
+          />
         )}
 
         {/* Add Friend Modal */}
