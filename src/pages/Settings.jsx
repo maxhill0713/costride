@@ -380,8 +380,8 @@ export default function Settings() {
               <LogOut className="w-6 h-6 text-red-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Account & Session</h3>
-              <p className="text-sm text-slate-300">Manage your login session</p>
+              <h3 className="text-lg font-semibold text-white">Danger Zone</h3>
+              <p className="text-sm text-slate-300">Irreversible account actions</p>
             </div>
           </div>
 
@@ -398,6 +398,26 @@ export default function Settings() {
               Logout
             </Button>
             <p className="text-xs text-slate-400 text-center">You will be logged out from all sessions</p>
+            
+            <div className="border-t border-red-500/20 pt-3 mt-4">
+              <Button 
+                variant="outline"
+                className="w-full border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-2xl font-semibold h-10"
+                onClick={() => {
+                  if (confirm('⚠️ Are you absolutely sure? This will permanently delete your account and all your data. This action cannot be undone.')) {
+                    if (confirm('Final confirmation: Delete my account and all data permanently?')) {
+                      // Delete user account
+                      base44.entities.User.delete(currentUser.id).then(() => {
+                        base44.auth.logout();
+                      });
+                    }
+                  }
+                }}
+              >
+                Delete Account
+              </Button>
+              <p className="text-xs text-red-400 text-center mt-2">⚠️ This action is permanent and cannot be undone</p>
+            </div>
           </div>
         </Card>
       </div>

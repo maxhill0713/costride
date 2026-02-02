@@ -39,9 +39,34 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
       
       return base44.entities.Post.update(postId, { reactions });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    onMutate: async ({ postId, emoji }) => {
+      await queryClient.cancelQueries({ queryKey: ['posts'] });
+      const previousPosts = queryClient.getQueryData(['posts']);
+      
+      queryClient.setQueryData(['posts'], (old = []) => 
+        old.map(p => {
+          if (p.id === postId) {
+            const reactions = { ...(p.reactions || {}) };
+            const userId = currentUser?.id;
+            if (reactions[userId] === emoji) {
+              delete reactions[userId];
+            } else {
+              reactions[userId] = emoji;
+            }
+            return { ...p, reactions };
+          }
+          return p;
+        })
+      );
+      
       setShowReactions(false);
+      return { previousPosts };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['posts'], context.previousPosts);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     }
   });
 
