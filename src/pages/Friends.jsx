@@ -212,7 +212,10 @@ export default function Friends() {
                               key={friend.id}
                               className="p-3 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
                             >
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <Link 
+                                to={createPageUrl('UserProfile') + `?userId=${friend.friend_id}`}
+                                className="flex items-center gap-2 flex-1 min-w-0"
+                              >
                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
                                   {friend.friend_avatar ? (
                                     <img src={friend.friend_avatar} alt={friend.friend_name} className="w-full h-full object-cover rounded-lg" />
@@ -236,7 +239,7 @@ export default function Friends() {
                                     </div>
                                   )}
                                 </div>
-                              </div>
+                              </Link>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -276,7 +279,11 @@ export default function Friends() {
             </h2>
             <div className="space-y-2">
               {friendPosts.map(post => (
-                <Card key={post.id} className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer">
+                <Card 
+                  key={post.id} 
+                  onClick={() => window.location.href = createPageUrl('UserProfile') + `?userId=${post.member_id}`}
+                  className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer"
+                >
                   <div className="p-3 flex items-start gap-3">
                     {post.member_avatar ? (
                       <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />

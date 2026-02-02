@@ -45,10 +45,10 @@ export default function Home() {
 
   // Redirect to onboarding if not completed
   useEffect(() => {
-    if (currentUser && !currentUser.onboarding_completed) {
+    if (currentUser && currentUser.onboarding_completed === false) {
       navigate(createPageUrl('Onboarding'));
     }
-  }, [currentUser, navigate]);
+  }, [currentUser?.onboarding_completed, navigate]);
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
