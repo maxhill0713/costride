@@ -495,18 +495,18 @@ export default function Friends() {
             ))}
           </div>
         ) : (
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden rounded-2xl">
-            <div className="p-5">
-              <div className="flex items-start gap-4">
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden rounded-xl">
+            <div className="p-3">
+              <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-slate-400" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-slate-400" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-white mb-1">Your friends haven't checked in yet</h3>
-                  <p className="text-sm font-normal text-slate-200 leading-relaxed">
-                    Be the first to hit the gym today and inspire your crew! 💪
+                  <p className="text-xs text-white font-semibold">No activity yet</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Be the first to check in today! 💪
                   </p>
                 </div>
               </div>
