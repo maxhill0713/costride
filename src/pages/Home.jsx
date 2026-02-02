@@ -98,9 +98,43 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, navigate]);
 
+  // Calculate these values before early return
   const memberGym = gymMemberships.length > 0 
     ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
     : null;
+
+  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
+  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
+  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
+
+  // Create reminder notification if inactive for 3+ days
+  useEffect(() => {
+    const createReminderNotification = async () => {
+      if (!currentUser || daysSinceCheckIn === null || daysSinceCheckIn < 3) return;
+
+      // Check if we already sent a recent reminder
+      const recentReminder = await base44.entities.Notification.filter({
+        user_id: currentUser.id,
+        type: 'reminder'
+      }, '-created_date', 1);
+
+      if (recentReminder.length > 0) {
+        const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
+        if (daysSinceReminder < 2) return;
+      }
+
+      await base44.entities.Notification.create({
+        user_id: currentUser.id,
+        type: 'reminder',
+        title: 'Time for your next workout! 💪',
+        message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
+        icon: '⏰',
+        action_url: createPageUrl('Gyms')
+      });
+    };
+
+    createReminderNotification();
+  }, [currentUser, daysSinceCheckIn]);
 
   if (userLoading) {
     return (
@@ -115,9 +149,6 @@ export default function Home() {
 
   const friendIds = friends.map(f => f.friend_id);
   const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
-
-  // Filter user's check-ins
-  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
 
   // Today's check-ins (all users)
   const todayCheckIns = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
@@ -159,37 +190,6 @@ export default function Home() {
   };
 
   const userStreak = calculateStreak(userCheckIns);
-  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
-  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
-
-  // Create reminder notification if inactive for 3+ days
-  useEffect(() => {
-    const createReminderNotification = async () => {
-      if (!currentUser || daysSinceCheckIn === null || daysSinceCheckIn < 3) return;
-
-      // Check if we already sent a recent reminder
-      const recentReminder = await base44.entities.Notification.filter({
-        user_id: currentUser.id,
-        type: 'reminder'
-      }, '-created_date', 1);
-
-      if (recentReminder.length > 0) {
-        const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
-        if (daysSinceReminder < 2) return; // Don't spam reminders
-      }
-
-      await base44.entities.Notification.create({
-        user_id: currentUser.id,
-        type: 'reminder',
-        title: 'Time for your next workout! 💪',
-        message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
-        icon: '⏰',
-        action_url: createPageUrl('Gyms')
-      });
-    };
-
-    createReminderNotification();
-  }, [currentUser, daysSinceCheckIn]);
 
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
