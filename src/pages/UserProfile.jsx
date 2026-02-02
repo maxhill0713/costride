@@ -65,16 +65,11 @@ export default function UserProfile() {
   }
 
   if (!viewingUser) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="p-8 text-center">
-          <p className="text-gray-600 mb-4">User not found</p>
-          <Link to={createPageUrl('Home')}>
-            <Button>Back to Home</Button>
-          </Link>
-        </Card>
-      </div>
-    );
+    // Don't show error UI, just redirect
+    if (!isLoading) {
+      window.location.href = createPageUrl('Home');
+    }
+    return null;
   }
 
   const isOwnProfile = currentUser?.id === userId;

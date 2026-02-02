@@ -213,7 +213,7 @@ export default function Friends() {
                               className="p-3 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
                             >
                               <Link 
-                                to={createPageUrl('UserProfile') + `?userId=${friend.friend_id}`}
+                                to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
                                 className="flex items-center gap-2 flex-1 min-w-0"
                               >
                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
@@ -281,7 +281,7 @@ export default function Friends() {
               {friendPosts.map(post => (
                 <Card 
                   key={post.id} 
-                  onClick={() => window.location.href = createPageUrl('UserProfile') + `?userId=${post.member_id}`}
+                  onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${post.member_id}`}
                   className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer"
                 >
                   <div className="p-3 flex items-start gap-3">
