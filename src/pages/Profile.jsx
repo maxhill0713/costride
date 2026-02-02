@@ -146,6 +146,24 @@ export default function Profile() {
 
   const updateGoalMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
+    onMutate: async ({ id, data }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['goals'] });
+      
+      // Snapshot previous value
+      const previousGoals = queryClient.getQueryData(['goals', currentUser?.id]);
+      
+      // Optimistically update
+      queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
+        old.map(goal => goal.id === id ? { ...goal, ...data } : goal)
+      );
+      
+      return { previousGoals };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['goals', currentUser?.id], context.previousGoals);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
