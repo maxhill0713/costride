@@ -249,34 +249,34 @@ export default function UserProfile() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 -mt-6">
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Streak Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <Card className="p-4 bg-slate-900/70 backdrop-blur-sm border border-orange-500/40 rounded-xl">
             <div className="flex items-center gap-3 mb-2">
-              <Flame className="w-8 h-8 text-orange-600" />
+              <Flame className="w-6 h-6 text-orange-400" />
               <div>
-                <p className="text-sm font-medium text-orange-700">Current Streak</p>
-                <p className="text-3xl font-black text-orange-900">{currentStreak}</p>
-                <p className="text-xs text-orange-600">days</p>
+                <p className="text-xs font-medium text-orange-300">Current Streak</p>
+                <p className="text-2xl font-black text-white">{currentStreak}</p>
+                <p className="text-[10px] text-orange-400">days</p>
               </div>
             </div>
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-orange-700 mb-1">
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-[10px] text-orange-300 mb-1">
                 <span>Next: {nextMilestone.name}</span>
                 <span>{currentStreak}/{nextMilestone.days}</span>
               </div>
-              <Progress value={streakProgress} className="h-2 bg-orange-200" />
+              <Progress value={streakProgress} className="h-1.5 bg-slate-700" />
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+          <Card className="p-4 bg-slate-900/70 backdrop-blur-sm border border-purple-500/40 rounded-xl">
             <div className="flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-purple-600" />
+              <Trophy className="w-6 h-6 text-purple-400" />
               <div>
-                <p className="text-sm font-medium text-purple-700">Longest Streak</p>
-                <p className="text-3xl font-black text-purple-900">{longestStreak}</p>
-                <p className="text-xs text-purple-600">days ever</p>
+                <p className="text-xs font-medium text-purple-300">Longest Streak</p>
+                <p className="text-2xl font-black text-white">{longestStreak}</p>
+                <p className="text-[10px] text-purple-400">days ever</p>
               </div>
             </div>
           </Card>
@@ -284,17 +284,17 @@ export default function UserProfile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-6 mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-600" />
-              Streak Milestones Achieved
+          <Card className="p-4 mb-4 bg-gradient-to-br from-yellow-600/15 to-yellow-500/5 backdrop-blur-sm border border-yellow-500/40 rounded-xl">
+            <h3 className="font-semibold text-yellow-300 mb-3 flex items-center gap-2 text-sm">
+              <Award className="w-4 h-4 text-yellow-400" />
+              Milestones Unlocked
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {earnedBadges.map((badge) => (
-                <div key={badge.days} className={`p-4 rounded-2xl bg-gradient-to-br ${badge.color} text-white text-center`}>
-                  <div className="text-4xl mb-2">{badge.icon}</div>
-                  <p className="font-bold text-sm">{badge.name}</p>
-                  <p className="text-xs opacity-90">{badge.days} days</p>
+                <div key={badge.days} className={`p-3 rounded-xl bg-gradient-to-br ${badge.color} text-white text-center`}>
+                  <div className="text-2xl mb-1">{badge.icon}</div>
+                  <p className="font-bold text-[10px]">{badge.name}</p>
+                  <p className="text-[10px] opacity-90">{badge.days}d</p>
                 </div>
               ))}
             </div>
@@ -302,40 +302,40 @@ export default function UserProfile() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
-          <Card className="p-4 text-center">
-            <Dumbbell className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-            <p className="text-2xl font-black text-gray-900">{totalLifts}</p>
-            <p className="text-xs text-gray-600">Total Lifts</p>
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-blue-500/40 rounded-xl">
+            <Dumbbell className="w-5 h-5 mx-auto mb-1 text-blue-400" />
+            <p className="text-xl font-black text-white">{totalLifts}</p>
+            <p className="text-[10px] text-slate-400">Lifts</p>
           </Card>
-          <Card className="p-4 text-center">
-            <Trophy className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-            <p className="text-2xl font-black text-gray-900">{personalRecords}</p>
-            <p className="text-xs text-gray-600">PRs</p>
+          <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-orange-500/40 rounded-xl">
+            <Trophy className="w-5 h-5 mx-auto mb-1 text-orange-400" />
+            <p className="text-xl font-black text-white">{personalRecords}</p>
+            <p className="text-[10px] text-slate-400">PRs</p>
           </Card>
-          <Card className="p-4 text-center">
-            <TrendingUp className="w-6 h-6 mx-auto mb-2 text-green-600" />
-            <p className="text-2xl font-black text-gray-900">{totalWeight.toLocaleString()}</p>
-            <p className="text-xs text-gray-600">Total lbs</p>
+          <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-green-500/40 rounded-xl">
+            <TrendingUp className="w-5 h-5 mx-auto mb-1 text-green-400" />
+            <p className="text-xl font-black text-white">{totalWeight.toLocaleString()}</p>
+            <p className="text-[10px] text-slate-400">lbs</p>
           </Card>
-          <Card className="p-4 text-center">
-            <Award className="w-6 h-6 mx-auto mb-2 text-purple-600" />
-            <p className="text-2xl font-black text-gray-900">{bestLift}</p>
-            <p className="text-xs text-gray-600">Max Lift</p>
+          <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-purple-500/40 rounded-xl">
+            <Award className="w-5 h-5 mx-auto mb-1 text-purple-400" />
+            <p className="text-xl font-black text-white">{bestLift}</p>
+            <p className="text-[10px] text-slate-400">Max</p>
           </Card>
         </div>
 
         {/* Progress Chart */}
         {progressData.length > 0 && (
-          <Card className="p-6 mb-6">
-            <h3 className="font-bold text-gray-900 mb-4">Bench Press Progress</h3>
-            <ResponsiveContainer width="100%" height={200}>
+          <Card className="p-4 mb-4 bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-xl">
+            <h3 className="font-semibold text-white mb-3 text-sm">Bench Press Progress</h3>
+            <ResponsiveContainer width="100%" height={160}>
               <LineChart data={progressData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="session" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip />
-                <Line type="monotone" dataKey="weight" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', r: 5 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="session" stroke="#64748b" fontSize={10} />
+                <YAxis stroke="#64748b" fontSize={10} />
+                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} />
+                <Line type="monotone" dataKey="weight" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </Card>
@@ -343,25 +343,25 @@ export default function UserProfile() {
 
         {/* Goals */}
         {goals.length > 0 && (
-          <Card className="p-6 mb-6">
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-blue-600" />
+          <Card className="p-4 mb-4 bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-xl">
+            <h3 className="font-semibold text-white mb-3 flex items-center gap-2 text-sm">
+              <Trophy className="w-4 h-4 text-blue-400" />
               Active Goals
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {goals.filter(g => g.status === 'active').slice(0, 3).map((goal) => {
                 const progress = (goal.current_value / goal.target_value) * 100;
                 return (
-                  <div key={goal.id} className="p-4 bg-gray-50 rounded-2xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-bold text-gray-900">{goal.title}</h4>
-                      <Badge>{goal.unit}</Badge>
+                  <div key={goal.id} className="p-3 bg-slate-800/50 rounded-xl">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-semibold text-white text-sm">{goal.title}</h4>
+                      <Badge className="bg-slate-700 text-slate-300 text-[10px]">{goal.unit}</Badge>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                       <span>{goal.current_value} / {goal.target_value}</span>
                       <span>{Math.round(progress)}%</span>
                     </div>
-                    <Progress value={progress} className="h-2" />
+                    <Progress value={progress} className="h-1.5 bg-slate-700" />
                   </div>
                 );
               })}
@@ -370,25 +370,25 @@ export default function UserProfile() {
         )}
 
         {/* Recent Activity */}
-        <Card className="p-6">
-          <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
+        <Card className="p-4 bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-xl">
+          <h3 className="font-semibold text-white mb-3 flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4 text-blue-400" />
             Recent Check-ins
           </h3>
           {checkIns.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No recent check-ins</p>
+            <p className="text-slate-500 text-center py-6 text-sm">No recent check-ins</p>
           ) : (
             <div className="space-y-2">
               {checkIns.slice(0, 5).map((checkIn) => (
-                <div key={checkIn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                <div key={checkIn.id} className="flex items-center justify-between p-2.5 bg-slate-800/50 rounded-xl">
                   <div>
-                    <p className="font-medium text-gray-900">{checkIn.gym_name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-medium text-white text-sm">{checkIn.gym_name}</p>
+                    <p className="text-[10px] text-slate-400">
                       {new Date(checkIn.check_in_date).toLocaleDateString()}
                     </p>
                   </div>
                   {checkIn.first_visit && (
-                    <Badge className="bg-green-500">First Visit!</Badge>
+                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-[10px]">First Visit!</Badge>
                   )}
                 </div>
               ))}
