@@ -74,6 +74,16 @@ export default function Layout({ children, currentPageName }) {
     return tabHistory[item.page] || (createPageUrl(item.page) + (item.params || ''));
   };
 
+  // Handle tab click - reset to root if already active
+  const handleTabClick = (item, e) => {
+    if (currentPageName === item.page) {
+      e.preventDefault();
+      // Navigate to root page and clear history
+      setTabHistory(prev => ({ ...prev, [item.page]: undefined }));
+      window.location.href = createPageUrl(item.page);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
@@ -87,6 +97,7 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={item.page}
                 to={getTabLink(item)}
+                onClick={(e) => handleTabClick(item, e)}
                 aria-label={item.name}
                 className={`
                   relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 active:scale-95
@@ -126,6 +137,7 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={item.page}
                 to={getTabLink(item)}
+                onClick={(e) => handleTabClick(item, e)}
                 className={`
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive 

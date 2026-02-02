@@ -653,6 +653,20 @@ export default function GymCommunity() {
       await queryClient.invalidateQueries();
     }}>
       <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+        {/* Back Button - Fixed at top */}
+        <div className="sticky top-0 z-30 px-4 pt-4 pb-2 bg-gradient-to-b from-slate-900 to-transparent backdrop-blur-sm">
+          <Link to={createPageUrl('Gyms')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-slate-800/80 backdrop-blur hover:bg-slate-700/90 text-white rounded-xl border border-slate-600/50"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back to Gyms
+            </Button>
+          </Link>
+        </div>
+
         {/* Header Background with Gym Hero Image */}
       <div className="relative h-48 bg-black overflow-hidden">
         {gym.image_url ? (

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect } from '@/components/ui/mobile-select';
 
 export default function Settings() {
   const queryClient = useQueryClient();
@@ -290,18 +290,16 @@ export default function Settings() {
                   <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
                 </div>
               </div>
-              <Select 
+              <MobileSelect 
                 value={currentUser.units || 'imperial'} 
                 onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
-              >
-                <SelectTrigger className="rounded-2xl border border-white/20 bg-white/5 text-slate-100">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
-                  <SelectItem value="metric">Metric (kg, m)</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="Select units"
+                triggerClassName="rounded-2xl border border-white/20 bg-white/5 text-slate-100"
+                options={[
+                  { value: 'imperial', label: 'Imperial (lbs, ft)' },
+                  { value: 'metric', label: 'Metric (kg, m)' }
+                ]}
+              />
             </div>
           </div>
         </Card>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MobileSelect } from "@/components/ui/mobile-select";
 import { Users, Loader2 } from 'lucide-react';
 
 export default function CreateGroupModal({ open, onClose, onSave, isLoading }) {
@@ -44,23 +44,21 @@ export default function CreateGroupModal({ open, onClose, onSave, isLoading }) {
 
           <div className="space-y-2">
             <Label className="text-gray-700 font-semibold">Category *</Label>
-            <Select
+            <MobileSelect
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value })}
-            >
-              <SelectTrigger className="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="running">Running</SelectItem>
-                <SelectItem value="weightlifting">Weightlifting</SelectItem>
-                <SelectItem value="yoga">Yoga</SelectItem>
-                <SelectItem value="crossfit">CrossFit</SelectItem>
-                <SelectItem value="cycling">Cycling</SelectItem>
-                <SelectItem value="boxing">Boxing</SelectItem>
-                <SelectItem value="general">General</SelectItem>
-              </SelectContent>
-            </Select>
+              placeholder="Select category"
+              triggerClassName="bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-2xl h-12"
+              options={[
+                { value: 'running', label: 'Running' },
+                { value: 'weightlifting', label: 'Weightlifting' },
+                { value: 'yoga', label: 'Yoga' },
+                { value: 'crossfit', label: 'CrossFit' },
+                { value: 'cycling', label: 'Cycling' },
+                { value: 'boxing', label: 'Boxing' },
+                { value: 'general', label: 'General' }
+              ]}
+            />
           </div>
 
           <div className="space-y-2">
