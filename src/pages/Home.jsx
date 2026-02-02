@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell } from 'lucide-react';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
@@ -84,6 +84,21 @@ export default function Home() {
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
     enabled: !!currentUser
   });
+
+  const { data: friends = [] } = useQuery({
+    queryKey: ['friends', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    enabled: !!currentUser
+  });
+
+  const { data: allPosts = [] } = useQuery({
+    queryKey: ['posts'],
+    queryFn: () => base44.entities.Post.list('-created_date', 50),
+    enabled: !!currentUser
+  });
+
+  const friendIds = friends.map(f => f.friend_id);
+  const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
 
   // Filter user's check-ins
   const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
@@ -395,6 +410,54 @@ export default function Home() {
         )}
 
 
+
+        {/* Friends Feed */}
+        {friendPosts.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <Users className="w-5 h-5 text-cyan-400" />
+              Friends Activity
+            </h2>
+            <div className="space-y-3">
+              {friendPosts.slice(0, 10).map(post => (
+                <Card key={post.id} className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      {post.member_avatar ? (
+                        <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="font-semibold text-white text-sm">{post.member_name}</div>
+                        <div className="text-xs text-slate-400">{format(new Date(post.created_date), 'MMM d, h:mm a')}</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-200 mb-3">{post.content}</p>
+                    {post.image_url && (
+                      <img src={post.image_url} alt="" className="w-full rounded-xl mb-3 object-cover max-h-64" />
+                    )}
+                    {post.video_url && (
+                      <video src={post.video_url} controls className="w-full rounded-xl mb-3 bg-black max-h-80" />
+                    )}
+                    <div className="flex items-center gap-4 text-slate-400 text-sm">
+                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                        <Heart className="w-4 h-4" />
+                        <span>{post.likes || 0}</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{post.comments?.length || 0}</span>
+                      </button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Notifications Section */}
          {notifications.length > 0 && (
