@@ -834,7 +834,7 @@ export default function GymCommunity() {
                                count <= 15 ? { text: 'Energetic', color: 'text-orange-400', emoji: '🔥' } :
                                { text: 'Buzzing', color: 'text-purple-400', emoji: '⚡' };
                   return (
-                    <Badge className={`${vibe.color} bg-slate-700/50 border-slate-600 text-[10px] px-2 py-0`}>
+                    <Badge className={`${vibe.color} bg-slate-700/50 border-slate-600 text-xs px-2 py-0`}>
                       {vibe.emoji} {vibe.text}
                     </Badge>
                   );
@@ -868,7 +868,7 @@ export default function GymCommunity() {
                   })()}
                 </p>
               </div>
-              <p className="text-[10px] text-slate-400 mt-1">Great time to train!</p>
+              <p className="text-xs text-slate-400 mt-1">Great time to train!</p>
             </Card>
             <Card className="bg-gradient-to-br from-orange-500/20 to-amber-500/20 border-2 border-orange-500/40 p-3 md:p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -1140,7 +1140,7 @@ export default function GymCommunity() {
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-[10px] md:text-xs text-slate-300">{member.count} check-ins</p>
+                        <p className="text-xs text-slate-300">{member.count} check-ins</p>
                       </div>
                       <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-400 flex-shrink-0" />
                     </div>
@@ -1174,7 +1174,7 @@ export default function GymCommunity() {
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-[10px] md:text-xs text-slate-300">{member.count} completed</p>
+                        <p className="text-xs text-slate-300">{member.count} completed</p>
                       </div>
                       <Trophy className="w-4 md:w-5 h-4 md:h-5 text-purple-400 flex-shrink-0" />
                     </div>
@@ -1208,7 +1208,7 @@ export default function GymCommunity() {
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-[10px] md:text-xs text-slate-300">{member.streak}d streak</p>
+                        <p className="text-xs text-slate-300">{member.streak}d streak</p>
                       </div>
                       <Flame className="w-4 md:w-5 h-4 md:h-5 text-orange-400 flex-shrink-0" />
                     </div>
@@ -1285,7 +1285,7 @@ export default function GymCommunity() {
                         }}
                         variant="outline"
                         size="icon"
-                        className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500 flex-shrink-0"
+                        className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500 flex-shrink-0 min-h-[44px] min-w-[44px]"
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
@@ -1392,7 +1392,7 @@ export default function GymCommunity() {
                               </div>
                             )}
                           </div>
-                          {coach.bio && <p className="text-[10px] md:text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
+                          {coach.bio && <p className="text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
                           {coach.specialties && coach.specialties.length > 0 && (
                             <div className="flex flex-wrap gap-1">
                               {coach.specialties.map((specialty, idx) => (
@@ -1403,7 +1403,7 @@ export default function GymCommunity() {
                         </div>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button className="flex-shrink-0 p-2 hover:bg-slate-600/50 rounded-lg transition-colors">
+                            <button className="flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-600/50 rounded-lg transition-colors">
                               <Mail className="w-4 h-4 text-blue-400 hover:text-blue-300" />
                             </button>
                           </PopoverTrigger>
@@ -1414,7 +1414,7 @@ export default function GymCommunity() {
                               </a>
                               <button
                                 onClick={handleCopyEmail}
-                                className="p-1 hover:bg-slate-700 rounded transition-colors flex-shrink-0"
+                                className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-700 rounded transition-colors flex-shrink-0"
                                 title="Copy email"
                               >
                                 <Copy className={`w-4 h-4 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} />

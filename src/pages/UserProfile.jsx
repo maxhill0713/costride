@@ -231,11 +231,11 @@ export default function UserProfile() {
               <div>
                 <p className="text-xs font-medium text-orange-300">Current Streak</p>
                 <p className="text-2xl font-black text-white">{currentStreak}</p>
-                <p className="text-[10px] text-orange-400">days</p>
+                <p className="text-xs text-orange-400">days</p>
               </div>
             </div>
             <div className="mt-2">
-              <div className="flex items-center justify-between text-[10px] text-orange-300 mb-1">
+              <div className="flex items-center justify-between text-xs text-orange-300 mb-1">
                 <span>Next: {nextMilestone.name}</span>
                 <span>{currentStreak}/{nextMilestone.days}</span>
               </div>
@@ -249,7 +249,7 @@ export default function UserProfile() {
               <div>
                 <p className="text-xs font-medium text-purple-300">Longest Streak</p>
                 <p className="text-2xl font-black text-white">{longestStreak}</p>
-                <p className="text-[10px] text-purple-400">days ever</p>
+                <p className="text-xs text-purple-400">days ever</p>
               </div>
             </div>
           </Card>
@@ -266,8 +266,8 @@ export default function UserProfile() {
               {earnedBadges.map((badge) => (
                 <div key={badge.days} className={`p-3 rounded-xl bg-gradient-to-br ${badge.color} text-white text-center`}>
                   <div className="text-2xl mb-1">{badge.icon}</div>
-                  <p className="font-bold text-[10px]">{badge.name}</p>
-                  <p className="text-[10px] opacity-90">{badge.days}d</p>
+                  <p className="font-bold text-xs">{badge.name}</p>
+                  <p className="text-xs opacity-90">{badge.days}d</p>
                 </div>
               ))}
             </div>
@@ -279,22 +279,22 @@ export default function UserProfile() {
           <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-blue-500/40 rounded-xl">
             <Dumbbell className="w-5 h-5 mx-auto mb-1 text-blue-400" />
             <p className="text-xl font-black text-white">{totalLifts}</p>
-            <p className="text-[10px] text-slate-400">Lifts</p>
+            <p className="text-xs text-slate-400">Lifts</p>
           </Card>
           <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-orange-500/40 rounded-xl">
             <Trophy className="w-5 h-5 mx-auto mb-1 text-orange-400" />
             <p className="text-xl font-black text-white">{personalRecords}</p>
-            <p className="text-[10px] text-slate-400">PRs</p>
+            <p className="text-xs text-slate-400">PRs</p>
           </Card>
           <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-green-500/40 rounded-xl">
             <TrendingUp className="w-5 h-5 mx-auto mb-1 text-green-400" />
             <p className="text-xl font-black text-white">{totalWeight.toLocaleString()}</p>
-            <p className="text-[10px] text-slate-400">lbs</p>
+            <p className="text-xs text-slate-400">lbs</p>
           </Card>
           <Card className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-purple-500/40 rounded-xl">
             <Award className="w-5 h-5 mx-auto mb-1 text-purple-400" />
             <p className="text-xl font-black text-white">{bestLift}</p>
-            <p className="text-[10px] text-slate-400">Max</p>
+            <p className="text-xs text-slate-400">Max</p>
           </Card>
         </div>
 
@@ -328,9 +328,9 @@ export default function UserProfile() {
                   <div key={goal.id} className="p-3 bg-slate-800/50 rounded-xl">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-semibold text-white text-sm">{goal.title}</h4>
-                      <Badge className="bg-slate-700 text-slate-300 text-[10px]">{goal.unit}</Badge>
+                      <Badge className="bg-slate-700 text-slate-300 text-xs">{goal.unit}</Badge>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                       <span>{goal.current_value} / {goal.target_value}</span>
                       <span>{Math.round(progress)}%</span>
                     </div>
@@ -356,12 +356,12 @@ export default function UserProfile() {
                 <div key={checkIn.id} className="flex items-center justify-between p-2.5 bg-slate-800/50 rounded-xl">
                   <div>
                     <p className="font-medium text-white text-sm">{checkIn.gym_name}</p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-xs text-slate-400">
                       {new Date(checkIn.check_in_date).toLocaleDateString()}
                     </p>
                   </div>
                   {checkIn.first_visit && (
-                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-[10px]">First Visit!</Badge>
+                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">First Visit!</Badge>
                   )}
                 </div>
               ))}

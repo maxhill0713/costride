@@ -161,7 +161,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                 }
               }}
               disabled={deletePostMutation.isPending}
-              className="text-red-400 hover:text-red-300 h-8 w-8 md:h-10 md:w-10"
+              className="text-red-400 hover:text-red-300 min-h-[44px] min-w-[44px] h-auto w-auto p-2"
             >
               <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
