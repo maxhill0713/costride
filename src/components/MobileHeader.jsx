@@ -19,7 +19,8 @@ export default function MobileHeader({ currentPageName }) {
   };
 
   const backPage = backButtonPages[currentPageName];
-  const showHeader = ['Onboarding', 'GymSignup', 'MemberSignup'].includes(currentPageName) === false;
+  const hiddenPages = ['Onboarding', 'GymSignup', 'MemberSignup', 'Profile'];
+  const showHeader = !hiddenPages.includes(currentPageName);
 
   if (!showHeader) return null;
 
