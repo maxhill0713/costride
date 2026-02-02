@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 import PageTransition from './components/PageTransition';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function Layout({ children, currentPageName }) {
   const { data: currentUser } = useQuery({
@@ -128,10 +129,12 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Main Content */}
             <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
-              <PageTransition key={currentPageName}>
-                {children}
-              </PageTransition>
+              <ErrorBoundary>
+                <PageTransition key={currentPageName}>
+                  {children}
+                </PageTransition>
+              </ErrorBoundary>
             </main>
-    </div>
-  );
-}
+            </div>
+            );
+            }
