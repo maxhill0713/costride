@@ -166,7 +166,6 @@ export default function Friends() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  const friendIds = friends.map(f => f.friend_id);
   const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
 
   return (
