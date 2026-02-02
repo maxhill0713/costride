@@ -60,6 +60,12 @@ export default function Friends() {
     enabled: !!currentUser
   });
 
+  const { data: allLifts = [] } = useQuery({
+    queryKey: ['lifts'],
+    queryFn: () => base44.entities.Lift.list('-created_date', 100),
+    enabled: !!currentUser
+  });
+
   const addFriendMutation = useMutation({
     mutationFn: async (friendUser) => {
       await base44.entities.Friend.create({
@@ -168,6 +174,130 @@ export default function Friends() {
 
   const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
 
+  // Create unified activity feed
+  const createActivityFeed = () => {
+    const activities = [];
+
+    // Add check-ins (last 7 days)
+    const recentCheckIns = allCheckIns.filter(checkIn => {
+      const daysSince = differenceInDays(new Date(), new Date(checkIn.check_in_date));
+      return daysSince <= 7 && friendIds.includes(checkIn.user_id);
+    });
+
+    recentCheckIns.forEach(checkIn => {
+      const friend = friends.find(f => f.friend_id === checkIn.user_id);
+      const isToday = differenceInDays(new Date(), new Date(checkIn.check_in_date)) === 0;
+      
+      activities.push({
+        id: `checkin-${checkIn.id}`,
+        type: 'checkin',
+        friendId: checkIn.user_id,
+        friendName: friend?.friend_name || checkIn.user_name,
+        friendAvatar: friend?.friend_avatar,
+        message: isToday ? 'checked in today' : `checked in at ${checkIn.gym_name}`,
+        timestamp: new Date(checkIn.check_in_date),
+        emoji: '💪',
+        gymName: checkIn.gym_name
+      });
+    });
+
+    // Add streak milestones
+    friendIds.forEach(friendId => {
+      const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
+      const streak = calculateStreak(friendCheckIns);
+      const friend = friends.find(f => f.friend_id === friendId);
+      
+      // Check if they recently hit a milestone (7, 14, 30, 50, 100 days)
+      const milestones = [7, 14, 30, 50, 100];
+      milestones.forEach(milestone => {
+        if (streak >= milestone) {
+          // Use the date when they hit this milestone (approximate)
+          const milestoneDate = friendCheckIns[Math.min(milestone - 1, friendCheckIns.length - 1)]?.check_in_date;
+          if (milestoneDate) {
+            const daysSinceMilestone = differenceInDays(new Date(), new Date(milestoneDate));
+            // Only show if milestone was hit in last 7 days
+            if (daysSinceMilestone <= 7) {
+              activities.push({
+                id: `milestone-${friendId}-${milestone}`,
+                type: 'milestone',
+                friendId,
+                friendName: friend?.friend_name,
+                friendAvatar: friend?.friend_avatar,
+                message: `reached a ${milestone}-day streak!`,
+                timestamp: new Date(milestoneDate),
+                emoji: milestone >= 50 ? '🔥' : milestone >= 30 ? '⚡' : '🎯',
+                milestone
+              });
+            }
+          }
+        }
+      });
+    });
+
+    // Add PR lifts
+    const friendPRs = allLifts.filter(lift => 
+      lift.is_pr && friendIds.includes(lift.member_id)
+    );
+
+    friendPRs.forEach(lift => {
+      const friend = friends.find(f => f.friend_id === lift.member_id);
+      const daysSince = differenceInDays(new Date(), new Date(lift.created_date));
+      
+      if (daysSince <= 7) {
+        const exerciseNames = {
+          bench_press: 'Bench Press',
+          squat: 'Squat',
+          deadlift: 'Deadlift',
+          overhead_press: 'Overhead Press',
+          barbell_row: 'Barbell Row',
+          power_clean: 'Power Clean'
+        };
+
+        activities.push({
+          id: `pr-${lift.id}`,
+          type: 'pr',
+          friendId: lift.member_id,
+          friendName: friend?.friend_name || lift.member_name,
+          friendAvatar: friend?.friend_avatar,
+          message: `hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`,
+          timestamp: new Date(lift.created_date),
+          emoji: '🏆',
+          weight: lift.weight_lbs,
+          exercise: lift.exercise
+        });
+      }
+    });
+
+    // Add posts
+    friendPosts.forEach(post => {
+      const friend = friends.find(f => f.friend_id === post.member_id);
+      const daysSince = differenceInDays(new Date(), new Date(post.created_date));
+      
+      if (daysSince <= 7) {
+        activities.push({
+          id: `post-${post.id}`,
+          type: 'post',
+          friendId: post.member_id,
+          friendName: friend?.friend_name || post.member_name,
+          friendAvatar: friend?.friend_avatar || post.member_avatar,
+          message: 'shared an update',
+          timestamp: new Date(post.created_date),
+          emoji: post.video_url ? '🎥' : post.image_url ? '📸' : '💬',
+          content: post.content,
+          imageUrl: post.image_url,
+          videoUrl: post.video_url,
+          likes: post.likes,
+          comments: post.comments
+        });
+      }
+    });
+
+    // Sort by most recent first
+    return activities.sort((a, b) => b.timestamp - a.timestamp);
+  };
+
+  const activityFeed = createActivityFeed();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
@@ -270,112 +400,126 @@ export default function Friends() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Friends' Posts Feed */}
-        {friendPosts.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-purple-400" />
-              Friends Posts
-            </h2>
-            <div className="space-y-2">
-              {friendPosts.map(post => (
-                <Card 
-                  key={post.id} 
-                  onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${post.member_id}`}
-                  className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer"
-                >
-                  <div className="p-3 flex items-start gap-3">
-                    {post.member_avatar ? (
-                      <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+        {/* Activity Feed */}
+        {activityFeed.length > 0 ? (
+          <div className="space-y-3">
+            {activityFeed.map(activity => (
+              <Card 
+                key={activity.id}
+                onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden"
+              >
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    {/* Profile Photo */}
+                    {activity.friendAvatar ? (
+                      <img 
+                        src={activity.friendAvatar} 
+                        alt={activity.friendName} 
+                        className="w-12 h-12 rounded-full object-cover flex-shrink-0" 
+                      />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-base">
+                          {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
                       </div>
                     )}
+
+                    {/* Activity Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <div className="font-semibold text-white text-sm">{post.member_name}</div>
-                          <div className="text-xs text-slate-400">{formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}</div>
+                        <div className="flex-1">
+                          {/* Name and Message */}
+                          <p className="text-white text-sm">
+                            <span className="font-semibold">{activity.friendName}</span>
+                            {' '}
+                            <span className="text-slate-300">{activity.message}</span>
+                          </p>
+                          
+                          {/* Timestamp */}
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                          </p>
                         </div>
-                        {(post.image_url || post.video_url) && (
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
-                            {post.video_url ? (
-                              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">▶</span>
-                              </div>
-                            ) : (
-                              <img src={post.image_url} alt="" className="w-full h-full object-cover" />
-                            )}
+
+                        {/* Emoji */}
+                        <div className="text-2xl flex-shrink-0">
+                          {activity.emoji}
+                        </div>
+                      </div>
+
+                      {/* Post Content */}
+                      {activity.type === 'post' && activity.content && (
+                        <div className="mt-2 p-3 bg-slate-700/30 rounded-lg">
+                          <p className="text-sm text-slate-300 line-clamp-2">{activity.content}</p>
+                          
+                          {/* Post Media Thumbnail */}
+                          {(activity.imageUrl || activity.videoUrl) && (
+                            <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-slate-800">
+                              {activity.videoUrl ? (
+                                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                  <span className="text-white text-xl font-bold">▶</span>
+                                </div>
+                              ) : (
+                                <img 
+                                  src={activity.imageUrl} 
+                                  alt="" 
+                                  className="w-full h-full object-cover" 
+                                />
+                              )}
+                            </div>
+                          )}
+
+                          {/* Post Engagement */}
+                          <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
+                            <div className="flex items-center gap-1">
+                              <Heart className="w-3 h-3" />
+                              <span>{activity.likes || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageCircle className="w-3 h-3" />
+                              <span>{activity.comments?.length || 0}</span>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-300 line-clamp-2">{post.content}</p>
-                      <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
-                        <div className="flex items-center gap-1">
-                          <Heart className="w-3 h-3" />
-                          <span>{post.likes || 0}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <MessageCircle className="w-3 h-3" />
-                          <span>{post.comments?.length || 0}</span>
-                        </div>
-                      </div>
+                      )}
+
+                      {/* Milestone Badge */}
+                      {activity.type === 'milestone' && (
+                        <Badge className="mt-2 bg-orange-500/20 text-orange-300 border-orange-500/40 text-xs">
+                          {activity.milestone} Days Strong! 🔥
+                        </Badge>
+                      )}
+
+                      {/* PR Badge */}
+                      {activity.type === 'pr' && (
+                        <Badge className="mt-2 bg-yellow-500/20 text-yellow-300 border-yellow-500/40 text-xs">
+                          New Personal Record!
+                        </Badge>
+                      )}
+
+                      {/* Check-in Badge */}
+                      {activity.type === 'checkin' && activity.gymName && (
+                        <Badge className="mt-2 bg-blue-500/20 text-blue-300 border-blue-500/40 text-xs">
+                          {activity.gymName}
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                </Card>
-              ))}
-            </div>
+                </div>
+              </Card>
+            ))}
           </div>
+        ) : (
+          <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
+            <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+            <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
+            <p className="text-sm text-slate-400">
+              Add friends to see their posts, check-ins, PRs, and streaks!
+            </p>
+          </Card>
         )}
-
-        {/* Notifications Section */}
-        {(() => {
-          const friendActivityNotifications = notifications.filter(n => n.type === 'friend_activity');
-          const hasCheckedInToday = currentUserCheckIns.length > 0 && 
-            differenceInDays(new Date(), new Date(currentUserCheckIns[0].check_in_date)) === 0;
-
-          return friendActivityNotifications.length === 0 && friendPosts.length === 0 ? (
-            <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
-              <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
-              <p className="text-sm text-slate-400">
-                Add friends to see their posts, check-ins, PRs, and streaks!
-              </p>
-            </Card>
-          ) : friendActivityNotifications.length > 0 ? (
-            <div>
-              <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-400" />
-                Recent Achievements
-              </h2>
-              <div className="space-y-3">
-                {friendActivityNotifications.map(notif => (
-                  <Card 
-                    key={notif.id}
-                    className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 hover:border-blue-500/50 transition-all"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-2xl">{notif.icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-white text-sm">{notif.title}</h4>
-                        <p className="text-xs text-slate-400 mt-1">{notif.message}</p>
-                        {!hasCheckedInToday && notif.title?.includes('checked in') && (
-                          <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs">
-                            It's your turn! 🔥
-                          </Badge>
-                        )}
-                        <p className="text-xs text-slate-500 mt-2">
-                          {formatDistanceToNow(new Date(notif.created_date), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ) : null;
-        })()}
 
         {/* Add Friend Modal */}
         {showAddModal && (
