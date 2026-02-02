@@ -402,63 +402,61 @@ export default function Friends() {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Activity Feed */}
         {activityFeed.length > 0 ? (
-          <div className="space-y-3 pb-6">
+          <div className="space-y-3">
             {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
                 onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                className="bg-white/95 backdrop-blur-sm border-0 rounded-2xl hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 rounded-2xl cursor-pointer"
               >
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
+                <div className="p-5">
+                  <div className="flex items-start gap-4">
                     {/* Profile Photo */}
-                    {activity.friendAvatar ? (
-                      <img 
-                        src={activity.friendAvatar} 
-                        alt={activity.friendName} 
-                        className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-white shadow-sm" 
-                      />
-                    ) : (
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 ring-2 ring-white shadow-sm">
-                        <span className="text-white font-bold text-base">
-                          {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex-shrink-0">
+                      {activity.friendAvatar ? (
+                        <img 
+                          src={activity.friendAvatar} 
+                          alt={activity.friendName} 
+                          className="w-10 h-10 rounded-full object-cover" 
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">
+                            {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Activity Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          {/* Name and Message */}
-                          <p className="text-gray-900 text-[15px] leading-snug">
-                            <span className="font-semibold">{activity.friendName}</span>
-                            {' '}
-                            <span className="text-gray-700">{activity.message}</span>
-                            {' '}
-                            <span className="text-xl">{activity.emoji}</span>
-                          </p>
-                          
-                          {/* Timestamp */}
-                          <p className="text-xs text-gray-500 mt-1">
-                            {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
-                          </p>
-                        </div>
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-white">
+                          {activity.friendName} {activity.emoji}
+                        </h3>
+                      </div>
+                      <p className="text-sm font-normal text-slate-200 mb-2 leading-relaxed">
+                        {activity.message}
+                      </p>
+                      
+                      {/* Timestamp */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-slate-500">
+                          {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                        </span>
                       </div>
 
                       {/* Post Content */}
                       {activity.type === 'post' && activity.content && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                          <p className="text-sm text-gray-800 line-clamp-3">{activity.content}</p>
+                        <div className="mt-3 p-3 bg-slate-700/50 rounded-xl">
+                          <p className="text-sm text-slate-300 line-clamp-2">{activity.content}</p>
                           
                           {/* Post Media Thumbnail */}
                           {(activity.imageUrl || activity.videoUrl) && (
-                            <div className="mt-2 w-full h-40 rounded-lg overflow-hidden bg-gray-200">
+                            <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-slate-800">
                               {activity.videoUrl ? (
                                 <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                  <div className="w-12 h-12 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                                    <span className="text-white text-xl">▶</span>
-                                  </div>
+                                  <span className="text-white text-xl font-bold">▶</span>
                                 </div>
                               ) : (
                                 <img 
@@ -471,14 +469,14 @@ export default function Friends() {
                           )}
 
                           {/* Post Engagement */}
-                          <div className="flex items-center gap-4 text-gray-500 text-xs mt-3">
+                          <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
                             <div className="flex items-center gap-1">
-                              <Heart className="w-3.5 h-3.5" />
-                              <span className="font-medium">{activity.likes || 0}</span>
+                              <Heart className="w-3 h-3" />
+                              <span>{activity.likes || 0}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <MessageCircle className="w-3.5 h-3.5" />
-                              <span className="font-medium">{activity.comments?.length || 0}</span>
+                              <MessageCircle className="w-3 h-3" />
+                              <span>{activity.comments?.length || 0}</span>
                             </div>
                           </div>
                         </div>
@@ -486,25 +484,28 @@ export default function Friends() {
 
                       {/* Milestone Badge */}
                       {activity.type === 'milestone' && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-xs font-semibold">
-                          <Flame className="w-3.5 h-3.5" />
-                          {activity.milestone} Day Streak!
+                        <div className="mt-3">
+                          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs shadow-lg">
+                            {activity.milestone} Day Streak!
+                          </Badge>
                         </div>
                       )}
 
                       {/* PR Badge */}
                       {activity.type === 'pr' && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-xs font-semibold">
-                          <Trophy className="w-3.5 h-3.5" />
-                          New Personal Record!
+                        <div className="mt-3">
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs shadow-lg">
+                            New Personal Record!
+                          </Badge>
                         </div>
                       )}
 
                       {/* Check-in Badge */}
                       {activity.type === 'checkin' && activity.gymName && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          {activity.gymName}
+                        <div className="mt-3">
+                          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-xs">
+                            {activity.gymName}
+                          </Badge>
                         </div>
                       )}
                     </div>
@@ -514,19 +515,10 @@ export default function Friends() {
             ))}
           </div>
         ) : (
-          <Card className="bg-white/95 backdrop-blur-sm border-0 rounded-2xl p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Your friends haven't checked in yet</h3>
-            <p className="text-gray-600 text-sm mb-6">
-              Be the first to hit the gym today and inspire your crew! 💪
-            </p>
-            <Link to={createPageUrl('Gyms')}>
-              <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-full px-6 shadow-lg">
-                Check In Now
-              </Button>
-            </Link>
+          <Card className="p-12 text-center border-2 border-dashed border-slate-600/50 rounded-3xl bg-gradient-to-br from-slate-700/50 to-slate-800/50">
+            <Users className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+            <p className="text-slate-300 font-medium">Your friends haven't checked in yet</p>
+            <p className="text-sm text-slate-400 mt-1">Be the first to hit the gym today and inspire your crew! 💪</p>
           </Card>
         )}
 
