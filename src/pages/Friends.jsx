@@ -300,6 +300,94 @@ export default function Friends() {
 
   const activityFeed = createActivityFeed();
 
+  // Generate activity cards/nudges
+  const generateActivityCards = () => {
+    const cards = [];
+
+    // Check if current user hasn't checked in recently
+    const lastCheckIn = currentUserCheckIns.length > 0 ? currentUserCheckIns[0] : null;
+    const daysSinceLastCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn.check_in_date)) : null;
+
+    if (daysSinceLastCheckIn && daysSinceLastCheckIn >= 3) {
+      cards.push({
+        id: 'nudge-checkin',
+        type: 'nudge',
+        title: 'Time to Check In',
+        message: `You haven't checked in in ${daysSinceLastCheckIn} days. Let's get back on track! 💪`,
+        emoji: '⏰',
+        color: 'from-orange-500 to-red-500',
+        borderColor: 'border-orange-500/30'
+      });
+    }
+
+    // Friend milestones
+    friendsWithActivity.forEach(friend => {
+      if (friend.activity.streak === 7) {
+        cards.push({
+          id: `milestone-${friend.friend_id}-7`,
+          type: 'friend-milestone',
+          title: `${friend.friend_name} Hit a Streak!`,
+          message: `${friend.friend_name} is on a 7-day check-in streak! 🔥`,
+          emoji: '🔥',
+          color: 'from-red-500 to-orange-500',
+          borderColor: 'border-red-500/30'
+        });
+      } else if (friend.activity.streak === 14) {
+        cards.push({
+          id: `milestone-${friend.friend_id}-14`,
+          type: 'friend-milestone',
+          title: `${friend.friend_name} is On Fire!`,
+          message: `${friend.friend_name} just hit a 14-day streak! ⚡`,
+          emoji: '⚡',
+          color: 'from-yellow-500 to-orange-500',
+          borderColor: 'border-yellow-500/30'
+        });
+      } else if (friend.activity.streak === 30) {
+        cards.push({
+          id: `milestone-${friend.friend_id}-30`,
+          type: 'friend-milestone',
+          title: `${friend.friend_name} is a Beast!`,
+          message: `${friend.friend_name} hit a 30-day streak! That's legendary! 🏆`,
+          emoji: '🏆',
+          color: 'from-purple-500 to-pink-500',
+          borderColor: 'border-purple-500/30'
+        });
+      }
+    });
+
+    // Inactive friends warning
+    friendsWithActivity.forEach(friend => {
+      if (friend.activity.daysSinceCheckIn >= 7) {
+        cards.push({
+          id: `inactive-${friend.friend_id}`,
+          type: 'friend-inactive',
+          title: `${friend.friend_name} Needs a Nudge`,
+          message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days. Send them some motivation! 👋`,
+          emoji: '👋',
+          color: 'from-slate-500 to-slate-600',
+          borderColor: 'border-slate-500/30'
+        });
+      }
+    });
+
+    // Streak freeze warning
+    if (lastCheckIn && daysSinceLastCheckIn === 1) {
+      cards.push({
+        id: 'streak-danger',
+        type: 'streak-warning',
+        title: 'Your Streak is at Risk!',
+        message: 'You have until midnight to check in and keep your streak alive! ⚠️',
+        emoji: '⚠️',
+        color: 'from-red-600 to-orange-600',
+        borderColor: 'border-red-500/30'
+      });
+    }
+
+    return cards;
+  };
+
+  const activityCards = generateActivityCards();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
