@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ export default function Profile() {
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState('');
   const [postVideo, setPostVideo] = useState('');
+  const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -156,6 +157,22 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
   });
+
+  const handleFileUpload = async (file, type) => {
+    try {
+      setUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      if (type === 'image') {
+        setPostImage(file_url);
+      } else {
+        setPostVideo(file_url);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const createPostMutation = useMutation({
     mutationFn: async (data) => {
@@ -839,23 +856,105 @@ export default function Profile() {
               />
 
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Image URL (optional)</label>
-                <Input
-                  value={postImage}
-                  onChange={(e) => setPostImage(e.target.value)}
-                  placeholder="https://..."
-                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
-                />
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Add Image</label>
+                <div className="flex gap-2">
+                  <label className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-slate-600/40 text-slate-300 hover:bg-slate-700/50"
+                      onClick={(e) => e.currentTarget.previousElementSibling?.click()}
+                      disabled={uploading}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? 'Uploading...' : 'Upload Image'}
+                    </Button>
+                  </label>
+                  <label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="border-slate-600/40 text-slate-300 hover:bg-slate-700/50"
+                      onClick={(e) => e.currentTarget.previousElementSibling?.click()}
+                      disabled={uploading}
+                    >
+                      <Camera className="w-4 h-4" />
+                    </Button>
+                  </label>
+                </div>
+                {postImage && (
+                  <Input
+                    value={postImage}
+                    onChange={(e) => setPostImage(e.target.value)}
+                    placeholder="Or paste image URL..."
+                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 mt-2 text-xs"
+                  />
+                )}
               </div>
 
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Video URL (optional)</label>
-                <Input
-                  value={postVideo}
-                  onChange={(e) => setPostVideo(e.target.value)}
-                  placeholder="https://..."
-                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
-                />
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Add Video</label>
+                <div className="flex gap-2">
+                  <label className="flex-1">
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-slate-600/40 text-slate-300 hover:bg-slate-700/50"
+                      onClick={(e) => e.currentTarget.previousElementSibling?.click()}
+                      disabled={uploading}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? 'Uploading...' : 'Upload Video'}
+                    </Button>
+                  </label>
+                  <label>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      capture="environment"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="border-slate-600/40 text-slate-300 hover:bg-slate-700/50"
+                      onClick={(e) => e.currentTarget.previousElementSibling?.click()}
+                      disabled={uploading}
+                    >
+                      <Video className="w-4 h-4" />
+                    </Button>
+                  </label>
+                </div>
+                {postVideo && (
+                  <Input
+                    value={postVideo}
+                    onChange={(e) => setPostVideo(e.target.value)}
+                    placeholder="Or paste video URL..."
+                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 mt-2 text-xs"
+                  />
+                )}
               </div>
 
               {postImage && (
