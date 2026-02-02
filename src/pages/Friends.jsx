@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X, ChevronDown } from 'lucide-react';
+import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X, ChevronDown, Heart, MessageCircle, Image as ImageIcon } from 'lucide-react';
 import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -51,6 +51,12 @@ export default function Friends() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date'),
+    enabled: !!currentUser
+  });
+
+  const { data: allPosts = [] } = useQuery({
+    queryKey: ['posts'],
+    queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser
   });
 
@@ -160,6 +166,9 @@ export default function Friends() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
+  const friendIds = friends.map(f => f.friend_id);
+  const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
@@ -259,45 +268,100 @@ export default function Friends() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {(() => {
-          const friendActivityNotifications = notifications.filter(n => n.type === 'friend_activity');
-          const hasCheckedInToday = currentUserCheckIns.length > 0 && 
-            differenceInDays(new Date(), new Date(currentUserCheckIns[0].check_in_date)) === 0;
-
-          return friendActivityNotifications.length === 0 ? (
-            <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
-              <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
-              <p className="text-sm text-slate-400">
-                Add friends to see their check-ins, PRs, and streaks!
-              </p>
-            </Card>
-          ) : (
+        {/* Friends' Posts Feed */}
+        {friendPosts.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-purple-400" />
+              Friends Posts
+            </h2>
             <div className="space-y-3">
-              {friendActivityNotifications.map(notif => (
-                <Card 
-                  key={notif.id}
-                  className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 hover:border-blue-500/50 transition-all"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl">{notif.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-white text-sm">{notif.title}</h4>
-                      <p className="text-xs text-slate-400 mt-1">{notif.message}</p>
-                      {!hasCheckedInToday && notif.title?.includes('checked in') && (
-                        <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs">
-                          It's your turn! 🔥
-                        </Badge>
+              {friendPosts.map(post => (
+                <Card key={post.id} className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      {post.member_avatar ? (
+                        <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
+                        </div>
                       )}
-                      <p className="text-xs text-slate-500 mt-2">
-                        {formatDistanceToNow(new Date(notif.created_date), { addSuffix: true })}
-                      </p>
+                      <div className="flex-1">
+                        <div className="font-semibold text-white text-sm">{post.member_name}</div>
+                        <div className="text-xs text-slate-400">{formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-200 mb-3">{post.content}</p>
+                    {post.image_url && (
+                      <img src={post.image_url} alt="" className="w-full rounded-xl mb-3 object-cover max-h-96" />
+                    )}
+                    {post.video_url && (
+                      <video src={post.video_url} controls className="w-full rounded-xl mb-3 bg-black max-h-96" />
+                    )}
+                    <div className="flex items-center gap-4 text-slate-400 text-sm">
+                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                        <Heart className="w-4 h-4" />
+                        <span>{post.likes || 0}</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{post.comments?.length || 0}</span>
+                      </button>
                     </div>
                   </div>
                 </Card>
               ))}
             </div>
-          );
+          </div>
+        )}
+
+        {/* Notifications Section */}
+        {(() => {
+          const friendActivityNotifications = notifications.filter(n => n.type === 'friend_activity');
+          const hasCheckedInToday = currentUserCheckIns.length > 0 && 
+            differenceInDays(new Date(), new Date(currentUserCheckIns[0].check_in_date)) === 0;
+
+          return friendActivityNotifications.length === 0 && friendPosts.length === 0 ? (
+            <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
+              <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
+              <p className="text-sm text-slate-400">
+                Add friends to see their posts, check-ins, PRs, and streaks!
+              </p>
+            </Card>
+          ) : friendActivityNotifications.length > 0 ? (
+            <div>
+              <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                Recent Achievements
+              </h2>
+              <div className="space-y-3">
+                {friendActivityNotifications.map(notif => (
+                  <Card 
+                    key={notif.id}
+                    className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 hover:border-blue-500/50 transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">{notif.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-white text-sm">{notif.title}</h4>
+                        <p className="text-xs text-slate-400 mt-1">{notif.message}</p>
+                        {!hasCheckedInToday && notif.title?.includes('checked in') && (
+                          <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs">
+                            It's your turn! 🔥
+                          </Badge>
+                        )}
+                        <p className="text-xs text-slate-500 mt-2">
+                          {formatDistanceToNow(new Date(notif.created_date), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : null;
         })()}
 
         {/* Add Friend Modal */}
