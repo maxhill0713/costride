@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MobileSelect } from "@/components/ui/mobile-select";
 import { Trophy, Loader2, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -89,60 +89,63 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
           <div className="space-y-2">
             <Label>Challenge Category *</Label>
-            <Select value={formData.category} onValueChange={(value) => {
-              const updates = { category: value };
-              if (value === 'lifting') {
-                updates.goal_type = 'total_weight';
-              } else if (value === 'attendance') {
-                updates.goal_type = 'most_check_ins';
-              } else if (value === 'streak') {
-                updates.goal_type = 'longest_streak';
-              }
-              setFormData({ ...formData, ...updates });
-            }}>
-              <SelectTrigger className="rounded-2xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lifting">💪 Lifting (Weight/Reps)</SelectItem>
-                <SelectItem value="attendance">📍 Attendance (Check-ins)</SelectItem>
-                <SelectItem value="streak">🔥 Streak (Consecutive Days)</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect 
+              value={formData.category} 
+              onValueChange={(value) => {
+                const updates = { category: value };
+                if (value === 'lifting') {
+                  updates.goal_type = 'total_weight';
+                } else if (value === 'attendance') {
+                  updates.goal_type = 'most_check_ins';
+                } else if (value === 'streak') {
+                  updates.goal_type = 'longest_streak';
+                }
+                setFormData({ ...formData, ...updates });
+              }}
+              placeholder="Select category"
+              triggerClassName="rounded-2xl"
+              options={[
+                { value: 'lifting', label: '💪 Lifting (Weight/Reps)' },
+                { value: 'attendance', label: '📍 Attendance (Check-ins)' },
+                { value: 'streak', label: '🔥 Streak (Consecutive Days)' }
+              ]}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Challenge Type *</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger className="rounded-2xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="team">Team</SelectItem>
-                  <SelectItem value="gym_vs_gym">Gym vs Gym</SelectItem>
-                  <SelectItem value="community">Community</SelectItem>
-                </SelectContent>
-              </Select>
+              <MobileSelect 
+                value={formData.type} 
+                onValueChange={(value) => setFormData({ ...formData, type: value })}
+                placeholder="Select type"
+                triggerClassName="rounded-2xl"
+                options={[
+                  { value: 'individual', label: 'Individual' },
+                  { value: 'team', label: 'Team' },
+                  { value: 'gym_vs_gym', label: 'Gym vs Gym' },
+                  { value: 'community', label: 'Community' }
+                ]}
+              />
             </div>
 
             {formData.category === 'lifting' && (
               <div className="space-y-2">
                 <Label>Exercise *</Label>
-                <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-                  <SelectTrigger className="rounded-2xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bench_press">Bench Press</SelectItem>
-                    <SelectItem value="squat">Squat</SelectItem>
-                    <SelectItem value="deadlift">Deadlift</SelectItem>
-                    <SelectItem value="overhead_press">Overhead Press</SelectItem>
-                    <SelectItem value="barbell_row">Barbell Row</SelectItem>
-                    <SelectItem value="power_clean">Power Clean</SelectItem>
-                  </SelectContent>
-                </Select>
+                <MobileSelect 
+                  value={formData.exercise} 
+                  onValueChange={(value) => setFormData({ ...formData, exercise: value })}
+                  placeholder="Select exercise"
+                  triggerClassName="rounded-2xl"
+                  options={[
+                    { value: 'bench_press', label: 'Bench Press' },
+                    { value: 'squat', label: 'Squat' },
+                    { value: 'deadlift', label: 'Deadlift' },
+                    { value: 'overhead_press', label: 'Overhead Press' },
+                    { value: 'barbell_row', label: 'Barbell Row' },
+                    { value: 'power_clean', label: 'Power Clean' }
+                  ]}
+                />
               </div>
             )}
           </div>
@@ -151,69 +154,56 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Home Gym *</Label>
-                <Select
+                <MobileSelect
                   value={formData.gym_id}
                   onValueChange={(value) => {
                     const gym = gyms.find(g => g.id === value);
                     setFormData({ ...formData, gym_id: value, gym_name: gym?.name || '' });
                   }}
-                >
-                  <SelectTrigger className="rounded-2xl">
-                    <SelectValue placeholder="Select gym" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gyms.map(gym => (
-                      <SelectItem key={gym.id} value={gym.id}>{gym.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select gym"
+                  triggerClassName="rounded-2xl"
+                  options={gyms.map(gym => ({ value: gym.id, label: gym.name }))}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Competing Gym *</Label>
-                <Select
+                <MobileSelect
                   value={formData.competing_gym_id}
                   onValueChange={(value) => {
                     const gym = gyms.find(g => g.id === value);
                     setFormData({ ...formData, competing_gym_id: value, competing_gym_name: gym?.name || '' });
                   }}
-                >
-                  <SelectTrigger className="rounded-2xl">
-                    <SelectValue placeholder="Select gym" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gyms.map(gym => (
-                      <SelectItem key={gym.id} value={gym.id}>{gym.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select gym"
+                  triggerClassName="rounded-2xl"
+                  options={gyms.map(gym => ({ value: gym.id, label: gym.name }))}
+                />
               </div>
             </div>
           )}
 
           <div className="space-y-2">
             <Label>Goal Type *</Label>
-            <Select value={formData.goal_type} onValueChange={(value) => setFormData({ ...formData, goal_type: value })}>
-              <SelectTrigger className="rounded-2xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {formData.category === 'lifting' && (
-                  <>
-                    <SelectItem value="total_weight">Total Weight Lifted</SelectItem>
-                    <SelectItem value="total_reps">Total Reps</SelectItem>
-                    <SelectItem value="max_weight">Max Weight</SelectItem>
-                  </>
-                )}
-                {formData.category === 'attendance' && (
-                  <SelectItem value="most_check_ins">Most Check-ins</SelectItem>
-                )}
-                {formData.category === 'streak' && (
-                  <SelectItem value="longest_streak">Longest Streak</SelectItem>
-                )}
-                <SelectItem value="participation">Most Participants</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect 
+              value={formData.goal_type} 
+              onValueChange={(value) => setFormData({ ...formData, goal_type: value })}
+              placeholder="Select goal type"
+              triggerClassName="rounded-2xl"
+              options={[
+                ...(formData.category === 'lifting' ? [
+                  { value: 'total_weight', label: 'Total Weight Lifted' },
+                  { value: 'total_reps', label: 'Total Reps' },
+                  { value: 'max_weight', label: 'Max Weight' }
+                ] : []),
+                ...(formData.category === 'attendance' ? [
+                  { value: 'most_check_ins', label: 'Most Check-ins' }
+                ] : []),
+                ...(formData.category === 'streak' ? [
+                  { value: 'longest_streak', label: 'Longest Streak' }
+                ] : []),
+                { value: 'participation', label: 'Most Participants' }
+              ]}
+            />
           </div>
 
           {(formData.category === 'attendance' || formData.category === 'streak') && (

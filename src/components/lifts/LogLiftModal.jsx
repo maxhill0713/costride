@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect } from '@/components/ui/mobile-select';
 import { Dumbbell, Upload, Video } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
@@ -74,19 +74,20 @@ export default function LogLiftModal({ open, onClose, onSuccess, gym, currentUse
         <div className="space-y-4">
           <div>
             <Label>Exercise *</Label>
-            <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-              <SelectTrigger className="rounded-2xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bench_press">Bench Press</SelectItem>
-                <SelectItem value="squat">Squat</SelectItem>
-                <SelectItem value="deadlift">Deadlift</SelectItem>
-                <SelectItem value="overhead_press">Overhead Press</SelectItem>
-                <SelectItem value="barbell_row">Barbell Row</SelectItem>
-                <SelectItem value="power_clean">Power Clean</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect 
+              value={formData.exercise} 
+              onValueChange={(value) => setFormData({ ...formData, exercise: value })}
+              placeholder="Select exercise"
+              triggerClassName="rounded-2xl"
+              options={[
+                { value: 'bench_press', label: 'Bench Press' },
+                { value: 'squat', label: 'Squat' },
+                { value: 'deadlift', label: 'Deadlift' },
+                { value: 'overhead_press', label: 'Overhead Press' },
+                { value: 'barbell_row', label: 'Barbell Row' },
+                { value: 'power_clean', label: 'Power Clean' }
+              ]}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

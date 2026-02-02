@@ -47,6 +47,9 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
       ...m,
       reached: newValue >= m.value
     })) || [];
+    
+    // Optimistic UI: update immediately
+    setEditValue(newValue);
     onUpdate(goal, newValue, goal.status, updatedMilestones);
   };
 
@@ -65,6 +68,7 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
       confetti({ particleCount: 50, spread: 50 });
     }
     
+    // Optimistic UI: update immediately
     onUpdate(goal, newValue, goal.status, updatedMilestones);
     setIsEditing(false);
   };
