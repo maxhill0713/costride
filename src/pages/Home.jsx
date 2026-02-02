@@ -20,7 +20,7 @@ export default function Home() {
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   
-  const { data: currentUser, isLoading: userLoading, error: userError } = useQuery({
+  const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       try {
@@ -31,24 +31,6 @@ export default function Home() {
       }
     }
   });
-
-  if (userLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-300">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Redirect to onboarding if not completed
-  useEffect(() => {
-    if (currentUser && currentUser.onboarding_completed === false) {
-      navigate(createPageUrl('Onboarding'));
-    }
-  }, [currentUser?.onboarding_completed, navigate]);
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
@@ -61,16 +43,10 @@ export default function Home() {
     queryFn: () => base44.entities.Gym.list()
   });
 
-  const memberGym = gymMemberships.length > 0 
-    ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
-    : null;
-
-  // Removed auto-redirect to onboarding - users stay signed in
-
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
     queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
-    refetchInterval: 30000 // Refetch every 30 seconds
+    refetchInterval: 30000
   });
 
   const { data: challenges = [] } = useQuery({
@@ -114,6 +90,28 @@ export default function Home() {
     queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser
   });
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (currentUser && currentUser.onboarding_completed === false) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser?.onboarding_completed, navigate]);
+
+  const memberGym = gymMemberships.length > 0 
+    ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
+    : null;
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const friendIds = friends.map(f => f.friend_id);
   const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
