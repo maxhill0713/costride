@@ -63,7 +63,7 @@ export default function LogLiftModal({ open, onClose, onSuccess, gym, currentUse
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             <Dumbbell className="w-6 h-6 text-blue-500" />

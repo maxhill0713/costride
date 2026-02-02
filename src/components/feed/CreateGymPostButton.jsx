@@ -19,6 +19,13 @@ export default function CreateGymPostButton({ gym, currentUser, onPostCreated })
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      toast.error('File size must be under 10MB');
+      return;
+    }
+
     setIsUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -70,7 +77,7 @@ export default function CreateGymPostButton({ gym, currentUser, onPostCreated })
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <DialogHeader>
             <DialogTitle>Create Gym Post</DialogTitle>
           </DialogHeader>

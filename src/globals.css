@@ -143,6 +143,40 @@ css
   .dark .bg-gradient-to-br.from-slate-50 {
     background: linear-gradient(to bottom right, #0a1929, #1a2332) !important;
   }
+
+  /* Auto Dark Mode based on system preference */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: linear-gradient(to bottom right, #0a1929, #1a2332, #1e3a5f);
+      color: #f1f5f9;
+    }
+
+    .bg-white {
+      background-color: #1a2332 !important;
+    }
+
+    .bg-gray-50 {
+      background-color: #0a1929 !important;
+    }
+
+    .text-gray-900 {
+      color: #f1f5f9 !important;
+    }
+
+    .text-gray-600,
+    .text-gray-500 {
+      color: #94a3b8 !important;
+    }
+
+    .border-gray-100,
+    .border-gray-200 {
+      border-color: #2a3f5f !important;
+    }
+
+    .bg-gradient-to-br.from-slate-50 {
+      background: linear-gradient(to bottom right, #0a1929, #1a2332) !important;
+    }
+  }
 }
 
 @layer utilities {
