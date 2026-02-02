@@ -514,12 +514,12 @@ export default function Friends() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
-              <Users className="w-10 h-10 text-blue-600" />
+          <Card className="bg-white/95 backdrop-blur-sm border-0 rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-blue-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Your friends haven't checked in yet</h3>
-            <p className="text-gray-600 text-center max-w-sm mb-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Your friends haven't checked in yet</h3>
+            <p className="text-gray-600 text-sm mb-6">
               Be the first to hit the gym today and inspire your crew! 💪
             </p>
             <Link to={createPageUrl('Gyms')}>
@@ -527,7 +527,7 @@ export default function Friends() {
                 Check In Now
               </Button>
             </Link>
-          </div>
+          </Card>
         )}
 
         {/* Add Friend Modal */}
