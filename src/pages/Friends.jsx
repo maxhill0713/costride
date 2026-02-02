@@ -490,8 +490,35 @@ export default function Friends() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Activity Feed */}
-        {activityFeed.length > 0 ? (
+         {/* Activity Nudge Cards */}
+         {activityCards.length > 0 && (
+           <div className="space-y-3 mb-6">
+             {activityCards.map(card => (
+               <Card
+                 key={card.id}
+                 className={`bg-gradient-to-r ${card.color} border ${card.borderColor} backdrop-blur-sm overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all`}
+               >
+                 <div className="p-4">
+                   <div className="flex items-start gap-3">
+                     {/* Icon */}
+                     <div className="flex-shrink-0 text-2xl mt-0.5">
+                       {card.emoji}
+                     </div>
+
+                     {/* Content */}
+                     <div className="flex-1 min-w-0">
+                       <h3 className="font-bold text-white text-sm">{card.title}</h3>
+                       <p className="text-xs text-white/90 mt-0.5 leading-snug">{card.message}</p>
+                     </div>
+                   </div>
+                 </div>
+               </Card>
+             ))}
+           </div>
+         )}
+
+         {/* Activity Feed */}
+         {activityFeed.length > 0 ? (
           <div className="space-y-2">
             {activityFeed.map(activity => (
               <Card 
