@@ -57,6 +57,20 @@ export default function UserProfile() {
     enabled: !!userId
   });
 
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['userGymMemberships', userId],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: userId, status: 'active' }),
+    enabled: !!userId
+  });
+
+  const { data: allGyms = [] } = useQuery({
+    queryKey: ['gyms'],
+    queryFn: () => base44.entities.Gym.list()
+  });
+
+  const memberGymIds = gymMemberships.map(m => m.gym_id);
+  const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
