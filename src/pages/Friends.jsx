@@ -406,27 +406,30 @@ export default function Friends() {
             {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
-                onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl cursor-pointer"
+                className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl"
               >
                 <div className="p-3">
                   <div className="flex items-center gap-3">
                     {/* Profile Photo */}
-                    <div className="flex-shrink-0">
-                      {activity.friendAvatar ? (
-                        <img 
-                          src={activity.friendAvatar} 
-                          alt={activity.friendName} 
-                          className="w-8 h-8 rounded-full object-cover" 
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                          <span className="text-white font-bold text-xs">
-                            {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    <Link 
+                     to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                     className="flex-shrink-0"
+                     onClick={(e) => e.stopPropagation()}
+                    >
+                     {activity.friendAvatar ? (
+                       <img 
+                         src={activity.friendAvatar} 
+                         alt={activity.friendName} 
+                         className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" 
+                       />
+                     ) : (
+                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
+                         <span className="text-white font-bold text-sm">
+                           {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                         </span>
+                       </div>
+                     )}
+                    </Link>
 
                     {/* Activity Content */}
                     <div className="flex-1 min-w-0">
@@ -465,30 +468,42 @@ export default function Friends() {
                         )}
                       </div>
 
-                      {/* Post Content - only for posts */}
+                      {/* Post Content - expandable for posts */}
                       {activity.type === 'post' && activity.content && (
-                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">{activity.content}</p>
-                      )}
-                    </div>
-
-                    {/* Post Media Thumbnail - small */}
-                    {activity.type === 'post' && (activity.imageUrl || activity.videoUrl) && (
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-700">
-                          {activity.videoUrl ? (
-                            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                              <span className="text-white text-xs">▶</span>
+                        <div className="mt-2">
+                          <p className="text-sm text-slate-300">{activity.content}</p>
+                          {(activity.imageUrl || activity.videoUrl) && (
+                            <div className="mt-2">
+                              {activity.videoUrl ? (
+                                <video 
+                                  src={activity.videoUrl} 
+                                  controls 
+                                  className="w-full rounded-lg max-h-64 bg-slate-900"
+                                />
+                              ) : (
+                                <img 
+                                  src={activity.imageUrl} 
+                                  alt="" 
+                                  className="w-full rounded-lg object-cover max-h-80" 
+                                />
+                              )}
                             </div>
-                          ) : (
-                            <img 
-                              src={activity.imageUrl} 
-                              alt="" 
-                              className="w-full h-full object-cover" 
-                            />
+                          )}
+                          {(activity.likes > 0 || activity.comments?.length > 0) && (
+                            <div className="flex items-center gap-4 mt-2 text-slate-400 text-xs">
+                              <div className="flex items-center gap-1">
+                                <Heart className="w-3 h-3" />
+                                <span>{activity.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageCircle className="w-3 h-3" />
+                                <span>{activity.comments?.length || 0}</span>
+                              </div>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </Card>
