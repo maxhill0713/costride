@@ -67,6 +67,26 @@ export default function CheckInButton({ gym }) {
       const newCheckIn = await base44.entities.CheckIn.create(data);
       return newCheckIn;
     },
+    onMutate: async (newCheckIn) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['checkIns'] });
+      await queryClient.cancelQueries({ queryKey: ['allCheckIns'] });
+      
+      // Snapshot previous values
+      const previousCheckIns = queryClient.getQueryData(['checkIns', currentUser?.id, gym?.id]);
+      const previousAllCheckIns = queryClient.getQueryData(['allCheckIns', currentUser?.id]);
+      
+      // Optimistically update check-ins
+      queryClient.setQueryData(['checkIns', currentUser?.id, gym?.id], (old = []) => [newCheckIn, ...old]);
+      queryClient.setQueryData(['allCheckIns', currentUser?.id], (old = []) => [newCheckIn, ...old]);
+      
+      return { previousCheckIns, previousAllCheckIns };
+    },
+    onError: (err, newCheckIn, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['checkIns', currentUser?.id, gym?.id], context.previousCheckIns);
+      queryClient.setQueryData(['allCheckIns', currentUser?.id], context.previousAllCheckIns);
+    },
     onSuccess: async (newCheckIn) => {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
