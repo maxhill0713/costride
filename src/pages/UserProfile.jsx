@@ -139,9 +139,9 @@ export default function UserProfile() {
 
         {/* Back Button */}
         <Link to={createPageUrl('Friends')} className="absolute top-3 left-3 z-20">
-          <Button variant="ghost" className="bg-slate-800/80 backdrop-blur-md border border-slate-600/50 hover:bg-slate-700/80 text-white rounded-xl w-10 h-10 p-0">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+          <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+            <ChevronLeft className="w-7 h-7" />
+          </button>
         </Link>
 
         <div className="max-w-4xl mx-auto relative z-10 pt-8">
@@ -189,54 +189,36 @@ export default function UserProfile() {
                   })}
                 </div>
               )}
-
-              {/* Bio */}
-              {viewingUser.bio && (
-                <p className="text-slate-300 text-sm leading-relaxed mt-2 max-w-xl">{viewingUser.bio}</p>
-              )}
-              
-              {/* Location */}
-              {viewingUser.gym_location && (
-                <div className="flex items-center gap-2 text-slate-400 mt-2">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{viewingUser.gym_location}</span>
-                </div>
-              )}
-
-              {/* Gym Memberships */}
-              {memberGyms.length > 0 && (
-                <div className="flex items-center gap-2 mt-3 flex-wrap">
-                  <Building2 className="w-4 h-4 text-blue-400" />
-                  {memberGyms.map((gym) => (
-                    <Badge 
-                      key={gym.id}
-                      className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
-                    >
-                      {gym.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 mt-3">
-                {isOwnProfile ? (
-                  <Link to={createPageUrl('Profile')}>
-                    <Button size="sm" className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
-                      Edit Profile
-                    </Button>
-                  </Link>
-                ) : (
-                  <Link to={`${createPageUrl('Messages')}?userId=${userId}`}>
-                    <Button size="sm" className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
-                      <MessageCircle className="w-4 h-4 mr-1" />
-                      Message
-                    </Button>
-                  </Link>
-                )}
-              </div>
             </div>
           </div>
+
+          {/* Bio */}
+          {viewingUser.bio && (
+            <p className="text-slate-300 text-sm leading-relaxed mt-4 max-w-xl">{viewingUser.bio}</p>
+          )}
+          
+          {/* Location */}
+          {viewingUser.gym_location && (
+            <div className="flex items-center gap-2 text-slate-400 mt-2">
+              <MapPin className="w-4 h-4" />
+              <span className="text-sm">{viewingUser.gym_location}</span>
+            </div>
+          )}
+
+          {/* Gym Memberships */}
+          {memberGyms.length > 0 && (
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <Building2 className="w-4 h-4 text-blue-400" />
+              {memberGyms.map((gym) => (
+                <Badge 
+                  key={gym.id}
+                  className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
+                >
+                  {gym.name}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
