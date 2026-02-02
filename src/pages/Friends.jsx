@@ -274,39 +274,46 @@ export default function Friends() {
               <ImageIcon className="w-5 h-5 text-purple-400" />
               Friends Posts
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {friendPosts.map(post => (
-                <Card key={post.id} className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all">
-                  <div className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      {post.member_avatar ? (
-                        <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="font-semibold text-white text-sm">{post.member_name}</div>
-                        <div className="text-xs text-slate-400">{formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}</div>
+                <Card key={post.id} className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer">
+                  <div className="p-3 flex items-start gap-3">
+                    {post.member_avatar ? (
+                      <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
                       </div>
-                    </div>
-                    <p className="text-sm text-slate-200 mb-3">{post.content}</p>
-                    {post.image_url && (
-                      <img src={post.image_url} alt="" className="w-full rounded-xl mb-3 object-cover max-h-96" />
                     )}
-                    {post.video_url && (
-                      <video src={post.video_url} controls className="w-full rounded-xl mb-3 bg-black max-h-96" />
-                    )}
-                    <div className="flex items-center gap-4 text-slate-400 text-sm">
-                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
-                        <Heart className="w-4 h-4" />
-                        <span>{post.likes || 0}</span>
-                      </button>
-                      <button className="flex items-center gap-1 hover:text-blue-400 transition-colors">
-                        <MessageCircle className="w-4 h-4" />
-                        <span>{post.comments?.length || 0}</span>
-                      </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <div className="font-semibold text-white text-sm">{post.member_name}</div>
+                          <div className="text-xs text-slate-400">{formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}</div>
+                        </div>
+                        {(post.image_url || post.video_url) && (
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
+                            {post.video_url ? (
+                              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">▶</span>
+                              </div>
+                            ) : (
+                              <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-300 line-clamp-2">{post.content}</p>
+                      <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
+                        <div className="flex items-center gap-1">
+                          <Heart className="w-3 h-3" />
+                          <span>{post.likes || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="w-3 h-3" />
+                          <span>{post.comments?.length || 0}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card>
