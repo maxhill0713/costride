@@ -399,15 +399,15 @@ export default function Friends() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Activity Feed */}
         {activityFeed.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-6">
             {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
                 onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden"
+                className="bg-white/95 backdrop-blur-sm border-0 rounded-2xl hover:shadow-lg transition-all cursor-pointer overflow-hidden"
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">
@@ -416,10 +416,10 @@ export default function Friends() {
                       <img 
                         src={activity.friendAvatar} 
                         alt={activity.friendName} 
-                        className="w-12 h-12 rounded-full object-cover flex-shrink-0" 
+                        className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-white shadow-sm" 
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 ring-2 ring-white shadow-sm">
                         <span className="text-white font-bold text-base">
                           {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
@@ -428,38 +428,37 @@ export default function Friends() {
 
                     {/* Activity Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           {/* Name and Message */}
-                          <p className="text-white text-sm">
+                          <p className="text-gray-900 text-[15px] leading-snug">
                             <span className="font-semibold">{activity.friendName}</span>
                             {' '}
-                            <span className="text-slate-300">{activity.message}</span>
+                            <span className="text-gray-700">{activity.message}</span>
+                            {' '}
+                            <span className="text-xl">{activity.emoji}</span>
                           </p>
                           
                           {/* Timestamp */}
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <p className="text-xs text-gray-500 mt-1">
                             {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
                           </p>
-                        </div>
-
-                        {/* Emoji */}
-                        <div className="text-2xl flex-shrink-0">
-                          {activity.emoji}
                         </div>
                       </div>
 
                       {/* Post Content */}
                       {activity.type === 'post' && activity.content && (
-                        <div className="mt-2 p-3 bg-slate-700/30 rounded-lg">
-                          <p className="text-sm text-slate-300 line-clamp-2">{activity.content}</p>
+                        <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                          <p className="text-sm text-gray-800 line-clamp-3">{activity.content}</p>
                           
                           {/* Post Media Thumbnail */}
                           {(activity.imageUrl || activity.videoUrl) && (
-                            <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-slate-800">
+                            <div className="mt-2 w-full h-40 rounded-lg overflow-hidden bg-gray-200">
                               {activity.videoUrl ? (
                                 <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                  <span className="text-white text-xl font-bold">▶</span>
+                                  <div className="w-12 h-12 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                                    <span className="text-white text-xl">▶</span>
+                                  </div>
                                 </div>
                               ) : (
                                 <img 
@@ -472,14 +471,14 @@ export default function Friends() {
                           )}
 
                           {/* Post Engagement */}
-                          <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
+                          <div className="flex items-center gap-4 text-gray-500 text-xs mt-3">
                             <div className="flex items-center gap-1">
-                              <Heart className="w-3 h-3" />
-                              <span>{activity.likes || 0}</span>
+                              <Heart className="w-3.5 h-3.5" />
+                              <span className="font-medium">{activity.likes || 0}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <MessageCircle className="w-3 h-3" />
-                              <span>{activity.comments?.length || 0}</span>
+                              <MessageCircle className="w-3.5 h-3.5" />
+                              <span className="font-medium">{activity.comments?.length || 0}</span>
                             </div>
                           </div>
                         </div>
@@ -487,23 +486,26 @@ export default function Friends() {
 
                       {/* Milestone Badge */}
                       {activity.type === 'milestone' && (
-                        <Badge className="mt-2 bg-orange-500/20 text-orange-300 border-orange-500/40 text-xs">
-                          {activity.milestone} Days Strong! 🔥
-                        </Badge>
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-xs font-semibold">
+                          <Flame className="w-3.5 h-3.5" />
+                          {activity.milestone} Day Streak!
+                        </div>
                       )}
 
                       {/* PR Badge */}
                       {activity.type === 'pr' && (
-                        <Badge className="mt-2 bg-yellow-500/20 text-yellow-300 border-yellow-500/40 text-xs">
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-xs font-semibold">
+                          <Trophy className="w-3.5 h-3.5" />
                           New Personal Record!
-                        </Badge>
+                        </div>
                       )}
 
                       {/* Check-in Badge */}
                       {activity.type === 'checkin' && activity.gymName && (
-                        <Badge className="mt-2 bg-blue-500/20 text-blue-300 border-blue-500/40 text-xs">
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                          <CheckCircle className="w-3.5 h-3.5" />
                           {activity.gymName}
-                        </Badge>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -512,13 +514,20 @@ export default function Friends() {
             ))}
           </div>
         ) : (
-          <Card className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 text-center">
-            <Users className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-slate-200 mb-2">No Activity Yet</h3>
-            <p className="text-sm text-slate-400">
-              Add friends to see their posts, check-ins, PRs, and streaks!
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
+              <Users className="w-10 h-10 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Your friends haven't checked in yet</h3>
+            <p className="text-gray-600 text-center max-w-sm mb-6">
+              Be the first to hit the gym today and inspire your crew! 💪
             </p>
-          </Card>
+            <Link to={createPageUrl('Gyms')}>
+              <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-full px-6 shadow-lg">
+                Check In Now
+              </Button>
+            </Link>
+          </div>
         )}
 
         {/* Add Friend Modal */}
