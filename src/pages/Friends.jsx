@@ -515,10 +515,22 @@ export default function Friends() {
             ))}
           </div>
         ) : (
-          <Card className="p-12 text-center border-2 border-dashed border-slate-600/50 rounded-3xl bg-gradient-to-br from-slate-700/50 to-slate-800/50">
-            <Users className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-            <p className="text-slate-300 font-medium">Your friends haven't checked in yet</p>
-            <p className="text-sm text-slate-400 mt-1">Be the first to hit the gym today and inspire your crew! 💪</p>
+          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden rounded-2xl">
+            <div className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-slate-400" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-white mb-1">Your friends haven't checked in yet</h3>
+                  <p className="text-sm font-normal text-slate-200 leading-relaxed">
+                    Be the first to hit the gym today and inspire your crew! 💪
+                  </p>
+                </div>
+              </div>
+            </div>
           </Card>
         )}
 
