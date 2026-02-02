@@ -564,7 +564,7 @@ export default function Home() {
            onClose={() => setShowJoinModal(false)} 
            currentUser={currentUser}
          />
-      </div>
-    </PullToRefresh>
+        </div>
+      </PullToRefresh>
   );
 }
