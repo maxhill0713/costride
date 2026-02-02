@@ -4,8 +4,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Get the lift data from the request
-    const { data: newLift } = await req.json();
+    // Get the lift data from the automation event
+    const body = await req.json();
+    const newLift = body.data;
     
     if (!newLift) {
       return Response.json({ error: 'No lift data provided' }, { status: 400 });
