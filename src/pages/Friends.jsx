@@ -402,26 +402,26 @@ export default function Friends() {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Activity Feed */}
         {activityFeed.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
                 onClick={() => window.location.href = createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 rounded-2xl cursor-pointer"
+                className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl cursor-pointer"
               >
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
+                <div className="p-3">
+                  <div className="flex items-center gap-3">
                     {/* Profile Photo */}
                     <div className="flex-shrink-0">
                       {activity.friendAvatar ? (
                         <img 
                           src={activity.friendAvatar} 
                           alt={activity.friendName} 
-                          className="w-10 h-10 rounded-full object-cover" 
+                          className="w-8 h-8 rounded-full object-cover" 
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">
                             {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
                         </div>
@@ -430,85 +430,65 @@ export default function Friends() {
 
                     {/* Activity Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-white">
-                          {activity.friendName} {activity.emoji}
-                        </h3>
-                      </div>
-                      <p className="text-sm font-normal text-slate-200 mb-2 leading-relaxed">
-                        {activity.message}
+                      <p className="text-xs text-white leading-tight">
+                        <span className="font-semibold">{activity.friendName}</span>
+                        {' '}
+                        <span className="text-slate-300">{activity.message}</span>
+                        {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
                       </p>
                       
-                      {/* Timestamp */}
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-slate-500">
+                      {/* Timestamp and badges inline */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-slate-500">
                           {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
                         </span>
-                      </div>
-
-                      {/* Post Content */}
-                      {activity.type === 'post' && activity.content && (
-                        <div className="mt-3 p-3 bg-slate-700/50 rounded-xl">
-                          <p className="text-sm text-slate-300 line-clamp-2">{activity.content}</p>
-                          
-                          {/* Post Media Thumbnail */}
-                          {(activity.imageUrl || activity.videoUrl) && (
-                            <div className="mt-2 w-full h-32 rounded-lg overflow-hidden bg-slate-800">
-                              {activity.videoUrl ? (
-                                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                  <span className="text-white text-xl font-bold">▶</span>
-                                </div>
-                              ) : (
-                                <img 
-                                  src={activity.imageUrl} 
-                                  alt="" 
-                                  className="w-full h-full object-cover" 
-                                />
-                              )}
-                            </div>
-                          )}
-
-                          {/* Post Engagement */}
-                          <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
-                            <div className="flex items-center gap-1">
-                              <Heart className="w-3 h-3" />
-                              <span>{activity.likes || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MessageCircle className="w-3 h-3" />
-                              <span>{activity.comments?.length || 0}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Milestone Badge */}
-                      {activity.type === 'milestone' && (
-                        <div className="mt-3">
-                          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs shadow-lg">
-                            {activity.milestone} Day Streak!
+                        
+                        {/* Milestone Badge */}
+                        {activity.type === 'milestone' && (
+                          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
+                            🔥 {activity.milestone} days
                           </Badge>
-                        </div>
-                      )}
+                        )}
 
-                      {/* PR Badge */}
-                      {activity.type === 'pr' && (
-                        <div className="mt-3">
-                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs shadow-lg">
-                            New Personal Record!
+                        {/* PR Badge */}
+                        {activity.type === 'pr' && (
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">
+                            🏆 PR
                           </Badge>
-                        </div>
-                      )}
+                        )}
 
-                      {/* Check-in Badge */}
-                      {activity.type === 'checkin' && activity.gymName && (
-                        <div className="mt-3">
-                          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-xs">
+                        {/* Check-in Badge */}
+                        {activity.type === 'checkin' && activity.gymName && (
+                          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] px-1.5 py-0">
                             {activity.gymName}
                           </Badge>
-                        </div>
+                        )}
+                      </div>
+
+                      {/* Post Content - only for posts */}
+                      {activity.type === 'post' && activity.content && (
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">{activity.content}</p>
                       )}
                     </div>
+
+                    {/* Post Media Thumbnail - small */}
+                    {activity.type === 'post' && (activity.imageUrl || activity.videoUrl) && (
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-700">
+                          {activity.videoUrl ? (
+                            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                              <span className="text-white text-xs">▶</span>
+                            </div>
+                          ) : (
+                            <img 
+                              src={activity.imageUrl} 
+                              alt="" 
+                              className="w-full h-full object-cover" 
+                            />
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
