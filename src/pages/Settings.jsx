@@ -6,6 +6,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut, User, Camera, Image } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -400,22 +401,37 @@ export default function Settings() {
             <p className="text-xs text-slate-400 text-center">You will be logged out from all sessions</p>
             
             <div className="border-t border-red-500/20 pt-3 mt-4">
-              <Button 
-                variant="outline"
-                className="w-full border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-2xl font-semibold h-10"
-                onClick={() => {
-                  if (confirm('⚠️ Are you absolutely sure? This will permanently delete your account and all your data. This action cannot be undone.')) {
-                    if (confirm('Final confirmation: Delete my account and all data permanently?')) {
-                      // Delete user account
-                      base44.entities.User.delete(currentUser.id).then(() => {
-                        base44.auth.logout();
-                      });
-                    }
-                  }
-                }}
-              >
-                Delete Account
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-2xl font-semibold h-10"
+                  >
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-slate-800 border-red-600/50">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-white">⚠️ Delete Account?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-slate-300">
+                      This will permanently delete your account and all your data including check-ins, posts, and progress. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                      onClick={() => {
+                        base44.entities.User.delete(currentUser.id).then(() => {
+                          base44.auth.logout();
+                        });
+                      }}
+                    >
+                      Delete Permanently
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <p className="text-xs text-red-400 text-center mt-2">⚠️ This action is permanent and cannot be undone</p>
             </div>
           </div>
