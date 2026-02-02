@@ -1538,7 +1538,6 @@ export default function GymCommunity() {
                   isLoading={createChallengeMutation.isPending}
                 />
       </div>
-      </div>
     </PullToRefresh>
   );
 }
