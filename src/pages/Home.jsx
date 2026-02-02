@@ -85,13 +85,9 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  const { data: myFriends = [] } = useQuery({
+  const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: async () => {
-      const friendsIAdded = await base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' });
-      const friendsWhoAddedMe = await base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'accepted' });
-      return [...friendsIAdded, ...friendsWhoAddedMe];
-    },
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
     enabled: !!currentUser
   });
 
@@ -101,11 +97,7 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  const friendIds = [...new Set([
-    ...myFriends.map(f => f.friend_id),
-    ...myFriends.map(f => f.user_id)
-  ])].filter(id => id !== currentUser?.id);
-  
+  const friendIds = friends.map(f => f.friend_id);
   const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
 
   // Filter user's check-ins
