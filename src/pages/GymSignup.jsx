@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect } from '@/components/ui/mobile-select';
 import { Card } from '@/components/ui/card';
 import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -628,32 +628,34 @@ export default function GymSignup() {
 
                 <div>
                   <Label className="text-white font-semibold">Gym Type *</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General Fitness</SelectItem>
-                      <SelectItem value="powerlifting">Powerlifting</SelectItem>
-                      <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
-                      <SelectItem value="crossfit">CrossFit</SelectItem>
-                      <SelectItem value="boxing">Boxing</SelectItem>
-                      <SelectItem value="mma">MMA</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MobileSelect 
+                    value={formData.type} 
+                    onValueChange={(value) => setFormData({ ...formData, type: value })}
+                    placeholder="Select gym type"
+                    triggerClassName="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
+                    options={[
+                      { value: 'general', label: 'General Fitness' },
+                      { value: 'powerlifting', label: 'Powerlifting' },
+                      { value: 'bodybuilding', label: 'Bodybuilding' },
+                      { value: 'crossfit', label: 'CrossFit' },
+                      { value: 'boxing', label: 'Boxing' },
+                      { value: 'mma', label: 'MMA' }
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <Label className="text-white font-semibold">Community Language *</Label>
-                  <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
-                    <SelectTrigger className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">🇬🇧 English</SelectItem>
-                      <SelectItem value="es">🇪🇸 Español</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MobileSelect 
+                    value={formData.language} 
+                    onValueChange={(value) => setFormData({ ...formData, language: value })}
+                    placeholder="Select language"
+                    triggerClassName="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
+                    options={[
+                      { value: 'en', label: '🇬🇧 English' },
+                      { value: 'es', label: '🇪🇸 Español' }
+                    ]}
+                  />
                   <p className="text-xs text-slate-400 mt-1">Language for your gym's community</p>
                 </div>
 

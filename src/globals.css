@@ -228,12 +228,15 @@ body {
   100% { transform: scale(1); }
 }
 
-button:active:not(:disabled) {
+button:active:not(:disabled),
+a:active,
+[role="button"]:active,
+[data-interactive]:active {
   animation: tapScale 0.15s ease;
 }
 
 /* Smooth transitions for interactive elements */
-button, a, [role="button"] {
+button, a, [role="button"], [data-interactive] {
   transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

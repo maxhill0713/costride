@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MobileSelect } from "@/components/ui/mobile-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Target, Loader2 } from 'lucide-react';
 
@@ -73,16 +73,18 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
 
           <div className="space-y-1.5 md:space-y-2">
             <Label className="text-xs md:text-sm font-bold text-slate-300">Goal Type *</Label>
-            <Select value={formData.goal_type} onValueChange={(value) => setFormData({ ...formData, goal_type: value, unit: value === 'numerical' ? 'lbs' : 'workouts' })}>
-              <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600 text-white">
-                <SelectItem value="numerical" className="text-white font-semibold">Numerical (e.g., lift 300 lbs)</SelectItem>
-                <SelectItem value="frequency" className="text-white font-semibold">Frequency (e.g., 6 workouts per week)</SelectItem>
-                <SelectItem value="consistency" className="text-white font-semibold">Consistency (e.g., 30 day streak)</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect 
+              value={formData.goal_type} 
+              onValueChange={(value) => setFormData({ ...formData, goal_type: value, unit: value === 'numerical' ? 'lbs' : 'workouts' })}
+              placeholder="Select goal type"
+              triggerClassName="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white"
+              className="bg-slate-800 border-slate-600 text-white"
+              options={[
+                { value: 'numerical', label: 'Numerical (e.g., lift 300 lbs)', className: 'text-white font-semibold' },
+                { value: 'frequency', label: 'Frequency (e.g., 6 workouts per week)', className: 'text-white font-semibold' },
+                { value: 'consistency', label: 'Consistency (e.g., 30 day streak)', className: 'text-white font-semibold' }
+              ]}
+            />
           </div>
 
           <div className="space-y-1.5 md:space-y-2">
@@ -117,27 +119,31 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
                 {formData.goal_type === 'numerical' ? 'Unit *' : 'Period *'}
               </Label>
               {formData.goal_type === 'numerical' ? (
-                <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600 text-white">
-                    <SelectItem value="lbs" className="text-white font-semibold">lbs</SelectItem>
-                    <SelectItem value="kg" className="text-white font-semibold">kg</SelectItem>
-                    <SelectItem value="reps" className="text-white font-semibold">reps</SelectItem>
-                  </SelectContent>
-                </Select>
+                <MobileSelect 
+                  value={formData.unit} 
+                  onValueChange={(value) => setFormData({ ...formData, unit: value })}
+                  placeholder="Unit"
+                  triggerClassName="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white"
+                  className="bg-slate-800 border-slate-600 text-white"
+                  options={[
+                    { value: 'lbs', label: 'lbs', className: 'text-white font-semibold' },
+                    { value: 'kg', label: 'kg', className: 'text-white font-semibold' },
+                    { value: 'reps', label: 'reps', className: 'text-white font-semibold' }
+                  ]}
+                />
               ) : (
-                <Select value={formData.frequency_period} onValueChange={(value) => setFormData({ ...formData, frequency_period: value })}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600 text-white">
-                    <SelectItem value="daily" className="text-white font-semibold">Daily</SelectItem>
-                    <SelectItem value="weekly" className="text-white font-semibold">Weekly</SelectItem>
-                    <SelectItem value="monthly" className="text-white font-semibold">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
+                <MobileSelect 
+                  value={formData.frequency_period} 
+                  onValueChange={(value) => setFormData({ ...formData, frequency_period: value })}
+                  placeholder="Period"
+                  triggerClassName="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white"
+                  className="bg-slate-800 border-slate-600 text-white"
+                  options={[
+                    { value: 'daily', label: 'Daily', className: 'text-white font-semibold' },
+                    { value: 'weekly', label: 'Weekly', className: 'text-white font-semibold' },
+                    { value: 'monthly', label: 'Monthly', className: 'text-white font-semibold' }
+                  ]}
+                />
               )}
             </div>
           </div>
@@ -145,19 +151,21 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
           {formData.goal_type === 'numerical' && (
             <div className="space-y-1.5 md:space-y-2">
               <Label className="text-xs md:text-sm font-bold text-slate-300">Exercise (Optional)</Label>
-              <Select value={formData.exercise} onValueChange={(value) => setFormData({ ...formData, exercise: value })}>
-                <SelectTrigger className="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white">
-                  <SelectValue placeholder="Select exercise" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600 text-white">
-                  <SelectItem value="bench_press" className="text-white font-semibold">Bench Press</SelectItem>
-                  <SelectItem value="squat" className="text-white font-semibold">Squat</SelectItem>
-                  <SelectItem value="deadlift" className="text-white font-semibold">Deadlift</SelectItem>
-                  <SelectItem value="overhead_press" className="text-white font-semibold">Overhead Press</SelectItem>
-                  <SelectItem value="barbell_row" className="text-white font-semibold">Barbell Row</SelectItem>
-                  <SelectItem value="power_clean" className="text-white font-semibold">Power Clean</SelectItem>
-                </SelectContent>
-              </Select>
+              <MobileSelect 
+                value={formData.exercise} 
+                onValueChange={(value) => setFormData({ ...formData, exercise: value })}
+                placeholder="Select exercise"
+                triggerClassName="rounded-xl md:rounded-2xl text-sm bg-slate-800/60 border-slate-600/40 text-white"
+                className="bg-slate-800 border-slate-600 text-white"
+                options={[
+                  { value: 'bench_press', label: 'Bench Press', className: 'text-white font-semibold' },
+                  { value: 'squat', label: 'Squat', className: 'text-white font-semibold' },
+                  { value: 'deadlift', label: 'Deadlift', className: 'text-white font-semibold' },
+                  { value: 'overhead_press', label: 'Overhead Press', className: 'text-white font-semibold' },
+                  { value: 'barbell_row', label: 'Barbell Row', className: 'text-white font-semibold' },
+                  { value: 'power_clean', label: 'Power Clean', className: 'text-white font-semibold' }
+                ]}
+              />
             </div>
           )}
 

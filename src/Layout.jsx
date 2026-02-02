@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +9,10 @@ import PageTransition from './components/PageTransition';
 import ErrorBoundary from './components/ErrorBoundary';
 
 export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+  const [tabHistory, setTabHistory] = useState({});
+  const [lastTabPage, setLastTabPage] = useState({});
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => ({
@@ -18,6 +22,21 @@ export default function Layout({ children, currentPageName }) {
       account_type: 'user'
     }))
   });
+
+  // Preserve tab navigation history
+  useEffect(() => {
+    const currentTab = navItems.find(item => item.page === currentPageName);
+    if (currentTab) {
+      setTabHistory(prev => ({
+        ...prev,
+        [currentTab.page]: location.pathname + location.search
+      }));
+      setLastTabPage(prev => ({
+        ...prev,
+        [currentTab.page]: currentPageName
+      }));
+    }
+  }, [currentPageName, location]);
 
   // Hide navigation on onboarding and signup pages
   const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup';
@@ -50,6 +69,11 @@ export default function Layout({ children, currentPageName }) {
         { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
       ];
 
+  // Get preserved link for tab
+  const getTabLink = (item) => {
+    return tabHistory[item.page] || (createPageUrl(item.page) + (item.params || ''));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
@@ -62,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
             return (
               <Link
                 key={item.page}
-                to={createPageUrl(item.page) + (item.params || '')}
+                to={getTabLink(item)}
                 aria-label={item.name}
                 className={`
                   relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 active:scale-95
@@ -101,7 +125,7 @@ export default function Layout({ children, currentPageName }) {
             return (
               <Link
                 key={item.page}
-                to={createPageUrl(item.page) + (item.params || '')}
+                to={getTabLink(item)}
                 className={`
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive 
