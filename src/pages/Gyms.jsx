@@ -694,11 +694,10 @@ export default function Gyms() {
                                 <Edit className="w-4 h-4 text-slate-300" />
                               </button>
                             )}
-                          </div>
-                        </div>
-                      )}
+                            </div>
+                            </div>
 
-                      {/* Content Section */}
+                            {/* Content Section */}
                       <div className="p-5 space-y-4">
                         {/* Header */}
                         <div>
