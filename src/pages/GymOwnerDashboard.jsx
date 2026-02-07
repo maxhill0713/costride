@@ -219,6 +219,22 @@ export default function GymOwnerDashboard() {
   const approvedGyms = myGyms.filter(g => g.status === 'approved');
   const pendingGyms = myGyms.filter(g => g.status === 'pending');
 
+  // Show error state if gyms failed to load
+  if (gymsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-red-500/40">
+          <X className="w-16 h-16 mx-auto mb-4 text-red-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">Error Loading Gyms</h2>
+          <p className="text-slate-300 mb-4">{gymsError.message || 'Failed to load gym data'}</p>
+          <Button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700">
+            Retry
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['allCheckIns'],
     queryFn: () => base44.entities.CheckIn.list(),
