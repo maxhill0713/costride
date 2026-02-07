@@ -1040,42 +1040,76 @@ export default function GymCommunity() {
 
 
 
-          {/* Gym Challenges - Gym-specific challenges */}
+          {/* Gym Challenges - Same style as GymRewards page */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-white/5 backdrop-blur-xl border border-amber-500/20 shadow-2xl shadow-amber-500/10 p-6 md:p-8">
-            <div className="space-y-11">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <Trophy className="w-6 h-6 text-white drop-shadow-lg" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-extrabold text-transparent bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text tracking-tight">
-                    Gym Challenges
-                  </h2>
-                  <p className="text-sm text-slate-300/80 font-medium mt-0.5">
-                    Exclusive from {gym.name}
-                  </p>
-                </div>
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-amber-300 mb-3 flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                Gym Challenges ({gymChallenges.length})
+              </h4>
+              <div className="grid gap-4">
+                {gymChallenges.map((challenge) => (
+                  <Card key={challenge.id} className="p-5 border-2 transition-all bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border-amber-500/50">
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">🏆</div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <h4 className="font-bold text-white">{challenge.title}</h4>
+                            <p className="text-xs text-slate-400 mt-0.5">{gym.name}</p>
+                          </div>
+                          {challenge.reward && (
+                            <span className="px-2 py-1 bg-amber-500/30 text-amber-200 text-xs font-bold rounded-full border border-amber-500/50">
+                              {challenge.reward}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {challenge.description && (
+                          <p className="text-sm text-slate-300 mb-3">{challenge.description}</p>
+                        )}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-2">
+                            <span className="px-2 py-1 bg-amber-500/20 text-amber-300 text-xs font-medium rounded-full capitalize border border-amber-500/30">
+                              {challenge.goal_type?.replace(/_/g, ' ')}
+                            </span>
+                            <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-medium rounded-full capitalize border border-yellow-500/30">
+                              {challenge.category}
+                            </span>
+                          </div>
+                          
+                          {!showOwnerControls ? (
+                            <Button
+                              size="sm"
+                              onClick={() => joinChallengeMutation.mutate(challenge)}
+                              disabled={hasjoinedChallenge(challenge.id) || joinChallengeMutation.isPending}
+                              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-2xl"
+                            >
+                              {hasjoinedChallenge(challenge.id) ? '✓ Joined' : 'Join Now'}
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (window.confirm('Delete this challenge?')) {
+                                  deleteChallengeMutation.mutate(challenge.id);
+                                }
+                              }}
+                              className="border-red-500/50 hover:bg-red-500/20 hover:border-red-500"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-              {gymChallenges.map((challenge) => (
-                <GymChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  isJoined={hasjoinedChallenge(challenge.id)}
-                  onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                  currentUser={currentUser}
-                  disabled={showOwnerControls}
-                  isOwner={showOwnerControls}
-                  onDelete={showOwnerControls ? (challengeId) => {
-                    if (window.confirm('Delete this challenge?')) {
-                      deleteChallengeMutation.mutate(challengeId);
-                    }
-                  } : null}
-                />
-              ))}
-              </div>
-              </Card>
-              )}
+            </div>
+          )}
 
               {/* Empty State */}
               {gymChallenges.length === 0 && (
