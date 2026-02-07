@@ -199,10 +199,20 @@ export default function GymOwnerDashboard() {
     }
   }, [currentUser, navigate]);
 
-  const { data: gyms = [] } = useQuery({
+  const { data: gyms = [], isLoading: gymsLoading, error: gymsError } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
-    enabled: !!currentUser
+    queryFn: async () => {
+      try {
+        const allGyms = await base44.entities.Gym.list();
+        console.log('Fetched gyms:', allGyms);
+        return allGyms;
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        throw error;
+      }
+    },
+    enabled: !!currentUser,
+    retry: 3
   });
 
   const myGyms = gyms.filter(g => g.owner_email === currentUser?.email);
