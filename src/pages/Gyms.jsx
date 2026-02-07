@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -215,13 +215,23 @@ export default function Gyms() {
                 {userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
               </h1>
             </div>
-            <Button 
-              onClick={() => setShowJoinWithCode(true)}
-              className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm"
-            >
-              <Key className="w-4 h-4" />
-              Join with Code
-            </Button>
+            <div className="flex gap-2">
+              <Link to={createPageUrl('AddGym')}>
+                <Button 
+                  className="bg-green-600/80 hover:bg-green-600 text-white border border-green-500/50 gap-2 rounded-xl text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden md:inline">Add Gym</span>
+                </Button>
+              </Link>
+              <Button 
+                onClick={() => setShowJoinWithCode(true)}
+                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm"
+              >
+                <Key className="w-4 h-4" />
+                <span className="hidden md:inline">Join with Code</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
