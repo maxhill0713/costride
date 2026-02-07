@@ -96,7 +96,7 @@ export default function Gyms() {
   };
 
   const searchPlaces = async (query) => {
-    if (!query.trim() || query.length < 3) {
+    if (!query.trim() || query.length < 2) {
       setPlacesResults([]);
       return;
     }
