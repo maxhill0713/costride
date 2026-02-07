@@ -22,26 +22,37 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    // Use Places API Text Search
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(input + ' gym')}&type=gym&key=${apiKey}`;
+    // Use New Places API (Text Search)
+    const url = 'https://places.googleapis.com/v1/places:searchText';
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating'
+      },
+      body: JSON.stringify({
+        textQuery: input + ' gym',
+        includedType: 'gym'
+      })
+    });
+    
     const data = await response.json();
 
-    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+    if (!response.ok) {
       console.error('Google Places API error:', data);
-      return Response.json({ error: data.status, message: data.error_message }, { status: 500 });
+      return Response.json({ error: 'API_ERROR', message: data.error?.message || 'Failed to search places' }, { status: 500 });
     }
 
     // Format results
-    const results = (data.results || []).map(place => ({
-      place_id: place.place_id,
-      name: place.name,
-      address: place.formatted_address,
-      latitude: place.geometry.location.lat,
-      longitude: place.geometry.location.lng,
-      rating: place.rating,
-      types: place.types
+    const results = (data.places || []).map(place => ({
+      place_id: place.id,
+      name: place.displayName?.text || place.displayName,
+      address: place.formattedAddress,
+      latitude: place.location?.latitude,
+      longitude: place.location?.longitude,
+      rating: place.rating
     }));
 
     return Response.json({ results });
