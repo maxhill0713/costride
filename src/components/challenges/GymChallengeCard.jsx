@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Trash2, Trophy, Clock } from 'lucide-react';
+import { Users, Trash2, Trophy, Clock, Star, Gift, Target } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
