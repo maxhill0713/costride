@@ -807,29 +807,6 @@ export default function GymCommunity() {
 
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
-          {/* Gym Join Code - Always Visible for Owners */}
-          {showOwnerControls && (
-            <Card className="p-3 md:p-4 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-xl">
-              <div className="flex items-center gap-2 md:gap-3 justify-between">
-                <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm md:text-base mb-0.5">🎯 Gym Join Code</h3>
-                    <p className="text-white/90 text-xs">Members scan or enter this code</p>
-                  </div>
-                </div>
-
-                {gym?.join_code && (
-                  <div className="bg-white/25 backdrop-blur px-2 md:px-3 py-1.5 md:py-2 rounded-xl border border-white/40 flex-shrink-0">
-                    <p className="text-xl md:text-2xl font-black text-white tracking-wider">{gym.join_code}</p>
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
-
           {/* Check-in Section */}
            {!showOwnerControls && <CheckInButton gym={gym} />}
 
