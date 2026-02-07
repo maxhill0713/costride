@@ -3,9 +3,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { gym_id } = await req.json();
+    const payload = await req.json();
+
+    // Handle both direct calls and entity automation events
+    const gym_id = payload.gym_id || payload.event?.entity_id || payload.data?.id;
 
     if (!gym_id) {
+      console.error('No gym_id found in payload:', payload);
       return Response.json({ error: 'gym_id is required' }, { status: 400 });
     }
 
