@@ -289,15 +289,21 @@ export default function Gyms() {
 
                             {/* Badges */}
                             <div className="absolute top-3 left-3 flex gap-2">
-                              {gym.verified && (
-                                <Badge className="bg-green-500 text-white text-xs shadow-lg">
-                                  <BadgeCheck className="w-3 h-3 mr-1" />
-                                  Verified
-                                </Badge>
-                              )}
-                              <Badge className="bg-blue-500/90 text-white text-xs shadow-lg">
-                                Member
-                              </Badge>
+                             {gym.verified && (
+                               <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                                 <BadgeCheck className="w-3 h-3 mr-1" />
+                                 Verified
+                               </Badge>
+                             )}
+                             {currentUser && currentUser.email === gym.owner_email ? (
+                               <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">
+                                 Owner
+                               </Badge>
+                             ) : (
+                               <Badge className="bg-blue-500/90 text-white text-xs shadow-lg">
+                                 Member
+                               </Badge>
+                             )}
                             </div>
 
                             {/* Icons: Gallery, Info, Heart & Edit */}
