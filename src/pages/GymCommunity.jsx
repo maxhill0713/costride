@@ -1042,7 +1042,6 @@ export default function GymCommunity() {
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-white/5 backdrop-blur-xl border border-amber-500/20 shadow-2xl shadow-amber-500/10 p-6 md:p-8">
             <div className="space-y-11">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
@@ -1074,7 +1073,6 @@ export default function GymCommunity() {
                 />
               ))}
               </div>
-              </Card>
               )}
 
               {/* Empty State */}
