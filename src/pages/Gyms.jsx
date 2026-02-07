@@ -163,8 +163,7 @@ export default function Gyms() {
       admin_id: isOwner ? currentUser?.id : null,
       owner_email: isOwner ? currentUser?.email : null,
       verified: isOwner,
-      status: 'approved',
-      members_count: 0
+      status: 'approved'
     };
 
     createGymMutation.mutate(gymData);
