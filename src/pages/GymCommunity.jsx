@@ -1044,11 +1044,11 @@ export default function GymCommunity() {
           {gymChallenges.length > 0 && (
             <div className="space-y-11">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
                   <Trophy className="w-6 h-6 text-white drop-shadow-lg" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-extrabold text-transparent bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text tracking-tight">
+                  <h2 className="text-xl font-extrabold text-transparent bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text tracking-tight">
                     Gym Challenges
                   </h2>
                   <p className="text-sm text-slate-300/80 font-medium mt-0.5">
