@@ -763,36 +763,16 @@ export default function GymOwnerDashboard() {
                <Button
                onClick={async () => {
                  try {
-                   // Generate unique 6-character code
-                   const generateCode = async () => {
-                     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                     let code;
-                     let isUnique = false;
-                     let attempts = 0;
-
-                     while (!isUnique && attempts < 10) {
-                       code = '';
-                       for (let i = 0; i < 6; i++) {
-                         code += chars.charAt(Math.floor(Math.random() * chars.length));
-                       }
-
-                       // Check if code already exists
-                       const existing = await base44.entities.Gym.filter({ join_code: code });
-                       isUnique = existing.length === 0;
-                       attempts++;
-                     }
-
-                     return code;
-                   };
-
-                   const code = await generateCode();
-                   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(code)}`;
-
-                   await base44.entities.Gym.update(selectedGym.id, { 
-                     join_code: code,
-                     qr_code: qrCodeUrl
+                   // Call backend function to generate code
+                   const response = await base44.functions.invoke('generateGymJoinCode', {
+                     gym_id: selectedGym.id
                    });
-                   queryClient.invalidateQueries({ queryKey: ['gyms'] });
+
+                   if (response.data?.success) {
+                     queryClient.invalidateQueries({ queryKey: ['gyms'] });
+                   } else {
+                     alert(response.data?.error || 'Failed to generate join code. Please try again.');
+                   }
                  } catch (error) {
                    console.error('Error generating code:', error);
                    alert('Failed to generate join code. Please try again.');
