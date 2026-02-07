@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,12 @@ export default function Gyms() {
   const [savedGyms, setSavedGyms] = useState([]);
   const [equipmentGym, setEquipmentGym] = useState(null);
   const [galleryGym, setGalleryGym] = useState(null);
+  const [placesResults, setPlacesResults] = useState([]);
+  const [searchingPlaces, setSearchingPlaces] = useState(false);
+  const [showAddGymModal, setShowAddGymModal] = useState(false);
+  const [selectedPlaceGym, setSelectedPlaceGym] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [gymType, setGymType] = useState('general');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -88,6 +94,89 @@ export default function Gyms() {
         : [...prev, gymId]
     );
   };
+
+  const searchPlaces = async (query) => {
+    if (!query.trim() || query.length < 3) {
+      setPlacesResults([]);
+      return;
+    }
+
+    setSearchingPlaces(true);
+    try {
+      const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
+      const results = response.data.results || [];
+      
+      // Filter out places that already exist in our database
+      const existingPlaceIds = gyms.map(g => g.google_place_id).filter(Boolean);
+      const newPlaces = results.filter(place => !existingPlaceIds.includes(place.place_id));
+      
+      setPlacesResults(newPlaces);
+    } catch (error) {
+      console.error('Places search failed:', error);
+      setPlacesResults([]);
+    } finally {
+      setSearchingPlaces(false);
+    }
+  };
+
+  const handleSelectPlace = (place) => {
+    setSelectedPlaceGym(place);
+    setShowAddGymModal(true);
+  };
+
+  const createGymMutation = useMutation({
+    mutationFn: async (gymData) => {
+      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
+      
+      if (existingGyms.length > 0) {
+        return { exists: true, gym: existingGyms[0] };
+      }
+
+      const newGym = await base44.entities.Gym.create(gymData);
+      return { exists: false, gym: newGym };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setShowAddGymModal(false);
+      setSelectedPlaceGym(null);
+      setPlacesResults([]);
+      setSearchQuery('');
+      navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
+    }
+  });
+
+  const handleCreateGym = () => {
+    if (!selectedPlaceGym) return;
+
+    const addressParts = selectedPlaceGym.address.split(',');
+    const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedPlaceGym.address;
+
+    const gymData = {
+      name: selectedPlaceGym.name,
+      address: selectedPlaceGym.address,
+      city: city,
+      google_place_id: selectedPlaceGym.place_id,
+      latitude: selectedPlaceGym.latitude,
+      longitude: selectedPlaceGym.longitude,
+      type: gymType,
+      claim_status: isOwner ? 'claimed' : 'unclaimed',
+      admin_id: isOwner ? currentUser?.id : null,
+      owner_email: isOwner ? currentUser?.email : null,
+      verified: isOwner,
+      status: 'approved',
+      members_count: 0
+    };
+
+    createGymMutation.mutate(gymData);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchPlaces(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
 
 
@@ -411,12 +500,57 @@ export default function Gyms() {
           <div className="max-w-6xl mx-auto">
             {/* Search & Filters */}
             <div className="space-y-2 mb-4">
-              <Input
-                placeholder="Search by name or city..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder:text-slate-500"
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search gyms or add new from Google Places..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-11 pl-10 pr-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder:text-slate-500"
+                />
+                {searchingPlaces && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />
+                )}
+              </div>
+
+              {/* Google Places Results */}
+              {placesResults.length > 0 && (
+                <div className="bg-slate-800/90 border border-blue-500/50 rounded-xl p-3 space-y-2">
+                  <p className="text-xs text-blue-400 font-semibold flex items-center gap-2">
+                    <Plus className="w-3 h-3" />
+                    Add new gyms from Google Places ({placesResults.length} found)
+                  </p>
+                  {placesResults.slice(0, 3).map((place) => (
+                    <button
+                      key={place.place_id}
+                      onClick={() => handleSelectPlace(place)}
+                      className="w-full text-left p-3 rounded-lg bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                          <Plus className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-white text-sm mb-0.5">{place.name}</h4>
+                          <div className="flex items-center gap-1 text-slate-400 text-xs">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{place.address}</span>
+                          </div>
+                          {place.rating && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                              <span className="text-slate-300 text-xs">{place.rating}</span>
+                            </div>
+                          )}
+                        </div>
+                        <Badge className="bg-green-600/30 text-green-200 border border-green-500/40 text-xs">
+                          Add
+                        </Badge>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Filters */}
               <div className="flex flex-wrap gap-2">
@@ -679,6 +813,102 @@ export default function Gyms() {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Gym Modal */}
+      <Dialog open={showAddGymModal} onOpenChange={() => {
+        setShowAddGymModal(false);
+        setSelectedPlaceGym(null);
+        setIsOwner(false);
+        setGymType('general');
+      }}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle>
+          </DialogHeader>
+          {selectedPlaceGym && (
+            <div className="space-y-4">
+              <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white text-lg mb-1">{selectedPlaceGym.name}</h3>
+                    <div className="flex items-start gap-2 text-slate-300 text-sm mb-2">
+                      <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span>{selectedPlaceGym.address}</span>
+                    </div>
+                    {selectedPlaceGym.rating && (
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-slate-300 text-sm">{selectedPlaceGym.rating} rating</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 text-sm font-semibold mb-2 block">Gym Type</label>
+                <Select value={gymType} onValueChange={setGymType}>
+                  <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General Fitness</SelectItem>
+                    <SelectItem value="powerlifting">Powerlifting</SelectItem>
+                    <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
+                    <SelectItem value="crossfit">CrossFit</SelectItem>
+                    <SelectItem value="boxing">Boxing</SelectItem>
+                    <SelectItem value="mma">MMA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isOwner}
+                    onChange={(e) => setIsOwner(e.target.checked)}
+                    className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span>
+                      <Crown className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <p className="text-slate-300 text-xs">
+                      Check this if you own or manage this gym. You'll have full control over the gym's profile.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <Button
+                onClick={handleCreateGym}
+                disabled={createGymMutation.isPending}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl font-bold py-6 text-base shadow-lg"
+              >
+                {createGymMutation.isPending ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : (
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                )}
+                {isOwner ? 'Claim & Add Gym' : 'Add Gym'}
+              </Button>
+
+              {isOwner && (
+                <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-3">
+                  <p className="text-blue-300 text-xs text-center">
+                    ✓ Your gym will be marked as verified and you'll become the admin
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
