@@ -1042,19 +1042,21 @@ export default function GymCommunity() {
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-slate-900/70 backdrop-blur-sm border border-cyan-500/30 p-2 md:p-5">
-            <div className="space-y-1.5 md:space-y-3">
-              <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
-                <div className="w-6 md:w-8 h-6 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                  <Dumbbell className="w-3 md:w-4 h-3 md:h-4 text-white" />
+            <Card className="bg-white/5 backdrop-blur-xl border border-amber-500/20 shadow-2xl shadow-amber-500/10 p-6 md:p-8">
+            <div className="space-y-11">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                  <Trophy className="w-6 h-6 text-white drop-shadow-lg" />
                 </div>
-                <h2 className="text-sm md:text-lg font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                  Gym Challenges
-                </h2>
+                <div>
+                  <h2 className="text-xl font-extrabold text-transparent bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text tracking-tight">
+                    Gym Challenges
+                  </h2>
+                  <p className="text-sm text-slate-300/80 font-medium mt-0.5">
+                    Exclusive from {gym.name}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs md:text-sm text-slate-300 mb-2">
-                Exclusive from {gym.name}! 💪
-              </p>
               {gymChallenges.map((challenge) => (
                 <GymChallengeCard
                   key={challenge.id}
