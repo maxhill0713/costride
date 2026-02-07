@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Users, Target, Building2, Trash2, Trophy, Flame, Zap, Award, Clock, TrendingUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Target, Trash2, Trophy, Gift, Clock, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
-import confetti from 'canvas-confetti';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
@@ -13,218 +12,173 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
   const daysElapsed = totalDays - daysLeft;
   const progressPercentage = totalDays > 0 ? (daysElapsed / totalDays) * 100 : 0;
   const participantCount = challenge.participants?.length || 0;
-  
-  // Check if user has joined by checking if their ID is in participants array
   const userHasJoined = currentUser ? (challenge.participants || []).includes(currentUser.id) : false;
   
-  // Gamification elements
-  const getDifficultyLevel = () => {
-    if (challenge.target_value <= 5) return { label: 'Easy', color: 'from-green-400 to-emerald-500', icon: '🌟', points: 100 };
-    if (challenge.target_value <= 15) return { label: 'Medium', color: 'from-yellow-400 to-orange-500', icon: '⚡', points: 250 };
-    if (challenge.target_value <= 30) return { label: 'Hard', color: 'from-orange-400 to-red-500', icon: '🔥', points: 500 };
-    return { label: 'Legendary', color: 'from-purple-400 to-pink-500', icon: '👑', points: 1000 };
-  };
+  // Timer countdown
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   
-  const difficulty = getDifficultyLevel();
-  
-  const getUrgencyStatus = () => {
-    if (daysLeft <= 1) return { label: 'ENDS SOON!', color: 'from-red-500 to-orange-500', pulse: true };
-    if (daysLeft <= 3) return { label: 'Hurry!', color: 'from-orange-400 to-yellow-500', pulse: true };
-    if (daysLeft <= 7) return { label: 'Act Fast', color: 'from-yellow-400 to-amber-500', pulse: false };
-    return null;
-  };
-  
-  const urgency = getUrgencyStatus();
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const endTime = new Date(challenge.end_date).getTime();
+      const difference = endTime - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, [challenge.end_date]);
   
   const handleJoinClick = () => {
     if (onJoin) {
       onJoin(challenge);
-      // Confetti effect
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.6 }
-      });
     }
   };
 
+  const targetValue = challenge.target_value || 10;
+  const progress = Math.floor((participantCount / targetValue) * 100);
+
+  // Get participant names for display
+  const participantNames = ['Alex', 'Sarah', 'Mike', 'Emma', 'John'];
+  const displayCount = Math.min(participantCount, 5);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02, y: -2 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="relative p-3 bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm border-2 border-blue-500/40 hover:border-blue-400/60 transition-all duration-300 shadow-2xl hover:shadow-blue-500/20 overflow-hidden">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <Card className="bg-slate-900/70 backdrop-blur-md border border-amber-500/30 rounded-2xl p-5 hover:border-amber-400/50 transition-all overflow-hidden group relative">
+        {/* Timer - Top Right */}
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-slate-800/90 backdrop-blur rounded-lg px-2 py-1">
+          <Clock className="w-3 h-3 text-amber-400" />
+          <div className="flex gap-0.5 text-[10px] font-bold text-white">
+            <span>{timeLeft.days}d</span>
+            <span>:</span>
+            <span>{String(timeLeft.hours).padStart(2, '0')}h</span>
+          </div>
+        </div>
+
+        {/* Sparkle effect */}
+        {progress >= 75 && (
+          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Star className="w-4 h-4 text-amber-400 animate-pulse" />
+          </div>
+        )}
         
-        {/* Urgency banner */}
-        <AnimatePresence>
-          {urgency && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className={`absolute top-0 left-0 right-0 bg-gradient-to-r ${urgency.color} py-1 px-3 text-center ${urgency.pulse ? 'animate-pulse' : ''}`}
-            >
-              <div className="flex items-center justify-center gap-1.5">
-                <Clock className="w-3 h-3 text-white animate-bounce" />
-                <p className="text-[10px] font-black text-white uppercase tracking-wider">{urgency.label} • {daysLeft}d remaining</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <div className={urgency ? 'mt-5' : ''}>
-          {/* Header with Title and Reward */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border border-blue-400/50 flex items-center justify-center">
-                  <Trophy className="w-3.5 h-3.5 text-blue-300" />
-                </div>
-                <Badge className={`bg-gradient-to-r ${difficulty.color} border-0 text-white text-[9px] font-black px-2 py-0.5`}>
-                  {difficulty.icon} {difficulty.label.toUpperCase()}
+        <div className="relative">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1 min-w-0 pr-20">
+              <h3 className="font-bold text-white mb-2 text-sm md:text-base truncate">{challenge.title}</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs">
+                  {challenge.category || challenge.goal_type}
                 </Badge>
-                <div className="flex items-center gap-1 bg-purple-500/20 border border-purple-400/40 rounded px-1.5 py-0.5">
-                  <Zap className="w-2.5 h-2.5 text-purple-400" />
-                  <span className="text-[9px] font-black text-purple-300">{difficulty.points} XP</span>
-                </div>
+                {progress >= 75 && (
+                  <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-[10px] md:text-xs inline-flex items-center gap-1">
+                    <Star className="w-3 h-3" />
+                    Hot
+                  </Badge>
+                )}
               </div>
-              <h3 className="font-black text-white text-sm mb-1 line-clamp-1">{challenge.title}</h3>
-              <p className="text-[10px] text-slate-400 line-clamp-1">{challenge.description}</p>
             </div>
-            {challenge.reward && (
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-400/50 rounded-lg px-2 py-1 text-center flex-shrink-0"
-              >
-                <p className="text-lg">🏆</p>
-                <p className="text-[8px] font-bold text-yellow-300 uppercase">Prize</p>
-                <p className="text-[10px] font-black text-white">{challenge.reward}</p>
-              </motion.div>
-            )}
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-amber-500/30">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
           </div>
-        </div>
 
-        {/* Goal Card - Gamified */}
-        <div className="bg-gradient-to-r from-blue-500/15 to-cyan-500/15 rounded-lg p-2.5 mb-2 border border-blue-400/30 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-          
-          <div className="flex items-center justify-between relative z-10 gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-black text-blue-300 uppercase mb-1 flex items-center gap-1">
+          {/* Participants with profile pics */}
+          {participantCount > 0 && (
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {[...Array(Math.min(displayCount, 4))].map((_, i) => (
+                  <div 
+                    key={i}
+                    className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 border-2 border-slate-900 flex items-center justify-center text-xs font-bold text-white"
+                  >
+                    {participantNames[i]?.charAt(0) || 'U'}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-300">
+                <span className="font-semibold text-white">{participantNames[0] || 'Members'}</span>
+                {participantCount > 1 && (
+                  <span> and {participantCount - 1} other{participantCount > 2 ? 's' : ''} joined</span>
+                )}
+              </p>
+            </div>
+          )}
+
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Target className="w-3 h-3" />
-                Goal
-              </p>
-              <p className="text-xs text-white font-black flex items-center gap-1.5 truncate">
-                <span className="text-base">{
-                  challenge.goal_type === 'most_check_ins' ? '✓' :
-                  challenge.goal_type === 'longest_streak' ? '🔥' :
-                  challenge.goal_type === 'total_weight' ? '💪' : '🎯'
-                }</span>
-                {challenge.goal_type === 'most_check_ins' && `${challenge.target_value} check-ins`}
-                {challenge.goal_type === 'longest_streak' && `${challenge.target_value}-day streak`}
-                {challenge.goal_type === 'total_weight' && `${challenge.target_value} lbs`}
-                {challenge.goal_type === 'participation' && 'Most active wins'}
-              </p>
+                Progress
+              </span>
+              <span className="text-sm font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                {participantCount}/{targetValue}
+              </span>
             </div>
-            <div className="flex gap-2">
-              <div className="text-center bg-slate-800/60 border border-cyan-400/30 rounded-lg px-2 py-1">
-                <div className="flex items-center justify-center gap-0.5">
-                  <Users className="w-2.5 h-2.5 text-cyan-400" />
-                  <p className="text-xs font-black text-cyan-300">{participantCount}</p>
-                </div>
-                <p className="text-[8px] text-slate-400 font-bold">Players</p>
-              </div>
-              <div className="text-center bg-slate-800/60 border border-purple-400/30 rounded-lg px-2 py-1">
-                <div className="flex items-center justify-center gap-0.5">
-                  <Clock className="w-2.5 h-2.5 text-purple-400" />
-                  <p className="text-xs font-black text-purple-300">{daysLeft}</p>
-                </div>
-                <p className="text-[8px] text-slate-400 font-bold">Days</p>
-              </div>
+            <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden relative">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 rounded-full shadow-lg shadow-cyan-500/50 relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+              </motion.div>
             </div>
           </div>
-        </div>
 
-        {/* Progress Bar - Enhanced */}
-        <div className="mb-2.5">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-[9px] font-black text-slate-300 uppercase flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-cyan-400" />
-              Progress
-            </p>
-            <motion.p 
-              key={progressPercentage}
-              initial={{ scale: 1.5, color: '#22d3ee' }}
-              animate={{ scale: 1, color: '#94a3b8' }}
-              className="text-[10px] text-slate-400 font-black"
-            >
-              {Math.round(progressPercentage)}%
-            </motion.p>
-          </div>
-          <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-            </motion.div>
-          </div>
-        </div>
+          {challenge.reward && (
+            <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Gift className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-slate-400 mb-0.5">Reward</p>
+                <p className="text-xs font-bold text-green-400 truncate">{challenge.reward}</p>
+              </div>
+            </div>
+          )}
 
-        {/* Join Button / Delete Button - Gamified */}
-        <div className="flex gap-1.5">
-          <motion.div 
-            whileHover={!userHasJoined && !isOwner ? { scale: 1.02 } : {}}
-            whileTap={!userHasJoined && !isOwner ? { scale: 0.98 } : {}}
-            className="flex-1"
-          >
+          {/* Action */}
+          <div className="flex gap-2">
             <Button
               onClick={handleJoinClick}
               disabled={userHasJoined || isOwner}
-              className={`w-full font-black text-[11px] h-9 transition-all duration-200 ${
+              className={`flex-1 font-bold text-sm h-10 ${
                 userHasJoined 
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white cursor-default border border-green-400/50' 
+                  ? 'bg-emerald-600 hover:bg-emerald-600 cursor-default' 
                   : isOwner
-                  ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-slate-300 cursor-not-allowed border border-slate-600'
-                  : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-green-500/30 border border-green-400/50 animate-pulse'
+                  ? 'bg-slate-700 hover:bg-slate-700 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
               }`}
             >
-              <span className="flex items-center gap-1.5">
-                {userHasJoined ? (
-                  <>
-                    <Award className="w-3.5 h-3.5" />
-                    <span>✓ JOINED</span>
-                  </>
-                ) : isOwner ? (
-                  <>
-                    <Trophy className="w-3.5 h-3.5" />
-                    <span>👑 YOUR CHALLENGE</span>
-                  </>
-                ) : (
-                  <>
-                    <Flame className="w-3.5 h-3.5" />
-                    <span>JOIN • {difficulty.points} XP</span>
-                  </>
-                )}
-              </span>
+              {userHasJoined ? '✓ Joined' : isOwner ? 'Your Challenge' : 'Join Challenge'}
             </Button>
-          </motion.div>
-          {isOwner && onDelete && (
-            <Button
-              onClick={() => onDelete(challenge.id)}
-              variant="outline"
-              size="icon"
-              className="border border-red-500/50 hover:bg-red-500/20 hover:border-red-500 h-9 w-9"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-red-500" />
-            </Button>
-          )}
+            {isOwner && onDelete && (
+              <Button
+                onClick={() => onDelete(challenge.id)}
+                variant="outline"
+                size="icon"
+                className="border-red-500/50 hover:bg-red-500/10 h-10 w-10"
+              >
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
     </motion.div>
