@@ -230,9 +230,10 @@ export default function Gyms() {
                   >
                     <Edit className="w-4 h-4 text-slate-300" />
                   </button>
-                  )}
-                  </div>
-                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Content Section */}
           <div className="p-4 space-y-3">
