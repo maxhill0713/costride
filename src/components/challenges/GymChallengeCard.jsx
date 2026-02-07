@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Users, Target, Building2, Trash2, Trophy, Flame, Zap, Award, Clock, TrendingUp } from 'lucide-react';
+import { Dumbbell, Users, Target, Building2, Trash2, Trophy, Flame, Zap, Award, Clock, TrendingUp, Star, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 import confetti from 'canvas-confetti';
