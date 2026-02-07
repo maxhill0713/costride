@@ -761,7 +761,8 @@ export default function GymOwnerDashboard() {
                </>
              ) : (
                <Button
-                 onClick={async () => {
+               onClick={async () => {
+                 try {
                    // Generate unique 6-character code
                    const generateCode = async () => {
                      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -785,13 +786,22 @@ export default function GymOwnerDashboard() {
                    };
 
                    const code = await generateCode();
-                   await base44.entities.Gym.update(selectedGym.id, { join_code: code });
+                   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(code)}`;
+
+                   await base44.entities.Gym.update(selectedGym.id, { 
+                     join_code: code,
+                     qr_code: qrCodeUrl
+                   });
                    queryClient.invalidateQueries({ queryKey: ['gyms'] });
-                 }}
-                 size="sm"
-                 className="bg-white text-green-600 hover:bg-white/90 font-semibold"
+                 } catch (error) {
+                   console.error('Error generating code:', error);
+                   alert('Failed to generate join code. Please try again.');
+                 }
+               }}
+               size="sm"
+               className="bg-white text-green-600 hover:bg-white/90 font-semibold"
                >
-                 Generate
+               Generate Code
                </Button>
              )}
            </div>
