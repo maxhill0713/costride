@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Users, Target, Building2, Trash2, Trophy, Flame, Zap, Award, Clock, TrendingUp, Star, Gift } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Trash2, Trophy, Clock } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
-import confetti from 'canvas-confetti';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
