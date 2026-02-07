@@ -47,56 +47,58 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import RedeemReward from './pages/RedeemReward';
-import Leaderboard from './pages/Leaderboard';
-import Routines from './pages/Routines';
-import Search from './pages/Search';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
-import Gyms from './pages/Gyms';
-import Friends from './pages/Friends';
-import AdminGyms from './pages/AdminGyms';
+import MemberSignup from './pages/MemberSignup';
+import Leaderboard from './pages/Leaderboard';
+import Search from './pages/Search';
 import GymCommunity from './pages/GymCommunity';
-import GymRewards from './pages/GymRewards';
+import BrandDiscounts from './pages/BrandDiscounts';
+import AdminGyms from './pages/AdminGyms';
 import Home from './pages/Home';
 import Members from './pages/Members';
-import Plus from './pages/Plus';
 import Premium from './pages/Premium';
-import GymSignup from './pages/GymSignup';
-import UserProfile from './pages/UserProfile';
-import MemberSignup from './pages/MemberSignup';
-import Settings from './pages/Settings';
-import BrandDiscounts from './pages/BrandDiscounts';
 import Profile from './pages/Profile';
+import Gyms from './pages/Gyms';
+import GymSignup from './pages/GymSignup';
+import Routines from './pages/Routines';
+import Plus from './pages/Plus';
+import Friends from './pages/Friends';
+import Settings from './pages/Settings';
 import Onboarding from './pages/Onboarding';
-import Notifications from './pages/Notifications';
+import GymRewards from './pages/GymRewards';
+import RedeemReward from './pages/RedeemReward';
 import Messages from './pages/Messages';
+import Notifications from './pages/Notifications';
+import UserProfile from './pages/UserProfile';
+import AddGym from './pages/AddGym';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "RedeemReward": RedeemReward,
-    "Leaderboard": Leaderboard,
-    "Routines": Routines,
-    "Search": Search,
     "GymOwnerDashboard": GymOwnerDashboard,
-    "Gyms": Gyms,
-    "Friends": Friends,
-    "AdminGyms": AdminGyms,
+    "MemberSignup": MemberSignup,
+    "Leaderboard": Leaderboard,
+    "Search": Search,
     "GymCommunity": GymCommunity,
-    "GymRewards": GymRewards,
+    "BrandDiscounts": BrandDiscounts,
+    "AdminGyms": AdminGyms,
     "Home": Home,
     "Members": Members,
-    "Plus": Plus,
     "Premium": Premium,
-    "GymSignup": GymSignup,
-    "UserProfile": UserProfile,
-    "MemberSignup": MemberSignup,
-    "Settings": Settings,
-    "BrandDiscounts": BrandDiscounts,
     "Profile": Profile,
+    "Gyms": Gyms,
+    "GymSignup": GymSignup,
+    "Routines": Routines,
+    "Plus": Plus,
+    "Friends": Friends,
+    "Settings": Settings,
     "Onboarding": Onboarding,
-    "Notifications": Notifications,
+    "GymRewards": GymRewards,
+    "RedeemReward": RedeemReward,
     "Messages": Messages,
+    "Notifications": Notifications,
+    "UserProfile": UserProfile,
+    "AddGym": AddGym,
 }
 
 export const pagesConfig = {
