@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Search input is required' }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY') || Deno.env.get('GOOFLE_PLACES_API_KEY');
+    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
     
     if (!apiKey) {
       console.error('Google Places API key not found');
