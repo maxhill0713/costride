@@ -621,7 +621,9 @@ export default function GymOwnerDashboard() {
         {/* Header */}
          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-8 md:mb-12">
            <div>
-             <h1 className="text-4xl md:text-6xl font-black text-white mb-2 md:mb-4 tracking-tight" style={{letterSpacing: '-0.5px'}}>{t('dashboard.title')}</h1>
+             <h1 className="text-4xl md:text-6xl font-black text-white mb-2 md:mb-4 tracking-tight" style={{letterSpacing: '-0.5px'}}>
+               {selectedGym?.name || t('dashboard.title')}
+             </h1>
              <p className="text-slate-400 text-sm md:text-base font-medium">{t('dashboard.subtitle')}</p>
            </div>
 
