@@ -452,24 +452,50 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Main Content Section */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6">
-        {/* Tabs Section */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="flex w-full bg-slate-800/50 p-1 rounded-xl gap-1 mb-4">
-              <TabsTrigger value="stats" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                Stats
-              </TabsTrigger>
-              <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                Progress
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                Goals
-              </TabsTrigger>
-              <TabsTrigger value="posts" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                Posts
-              </TabsTrigger>
-            </TabsList>
+      {/* Tabs Section - Sticky Below Banner */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
+        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl overflow-x-hidden">
+          <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible border-0">
+            <TabsTrigger 
+              value="stats" 
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
+            >
+              <div className="flex items-center gap-1.5">
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-sm font-bold">Stats</span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="progress" 
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-green-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
+            >
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-bold">Progress</span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="goals" 
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
+            >
+              <div className="flex items-center gap-1.5">
+                <Target className="w-4 h-4" />
+                <span className="text-sm font-bold">Goals</span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="posts" 
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-cyan-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
+            >
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-4 h-4" />
+                <span className="text-sm font-bold">Posts</span>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-6">
 
 
             <TabsContent value="progress" className="space-y-4 mt-0">
