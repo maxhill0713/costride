@@ -234,8 +234,10 @@ export default function TodayWorkout({ currentUser, isExpanded = true }) {
       </div>
 
       {/* Exercises */}
-      {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
-        <div className="space-y-2">
+       {isExpanded && (
+         <>
+           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+             <div className="space-y-2">
           {/* Headers */}
           <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
             <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
