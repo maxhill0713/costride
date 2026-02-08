@@ -344,9 +344,9 @@ export default function TodayWorkout({ currentUser }) {
               onClick={() => setIsExpanded(false)}
               variant="ghost"
               size="icon"
-              className="w-6 h-6 text-slate-400 hover:text-white"
+              className="w-7 h-7 text-slate-400 hover:text-white"
             >
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-5 h-5" />
             </Button>
           </div>
         </div>
