@@ -88,7 +88,8 @@ export default function Home() {
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 50),
-    enabled: !!currentUser
+    enabled: !!currentUser && !!friends.length,
+    staleTime: 60000
   });
 
   const { data: recentChallengeActivity = [] } = useQuery({
@@ -99,7 +100,8 @@ export default function Home() {
         created_date: { $gte: oneDayAgo.toISOString() }
       }, '-created_date', 5);
     },
-    enabled: !!currentUser
+    enabled: !!currentUser && !!challenges.length,
+    staleTime: 60000
   });
 
   // Pre-calculate for check-in users query
