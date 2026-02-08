@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen, Play, Pause } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -199,15 +199,26 @@ export default function TodayWorkout({ currentUser }) {
     );
   }
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const progressPercentage = restTimer > 0 ? ((restTimer / (restTimer + 10)) * 100) : 0;
+
   return (
-    <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-5">
+    <Card className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 shadow-2xl overflow-hidden">
+      {/* Header */}
       <div className="space-y-2 mb-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+              <Dumbbell className="w-4 h-4 text-white" />
+            </div>
+            <h3 className="text-xs font-bold text-slate-200 tracking-tight uppercase">Today's Workout</h3>
           </div>
-          <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+          <h2 className="text-sm font-bold bg-gradient-to-r from-orange-300 to-amber-300 bg-clip-text text-transparent tracking-tight">
             {todayWorkout.name}
           </h2>
         </div>
@@ -263,7 +274,7 @@ export default function TodayWorkout({ currentUser }) {
 
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className={`p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/40 shadow-md ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'} hover:border-slate-500/60 transition-all`}>
+            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
               {editingIndex === index ? (
                 <div className="space-y-2.5">
                    <div className="flex items-center justify-between mb-2">
@@ -315,37 +326,37 @@ export default function TodayWorkout({ currentUser }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <div className="text-sm font-bold text-white leading-tight">
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-xs font-semibold text-white leading-tight">
                       {exercise.exercise || '-'}
                     </div>
                     {lastWorkout?.exercises?.[index] ? (
-                      <div className="text-[10px] text-slate-500 font-medium">
+                      <div className="text-[10px] text-slate-400 font-medium">
                         Last: {lastWorkout.exercises[index].weight}kg
                       </div>
                     ) : (
-                      <div className="text-[10px] text-cyan-400 font-semibold">
+                      <div className="text-[10px] text-blue-400 font-medium">
                         First Lift
                       </div>
                     )}
                   </div>
-                  <div className="text-xs font-semibold text-slate-300 bg-slate-700/50 px-2 py-1 rounded-lg">
+                  <div className="text-xs font-medium text-slate-200">
                     {exercise.setsReps || '-'}
                   </div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500 to-orange-600 px-2.5 py-1 rounded-lg shadow-lg shadow-orange-500/30">
-                        {exercise.weight || '-'} kg
-                      </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-semibold text-white">
+                        {exercise.weight || '-'}
+                      </span>
                       {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                     </div>
                     <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
-                      className="w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0"
+                      className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </>
