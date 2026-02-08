@@ -347,14 +347,32 @@ export default function Home() {
           {memberGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
               <Card className="bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="text-white font-semibold text-sm tracking-tight">Community</p>
                       <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
                     </div>
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                  {todayCheckIns.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center -space-x-2">
+                        {checkInUsers.slice(0, 4).map((user) => (
+                          <div key={user.id} className="relative group">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-slate-800" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-800">
+                                {user.full_name?.[0] || 'U'}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <span className="text-slate-300 text-xs font-medium">{todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today</span>
+                    </div>
+                  )}
                 </div>
               </Card>
             </Link>
