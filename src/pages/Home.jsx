@@ -5,7 +5,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
@@ -22,7 +22,6 @@ export default function Home() {
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
-  const [expandWorkout, setExpandWorkout] = useState(false);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -301,8 +300,8 @@ export default function Home() {
                   await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
                 }
               }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full w-9.6 h-9.6">
-                   <Users className="w-8.8 h-8.8 text-cyan-400" />
+                <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
+                   <Users className="w-11 h-11 text-cyan-400" />
                    {friendPosts.length > 0 && (!currentUser?.last_friends_view || new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
                  </Button>
               </Link>
@@ -366,7 +365,7 @@ export default function Home() {
             <div className="space-y-3">
               {/* Today's Workout */}
               {currentUser?.workout_split && (
-                <TodayWorkout currentUser={currentUser} isExpanded={expandWorkout} onToggleExpand={() => setExpandWorkout(!expandWorkout)} />
+                <TodayWorkout currentUser={currentUser} />
               )}
             </div>
           )}

@@ -7,9 +7,7 @@ import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown } from 'lucide-reac
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-import { ChevronUp, ChevronDown } from 'lucide-react';
-
-export default function TodayWorkout({ currentUser, isExpanded = true, onToggleExpand }) {
+export default function TodayWorkout({ currentUser }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
@@ -188,174 +186,160 @@ export default function TodayWorkout({ currentUser, isExpanded = true, onToggleE
   return (
     <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-5">
       <div className="space-y-2 mb-3">
-         <div className="flex items-center justify-between gap-2">
-           <div className="flex items-center gap-2">
-             <Dumbbell className="w-4 h-4 text-indigo-400" />
-             <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
-           </div>
-           <h2 className="text-base font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
-             {todayWorkout.name}
-           </h2>
-         </div>
-         <p className="text-[10px] text-slate-400 leading-relaxed">Log your lifts to track progress</p>
-         {alreadyLoggedToday ? (
-           <div className="text-center py-1">
-             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
-               ✓ Logged Today
-             </Badge>
-           </div>
-         ) : (
-           <>
-             {lastWorkout && (
-               <div className="flex items-center justify-between">
-                 <p className="text-[10px] text-slate-400 font-medium">
-                   Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
-                 </p>
-                 <Button
-                   onClick={() => logWorkoutMutation.mutate()}
-                   disabled={logWorkoutMutation.isPending}
-                   size="sm"
-                   className="h-6 text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-700 px-3"
-                 >
-                   Log Workout
-                 </Button>
-               </div>
-             )}
-             {!lastWorkout && todayWorkout.exercises.length > 0 && (
-               <div className="flex flex-col items-center gap-2">
-                 <Button
-                   onClick={() => logWorkoutMutation.mutate()}
-                   disabled={logWorkoutMutation.isPending}
-                   size="sm"
-                   className="h-6 text-[10px] font-semibold w-full bg-indigo-600 hover:bg-indigo-700"
-                 >
-                   Log Workout
-                 </Button>
-               </div>
-             )}
-           </>
-         )}
-       </div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Dumbbell className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
+          </div>
+          <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+            {todayWorkout.name}
+          </h2>
+        </div>
+        <p className="text-[10px] text-slate-400 leading-relaxed">Log your lifts to track progress</p>
+        {alreadyLoggedToday ? (
+          <div className="text-center py-1">
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
+              ✓ Logged Today
+            </Badge>
+          </div>
+        ) : (
+          <>
+            {lastWorkout && (
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-slate-400 font-medium">
+                  Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
+                </p>
+                <Button
+                  onClick={() => logWorkoutMutation.mutate()}
+                  disabled={logWorkoutMutation.isPending}
+                  size="sm"
+                  className="h-6 text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-700 px-3"
+                >
+                  Log Workout
+                </Button>
+              </div>
+            )}
+            {!lastWorkout && todayWorkout.exercises.length > 0 && (
+              <Button
+                onClick={() => logWorkoutMutation.mutate()}
+                disabled={logWorkoutMutation.isPending}
+                size="sm"
+                className="h-6 text-[10px] font-semibold w-full bg-indigo-600 hover:bg-indigo-700"
+              >
+                Log Workout
+              </Button>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Exercises */}
-      {isExpanded && (
-        <>
-          {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
-            <div className="space-y-2">
-              <div className="flex justify-center -mb-2">
-                <button
-                  onClick={onToggleExpand}
-                  className="text-slate-400 hover:text-white transition-colors p-1"
-                >
-                  <ChevronUp className="w-5 h-5" />
-                </button>
-              </div>
-              {/* Headers */}
-              <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
-              </div>
+      {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+        <div className="space-y-2">
+          {/* Headers */}
+          <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
+          </div>
 
-              {/* Exercise Rows */}
-              {todayWorkout.exercises.map((exercise, index) => (
-                <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
-                  {editingIndex === index ? (
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
-                        {lastWorkout?.exercises?.[index] ? (
-                          <div className="text-xs text-slate-400 font-medium">
-                            Last: {lastWorkout.exercises[index].weight}kg
-                          </div>
-                        ) : (
-                          <div className="text-xs text-blue-400 font-medium">
-                            First Lift
-                          </div>
-                        )}
+          {/* Exercise Rows */}
+          {todayWorkout.exercises.map((exercise, index) => (
+            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
+              {editingIndex === index ? (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
+                    {lastWorkout?.exercises?.[index] ? (
+                      <div className="text-xs text-slate-400 font-medium">
+                        Last: {lastWorkout.exercises[index].weight}kg
                       </div>
-                      <div className="flex gap-2">
-                        <Input
-                          type="text"
-                          placeholder="Sets x Reps"
-                          value={editReps}
-                          onChange={(e) => setEditReps(e.target.value)}
-                          className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
-                        />
-                        <Input
-                          type="text"
-                          placeholder="Weight"
-                          value={editWeight}
-                          onChange={(e) => setEditWeight(e.target.value)}
-                          className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
-                        />
+                    ) : (
+                      <div className="text-xs text-blue-400 font-medium">
+                        First Lift
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          onClick={() => handleSave(index)}
-                          size="sm"
-                          disabled={updateWorkoutMutation.isPending}
-                          className="flex-1 bg-green-600 hover:bg-green-700 h-7"
-                        >
-                          <Check className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          onClick={handleCancel}
-                          size="sm"
-                          variant="ghost"
-                          className="flex-1 text-slate-300 h-7"
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-col gap-0.5">
-                        <div className="text-xs font-semibold text-white leading-tight">
-                          {exercise.exercise || '-'}
-                        </div>
-                        {lastWorkout?.exercises?.[index] ? (
-                          <div className="text-[10px] text-slate-400 font-medium">
-                            Last: {lastWorkout.exercises[index].weight}kg
-                          </div>
-                        ) : (
-                          <div className="text-[10px] text-blue-400 font-medium">
-                            First Lift
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs font-medium text-slate-200">
-                        {exercise.setsReps || '-'}
-                      </div>
-                      <div className="flex items-center gap-1.5 justify-end">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs font-semibold text-white">
-                            {exercise.weight || '-'}
-                          </span>
-                          {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
-                        </div>
-                        <Button
-                          onClick={() => handleEdit(index, exercise)}
-                          size="icon"
-                          variant="ghost"
-                          className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Sets x Reps"
+                      value={editReps}
+                      onChange={(e) => setEditReps(e.target.value)}
+                      className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Weight"
+                      value={editWeight}
+                      onChange={(e) => setEditWeight(e.target.value)}
+                      className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      onClick={() => handleSave(index)}
+                      size="sm"
+                      disabled={updateWorkoutMutation.isPending}
+                      className="flex-1 bg-green-600 hover:bg-green-700 h-7"
+                    >
+                      <Check className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      onClick={handleCancel}
+                      size="sm"
+                      variant="ghost"
+                      className="flex-1 text-slate-300 h-7"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-              ))}
+              ) : (
+                <>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-xs font-semibold text-white leading-tight">
+                      {exercise.exercise || '-'}
+                    </div>
+                    {lastWorkout?.exercises?.[index] ? (
+                      <div className="text-[10px] text-slate-400 font-medium">
+                        Last: {lastWorkout.exercises[index].weight}kg
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-blue-400 font-medium">
+                        First Lift
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs font-medium text-slate-200">
+                    {exercise.setsReps || '-'}
+                  </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-semibold text-white">
+                        {exercise.weight || '-'}
+                      </span>
+                      {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
+                    </div>
+                    <Button
+                      onClick={() => handleEdit(index, exercise)}
+                      size="icon"
+                      variant="ghost"
+                      className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
-          ) : (
-            <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
-              <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
-            </div>
-          )}
-        </>
+          ))}
+        </div>
+      ) : (
+        <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
+          <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
+        </div>
       )}
-      </Card>
-      );
-      }
+    </Card>
+  );
+}
