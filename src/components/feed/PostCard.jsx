@@ -137,10 +137,32 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
           </button>
         </div>
 
-        {/* Likes */}
-        <p className="font-semibold text-sm text-gray-900 mb-2">
-          {(post.likes || 0) + (liked ? 1 : 0)} likes
-        </p>
+        {/* Likes with Streak Icon */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1">
+            {liked && (
+              currentUser?.streak_variant === 'sunglasses' ? (
+                <div className="relative w-5 h-5 flex items-center justify-center">
+                  <Flame className="w-5 h-5 text-orange-500 fill-current" />
+                  <svg 
+                    className="absolute w-4 h-2 pointer-events-none"
+                    viewBox="0 0 64 32"
+                    style={{ top: '0px' }}
+                  >
+                    <circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
+                    <circle cx="48" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
+                    <line x1="21" y1="16" x2="43" y2="16" stroke="currentColor" strokeWidth="1" className="text-black" />
+                  </svg>
+                </div>
+              ) : (
+                <Flame className="w-5 h-5 text-orange-500 fill-current" />
+              )
+            )}
+          </div>
+          <p className="font-semibold text-sm text-gray-900">
+            {(post.likes || 0) + (liked ? 1 : 0)} {liked ? 'reactions' : 'likes'}
+          </p>
+        </div>
 
         {/* Caption */}
         <div className="text-sm">
