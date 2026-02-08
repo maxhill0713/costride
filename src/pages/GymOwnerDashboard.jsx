@@ -488,6 +488,20 @@ export default function GymOwnerDashboard() {
     }
   });
 
+  const createPollMutation = useMutation({
+    mutationFn: (pollData) => base44.entities.Poll.create({
+      ...pollData,
+      gym_id: selectedGym.id,
+      gym_name: selectedGym.name,
+      created_by: currentUser.id,
+      voters: []
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['polls', selectedGym.id] });
+      setShowCreatePoll(false);
+    }
+  });
+
   // Access check temporarily disabled for testing
   // if (currentUser?.account_type !== 'gym_owner') {
   //   return (
