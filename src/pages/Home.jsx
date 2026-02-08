@@ -333,10 +333,28 @@ export default function Home() {
             </div>
           )}
 
-        {/* Today's Workout */}
-        {currentUser?.workout_split && (
-          <TodayWorkout currentUser={currentUser} />
-        )}
+          {/* Gym Section with Workout */}
+          {memberGym && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-4">
+                <div>
+                  <h3 className="text-white font-bold text-lg">{memberGym.name}</h3>
+                  <p className="text-slate-400 text-sm">
+                    {currentUser?.workout_split ? currentUser.workout_split : 'Chest/delts day at the gym'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-slate-400 text-xs">🔥</p>
+                  <p className="text-cyan-400 font-bold text-lg">{todayCheckIns.length} visits</p>
+                </div>
+              </div>
+
+              {/* Today's Workout */}
+              {currentUser?.workout_split && (
+                <TodayWorkout currentUser={currentUser} />
+              )}
+            </div>
+          )}
 
 
 
