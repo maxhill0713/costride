@@ -385,118 +385,46 @@ export default function Home() {
             </Link>
           </div>
 
-        {/* Join a Gym Prompt - Show at top for new members */}
+        {/* Join a Gym Prompt */}
         {gymMemberships.length === 0 && (
-          <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 backdrop-blur-sm border-0 p-6 rounded-2xl mb-6 shadow-lg">
+          <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h3 className="font-semibold text-white text-base mb-1">Get Started</h3>
-                <p className="text-blue-100 text-sm">Join a gym to start tracking your workouts and connect with the community</p>
+                <p className="text-blue-100 text-sm">Join a gym to start tracking your workouts</p>
               </div>
               <Link to={createPageUrl('Gyms')}>
-                <Button className="bg-white text-blue-600 hover:bg-blue-50 rounded-lg font-semibold whitespace-nowrap">
+                <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold">
                   Join Gym
                 </Button>
               </Link>
             </div>
           </Card>
         )}
+        </div>
+        </div>
 
-
-
-        {/* Weekly Challenges */}
-        {weeklyChallenges.length > 0 && (
-          <div>
-            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-purple-400" />
-              Weekly Challenges
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {weeklyChallenges.map(challenge => (
-                <WeeklyChallengeCard 
-                  key={challenge.id} 
-                  challenge={challenge} 
-                  currentUser={currentUser}
-                />
-              ))}
-            </div>
+        {/* Check-in Modal */}
+        {showCheckIn && memberGym && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900">Quick Check-In</h2>
+            <Button variant="ghost" size="icon" onClick={() => setShowCheckIn(false)}>
+              <X className="w-5 h-5" />
+            </Button>
           </div>
+          <CheckInButton gym={memberGym} />
+        </div>
+        </div>
         )}
 
-
-
-        {/* Friends Feed */}
-        {friendPosts.length > 0 && (
-          <div>
-            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5 text-cyan-400" />
-              Friends Activity
-            </h2>
-            <div className="space-y-2">
-              {friendPosts.slice(0, 10).map(post => (
-                <Card key={post.id} className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
-                  <div className="p-3 flex items-start gap-3">
-                    {post.member_avatar ? (
-                      <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <div className="font-semibold text-white text-sm">{post.member_name}</div>
-                          <div className="text-xs text-slate-400">{formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}</div>
-                        </div>
-                        {(post.image_url || post.video_url) && (
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
-                            {post.video_url ? (
-                              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">▶</span>
-                              </div>
-                            ) : (
-                              <img src={post.image_url} alt="" className="w-full h-full object-cover" />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-300 line-clamp-2">{post.content}</p>
-                      <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
-                        <div className="flex items-center gap-1">
-                          <Heart className="w-3 h-3" />
-                          <span>{post.likes || 0}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MessageCircle className="w-3 h-3" />
-                          <span>{post.comments?.length || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Notifications Section */}
-         {notifications.length > 0 && (
-           <Card className="bg-slate-900/70 backdrop-blur-sm border border-blue-500/30 p-4">
-             <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2 text-sm">
-               <Bell className="w-4 h-4 text-blue-400" />
-               Recent Notifications
-             </h3>
-             <div className="space-y-2">
-               {notifications.slice(0, 3).map(notif => (
-                 <div key={notif.id} className={`p-3 rounded-lg text-sm border ${notif.read ? 'bg-slate-800/40 border-slate-700/30' : 'bg-slate-800/60 border-blue-500/30'}`}>
-                   <div className="text-slate-200">{notif.title}</div>
-                   <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
-                 </div>
-               ))}
-             </div>
-           </Card>
-         )}
+        {/* Join with Code Modal */}
+        <JoinWithCodeModal 
+        open={showJoinModal} 
+        onClose={() => setShowJoinModal(false)} 
+        currentUser={currentUser}
+        />
 
 
 
