@@ -1,38 +1,60 @@
 export default function CustomFlameIcon() {
   return (
     <svg
-      width="28"
-      height="28"
-      viewBox="0 0 28 28"
+      width="48"
+      height="56"
+      viewBox="0 0 48 56"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="drop-shadow-lg"
     >
-      {/* Flame body */}
+      <defs>
+        <radialGradient id="flameGradient" cx="50%" cy="50%">
+          <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+          <stop offset="50%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: '#FF6B35', stopOpacity: 1 }} />
+        </radialGradient>
+      </defs>
+
+      {/* Main flame body with rounded bottom and peaks */}
       <path
-        d="M14 2C14 2 10 10 10 15C10 18.3137 11.7909 21 14 21C16.2091 21 18 18.3137 18 15C18 10 14 2 14 2Z"
+        d="M24 2C20 8 14 15 14 24C14 32.8366 18.9373 40 24 40C29.0627 40 34 32.8366 34 24C34 15 28 8 24 2Z"
+        fill="url(#flameGradient)"
+      />
+
+      {/* Left peak */}
+      <path
+        d="M10 22C8 18 4 22 6 28C8 32 12 32 14 28C15 25 12 20 10 22Z"
         fill="#FF6B35"
       />
-      
-      {/* Flame highlight/lighter area */}
+
+      {/* Right peak */}
       <path
-        d="M14 4C14 4 11.5 10 11.5 15C11.5 17.4853 12.5402 19.5 14 19.5C15.4598 19.5 16.5 17.4853 16.5 15C16.5 10 14 4 14 4Z"
-        fill="#FFA500"
+        d="M38 22C40 18 44 22 42 28C40 32 36 32 34 28C33 25 36 20 38 22Z"
+        fill="#FF6B35"
       />
 
-      {/* Left eye */}
-      <circle cx="11" cy="12" r="1.5" fill="white" />
-      <circle cx="11" cy="12" r="0.8" fill="black" />
+      {/* Inner lighter flame */}
+      <path
+        d="M24 8C21 13 17 19 17 24C17 30.6274 20.134 36 24 36C27.866 36 31 30.6274 31 24C31 19 27 13 24 8Z"
+        fill="#FFD700"
+      />
 
-      {/* Right eye */}
-      <circle cx="17" cy="12" r="1.5" fill="white" />
-      <circle cx="17" cy="12" r="0.8" fill="black" />
+      {/* Left eye white */}
+      <circle cx="18" cy="22" r="3.5" fill="white" />
+      {/* Left eye pupil */}
+      <circle cx="18" cy="22" r="2" fill="#8B4513" />
+
+      {/* Right eye white */}
+      <circle cx="30" cy="22" r="3.5" fill="white" />
+      {/* Right eye pupil */}
+      <circle cx="30" cy="22" r="2" fill="#8B4513" />
 
       {/* Smile */}
       <path
-        d="M12 15C12 15 13.5 16 14 16C14.5 16 16 15 16 15"
-        stroke="black"
-        strokeWidth="1.2"
+        d="M20 28C20 28 24 31 24 31C24 31 28 28 28 28"
+        stroke="#8B4513"
+        strokeWidth="2"
         strokeLinecap="round"
         fill="none"
       />
