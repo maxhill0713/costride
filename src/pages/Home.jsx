@@ -105,7 +105,15 @@ export default function Home() {
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      try {
+        const users = await base44.entities.User.list();
+        return users;
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser
   });
 
