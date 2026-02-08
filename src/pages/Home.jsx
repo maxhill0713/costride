@@ -298,30 +298,34 @@ export default function Home() {
               )}
 
               {/* Check-In Stats */}
-              <div className="bg-slate-800/40 rounded-xl px-4 py-3 border border-slate-700/30">
-                <p className="text-slate-300 text-sm mb-3">{todayCheckIns.length} people checked in</p>
-                <div className="flex items-center gap-2">
-                  {checkInUsers.slice(0, 5).map((user) => (
-                    <div key={user.id} className="relative group">
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt={user.full_name} className="w-10 h-10 rounded-full object-cover border-2 border-slate-700" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
-                          {user.full_name?.[0] || 'U'}
-                        </div>
-                      )}
-                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {user.full_name}
-                      </span>
-                    </div>
-                  ))}
-                  {todayCheckIns.length > 5 && (
-                    <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
-                      +{todayCheckIns.length - 5}
-                    </div>
-                  )}
+              {todayCheckIns.length > 0 ? (
+                <div className="bg-slate-800/40 rounded-xl px-4 py-3 border border-slate-700/30">
+                  <p className="text-slate-300 text-sm mb-3">{todayCheckIns.length} people checked in</p>
+                  <div className="flex items-center gap-2">
+                    {checkInUsers.slice(0, 5).map((user) => (
+                      <div key={user.id} className="relative group">
+                        {user.avatar_url ? (
+                          <img src={user.avatar_url} alt={user.full_name} className="w-10 h-10 rounded-full object-cover border-2 border-slate-700" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
+                            {user.full_name?.[0] || 'U'}
+                          </div>
+                        )}
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          {user.full_name}
+                        </span>
+                      </div>
+                    ))}
+                    {todayCheckIns.length > 5 && (
+                      <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
+                        +{todayCheckIns.length - 5}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="text-slate-400 text-sm">No one has checked in yet</p>
+              )}
             </>
           )}
 
