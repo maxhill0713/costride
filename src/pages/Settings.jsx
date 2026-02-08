@@ -49,12 +49,14 @@ export default function Settings() {
       setDisplayName(currentUser.full_name || '');
       setBio(currentUser.bio || '');
     }
-  }, [currentUser]);
+  }, []);
 
   const updateSettingsMutation = useMutation({
     mutationFn: (settings) => base44.auth.updateMe(settings),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      if (variables.full_name) setDisplayName(variables.full_name);
+      if (variables.bio) setBio(variables.bio);
     }
   });
 
