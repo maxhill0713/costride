@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, Flame, Award, MoreVertical, Gift } from 'lucide-react';
+import { Dumbbell, Users, Building2, Home, Gift, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -41,13 +41,7 @@ export default function Layout({ children, currentPageName }) {
   // Hide navigation on onboarding and signup pages
   const hideNavigation = currentPageName === 'Onboarding' || currentPageName === 'GymSignup' || currentPageName === 'MemberSignup';
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id, read: false }),
-    enabled: !!currentUser
-  });
 
-  const unreadCount = notifications.length;
 
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 

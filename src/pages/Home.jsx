@@ -5,7 +5,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle } from 'lucide-react';
+import { Dumbbell, Users, Trophy, Flame, CheckCircle, X, Crown, Bell, Heart, MessageCircle } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
@@ -41,18 +41,17 @@ export default function Home() {
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => base44.entities.Gym.list(),
+    enabled: !!currentUser && gymMemberships.length > 0,
+    staleTime: 300000
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
-    refetchInterval: 30000
-  });
-
-  const { data: challenges = [] } = useQuery({
-    queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list('-created_date')
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date', 100),
+    enabled: !!currentUser,
+    refetchInterval: 60000,
+    staleTime: 30000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
@@ -60,12 +59,9 @@ export default function Home() {
     queryFn: () => base44.entities.Challenge.filter({ 
       category: 'weekly',
       is_app_challenge: true 
-    }, '-created_date', 2)
-  });
-
-  const { data: lifts = [] } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date')
+    }, '-created_date', 2),
+    enabled: !!currentUser,
+    staleTime: 300000
   });
 
   const { data: goals = [] } = useQuery({
@@ -88,8 +84,9 @@ export default function Home() {
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => base44.entities.Post.list('-created_date', 50),
-    enabled: !!currentUser
+    queryFn: () => base44.entities.Post.list('-created_date', 20),
+    enabled: !!currentUser && friends.length > 0,
+    staleTime: 60000
   });
 
   // Redirect to onboarding if not completed
