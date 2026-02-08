@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -12,7 +12,22 @@ export default function TodayWorkout({ currentUser }) {
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [restTimer, setRestTimer] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
   const queryClient = useQueryClient();
+
+  // Rest timer effect
+  React.useEffect(() => {
+    let interval;
+    if (isTimerActive && restTimer > 0) {
+      interval = setInterval(() => {
+        setRestTimer(t => t - 1);
+      }, 1000);
+    } else if (restTimer === 0 && isTimerActive) {
+      setIsTimerActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive, restTimer]);
 
   const today = useMemo(() => new Date(), []);
   const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc
