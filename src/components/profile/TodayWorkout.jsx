@@ -234,115 +234,115 @@ export default function TodayWorkout({ currentUser, isExpanded = true }) {
       </div>
 
       {/* Exercises */}
-       {isExpanded && (
-         <>
-           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
-             <div className="space-y-2">
-          {/* Headers */}
-          <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
-          </div>
+      {isExpanded && (
+        <>
+          {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+            <div className="space-y-2">
+              {/* Headers */}
+              <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
+              </div>
 
-          {/* Exercise Rows */}
-          {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
-              {editingIndex === index ? (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
-                    {lastWorkout?.exercises?.[index] ? (
-                      <div className="text-xs text-slate-400 font-medium">
-                        Last: {lastWorkout.exercises[index].weight}kg
+              {/* Exercise Rows */}
+              {todayWorkout.exercises.map((exercise, index) => (
+                <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
+                  {editingIndex === index ? (
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
+                        {lastWorkout?.exercises?.[index] ? (
+                          <div className="text-xs text-slate-400 font-medium">
+                            Last: {lastWorkout.exercises[index].weight}kg
+                          </div>
+                        ) : (
+                          <div className="text-xs text-blue-400 font-medium">
+                            First Lift
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="text-xs text-blue-400 font-medium">
-                        First Lift
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Sets x Reps"
+                          value={editReps}
+                          onChange={(e) => setEditReps(e.target.value)}
+                          className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
+                        />
+                        <Input
+                          type="text"
+                          placeholder="Weight"
+                          value={editWeight}
+                          onChange={(e) => setEditWeight(e.target.value)}
+                          className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
+                        />
                       </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Sets x Reps"
-                      value={editReps}
-                      onChange={(e) => setEditReps(e.target.value)}
-                      className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Weight"
-                      value={editWeight}
-                      onChange={(e) => setEditWeight(e.target.value)}
-                      className="bg-slate-600 border-slate-500 text-white text-xs flex-1"
-                    />
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      onClick={() => handleSave(index)}
-                      size="sm"
-                      disabled={updateWorkoutMutation.isPending}
-                      className="flex-1 bg-green-600 hover:bg-green-700 h-7"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      onClick={handleCancel}
-                      size="sm"
-                      variant="ghost"
-                      className="flex-1 text-slate-300 h-7"
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
+                      <div className="flex gap-1">
+                        <Button
+                          onClick={() => handleSave(index)}
+                          size="sm"
+                          disabled={updateWorkoutMutation.isPending}
+                          className="flex-1 bg-green-600 hover:bg-green-700 h-7"
+                        >
+                          <Check className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          onClick={handleCancel}
+                          size="sm"
+                          variant="ghost"
+                          className="flex-1 text-slate-300 h-7"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-0.5">
+                        <div className="text-xs font-semibold text-white leading-tight">
+                          {exercise.exercise || '-'}
+                        </div>
+                        {lastWorkout?.exercises?.[index] ? (
+                          <div className="text-[10px] text-slate-400 font-medium">
+                            Last: {lastWorkout.exercises[index].weight}kg
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-blue-400 font-medium">
+                            First Lift
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs font-medium text-slate-200">
+                        {exercise.setsReps || '-'}
+                      </div>
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-semibold text-white">
+                            {exercise.weight || '-'}
+                          </span>
+                          {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
+                        </div>
+                        <Button
+                          onClick={() => handleEdit(index, exercise)}
+                          size="icon"
+                          variant="ghost"
+                          className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
-              ) : (
-                <>
-                  <div className="flex flex-col gap-0.5">
-                    <div className="text-xs font-semibold text-white leading-tight">
-                      {exercise.exercise || '-'}
-                    </div>
-                    {lastWorkout?.exercises?.[index] ? (
-                      <div className="text-[10px] text-slate-400 font-medium">
-                        Last: {lastWorkout.exercises[index].weight}kg
-                      </div>
-                    ) : (
-                      <div className="text-[10px] text-blue-400 font-medium">
-                        First Lift
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-xs font-medium text-slate-200">
-                    {exercise.setsReps || '-'}
-                  </div>
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-semibold text-white">
-                        {exercise.weight || '-'}
-                      </span>
-                      {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
-                    </div>
-                    <Button
-                      onClick={() => handleEdit(index, exercise)}
-                      size="icon"
-                      variant="ghost"
-                      className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
-          <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
-        </div>
-      )}
-      </>
+          ) : (
+            <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
+              <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
+            </div>
+          )}
+        </>
       )}
       </Card>
       );
