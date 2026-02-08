@@ -345,7 +345,7 @@ export default function Home() {
                         ? `${recentChallengeActivity[0].user_name?.split(' ')[0] || 'Someone'} joined a challenge`
                         : todayCheckIns.length > 0
                         ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person has' : 'people have'} worked out today`
-                        : 'View Community Feed'}
+                        : '3 people have worked out today'}
                     </p>
                   </div>
                 </div>
