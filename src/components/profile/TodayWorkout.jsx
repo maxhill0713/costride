@@ -340,11 +340,12 @@ export default function TodayWorkout({ currentUser }) {
                   </div>
                   <div className="flex items-center gap-2 justify-end">
                     <div className="flex items-center gap-2">
-                      <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500 to-orange-600 px-2.5 py-1 rounded-lg shadow-lg shadow-orange-500/30">
-                        {exercise.weight || '-'} kg
+                        <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500 to-orange-600 px-2.5 py-1 rounded-lg shadow-lg shadow-orange-500/30">
+                          {exercise.weight || '-'}
+                          <span className="text-[10px] font-bold ml-1">kg</span>
+                        </div>
+                        {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                       </div>
-                      {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
-                    </div>
                     <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
