@@ -277,8 +277,8 @@ export default function Home() {
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 {streakVariant === 'sunglasses' ? (
-                    <div className="relative w-10.8 h-10.8">
-                      <Flame className="w-10.8 h-10.8 text-orange-500 fill-current" />
+                  <div className="relative w-12 h-12">
+                    <Flame className="w-12 h-12 text-orange-500 fill-current" />
                     <svg 
                       className="absolute inset-0 w-full h-full pointer-events-none"
                       viewBox="0 0 64 64"
@@ -289,7 +289,7 @@ export default function Home() {
                     </svg>
                   </div>
                 ) : (
-                   <Flame className="w-10.8 h-10.8 text-orange-500 fill-current" />
+                  <Flame className="w-12 h-12 text-orange-500 fill-current" />
                 )}
                 <span className="text-white font-semibold text-2xl tracking-tight">{userStreak}</span>
               </button>
@@ -370,7 +370,7 @@ export default function Home() {
                   <TodayWorkout currentUser={currentUser} isExpanded={expandWorkout} />
                   <button
                     onClick={() => setExpandWorkout(!expandWorkout)}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 text-slate-400 hover:text-white transition-colors p-1"
+                    className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
                   >
                     {expandWorkout ? (
                       <ChevronUp className="w-5 h-5" />

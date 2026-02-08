@@ -29,8 +29,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           >
             <Flame className="w-10 h-10 text-orange-500 fill-current" />
             {selectedVariant === 'default' && (
-              <div className="relative w-6 h-6 bg-green-500 rounded">
-                <Check className="absolute bottom-0.5 right-0.5 w-2 h-2 text-white" />
+              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                <Check className="w-4 h-4 text-white" />
               </div>
             )}
           </button>
@@ -61,8 +61,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               </svg>
             </div>
             {selectedVariant === 'sunglasses' && (
-              <div className="relative w-6 h-6 bg-green-500 rounded">
-                <Check className="absolute bottom-0.5 right-0.5 w-2 h-2 text-white" />
+              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                <Check className="w-4 h-4 text-white" />
               </div>
             )}
           </button>
