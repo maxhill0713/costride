@@ -37,6 +37,7 @@ import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import PullToRefresh from '../components/PullToRefresh';
+import PollCard from '../components/polls/PollCard';
 // i18n import removed - using default language
 
 export default function GymCommunity() {
