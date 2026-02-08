@@ -432,63 +432,6 @@ export default function Home() {
 
 
 
-        {/* Premium Upgrade Card */}
-         <Card className="p-6 bg-slate-900/70 backdrop-blur-sm border border-purple-500/30 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full -mr-20 -mt-20 blur-2xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <Crown className="w-4 h-4" />
-                  </div>
-                  <Badge className="bg-purple-500/30 text-purple-200 border border-purple-500/50 font-bold text-xs">
-                    PREMIUM
-                  </Badge>
-                  <Badge className="bg-amber-500 text-amber-950 font-bold text-xs px-2 py-0.5 animate-pulse">
-                    COMING SOON
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <h3 className="font-bold text-base mb-2">Unlock Exclusive Rewards</h3>
-            <p className="text-slate-300 text-xs mb-4 leading-relaxed">
-              Access to brand rewards
-            </p>
-            <div className="mb-5">
-              <div className="text-2xl font-bold text-white">£4.99<span className="text-sm text-slate-400 font-semibold">/month</span></div>
-            </div>
-            <Button disabled className="w-full bg-gradient-to-r from-purple-600 to-pink-600 opacity-60 cursor-not-allowed text-white font-bold rounded-xl">
-              Coming Soon
-            </Button>
-          </div>
-        </Card>
-
-      </div>
-
-      {/* Check-in Modal */}
-      {showCheckIn && memberGym && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-gray-900">Quick Check-In</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowCheckIn(false)}>
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-            <CheckInButton gym={memberGym} />
-          </div>
-        </div>
-      )}
-
-      {/* Join with Code Modal */}
-      <JoinWithCodeModal 
-        open={showJoinModal} 
-        onClose={() => setShowJoinModal(false)} 
-        currentUser={currentUser}
-      />
-      </div>
-    </PullToRefresh>
-  );
-}
+        </PullToRefresh>
+        );
+        }
