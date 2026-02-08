@@ -17,6 +17,8 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [bio, setBio] = useState('');
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
@@ -41,6 +43,13 @@ export default function Settings() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
   });
+
+  React.useEffect(() => {
+    if (currentUser) {
+      setDisplayName(currentUser.full_name || '');
+      setBio(currentUser.bio || '');
+    }
+  }, [currentUser]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: (settings) => base44.auth.updateMe(settings),
@@ -86,113 +95,89 @@ export default function Settings() {
 
           <div className="space-y-4">
             {/* Profile Picture */}
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
-                  {currentUser.avatar_url ? (
-                    <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-2xl font-semibold text-white">
-                      {currentUser.full_name?.charAt(0)?.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <Label className="text-sm font-bold text-slate-100">Profile Picture</Label>
-                  <p className="text-xs text-slate-400">Upload a photo or enter a URL</p>
-                </div>
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'avatar')}
-                  />
-                  <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2">
-                    {uploadingAvatar ? (
-                      <span>Uploading...</span>
-                    ) : (
-                      <>
-                        <Camera className="w-4 h-4" />
-                        Upload
-                      </>
-                    )}
-                  </div>
-                </label>
-              </div>
-              <Input
-                type="text"
-                value={currentUser.avatar_url || ''}
-                onChange={(e) => updateSettingsMutation.mutate({ avatar_url: e.target.value })}
-                placeholder="https://example.com/photo.jpg"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
-            </div>
+             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+               <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
+               <div className="flex items-center gap-4">
+                 <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
+                   {currentUser.avatar_url ? (
+                     <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
+                   ) : (
+                     <span className="text-2xl font-semibold text-white">
+                       {currentUser.full_name?.charAt(0)?.toUpperCase()}
+                     </span>
+                   )}
+                 </div>
+                 <label className="cursor-pointer">
+                   <input
+                     type="file"
+                     accept="image/*"
+                     className="hidden"
+                     onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'avatar')}
+                   />
+                   <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2 cursor-pointer">
+                     {uploadingAvatar ? (
+                       <span>Uploading...</span>
+                     ) : (
+                       <Camera className="w-4 h-4" />
+                     )}
+                   </div>
+                 </label>
+               </div>
+             </div>
 
             {/* Banner Image */}
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="flex items-center gap-3 mb-3">
-                <Image className="w-5 h-5 text-slate-400" />
-                <div className="flex-1">
-                  <Label className="text-sm font-bold text-slate-100">Banner Image</Label>
-                  <p className="text-xs text-slate-400">Customize your profile header background</p>
-                </div>
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'banner')}
-                  />
-                  <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2">
-                    {uploadingBanner ? (
-                      <span>Uploading...</span>
-                    ) : (
-                      <>
-                        <Camera className="w-4 h-4" />
-                        Upload
-                      </>
-                    )}
-                  </div>
-                </label>
-              </div>
-              {currentUser.hero_image_url && (
-                <div className="mb-3 rounded-xl overflow-hidden h-20">
-                  <img src={currentUser.hero_image_url} alt="Banner" className="w-full h-full object-cover" />
-                </div>
-              )}
-              <Input
-                type="text"
-                value={currentUser.hero_image_url || ''}
-                onChange={(e) => updateSettingsMutation.mutate({ hero_image_url: e.target.value })}
-                placeholder="https://example.com/banner.jpg"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
-            </div>
+             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+               <Label className="text-sm font-bold text-slate-100 block mb-3">Banner Image</Label>
+               <div className="flex items-center gap-3">
+                 {currentUser.hero_image_url && (
+                   <div className="rounded-xl overflow-hidden h-16 w-24 flex-shrink-0">
+                     <img src={currentUser.hero_image_url} alt="Banner" className="w-full h-full object-cover" />
+                   </div>
+                 )}
+                 <label className="cursor-pointer">
+                   <input
+                     type="file"
+                     accept="image/*"
+                     className="hidden"
+                     onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'banner')}
+                   />
+                   <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2 cursor-pointer">
+                     {uploadingBanner ? (
+                       <span>Uploading...</span>
+                     ) : (
+                       <Camera className="w-4 h-4" />
+                     )}
+                   </div>
+                 </label>
+               </div>
+             </div>
 
             {/* Display Name */}
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Display Name</Label>
-              <Input
-                type="text"
-                value={currentUser.full_name || ''}
-                onChange={(e) => updateSettingsMutation.mutate({ full_name: e.target.value })}
-                placeholder="Your name"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
-            </div>
+             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+               <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Display Name</Label>
+               <Input
+                 type="text"
+                 value={displayName}
+                 onChange={(e) => setDisplayName(e.target.value.slice(0, 15))}
+                 maxLength="15"
+                 placeholder="Your name"
+                 className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
+                 onBlur={() => updateSettingsMutation.mutate({ full_name: displayName })}
+               />
+             </div>
 
             {/* Bio */}
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
-              <Textarea
-                value={currentUser.bio || ''}
-                onChange={(e) => updateSettingsMutation.mutate({ bio: e.target.value })}
-                placeholder="Tell us about yourself..."
-                rows={3}
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
-              />
-            </div>
+             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+               <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
+               <Textarea
+                 value={bio}
+                 onChange={(e) => setBio(e.target.value)}
+                 placeholder="Tell us about yourself..."
+                 rows={3}
+                 className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
+                 onBlur={() => updateSettingsMutation.mutate({ bio })}
+               />
+             </div>
           </div>
         </Card>
 
