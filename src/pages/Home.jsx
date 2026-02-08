@@ -328,26 +328,7 @@ export default function Home() {
 
 
 
-          {/* Recent Check-ins */}
-          {todayCheckIns.length > 0 && (
-            <div className="space-y-2">
-              {todayCheckIns.slice(0, 1).map((checkIn) => {
-                const user = checkInUsers.find(u => u.id === checkIn.user_id);
-                return (
-                  <div key={checkIn.id} className="flex items-center gap-2 px-4 py-2">
-                    {user?.avatar_url ? (
-                      <img src={user.avatar_url} alt={checkIn.user_name} className="w-8 h-8 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold">
-                        {checkIn.user_name?.[0] || 'U'}
-                      </div>
-                    )}
-                    <span className="text-slate-300 text-sm">{checkIn.user_name} <span className="text-slate-500">checked in 20 mins ago</span></span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+
 
           {/* Gym Section with Workout */}
           {memberGym && (
