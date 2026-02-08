@@ -267,6 +267,26 @@ export default function GymCommunity() {
     }
   });
 
+  const votePollMutation = useMutation({
+    mutationFn: async ({ pollId, optionId }) => {
+      const poll = polls.find(p => p.id === pollId);
+      const updatedOptions = poll.options.map(opt => 
+        opt.id === optionId 
+          ? { ...opt, votes: opt.votes + 1 }
+          : opt
+      );
+      const updatedVoters = [...(poll.voters || []), currentUser.id];
+      
+      await base44.entities.Poll.update(pollId, {
+        options: updatedOptions,
+        voters: updatedVoters
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['polls', gymId] });
+    }
+  });
+
   const updateCoachMutation = useMutation({
     mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data),
     onSuccess: () => {
