@@ -58,9 +58,8 @@ export default function Home() {
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
     queryFn: () => base44.entities.Challenge.filter({ 
-      is_app_challenge: true,
       status: 'active'
-    }, '-created_date', 2)
+    }, '-created_date', 3)
   });
 
   const { data: lifts = [] } = useQuery({
