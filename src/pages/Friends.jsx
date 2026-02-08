@@ -62,6 +62,24 @@ export default function Friends() {
     enabled: !!currentUser
   });
 
+  const updatePostReactionMutation = useMutation({
+    mutationFn: async (postId, streakIcon) => {
+      const post = allPosts.find(p => p.id === postId);
+      if (post) {
+        const reactions = post.reactions || {};
+        if (reactions[currentUser.id]) {
+          delete reactions[currentUser.id];
+        } else {
+          reactions[currentUser.id] = streakIcon;
+        }
+        await base44.entities.Post.update(postId, { reactions });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['posts']);
+    }
+  });
+
   const { data: allLifts = [] } = useQuery({
     queryKey: ['lifts'],
     queryFn: () => base44.entities.Lift.list('-created_date', 100),
