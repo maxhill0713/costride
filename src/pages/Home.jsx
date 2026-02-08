@@ -297,30 +297,28 @@ export default function Home() {
               )}
 
               {/* Check-In Stats */}
-              <div className="bg-slate-800/40 rounded-xl px-4 py-3 border border-slate-700/30">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex items-center -space-x-2">
-                    {(checkInUsers.length > 0 ? checkInUsers : [
-                      { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
-                      { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
-                      { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
-                    ]).slice(0, 3).map((user) => (
-                      <div key={user.id} className="relative group">
-                        {user.avatar_url ? (
-                          <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-slate-700" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
-                            {user.full_name?.[0] || 'U'}
-                          </div>
-                        )}
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                          {user.full_name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-slate-300 text-xs font-medium tracking-tight">{todayCheckIns.length > 0 ? `${todayCheckIns.length} members checked in today` : '3 members checked in today'}</p>
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center -space-x-2">
+                  {(checkInUsers.length > 0 ? checkInUsers : [
+                    { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
+                    { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
+                    { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
+                  ]).slice(0, 3).map((user) => (
+                    <div key={user.id} className="relative group">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-slate-700" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
+                          {user.full_name?.[0] || 'U'}
+                        </div>
+                      )}
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {user.full_name}
+                      </span>
+                    </div>
+                  ))}
                 </div>
+                <p className="text-slate-300 text-xs font-medium tracking-tight">{todayCheckIns.length > 0 ? `${todayCheckIns.length} members checked in today` : '3 members checked in today'}</p>
               </div>
             </>
           )}
