@@ -242,6 +242,14 @@ export default function TodayWorkout({ currentUser, isExpanded = true, onToggleE
         <>
           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
             <div className="space-y-2">
+              <div className="flex justify-center -mb-2">
+                <button
+                  onClick={onToggleExpand}
+                  className="text-slate-400 hover:text-white transition-colors p-1"
+                >
+                  <ChevronUp className="w-5 h-5" />
+                </button>
+              </div>
               {/* Headers */}
               <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
