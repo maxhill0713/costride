@@ -303,7 +303,7 @@ export default function Home() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-slate-300 text-sm mb-1">
-                    {todayCheckIns.filter(c => c.gym_id === memberGym.id).length} {todayCheckIns.filter(c => c.gym_id === memberGym.id).length === 1 ? 'member' : 'members'} checked in today
+                    {todayCheckIns.length} {todayCheckIns.length === 1 ? 'member' : 'members'} checked in today
                   </p>
                   <p className="text-slate-400 text-xs">Join your gym community</p>
                 </div>
