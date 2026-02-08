@@ -16,6 +16,8 @@ export default function TodayWorkout({ currentUser }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [restTimer, setRestTimer] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
   const queryClient = useQueryClient();
 
   // Rest timer effect
