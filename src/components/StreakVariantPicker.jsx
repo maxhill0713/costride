@@ -8,6 +8,11 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
     }
   };
 
+  const handleSelect = (variant) => {
+    onSelect(variant);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
