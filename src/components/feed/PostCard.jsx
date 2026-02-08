@@ -112,77 +112,52 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         ) : null}
       </div>
 
-      {/* Thin Action Bar */}
-      <div className="px-4 py-3 flex items-center justify-between gap-3 border-t border-gray-200">
-        <div className="flex items-center gap-3">
-          <button onClick={handleReact} className="hover:scale-110 transition-transform active:scale-95 flex items-center gap-1">
-            {reacted ? (
-              currentUser?.streak_variant === 'sunglasses' ? (
-                <div className="relative w-5 h-5 flex items-center justify-center">
-                  <Flame className="w-5 h-5 text-orange-500 fill-current" />
-                  <svg 
-                    className="absolute w-4 h-2 pointer-events-none"
-                    viewBox="0 0 64 32"
-                    style={{ top: '0px' }}
-                  >
-                    <circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
-                    <circle cx="48" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
-                    <line x1="21" y1="16" x2="43" y2="16" stroke="currentColor" strokeWidth="1" className="text-black" />
-                  </svg>
-                </div>
-              ) : (
-                <Flame className="w-5 h-5 text-orange-500 fill-current" />
-              )
-            ) : (
-              <>
-                <div className="w-5 h-5 border-2 border-gray-900 rounded-full relative flex items-center justify-center">
-                  <Flame className="w-3 h-3 text-gray-900" />
-                </div>
-                <span className="text-gray-900 font-semibold">+</span>
-              </>
-            )}
-          </button>
-          <span className="text-xs text-gray-600 font-medium">{(post.likes || 0) + (reacted ? 1 : 0)}</span>
-        </div>
-
-        <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
-          <MessageCircle className="w-5 h-5 text-gray-900" />
-        </button>
-
-        <button onClick={() => setShowShare(true)} className="hover:scale-110 transition-transform active:scale-95">
-          <Send className="w-5 h-5 text-gray-900" />
-        </button>
-
-        <button onClick={handleSave} className="ml-auto hover:scale-110 transition-transform active:scale-95">
-          <Bookmark className={`w-5 h-5 ${saved ? 'fill-gray-900 text-gray-900' : 'text-gray-900'}`} />
-        </button>
-      </div>
-
-      {/* Caption Section - Below Image */}
-      <div className="px-4 py-2 border-t border-gray-100">
-        <div className="text-xs mb-2">
-          <span className="font-semibold text-gray-900">{post.member_name}</span>
-          {post.exercise && (
-            <span className="text-gray-600 ml-2 capitalize">({post.exercise.replace(/_/g, ' ')})</span>
-          )}
-        </div>
-        <p className="text-sm text-gray-900 leading-snug">{post.content}</p>
+      {/* Caption Section - Thin Block */}
+      <div className="px-4 py-2 border-t border-gray-100 text-sm text-gray-900">
+        <p className="leading-snug">{post.content}</p>
         {post.weight && (
-          <span className="block mt-1 text-blue-600 font-semibold text-sm">
+          <span className="block mt-1 text-blue-600 font-semibold">
             💪 {post.weight} lbs
           </span>
         )}
-        {post.comments && post.comments.length > 0 && (
-          <button 
-            onClick={() => setShowComments(true)}
-            className="text-xs text-gray-500 mt-1 hover:text-gray-700"
-          >
-            View {post.comments.length} comments
-          </button>
-        )}
-        <p className="text-xs text-gray-400 mt-1 uppercase">
-          {format(new Date(post.created_date), 'MMM d, yyyy')}
-        </p>
+      </div>
+
+      {/* Reaction Bar */}
+      <div className="px-4 py-2 flex items-center gap-4 border-t border-gray-100">
+        <button onClick={handleReact} className="hover:scale-110 transition-transform active:scale-95">
+          {reacted ? (
+            currentUser?.streak_variant === 'sunglasses' ? (
+              <div className="relative w-5 h-5 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-orange-500 fill-current" />
+                <svg 
+                  className="absolute w-4 h-2 pointer-events-none"
+                  viewBox="0 0 64 32"
+                  style={{ top: '0px' }}
+                >
+                  <circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
+                  <circle cx="48" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
+                  <line x1="21" y1="16" x2="43" y2="16" stroke="currentColor" strokeWidth="1" className="text-black" />
+                </svg>
+              </div>
+            ) : (
+              <Flame className="w-5 h-5 text-orange-500 fill-current" />
+            )
+          ) : (
+            <Flame className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
+          )}
+        </button>
+
+        <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
+          <MessageCircle className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
+        </button>
+
+        <button onClick={() => setShowShare(true)} className="hover:scale-110 transition-transform active:scale-95">
+          <Send className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
+        </button>
+
+        <button onClick={handleSave} className="ml-auto hover:scale-110 transition-transform active:scale-95">
+          <Bookmark className={`w-5 h-5 ${saved ? 'fill-gray-900 text-gray-900' : 'text-gray-900'}`} strokeWidth={1.5} />
+        </button>
       </div>
 
       {/* Modals */}
