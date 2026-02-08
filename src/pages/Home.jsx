@@ -358,83 +358,32 @@ export default function Home() {
 
 
 
-        {/* Top 3 Leaderboard Badge */}
-        {(() => {
-          const weeklyCheckInsAll = allCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
-          const userCheckInCounts = {};
-          const userNames = {};
-          
-          weeklyCheckInsAll.forEach(c => {
-            userCheckInCounts[c.user_id] = (userCheckInCounts[c.user_id] || 0) + 1;
-            if (!userNames[c.user_id]) {
-              userNames[c.user_id] = c.user_name;
-            }
-          });
-          
-          const sortedUsers = Object.entries(userCheckInCounts)
-            .sort((a, b) => b[1] - a[1])
-            .map(([userId, count], index) => ({ 
-              userId, 
-              rank: index + 1, 
-              count,
-              name: userNames[userId] 
-            }));
-          
-          const userRank = sortedUsers.find(u => u.userId === currentUser?.id);
-          const top3 = sortedUsers.slice(0, 3);
-          
-          if (userRank && userRank.rank <= 3) {
-            const positionText = userRank.rank === 1 ? 'number one' : userRank.rank === 2 ? 'number two' : 'number three';
-            const gradientClass = userRank.rank === 1 
-              ? 'from-amber-500 to-yellow-500' 
-              : userRank.rank === 2 
-              ? 'from-slate-400 to-slate-300' 
-              : 'from-orange-600 to-amber-700';
-            const iconEmoji = userRank.rank === 1 ? '🥇' : userRank.rank === 2 ? '🥈' : '🥉';
-
-            return (
-              <Card className={`bg-gradient-to-r ${gradientClass} border-0 p-5 text-center shadow-xl animate-pulse`}>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-3xl">{iconEmoji}</span>
-                  <p className="text-white font-bold text-base">
-                    {currentUser.full_name?.split(' ')[0]} is {positionText} this week!
-                  </p>
-                  <Trophy className="w-6 h-6 text-white" />
+          {/* Community Section */}
+          <div className="space-y-3">
+            <h3 className="text-white font-bold text-lg px-4">Community</h3>
+            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
+              <Card className="bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {checkInUsers.length > 0 && (
+                      <img src={checkInUsers[0].avatar_url || ''} alt="" className="w-10 h-10 rounded-full object-cover" onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }} />
+                    )}
+                    <div style={{display: checkInUsers.length === 0 ? 'flex' : 'none'}} className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
+                      <span className="text-white font-bold">A</span>
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">{checkInUsers[0]?.full_name || 'Alex Mason'}</p>
+                      <p className="text-slate-400 text-xs">🏆 Sam completed the consistency challenge</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
                 </div>
               </Card>
-            );
-          } else if (top3.length > 0) {
-            return (
-              <Card className="bg-slate-900/70 backdrop-blur-sm border border-amber-500/30 p-4">
-                <h3 className="text-sm font-semibold text-slate-200 mb-3 text-center flex items-center justify-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-400" />
-                  This Week's Leaders
-                </h3>
-                <div className="space-y-2">
-                  {top3.map((user, idx) => {
-                    const emoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
-                    const textColor = idx === 0 ? 'text-amber-300' : idx === 1 ? 'text-slate-300' : 'text-orange-300';
-
-                    return (
-                      <div key={user.userId} className="flex items-center justify-between bg-slate-800/40 border border-slate-700/30 rounded-lg px-3 py-2 hover:bg-slate-800/60 transition-all">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{emoji}</span>
-                          <span className={`font-semibold text-sm ${textColor}`}>
-                            {user.name?.split(' ')[0] || 'User'}
-                          </span>
-                        </div>
-                        <Badge className="bg-slate-700/30 text-slate-200 border-slate-600 text-xs">
-                          {user.count} check-ins
-                        </Badge>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            );
-          }
-          return null;
-        })()}
+            </Link>
+          </div>
 
         {/* Join a Gym Prompt - Show at top for new members */}
         {gymMemberships.length === 0 && (
