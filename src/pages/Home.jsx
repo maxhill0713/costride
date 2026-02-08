@@ -103,18 +103,24 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['users'],
+  // Map check-in users to get unique user IDs
+  const checkInUserIds = [...new Set(todayCheckIns.map(c => c.user_id))];
+  
+  const { data: checkInUsers = [] } = useQuery({
+    queryKey: ['checkInUsers', checkInUserIds.join(',')],
     queryFn: async () => {
+      if (checkInUserIds.length === 0) return [];
       try {
-        const users = await base44.entities.User.list();
-        return users;
+        const users = await Promise.all(
+          checkInUserIds.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
+        );
+        return users.filter(Boolean);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching check-in users:', error);
         return [];
       }
     },
-    enabled: !!currentUser
+    enabled: checkInUserIds.length > 0
   });
 
   // Redirect to onboarding if not completed
@@ -372,7 +378,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 pl-15">
                     <div className="flex -space-x-2">
                       {todayCheckIns.slice(0, 5).map((checkIn, idx) => {
-                        const user = allUsers.find(u => u.id === checkIn.user_id);
+                        const user = checkInUsers.find(u => u.id === checkIn.user_id);
                         return (
                           <div 
                             key={checkIn.id}
@@ -380,7 +386,7 @@ export default function Home() {
                             style={{ zIndex: 5 - idx }}
                             title={checkIn.user_name}
                           >
-                            {user && user.avatar_url ? (
+                            {user?.avatar_url ? (
                               <img src={user.avatar_url} alt={checkIn.user_name} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
