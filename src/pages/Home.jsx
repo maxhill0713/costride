@@ -301,8 +301,8 @@ export default function Home() {
                   await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
                 }
               }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
-                   <Users className="w-11 h-11 text-cyan-400" />
+                <Button variant="ghost" size="icon" className="relative rounded-full w-9.6 h-9.6">
+                   <Users className="w-8.8 h-8.8 text-cyan-400" />
                    {friendPosts.length > 0 && (!currentUser?.last_friends_view || new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
                  </Button>
               </Link>
