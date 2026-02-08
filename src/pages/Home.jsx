@@ -257,53 +257,47 @@ export default function Home() {
       await queryClient.invalidateQueries();
     }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        {/* Header */}
+        {/* Header with Streak */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Flame className="w-5 h-5 text-orange-400" />
-            <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+            <div className="flex items-center gap-2">
+              <Flame className="w-5 h-5 text-orange-400" />
+              <span className="text-white font-bold text-sm">{userStreak}</span>
+            </div>
+            <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
               CoStride
             </h1>
             <Link to={createPageUrl('Friends')}>
               <Button variant="ghost" size="icon" className="relative rounded-full">
-                <Users className="w-6 h-6 text-cyan-400" />
+                <Users className="w-5 h-5 text-cyan-400" />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />
               </Button>
             </Link>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-          {/* Motivational Section */}
+        <div className="max-w-4xl mx-auto px-4 py-3 space-y-3">
+          {/* Hero Section */}
           {memberGym && (
-            <div className="text-center space-y-0.5 py-2">
-              <h2 className="text-xl font-bold text-white">
-                You're showing up today 🔥
-              </h2>
-              <p className="text-2xl font-bold text-cyan-400">{todayCheckIns.length} visits</p>
-              <p className="text-slate-400 text-xs">
-                {todayCheckIns.length} {todayCheckIns.length === 1 ? 'member has' : 'members have'} checked in
-              </p>
-            </div>
-          )}
-
-          {/* Check-In Button */}
-          {memberGym && (
-            <>
+            <div className="flex items-center justify-between bg-gradient-to-r from-slate-800/40 to-slate-800/20 rounded-xl px-4 py-3 border border-slate-700/30">
+              <div>
+                <p className="text-white font-bold text-sm">You're showing up today</p>
+                <p className="text-cyan-400 font-bold text-lg">{todayCheckIns.length} people checked in</p>
+              </div>
               {daysSinceCheckIn === 0 ? (
-                <Badge className="w-full justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white text-base px-6 py-4 shadow-lg">
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                  Checked In Today ✓
+                <Badge className="bg-green-500/20 text-green-300 border border-green-500/50">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Checked in
                 </Badge>
               ) : (
                 <Button 
                   onClick={() => setShowCheckIn(true)}
-                  className="w-full text-white border-0 shadow-lg py-5 text-lg font-bold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  className="text-white text-sm px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg"
                 >
-                  Check In Now
+                  Check In
                 </Button>
               )}
-            </>
+            </div>
           )}
 
 
