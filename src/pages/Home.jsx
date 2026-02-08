@@ -333,23 +333,48 @@ export default function Home() {
         {memberGym && (
           <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`}>
             <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg">
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
-                    <Users className="w-6 h-6 text-white" />
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-bold text-base">{memberGym.name}</h3>
+                      <p className="text-slate-400 text-sm">
+                        {recentChallengeActivity.length > 0 
+                          ? `${recentChallengeActivity[0].user_name?.split(' ')[0] || 'Someone'} joined a challenge`
+                          : todayCheckIns.length > 0
+                          ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person has' : 'people have'} worked out today`
+                          : '3 people have worked out today'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-white font-bold text-base">{memberGym.name}</h3>
-                    <p className="text-slate-400 text-sm">
-                      {recentChallengeActivity.length > 0 
-                        ? `${recentChallengeActivity[0].user_name?.split(' ')[0] || 'Someone'} joined a challenge`
-                        : todayCheckIns.length > 0
-                        ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person has' : 'people have'} worked out today`
-                        : '3 people have worked out today'}
-                    </p>
-                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-400" />
+                
+                {/* Active Members Avatars */}
+                {todayCheckIns.length > 0 && (
+                  <div className="flex items-center gap-2 pl-15">
+                    <div className="flex -space-x-2">
+                      {todayCheckIns.slice(0, 5).map((checkIn, idx) => (
+                        <div 
+                          key={checkIn.id}
+                          className="w-8 h-8 rounded-full border-2 border-slate-800 bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold shadow-lg"
+                          style={{ zIndex: 5 - idx }}
+                        >
+                          {checkIn.user_name?.[0] || 'U'}
+                        </div>
+                      ))}
+                      {todayCheckIns.length > 5 && (
+                        <div className="w-8 h-8 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-white text-xs font-semibold">
+                          +{todayCheckIns.length - 5}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-slate-400 text-xs">Active today</span>
+                  </div>
+                )}
               </div>
             </Card>
           </Link>
