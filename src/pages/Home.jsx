@@ -361,7 +361,7 @@ export default function Home() {
           {/* Weekly Challenges */}
           {weeklyChallenges.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-white font-bold text-lg px-4">Weekly Challenges</h3>
+              <h3 className="text-white font-semibold text-base px-4 tracking-tight">Weekly Challenges</h3>
               <div className="space-y-2">
                 {weeklyChallenges.map((challenge) => (
                   <WeeklyChallengeCard key={challenge.id} challenge={challenge} currentUser={currentUser} />
