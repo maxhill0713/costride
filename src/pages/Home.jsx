@@ -366,18 +366,20 @@ export default function Home() {
             <div className="space-y-3">
               {/* Today's Workout */}
               {currentUser?.workout_split && (
-                <div className="relative">
+                <div className="space-y-2">
                   <TodayWorkout currentUser={currentUser} isExpanded={expandWorkout} />
-                  <button
-                    onClick={() => setExpandWorkout(!expandWorkout)}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
-                  >
-                    {expandWorkout ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
-                  </button>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setExpandWorkout(!expandWorkout)}
+                      className="text-slate-400 hover:text-white transition-colors p-1"
+                    >
+                      {expandWorkout ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
