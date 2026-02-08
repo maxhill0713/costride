@@ -448,13 +448,6 @@ export default function CheckInButton({ gym }) {
   const handleCheckIn = async () => {
     if (!currentUser || !gym) return;
     
-    if (!gymMembership) {
-      toast.error('You need a membership to check in', {
-        description: 'Join this gym to start checking in and tracking your progress!'
-      });
-      return;
-    }
-    
     setIsChecking(true);
     try {
       // Get user's location
@@ -669,13 +662,7 @@ export default function CheckInButton({ gym }) {
 
 
       {/* Check-in Button */}
-      {!gymMembership ? (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
-          <p className="text-purple-900 font-semibold mb-2">Join this gym to check in</p>
-          <p className="text-sm text-purple-700">Get a membership to start tracking your progress!</p>
-        </div>
-      ) : (
-        <motion.div
+      <motion.div
           whileTap={!hasCheckedInToday() && !isChecking ? { scale: 0.95 } : {}}
           animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}
@@ -703,10 +690,9 @@ export default function CheckInButton({ gym }) {
             </>
           )}
           </Button>
-        </motion.div>
-      )}
+          </motion.div>
 
-      {hasCheckedInToday() && (
+          {hasCheckedInToday() && (
         <p className="text-center text-sm text-gray-500">
           See you tomorrow! Keep the streak alive 🔥
         </p>
