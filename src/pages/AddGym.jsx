@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +18,6 @@ export default function AddGym() {
   const [selectedGym, setSelectedGym] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [gymType, setGymType] = useState('general');
-  const debounceTimer = useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -50,48 +49,20 @@ export default function AddGym() {
     }
   });
 
-  const handleSearch = async (query) => {
-    if (!query.trim() || query.length < 1) {
-      setSearchResults([]);
-      return;
-    }
+  const handleSearch = async () => {
+    if (!searchInput.trim()) return;
 
     setSearching(true);
     try {
-      const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
+      const response = await base44.functions.invoke('searchGymsPlaces', { input: searchInput });
       setSearchResults(response.data.results || []);
     } catch (error) {
       console.error('Search failed:', error);
-      setSearchResults([]);
+      alert('Failed to search. Please try again.');
     } finally {
       setSearching(false);
     }
   };
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchInput(value);
-
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    if (value.length > 0) {
-      debounceTimer.current = setTimeout(() => {
-        handleSearch(value);
-      }, 300);
-    } else {
-      setSearchResults([]);
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
-  }, []);
 
   const handleSelectGym = (gym) => {
     setSelectedGym(gym);
@@ -141,18 +112,19 @@ export default function AddGym() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <Input
                     value={searchInput}
-                    onChange={handleInputChange}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchInput)}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     placeholder="Search for a gym..."
                     className="pl-10 bg-slate-800/60 border-slate-600/40 text-white placeholder:text-slate-500 rounded-xl"
                   />
                 </div>
-                {searching && (
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">Searching...</span>
-                  </div>
-                )}
+                <Button
+                  onClick={handleSearch}
+                  disabled={searching || !searchInput.trim()}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl px-6 min-h-[44px]"
+                >
+                  {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search'}
+                </Button>
               </div>
 
               {/* Search Results */}

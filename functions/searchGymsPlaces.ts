@@ -15,44 +15,33 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Search input is required' }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY') || Deno.env.get('GOOFLE_PLACES_API_KEY');
     
     if (!apiKey) {
       console.error('Google Places API key not found');
       return Response.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    // Use New Places API (Text Search)
-    const url = 'https://places.googleapis.com/v1/places:searchText';
+    // Use Places API Text Search
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(input + ' gym')}&type=gym&key=${apiKey}`;
     
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating'
-      },
-      body: JSON.stringify({
-        textQuery: input + ' gym',
-        includedType: 'gym'
-      })
-    });
-    
+    const response = await fetch(url);
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       console.error('Google Places API error:', data);
-      return Response.json({ error: 'API_ERROR', message: data.error?.message || 'Failed to search places' }, { status: 500 });
+      return Response.json({ error: data.status, message: data.error_message }, { status: 500 });
     }
 
     // Format results
-    const results = (data.places || []).map(place => ({
-      place_id: place.id,
-      name: place.displayName?.text || place.displayName,
-      address: place.formattedAddress,
-      latitude: place.location?.latitude,
-      longitude: place.location?.longitude,
-      rating: place.rating
+    const results = (data.results || []).map(place => ({
+      place_id: place.place_id,
+      name: place.name,
+      address: place.formatted_address,
+      latitude: place.geometry.location.lat,
+      longitude: place.geometry.location.lng,
+      rating: place.rating,
+      types: place.types
     }));
 
     return Response.json({ results });

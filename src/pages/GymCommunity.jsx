@@ -682,46 +682,6 @@ export default function GymCommunity() {
 
         {/* Header Controls */}
         <div className="absolute top-4 right-4 flex gap-2">
-          {/* Claim Gym Button - for unclaimed gyms viewed by gym owners */}
-          {currentUser?.account_type === 'gym_owner' && gym?.claim_status === 'unclaimed' && !isGymOwner && (
-            <Button
-              onClick={async () => {
-                if (window.confirm(`Claim ${gym.name}? You will become the gym owner.`)) {
-                  await base44.entities.Gym.update(gymId, {
-                    claim_status: 'claimed',
-                    admin_id: currentUser.id,
-                    owner_email: currentUser.email,
-                    verified: true
-                  });
-                  queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
-                }
-              }}
-              variant="ghost"
-              size="sm"
-              className="bg-purple-600/90 backdrop-blur hover:bg-purple-700 text-white rounded-full text-xs font-semibold"
-            >
-              <Crown className="w-4 h-4 mr-1" />
-              Claim Gym
-            </Button>
-          )}
-          
-          {/* Invite Owner Button - for members when gym is unclaimed */}
-          {isMember && !isGymOwner && gym?.claim_status === 'unclaimed' && (
-            <Button
-              onClick={() => {
-                const subject = `Join ${gym.name} on CoStride`;
-                const body = `Hi! I'm inviting you to claim and manage ${gym.name} on CoStride.\n\nJoin here: ${window.location.origin}${createPageUrl('GymCommunity')}?id=${gymId}\n\nYou can claim the gym by signing up as a gym owner and clicking "Claim Gym".`;
-                window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-              }}
-              variant="ghost"
-              size="sm"
-              className="bg-blue-600/90 backdrop-blur hover:bg-blue-700 text-white rounded-full text-xs font-semibold"
-            >
-              <Mail className="w-4 h-4 mr-1" />
-              Invite Owner
-            </Button>
-          )}
-
           {showOwnerControls && (
             <Button
               onClick={() => setShowEditHeroImage(true)}
