@@ -230,9 +230,8 @@ export default function Home() {
 
   const handleStreakVariantSelect = async (variant) => {
     if (currentUser) {
-      await base44.auth.updateMe({ streak_variant: variant });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowStreakVariants(false);
+      await base44.auth.updateMe({ streak_variant: variant });
     }
   };
 
