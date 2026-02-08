@@ -232,6 +232,8 @@ export default function Home() {
     if (currentUser) {
       setShowStreakVariants(false);
       await base44.auth.updateMe({ streak_variant: variant });
+      // Refetch current user to update UI with new streak variant
+      await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
   };
 
