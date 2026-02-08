@@ -25,6 +25,7 @@ import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import ManageMembersModal from '../components/gym/ManageMembersModal';
+import InviteOwnerModal from '../components/gym/InviteOwnerModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
@@ -58,6 +59,7 @@ export default function GymCommunity() {
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [copiedCoachId, setCopiedCoachId] = useState(null);
+  const [showInviteOwner, setShowInviteOwner] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -535,6 +537,7 @@ export default function GymCommunity() {
   });
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
+  const isGhostGym = gym && !gym.admin_id && !gym.owner_email;
   const currentCoach = currentUser && coaches.find(c => c.user_email === currentUser.email);
   const isCoach = !!currentCoach;
   const showOwnerControls = isGymOwner && !viewAsMember;
@@ -682,6 +685,17 @@ export default function GymCommunity() {
 
         {/* Header Controls */}
         <div className="absolute top-4 right-4 flex gap-2">
+          {isGhostGym && !isGymOwner && (
+            <Button
+              onClick={() => setShowInviteOwner(true)}
+              variant="ghost"
+              size="sm"
+              className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
+            >
+              <Crown className="w-4 h-4 mr-1" />
+              Invite Owner
+            </Button>
+          )}
           {showOwnerControls && (
             <Button
               onClick={() => setShowEditHeroImage(true)}
@@ -1551,6 +1565,12 @@ export default function GymCommunity() {
                   }}
                   isLoading={createChallengeMutation.isPending}
                 />
+
+        <InviteOwnerModal
+          open={showInviteOwner}
+          onClose={() => setShowInviteOwner(false)}
+          gym={gym}
+        />
       </div>
     </PullToRefresh>
   );
