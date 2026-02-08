@@ -173,10 +173,10 @@ export default function Gyms() {
   useEffect(() => {
     const timer = setTimeout(() => {
       searchPlaces(searchQuery);
-    }, 500);
+    }, 800);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, gyms]);
 
 
 

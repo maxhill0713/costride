@@ -47,58 +47,58 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import GymOwnerDashboard from './pages/GymOwnerDashboard';
-import MemberSignup from './pages/MemberSignup';
-import Leaderboard from './pages/Leaderboard';
-import Search from './pages/Search';
-import GymCommunity from './pages/GymCommunity';
-import BrandDiscounts from './pages/BrandDiscounts';
-import AdminGyms from './pages/AdminGyms';
-import Home from './pages/Home';
-import Members from './pages/Members';
-import Premium from './pages/Premium';
-import Profile from './pages/Profile';
-import Gyms from './pages/Gyms';
-import GymSignup from './pages/GymSignup';
-import Routines from './pages/Routines';
-import Plus from './pages/Plus';
-import Friends from './pages/Friends';
-import Settings from './pages/Settings';
-import Onboarding from './pages/Onboarding';
-import GymRewards from './pages/GymRewards';
 import RedeemReward from './pages/RedeemReward';
-import Messages from './pages/Messages';
+import Routines from './pages/Routines';
+import Profile from './pages/Profile';
+import Search from './pages/Search';
+import Home from './pages/Home';
+import AdminGyms from './pages/AdminGyms';
+import Friends from './pages/Friends';
+import Onboarding from './pages/Onboarding';
+import Leaderboard from './pages/Leaderboard';
+import GymCommunity from './pages/GymCommunity';
 import Notifications from './pages/Notifications';
-import UserProfile from './pages/UserProfile';
 import AddGym from './pages/AddGym';
+import GymSignup from './pages/GymSignup';
+import Messages from './pages/Messages';
+import BrandDiscounts from './pages/BrandDiscounts';
+import Members from './pages/Members';
+import UserProfile from './pages/UserProfile';
+import GymOwnerDashboard from './pages/GymOwnerDashboard';
+import GymRewards from './pages/GymRewards';
+import MemberSignup from './pages/MemberSignup';
+import Settings from './pages/Settings';
+import Gyms from './pages/Gyms';
+import Plus from './pages/Plus';
+import Premium from './pages/Premium';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "GymOwnerDashboard": GymOwnerDashboard,
-    "MemberSignup": MemberSignup,
-    "Leaderboard": Leaderboard,
-    "Search": Search,
-    "GymCommunity": GymCommunity,
-    "BrandDiscounts": BrandDiscounts,
-    "AdminGyms": AdminGyms,
-    "Home": Home,
-    "Members": Members,
-    "Premium": Premium,
-    "Profile": Profile,
-    "Gyms": Gyms,
-    "GymSignup": GymSignup,
-    "Routines": Routines,
-    "Plus": Plus,
-    "Friends": Friends,
-    "Settings": Settings,
-    "Onboarding": Onboarding,
-    "GymRewards": GymRewards,
     "RedeemReward": RedeemReward,
-    "Messages": Messages,
+    "Routines": Routines,
+    "Profile": Profile,
+    "Search": Search,
+    "Home": Home,
+    "AdminGyms": AdminGyms,
+    "Friends": Friends,
+    "Onboarding": Onboarding,
+    "Leaderboard": Leaderboard,
+    "GymCommunity": GymCommunity,
     "Notifications": Notifications,
-    "UserProfile": UserProfile,
     "AddGym": AddGym,
+    "GymSignup": GymSignup,
+    "Messages": Messages,
+    "BrandDiscounts": BrandDiscounts,
+    "Members": Members,
+    "UserProfile": UserProfile,
+    "GymOwnerDashboard": GymOwnerDashboard,
+    "GymRewards": GymRewards,
+    "MemberSignup": MemberSignup,
+    "Settings": Settings,
+    "Gyms": Gyms,
+    "Plus": Plus,
+    "Premium": Premium,
 }
 
 export const pagesConfig = {
