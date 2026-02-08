@@ -254,7 +254,15 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center justify-end">
+            <div className="flex items-center gap-2 justify-end">
+              {memberGym && (
+                <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`}>
+                  <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0 backdrop-blur-sm rounded-xl shadow-lg">
+                    <Users className="w-4 h-4 mr-2" />
+                    Community
+                  </Button>
+                </Link>
+              )}
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
                   <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
