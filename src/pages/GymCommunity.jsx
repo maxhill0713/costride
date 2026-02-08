@@ -144,6 +144,15 @@ export default function GymCommunity() {
     enabled: !!gymId
   });
 
+  const { data: polls = [] } = useQuery({
+    queryKey: ['polls', gymId],
+    queryFn: async () => {
+      const allPolls = await base44.entities.Poll.list('-created_date');
+      return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
+    },
+    enabled: !!gymId
+  });
+
   // Only gym challenges now
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
 
