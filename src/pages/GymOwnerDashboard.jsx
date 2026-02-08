@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Users, Trophy, Calendar, Star, Target, Award, Activity, Bell, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, X, Crown, Trash2 } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Share2, X, Crown, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, subDays, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
@@ -235,11 +235,25 @@ export default function GymOwnerDashboard() {
     );
   }
 
+  const { data: allCheckIns = [] } = useQuery({
+    queryKey: ['allCheckIns'],
+    queryFn: () => base44.entities.CheckIn.list(),
+    enabled: !!currentUser && !!selectedGym,
+    staleTime: 30000 // Cache for 30 seconds
+  });
+
   const { data: allMemberships = [] } = useQuery({
     queryKey: ['allMemberships'],
-    queryFn: () => base44.entities.GymMembership.filter({ gym_id: selectedGym.id }),
+    queryFn: () => base44.entities.GymMembership.list(),
     enabled: !!currentUser && !!selectedGym,
-    staleTime: 60000
+    staleTime: 30000
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: !!currentUser && !!selectedGym,
+    staleTime: 30000
   });
 
   React.useEffect(() => {
@@ -257,58 +271,82 @@ export default function GymOwnerDashboard() {
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', selectedGym?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }, '-check_in_date', 500),
+    queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }),
     enabled: !!selectedGym,
-    staleTime: 60000
+    staleTime: 20000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', selectedGym?.id],
-    queryFn: () => base44.entities.Lift.filter({ gym_id: selectedGym.id }),
-    enabled: !!selectedGym,
-    staleTime: 120000
+    queryFn: async () => {
+      const allLifts = await base44.entities.Lift.list();
+      return allLifts.filter(l => l.gym_id === selectedGym.id);
+    },
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', selectedGym?.id],
-    queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }),
-    enabled: !!selectedGym,
-    staleTime: 120000
+    queryFn: async () => {
+      const allRewards = await base44.entities.Reward.list();
+      return allRewards.filter(r => r.gym_id === selectedGym.id);
+    },
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', selectedGym?.id],
-    queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }),
-    enabled: !!selectedGym,
-    staleTime: 180000
+    queryFn: async () => {
+      const allClasses = await base44.entities.GymClass.list();
+      return allClasses.filter(c => c.gym_id === selectedGym.id);
+    },
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: coaches = [] } = useQuery({
     queryKey: ['coaches', selectedGym?.id],
-    queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }),
-    enabled: !!selectedGym,
-    staleTime: 180000
+    queryFn: async () => {
+      const allCoaches = await base44.entities.Coach.list();
+      return allCoaches.filter(c => c.gym_id === selectedGym.id);
+    },
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events', selectedGym?.id],
-    queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }),
-    enabled: !!selectedGym,
-    staleTime: 120000
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.list();
+      return allEvents.filter(e => e.gym_id === selectedGym.id);
+    },
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', selectedGym?.id],
-    queryFn: () => base44.entities.Post.list('-created_date', 20),
-    enabled: !!selectedGym,
-    staleTime: 60000
+    queryFn: async () => {
+      const allPosts = await base44.entities.Post.list('-created_date');
+      return allPosts.filter(p => {
+        const postCheckIns = checkIns.filter(c => c.user_id === p.member_id);
+        return postCheckIns.length > 0;
+      });
+    },
+    enabled: !!selectedGym && checkIns.length > 0,
+    staleTime: 20000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges', selectedGym?.id],
-    queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym?.id }, '-created_date'),
-    enabled: !!selectedGym,
-    staleTime: 120000
+    queryFn: async () => {
+      const allChallenges = await base44.entities.Challenge.list('-created_date');
+      return allChallenges.filter(c => c.gym_id === selectedGym?.id || c.competing_gym_id === selectedGym?.id);
+    },
+    enabled: !!selectedGym && !!checkIns,
+    staleTime: 30000
   });
 
   const createRewardMutation = useMutation({
@@ -566,7 +604,42 @@ export default function GymOwnerDashboard() {
     value
   }));
 
+  // Gym Leaderboard Data
+  const gymLeaderboardData = gyms.map(gym => {
+    const gymCheckIns = allCheckIns.filter(c => c.gym_id === gym.id);
+    const gymMembers = allMemberships.filter(m => m.gym_id === gym.id && m.status === 'active');
+    const uniqueUsers = new Set(gymCheckIns.map(c => c.user_id)).size;
+    
+    // Calculate engagement score
+    const avgCheckInsPerMember = uniqueUsers > 0 ? gymCheckIns.length / uniqueUsers : 0;
+    const engagementScore = Math.min(100, Math.round((avgCheckInsPerMember / 10) * 100));
+    
+    return {
+      id: gym.id,
+      name: gym.name,
+      members: gymMembers.length,
+      rating: gym.rating || 0,
+      checkIns: gymCheckIns.length,
+      engagementScore,
+      isOwner: gym.owner_email === currentUser?.email,
+      overallScore: (gymMembers.length * 0.4 + (gym.rating || 0) * 20 * 0.4 + engagementScore * 0.2)
+    };
+  });
 
+  // Sort based on filter
+  const sortedGyms = [...gymLeaderboardData].sort((a, b) => {
+    switch (leaderboardFilter) {
+      case 'members':
+        return b.members - a.members;
+      case 'rating':
+        return b.rating - a.rating;
+      case 'engagement':
+        return b.engagementScore - a.engagementScore;
+      case 'overall':
+      default:
+        return b.overallScore - a.overallScore;
+    }
+  });
 
   return (
     <div className="min-h-screen p-4 md:p-8">
