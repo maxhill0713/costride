@@ -338,24 +338,28 @@ export default function Home() {
           {/* Gym Section with Workout */}
           {memberGym && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between px-4">
-                <div>
-                  <h3 className="text-white font-semibold text-base tracking-tight">{memberGym.name}</h3>
-                  <p className="text-slate-400 text-xs mt-1 font-medium">
-                    {currentUser?.workout_split ? currentUser.workout_split : 'Chest/delts day at the gym'}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-cyan-400 text-xs font-semibold">{todayCheckIns.length}</p>
-                  <p className="text-slate-400 text-[10px] tracking-tight">members</p>
-                </div>
-              </div>
-
               {/* Today's Workout */}
               {currentUser?.workout_split && (
                 <TodayWorkout currentUser={currentUser} />
               )}
             </div>
+          )}
+
+          {/* Community Section */}
+          {memberGym && (
+            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
+              <Card className="bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="text-white font-semibold text-sm tracking-tight">Community</p>
+                      <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                </div>
+              </Card>
+            </Link>
           )}
 
 
