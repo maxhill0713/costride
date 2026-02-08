@@ -263,7 +263,7 @@ export default function Home() {
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Flame className="w-5 h-5 text-orange-400" />
+                <CustomFlameIcon />
                 <span className="text-white font-semibold text-xs tracking-tight">{userStreak}</span>
               </div>
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
