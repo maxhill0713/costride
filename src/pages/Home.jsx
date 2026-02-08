@@ -269,6 +269,18 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-4 space-y-5">
+        {/* Motivational Text */}
+        <div className="text-center py-3">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+            Every Rep Counts
+          </h2>
+          <p className="text-slate-400 text-sm">
+            {userStreak > 0 
+              ? `${userStreak} day streak - Keep pushing forward! 💪`
+              : "Start your journey today and build unstoppable momentum"}
+          </p>
+        </div>
+
         {/* Check-In Button */}
         {memberGym && (
           <>
