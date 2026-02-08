@@ -35,9 +35,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
 
   const isOwner = currentUser?.id === post.member_id;
 
-  const handleLike = () => {
-    setLiked(!liked);
-    onLike(post.id, !liked);
+  const handleReact = () => {
+    setReacted(!reacted);
+    onLike(post.id, !reacted);
   };
 
   const handleSave = () => {
