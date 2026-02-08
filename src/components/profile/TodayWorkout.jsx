@@ -237,7 +237,7 @@ export default function TodayWorkout({ currentUser }) {
       {isExpanded && (
         <div className="text-[10px] text-slate-400 mb-3 leading-relaxed">Log your lifts to track progress</div>
       )}
-      {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+      {isExpanded && todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
         <div className="space-y-2">
           {/* Headers */}
           <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
@@ -251,7 +251,7 @@ export default function TodayWorkout({ currentUser }) {
             <div key={index} className={`p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'}`}>
               {editingIndex === index ? (
                 <div className="space-y-2.5">
-                  <div className="flex items-center justify-between mb-2">
+                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
                     {lastWorkout?.exercises?.[index] ? (
                       <div className="text-xs text-slate-400 font-medium">
@@ -337,12 +337,45 @@ export default function TodayWorkout({ currentUser }) {
               )}
             </div>
           ))}
+
+          {/* Collapse Arrow */}
+          <div className="flex justify-center mt-3 pt-2 border-t border-slate-600/30">
+            <Button
+              onClick={() => setIsExpanded(false)}
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6 text-slate-400 hover:text-white"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-      ) : (
+      ) : isExpanded && todayWorkout.exercises.length === 0 ? (
         <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
           <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
+          <div className="flex justify-center mt-3 pt-2 border-t border-slate-600/30">
+            <Button
+              onClick={() => setIsExpanded(false)}
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6 text-slate-400 hover:text-white"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center pt-2">
+          <Button
+            onClick={() => setIsExpanded(true)}
+            variant="ghost"
+            size="icon"
+            className="w-6 h-6 text-slate-400 hover:text-white"
+          >
+            <ChevronDown className="w-4 h-4" />
+          </Button>
         </div>
       )}
-    </Card>
-  );
-}
+      </Card>
+      );
+      }
