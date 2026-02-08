@@ -1327,36 +1327,7 @@ export default function GymOwnerDashboard() {
               </div>
             </Card>
 
-            {/* Reward Effectiveness */}
-            <Card className="p-8 bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-pink-600/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/10">
-              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Award className="w-7 h-7 text-pink-400" />
-                {t('dashboard.rewardEffectiveness')}
-              </h3>
-              <div className="grid grid-cols-3 gap-6">
-                <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
-                  <p className="text-sm text-slate-300 mb-1">{t('dashboard.activeRewards')}</p>
-                  <p className="text-3xl font-black text-purple-300">{rewards.filter(r => r.active).length}</p>
-                </div>
-                <div className="p-4 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-2xl border border-pink-500/30">
-                  <p className="text-sm text-slate-300 mb-1">{t('dashboard.totalClaims')}</p>
-                  <p className="text-3xl font-black text-pink-300">
-                    {rewards.reduce((sum, r) => sum + (r.claimed_by?.length || 0), 0)}
-                  </p>
-                </div>
-                <div className="p-4 bg-gradient-to-br from-orange-500/20 to-amber-500/20 rounded-2xl border border-orange-500/30">
-                  <p className="text-sm text-slate-300 mb-1">{t('dashboard.mostPopular')}</p>
-                  <p className="text-lg font-bold text-orange-300">
-                    {rewards.sort((a, b) => (b.claimed_by?.length || 0) - (a.claimed_by?.length || 0))[0]?.title || 'N/A'}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Button onClick={() => setShowManageRewards(true)} variant="outline" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-white shadow-lg">
-                  {t('dashboard.manageRewards')}
-                </Button>
-              </div>
-            </Card>
+
           </TabsContent>
 
           <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
