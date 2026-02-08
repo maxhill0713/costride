@@ -186,52 +186,54 @@ export default function TodayWorkout({ currentUser, isExpanded = true }) {
   return (
     <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-5">
       <div className="space-y-2 mb-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
-          </div>
-          <h2 className="text-base font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
-            {todayWorkout.name}
-          </h2>
-        </div>
-        <p className="text-[10px] text-slate-400 leading-relaxed">Log your lifts to track progress</p>
-        {alreadyLoggedToday ? (
-          <div className="text-center py-1">
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
-              ✓ Logged Today
-            </Badge>
-          </div>
-        ) : (
-          <>
-            {lastWorkout && (
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] text-slate-400 font-medium">
-                  Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
-                </p>
-                <Button
-                  onClick={() => logWorkoutMutation.mutate()}
-                  disabled={logWorkoutMutation.isPending}
-                  size="sm"
-                  className="h-6 text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-700 px-3"
-                >
-                  Log Workout
-                </Button>
-              </div>
-            )}
-            {!lastWorkout && todayWorkout.exercises.length > 0 && (
-              <Button
-                onClick={() => logWorkoutMutation.mutate()}
-                disabled={logWorkoutMutation.isPending}
-                size="sm"
-                className="h-6 text-[10px] font-semibold w-full bg-indigo-600 hover:bg-indigo-700"
-              >
-                Log Workout
-              </Button>
-            )}
-          </>
-        )}
-      </div>
+         <div className="flex items-center justify-between gap-2">
+           <div className="flex items-center gap-2">
+             <Dumbbell className="w-4 h-4 text-indigo-400" />
+             <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
+           </div>
+           <h2 className="text-base font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+             {todayWorkout.name}
+           </h2>
+         </div>
+         <p className="text-[10px] text-slate-400 leading-relaxed">Log your lifts to track progress</p>
+         {alreadyLoggedToday ? (
+           <div className="text-center py-1">
+             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
+               ✓ Logged Today
+             </Badge>
+           </div>
+         ) : (
+           <>
+             {lastWorkout && (
+               <div className="flex items-center justify-between">
+                 <p className="text-[10px] text-slate-400 font-medium">
+                   Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
+                 </p>
+                 <Button
+                   onClick={() => logWorkoutMutation.mutate()}
+                   disabled={logWorkoutMutation.isPending}
+                   size="sm"
+                   className="h-6 text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-700 px-3"
+                 >
+                   Log Workout
+                 </Button>
+               </div>
+             )}
+             {!lastWorkout && todayWorkout.exercises.length > 0 && (
+               <div className="flex flex-col items-center gap-2">
+                 <Button
+                   onClick={() => logWorkoutMutation.mutate()}
+                   disabled={logWorkoutMutation.isPending}
+                   size="sm"
+                   className="h-6 text-[10px] font-semibold w-full bg-indigo-600 hover:bg-indigo-700"
+                 >
+                   Log Workout
+                 </Button>
+               </div>
+             )}
+           </>
+         )}
+       </div>
 
       {/* Exercises */}
       {isExpanded && (
