@@ -364,7 +364,11 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                    <div className="flex flex-col">
+                      <span className="text-slate-300 text-xs font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person' : 'people'}` : '3 people'}</span>
+                      <span className="text-slate-400 text-xs">checked in today</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-400 ml-auto" />
                   </div>
                 </div>
               </Card>
