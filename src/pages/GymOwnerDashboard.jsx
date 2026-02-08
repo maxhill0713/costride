@@ -2610,8 +2610,42 @@ export default function GymOwnerDashboard() {
           isLoading={createPollMutation.isPending}
         />
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        {/* Delete Account Confirmation Dialog */}
+         <AlertDialog open={showDeleteAccountConfirm} onOpenChange={setShowDeleteAccountConfirm}>
+           <AlertDialogContent className="bg-slate-900 border border-red-700/50">
+             <AlertDialogHeader>
+               <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
+                 <Trash2 className="w-6 h-6 text-red-400" />
+                 Delete Account Permanently?
+               </AlertDialogTitle>
+               <AlertDialogDescription className="text-slate-300">
+                 This will permanently delete your account and all your personal data:
+                 <ul className="list-disc list-inside mt-2 space-y-1">
+                   <li>Your profile and account information</li>
+                   <li>All check-ins and activity history</li>
+                   <li>Your gyms and their data</li>
+                   <li>All associated records</li>
+                 </ul>
+                 <p className="mt-3 font-bold text-red-400">This action cannot be undone.</p>
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+             <AlertDialogFooter>
+               <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
+                 Cancel
+               </AlertDialogCancel>
+               <AlertDialogAction
+                 onClick={() => deleteAccountMutation.mutate()}
+                 disabled={deleteAccountMutation.isPending}
+                 className="bg-red-700 hover:bg-red-800 text-white"
+               >
+                 {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
+               </AlertDialogAction>
+             </AlertDialogFooter>
+           </AlertDialogContent>
+         </AlertDialog>
+
+         {/* Delete Confirmation Dialog */}
+         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent className="bg-slate-900 border border-red-700/50">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
