@@ -302,7 +302,7 @@ export default function Home() {
               {todayCheckIns.length > 0 ? (
                 <div className="bg-slate-800/40 rounded-xl px-4 py-3 border border-slate-700/30">
                   <p className="text-slate-300 text-xs font-medium tracking-tight mb-3">{todayCheckIns.length} members checked in today</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2">
                     {checkInUsers.slice(0, 5).map((user) => (
                       <div key={user.id} className="relative group">
                         {user.avatar_url ? (
@@ -325,7 +325,7 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <p className="text-slate-400 text-sm">No one has checked in yet</p>
+                <p className="text-slate-400 text-sm text-center">No one has checked in yet</p>
               )}
             </>
           )}
