@@ -16,21 +16,21 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
       onClick={handleBackdropClick}
       style={{ background: 'rgba(0, 0, 0, 0.3)' }}
     >
-      <div className="bg-slate-800/90 rounded-3xl p-8 max-w-2xl w-full border border-slate-700/50 shadow-2xl backdrop-blur-sm">
-        <div className="flex items-center justify-center gap-8">
+      <div className="bg-slate-800/90 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/50 shadow-2xl backdrop-blur-sm">
+        <div className="grid grid-cols-4 gap-8">
           {/* Default Flame */}
           <button
             onClick={() => onSelect('default')}
-            className={`flex flex-col items-center gap-4 p-6 rounded-2xl transition-all ${
+            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
               selectedVariant === 'default'
                 ? 'ring-2 ring-green-500'
                 : 'hover:opacity-80'
             }`}
           >
-            <Flame className="w-20 h-20 text-orange-500 fill-current" />
+            <Flame className="w-10 h-10 text-orange-500 fill-current" />
             {selectedVariant === 'default' && (
-              <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
-                <Check className="w-5 h-5 text-white" />
+              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                <Check className="w-4 h-4 text-white" />
               </div>
             )}
           </button>
@@ -38,19 +38,19 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           {/* Sunglasses Flame */}
           <button
             onClick={() => onSelect('sunglasses')}
-            className={`flex flex-col items-center gap-4 p-6 rounded-2xl transition-all ${
+            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
               selectedVariant === 'sunglasses'
                 ? 'ring-2 ring-green-500'
                 : 'hover:opacity-80'
             }`}
           >
-            <div className="relative w-20 h-20 flex items-center justify-center">
-              <Flame className="w-20 h-20 text-orange-500 fill-current" />
+            <div className="relative w-10 h-10 flex items-center justify-center">
+              <Flame className="w-10 h-10 text-orange-500 fill-current" />
               {/* Sunglasses positioned on flame */}
               <svg 
-                className="absolute w-16 h-8 pointer-events-none"
+                className="absolute w-8 h-4 pointer-events-none"
                 viewBox="0 0 64 32"
-                style={{ top: '4px' }}
+                style={{ top: '2px' }}
               >
                 {/* Left lens */}
                 <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
@@ -61,11 +61,19 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               </svg>
             </div>
             {selectedVariant === 'sunglasses' && (
-              <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
-                <Check className="w-5 h-5 text-white" />
+              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                <Check className="w-4 h-4 text-white" />
               </div>
             )}
           </button>
+
+          {/* Empty spaces for future icons */}
+          <div className="flex flex-col items-center gap-3 p-4" />
+          <div className="flex flex-col items-center gap-3 p-4" />
+          <div className="flex flex-col items-center gap-3 p-4" />
+          <div className="flex flex-col items-center gap-3 p-4" />
+          <div className="flex flex-col items-center gap-3 p-4" />
+          <div className="flex flex-col items-center gap-3 p-4" />
         </div>
       </div>
     </div>
