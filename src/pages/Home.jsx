@@ -71,19 +71,22 @@ export default function Home() {
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 300000
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
-    enabled: !!currentUser
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 3),
+    enabled: !!currentUser,
+    staleTime: 60000
   });
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 300000
   });
 
   const { data: allPosts = [] } = useQuery({
@@ -92,12 +95,11 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  // Redirect to onboarding if not completed
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false) {
       navigate(createPageUrl('Onboarding'));
     }
-  }, [currentUser?.onboarding_completed, navigate]);
+  }, [currentUser?.onboarding_completed]);
 
   // Calculate these values before early return
   const memberGym = gymMemberships.length > 0 
@@ -108,34 +110,7 @@ export default function Home() {
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
-  // Create reminder notification if inactive for 3+ days
-  useEffect(() => {
-    const createReminderNotification = async () => {
-      if (!currentUser || daysSinceCheckIn === null || daysSinceCheckIn < 3) return;
 
-      // Check if we already sent a recent reminder
-      const recentReminder = await base44.entities.Notification.filter({
-        user_id: currentUser.id,
-        type: 'reminder'
-      }, '-created_date', 1);
-
-      if (recentReminder.length > 0) {
-        const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
-        if (daysSinceReminder < 2) return;
-      }
-
-      await base44.entities.Notification.create({
-        user_id: currentUser.id,
-        type: 'reminder',
-        title: 'Time for your next workout! 💪',
-        message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
-        icon: '⏰',
-        action_url: createPageUrl('Gyms')
-      });
-    };
-
-    createReminderNotification();
-  }, [currentUser, daysSinceCheckIn]);
 
   if (userLoading) {
     return (
