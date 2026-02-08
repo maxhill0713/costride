@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen, Play, Pause } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -199,15 +199,26 @@ export default function TodayWorkout({ currentUser }) {
     );
   }
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const progressPercentage = restTimer > 0 ? ((restTimer / (restTimer + 10)) * 100) : 0;
+
   return (
-    <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-950/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 shadow-xl shadow-black/40">
+    <Card className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 shadow-2xl overflow-hidden">
+      {/* Header */}
       <div className="space-y-2 mb-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+              <Dumbbell className="w-4 h-4 text-white" />
+            </div>
+            <h3 className="text-xs font-bold text-slate-200 tracking-tight uppercase">Today's Workout</h3>
           </div>
-          <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+          <h2 className="text-sm font-bold bg-gradient-to-r from-orange-300 to-amber-300 bg-clip-text text-transparent tracking-tight">
             {todayWorkout.name}
           </h2>
         </div>
@@ -250,20 +261,20 @@ export default function TodayWorkout({ currentUser }) {
 
       {/* Exercises - Collapsible */}
       {isExpanded && (
-        <div className="text-[10px] text-slate-400 mb-3 leading-relaxed">Log your lifts to track progress</div>
+        <div className="text-[10px] text-slate-400 mb-3 leading-relaxed font-medium">Log your lifts to track progress</div>
       )}
       {isExpanded && todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-3 relative">
           {/* Headers */}
-          <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
+          <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-2 px-1">
+            <div className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Exercise</div>
+            <div className="text-[8px] font-bold text-slate-500 uppercase tracking-widest text-center">Last</div>
+            <div className="text-[8px] font-bold text-slate-500 uppercase tracking-widest text-right">Weight</div>
           </div>
 
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className={`p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/40 shadow-md ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'} hover:border-slate-500/60 transition-all`}>
+            <div key={index} className={`group relative p-3 bg-gradient-to-br from-slate-800/60 to-slate-900/40 rounded-xl border border-slate-700/50 hover:border-orange-500/50 transition-all ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-3 items-center'}`}>
               {editingIndex === index ? (
                 <div className="space-y-2.5">
                    <div className="flex items-center justify-between mb-2">
@@ -315,37 +326,37 @@ export default function TodayWorkout({ currentUser }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <div className="text-sm font-bold text-white leading-tight">
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-xs font-semibold text-white leading-tight">
                       {exercise.exercise || '-'}
                     </div>
                     {lastWorkout?.exercises?.[index] ? (
-                      <div className="text-[10px] text-slate-500 font-medium">
+                      <div className="text-[10px] text-slate-400 font-medium">
                         Last: {lastWorkout.exercises[index].weight}kg
                       </div>
                     ) : (
-                      <div className="text-[10px] text-cyan-400 font-semibold">
+                      <div className="text-[10px] text-blue-400 font-medium">
                         First Lift
                       </div>
                     )}
                   </div>
-                  <div className="text-xs font-semibold text-slate-300 bg-slate-700/50 px-2 py-1 rounded-lg">
+                  <div className="text-xs font-medium text-slate-200">
                     {exercise.setsReps || '-'}
                   </div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500 to-orange-600 px-2.5 py-1 rounded-lg shadow-lg shadow-orange-500/30">
-                        {exercise.weight || '-'} kg
-                      </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-semibold text-white">
+                        {exercise.weight || '-'}
+                      </span>
                       {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                     </div>
                     <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
-                      className="w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0"
+                      className="w-5 h-5 text-slate-400 hover:text-white shrink-0"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3 h-3" />
                     </Button>
                   </div>
                 </>
@@ -353,62 +364,18 @@ export default function TodayWorkout({ currentUser }) {
             </div>
           ))}
 
-          {/* Rest Timer & Tools */}
-          <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-2">
-            {/* Timer Capsule */}
-            <div className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/60 backdrop-blur-md border border-orange-500/40 shadow-lg shadow-orange-500/20">
-              <Clock className="w-3.5 h-3.5 text-orange-400" />
-              <input
-                type="number"
-                min="0"
-                max="300"
-                value={restTimer}
-                onChange={(e) => setRestTimer(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-10 bg-transparent text-orange-300 font-bold text-xs text-center border-none focus:outline-none"
-              />
-              <span className="text-orange-300 text-xs font-semibold">s</span>
-              <button
-                onClick={() => setIsTimerActive(!isTimerActive)}
-                className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500/80 hover:bg-orange-600 text-white transition-all active:scale-95"
-              >
-                {isTimerActive ? 'Stop' : 'Go'}
-              </button>
-              {isTimerActive && (
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-orange-400 border-r-orange-400 animate-spin" style={{ width: 'calc(100% + 4px)', height: 'calc(100% + 4px)', left: '-2px', top: '-2px' }} />
-              )}
-            </div>
-
-            {/* Quick Action Icons */}
-            <div className="flex items-center gap-1.5">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-                title="Plate Calculator"
-              >
-                <Calculator className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-                title="Notes"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-
-            {/* Collapse Arrow */}
+          {/* Collapse Arrow */}
+          <div className="flex justify-center mt-3 pt-2 border-t border-slate-600/30">
             <Button
               onClick={() => setIsExpanded(false)}
               variant="ghost"
               size="icon"
-              className="w-6 h-6 text-slate-400 hover:text-white ml-auto"
+              className="w-7 h-7 text-slate-400 hover:text-white"
             >
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-5 h-5" />
             </Button>
           </div>
-          </div>
+        </div>
       ) : isExpanded && todayWorkout.exercises.length === 0 ? (
         <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
           <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
