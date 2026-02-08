@@ -271,7 +271,7 @@ export default function Home() {
               <Link to={createPageUrl('Friends')}>
                 <Button variant="ghost" size="icon" className="relative rounded-full">
                   <Users className="w-7 h-7 text-cyan-400" />
-                  {friendPosts.length > 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
+                  {friendPosts.length > 0 && window.location.pathname !== createPageUrl('Friends') && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
                 </Button>
               </Link>
             </div>
