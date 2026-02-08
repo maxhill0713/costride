@@ -360,31 +360,21 @@ export default function Home() {
 
 
           {/* Community Section */}
-          <div className="space-y-3">
-            <h3 className="text-white font-bold text-lg px-4">Community</h3>
+          {memberGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
               <Card className="bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {checkInUsers.length > 0 && (
-                      <img src={checkInUsers[0].avatar_url || ''} alt="" className="w-10 h-10 rounded-full object-cover" onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
-                      }} />
-                    )}
-                    <div style={{display: checkInUsers.length === 0 ? 'flex' : 'none'}} className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
-                      <span className="text-white font-bold">A</span>
-                    </div>
                     <div>
-                      <p className="text-white font-bold text-sm">{checkInUsers[0]?.full_name || 'Alex Mason'}</p>
-                      <p className="text-slate-400 text-xs">🏆 Sam completed the consistency challenge</p>
+                      <p className="text-white font-bold text-sm">Community</p>
+                      <p className="text-slate-400 text-xs">Join the crew at {memberGym.name}</p>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-400" />
                 </div>
               </Card>
             </Link>
-          </div>
+          )}
 
         {/* Join a Gym Prompt */}
         {gymMemberships.length === 0 && (
