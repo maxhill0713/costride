@@ -191,7 +191,7 @@ export default function TodayWorkout({ currentUser, isExpanded = true }) {
             <Dumbbell className="w-4 h-4 text-indigo-400" />
             <h3 className="text-xs font-bold text-slate-200 tracking-tight">Today's Workout</h3>
           </div>
-          <h2 className="text-sm font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+          <h2 className="text-base font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
             {todayWorkout.name}
           </h2>
         </div>
