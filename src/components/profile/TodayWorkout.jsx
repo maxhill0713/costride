@@ -196,7 +196,6 @@ export default function TodayWorkout({ currentUser }) {
             {todayWorkout.name}
           </h2>
         </div>
-        <p className="text-[10px] text-slate-400 leading-relaxed">Log your lifts to track progress</p>
         {alreadyLoggedToday ? (
           <div className="text-center py-1">
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
@@ -234,7 +233,10 @@ export default function TodayWorkout({ currentUser }) {
         )}
       </div>
 
-      {/* Exercises */}
+      {/* Exercises - Collapsible */}
+      {isExpanded && (
+        <div className="text-[10px] text-slate-400 mb-3 leading-relaxed">Log your lifts to track progress</div>
+      )}
       {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
         <div className="space-y-2">
           {/* Headers */}
