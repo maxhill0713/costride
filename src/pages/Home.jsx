@@ -290,7 +290,7 @@ export default function Home() {
                     </svg>
                   </div>
                 ) : (
-                  <Flame className="w-12 h-12 text-orange-500 fill-current" />
+                  <Flame className="w-9 h-9 text-orange-500 fill-current" />
                 )}
                 <span className="text-white font-semibold text-2xl tracking-tight">{userStreak}</span>
               </button>
