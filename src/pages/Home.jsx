@@ -297,7 +297,8 @@ export default function Home() {
               )}
 
               {/* Check-In Stats */}
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <p className="text-slate-300 text-xs font-medium tracking-tight">{todayCheckIns.length > 0 ? `${todayCheckIns.length} members checked in today` : '3 members checked in today'}</p>
                 <div className="flex items-center -space-x-2">
                   {(checkInUsers.length > 0 ? checkInUsers : [
                     { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
@@ -318,7 +319,6 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <p className="text-slate-300 text-xs font-medium tracking-tight">{todayCheckIns.length > 0 ? `${todayCheckIns.length} members checked in today` : '3 members checked in today'}</p>
               </div>
             </>
           )}
