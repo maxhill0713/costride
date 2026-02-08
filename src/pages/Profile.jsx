@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload } from 'lucide-react';
+import { Settings, Award, Calendar, Dumbbell, Target, MapPin, X, Plus, Flame, Trophy, Building2, CheckCircle, Camera, FileText, Upload, Video } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,43 +64,52 @@ export default function Profile() {
   }, [currentUser?.dark_mode]);
 
   const { data: lifts = [] } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date')
+    queryKey: ['lifts', currentUser?.id],
+    queryFn: () => base44.entities.Lift.filter({ member_id: currentUser.id }, '-created_date', 100),
+    enabled: !!currentUser,
+    staleTime: 120000
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 120000
   });
 
   const { data: checkIns = [] } = useQuery({
-    queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date')
+    queryKey: ['checkIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
+    enabled: !!currentUser,
+    staleTime: 60000
   });
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
-    enabled: !!currentUser
+    enabled: !!currentUser && activeTab === 'progress',
+    staleTime: 300000
   });
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => base44.entities.Gym.list(),
+    enabled: !!currentUser && gymMemberships.length > 0 && activeTab === 'progress',
+    staleTime: 300000
   });
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list()
+    queryFn: () => base44.entities.Challenge.list('-created_date', 50),
+    enabled: !!currentUser && activeTab === 'stats',
+    staleTime: 180000
   });
 
 
 
-  const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
-  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
+  const memberLifts = lifts;
+  const userCheckIns = checkIns;
 
-  // Get gyms user is a member of
   const memberGymIds = gymMemberships.map(m => m.gym_id);
   const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
 
@@ -301,17 +310,7 @@ export default function Profile() {
 
   const streakRisk = getStreakRisk();
 
-  const getProgressData = () => {
-    const last30Days = memberLifts
-      .filter(l => l.exercise === 'bench_press')
-      .slice(0, 10)
-      .reverse()
-      .map((l, i) => ({
-        session: `S${i + 1}`,
-        weight: l.weight_lbs
-      }));
-    return last30Days;
-  };
+
 
   if (!currentUser) {
     return (

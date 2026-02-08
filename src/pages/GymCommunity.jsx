@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy } from 'lucide-react';
+import { MapPin, Users, Trophy, MessageCircle, BadgeCheck, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Target, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Star } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
@@ -70,83 +70,66 @@ export default function GymCommunity() {
       const gyms = await base44.entities.Gym.list();
       return gyms.find(g => g.id === gymId);
     },
-    enabled: !!gymId
-  });
-
-  // Language setting stored on gym
-
-  const { data: members = [] } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+    enabled: !!gymId,
+    staleTime: 300000
   });
 
   const { data: posts = [] } = useQuery({
-    queryKey: ['posts'],
-    queryFn: () => base44.entities.Post.list('-created_date')
+    queryKey: ['posts', gymId],
+    queryFn: () => base44.entities.Post.list('-created_date', 15),
+    enabled: !!gymId && activeTab === 'feed',
+    staleTime: 60000
   });
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', gymId],
-    queryFn: async () => {
-      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
-      return allCheckIns.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200),
+    enabled: !!gymId,
+    staleTime: 60000
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
-    queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('-event_date');
-      return allEvents.filter(e => e.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'),
+    enabled: !!gymId && activeTab === 'events',
+    staleTime: 180000
   });
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', gymId],
-    queryFn: async () => {
-      const allClasses = await base44.entities.GymClass.list();
-      return allClasses.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }),
+    enabled: !!gymId && activeTab === 'events',
+    staleTime: 300000
   });
 
   const { data: coaches = [] } = useQuery({
     queryKey: ['coaches', gymId],
-    queryFn: async () => {
-      const allCoaches = await base44.entities.Coach.list();
-      return allCoaches.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }),
+    enabled: !!gymId && activeTab === 'events',
+    staleTime: 300000
   });
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', gymId],
-    queryFn: async () => {
-      const allRewards = await base44.entities.Reward.list();
-      return allRewards.filter(r => r.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }),
+    enabled: !!gymId && activeTab === 'home',
+    staleTime: 180000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges', gymId],
-    queryFn: async () => {
-      const allChallenges = await base44.entities.Challenge.list();
-      const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
-      console.log('Challenges fetched:', filtered);
-      return filtered;
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }),
+    enabled: !!gymId && activeTab === 'challenges',
+    staleTime: 180000
   });
 
-  // Only gym challenges now
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => base44.entities.Gym.list(),
+    enabled: showCreateChallenge,
+    staleTime: 300000
   });
 
   const { data: gymMembership } = useQuery({
@@ -310,54 +293,22 @@ export default function GymCommunity() {
     }
   });
 
-  const { data: claimedBonuses = [] } = useQuery({
-    queryKey: ['claimedBonuses', currentUser?.id, gymId],
-    queryFn: async () => {
-      const bonuses = await base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId });
-      return bonuses;
-    },
-    enabled: !!currentUser && !!gymId
-  });
-
   const { data: challengeParticipants = [] } = useQuery({
     queryKey: ['challengeParticipants', currentUser?.id],
-    queryFn: async () => {
-      const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id });
-      return participants;
-    },
-    enabled: !!currentUser
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser && activeTab === 'challenges',
+    staleTime: 120000
   });
 
-  const claimBonusMutation = useMutation({
-    mutationFn: ({ bonusType, offerDetails }) =>
-      base44.entities.ClaimedBonus.create({
-        user_id: currentUser.id,
-        gym_id: gymId,
-        bonus_type: bonusType,
-        offer_details: offerDetails
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] });
-      // Create notification
-      base44.entities.Notification.create({
-        user_id: currentUser.id,
-        type: 'reward',
-        title: '🎁 Bonus Claimed!',
-        message: 'Your gym bonus has been claimed successfully',
-        icon: '🎉'
-      });
-    }
-  });
+
 
   const joinChallengeMutation = useMutation({
     mutationFn: async (challenge) => {
-      // Update Challenge participants array first
       const currentParticipants = challenge.participants || [];
       await base44.entities.Challenge.update(challenge.id, {
         participants: [...currentParticipants, currentUser.id]
       });
       
-      // Create ChallengeParticipant record
       await base44.entities.ChallengeParticipant.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
@@ -368,119 +319,16 @@ export default function GymCommunity() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipants'] });
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
-      queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });
-      // Create notification
-      base44.entities.Notification.create({
-        user_id: currentUser.id,
-        type: 'challenge',
-        title: '💪 Challenge Joined!',
-        message: 'Good luck on your new challenge!',
-        icon: '🎯'
-      });
     }
   });
-
-  const hasClaimedBonus = (bonusType) => {
-    return claimedBonuses.some(b => b.bonus_type === bonusType);
-  };
 
   const hasjoinedChallenge = (challengeId) => {
     return challengeParticipants.some(p => p.challenge_id === challengeId);
   };
 
-  const meetsRequirement = (requirement) => {
-    if (!currentUser) return false;
 
-    const userCheckIns = checkIns.filter(c => c.user_id === currentUser.id);
-    
-    switch (requirement) {
-      case 'first_visit':
-        return userCheckIns.length >= 1;
-      case 'visits_3':
-        return userCheckIns.length >= 3;
-      case 'visits_5':
-        return userCheckIns.length >= 5;
-      case 'visits_10':
-      case 'check_ins_10':
-        return userCheckIns.length >= 10;
-      case 'visits_25':
-        return userCheckIns.length >= 25;
-      case 'visits_50':
-      case 'check_ins_50':
-        return userCheckIns.length >= 50;
-      case 'visits_100':
-        return userCheckIns.length >= 100;
-      case 'streak_7':
-        return calculateCurrentStreak(userCheckIns) >= 7;
-      case 'streak_30':
-        return calculateCurrentStreak(userCheckIns) >= 30;
-      case 'streak_90':
-        return calculateCurrentStreak(userCheckIns) >= 90;
-      case 'referral_3':
-      case 'referral':
-        return false;
-      case 'referral_10':
-        return false;
-      case 'challenge_winner':
-        return false;
-      case 'points':
-      case 'none':
-        return true;
-      default:
-        return true;
-    }
-  };
-
-  const getRequirementProgress = (requirement, rewardCreatedDate) => {
-    if (!currentUser) return { current: 0, target: 1, percentage: 0 };
-
-    // Only count check-ins after the reward was created
-    const userCheckIns = checkIns.filter(c => 
-      c.user_id === currentUser.id && 
-      new Date(c.check_in_date) >= new Date(rewardCreatedDate)
-    );
-    const currentStreak = calculateCurrentStreak(userCheckIns);
-    
-    switch (requirement) {
-      case 'first_visit':
-        return { current: Math.min(userCheckIns.length, 1), target: 1, percentage: Math.min(userCheckIns.length / 1 * 100, 100) };
-      case 'visits_3':
-        return { current: Math.min(userCheckIns.length, 3), target: 3, percentage: Math.min(userCheckIns.length / 3 * 100, 100) };
-      case 'visits_5':
-        return { current: Math.min(userCheckIns.length, 5), target: 5, percentage: Math.min(userCheckIns.length / 5 * 100, 100) };
-      case 'visits_10':
-      case 'check_ins_10':
-        return { current: Math.min(userCheckIns.length, 10), target: 10, percentage: Math.min(userCheckIns.length / 10 * 100, 100) };
-      case 'visits_25':
-        return { current: Math.min(userCheckIns.length, 25), target: 25, percentage: Math.min(userCheckIns.length / 25 * 100, 100) };
-      case 'visits_50':
-      case 'check_ins_50':
-        return { current: Math.min(userCheckIns.length, 50), target: 50, percentage: Math.min(userCheckIns.length / 50 * 100, 100) };
-      case 'visits_100':
-        return { current: Math.min(userCheckIns.length, 100), target: 100, percentage: Math.min(userCheckIns.length / 100 * 100, 100) };
-      case 'streak_7':
-        return { current: Math.min(currentStreak, 7), target: 7, percentage: Math.min(currentStreak / 7 * 100, 100) };
-      case 'streak_30':
-        return { current: Math.min(currentStreak, 30), target: 30, percentage: Math.min(currentStreak / 30 * 100, 100) };
-      case 'streak_90':
-        return { current: Math.min(currentStreak, 90), target: 90, percentage: Math.min(currentStreak / 90 * 100, 100) };
-      case 'referral_3':
-      case 'referral':
-        return { current: 0, target: 3, percentage: 0 };
-      case 'referral_10':
-        return { current: 0, target: 10, percentage: 0 };
-      case 'challenge_winner':
-        return { current: 0, target: 1, percentage: 0 };
-      case 'points':
-      case 'none':
-        return { current: 1, target: 1, percentage: 100 };
-      default:
-        return { current: 1, target: 1, percentage: 100 };
-    }
-  };
 
   const calculateCurrentStreak = (userCheckIns) => {
     if (userCheckIns.length === 0) return 0;
@@ -543,86 +391,36 @@ export default function GymCommunity() {
   const canPost = isGymOwner || (currentCoach?.can_post ?? false);
   const isMember = !!gymMembership || isGymOwner;
 
-  // System-generated challenges with participant counts
-  const systemChallenges = [
-    {
-      id: 'weekend-warrior',
-      title: '🔥 Weekend Warrior',
-      description: 'Check in 3 times this weekend (Sat-Sun)',
-      type: 'weekend',
-      timeframe: 'This Weekend',
-      reward: 'Free protein shake',
-      participants: 23
-    },
-    {
-      id: 'weekly-grind',
-      title: '💪 Weekly Grind',
-      description: 'Complete 5 workouts this week',
-      type: 'weekly',
-      timeframe: 'This Week',
-      reward: '£5 off next month',
-      participants: 47
-    },
-    {
-      id: 'streak-starter',
-      title: '⚡ Streak Starter',
-      description: 'Build a 3-day streak',
-      type: 'streak',
-      timeframe: '3 Days',
-      reward: 'Free gym merchandise',
-      participants: 31
-    }
-  ];
 
-  // Mock leaderboard data
-  const weeklyLeaders = members.slice(0, 3).map((member, idx) => ({
-    id: member.id,
-    name: member.name || member.nickname || 'Member',
-    progress: ['100%', '95%', '87%'][idx],
-    score: [500, 475, 435][idx]
-  }));
 
-  // Get upcoming events (next 7 days)
-  const upcomingEvents = events.filter(e => {
-    const eventDate = new Date(e.event_date);
+  const upcomingEvents = React.useMemo(() => {
     const today = new Date();
     const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return eventDate >= today && eventDate <= weekFromNow;
-  }).slice(0, 2);
+    return (events || []).filter(e => {
+      const eventDate = new Date(e.event_date);
+      return eventDate >= today && eventDate <= weekFromNow;
+    }).slice(0, 2);
+  }, [events]);
 
-  // Calculate weekly check-ins per user
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
+  
+  const checkInLeaderboard = React.useMemo(() => {
+    const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
+    return Object.values(
+      weeklyCheckIns.reduce((acc, checkIn) => {
+        const userId = checkIn.user_id;
+        if (!acc[userId]) {
+          acc[userId] = { userId, userName: checkIn.user_name, count: 0 };
+        }
+        acc[userId].count++;
+        return acc;
+      }, {})
+    ).sort((a, b) => b.count - a.count).slice(0, 10);
+  }, [checkIns, weekAgo]);
 
-  const checkInLeaderboard = Object.values(
-    weeklyCheckIns.reduce((acc, checkIn) => {
-      const userId = checkIn.user_id;
-      if (!acc[userId]) {
-        acc[userId] = { userId, userName: checkIn.user_name, count: 0 };
-      }
-      acc[userId].count++;
-      return acc;
-    }, {})
-  ).sort((a, b) => b.count - a.count).slice(0, 10);
-
-  // Calculate challenge completions (mock data for now)
-  const challengeLeaderboard = members.slice(0, 10).map((member, idx) => ({
-    userId: member.id,
-    userName: member.name || member.nickname || 'Member',
-    count: Math.max(0, 15 - idx * 2)
-  })).filter(m => m.count > 0);
-
-  // Calculate streaks (mock data based on check-ins)
-  const streakLeaderboard = Object.values(
-    checkIns.reduce((acc, checkIn) => {
-      const userId = checkIn.user_id;
-      if (!acc[userId]) {
-        acc[userId] = { userId, userName: checkIn.user_name, streak: Math.floor(Math.random() * 30) + 1 };
-      }
-      return acc;
-    }, {})
-  ).sort((a, b) => b.streak - a.streak).slice(0, 10);
+  const challengeLeaderboard = [];
+  const streakLeaderboard = [];
 
   if (gymLoading) {
     return (
@@ -894,34 +692,23 @@ export default function GymCommunity() {
                   );
                 })()}
               </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl md:text-3xl font-black text-white">
-                  {(() => {
-                    const now = new Date();
-                    const usersInGym = new Set();
-                    checkIns.forEach(checkIn => {
-                      const checkInTime = new Date(checkIn.check_in_date);
-                      if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
-                        usersInGym.add(checkIn.user_id);
-                      }
-                    });
-                    return usersInGym.size;
-                  })()}
-                </p>
-                <p className="text-xs text-slate-300">
-                  {(() => {
-                    const now = new Date();
-                    const usersInGym = new Set();
-                    checkIns.forEach(checkIn => {
-                      const checkInTime = new Date(checkIn.check_in_date);
-                      if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
-                        usersInGym.add(checkIn.user_id);
-                      }
-                    });
-                    return usersInGym.size === 1 ? 'member' : 'members';
-                  })()}
-                </p>
-              </div>
+              {(() => {
+                const now = new Date();
+                const usersInGym = new Set();
+                checkIns.forEach(checkIn => {
+                  const checkInTime = new Date(checkIn.check_in_date);
+                  if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
+                    usersInGym.add(checkIn.user_id);
+                  }
+                });
+                const count = usersInGym.size;
+                return (
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-2xl md:text-3xl font-black text-white">{count}</p>
+                    <p className="text-xs text-slate-300">{count === 1 ? 'member' : 'members'}</p>
+                  </div>
+                );
+              })()}
               <p className="text-xs text-slate-400 mt-1">Great time to train!</p>
             </Card>
             <Card className="bg-gradient-to-br from-orange-500/20 to-amber-500/20 border-2 border-orange-500/40 p-3 md:p-4">
@@ -1204,71 +991,17 @@ export default function GymCommunity() {
             )}
 
             {leaderboardView === 'challenges' && (
-              challengeLeaderboard.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-2 text-slate-600" />
-                  <p className="text-slate-400 text-sm">No challenges completed yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 md:space-y-2">
-                  {challengeLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
-                      'bg-slate-700/40 border-slate-600/30'
-                    }`}>
-                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
-                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
-                        'bg-slate-600'
-                      }`}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-xs text-slate-300">{member.count} completed</p>
-                      </div>
-                      <Trophy className="w-4 md:w-5 h-4 md:h-5 text-purple-400 flex-shrink-0" />
-                    </div>
-                  ))}
-                </div>
-              )
+              <div className="p-8 text-center">
+                <Trophy className="w-12 h-12 mx-auto mb-2 text-slate-600" />
+                <p className="text-slate-400 text-sm">Challenge data coming soon</p>
+              </div>
             )}
 
             {leaderboardView === 'streaks' && (
-              streakLeaderboard.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Flame className="w-12 h-12 mx-auto mb-2 text-slate-600" />
-                  <p className="text-slate-400 text-sm">No streaks yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 md:space-y-2">
-                  {streakLeaderboard.map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
-                      'bg-slate-700/40 border-slate-600/30'
-                    }`}>
-                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
-                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
-                        'bg-slate-600'
-                      }`}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-xs text-slate-300">{member.streak}d streak</p>
-                      </div>
-                      <Flame className="w-4 md:w-5 h-4 md:h-5 text-orange-400 flex-shrink-0" />
-                    </div>
-                  ))}
-                </div>
-              )
+              <div className="p-8 text-center">
+                <Flame className="w-12 h-12 mx-auto mb-2 text-slate-600" />
+                <p className="text-slate-400 text-sm">Streak data coming soon</p>
+              </div>
             )}
           </Card>
         </TabsContent>
