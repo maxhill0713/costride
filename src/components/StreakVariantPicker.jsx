@@ -21,34 +21,29 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           {/* Default Flame */}
           <button
             onClick={() => onSelect('default')}
-            className={`relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
+            className={`flex flex-col items-center gap-3 p-6 rounded-lg transition-all ${
               selectedVariant === 'default'
-                ? 'ring-2 ring-green-500'
+                ? 'border-3 border-green-500'
                 : 'hover:opacity-80'
             }`}
           >
-            <Flame className="w-10 h-10 text-orange-500 fill-current" />
-            {selectedVariant === 'default' && (
-              <div className="absolute bottom-1 right-1 flex items-center justify-center w-3 h-3 bg-green-500 rounded-sm">
-                <Check className="w-2 h-2 text-white" />
-              </div>
-            )}
+            <Flame className="w-12 h-12 text-orange-500 fill-current" />
           </button>
 
           {/* Sunglasses Flame */}
           <button
             onClick={() => onSelect('sunglasses')}
-            className={`relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
+            className={`flex flex-col items-center gap-3 p-6 rounded-lg transition-all ${
               selectedVariant === 'sunglasses'
-                ? 'ring-2 ring-green-500'
+                ? 'border-3 border-green-500'
                 : 'hover:opacity-80'
             }`}
           >
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <Flame className="w-10 h-10 text-orange-500 fill-current" />
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <Flame className="w-12 h-12 text-orange-500 fill-current" />
               {/* Sunglasses positioned on flame */}
               <svg 
-                className="absolute w-8 h-4 pointer-events-none"
+                className="absolute w-9.6 h-4.8 pointer-events-none"
                 viewBox="0 0 64 32"
                 style={{ top: '2px' }}
               >
@@ -60,11 +55,6 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
                 <line x1="23" y1="16" x2="41" y2="16" stroke="currentColor" strokeWidth="2" className="text-black" />
               </svg>
             </div>
-            {selectedVariant === 'sunglasses' && (
-              <div className="absolute bottom-1 right-1 flex items-center justify-center w-3 h-3 bg-green-500 rounded-sm">
-                <Check className="w-2 h-2 text-white" />
-              </div>
-            )}
           </button>
 
           {/* Empty spaces for future icons */}
