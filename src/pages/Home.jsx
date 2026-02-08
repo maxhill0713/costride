@@ -103,26 +103,6 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  // Map check-in users to get unique user IDs
-  const checkInUserIds = [...new Set(todayCheckIns.map(c => c.user_id))];
-  
-  const { data: checkInUsers = [] } = useQuery({
-    queryKey: ['checkInUsers', checkInUserIds.join(',')],
-    queryFn: async () => {
-      if (checkInUserIds.length === 0) return [];
-      try {
-        const users = await Promise.all(
-          checkInUserIds.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
-        );
-        return users.filter(Boolean);
-      } catch (error) {
-        console.error('Error fetching check-in users:', error);
-        return [];
-      }
-    },
-    enabled: checkInUserIds.length > 0
-  });
-
   // Redirect to onboarding if not completed
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false) {
@@ -184,6 +164,26 @@ export default function Home() {
 
   // Today's check-ins (all users)
   const todayCheckIns = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
+
+  // Map check-in users to get unique user IDs
+  const checkInUserIds = [...new Set(todayCheckIns.map(c => c.user_id))];
+  
+  const { data: checkInUsers = [] } = useQuery({
+    queryKey: ['checkInUsers', checkInUserIds.join(',')],
+    queryFn: async () => {
+      if (checkInUserIds.length === 0) return [];
+      try {
+        const users = await Promise.all(
+          checkInUserIds.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
+        );
+        return users.filter(Boolean);
+      } catch (error) {
+        console.error('Error fetching check-in users:', error);
+        return [];
+      }
+    },
+    enabled: checkInUserIds.length > 0
+  });
 
   // Active challenges
   const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
