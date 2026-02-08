@@ -103,6 +103,12 @@ export default function Home() {
     enabled: !!currentUser
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: !!currentUser
+  });
+
   // Redirect to onboarding if not completed
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false) {
@@ -357,15 +363,25 @@ export default function Home() {
                 {todayCheckIns.length > 0 && (
                   <div className="flex items-center gap-2 pl-15">
                     <div className="flex -space-x-2">
-                      {todayCheckIns.slice(0, 5).map((checkIn, idx) => (
-                        <div 
-                          key={checkIn.id}
-                          className="w-8 h-8 rounded-full border-2 border-slate-800 bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold shadow-lg"
-                          style={{ zIndex: 5 - idx }}
-                        >
-                          {checkIn.user_name?.[0] || 'U'}
-                        </div>
-                      ))}
+                      {todayCheckIns.slice(0, 5).map((checkIn, idx) => {
+                        const user = allUsers.find(u => u.id === checkIn.user_id);
+                        return (
+                          <div 
+                            key={checkIn.id}
+                            className="w-8 h-8 rounded-full border-2 border-slate-800 flex items-center justify-center text-white text-xs font-bold shadow-lg overflow-hidden flex-shrink-0"
+                            style={{ zIndex: 5 - idx }}
+                            title={checkIn.user_name}
+                          >
+                            {user && user.avatar_url ? (
+                              <img src={user.avatar_url} alt={checkIn.user_name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
+                                {checkIn.user_name?.[0] || 'U'}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                       {todayCheckIns.length > 5 && (
                         <div className="w-8 h-8 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-white text-xs font-semibold">
                           +{todayCheckIns.length - 5}
