@@ -854,6 +854,21 @@ export default function GymCommunity() {
           {/* Check-in Section */}
            {!showOwnerControls && <CheckInButton gym={gym} />}
 
+           {/* Polls Section */}
+           {polls.length > 0 && (
+             <div className="space-y-2">
+               {polls.map((poll) => (
+                 <PollCard
+                   key={poll.id}
+                   poll={poll}
+                   onVote={!showOwnerControls ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
+                   userVoted={currentUser?.id}
+                   isLoading={votePollMutation.isPending}
+                 />
+               ))}
+             </div>
+           )}
+
            {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 p-3 md:p-4">
