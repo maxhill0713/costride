@@ -53,32 +53,28 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-gray-200 rounded-lg mb-4"
+      className="bg-white border border-gray-200 rounded-lg mb-4 overflow-hidden"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center overflow-hidden">
-            {post.member_avatar ? (
-              <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-sm font-bold text-white">
-                {post.member_name?.charAt(0)?.toUpperCase()}
-              </span>
-            )}
-          </div>
-          <div>
-            <p className="font-semibold text-sm text-gray-900">{post.member_name}</p>
-            {post.exercise && (
-              <p className="text-xs text-gray-500 capitalize">{post.exercise.replace(/_/g, ' ')}</p>
-            )}
-          </div>
+      {/* Header - Profile Picture Only */}
+      <div className="absolute top-3 left-3 z-10">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center overflow-hidden border-2 border-white shadow-lg">
+          {post.member_avatar ? (
+            <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-sm font-bold text-white">
+              {post.member_name?.charAt(0)?.toUpperCase()}
+            </span>
+          )}
         </div>
-        {isOwner && (
+      </div>
+
+      {/* Delete Menu */}
+      {isOwner && (
+        <div className="absolute top-3 right-3 z-20">
           <div className="relative">
             <button 
               onClick={() => setShowMenu(!showMenu)}
-              className="text-gray-600 hover:text-gray-800 relative z-10"
+              className="text-gray-600 hover:text-gray-800 bg-white rounded-full p-2 shadow-lg"
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>
@@ -98,12 +94,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Video or Image */}
-      {post.video_url ? (
-        <div className="w-full aspect-square bg-black">
+      {/* Video or Image - Full Size */}
+      <div className="relative w-full aspect-square bg-gray-100">
+        {post.video_url ? (
           <video 
             src={post.video_url} 
             className="w-full h-full object-cover"
@@ -111,36 +107,16 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
             playsInline
             preload="metadata"
           />
-        </div>
-      ) : post.image_url ? (
-        <div className="w-full aspect-square bg-gray-100">
+        ) : post.image_url ? (
           <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
-      {/* Actions */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-4">
-            <button onClick={handleLike} className="hover:scale-110 transition-transform active:scale-95">
-              <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 text-red-500' : 'text-gray-900'}`} />
-            </button>
-            <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
-              <MessageCircle className="w-6 h-6 text-gray-900" />
-            </button>
-            <button onClick={() => setShowShare(true)} className="hover:scale-110 transition-transform active:scale-95">
-              <Send className="w-6 h-6 text-gray-900" />
-            </button>
-          </div>
-          <button onClick={handleSave} className="hover:scale-110 transition-transform active:scale-95">
-            <Bookmark className={`w-6 h-6 ${saved ? 'fill-gray-900 text-gray-900' : 'text-gray-900'}`} />
-          </button>
-        </div>
-
-        {/* Likes with Streak Icon */}
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">
-            {liked && (
+      {/* Thin Action Bar */}
+      <div className="px-4 py-3 flex items-center justify-between gap-3 border-t border-gray-200">
+        <div className="flex items-center gap-3">
+          <button onClick={handleReact} className="hover:scale-110 transition-transform active:scale-95 flex items-center gap-1">
+            {reacted ? (
               currentUser?.streak_variant === 'sunglasses' ? (
                 <div className="relative w-5 h-5 flex items-center justify-center">
                   <Flame className="w-5 h-5 text-orange-500 fill-current" />
@@ -157,36 +133,54 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               ) : (
                 <Flame className="w-5 h-5 text-orange-500 fill-current" />
               )
+            ) : (
+              <>
+                <div className="w-5 h-5 border-2 border-gray-900 rounded-full relative flex items-center justify-center">
+                  <Flame className="w-3 h-3 text-gray-900" />
+                </div>
+                <span className="text-gray-900 font-semibold">+</span>
+              </>
             )}
-          </div>
-          <p className="font-semibold text-sm text-gray-900">
-            {(post.likes || 0) + (liked ? 1 : 0)} {liked ? 'reactions' : 'likes'}
-          </p>
+          </button>
+          <span className="text-xs text-gray-600 font-medium">{(post.likes || 0) + (reacted ? 1 : 0)}</span>
         </div>
 
-        {/* Caption */}
-        <div className="text-sm">
-          <span className="font-semibold text-gray-900 mr-2">{post.member_name}</span>
-          <span className="text-gray-900">{post.content}</span>
-          {post.weight && (
-            <span className="block mt-1 text-blue-600 font-semibold">
-              💪 {post.weight} lbs
-            </span>
+        <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
+          <MessageCircle className="w-5 h-5 text-gray-900" />
+        </button>
+
+        <button onClick={() => setShowShare(true)} className="hover:scale-110 transition-transform active:scale-95">
+          <Send className="w-5 h-5 text-gray-900" />
+        </button>
+
+        <button onClick={handleSave} className="ml-auto hover:scale-110 transition-transform active:scale-95">
+          <Bookmark className={`w-5 h-5 ${saved ? 'fill-gray-900 text-gray-900' : 'text-gray-900'}`} />
+        </button>
+      </div>
+
+      {/* Caption Section - Below Image */}
+      <div className="px-4 py-2 border-t border-gray-100">
+        <div className="text-xs mb-2">
+          <span className="font-semibold text-gray-900">{post.member_name}</span>
+          {post.exercise && (
+            <span className="text-gray-600 ml-2 capitalize">({post.exercise.replace(/_/g, ' ')})</span>
           )}
         </div>
-
-        {/* View Comments */}
+        <p className="text-sm text-gray-900 leading-snug">{post.content}</p>
+        {post.weight && (
+          <span className="block mt-1 text-blue-600 font-semibold text-sm">
+            💪 {post.weight} lbs
+          </span>
+        )}
         {post.comments && post.comments.length > 0 && (
           <button 
             onClick={() => setShowComments(true)}
-            className="text-sm text-gray-500 mt-2 hover:text-gray-700"
+            className="text-xs text-gray-500 mt-1 hover:text-gray-700"
           >
-            View all {post.comments.length} comments
+            View {post.comments.length} comments
           </button>
         )}
-
-        {/* Timestamp */}
-        <p className="text-xs text-gray-400 mt-2 uppercase">
+        <p className="text-xs text-gray-400 mt-1 uppercase">
           {format(new Date(post.created_date), 'MMM d, yyyy')}
         </p>
       </div>
