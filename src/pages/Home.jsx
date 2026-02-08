@@ -276,32 +276,54 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 py-3 space-y-3">
-          {/* Hero Section */}
+        <div className="max-w-4xl mx-auto px-4 py-3 space-y-4">
+          {/* Check-In Button - Full Width */}
           {memberGym && (
-            <div className="flex items-center justify-between bg-gradient-to-r from-slate-800/40 to-slate-800/20 rounded-xl px-4 py-3 border border-slate-700/30">
-              <div>
-                <p className="text-white font-bold text-sm">You're showing up today</p>
-                <p className="text-cyan-400 font-bold text-lg">{todayCheckIns.length} people checked in</p>
-              </div>
+            <>
               {daysSinceCheckIn === 0 ? (
-                <Badge className="bg-green-500/20 text-green-300 border border-green-500/50">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Checked in
-                </Badge>
+                <Button 
+                  disabled
+                  className="w-full text-white shadow-lg py-8 text-xl font-bold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 cursor-default"
+                >
+                  <CheckCircle className="w-6 h-6 mr-2" />
+                  Checked In Today ✓
+                </Button>
               ) : (
                 <Button 
                   onClick={() => setShowCheckIn(true)}
-                  className="text-white text-sm px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg"
+                  className="w-full text-white border-0 shadow-lg py-8 text-xl font-bold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                 >
-                  Check In
+                  Check In Now
                 </Button>
               )}
-            </div>
+
+              {/* Check-In Stats */}
+              <div className="bg-slate-800/40 rounded-xl px-4 py-3 border border-slate-700/30">
+                <p className="text-slate-300 text-sm mb-3">{todayCheckIns.length} people checked in</p>
+                <div className="flex items-center gap-2">
+                  {checkInUsers.slice(0, 5).map((user) => (
+                    <div key={user.id} className="relative group">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt={user.full_name} className="w-10 h-10 rounded-full object-cover border-2 border-slate-700" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
+                          {user.full_name?.[0] || 'U'}
+                        </div>
+                      )}
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {user.full_name}
+                      </span>
+                    </div>
+                  ))}
+                  {todayCheckIns.length > 5 && (
+                    <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-700">
+                      +{todayCheckIns.length - 5}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
-
-
-
 
 
 
