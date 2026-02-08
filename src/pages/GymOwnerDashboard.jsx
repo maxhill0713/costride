@@ -1674,6 +1674,24 @@ export default function GymOwnerDashboard() {
                 Delete Gym
               </Button>
             </Card>
+
+            {/* Delete Account */}
+            <Card className="p-6 bg-gradient-to-br from-red-950/40 to-red-900/30 border border-red-600/50">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red-500" />
+                Delete Account
+              </h3>
+              <p className="text-slate-300 text-sm mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <Button
+                onClick={() => setShowDeleteAccountConfirm(true)}
+                className="w-full bg-red-700 hover:bg-red-800 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete My Account
+              </Button>
+            </Card>
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
