@@ -268,10 +268,14 @@ export default function Home() {
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
               </h1>
-              <Link to={createPageUrl('Friends')}>
+              <Link to={createPageUrl('Friends')} onClick={async () => {
+                if (currentUser) {
+                  await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+                }
+              }}>
                 <Button variant="ghost" size="icon" className="relative rounded-full">
                   <Users className="w-7 h-7 text-cyan-400" />
-                  {friendPosts.length > 0 && window.location.pathname !== createPageUrl('Friends') && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
+                  {friendPosts.length > 0 && (!currentUser?.last_friends_view || new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
                 </Button>
               </Link>
             </div>
