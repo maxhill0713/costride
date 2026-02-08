@@ -9,7 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 export default function PostCard({ post, onLike, onComment, onSave, onDelete }) {
-  const [liked, setLiked] = useState(false);
+  const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
