@@ -7,7 +7,7 @@ import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown } from 'lucide-reac
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-export default function TodayWorkout({ currentUser }) {
+export default function TodayWorkout({ currentUser, isExpanded = true }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
