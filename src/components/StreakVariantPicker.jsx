@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Check } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 export default function StreakVariantPicker({ isOpen, onClose, onSelect, selectedVariant }) {
   const handleBackdropClick = (e) => {
