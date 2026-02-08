@@ -428,8 +428,3 @@ export default function Home() {
     </PullToRefresh>
   );
 }
-
-
-        </PullToRefresh>
-        );
-        }
