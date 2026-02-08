@@ -341,7 +341,7 @@ export default function Home() {
           {/* Community Section */}
           {memberGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
-              <Card className="bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
+              <Card className="bg-slate-800/40 border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-white font-semibold text-sm tracking-tight">Community</p>
@@ -364,11 +364,7 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-slate-300 text-xs font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person' : 'people'}` : '3 people'}</span>
-                      <span className="text-slate-400 text-xs">checked in today</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400 ml-auto" />
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
                   </div>
                 </div>
               </Card>
