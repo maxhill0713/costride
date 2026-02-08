@@ -220,198 +220,98 @@ export default function Home() {
   const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
   const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
 
-  // Recent check-ins for display
-  const recentCheckIns = todayCheckIns.slice(0, 2);
-
   return (
     <PullToRefresh onRefresh={async () => {
       await queryClient.invalidateQueries();
     }}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900">
-        {/* Compact Header */}
-        <div className="bg-slate-900/60 backdrop-blur-md border-b border-slate-700/50 px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="text-slate-300 hover:text-white"
-              onClick={() => navigate(createPageUrl('Notifications'))}
-            >
-              <Bell className="w-6 h-6" />
-            </Button>
-            <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-              CoStride
-            </h1>
-            <Link to={createPageUrl('Profile')}>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="relative text-slate-300 hover:text-white"
-              >
-                <Users className="w-6 h-6" />
-                {notifications.length > 0 && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
-                )}
-              </Button>
-            </Link>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        {/* Hero Header */}
+      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <span className="text-xl font-bold text-orange-400">{userStreak}</span>
+                <div className="relative w-8 h-8">
+                  <Flame className="w-8 h-8 text-orange-500 fill-orange-500" />
+                  <Dumbbell className="w-5 h-5 text-slate-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-[-30deg]" />
+                </div>
+              </div>
+              <div className="flex-1 text-center px-4">
+                <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+                  CoStride
+                </h1>
+              </div>
+              <Link to={createPageUrl('Friends')}>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="relative rounded-xl transition-all duration-300 hover:scale-125 group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-300 group-hover:blur-lg" />
+                  <Users className="w-8 h-8 relative z-10 text-cyan-400 group-hover:text-cyan-300 transition-all duration-300" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center justify-end">
+              {currentUser?.account_type === 'gym_owner' && (
+                <Link to={createPageUrl('GymOwnerDashboard')}>
+                  <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Admin View
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
-        {/* Streak and Status Card */}
-        <Card className="bg-gradient-to-br from-indigo-600 to-blue-700 border-0 p-6 text-white shadow-xl">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="relative w-8 h-8">
-                <Flame className="w-8 h-8 text-orange-400 fill-orange-400" />
-                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-white">
-                  {userStreak}
-                </span>
-              </div>
-              <span className="text-lg font-bold">{userStreak} day streak</span>
-            </div>
-          </div>
-          
-          <h2 className="text-2xl font-black mb-1">You're showing up today 🔥</h2>
-          <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-4xl font-black text-orange-400">{todayCheckIns.length}</span>
-            <span className="text-lg text-blue-100">visits</span>
-          </div>
-          <p className="text-blue-100 text-sm mb-4">
-            {todayCheckIns.length} {todayCheckIns.length === 1 ? 'member has' : 'members have'} already checked in.
-          </p>
-
-          {/* Check In Button */}
-          {memberGym && daysSinceCheckIn !== 0 ? (
-            <Button 
-              onClick={() => setShowCheckIn(true)}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg py-6 text-lg font-bold rounded-xl"
-            >
-              Check In Now
-            </Button>
-          ) : (
-            <Badge className="w-full justify-center bg-green-500/20 border border-green-400/50 text-green-100 text-base px-6 py-3">
-              <CheckCircle className="w-5 h-5 mr-2" />
-              Checked In Today ✓
-            </Badge>
-          )}
-
-          {/* Recent Check-ins */}
-          {recentCheckIns.length > 0 && (
-            <div className="mt-4 flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {recentCheckIns.map((checkIn, idx) => (
-                  <div 
-                    key={checkIn.id}
-                    className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-indigo-600 flex items-center justify-center"
-                  >
-                    <span className="text-white font-bold text-xs">
-                      {checkIn.user_name?.[0] || 'U'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="text-sm text-blue-100">
-                <span className="font-semibold">{recentCheckIns[0].user_name?.split(' ')[0]}</span>
-                {recentCheckIns.length > 1 && (
-                  <span> and {recentCheckIns.length - 1} other{recentCheckIns.length > 2 ? 's' : ''}</span>
-                )} checked in {formatDistanceToNow(new Date(recentCheckIns[0].check_in_date), { addSuffix: true })}
-              </div>
-            </div>
-          )}
-        </Card>
-
-
-
-
-
-
-
-        {/* Gym & Today's Workout Section */}
+      <div className="max-w-4xl mx-auto px-4 py-4 space-y-5">
+        {/* Check-In Button */}
         {memberGym && (
-          <Card className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-white">At {memberGym.name}</h3>
-              <div className="flex items-center gap-1 text-orange-400">
-                <Flame className="w-4 h-4 fill-orange-400" />
-                <span className="text-sm font-semibold">{weeklyCheckIns.length} visits</span>
-              </div>
-            </div>
-
-            {currentUser?.workout_split ? (
-              <div>
-                <p className="text-slate-300 text-sm mb-3">
-                  {currentUser.workout_split.days?.[new Date().getDay()]?.name || 'Rest day'} at the gym
-                </p>
-
-                {/* Today's Exercises */}
-                {todayLifts.length > 0 ? (
-                  <div className="space-y-2">
-                    {todayLifts.slice(0, 4).map((lift, idx) => (
-                      <div 
-                        key={lift.id}
-                        className="bg-slate-800/60 border border-slate-700/40 rounded-lg p-3 flex items-center justify-between"
-                      >
-                        <div className="flex-1">
-                          <h4 className="text-white font-semibold text-sm capitalize">
-                            {lift.exercise.replace('_', ' ')}
-                          </h4>
-                          {lift.notes && (
-                            <p className="text-xs text-slate-400 mt-1">
-                              Last time: {lift.notes}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-slate-300 text-sm">
-                            {lift.reps && <span>{lift.reps} x </span>}
-                            <span className="font-bold">{lift.weight_lbs}kg</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <TodayWorkout currentUser={currentUser} />
-                )}
-              </div>
+          <>
+            {daysSinceCheckIn === 0 ? (
+              <Badge className="w-full justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white text-base px-6 py-4 shadow-lg">
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Checked In Today ✓
+              </Badge>
             ) : (
-              <p className="text-slate-400 text-sm">No workout planned for today</p>
+              <Button 
+                onClick={() => setShowCheckIn(true)}
+                className={`w-full text-white border-0 shadow-lg py-6 text-lg font-bold rounded-xl ${
+                  daysSinceCheckIn === null
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
+                    : daysSinceCheckIn >= 3
+                    ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'
+                    : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
+                }`}
+              >
+                <CheckCircle className="w-6 h-6 mr-3" />
+                Check In Now
+              </Button>
             )}
-          </Card>
+            {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
+              <p className="text-slate-400 text-sm font-light text-center">
+                Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
+              </p>
+            )}
+          </>
         )}
 
 
 
-        {/* Community Section */}
-        {friendPosts.length > 0 && (
-          <div>
-            <h2 className="text-base font-bold text-slate-100 mb-3">Community</h2>
-            <div className="space-y-2">
-              {friendPosts.slice(0, 3).map(post => (
-                <Card 
-                  key={post.id} 
-                  className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 p-3 hover:border-blue-500/50 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    {post.member_avatar ? (
-                      <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-semibold text-sm">{post.member_name}</h4>
-                      <p className="text-slate-400 text-xs line-clamp-1">{post.content}</p>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-500" />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+
+
+
+
+        {/* Today's Workout */}
+        {currentUser?.workout_split && (
+          <TodayWorkout currentUser={currentUser} />
         )}
+
+
 
         {/* Top 3 Leaderboard Badge */}
         {(() => {
@@ -510,6 +410,99 @@ export default function Home() {
 
 
 
+        {/* Weekly Challenges */}
+        {weeklyChallenges.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-purple-400" />
+              Weekly Challenges
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {weeklyChallenges.map(challenge => (
+                <WeeklyChallengeCard 
+                  key={challenge.id} 
+                  challenge={challenge} 
+                  currentUser={currentUser}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+
+
+        {/* Friends Feed */}
+        {friendPosts.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <Users className="w-5 h-5 text-cyan-400" />
+              Friends Activity
+            </h2>
+            <div className="space-y-2">
+              {friendPosts.slice(0, 10).map(post => (
+                <Card key={post.id} className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
+                  <div className="p-3 flex items-start gap-3">
+                    {post.member_avatar ? (
+                      <img src={post.member_avatar} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-sm">{post.member_name?.[0] || 'U'}</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <div className="font-semibold text-white text-sm">{post.member_name}</div>
+                          <div className="text-xs text-slate-400">{formatDistanceToNow(new Date(post.created_date), { addSuffix: true })}</div>
+                        </div>
+                        {(post.image_url || post.video_url) && (
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
+                            {post.video_url ? (
+                              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">▶</span>
+                              </div>
+                            ) : (
+                              <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-300 line-clamp-2">{post.content}</p>
+                      <div className="flex items-center gap-3 text-slate-400 text-xs mt-2">
+                        <div className="flex items-center gap-1">
+                          <Heart className="w-3 h-3" />
+                          <span>{post.likes || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="w-3 h-3" />
+                          <span>{post.comments?.length || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notifications Section */}
+         {notifications.length > 0 && (
+           <Card className="bg-slate-900/70 backdrop-blur-sm border border-blue-500/30 p-4">
+             <h3 className="text-slate-200 font-semibold mb-3 flex items-center gap-2 text-sm">
+               <Bell className="w-4 h-4 text-blue-400" />
+               Recent Notifications
+             </h3>
+             <div className="space-y-2">
+               {notifications.slice(0, 3).map(notif => (
+                 <div key={notif.id} className={`p-3 rounded-lg text-sm border ${notif.read ? 'bg-slate-800/40 border-slate-700/30' : 'bg-slate-800/60 border-blue-500/30'}`}>
+                   <div className="text-slate-200">{notif.title}</div>
+                   <div className="text-xs text-slate-400 mt-1">{notif.message}</div>
+                 </div>
+               ))}
+             </div>
+           </Card>
+         )}
 
 
 
@@ -517,10 +510,38 @@ export default function Home() {
 
 
 
-
-
-
-
+        {/* Premium Upgrade Card */}
+         <Card className="p-6 bg-slate-900/70 backdrop-blur-sm border border-purple-500/30 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full -mr-20 -mt-20 blur-2xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Crown className="w-4 h-4" />
+                  </div>
+                  <Badge className="bg-purple-500/30 text-purple-200 border border-purple-500/50 font-bold text-xs">
+                    PREMIUM
+                  </Badge>
+                  <Badge className="bg-amber-500 text-amber-950 font-bold text-xs px-2 py-0.5 animate-pulse">
+                    COMING SOON
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <h3 className="font-bold text-base mb-2">Unlock Exclusive Rewards</h3>
+            <p className="text-slate-300 text-xs mb-4 leading-relaxed">
+              Access to brand rewards
+            </p>
+            <div className="mb-5">
+              <div className="text-2xl font-bold text-white">£4.99<span className="text-sm text-slate-400 font-semibold">/month</span></div>
+            </div>
+            <Button disabled className="w-full bg-gradient-to-r from-purple-600 to-pink-600 opacity-60 cursor-not-allowed text-white font-bold rounded-xl">
+              Coming Soon
+            </Button>
+          </div>
+        </Card>
 
       </div>
 
