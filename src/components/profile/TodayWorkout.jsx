@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import PlateCalculatorModal from './PlateCalculatorModal';
+import WorkoutNotesModal from './WorkoutNotesModal';
 
 export default function TodayWorkout({ currentUser }) {
   const [editingIndex, setEditingIndex] = useState(null);
