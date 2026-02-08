@@ -179,6 +179,7 @@ export default function GymOwnerDashboard() {
   const [showManageAmenities, setShowManageAmenities] = useState(false);
   const [showEditBasicInfo, setShowEditBasicInfo] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser, refetch: refetchUser } = useQuery({
