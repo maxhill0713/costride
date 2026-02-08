@@ -366,16 +366,24 @@ export default function Gyms() {
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                       <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md border-2 border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
                         {/* Image Section with Overlay */}
-                        {gym.image_url && (
-                          <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                            <img 
-                              src={gym.image_url} 
-                              alt={gym.name} 
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                            />
-                            
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                          {gym.image_url && (
+                            <>
+                              <img 
+                                src={gym.image_url} 
+                                alt={gym.name} 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                              />
+                              
+                              {/* Gradient Overlay */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            </>
+                          )}
+                          {!gym.image_url && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Dumbbell className="w-16 h-16 text-slate-600 opacity-40" />
+                            </div>
+                          )}
                             
                             {/* Quick Action Button */}
                             <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -437,10 +445,9 @@ export default function Gyms() {
                                 >
                                   <Edit className="w-4 h-4 text-slate-300" />
                                 </button>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                                )}
+                                </div>
+                                </div>
 
                         {/* Content Section */}
                         <div className="p-5 space-y-4">
@@ -617,16 +624,24 @@ export default function Gyms() {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                     <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md border-2 border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
                       {/* Image Section with Overlay */}
-                      {gym.image_url && (
-                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                          <img 
-                            src={gym.image_url} 
-                            alt={gym.name} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                          />
+                      <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                        {gym.image_url && (
+                          <>
+                            <img 
+                              src={gym.image_url} 
+                              alt={gym.name} 
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                            />
 
-                          {/* Gradient Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          </>
+                        )}
+                        {!gym.image_url && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Dumbbell className="w-16 h-16 text-slate-600 opacity-40" />
+                          </div>
+                        )}
 
                           {/* Quick Action Button */}
                           <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -680,11 +695,10 @@ export default function Gyms() {
                                 <Edit className="w-4 h-4 text-slate-300" />
                               </button>
                             )}
-                          </div>
-                        </div>
-                      )}
+                            </div>
+                            </div>
 
-                      {/* Content Section */}
+                            {/* Content Section */}
                       <div className="p-5 space-y-4">
                         {/* Header */}
                         <div>
