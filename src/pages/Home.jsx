@@ -342,12 +342,12 @@ export default function Home() {
           {memberGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
               <Card className="bg-slate-800/40 border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-white font-semibold text-sm tracking-tight">Community</p>
-                    <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1">
+                      <p className="text-white font-semibold text-sm tracking-tight">Community</p>
+                      <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
+                    </div>
                     <div className="relative w-12 h-8">
                       {(checkInUsers.length > 0 ? checkInUsers : [
                         { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
@@ -364,7 +364,10 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-300 font-medium">
+                    <span>{todayCheckIns.length > 0 ? `${todayCheckIns.length} people checked in` : '3 people checked in'}</span>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
                 </div>
               </Card>
