@@ -839,8 +839,6 @@ export default function Profile() {
             </TabsContent>
         </div>
       </Tabs>
-    </div>
-
       <AddGoalModal
         open={showAddGoal}
         onClose={() => setShowAddGoal(false)}
