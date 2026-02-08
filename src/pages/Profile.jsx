@@ -837,9 +837,9 @@ export default function Profile() {
               </div>
             )}
             </TabsContent>
-        </Tabs>
         </div>
-      </div>
+      </Tabs>
+    </div>
 
       <AddGoalModal
         open={showAddGoal}
