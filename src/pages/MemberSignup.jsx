@@ -164,13 +164,14 @@ export default function MemberSignup() {
           {/* Name Input */}
           <div>
             <Label htmlFor="name" className="text-white font-semibold mb-2 block">
-              Your Name *
+              Your Name * ({formData.name.length}/15)
             </Label>
             <Input
               id="name"
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value.slice(0, 15) })}
+              maxLength="15"
               placeholder="Enter your full name"
               required
               className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"

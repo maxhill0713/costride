@@ -561,15 +561,16 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-white font-semibold">Gym Name *</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Iron Paradise Gym"
-                    required
-                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                  />
-                </div>
+                   <Label className="text-white font-semibold">Gym Name * ({formData.name.length}/15)</Label>
+                   <Input
+                     value={formData.name}
+                     onChange={(e) => setFormData({ ...formData, name: e.target.value.slice(0, 15) })}
+                     maxLength="15"
+                     placeholder="Iron Paradise Gym"
+                     required
+                     className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
+                   />
+                 </div>
 
                 <div>
                   <Label className="text-white font-semibold">Address *</Label>

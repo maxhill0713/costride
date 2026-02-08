@@ -359,9 +359,9 @@ export default function Profile() {
                  )}
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                   <h1 className="text-2xl md:text-3xl font-medium tracking-[-0.02em] text-white leading-tight">{currentUser.full_name}</h1>
-                  <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
+               <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl md:text-3xl font-medium tracking-[-0.02em] text-white leading-tight truncate">{currentUser.full_name}</h1>
+                 <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="lg" />
                 </div>
                 {/* Equipped Badges */}
                 {currentUser?.equipped_badges?.length > 0 && (
