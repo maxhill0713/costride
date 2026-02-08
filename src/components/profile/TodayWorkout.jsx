@@ -386,24 +386,26 @@ export default function TodayWorkout({ currentUser }) {
             </div>
 
             {/* Quick Action Icons */}
-            <div className="flex items-center gap-1.5">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-                title="Plate Calculator"
-              >
-                <Calculator className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-                title="Notes"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-              </Button>
-            </div>
+             <div className="flex items-center gap-1.5">
+               <Button
+                 onClick={() => setShowCalculator(true)}
+                 size="icon"
+                 variant="ghost"
+                 className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+                 title="Plate Calculator"
+               >
+                 <Calculator className="w-3.5 h-3.5" />
+               </Button>
+               <Button
+                 onClick={() => setShowNotes(true)}
+                 size="icon"
+                 variant="ghost"
+                 className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+                 title="Notes"
+               >
+                 <BookOpen className="w-3.5 h-3.5" />
+               </Button>
+             </div>
 
             {/* Collapse Arrow */}
             <Button
