@@ -838,6 +838,7 @@ export default function Profile() {
             )}
             </TabsContent>
         </Tabs>
+        </div>
       </div>
 
       <AddGoalModal
