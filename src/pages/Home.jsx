@@ -297,6 +297,24 @@ export default function Home() {
                 Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
               </p>
             )}
+
+            {/* Community Info */}
+            <Card className="bg-slate-900/70 backdrop-blur-sm border border-blue-500/30 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-slate-300 text-sm mb-1">
+                    {todayCheckIns.length} {todayCheckIns.length === 1 ? 'member' : 'members'} checked in today at {memberGym.name}
+                  </p>
+                  <p className="text-slate-400 text-xs">Join your gym community</p>
+                </div>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + memberGym.id}>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
+                    <Users className="w-4 h-4 mr-2" />
+                    Community
+                  </Button>
+                </Link>
+              </div>
+            </Card>
           </>
         )}
 
