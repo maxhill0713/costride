@@ -82,18 +82,15 @@ export default function Settings() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Profile */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Profile</h3>
-              <p className="text-sm text-slate-300">Customize your profile appearance</p>
-            </div>
+            <h3 className="text-base font-semibold text-white">Profile</h3>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Profile Picture */}
              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
                <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
@@ -155,15 +152,23 @@ export default function Settings() {
             {/* Display Name */}
              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
                <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Display Name</Label>
-               <Input
-                 type="text"
-                 value={displayName}
-                 onChange={(e) => setDisplayName(e.target.value.slice(0, 15))}
-                 maxLength="15"
-                 placeholder="Your name"
-                 className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-                 onBlur={() => updateSettingsMutation.mutate({ full_name: displayName })}
-               />
+               <div className="flex gap-2">
+                 <Input
+                   type="text"
+                   value={displayName}
+                   onChange={(e) => setDisplayName(e.target.value.slice(0, 15))}
+                   maxLength="15"
+                   placeholder="Your name"
+                   className="bg-white/5 border border-white/10 text-slate-100 rounded-xl flex-1"
+                 />
+                 <Button
+                   onClick={() => updateSettingsMutation.mutate({ full_name: displayName })}
+                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 font-semibold"
+                   disabled={updateSettingsMutation.isPending}
+                 >
+                   {updateSettingsMutation.isPending ? 'Saving...' : 'Save'}
+                 </Button>
+               </div>
              </div>
 
             {/* Bio */}
@@ -182,29 +187,23 @@ export default function Settings() {
         </Card>
 
         {/* Notifications */}
-        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-6 shadow-lg">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
-              <Bell className="w-6 h-6 text-white" />
+        <Card className="bg-gradient-to-br from-slate-700/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-slate-600/40 p-4 shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+              <Bell className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Notifications</h3>
-              <p className="text-sm text-slate-300">Manage your notification preferences</p>
-            </div>
+            <h3 className="text-base font-semibold text-white">Notifications</h3>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl">
               <div className="flex items-center gap-3">
                 {currentUser.notifications_enabled ? (
-                  <Bell className="w-5 h-5 text-slate-400" />
+                  <Bell className="w-4 h-4 text-slate-400" />
                 ) : (
-                  <BellOff className="w-5 h-5 text-slate-500" />
+                  <BellOff className="w-4 h-4 text-slate-500" />
                 )}
-                <div>
-                  <Label className="text-sm font-bold text-slate-100">Push Notifications</Label>
-                  <p className="text-xs text-slate-400">Get notified about challenges and updates</p>
-                </div>
+                <Label className="text-sm font-semibold text-slate-100">Push Notifications</Label>
               </div>
               <Switch
                 checked={currentUser.notifications_enabled ?? true}
@@ -212,17 +211,14 @@ export default function Settings() {
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl">
               <div className="flex items-center gap-3">
                 {currentUser.email_notifications ? (
-                  <Bell className="w-5 h-5 text-slate-400" />
+                  <Bell className="w-4 h-4 text-slate-400" />
                 ) : (
-                  <BellOff className="w-5 h-5 text-slate-500" />
+                  <BellOff className="w-4 h-4 text-slate-500" />
                 )}
-                <div>
-                  <Label className="text-sm font-bold text-slate-100">Email Notifications</Label>
-                  <p className="text-xs text-slate-400">Receive email updates and summaries</p>
-                </div>
+                <Label className="text-sm font-semibold text-slate-100">Email Notifications</Label>
               </div>
               <Switch
                 checked={currentUser.email_notifications ?? true}
