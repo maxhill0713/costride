@@ -76,7 +76,7 @@ export default function Friends() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['posts']);
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     }
   });
 
