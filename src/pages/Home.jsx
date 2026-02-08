@@ -258,9 +258,9 @@ export default function Home() {
     }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Header */}
-        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-4">
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Bell className="w-6 h-6 text-slate-400" />
+            <Flame className="w-5 h-5 text-orange-400" />
             <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
               CoStride
             </h1>
