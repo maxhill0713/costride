@@ -87,12 +87,8 @@ export default function GymCommunity() {
     queryKey: ['posts', gymId],
     queryFn: async () => {
       const allPosts = await base44.entities.Post.list('-created_date');
-      // Show posts from gym members or from gym owner
-      return allPosts.filter(p => {
-        const fromMember = checkIns.some(c => c.user_id === p.member_id);
-        const fromOwner = p.member_id === gym?.admin_id || p.member_id === currentUser?.id;
-        return fromMember || fromOwner;
-      });
+      // Show only gym posts (from gym owner/coaches)
+      return allPosts.filter(p => p.member_id === gym?.admin_id || p.member_id === currentUser?.id);
     },
     enabled: !!gymId && !!currentUser
   });
