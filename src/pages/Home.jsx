@@ -312,69 +312,26 @@ export default function Home() {
 
 
 
-        {/* Community Card */}
-        {memberGym && (
-          <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`}>
-            <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg">
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-bold text-base">{memberGym.name}</h3>
-                      <p className="text-slate-400 text-sm">
-                        {recentChallengeActivity.length > 0 
-                          ? `${recentChallengeActivity[0].user_name?.split(' ')[0] || 'Someone'} joined a challenge`
-                          : todayCheckIns.length > 0
-                          ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person has' : 'people have'} worked out today`
-                          : '3 people have worked out today'}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </div>
-                
-                {/* Active Members Avatars */}
-                <div className="flex items-center gap-2 pl-15">
-                  <div className="flex -space-x-2">
-                    {(todayCheckIns.length > 0 ? todayCheckIns : [
-                      { id: '1', user_id: 'sample1', user_name: 'Alex' },
-                      { id: '2', user_id: 'sample2', user_name: 'Jordan' },
-                      { id: '3', user_id: 'sample3', user_name: 'Casey' }
-                    ]).slice(0, 5).map((checkIn, idx) => {
-                      const user = checkInUsers.find(u => u.id === checkIn.user_id);
-                      const colors = ['from-blue-400 to-cyan-400', 'from-purple-400 to-pink-400', 'from-orange-400 to-red-400', 'from-green-400 to-emerald-400'];
-                      return (
-                        <div 
-                          key={checkIn.id}
-                          className="w-8 h-8 rounded-full border-2 border-slate-800 flex items-center justify-center text-white text-xs font-bold shadow-lg overflow-hidden flex-shrink-0"
-                          style={{ zIndex: 5 - idx }}
-                          title={checkIn.user_name}
-                        >
-                          {user?.avatar_url ? (
-                            <img src={user.avatar_url} alt={checkIn.user_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className={`w-full h-full bg-gradient-to-br ${colors[idx % colors.length]} flex items-center justify-center`}>
-                              {checkIn.user_name?.[0] || 'U'}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {todayCheckIns.length > 5 && (
-                      <div className="w-8 h-8 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-white text-xs font-semibold">
-                        +{todayCheckIns.length - 5}
+          {/* Recent Check-ins */}
+          {todayCheckIns.length > 0 && (
+            <div className="space-y-2">
+              {todayCheckIns.slice(0, 1).map((checkIn) => {
+                const user = checkInUsers.find(u => u.id === checkIn.user_id);
+                return (
+                  <div key={checkIn.id} className="flex items-center gap-2 px-4 py-2">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={checkIn.user_name} className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold">
+                        {checkIn.user_name?.[0] || 'U'}
                       </div>
                     )}
+                    <span className="text-slate-300 text-sm">{checkIn.user_name} <span className="text-slate-500">checked in 20 mins ago</span></span>
                   </div>
-                  <span className="text-slate-400 text-xs">Active today</span>
-                </div>
-              </div>
-            </Card>
-          </Link>
-        )}
+                );
+              })}
+            </div>
+          )}
 
         {/* Today's Workout */}
         {currentUser?.workout_split && (
