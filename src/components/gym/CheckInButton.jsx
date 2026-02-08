@@ -445,8 +445,18 @@ export default function CheckInButton({ gym }) {
     return R * c; // Distance in km
   };
 
+  const isClaimedGym = gym && (gym.owner_email || gym.admin_id);
+
   const handleCheckIn = async () => {
     if (!currentUser || !gym) return;
+    
+    // Claimed gyms require membership
+    if (isClaimedGym && !gymMembership) {
+      toast.error('Membership required', {
+        description: 'Join this gym with a join code to check in.'
+      });
+      return;
+    }
     
     setIsChecking(true);
     try {
@@ -661,8 +671,22 @@ export default function CheckInButton({ gym }) {
 
 
 
+      {/* Membership Required Message for Claimed Gyms */}
+      {isClaimedGym && !gymMembership && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center mb-3">
+          <p className="text-purple-900 font-semibold mb-2">Membership required</p>
+          <p className="text-sm text-purple-700">Ask the gym for a join code to start checking in</p>
+        </div>
+      )}
+
       {/* Check-in Button */}
-      <motion.div
+      {isClaimedGym && !gymMembership ? (
+        <Button disabled className="w-full h-14 rounded-2xl font-bold text-base bg-gray-400 cursor-not-allowed">
+          <MapPin className="w-5 h-5 mr-2" />
+          Membership Required
+        </Button>
+      ) : (
+        <motion.div
           whileTap={!hasCheckedInToday() && !isChecking ? { scale: 0.95 } : {}}
           animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}
@@ -691,6 +715,7 @@ export default function CheckInButton({ gym }) {
           )}
           </Button>
           </motion.div>
+          )}
 
           {hasCheckedInToday() && (
         <p className="text-center text-sm text-gray-500">
