@@ -239,6 +239,55 @@ export default function RedeemReward() {
         {/* Active Challenges Section */}
         {activeSection === 'challenges' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            {/* Weekly Challenges */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <Clock className="w-6 h-6 text-cyan-400" />
+                Weekly Challenges (Resets Sunday)
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {weeklyCheckInChallenges.map((challenge) => (
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className="bg-slate-900/70 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 hover:border-cyan-400/50 transition-all overflow-hidden group relative">
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Zap className="w-4 h-4 text-cyan-400 animate-pulse" />
+                      </div>
+                      
+                      <div className="relative">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-white mb-2 text-sm md:text-base">{challenge.title}</h3>
+                            <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
+                            <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] inline-block">
+                              {challenge.target_value} check-ins
+                            </Badge>
+                          </div>
+                          <div className="text-3xl flex-shrink-0 ml-2">{challenge.icon}</div>
+                        </div>
+
+                        <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mt-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Gift className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] text-slate-400">Reward</p>
+                            <p className="text-xs font-bold text-green-400">{challenge.reward}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Community Challenges */}
             <div className="mb-6">
               <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
                 <Trophy className="w-6 h-6 text-amber-400" />
