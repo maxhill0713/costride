@@ -651,6 +651,28 @@ export default function Profile() {
                 </Card>
               </div>
 
+              {/* Streak Freezes Section */}
+              <Card className="p-5 bg-gradient-to-br from-blue-600/15 to-blue-500/5 backdrop-blur-sm border border-blue-500/40 shadow-md overflow-hidden">
+                <h3 className="font-semibold text-blue-300 mb-3 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                  <span className="truncate">Streak Freezes</span>
+                </h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <p className="text-slate-300 text-sm mb-1">Available Freezes</p>
+                    <div className="text-3xl font-bold text-blue-300">{currentUser?.streak_freezes || 0}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {Array.from({ length: Math.min(currentUser?.streak_freezes || 0, 3) }).map((_, i) => (
+                      <div key={i} className="w-10 h-10 rounded-lg bg-blue-500/40 border border-blue-400/60 flex items-center justify-center">
+                        <Zap className="w-5 h-5 text-blue-300" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 mt-3">Earn 1 freeze every week. Use a freeze to prevent your streak from breaking if you miss a day.</p>
+              </Card>
+
               {/* Badges Section */}
               <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
             </TabsContent>
