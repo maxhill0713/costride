@@ -370,7 +370,7 @@ export default function Home() {
                   <TodayWorkout currentUser={currentUser} isExpanded={expandWorkout} />
                   <button
                     onClick={() => setExpandWorkout(!expandWorkout)}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 text-slate-400 hover:text-white transition-colors p-1"
                   >
                     {expandWorkout ? (
                       <ChevronUp className="w-5 h-5" />
