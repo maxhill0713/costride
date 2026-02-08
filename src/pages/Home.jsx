@@ -170,7 +170,7 @@ export default function Home() {
     createReminderNotification();
   }, [currentUser, daysSinceCheckIn]);
 
-  if (userLoading) {
+  if (userLoading || !currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
