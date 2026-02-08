@@ -257,61 +257,35 @@ export default function Home() {
       await queryClient.invalidateQueries();
     }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        {/* Hero Header */}
-      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <span className="text-xl font-bold text-orange-400">{userStreak}</span>
-                <div className="relative w-8 h-8">
-                  <Flame className="w-8 h-8 text-orange-500 fill-orange-500" />
-                  <Dumbbell className="w-5 h-5 text-slate-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-[-30deg]" />
-                </div>
-              </div>
-              <div className="flex-1 text-center px-4">
-                <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-                  CoStride
-                </h1>
-              </div>
-              <Link to={createPageUrl('Friends')}>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="relative rounded-xl transition-all duration-300 hover:scale-125 group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-300 group-hover:blur-lg" />
-                  <Users className="w-8 h-8 relative z-10 text-cyan-400 group-hover:text-cyan-300 transition-all duration-300" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
-                </Button>
-              </Link>
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              {currentUser?.account_type === 'gym_owner' && (
-                <Link to={createPageUrl('GymOwnerDashboard')}>
-                  <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Admin View
-                  </Button>
-                </Link>
-              )}
-            </div>
+        {/* Header */}
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <Bell className="w-6 h-6 text-slate-400" />
+            <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+              CoStride
+            </h1>
+            <Link to={createPageUrl('Friends')}>
+              <Button variant="ghost" size="icon" className="relative rounded-full">
+                <Users className="w-6 h-6 text-cyan-400" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />
+              </Button>
+            </Link>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-4 space-y-5">
-        {/* Motivational Text */}
-        <div className="text-center py-3">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-            Every Rep Counts
-          </h2>
-          <p className="text-slate-400 text-sm">
-            {userStreak > 0 
-              ? `${userStreak} day streak - Keep pushing forward! 💪`
-              : "Start your journey today and build unstoppable momentum"}
-          </p>
-        </div>
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+          {/* Motivational Section */}
+          {memberGym && (
+            <div className="text-center space-y-1">
+              <h2 className="text-3xl font-bold text-white">
+                You're showing up today <span className="text-4xl">🔥</span>
+              </h2>
+              <p className="text-4xl font-bold text-cyan-400">{todayCheckIns.length} visits</p>
+              <p className="text-slate-300 text-sm">
+                {todayCheckIns.length} {todayCheckIns.length === 1 ? 'member has' : 'members have'} already checked in.
+              </p>
+            </div>
+          )}
 
         {/* Check-In Button */}
         {memberGym && (
