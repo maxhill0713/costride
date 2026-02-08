@@ -312,9 +312,9 @@ export default function Home() {
                    ]).slice(0, 3).map((user) => (
                      <div key={user.id} className="relative group">
                        {user.avatar_url ? (
-                         <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-4 border-green-500 shadow-lg shadow-green-500/50" />
+                         <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
                        ) : (
-                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-4 border-green-500 shadow-lg shadow-green-500/50">
+                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
                            {user.full_name?.[0] || 'U'}
                          </div>
                        )}
