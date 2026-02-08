@@ -272,10 +272,23 @@ export default function Home() {
         {/* Header with Streak */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Flame className="w-9 h-9 text-orange-500 fill-current" />
+              <button 
+                onClick={() => setShowStreakVariants(true)}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                {streakVariant === 'sunglasses' ? (
+                  <div className="relative">
+                    <Flame className="w-9 h-9 text-orange-500 fill-current" />
+                    <div className="absolute -top-1 right-0 flex gap-0.5">
+                      <div className="w-2 h-1.5 bg-black rounded-full" />
+                      <div className="w-2 h-1.5 bg-black rounded-full" />
+                    </div>
+                  </div>
+                ) : (
+                  <Flame className="w-9 h-9 text-orange-500 fill-current" />
+                )}
                 <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
-              </div>
+              </button>
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
               </h1>
