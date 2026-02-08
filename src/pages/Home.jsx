@@ -258,22 +258,24 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Header with Streak */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Flame className="w-5 h-5 text-orange-400" />
-                <span className="text-white font-semibold text-xs tracking-tight">{userStreak} day streak</span>
-              </div>
-              <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center gap-3">
+              <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
               </h1>
-            <Link to={createPageUrl('Friends')}>
-              <Button variant="ghost" size="icon" className="relative rounded-full">
-                <Users className="w-5 h-5 text-cyan-400" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />
-              </Button>
-            </Link>
+              <div className="flex items-center justify-center gap-6">
+                <div className="flex items-center gap-1.5">
+                  <Flame className="w-5 h-5 text-orange-400" />
+                  <span className="text-white font-semibold text-xs tracking-tight">{userStreak}</span>
+                </div>
+                <Link to={createPageUrl('Friends')}>
+                  <Button variant="ghost" size="icon" className="relative rounded-full">
+                    <Users className="w-5 h-5 text-cyan-400" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
 
         <div className="max-w-4xl mx-auto px-4 py-3 space-y-4">
           {/* Check-In Button - Full Width */}
