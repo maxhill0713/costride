@@ -96,7 +96,22 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             </div>
           )}
 
-          <div className="mt-4 pt-3 border-t border-slate-700/50 flex gap-2">
+          <div className="mt-3 pt-3 border-t border-slate-700/50">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-[10px] font-bold text-slate-400">Progress</p>
+              <p className="text-[10px] font-bold text-amber-400">{Math.round(progressPercentage)}%</p>
+            </div>
+            <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercentage}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex gap-2">
             <motion.div 
               whileHover={!userHasJoined && !isOwner ? { scale: 1.02 } : {}}
               whileTap={!userHasJoined && !isOwner ? { scale: 0.98 } : {}}
