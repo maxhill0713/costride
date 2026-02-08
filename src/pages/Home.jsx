@@ -273,10 +273,10 @@ export default function Home() {
                   await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
                 }
               }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full">
-                  <Users className="w-7 h-7 text-cyan-400" />
-                  {friendPosts.length > 0 && (!currentUser?.last_friends_view || new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
-                </Button>
+                <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
+                   <Users className="w-10 h-10 text-cyan-400" />
+                   {friendPosts.length > 0 && (!currentUser?.last_friends_view || new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
+                 </Button>
               </Link>
             </div>
           </div>
