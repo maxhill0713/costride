@@ -351,6 +351,16 @@ export default function GymOwnerDashboard() {
     staleTime: 30000
   });
 
+  const { data: polls = [] } = useQuery({
+    queryKey: ['polls', selectedGym?.id],
+    queryFn: async () => {
+      const allPolls = await base44.entities.Poll.list('-created_date');
+      return allPolls.filter(p => p.gym_id === selectedGym?.id && p.status === 'active');
+    },
+    enabled: !!selectedGym,
+    staleTime: 30000
+  });
+
   const createRewardMutation = useMutation({
     mutationFn: (rewardData) => base44.entities.Reward.create(rewardData),
     onSuccess: () => {
