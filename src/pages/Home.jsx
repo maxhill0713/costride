@@ -355,24 +355,26 @@ export default function Home() {
                     </div>
                     <ChevronRight className="w-5 h-5 text-slate-400" />
                   </div>
-                  {todayCheckIns.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center -space-x-2">
-                        {checkInUsers.slice(0, 4).map((user) => (
-                          <div key={user.id} className="relative group">
-                            {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-slate-800" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-800">
-                                {user.full_name?.[0] || 'U'}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <span className="text-slate-300 text-xs font-medium">{todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center -space-x-2">
+                      {(checkInUsers.length > 0 ? checkInUsers : [
+                        { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
+                        { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null },
+                        { id: 'demo3', full_name: 'Jordan Lee', avatar_url: null }
+                      ]).slice(0, 4).map((user) => (
+                        <div key={user.id} className="relative group">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-slate-800" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-800">
+                              {user.full_name?.[0] || 'U'}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
+                    <span className="text-slate-300 text-xs font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person' : 'people'}` : '3 people'} checked in today</span>
+                  </div>
                 </div>
               </Card>
             </Link>
