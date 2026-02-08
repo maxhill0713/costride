@@ -25,7 +25,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
         <div className="grid grid-cols-4 gap-8">
           {/* Default Flame */}
           <button
-            onClick={() => onSelect('default')}
+            onClick={() => handleSelect('default')}
             className={`flex flex-col items-center gap-3 p-6 rounded-lg transition-all ${
               selectedVariant === 'default'
                 ? 'border-3 border-green-500'
@@ -37,7 +37,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
           {/* Sunglasses Flame */}
           <button
-            onClick={() => onSelect('sunglasses')}
+            onClick={() => handleSelect('sunglasses')}
             className={`flex flex-col items-center gap-3 p-6 rounded-lg transition-all ${
               selectedVariant === 'sunglasses'
                 ? 'border-3 border-green-500'
