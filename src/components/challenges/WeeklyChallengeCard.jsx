@@ -90,11 +90,11 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
                   isParticipant 
                     ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50' 
                     : isExpired
-                    ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-slate-300 cursor-not-allowed border border-slate-600'
+                    ? 'hidden'
                     : 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-400/50'
                 }`}
               >
-                {isParticipant ? '✓ Joined' : isExpired ? 'Ended' : 'Join Challenge'}
+                {isParticipant ? '✓ Joined' : 'Join Challenge'}
               </Button>
             </motion.div>
           </div>
