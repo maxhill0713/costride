@@ -287,36 +287,24 @@ export default function Home() {
             </div>
           )}
 
-        {/* Check-In Button */}
-        {memberGym && (
-          <>
-            {daysSinceCheckIn === 0 ? (
-              <Badge className="w-full justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white text-base px-6 py-4 shadow-lg">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Checked In Today ✓
-              </Badge>
-            ) : (
-              <Button 
-                onClick={() => setShowCheckIn(true)}
-                className={`w-full text-white border-0 shadow-lg py-6 text-lg font-bold rounded-xl ${
-                  daysSinceCheckIn === null
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
-                    : daysSinceCheckIn >= 3
-                    ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'
-                    : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
-                }`}
-              >
-                <CheckCircle className="w-6 h-6 mr-3" />
-                Check In Now
-              </Button>
-            )}
-            {daysSinceCheckIn !== null && daysSinceCheckIn > 0 && (
-              <p className="text-slate-400 text-sm font-light text-center">
-                Not checked in for {daysSinceCheckIn} {daysSinceCheckIn === 1 ? 'day' : 'days'}
-              </p>
-            )}
-          </>
-        )}
+          {/* Check-In Button */}
+          {memberGym && (
+            <>
+              {daysSinceCheckIn === 0 ? (
+                <Badge className="w-full justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white text-base px-6 py-4 shadow-lg">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Checked In Today ✓
+                </Badge>
+              ) : (
+                <Button 
+                  onClick={() => setShowCheckIn(true)}
+                  className="w-full text-white border-0 shadow-lg py-5 text-lg font-bold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                >
+                  Check In Now
+                </Button>
+              )}
+            </>
+          )}
 
 
 
