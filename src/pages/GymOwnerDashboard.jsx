@@ -23,6 +23,7 @@ import EditBasicInfoModal from '../components/gym/EditBasicInfoModal';
 import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
+import CreatePollModal from '../components/polls/CreatePollModal';
 
 import QRCode from 'react-qr-code';
 
