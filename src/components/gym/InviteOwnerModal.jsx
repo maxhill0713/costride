@@ -24,10 +24,13 @@ export default function InviteOwnerModal({ open, onClose, gym }) {
 
     setIsLoading(true);
     try {
-      // Invite the user to the app
-      await base44.users.inviteUser(email, 'user');
+      // Send invite via backend function
+      await base44.functions.invoke('inviteGymOwner', { 
+        email: email.trim(),
+        gym_id: gym.id,
+        gym_name: gym.name
+      });
       
-      // Optionally update the gym to mark it as having a pending owner claim
       setSuccess(true);
       setTimeout(() => {
         setEmail('');

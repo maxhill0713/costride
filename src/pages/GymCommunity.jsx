@@ -756,10 +756,10 @@ export default function GymCommunity() {
             </div>
 
             {/* Gym Name & Info */}
-            <div className="flex-1 text-left pb-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-3xl font-black text-white drop-shadow-lg">{gym.name}</h1>
-                {gym.verified && <BadgeCheck className="w-6 h-6 text-white drop-shadow-lg" />}
+            <div className="flex-1 text-left pb-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h1 className="text-2xl md:text-3xl font-black text-white drop-shadow-lg break-words">{gym.name}</h1>
+                {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
               </div>
               <p className="text-white/90 text-sm font-medium drop-shadow-md">Your fitness community 💪</p>
               <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
