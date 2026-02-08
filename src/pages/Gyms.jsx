@@ -379,8 +379,8 @@ export default function Gyms() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             
                             {/* Quick Action Button */}
-                            <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transform scale-95 group-hover:scale-100 transition-transform">
+                            <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                              <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
                                 <Dumbbell className="w-4 h-4 mr-2" />
                                 Enter Gym
                               </Button>
@@ -654,8 +654,8 @@ export default function Gyms() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                           {/* Quick Action Button */}
-                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transform scale-95 group-hover:scale-100 transition-transform">
+                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
                               <Dumbbell className="w-4 h-4 mr-2" />
                               Enter Gym
                             </Button>
