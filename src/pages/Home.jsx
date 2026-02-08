@@ -259,13 +259,13 @@ export default function Home() {
         {/* Header with Streak */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-400" />
-              <span className="text-white font-bold text-sm">{userStreak}</span>
-            </div>
-            <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
-              CoStride
-            </h1>
+              <div className="flex items-center gap-1.5">
+                <Flame className="w-5 h-5 text-orange-400" />
+                <span className="text-white font-semibold text-xs tracking-tight">{userStreak} day streak</span>
+              </div>
+              <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+                CoStride
+              </h1>
             <Link to={createPageUrl('Friends')}>
               <Button variant="ghost" size="icon" className="relative rounded-full">
                 <Users className="w-5 h-5 text-cyan-400" />
