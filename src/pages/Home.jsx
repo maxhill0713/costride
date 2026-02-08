@@ -375,37 +375,40 @@ export default function Home() {
                 </div>
                 
                 {/* Active Members Avatars */}
-                {todayCheckIns.length > 0 && (
-                  <div className="flex items-center gap-2 pl-15">
-                    <div className="flex -space-x-2">
-                      {todayCheckIns.slice(0, 5).map((checkIn, idx) => {
-                        const user = checkInUsers.find(u => u.id === checkIn.user_id);
-                        return (
-                          <div 
-                            key={checkIn.id}
-                            className="w-8 h-8 rounded-full border-2 border-slate-800 flex items-center justify-center text-white text-xs font-bold shadow-lg overflow-hidden flex-shrink-0"
-                            style={{ zIndex: 5 - idx }}
-                            title={checkIn.user_name}
-                          >
-                            {user?.avatar_url ? (
-                              <img src={user.avatar_url} alt={checkIn.user_name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
-                                {checkIn.user_name?.[0] || 'U'}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {todayCheckIns.length > 5 && (
-                        <div className="w-8 h-8 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-white text-xs font-semibold">
-                          +{todayCheckIns.length - 5}
+                <div className="flex items-center gap-2 pl-15">
+                  <div className="flex -space-x-2">
+                    {(todayCheckIns.length > 0 ? todayCheckIns : [
+                      { id: '1', user_id: 'sample1', user_name: 'Alex' },
+                      { id: '2', user_id: 'sample2', user_name: 'Jordan' },
+                      { id: '3', user_id: 'sample3', user_name: 'Casey' }
+                    ]).slice(0, 5).map((checkIn, idx) => {
+                      const user = checkInUsers.find(u => u.id === checkIn.user_id);
+                      const colors = ['from-blue-400 to-cyan-400', 'from-purple-400 to-pink-400', 'from-orange-400 to-red-400', 'from-green-400 to-emerald-400'];
+                      return (
+                        <div 
+                          key={checkIn.id}
+                          className="w-8 h-8 rounded-full border-2 border-slate-800 flex items-center justify-center text-white text-xs font-bold shadow-lg overflow-hidden flex-shrink-0"
+                          style={{ zIndex: 5 - idx }}
+                          title={checkIn.user_name}
+                        >
+                          {user?.avatar_url ? (
+                            <img src={user.avatar_url} alt={checkIn.user_name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className={`w-full h-full bg-gradient-to-br ${colors[idx % colors.length]} flex items-center justify-center`}>
+                              {checkIn.user_name?.[0] || 'U'}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <span className="text-slate-400 text-xs">Active today</span>
+                      );
+                    })}
+                    {todayCheckIns.length > 5 && (
+                      <div className="w-8 h-8 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-white text-xs font-semibold">
+                        +{todayCheckIns.length - 5}
+                      </div>
+                    )}
                   </div>
-                )}
+                  <span className="text-slate-400 text-xs">Active today</span>
+                </div>
               </div>
             </Card>
           </Link>
