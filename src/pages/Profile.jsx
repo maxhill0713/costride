@@ -23,7 +23,6 @@ import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
-import WorkoutProgressCard from '../components/profile/WorkoutProgressCard';
 
 
 export default function Profile() {
@@ -522,8 +521,8 @@ export default function Profile() {
                 />
               </Card>
 
-              {/* Workout Progress Card with Notes */}
-              <WorkoutProgressCard currentUser={currentUser} workoutLogs={lifts} />
+              {/* Workout Progress Tracker */}
+              <WorkoutProgressTracker currentUser={currentUser} />
 
               {/* Gym Memberships - Compact */}
               {memberGyms.length > 0 && (
