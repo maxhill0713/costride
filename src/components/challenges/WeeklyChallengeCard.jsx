@@ -38,10 +38,6 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       transition={{ duration: 0.2 }}
     >
       <Card className="bg-slate-900/70 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 hover:border-cyan-400/50 transition-all overflow-hidden group relative">
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Zap className="w-4 h-4 text-cyan-400 animate-pulse" />
-        </div>
-        
         <div className="relative">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1 min-w-0">
@@ -51,7 +47,9 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
                 {challenge.target_value} check-ins
               </Badge>
             </div>
-            <div className="text-3xl flex-shrink-0 ml-2">✨</div>
+            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-cyan-500/30">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
           </div>
 
           <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mt-3">
