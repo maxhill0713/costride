@@ -2602,6 +2602,13 @@ export default function GymOwnerDashboard() {
           isLoading={updateGymMutation.isPending}
         />
 
+        <CreatePollModal
+          open={showCreatePoll}
+          onClose={() => setShowCreatePoll(false)}
+          onSave={(data) => createPollMutation.mutate(data)}
+          isLoading={createPollMutation.isPending}
+        />
+
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent className="bg-slate-900 border border-red-700/50">
