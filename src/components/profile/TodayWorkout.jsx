@@ -444,6 +444,10 @@ export default function TodayWorkout({ currentUser }) {
           </Button>
         </div>
       )}
+
+      {/* Modals */}
+      <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
+      <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
       </Card>
       );
       }
