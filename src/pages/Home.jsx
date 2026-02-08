@@ -376,23 +376,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Community Section */}
-          {memberGym && (
-            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
-              <Card className="bg-slate-800/60 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="text-white font-semibold text-sm tracking-tight">Community</p>
-                      <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </div>
-              </Card>
-            </Link>
-          )}
-
         {/* Join a Gym Prompt */}
         {gymMemberships.length === 0 && (
           <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
