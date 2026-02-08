@@ -255,14 +255,6 @@ export default function Home() {
               </Link>
             </div>
             <div className="flex items-center gap-2 justify-end">
-              {memberGym && (
-                <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`}>
-                  <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0 backdrop-blur-sm rounded-xl shadow-lg">
-                    <Users className="w-4 h-4 mr-2" />
-                    Community
-                  </Button>
-                </Link>
-              )}
               {currentUser?.account_type === 'gym_owner' && (
                 <Link to={createPageUrl('GymOwnerDashboard')}>
                   <Button className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl">
@@ -313,6 +305,26 @@ export default function Home() {
 
 
 
+
+        {/* Community Card */}
+        {memberGym && (
+          <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`}>
+            <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-slate-700/50 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg">
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-base">{memberGym.name}</h3>
+                    <p className="text-slate-400 text-sm">View Community Feed</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-400" />
+              </div>
+            </Card>
+          </Link>
+        )}
 
         {/* Today's Workout */}
         {currentUser?.workout_split && (
