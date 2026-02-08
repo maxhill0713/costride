@@ -38,6 +38,52 @@ export default function RedeemReward() {
 
   const gymIds = gymMemberships.map(m => m.gym_id);
 
+  // Get current week number for rotating challenges
+  const getWeekNumber = (date = new Date()) => {
+    const firstDay = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date - firstDay) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDay.getDay() + 1) / 7);
+  };
+
+  const weekNumber = getWeekNumber();
+  
+  // 3 rotating weekly challenges based on week number
+  const weeklyCheckInChallenges = [
+    {
+      id: `weekly-checkins-${weekNumber}`,
+      title: 'Check In 3 Times This Week',
+      description: 'Visit your gym 3 times this week',
+      type: 'checkin',
+      target_value: 3,
+      category: 'attendance',
+      status: 'active',
+      reward: '10 points',
+      icon: '🏋️'
+    },
+    {
+      id: `weekly-checkins-${weekNumber}-2`,
+      title: 'Consistency Warrior',
+      description: 'Check in 5 times this week',
+      type: 'checkin',
+      target_value: 5,
+      category: 'streak',
+      status: 'active',
+      reward: '25 points',
+      icon: '🔥'
+    },
+    {
+      id: `weekly-checkins-${weekNumber}-3`,
+      title: 'Daily Grind',
+      description: 'Check in every day this week',
+      type: 'checkin',
+      target_value: 7,
+      category: 'daily',
+      status: 'active',
+      reward: '50 points',
+      icon: '⚡'
+    }
+  ];
+
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
     queryFn: async () => {
