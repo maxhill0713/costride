@@ -367,81 +367,81 @@ export default function Gyms() {
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                       <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md border-2 border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
                         {/* Image Section with Overlay */}
-                        {gym.image_url && (
-                          <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                          {gym.image_url && (
                             <img 
                               src={gym.image_url} 
                               alt={gym.name} 
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                             />
-                            
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                            
-                            {/* Quick Action Button */}
-                            <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                              <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
-                                <Dumbbell className="w-4 h-4 mr-2" />
-                                Enter Gym
-                              </Button>
-                            </Link>
+                          )}
+                          
+                          {/* Gradient Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          
+                          {/* Quick Action Button */}
+                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
+                              <Dumbbell className="w-4 h-4 mr-2" />
+                              Enter Gym
+                            </Button>
+                          </Link>
 
-                            {/* Badges */}
-                            <div className="absolute top-3 left-3 flex gap-2">
-                             {gym.verified && (
-                               <Badge className="bg-green-500 text-white text-xs shadow-lg">
-                                 <BadgeCheck className="w-3 h-3 mr-1" />
-                                 Verified
-                               </Badge>
-                             )}
-                             {currentUser && currentUser.email === gym.owner_email ? (
-                               <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">
-                                 Owner
-                               </Badge>
-                             ) : (
-                               <Badge className="bg-blue-500/90 text-white text-xs shadow-lg">
-                                 Member
-                               </Badge>
-                             )}
-                            </div>
-
-                            {/* Icons: Gallery, Info, Heart & Edit */}
-                            <div className="absolute top-3 right-3 flex gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setGalleryGym(gym);
-                                }}
-                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                              >
-                                <Images className="w-4 h-4 text-slate-300" />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setEquipmentGym(gym);
-                                }}
-                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                              >
-                                <Dumbbell className="w-4 h-4 text-slate-300" />
-                              </button>
-                              <button
-                                onClick={() => toggleSave(gym.id)}
-                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                              >
-                                <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
-                              </button>
-                              {currentUser && currentUser.email === gym.owner_email && (
-                                <button
-                                  onClick={() => setEditingGym(gym)}
-                                  className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                                >
-                                  <Edit className="w-4 h-4 text-slate-300" />
-                                </button>
-                              )}
-                            </div>
+                          {/* Badges */}
+                          <div className="absolute top-3 left-3 flex gap-2">
+                           {gym.verified && (
+                             <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                               <BadgeCheck className="w-3 h-3 mr-1" />
+                               Verified
+                             </Badge>
+                           )}
+                           {currentUser && currentUser.email === gym.owner_email ? (
+                             <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">
+                               Owner
+                             </Badge>
+                           ) : (
+                             <Badge className="bg-blue-500/90 text-white text-xs shadow-lg">
+                               Member
+                             </Badge>
+                           )}
                           </div>
-                        )}
+
+                          {/* Icons: Gallery, Info, Heart & Edit */}
+                          <div className="absolute top-3 right-3 flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setGalleryGym(gym);
+                              }}
+                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            >
+                              <Images className="w-4 h-4 text-slate-300" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setEquipmentGym(gym);
+                              }}
+                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            >
+                              <Dumbbell className="w-4 h-4 text-slate-300" />
+                            </button>
+                            <button
+                              onClick={() => toggleSave(gym.id)}
+                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            >
+                              <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+                            </button>
+                            {currentUser && currentUser.email === gym.owner_email && (
+                              <button
+                                onClick={() => setEditingGym(gym)}
+                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              >
+                                <Edit className="w-4 h-4 text-slate-300" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
 
                         {/* Content Section */}
                         <div className="p-5 space-y-4">
@@ -642,72 +642,72 @@ export default function Gyms() {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                     <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md border-2 border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
                       {/* Image Section with Overlay */}
-                      {gym.image_url && (
-                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                      <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                        {gym.image_url && (
                           <img 
                             src={gym.image_url} 
                             alt={gym.name} 
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                           />
+                        )}
 
-                          {/* Gradient Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                          {/* Quick Action Button */}
-                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
-                              <Dumbbell className="w-4 h-4 mr-2" />
-                              Enter Gym
-                            </Button>
-                          </Link>
+                        {/* Quick Action Button */}
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
+                            <Dumbbell className="w-4 h-4 mr-2" />
+                            Enter Gym
+                          </Button>
+                        </Link>
 
-                          {/* Badges */}
-                          <div className="absolute top-3 left-3 flex gap-2">
-                            {gym.verified && (
-                              <Badge className="bg-green-500 text-white text-xs shadow-lg">
-                                <BadgeCheck className="w-3 h-3 mr-1" />
-                                Verified
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Icons: Gallery, Info, Heart & Edit */}
-                          <div className="absolute top-3 right-3 flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setGalleryGym(gym);
-                              }}
-                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                            >
-                              <Images className="w-4 h-4 text-slate-300" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setEquipmentGym(gym);
-                              }}
-                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                            >
-                              <Dumbbell className="w-4 h-4 text-slate-300" />
-                            </button>
-                            <button
-                              onClick={() => toggleSave(gym.id)}
-                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                            >
-                              <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
-                            </button>
-                            {currentUser && currentUser.email === gym.owner_email && (
-                              <button
-                                onClick={() => setEditingGym(gym)}
-                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                              >
-                                <Edit className="w-4 h-4 text-slate-300" />
-                              </button>
-                            )}
-                          </div>
+                        {/* Badges */}
+                        <div className="absolute top-3 left-3 flex gap-2">
+                          {gym.verified && (
+                            <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                              <BadgeCheck className="w-3 h-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
                         </div>
-                      )}
+
+                        {/* Icons: Gallery, Info, Heart & Edit */}
+                        <div className="absolute top-3 right-3 flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setGalleryGym(gym);
+                            }}
+                            className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                          >
+                            <Images className="w-4 h-4 text-slate-300" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setEquipmentGym(gym);
+                            }}
+                            className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                          >
+                            <Dumbbell className="w-4 h-4 text-slate-300" />
+                          </button>
+                          <button
+                            onClick={() => toggleSave(gym.id)}
+                            className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                          >
+                            <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+                          </button>
+                          {currentUser && currentUser.email === gym.owner_email && (
+                            <button
+                              onClick={() => setEditingGym(gym)}
+                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            >
+                              <Edit className="w-4 h-4 text-slate-300" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
                       {/* Content Section */}
                       <div className="p-5 space-y-4">
