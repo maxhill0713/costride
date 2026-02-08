@@ -92,6 +92,17 @@ export default function Home() {
     enabled: !!currentUser
   });
 
+  const { data: recentChallengeActivity = [] } = useQuery({
+    queryKey: ['recentChallengeActivity'],
+    queryFn: async () => {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      return base44.entities.ChallengeParticipant.filter({
+        created_date: { $gte: oneDayAgo.toISOString() }
+      }, '-created_date', 5);
+    },
+    enabled: !!currentUser
+  });
+
   // Redirect to onboarding if not completed
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false) {
@@ -329,7 +340,13 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold text-base">{memberGym.name}</h3>
-                    <p className="text-slate-400 text-sm">View Community Feed</p>
+                    <p className="text-slate-400 text-sm">
+                      {recentChallengeActivity.length > 0 
+                        ? `${recentChallengeActivity[0].user_name?.split(' ')[0] || 'Someone'} joined a challenge`
+                        : todayCheckIns.length > 0
+                        ? `${todayCheckIns.length} ${todayCheckIns.length === 1 ? 'person has' : 'people have'} worked out today`
+                        : 'View Community Feed'}
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-400" />
