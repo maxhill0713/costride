@@ -946,7 +946,16 @@ export default function GymOwnerDashboard() {
             </div>
             <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
           </Button>
-        </div>
+          <Button
+            onClick={() => setShowCreatePoll(true)}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-1 border border-cyan-500/30">
+              <span className="text-xl">📊</span>
+            </div>
+            <span className="font-bold text-sm md:text-base">Polls</span>
+          </Button>
+          </div>
 
         <Tabs defaultValue="snapshot" className="w-full">
            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 md:mb-10 bg-slate-800/50 border border-slate-700 backdrop-blur-sm p-1 md:p-1.5 rounded-xl h-auto md:h-14 shadow-xl gap-1">
