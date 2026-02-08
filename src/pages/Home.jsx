@@ -274,20 +274,24 @@ export default function Home() {
           <div className="max-w-4xl mx-auto flex items-center justify-between">
               <button 
                 onClick={() => setShowStreakVariants(true)}
-                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 {streakVariant === 'sunglasses' ? (
-                  <div className="relative">
-                    <Flame className="w-9 h-9 text-orange-500 fill-current" />
-                    <div className="absolute -top-1 right-0 flex gap-0.5">
-                      <div className="w-2 h-1.5 bg-black rounded-full" />
-                      <div className="w-2 h-1.5 bg-black rounded-full" />
-                    </div>
+                  <div className="relative w-12 h-12">
+                    <Flame className="w-12 h-12 text-orange-500 fill-current" />
+                    <svg 
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      viewBox="0 0 64 64"
+                    >
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                    </svg>
                   </div>
                 ) : (
-                  <Flame className="w-9 h-9 text-orange-500 fill-current" />
+                  <Flame className="w-12 h-12 text-orange-500 fill-current" />
                 )}
-                <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
+                <span className="text-white font-semibold text-2xl tracking-tight">{userStreak}</span>
               </button>
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
