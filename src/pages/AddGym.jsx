@@ -29,23 +29,37 @@ export default function AddGym() {
       // Check if gym already exists with this google_place_id
       const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
       
+      let gym;
+      let isNew = false;
+
       if (existingGyms.length > 0) {
-        // Gym already exists, redirect to it
-        return { exists: true, gym: existingGyms[0] };
+        // Gym already exists
+        gym = existingGyms[0];
+      } else {
+        // Create new gym
+        gym = await base44.entities.Gym.create(gymData);
+        isNew = true;
       }
 
-      // Create new gym
-      const newGym = await base44.entities.Gym.create(gymData);
-      return { exists: false, gym: newGym };
+      // Create gym membership for current user
+      if (currentUser) {
+        await base44.entities.GymMembership.create({
+          user_id: currentUser.id,
+          user_name: currentUser.full_name,
+          user_email: currentUser.email,
+          gym_id: gym.id,
+          gym_name: gym.name,
+          status: 'active',
+          join_date: new Date().toISOString().split('T')[0],
+          membership_type: 'monthly'
+        });
+      }
+
+      return { isNew, gym };
     },
     onSuccess: (result) => {
-      if (result.exists) {
-        // Redirect to existing gym
-        navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
-      } else {
-        // Redirect to newly created gym
-        navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
-      }
+      // Redirect to gym community page
+      navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
     }
   });
 
