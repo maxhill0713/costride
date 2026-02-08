@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Trophy, Flame, Gift, QrCode, Clock, Zap, Star, Target } from 'lucide-react';
+import { CheckCircle, Trophy, Flame, Gift, QrCode, Clock, Zap, Star, Target, Dumbbell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
