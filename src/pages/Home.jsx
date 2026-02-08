@@ -338,14 +338,14 @@ export default function Home() {
             <div className="space-y-3">
               <div className="flex items-center justify-between px-4">
                 <div>
-                  <h3 className="text-white font-bold text-lg">{memberGym.name}</h3>
-                  <p className="text-slate-400 text-sm">
+                  <h3 className="text-white font-semibold text-base tracking-tight">{memberGym.name}</h3>
+                  <p className="text-slate-400 text-xs mt-1 font-medium">
                     {currentUser?.workout_split ? currentUser.workout_split : 'Chest/delts day at the gym'}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-slate-400 text-xs">🔥</p>
-                  <p className="text-cyan-400 font-bold text-lg">{todayCheckIns.length} visits</p>
+                  <p className="text-cyan-400 text-xs font-semibold">{todayCheckIns.length}</p>
+                  <p className="text-slate-400 text-[10px] tracking-tight">members</p>
                 </div>
               </div>
 
