@@ -11,6 +11,7 @@ export default function TodayWorkout({ currentUser }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   const queryClient = useQueryClient();
 
   const today = useMemo(() => new Date(), []);
