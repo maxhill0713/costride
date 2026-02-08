@@ -226,6 +226,15 @@ export default function Home() {
   };
 
   const userStreak = calculateStreak(userCheckIns);
+  const streakVariant = currentUser?.streak_variant || 'default';
+
+  const handleStreakVariantSelect = async (variant) => {
+    if (currentUser) {
+      await base44.auth.updateMe({ streak_variant: variant });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      setShowStreakVariants(false);
+    }
+  };
 
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
