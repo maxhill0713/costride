@@ -342,6 +342,8 @@ export default function TodayWorkout({ currentUser, isExpanded = true }) {
           <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
         </div>
       )}
-    </Card>
-  );
-}
+      </>
+      )}
+      </Card>
+      );
+      }
