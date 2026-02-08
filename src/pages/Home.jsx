@@ -278,8 +278,8 @@ export default function Home() {
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 {streakVariant === 'sunglasses' ? (
-                  <div className="relative w-12 h-12">
-                    <Flame className="w-12 h-12 text-orange-500 fill-current" />
+                  <div className="relative w-9 h-9">
+                    <Flame className="w-9 h-9 text-orange-500 fill-current" />
                     <svg 
                       className="absolute inset-0 w-full h-full pointer-events-none"
                       viewBox="0 0 64 64"
