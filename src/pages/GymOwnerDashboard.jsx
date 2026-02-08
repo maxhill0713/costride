@@ -489,6 +489,17 @@ export default function GymOwnerDashboard() {
     }
   });
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('deleteUserAccount'),
+    onSuccess: () => {
+      setShowDeleteAccountConfirm(false);
+      base44.auth.logout();
+    },
+    onError: (error) => {
+      alert('Failed to delete account: ' + error.message);
+    }
+  });
+
   const createPollMutation = useMutation({
     mutationFn: (pollData) => base44.entities.Poll.create({
       ...pollData,
