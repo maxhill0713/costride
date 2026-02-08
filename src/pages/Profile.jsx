@@ -652,25 +652,25 @@ export default function Profile() {
               </div>
 
               {/* Streak Freezes Section */}
-              <Card className="p-5 bg-gradient-to-br from-blue-600/15 to-blue-500/5 backdrop-blur-sm border border-blue-500/40 shadow-md overflow-hidden">
-                <h3 className="font-semibold text-blue-300 mb-3 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-blue-400 flex-shrink-0" />
-                  <span className="truncate">Streak Freezes</span>
-                </h3>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <p className="text-slate-300 text-sm mb-1">Available Freezes</p>
-                    <div className="text-3xl font-bold text-blue-300">{currentUser?.streak_freezes || 0}</div>
+              <Card className="p-5 bg-gradient-to-br from-cyan-600/15 to-blue-500/5 backdrop-blur-sm border border-cyan-500/40 shadow-md overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Snowflake className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                    <span className="font-semibold text-cyan-300 truncate">Streak Freezes</span>
                   </div>
-                  <div className="flex gap-2">
-                    {Array.from({ length: Math.min(currentUser?.streak_freezes || 0, 3) }).map((_, i) => (
-                      <div key={i} className="w-10 h-10 rounded-lg bg-blue-500/40 border border-blue-400/60 flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-blue-300" />
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-cyan-300 flex items-center gap-1">
+                    {currentUser?.streak_freezes || 2}
+                    <Snowflake className="w-5 h-5 text-cyan-400" />
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-3">Earn 1 freeze every week. Use a freeze to prevent your streak from breaking if you miss a day.</p>
+                <div className="flex gap-2 mt-3">
+                  {Array.from({ length: Math.min(currentUser?.streak_freezes || 2, 5) }).map((_, i) => (
+                    <div key={i} className="w-8 h-8 rounded-lg bg-cyan-500/40 border border-cyan-400/60 flex items-center justify-center flex-shrink-0">
+                      <Snowflake className="w-4 h-4 text-cyan-300" />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-400 mt-2">Use a freeze to prevent your streak from breaking if you miss a day.</p>
               </Card>
 
               {/* Badges Section */}
