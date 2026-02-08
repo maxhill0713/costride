@@ -341,7 +341,7 @@ export default function Home() {
           {/* Community Section */}
           {memberGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
-              <Card className="bg-slate-800/60 border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
+              <Card className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
                 <div className="p-4">
                   <div className="mb-3">
                     <p className="text-white font-semibold text-sm tracking-tight">Community</p>
