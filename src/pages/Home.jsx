@@ -341,33 +341,33 @@ export default function Home() {
           {/* Community Section */}
           {memberGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
-              <Card className="bg-slate-800/40 border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
+              <Card className="bg-slate-800/60 border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
                 <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex-1">
-                      <p className="text-white font-semibold text-sm tracking-tight">Community</p>
-                      <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
-                    </div>
-                    <div className="relative w-12 h-8">
-                      {(checkInUsers.length > 0 ? checkInUsers : [
-                        { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
-                        { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }
-                      ]).slice(0, 2).map((user, idx) => (
-                        <div key={user.id} className={`absolute ${idx === 0 ? 'w-8 h-8 bottom-0 left-0' : 'w-6 h-6 top-0 right-0'}`}>
-                          {user.avatar_url ? (
-                            <img src={user.avatar_url} alt={user.full_name} className="w-full h-full rounded-full object-cover border-2 border-slate-800" />
-                          ) : (
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white font-bold border-2 border-slate-800" style={{fontSize: idx === 0 ? '11px' : '9px'}}>
-                              {user.full_name?.[0] || 'U'}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="mb-3">
+                    <p className="text-white font-semibold text-sm tracking-tight">Community</p>
+                    <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-slate-300 font-medium">
-                    <span>{todayCheckIns.length > 0 ? `${todayCheckIns.length} people checked in` : '3 people checked in'}</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-300 font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} people checked in` : '3 people checked in'}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center -space-x-2">
+                        {(checkInUsers.length > 0 ? checkInUsers : [
+                          { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
+                          { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }
+                        ]).slice(0, 2).map((user) => (
+                          <div key={user.id} className="relative group">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
+                                {user.full_name?.[0] || 'U'}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
                   </div>
                 </div>
               </Card>
