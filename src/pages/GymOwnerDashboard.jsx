@@ -931,15 +931,7 @@ export default function GymOwnerDashboard() {
             </div>
             <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
           </Button>
-          <Button
-            onClick={() => setShowManageRewards(true)}
-            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
-          >
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-1 border border-purple-500/30">
-              <Award className="w-6 h-6 md:w-7 md:h-7 text-purple-400" />
-            </div>
-            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Recompensas' : 'Rewards'}</span>
-          </Button>
+
           <Button
             onClick={() => setShowManageClasses(true)}
             className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
