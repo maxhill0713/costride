@@ -1,13 +1,7 @@
 import React from 'react';
-import { Flame, Check, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Flame, Check } from 'lucide-react';
 
 export default function StreakVariantPicker({ isOpen, onClose, onSelect, selectedVariant }) {
-  const variants = [
-    { id: 'default', label: 'Classic' },
-    { id: 'sunglasses', label: 'Cool' }
-  ];
-
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -18,51 +12,60 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4"
+      className="fixed inset-0 z-40 flex items-start justify-center pt-12 px-4"
       onClick={handleBackdropClick}
+      style={{ background: 'rgba(0, 0, 0, 0.3)' }}
     >
-      <div className="bg-slate-800 rounded-3xl p-8 max-w-sm w-full border border-slate-700/50 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white font-semibold text-lg">Choose Your Streak Icon</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          {variants.map((variant) => (
-            <button
-              key={variant.id}
-              onClick={() => onSelect(variant.id)}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
-                selectedVariant === variant.id
-                  ? 'border-green-500 bg-green-500/10'
-                  : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
-              }`}
-            >
-              <span className="text-white font-medium">{variant.label}</span>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  {variant.id === 'default' ? (
-                    <Flame className="w-10 h-10 text-orange-500 fill-current" />
-                  ) : (
-                    <div className="relative">
-                      <Flame className="w-10 h-10 text-orange-500 fill-current" />
-                      <div className="absolute -top-1 right-0 flex gap-0.5">
-                        <div className="w-2 h-1.5 bg-black rounded-full" />
-                        <div className="w-2 h-1.5 bg-black rounded-full" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {selectedVariant === variant.id && (
-                  <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                )}
+      <div className="bg-slate-800/90 rounded-3xl p-8 max-w-2xl w-full border border-slate-700/50 shadow-2xl backdrop-blur-sm">
+        <div className="flex items-center justify-center gap-8">
+          {/* Default Flame */}
+          <button
+            onClick={() => onSelect('default')}
+            className={`flex flex-col items-center gap-4 p-6 rounded-2xl transition-all ${
+              selectedVariant === 'default'
+                ? 'ring-2 ring-green-500'
+                : 'hover:opacity-80'
+            }`}
+          >
+            <Flame className="w-20 h-20 text-orange-500 fill-current" />
+            {selectedVariant === 'default' && (
+              <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
+                <Check className="w-5 h-5 text-white" />
               </div>
-            </button>
-          ))}
+            )}
+          </button>
+
+          {/* Sunglasses Flame */}
+          <button
+            onClick={() => onSelect('sunglasses')}
+            className={`flex flex-col items-center gap-4 p-6 rounded-2xl transition-all ${
+              selectedVariant === 'sunglasses'
+                ? 'ring-2 ring-green-500'
+                : 'hover:opacity-80'
+            }`}
+          >
+            <div className="relative w-20 h-20 flex items-center justify-center">
+              <Flame className="w-20 h-20 text-orange-500 fill-current" />
+              {/* Sunglasses positioned on flame */}
+              <svg 
+                className="absolute w-16 h-8 pointer-events-none"
+                viewBox="0 0 64 32"
+                style={{ top: '4px' }}
+              >
+                {/* Left lens */}
+                <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
+                {/* Right lens */}
+                <circle cx="48" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
+                {/* Bridge */}
+                <line x1="23" y1="16" x2="41" y2="16" stroke="currentColor" strokeWidth="2" className="text-black" />
+              </svg>
+            </div>
+            {selectedVariant === 'sunglasses' && (
+              <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
+                <Check className="w-5 h-5 text-white" />
+              </div>
+            )}
+          </button>
         </div>
       </div>
     </div>
