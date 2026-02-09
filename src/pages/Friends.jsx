@@ -41,7 +41,9 @@ export default function Friends() {
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date')
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    staleTime: 60000,
+    cacheTime: 300000
   });
 
   const { data: currentUserCheckIns = [] } = useQuery({
