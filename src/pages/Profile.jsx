@@ -506,13 +506,15 @@ export default function Profile() {
                   <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
                 </div>
 
-                <button
-                  onClick={() => setShowSplitModal(true)}
-                  className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
-                >
-                  <Calendar className="w-3 h-3" />
-                  Edit Your Split
-                </button>
+                {currentUser?.workout_split && (
+                  <button
+                    onClick={() => setShowSplitModal(true)}
+                    className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+                  >
+                    <Calendar className="w-3 h-3" />
+                    Edit Your Split
+                  </button>
+                )}
 
                 <WorkoutSplitHeatmap 
                   checkIns={userCheckIns}
