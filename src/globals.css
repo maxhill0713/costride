@@ -122,18 +122,95 @@
   }
 
   /* Shimmer animation for gamification */
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
     }
-    100% {
-      transform: translateX(100%);
-    }
-  }
 
-  .animate-shimmer {
-    animation: shimmer 3s infinite;
-  }
+    .animate-shimmer {
+      animation: shimmer 3s infinite;
+    }
+
+    /* iOS Spring Animations */
+    @keyframes iosSpringIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes iosSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes iosSlideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes iosBounce {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes iosHaptic {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(0.98);
+      }
+    }
+
+    .animate-ios-spring-in {
+      animation: iosSpringIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .animate-ios-slide-up {
+      animation: iosSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .animate-ios-slide-down {
+      animation: iosSlideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .animate-ios-bounce {
+      animation: iosBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .animate-ios-haptic {
+      animation: iosHaptic 0.1s ease-in-out;
+    }
 
   /* Dark Mode Styles */
   .dark body {
@@ -215,7 +292,7 @@
     min-width: 44px;
   }
 
-  /* Interactive Elements */
+  /* Interactive Elements - iOS Spring Physics */
   a,
   button,
   [role="button"],
@@ -223,7 +300,15 @@
   input[type="checkbox"],
   input[type="radio"] {
     @apply active:scale-95 transition-transform;
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+  }
+
+  button:active,
+  a[role="button"]:active,
+  [role="button"]:active,
+  [role="link"]:active {
+    animation: iosHaptic 0.1s ease-in-out;
   }
 
   /* Tap Feedback Animation */
@@ -274,11 +359,25 @@
     }
   }
 
-  /* Card hover animations from original */
+  /* Card hover animations - iOS Style */
   .hover\:shadow-lg:hover,
   .hover\:shadow-xl:hover,
   .hover\:shadow-2xl:hover {
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateY(-4px);
+  }
+
+  /* Smooth opacity transitions */
+  [class*="bg-"] {
+    transition: background-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  [class*="text-"] {
+    transition: color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  [class*="border-"] {
+    transition: border-color 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
