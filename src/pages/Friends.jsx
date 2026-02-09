@@ -87,7 +87,9 @@ export default function Friends() {
   const { data: allLifts = [] } = useQuery({
     queryKey: ['lifts'],
     queryFn: () => base44.entities.Lift.list('-created_date', 100),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 60000,
+    cacheTime: 300000
   });
 
   const addFriendMutation = useMutation({
