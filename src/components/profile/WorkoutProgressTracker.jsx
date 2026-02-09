@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { TrendingUp, TrendingDown, Activity, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, ChevronRight, MessageSquare } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { motion } from 'framer-motion';
 
 export default function WorkoutProgressTracker({ currentUser }) {
   const [selectedWorkout, setSelectedWorkout] = useState('all');
   const [selectedDay, setSelectedDay] = useState('all');
+  const [todayWorkoutLogged, setTodayWorkoutLogged] = useState(null);
 
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
@@ -20,6 +22,22 @@ export default function WorkoutProgressTracker({ currentUser }) {
     },
     enabled: !!currentUser?.id
   });
+
+  // Subscribe to real-time workout log changes
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const unsubscribe = base44.entities.WorkoutLog.subscribe((event) => {
+      if (event.data?.user_id === currentUser.id) {
+        const today = new Date().toISOString().split('T')[0];
+        if (event.data?.completed_date === today) {
+          setTodayWorkoutLogged(event.data);
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [currentUser?.id]);
 
   // Group logs by workout name
   const workoutGroups = workoutLogs.reduce((acc, log) => {
@@ -116,6 +134,47 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
   return (
     <Card className="bg-slate-900/70 border border-purple-500/30 p-3 rounded-2xl">
+      {todayWorkoutLogged && (
+        <motion.div
+          initial={{ opacity: 0, y: -10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+          className="mb-3 p-2.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 rounded-xl"
+        >
+          <div className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 animate-pulse flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-green-300 font-semibold text-xs mb-1">Today's Workout Logged! ✓</p>
+              {todayWorkoutLogged.exercises?.length > 0 && (
+                <div className="space-y-1.5">
+                  {todayWorkoutLogged.exercises.slice(0, 3).map((exercise, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-2 text-[10px] bg-white/5 p-1.5 rounded-lg">
+                      <span className="text-green-200 font-medium">{exercise.exercise}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-green-300 font-bold">{exercise.weight}kg</span>
+                        <span className="text-green-400/70">{exercise.setsReps}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {todayWorkoutLogged.exercises.length > 3 && (
+                    <div className="text-[9px] text-green-400/70 font-medium">
+                      +{todayWorkoutLogged.exercises.length - 3} more exercises
+                    </div>
+                  )}
+                  {todayWorkoutLogged.notes && (
+                    <div className="mt-2 pt-2 border-t border-green-500/20 flex gap-1.5 items-start">
+                      <MessageSquare className="w-3 h-3 text-green-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-green-200/80 text-[9px] line-clamp-2">{todayWorkoutLogged.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2">
           <Activity className="w-3.5 h-3.5 text-purple-400" />
@@ -186,7 +245,13 @@ export default function WorkoutProgressTracker({ currentUser }) {
           </div>
         ) : (
           exerciseProgress.slice(0, 5).map((exercise, index) => (
-            <div key={index} className="p-2 bg-slate-700/50 rounded-lg border border-slate-600/30">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+              className="p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 hover:border-purple-500/30 transition-colors"
+            >
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <span className="text-[10px] font-semibold text-white">{exercise.name}</span>
                 <div className="flex gap-1">
@@ -235,7 +300,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
                   <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>
