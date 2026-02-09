@@ -664,7 +664,7 @@ export default function GymCommunity() {
 
   if (gymLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading gym...</p>
@@ -675,7 +675,7 @@ export default function GymCommunity() {
 
   if (!gym) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <p className="text-gray-600 mb-4">Gym not found</p>
           <Link to={createPageUrl('Gyms')}>
@@ -690,7 +690,7 @@ export default function GymCommunity() {
     <PullToRefresh onRefresh={async () => {
       await queryClient.invalidateQueries();
     }}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Back Button - Fixed at top */}
         <div className="sticky top-0 z-30 px-4 pt-4 pb-2 bg-gradient-to-b from-slate-900 to-transparent backdrop-blur-sm">
           <Link to={createPageUrl('Gyms')}>
