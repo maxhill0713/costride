@@ -38,60 +38,78 @@ export default function Home() {
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => base44.entities.Gym.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
     queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
-    refetchInterval: 30000
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list('-created_date')
+    queryFn: () => base44.entities.Challenge.list('-created_date'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
     queryFn: () => base44.entities.Challenge.filter({ 
       status: 'active'
-    }, '-created_date', 3)
+    }, '-created_date', 3),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date')
+    queryFn: () => base44.entities.Lift.list('-created_date'),
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser && !!friends.length,
-    staleTime: 60000
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const { data: recentChallengeActivity = [] } = useQuery({
@@ -103,7 +121,8 @@ export default function Home() {
       }, '-created_date', 5);
     },
     enabled: !!currentUser && !!challenges.length,
-    staleTime: 60000
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   // Pre-calculate for check-in users query
@@ -124,7 +143,9 @@ export default function Home() {
         return [];
       }
     },
-    enabled: checkInUserIdsForQuery.length > 0
+    enabled: checkInUserIdsForQuery.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   // Redirect to onboarding if not completed
