@@ -601,7 +601,7 @@ export default function Friends() {
          )}
 
          {/* Activity Feed */}
-         {filteredActivityFeed.length > 0 ? (
+         {filteredActivityFeed.length > 0 && (
           <div className="space-y-2">
             {filteredActivityFeed.map(activity => (
               <Card 
