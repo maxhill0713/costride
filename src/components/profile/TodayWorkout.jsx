@@ -232,11 +232,11 @@ export default function TodayWorkout({ currentUser }) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-950/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 shadow-xl shadow-black/40">
+    <Card className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/20">
       <div className="space-y-3 mb-4">
          <div className="flex items-center justify-between gap-3">
            <div className="flex items-center gap-2">
-             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/40">
+             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
                <Dumbbell className="w-4 h-4 text-white" />
              </div>
              <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
@@ -297,7 +297,7 @@ export default function TodayWorkout({ currentUser }) {
 
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
-            <div key={index} className={`p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/40 shadow-md ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'} hover:border-slate-500/60 transition-all`}>
+            <div key={index} className={`p-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-lg shadow-black/10 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto] gap-2 items-center'} hover:border-white/20 transition-all`}>
               {editingIndex === index ? (
                 <div className="space-y-2.5">
                    <div className="flex items-center justify-between mb-2">
@@ -329,7 +329,7 @@ export default function TodayWorkout({ currentUser }) {
                       onClick={() => handleSave(index)}
                       size="sm"
                       disabled={updateWorkoutMutation.isPending}
-                      className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 h-7 shadow-lg shadow-orange-500/30"
+                      className="flex-1 bg-gradient-to-r from-orange-500/90 to-orange-600/90 hover:from-orange-600/90 hover:to-orange-700/90 h-7 shadow-md shadow-orange-500/10"
                     >
                       <Check className="w-3 h-3" />
                     </Button>
@@ -355,12 +355,12 @@ export default function TodayWorkout({ currentUser }) {
                       </div>
                     )}
                   </div>
-                  <div className="text-xs font-semibold text-slate-300 bg-slate-700/50 px-2 py-1 rounded-lg">
+                  <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg">
                     {exercise.setsReps || '-'}
                   </div>
                   <div className="flex items-center gap-2 justify-end">
                     <div className="flex items-center gap-2">
-                        <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500 to-orange-600 px-2.5 py-1 rounded-lg shadow-lg shadow-orange-500/30">
+                        <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500/80 to-orange-600/80 px-2.5 py-1 rounded-lg shadow-md shadow-orange-500/10">
                           {exercise.weight || '-'}
                           <span className="text-[10px] font-bold ml-1">kg</span>
                         </div>
@@ -387,7 +387,7 @@ export default function TodayWorkout({ currentUser }) {
               <div className="relative flex-1">
                 <button
                   onClick={() => setShowTimerOptions(!showTimerOptions)}
-                  className="relative w-full flex flex-col items-center gap-1 px-5 py-4 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-md border border-orange-500/40 shadow-xl shadow-orange-500/20 hover:border-orange-400/60 transition-all"
+                  className="relative w-full flex flex-col items-center gap-1 px-5 py-4 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-orange-400/20 shadow-lg shadow-black/10 hover:border-orange-400/30 transition-all"
                 >
                   <span className="text-[10px] font-bold text-orange-400/70 uppercase tracking-wider">Rest Timer</span>
                   <div className="flex items-center gap-2">
@@ -404,7 +404,7 @@ export default function TodayWorkout({ currentUser }) {
                 {showTimerOptions && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                    <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl p-2 z-50">
+                    <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/20 p-2 z-50">
                       <div className="grid grid-cols-3 gap-1.5">
                         {timerPresets.map((preset) => (
                           <button
@@ -413,7 +413,7 @@ export default function TodayWorkout({ currentUser }) {
                               setRestTimer(preset.value);
                               setShowTimerOptions(false);
                             }}
-                            className="px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-xs font-bold transition-all active:scale-95 border border-slate-700/30 hover:border-orange-500/50"
+                            className="px-3 py-2 rounded-lg bg-white/5 hover:bg-orange-500/10 text-slate-300 hover:text-orange-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-orange-500/30"
                           >
                             {preset.label}
                           </button>
@@ -433,7 +433,7 @@ export default function TodayWorkout({ currentUser }) {
                   }
                   setIsTimerActive(!isTimerActive);
                 }}
-                className="text-sm font-bold px-6 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white transition-all active:scale-95 shadow-xl shadow-orange-500/40"
+                className="text-sm font-bold px-6 py-4 rounded-2xl bg-gradient-to-r from-orange-500/90 to-orange-600/90 hover:from-orange-600/90 hover:to-orange-700/90 text-white transition-all active:scale-95 shadow-md shadow-orange-500/10"
               >
                 {isTimerActive ? 'Stop' : 'Go'}
               </button>
