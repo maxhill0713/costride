@@ -879,58 +879,26 @@ export default function GymCommunity() {
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* Check-in Section */}
-           {!showOwnerControls && <CheckInButton gym={gym} />}
+          {!showOwnerControls && <CheckInButton gym={gym} />}
 
-           {/* Polls Section */}
-           {polls.length > 0 && (
-             <div className="space-y-3">
-               {polls.map((poll) => (
-                 <PollCard
-                   key={poll.id}
-                   poll={poll}
-                   onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
-                   userVoted={poll.voters?.includes(currentUser?.id)}
-                   isLoading={votePollMutation.isPending}
-                 />
-               ))}
-             </div>
-           )}
-
-           {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-2 md:gap-3">
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Trophy className="w-5 h-5 text-purple-400" />
-                <h3 className="text-xs md:text-sm font-bold text-slate-100">Challenges Available</h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-black text-white">{gymChallenges.length}</p>
-            </Card>
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-5 h-5 text-orange-400" />
-                <h3 className="text-xs md:text-sm font-bold text-slate-100">Your Progress</h3>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-xs text-slate-300 mb-1">Times Visited</p>
-                  <p className="text-xl md:text-2xl font-black text-white">
-                    {currentUser ? checkIns.filter(c => c.user_id === currentUser.id).length : 0}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-300 mb-1">Current Streak</p>
-                  <p className="text-xl md:text-2xl font-black text-white flex items-center gap-1">
-                    {currentUser ? calculateCurrentStreak(checkIns.filter(c => c.user_id === currentUser.id)) : 0}
-                    <Flame className="w-4 h-4 text-orange-400" />
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
+          {/* Polls Section */}
+          {polls.length > 0 && (
+            <div className="space-y-3">
+              {polls.map((poll) => (
+                <PollCard
+                  key={poll.id}
+                  poll={poll}
+                  onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
+                  userVoted={poll.voters?.includes(currentUser?.id)}
+                  isLoading={votePollMutation.isPending}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Upcoming Events */}
           {upcomingEvents.length > 0 && (
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
+           <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-5 h-5 text-orange-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">This Week</h3>
@@ -953,7 +921,7 @@ export default function GymCommunity() {
 
           {/* New Challenges */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
+            <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
               <div className="flex items-center gap-2 mb-3">
                 <Trophy className="w-5 h-5 text-purple-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">New Challenges</h3>
@@ -977,7 +945,7 @@ export default function GymCommunity() {
 
           {/* Recent Posts */}
           {posts.length > 0 && (
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
+            <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 text-blue-400" />
