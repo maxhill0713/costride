@@ -553,12 +553,13 @@ export default function Friends() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
          {/* Activity Nudge Cards */}
-         {activityCards.length > 0 && (
+         {filteredActivityCards.length > 0 && (
            <div className="space-y-3 mb-6">
-             {activityCards.map(card => (
+             {filteredActivityCards.map(card => (
                <Card
                  key={card.id}
-                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all shadow-2xl shadow-black/20"
+                 data-activity-id={card.id}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all shadow-2xl shadow-black/20 relative"
                >
                  <div className="p-4">
                    <div className="flex items-start gap-3">
