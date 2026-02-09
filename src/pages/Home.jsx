@@ -450,16 +450,22 @@ export default function Home() {
 
 
           {/* Weekly Challenges */}
-          {weeklyChallenges.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-white font-semibold text-base px-4 tracking-tight">Weekly Challenges</h3>
-              <div className="space-y-2">
-                {weeklyChallenges.map((challenge) => (
-                  <WeeklyChallengeCard key={challenge.id} challenge={challenge} currentUser={currentUser} />
-                ))}
-              </div>
-            </div>
-          )}
+           {featuredChallenge && (
+             <Link to={createPageUrl('Challenges')} className="block">
+               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+                 <div className="p-4">
+                   <div className="mb-3">
+                     <p className="text-white font-semibold text-sm tracking-tight">Weekly Challenges</p>
+                     <p className="text-slate-400 text-xs mt-0.5 font-medium">{featuredChallenge.title}</p>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span className="text-xs text-slate-300 font-medium">{featuredChallenge.description}</span>
+                     <ChevronRight className="w-4 h-4 text-slate-400" />
+                   </div>
+                 </div>
+               </Card>
+             </Link>
+           )}
 
         {/* Join a Gym Prompt */}
         {gymMemberships.length === 0 && (
