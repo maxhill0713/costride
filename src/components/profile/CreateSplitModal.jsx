@@ -103,53 +103,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          {/* Split Options */}
-          <div className="grid gap-2">
-            {splits.map((split) => (
-              <div
-                key={split.id}
-                onClick={() => {
-                  setSelectedSplit(split.id);
-                  setWeeklyGoal(split.recommended);
-                  setSelectedDays(split.defaultDays);
-                }}
-                className={`
-                  p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98]
-                  ${selectedSplit === split.id 
-                    ? 'border-indigo-500 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-indigo-500/20 ring-2 ring-indigo-500/50 shadow-lg shadow-indigo-500/20' 
-                    : 'border-slate-700/50 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/60'
-                  }
-                `}
-              >
-                <div className="flex items-start justify-between mb-2.5">
-                  <div className="flex-1">
-                    <h3 className="text-base font-bold text-white mb-0.5">{split.name}</h3>
-                    <p className="text-xs text-slate-400">{split.description}</p>
-                  </div>
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/60 text-[10px] font-bold text-slate-200 border border-slate-600/40">
-                    <Calendar className="w-3 h-3" />
-                    {split.recommended}x
-                  </div>
-                </div>
-
-                {/* Schedule Preview */}
-                <div className="flex gap-1.5">
-                  {split.schedule.map((day, i) => (
-                    <div
-                      key={i}
-                      className={`
-                        flex-1 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold text-white
-                        bg-gradient-to-br ${split.gradient} shadow-sm
-                        ${selectedSplit === split.id ? 'shadow-md' : 'opacity-60'}
-                      `}
-                    >
-                      {day.slice(0, 1)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
 
           {/* Custom Split Name */}
           {selectedSplit === 'custom' && (
