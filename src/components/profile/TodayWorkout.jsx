@@ -174,7 +174,7 @@ export default function TodayWorkout({ currentUser }) {
           updatedWorkoutTypes[dayKey] = {
             ...workout,
             exercises: workout.exercises.map((ex, i) => 
-              i === index ? { ...ex, weight: editWeight, setsReps: editReps } : ex
+              i === index ? { ...ex, weight: weight, setsReps: setsReps } : ex
             )
           };
         }
