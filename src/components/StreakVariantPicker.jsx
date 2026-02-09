@@ -48,7 +48,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
             }`}
           >
             <div className="relative w-10 h-10 flex items-center justify-center">
-              <Flame className="w-10 h-10 text-orange-500 fill-current" />
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-full blur-md opacity-60" />
+              <Flame className="w-10 h-10 text-orange-500 fill-current relative z-10" />
               {/* Sunglasses positioned on flame */}
               <svg 
                 className="absolute w-8 h-4 pointer-events-none"
