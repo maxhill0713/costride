@@ -210,6 +210,24 @@ export default function Home() {
   // Today's check-ins (all users)
   const todayCheckIns = todayCheckInsForQuery;
 
+  // Get the challenge closest to completing (or random if all equal)
+  const selectFeaturedChallenge = () => {
+    const activeChallenges = weeklyChallenges.filter(c => c.status === 'active');
+    if (activeChallenges.length === 0) return null;
+    
+    // Calculate progress for each challenge
+    const withProgress = activeChallenges.map(c => {
+      const participants = lifts.filter(l => c.participants?.includes(l.member_id) || false);
+      const progress = c.target_value ? Math.min((participants.length / c.target_value) * 100, 100) : 0;
+      return { ...c, progress };
+    });
+    
+    // Return the one with highest progress
+    return withProgress.sort((a, b) => b.progress - a.progress)[0];
+  };
+
+  const featuredChallenge = selectFeaturedChallenge();
+
   // Active challenges
   const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
 
