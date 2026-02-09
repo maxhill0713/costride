@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen, Info } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
@@ -20,6 +20,7 @@ export default function TodayWorkout({ currentUser }) {
   const [showCalculator, setShowCalculator] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showTimerOptions, setShowTimerOptions] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const queryClient = useQueryClient();
 
   const timerPresets = [
@@ -240,11 +241,30 @@ export default function TodayWorkout({ currentUser }) {
               <Dumbbell className={isExpanded ? 'w-4 h-4 text-white' : 'w-3.5 h-3.5 text-white'} />
             </div>
             <h3 className={`font-bold text-slate-100 tracking-tight uppercase ${isExpanded ? 'text-xs' : 'text-[11px]'}`}>Today's Workout</h3>
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className="relative text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <Info className="w-3.5 h-3.5" />
+            </button>
           </div>
           <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${isExpanded ? 'text-sm' : 'text-xs'}`}>
             {todayWorkout.name}
           </h2>
          </div>
+        {showInfo && (
+          <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3">
+            <p className="text-xs text-blue-200 leading-relaxed mb-2 font-medium">
+              <strong className="text-blue-100">How to use:</strong>
+            </p>
+            <ul className="text-[11px] text-blue-200/90 space-y-1.5 leading-relaxed">
+              <li>• <strong>Edit exercises:</strong> Click the pencil icon to update weight/reps</li>
+              <li>• <strong>Track progress:</strong> See your improvements compared to last workout</li>
+              <li>• <strong>Rest timer:</strong> Use the timer between sets</li>
+              <li>• <strong>Log workout:</strong> Click "Log Workout" when done to track completion</li>
+            </ul>
+          </div>
+        )}
         {alreadyLoggedToday ? (
           <div className="text-center py-1">
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
