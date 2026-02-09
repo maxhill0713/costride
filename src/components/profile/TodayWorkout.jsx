@@ -232,18 +232,18 @@ export default function TodayWorkout({ currentUser }) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/20">
-      <div className="space-y-3 mb-4">
-         <div className="flex items-center justify-between gap-3">
-           <div className="flex items-center gap-2">
-             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
-               <Dumbbell className="w-4 h-4 text-white" />
-             </div>
-             <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-           </div>
-           <h2 className="text-sm font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight">
-             {todayWorkout.name}
-           </h2>
+    <Card className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 ${isExpanded ? 'p-5' : 'p-3'}`}>
+      <div className={isExpanded ? "space-y-3 mb-4" : "space-y-2"}>
+         <div className={`flex items-center justify-between ${isExpanded ? 'gap-3' : 'gap-2'}`}>
+          <div className="flex items-center gap-2">
+            <div className={`rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10 ${isExpanded ? 'w-8 h-8' : 'w-7 h-7'}`}>
+              <Dumbbell className={isExpanded ? 'w-4 h-4 text-white' : 'w-3.5 h-3.5 text-white'} />
+            </div>
+            <h3 className={`font-bold text-slate-100 tracking-tight uppercase ${isExpanded ? 'text-xs' : 'text-[11px]'}`}>Today's Workout</h3>
+          </div>
+          <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${isExpanded ? 'text-sm' : 'text-xs'}`}>
+            {todayWorkout.name}
+          </h2>
          </div>
         {alreadyLoggedToday ? (
           <div className="text-center py-1">
@@ -542,14 +542,14 @@ export default function TodayWorkout({ currentUser }) {
           </div>
         </div>
       ) : (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-1">
         <Button
           onClick={() => setIsExpanded(true)}
           variant="ghost"
           size="icon"
-          className="w-7 h-7 text-slate-400 hover:text-white"
+          className="w-6 h-6 text-slate-400 hover:text-white"
         >
-          <ChevronDown className="w-5 h-5" />
+          <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       )}
