@@ -788,11 +788,6 @@ export default function Friends() {
           <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
             <div className="p-3">
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-white font-semibold">No activity yet</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
