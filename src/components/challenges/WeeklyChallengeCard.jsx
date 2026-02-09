@@ -38,10 +38,11 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       transition={{ duration: 0.2 }}
     >
       <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
-        <div className="relative">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white mb-2 text-sm md:text-base">{challenge.title}</h3>
+         <div className="relative">
+           <div className="flex items-start justify-between mb-3">
+             <div className="flex-1 min-w-0">
+               <h3 className="font-bold text-white mb-1 text-xs text-slate-400">Weekly Challenges</h3>
+               <h4 className="font-bold text-white mb-2 text-sm md:text-base">{challenge.title}</h4>
               <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
               <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] inline-block">
                 {challenge.target_value} check-ins
