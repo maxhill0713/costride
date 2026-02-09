@@ -268,10 +268,9 @@ export default function TodayWorkout({ currentUser }) {
           </div>
         )}
         {alreadyLoggedToday ? (
-          <div className="text-center py-1">
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-2 py-0.5">
-              ✓ Logged Today
-            </Badge>
+          <div className="flex items-center justify-center gap-1.5 py-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-[10px] text-green-400 font-medium">Logged</span>
           </div>
         ) : (
           <>
