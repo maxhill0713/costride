@@ -45,11 +45,11 @@ export default function Settings() {
   });
 
   React.useEffect(() => {
-    if (currentUser) {
+    if (currentUser && !displayName) {
       setDisplayName(currentUser.full_name || '');
       setBio(currentUser.bio || '');
     }
-  }, [currentUser]);
+  }, []);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings) => {
