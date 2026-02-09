@@ -782,9 +782,9 @@ export default function Friends() {
                   </div>
                 )}
                 </Card>
-            ))}
-          </div>
-          )}
+                ))}
+                </div>
+                )}
 
         {/* Post View Modal */}
         {selectedPost && (
