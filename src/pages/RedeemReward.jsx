@@ -254,7 +254,7 @@ export default function RedeemReward() {
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="bg-slate-900/70 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 hover:border-cyan-400/50 transition-all overflow-hidden group relative">
+                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Zap className="w-4 h-4 text-cyan-400 animate-pulse" />
                       </div>
@@ -308,7 +308,7 @@ export default function RedeemReward() {
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="bg-slate-900/70 backdrop-blur-md border border-amber-500/30 rounded-2xl p-5 hover:border-amber-400/50 transition-all overflow-hidden group relative">
+                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
                       {/* Sparkle effect on hover */}
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -395,7 +395,7 @@ export default function RedeemReward() {
             ) : (
               <>
                 {completedChallengeRewards.map((reward) => (
-                  <Card key={reward.id} className="bg-slate-900/70 backdrop-blur-md border border-amber-500/30 rounded-2xl p-5 hover:border-amber-400/50 transition-all group overflow-hidden">
+                  <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all group overflow-hidden shadow-2xl shadow-black/20">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
@@ -427,7 +427,7 @@ export default function RedeemReward() {
                    </Card>
                  ))}
                  {unclaimedRewards.map((reward) => (
-                   <Card key={reward.id} className="bg-slate-900/70 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 hover:border-cyan-400/50 transition-all group overflow-hidden">
+                   <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all group overflow-hidden shadow-2xl shadow-black/20">
                      <div className="flex items-start justify-between mb-2">
                        <div className="flex-1 min-w-0">
                          <div className="flex items-center gap-2 mb-1">
@@ -506,7 +506,7 @@ export default function RedeemReward() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {claimedBonuses.map((bonus) => (
-                <Card key={bonus.id} className="bg-slate-800/80 backdrop-blur-md border border-green-500/30 rounded-2xl p-5 hover:border-green-400/40 transition-all">
+                <Card key={bonus.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-green-400/30 transition-all shadow-2xl shadow-black/20">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{bonus.offer_details}</h3>

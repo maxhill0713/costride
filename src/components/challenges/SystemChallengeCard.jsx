@@ -41,7 +41,7 @@ export default function SystemChallengeCard({ challenge, onJoin, isJoined = fals
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.02 }}
     >
-      <Card className={`bg-gradient-to-br ${bgGradient} border-2 p-4 relative overflow-hidden`}>
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-4 relative overflow-hidden shadow-2xl shadow-black/20">
         <motion.div
           className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/20"
           animate={{ 

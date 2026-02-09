@@ -20,7 +20,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="p-4 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border-2 border-orange-500/30 hover:border-orange-400/50 transition-all duration-300 shadow-xl hover:shadow-orange-500/10">
+      <Card className="p-4 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-orange-400/30 transition-all duration-300 shadow-2xl shadow-black/20">
         {/* Header with Title and Reward */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1">

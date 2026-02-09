@@ -49,7 +49,7 @@ export default function ClaimedRewardCard({ claimedBonus, reward, gym }) {
 
   return (
     <>
-      <Card className={`p-5 border-2 ${claimedBonus.redeemed ? 'border-gray-300 bg-gray-100 opacity-75' : 'border-green-200 bg-green-50/50'}`}>
+      <Card className={`p-5 border ${claimedBonus.redeemed ? 'border-white/10 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 opacity-75' : 'border-white/10 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70'} backdrop-blur-xl shadow-2xl shadow-black/20 rounded-2xl`}>
         <div className="flex items-start gap-4">
           <div className="text-4xl">{reward?.icon || '🎁'}</div>
           <div className="flex-1">
