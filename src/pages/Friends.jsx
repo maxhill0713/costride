@@ -59,7 +59,9 @@ export default function Friends() {
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 50),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 60000,
+    cacheTime: 300000
   });
 
   const updatePostReactionMutation = useMutation({
