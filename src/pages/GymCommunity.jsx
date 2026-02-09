@@ -38,6 +38,7 @@ import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
+import BusyTimesChart from '../components/gym/BusyTimesChart';
 // i18n import removed - using default language
 
 export default function GymCommunity() {
@@ -895,6 +896,9 @@ export default function GymCommunity() {
               ))}
             </div>
           )}
+
+          {/* Busy Times Chart */}
+          <BusyTimesChart checkIns={checkIns} />
 
           {/* Upcoming Events */}
           {upcomingEvents.length > 0 && (
