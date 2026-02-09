@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { MobileSelect } from '@/components/ui/mobile-select';
 import { Card } from '@/components/ui/card';
-import { Dumbbell, Loader2, CheckCircle2, Upload, Plus } from 'lucide-react';
+import { Dumbbell, Loader2, CheckCircle2, Upload, Plus, Search, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GymSignup() {
@@ -16,12 +16,17 @@ export default function GymSignup() {
   const [submitted, setSubmitted] = useState(false);
   const [equipmentSearch, setEquipmentSearch] = useState('');
   const [customEquipment, setCustomEquipment] = useState('');
-  const [addressSearch, setAddressSearch] = useState('');
-  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [placeSearch, setPlaceSearch] = useState('');
+  const [showPlaceSuggestions, setShowPlaceSuggestions] = useState(false);
+  const [placeSuggestions, setPlaceSuggestions] = useState([]);
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
+    google_place_id: '',
+    latitude: null,
+    longitude: null,
     address: '',
     city: '',
     postcode: '',
@@ -453,13 +458,43 @@ export default function GymSignup() {
     'Cardiff', 'Belfast', 'Brighton', 'Southampton', 'Oxford', 'Cambridge'
   ];
 
-  const filteredCities = ukCities.filter(city =>
-    city.toLowerCase().includes(addressSearch.toLowerCase())
-  );
-
   const detectLanguageFromCity = (city) => {
     const spanishCities = ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza', 'Málaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao'];
     return spanishCities.some(sc => city?.includes(sc)) ? 'es' : 'en';
+  };
+
+  const searchGooglePlaces = async (query) => {
+    if (!query || query.length < 2) {
+      setPlaceSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await base44.functions.invoke('searchGymsPlaces', { 
+        query,
+        type: 'gym' 
+      });
+      setPlaceSuggestions(response.data.places || []);
+    } catch (error) {
+      console.error('Error searching places:', error);
+      setPlaceSuggestions([]);
+    }
+  };
+
+  const handleSelectPlace = (place) => {
+    setSelectedPlace(place);
+    setFormData(prev => ({
+      ...prev,
+      name: place.name.slice(0, 15),
+      google_place_id: place.place_id,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      address: place.address || '',
+      city: place.city || '',
+      postcode: place.postcode || ''
+    }));
+    setPlaceSearch(place.name);
+    setShowPlaceSuggestions(false);
   };
 
 
@@ -560,71 +595,45 @@ export default function GymSignup() {
                   />
                 </div>
 
-                <div>
-                   <Label className="text-white font-semibold">Gym Name * ({formData.name.length}/15)</Label>
-                   <Input
-                     value={formData.name}
-                     onChange={(e) => setFormData({ ...formData, name: e.target.value.slice(0, 15) })}
-                     maxLength="15"
-                     placeholder="Iron Paradise Gym"
-                     required
-                     className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                   />
-                 </div>
-
-                <div>
-                  <Label className="text-white font-semibold">Address *</Label>
-                  <Input
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="123 Muscle Street"
-                    required
-                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <Label className="text-white font-semibold">City *</Label>
+                <div className="relative">
+                  <Label className="text-white font-semibold">Search Your Gym *</Label>
+                  <div className="relative mt-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <Input
-                      value={formData.city}
+                      value={placeSearch}
                       onChange={(e) => {
-                        setFormData({ ...formData, city: e.target.value });
-                        setAddressSearch(e.target.value);
-                        setShowAddressSuggestions(true);
+                        setPlaceSearch(e.target.value);
+                        setShowPlaceSuggestions(true);
+                        searchGooglePlaces(e.target.value);
                       }}
-                      onFocus={() => setShowAddressSuggestions(true)}
-                      placeholder="London"
-                      required
-                      className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                    />
-                    {showAddressSuggestions && addressSearch && filteredCities.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
-                        {filteredCities.map(city => (
-                          <button
-                            key={city}
-                            type="button"
-                            onClick={() => {
-                              setFormData({ ...formData, city });
-                              setShowAddressSuggestions(false);
-                            }}
-                            className="w-full text-left px-4 py-2 text-white hover:bg-slate-700 first:rounded-t-2xl last:rounded-b-2xl transition-colors"
-                          >
-                            {city}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-white font-semibold">Postcode</Label>
-                    <Input
-                      value={formData.postcode}
-                      onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
-                      placeholder="SW1A 1AA"
-                      className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
+                      onFocus={() => setShowPlaceSuggestions(true)}
+                      placeholder="Search gym name or address..."
+                      className="mt-0 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white pl-9"
                     />
                   </div>
+                  {showPlaceSuggestions && placeSuggestions.length > 0 && (
+                    <div className="absolute z-20 w-full mt-1 bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
+                      {placeSuggestions.map((place, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSelectPlace(place)}
+                          className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 first:rounded-t-2xl last:rounded-b-2xl transition-colors border-b border-slate-700 last:border-0 flex items-start gap-2"
+                        >
+                          <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                          <div className="min-w-0">
+                            <div className="font-medium">{place.name}</div>
+                            <div className="text-xs text-slate-400">{place.address}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {selectedPlace && (
+                    <div className="mt-2 p-2.5 bg-green-500/20 border border-green-500/40 rounded-lg">
+                      <p className="text-xs text-green-300 font-medium">✓ Gym location selected</p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -673,12 +682,12 @@ export default function GymSignup() {
               </div>
 
               <Button
-                type="button"
-                onClick={() => setStep(2)}
-                disabled={!formData.email || !formData.password || !formData.name || !formData.address || !formData.city || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
-                className="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12 disabled:opacity-50 disabled:cursor-not-allowed"
+               type="button"
+               onClick={() => setStep(2)}
+               disabled={!formData.email || !formData.password || !selectedPlace || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
+               className="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next Step
+               Next Step
               </Button>
             </div>
 

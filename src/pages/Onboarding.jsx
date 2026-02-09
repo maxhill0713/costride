@@ -53,7 +53,7 @@ export default function Onboarding() {
             <span className="text-3xl">🏋️</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3">
-            Welcome to FitHub
+            Welcome to CoStride
           </h1>
           <p className="text-slate-300 text-lg">
             Choose how you want to use the app
