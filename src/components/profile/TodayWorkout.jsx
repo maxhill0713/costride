@@ -186,11 +186,16 @@ export default function TodayWorkout({ currentUser }) {
       if (alreadyLoggedToday) {
         throw new Error('You have already logged this workout today');
       }
+      const user = await base44.auth.me();
+      const workout_notes = user?.workout_notes || {};
+      const workoutNotes = workout_notes[todayWorkout.name] || '';
+      
       await base44.entities.WorkoutLog.create({
         user_id: currentUser.id,
         workout_name: todayWorkout.name,
         day_of_week: adjustedDay,
         exercises: todayWorkout.exercises,
+        notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0]
       });
     },

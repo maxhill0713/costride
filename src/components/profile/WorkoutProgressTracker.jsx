@@ -90,11 +90,11 @@ export default function WorkoutProgressTracker({ currentUser }) {
       
       let progressFromPrevious = null;
       if (previous && latest) {
-        const change = latest.weight - previous.weight;
+        const change = (latest.weight - previous.weight).toFixed(1);
         progressFromPrevious = {
           change,
-          percentage: previous.weight > 0 ? ((change / previous.weight) * 100).toFixed(1) : 0,
-          direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same'
+          percentage: previous.weight > 0 ? (((latest.weight - previous.weight) / previous.weight) * 100).toFixed(1) : 0,
+          direction: latest.weight > previous.weight ? 'up' : latest.weight < previous.weight ? 'down' : 'same'
         };
       }
 
