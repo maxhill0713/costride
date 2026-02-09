@@ -397,6 +397,25 @@ export default function GymCommunity() {
     }
   });
 
+  const joinGhostGymMutation = useMutation({
+    mutationFn: async () => {
+      await base44.entities.GymMembership.create({
+        user_id: currentUser.id,
+        user_name: currentUser.full_name,
+        user_email: currentUser.email,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        status: 'active',
+        join_date: new Date().toISOString().split('T')[0],
+        membership_type: 'lifetime'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
+      setShowJoinGymModal(false);
+    }
+  });
+
   const joinChallengeMutation = useMutation({
     mutationFn: async (challenge) => {
       // Update Challenge participants array first
@@ -404,7 +423,7 @@ export default function GymCommunity() {
       await base44.entities.Challenge.update(challenge.id, {
         participants: [...currentParticipants, currentUser.id]
       });
-      
+
       // Create ChallengeParticipant record
       await base44.entities.ChallengeParticipant.create({
         user_id: currentUser.id,
