@@ -49,7 +49,7 @@ export default function Settings() {
       setDisplayName(currentUser.full_name || '');
       setBio(currentUser.bio || '');
     }
-  }, []);
+  }, [currentUser]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: (settings) => base44.auth.updateMe(settings),
