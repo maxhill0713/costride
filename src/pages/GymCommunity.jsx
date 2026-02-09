@@ -1644,12 +1644,7 @@ export default function GymCommunity() {
           currentUser={currentUser}
         />
 
-        <JoinGymModal
-          open={showJoinGymModal}
-          onClose={() => setShowJoinGymModal(false)}
-          gym={gym}
-          currentUser={currentUser}
-        />
+
 
         <CreateChallengeModal
                   open={showCreateChallenge}
