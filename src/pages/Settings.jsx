@@ -53,10 +53,10 @@ export default function Settings() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: (settings) => base44.auth.updateMe(settings),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(['currentUser'], (old) => {
         if (!old) return old;
-        return { ...old, full_name: displayName, bio };
+        return { ...old, ...variables };
       });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
