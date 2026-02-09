@@ -911,8 +911,8 @@ export default function GymCommunity() {
                 variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
                 onClick={() => setLeaderboardView('checkins')}
                 size="sm"
-                className={`rounded-lg text-xs px-3 h-8 transition-all ${
-                  leaderboardView === 'checkins' ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50'
+                className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
+                  leaderboardView === 'checkins' ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-0' : 'border-slate-600 text-white hover:bg-slate-700/50'
                 }`}
               >
                 Check-ins
@@ -921,8 +921,8 @@ export default function GymCommunity() {
                 variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
                 onClick={() => setLeaderboardView('challenges')}
                 size="sm"
-                className={`rounded-lg text-xs px-3 h-8 transition-all ${
-                  leaderboardView === 'challenges' ? 'bg-purple-500 hover:bg-purple-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50'
+                className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
+                  leaderboardView === 'challenges' ? 'bg-purple-500 hover:bg-purple-600 text-white border-0' : 'border-slate-600 text-white hover:bg-slate-700/50'
                 }`}
               >
                 Challenges
@@ -931,8 +931,8 @@ export default function GymCommunity() {
                 variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
                 onClick={() => setLeaderboardView('streaks')}
                 size="sm"
-                className={`rounded-lg text-xs px-3 h-8 transition-all ${
-                  leaderboardView === 'streaks' ? 'bg-orange-500 hover:bg-orange-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50'
+                className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
+                  leaderboardView === 'streaks' ? 'bg-orange-500 hover:bg-orange-600 text-white border-0' : 'border-slate-600 text-white hover:bg-slate-700/50'
                 }`}
               >
                 Streaks
@@ -947,7 +947,7 @@ export default function GymCommunity() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {checkInLeaderboard.map((member, idx) => (
+                  {checkInLeaderboard.slice(0, 3).map((member, idx) => (
                     <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
                       idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
                       idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
@@ -981,7 +981,7 @@ export default function GymCommunity() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {challengeLeaderboard.map((member, idx) => (
+                  {challengeLeaderboard.slice(0, 3).map((member, idx) => (
                     <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
                       idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
                       idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
@@ -1015,7 +1015,7 @@ export default function GymCommunity() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {streakLeaderboard.map((member, idx) => (
+                  {streakLeaderboard.slice(0, 3).map((member, idx) => (
                     <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
                       idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
                       idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
@@ -1233,8 +1233,8 @@ export default function GymCommunity() {
                 variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('checkins')}
                   size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 ${
-                    leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-0' : 'border-slate-600'
+                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
+                    leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0' : 'border-slate-600 text-white'
                   }`}
                 >
                   <CheckCircle className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
@@ -1244,8 +1244,8 @@ export default function GymCommunity() {
                   variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('challenges')}
                   size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 ${
-                    leaderboardView === 'challenges' ? 'bg-gradient-to-r from-purple-500 to-pink-500 border-0' : 'border-slate-600'
+                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
+                    leaderboardView === 'challenges' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0' : 'border-slate-600 text-white'
                   }`}
                 >
                   <Trophy className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
@@ -1255,8 +1255,8 @@ export default function GymCommunity() {
                   variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('streaks')}
                   size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 ${
-                    leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 border-0' : 'border-slate-600'
+                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
+                    leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white border-0' : 'border-slate-600 text-white'
                   }`}
                 >
                   <Flame className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
@@ -1272,7 +1272,7 @@ export default function GymCommunity() {
                 </div>
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
-                  {checkInLeaderboard.map((member, idx) => (
+                  {checkInLeaderboard.slice(0, 3).map((member, idx) => (
                     <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
                       idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
                       idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
@@ -1306,7 +1306,7 @@ export default function GymCommunity() {
                 </div>
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
-                  {challengeLeaderboard.map((member, idx) => (
+                  {challengeLeaderboard.slice(0, 3).map((member, idx) => (
                     <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
                       idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
                       idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
@@ -1340,7 +1340,7 @@ export default function GymCommunity() {
                 </div>
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
-                  {streakLeaderboard.map((member, idx) => (
+                  {streakLeaderboard.slice(0, 3).map((member, idx) => (
                     <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
                       idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
                       idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
