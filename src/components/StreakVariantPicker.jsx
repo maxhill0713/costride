@@ -84,18 +84,16 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
                 viewBox="0 0 64 48"
                 style={{ top: '-8px' }}
               >
-                {/* Hat brim */}
-                <ellipse cx="32" cy="36" rx="28" ry="8" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-amber-900" />
-                {/* Hat crown - trapezoid shape */}
+                {/* Hat crown */}
                 <path 
                   d="M 16 36 L 12 20 Q 12 8 32 4 Q 52 8 52 20 L 48 36" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  className="text-amber-900"
+                  fill="currentColor" 
+                  className="text-amber-800"
                 />
-                {/* Hat band */}
-                <line x1="14" y1="34" x2="50" y2="34" stroke="currentColor" strokeWidth="1.5" className="text-amber-700" />
+                {/* Hat brim */}
+                <ellipse cx="32" cy="36" rx="28" ry="8" fill="currentColor" className="text-amber-700" />
+                {/* Hat band detail */}
+                <rect x="14" y="33" width="36" height="2" fill="currentColor" className="text-amber-900" />
               </svg>
             </div>
             {selectedVariant === 'cowboy' && (
