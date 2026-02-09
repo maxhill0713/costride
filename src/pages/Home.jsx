@@ -451,12 +451,9 @@ export default function Home() {
 
           {/* Weekly Challenges */}
            {featuredChallenge && (
-             <div>
-               <h3 className="text-white font-semibold text-base px-4 tracking-tight mb-3">Weekly Challenges</h3>
-               <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
-                 <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
-               </Link>
-             </div>
+             <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block px-4">
+               <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
+             </Link>
            )}
 
         {/* Join a Gym Prompt */}
