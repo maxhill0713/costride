@@ -105,7 +105,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         <div className="space-y-4 mt-4">
 
           {/* Custom Split Name */}
-          {selectedSplit === 'custom' && (
+           {(
             <div className="space-y-3">
               <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-3 rounded-xl border border-slate-700/50">
                 <Label className="text-white flex items-center gap-1.5 mb-2 text-sm font-bold">
