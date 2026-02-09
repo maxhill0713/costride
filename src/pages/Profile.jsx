@@ -359,12 +359,12 @@ export default function Profile() {
                  )}
               </div>
               <div className="flex-1">
-               <div className="flex flex-col gap-2 mb-2">
-                  <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight truncate">{currentUser.full_name}</h1>
-                 <div className="flex items-center">
-                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
+                <div className="flex flex-col gap-2 mb-2">
+                   <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight truncate">{currentUser.full_name}</h1>
+                  <div className="flex items-center flex-wrap gap-2">
+                    <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
+                  </div>
                  </div>
-                </div>
                 {/* Equipped Badges */}
                 {currentUser?.equipped_badges?.length > 0 && (
                   <div className="flex items-center gap-2 mt-3">
