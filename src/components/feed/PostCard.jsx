@@ -113,29 +113,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       </div>
 
       {/* Caption Section - Thin Block */}
-      <div className="px-4 py-0.5 border-t border-gray-100 text-sm text-gray-900">
+      <div className="px-4 py-1 text-sm text-gray-900">
         <p className="leading-snug">{post.content}</p>
         {post.weight && (
           <span className="block mt-1 text-blue-600 font-semibold">
             💪 {post.weight} lbs
           </span>
         )}
-      </div>
-
-      {/* Reaction Bar */}
-      <div className="px-4 py-2 flex items-center gap-4 border-t border-gray-100">
-
-        <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
-          <MessageCircle className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
-        </button>
-
-        <button onClick={() => setShowShare(true)} className="hover:scale-110 transition-transform active:scale-95">
-          <Send className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
-        </button>
-
-        <button onClick={handleSave} className="ml-auto hover:scale-110 transition-transform active:scale-95">
-          <Bookmark className={`w-5 h-5 ${saved ? 'fill-gray-900 text-gray-900' : 'text-gray-900'}`} strokeWidth={1.5} />
-        </button>
       </div>
 
       {/* Modals */}
