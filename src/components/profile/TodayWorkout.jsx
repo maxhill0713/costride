@@ -270,8 +270,8 @@ export default function TodayWorkout({ currentUser }) {
               <Info className="w-3.5 h-3.5" />
             </button>
           </div>
-          <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${isExpanded ? 'text-sm' : 'text-xs'}`}>
-            {todayWorkout.name}
+          <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${isExpanded ? 'text-lg' : 'text-base'}`}>
+          {todayWorkout.name}
           </h2>
          </div>
         {showInfo && (
