@@ -134,7 +134,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
   }
 
   return (
-    <Card className="bg-slate-900/70 border border-purple-500/30 p-3 rounded-2xl">
+    <Card className="bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 border border-purple-500/40 p-3 rounded-2xl">
       {todayWorkoutLogged && (
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -217,21 +217,21 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-1.5 mb-3">
-        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
-          <div className="text-base font-bold text-purple-400">{workoutLogs.length}</div>
-          <div className="text-[8px] text-slate-400 font-medium">Logs</div>
+        <div className="bg-gradient-to-br from-purple-600/30 to-purple-700/20 rounded-lg p-1.5 text-center border border-purple-500/30 hover:border-purple-400/50 transition-colors">
+          <div className="text-base font-bold text-purple-300">{workoutLogs.length}</div>
+          <div className="text-[8px] text-purple-300/60 font-medium">Logs</div>
         </div>
-        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
-          <div className="text-base font-bold text-green-400">
+        <div className="bg-gradient-to-br from-emerald-600/30 to-emerald-700/20 rounded-lg p-1.5 text-center border border-emerald-500/30 hover:border-emerald-400/50 transition-colors">
+          <div className="text-base font-bold text-emerald-300">
             {exerciseProgress.filter(e => e.progressFromPrevious?.direction === 'up').length}
           </div>
-          <div className="text-[8px] text-slate-400 font-medium">Up</div>
+          <div className="text-[8px] text-emerald-300/60 font-medium">Up</div>
         </div>
-        <div className="bg-slate-700/50 rounded-lg p-1.5 text-center">
-          <div className="text-base font-bold text-blue-400">
+        <div className="bg-gradient-to-br from-cyan-600/30 to-cyan-700/20 rounded-lg p-1.5 text-center border border-cyan-500/30 hover:border-cyan-400/50 transition-colors">
+          <div className="text-base font-bold text-cyan-300">
             {new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size}
           </div>
-          <div className="text-[8px] text-slate-400 font-medium">Exercises</div>
+          <div className="text-[8px] text-cyan-300/60 font-medium">Exercises</div>
         </div>
       </div>
 
@@ -251,7 +251,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-              className="p-2 bg-slate-700/50 rounded-lg border border-slate-600/30 hover:border-purple-500/30 transition-colors"
+              className="p-2 bg-gradient-to-r from-slate-800/60 to-slate-700/40 rounded-lg border border-slate-600/40 hover:border-purple-500/50 hover:bg-gradient-to-r hover:from-slate-800/80 hover:to-slate-700/60 transition-all"
             >
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <span className="text-[10px] font-semibold text-white">{exercise.name}</span>
