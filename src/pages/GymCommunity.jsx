@@ -960,10 +960,11 @@ export default function GymCommunity() {
                   <p className="text-xs text-slate-300">Start checking in and connecting with members</p>
                 </div>
                 <Button
-                  onClick={() => setShowJoinGymModal(true)}
+                  onClick={() => joinGhostGymMutation.mutate()}
+                  disabled={joinGhostGymMutation.isPending}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl whitespace-nowrap"
                 >
-                  Join Gym
+                  {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
                 </Button>
               </div>
             </Card>
