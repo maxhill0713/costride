@@ -67,9 +67,46 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
             )}
           </button>
 
+          {/* Cowboy Hat Flame */}
+          <button
+            onClick={() => onSelect('cowboy')}
+            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
+              selectedVariant === 'cowboy'
+                ? 'ring-2 ring-green-500'
+                : 'hover:opacity-80'
+            }`}
+          >
+            <div className="relative w-10 h-10 flex items-center justify-center">
+              <Flame className="w-10 h-10 text-orange-500 fill-current" />
+              {/* Cowboy hat positioned on top of flame */}
+              <svg 
+                className="absolute w-10 h-6 pointer-events-none"
+                viewBox="0 0 64 48"
+                style={{ top: '-8px' }}
+              >
+                {/* Hat brim */}
+                <ellipse cx="32" cy="36" rx="28" ry="8" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-amber-900" />
+                {/* Hat crown - trapezoid shape */}
+                <path 
+                  d="M 16 36 L 12 20 Q 12 8 32 4 Q 52 8 52 20 L 48 36" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  className="text-amber-900"
+                />
+                {/* Hat band */}
+                <line x1="14" y1="34" x2="50" y2="34" stroke="currentColor" strokeWidth="1.5" className="text-amber-700" />
+              </svg>
+            </div>
+            {selectedVariant === 'cowboy' && (
+              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                <Check className="w-4 h-4 text-white" />
+              </div>
+            )}
+          </button>
+
           {/* Empty spaces for future icons */}
-          <div className="flex flex-col items-center gap-3 p-4" />
-          <div className="flex flex-col items-center gap-3 p-4" />
+           <div className="flex flex-col items-center gap-3 p-4" />
           <div className="flex flex-col items-center gap-3 p-4" />
           <div className="flex flex-col items-center gap-3 p-4" />
           <div className="flex flex-col items-center gap-3 p-4" />
