@@ -41,7 +41,7 @@ export default function Home() {
     enabled: !!currentUser
   });
 
-  const { data: allGyms = [] } = useQuery({
+  const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
     queryFn: () => base44.entities.Gym.list()
   });
@@ -172,7 +172,7 @@ export default function Home() {
     createReminderNotification();
   }, [currentUser, daysSinceCheckIn]);
 
-  if (userLoading || !currentUser) {
+  if (userLoading || !currentUser || gymsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
