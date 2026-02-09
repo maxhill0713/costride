@@ -430,7 +430,6 @@ export default function Home() {
                 <>
                   <WorkoutSplitHeatmap currentUser={currentUser} />
 
-                  {/* Your Split Progress Card - For New Users */}
                   <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
                     <div className="flex items-center gap-2 mb-3">
                       <Dumbbell className="w-4 h-4 text-indigo-400" />
@@ -439,9 +438,9 @@ export default function Home() {
 
                     <button
                       onClick={() => setShowSplitModal(true)}
-                      className="w-full mb-3 p-3 rounded-lg bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/40 transition-all text-xs font-semibold flex items-center justify-center gap-2"
+                      className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
                     >
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-3 h-3" />
                       Create Your Workout Split
                     </button>
 
