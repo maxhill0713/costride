@@ -83,8 +83,9 @@ export default function Gyms() {
     const matchesDistance = maxDistance === 'all' || (gym.distance_km && gym.distance_km <= parseFloat(maxDistance));
     const matchesEquipment = selectedEquipment === 'all' || 
                             (gym.equipment && gym.equipment.includes(selectedEquipment));
+    const isGhostOrApproved = gym.status === 'approved' || (!gym.admin_id && !gym.owner_email);
     
-    return matchesSearch && matchesType && matchesDistance && matchesEquipment;
+    return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
   });
 
   const toggleSave = (gymId) => {
