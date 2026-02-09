@@ -52,11 +52,14 @@ export default function Settings() {
   }, [currentUser]);
 
   const updateSettingsMutation = useMutation({
-    mutationFn: (settings) => base44.auth.updateMe(settings),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    mutationFn: async (settings) => {
+      const response = await base44.auth.updateMe(settings);
+      return response;
+    },
+    onSuccess: async (data, variables) => {
       if (variables.full_name) setDisplayName(variables.full_name);
       if (variables.bio) setBio(variables.bio);
+      await queryClient.refetchQueries({ queryKey: ['currentUser'] });
     }
   });
 
