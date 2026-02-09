@@ -601,11 +601,12 @@ export default function Friends() {
          )}
 
          {/* Activity Feed */}
-         {activityFeed.length > 0 ? (
+         {filteredActivityFeed.length > 0 ? (
           <div className="space-y-2">
-            {activityFeed.map(activity => (
+            {filteredActivityFeed.map(activity => (
               <Card 
                 key={activity.id}
+                data-activity-id={activity.id}
                 className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20 ${activity.type === 'post' ? 'cursor-pointer' : ''}`}
                 >
                 {activity.type === 'post' ? (
