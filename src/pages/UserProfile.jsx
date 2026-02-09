@@ -156,10 +156,12 @@ export default function UserProfile() {
               )}
             </div>
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl md:text-3xl font-medium tracking-[-0.02em] text-white leading-tight">{viewingUser.full_name}</h1>
-                <StatusBadge checkIns={checkIns} streak={currentStreak} size="lg" />
-              </div>
+               <div className="flex flex-col gap-2 mb-2">
+                 <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{viewingUser.full_name}</h1>
+                 <div className="flex items-center">
+                   <StatusBadge checkIns={checkIns} streak={currentStreak} size="sm" />
+                 </div>
+               </div>
               
               {/* Equipped Badges */}
               {viewingUser?.equipped_badges?.length > 0 && (
