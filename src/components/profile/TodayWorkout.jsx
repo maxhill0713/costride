@@ -302,16 +302,12 @@ export default function TodayWorkout({ currentUser }) {
                 <div className="space-y-2.5">
                    <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
-                    {lastWorkout?.exercises?.[index] ? (
+                    {lastWorkout?.exercises?.[index] && (
                       <div className="text-xs text-slate-400 font-medium">
                         Last: {lastWorkout.exercises[index].weight}kg
                       </div>
-                    ) : (
-                      <div className="text-xs text-blue-400 font-medium">
-                        First Lift
-                      </div>
                     )}
-                  </div>
+                   </div>
                   <div className="flex gap-2">
                     <Input
                       type="text"
@@ -353,13 +349,9 @@ export default function TodayWorkout({ currentUser }) {
                     <div className="text-sm font-bold text-white leading-tight">
                       {exercise.exercise || '-'}
                     </div>
-                    {lastWorkout?.exercises?.[index] ? (
+                    {lastWorkout?.exercises?.[index] && (
                       <div className="text-[10px] text-slate-500 font-medium">
                         Last: {lastWorkout.exercises[index].weight}kg
-                      </div>
-                    ) : (
-                      <div className="text-[10px] text-cyan-400 font-semibold">
-                        First Lift
                       </div>
                     )}
                   </div>
