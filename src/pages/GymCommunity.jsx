@@ -804,6 +804,43 @@ export default function GymCommunity() {
 
             </div>
           </div>
+
+          {/* Small Stats - Bottom Right */}
+          <div className="absolute bottom-4 right-4 flex flex-col gap-1.5">
+            {/* In Gym Now */}
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/20 rounded-lg px-2.5 py-1.5 shadow-lg">
+              <div className="flex items-center gap-1.5">
+                <Flame className="w-3 h-3 text-green-400 flex-shrink-0" />
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold text-white">
+                    {(() => {
+                      const now = new Date();
+                      const usersInGym = new Set();
+                      checkIns.forEach(checkIn => {
+                        const checkInTime = new Date(checkIn.check_in_date);
+                        if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
+                          usersInGym.add(checkIn.user_id);
+                        }
+                      });
+                      return usersInGym.size;
+                    })()}
+                  </span>
+                  <span className="text-[9px] text-white/70">in gym</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Member Count */}
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/20 rounded-lg px-2.5 py-1.5 shadow-lg">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold text-white">{gym?.members_count || 0}</span>
+                  <span className="text-[9px] text-white/70">members</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -878,75 +915,10 @@ export default function GymCommunity() {
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
               <div className="flex items-center gap-2 mb-2">
-                <Users className="w-5 h-5 text-blue-400" />
-                <h3 className="text-xs md:text-sm font-bold text-slate-100">Member Count</h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-black text-white">{gym?.members_count || 0}</p>
-            </Card>
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-purple-400" />
                 <h3 className="text-xs md:text-sm font-bold text-slate-100">Challenges Available</h3>
               </div>
               <p className="text-2xl md:text-3xl font-black text-white">{gymChallenges.length}</p>
-            </Card>
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-green-400" />
-                  <h3 className="text-xs md:text-sm font-bold text-slate-100">In Gym Now</h3>
-                </div>
-                {(() => {
-                  const now = new Date();
-                  const usersInGym = new Set();
-                  checkIns.forEach(checkIn => {
-                    const checkInTime = new Date(checkIn.check_in_date);
-                    if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
-                      usersInGym.add(checkIn.user_id);
-                    }
-                  });
-                  const count = usersInGym.size;
-                  const vibe = count === 0 ? { text: 'Peaceful', color: 'text-blue-400', emoji: '🧘' } :
-                               count <= 3 ? { text: 'Focused', color: 'text-cyan-400', emoji: '🎯' } :
-                               count <= 8 ? { text: 'Active', color: 'text-green-400', emoji: '💪' } :
-                               count <= 15 ? { text: 'Energetic', color: 'text-orange-400', emoji: '🔥' } :
-                               { text: 'Buzzing', color: 'text-purple-400', emoji: '⚡' };
-                  return (
-                    <Badge className={`${vibe.color} bg-slate-700/50 border-slate-600 text-xs px-2 py-0`}>
-                      {vibe.emoji} {vibe.text}
-                    </Badge>
-                  );
-                })()}
-              </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl md:text-3xl font-black text-white">
-                  {(() => {
-                    const now = new Date();
-                    const usersInGym = new Set();
-                    checkIns.forEach(checkIn => {
-                      const checkInTime = new Date(checkIn.check_in_date);
-                      if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
-                        usersInGym.add(checkIn.user_id);
-                      }
-                    });
-                    return usersInGym.size;
-                  })()}
-                </p>
-                <p className="text-xs text-slate-300">
-                  {(() => {
-                    const now = new Date();
-                    const usersInGym = new Set();
-                    checkIns.forEach(checkIn => {
-                      const checkInTime = new Date(checkIn.check_in_date);
-                      if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
-                        usersInGym.add(checkIn.user_id);
-                      }
-                    });
-                    return usersInGym.size === 1 ? 'member' : 'members';
-                  })()}
-                </p>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Great time to train!</p>
             </Card>
             <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 md:p-4 shadow-2xl shadow-black/20">
               <div className="flex items-center gap-2 mb-2">
