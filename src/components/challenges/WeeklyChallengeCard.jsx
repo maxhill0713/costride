@@ -37,7 +37,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-slate-900/70 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 hover:border-cyan-400/50 transition-all overflow-hidden group relative">
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
         <div className="relative">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1 min-w-0">
