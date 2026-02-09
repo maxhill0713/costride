@@ -535,11 +535,8 @@ export default function CheckInButton({ gym }) {
       } else {
         console.error('Check-in error:', error);
       }
-      setIsChecking(false);
     } finally {
-      if (!checkInMutation.isPending) {
-        setIsChecking(false);
-      }
+      setIsChecking(false);
     }
   };
 
