@@ -514,7 +514,7 @@ export default function Friends() {
              {activityCards.map(card => (
                <Card
                  key={card.id}
-                 className={`bg-gradient-to-r ${card.color} border ${card.borderColor} backdrop-blur-sm overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all`}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all shadow-2xl shadow-black/20"
                >
                  <div className="p-4">
                    <div className="flex items-start gap-3">
@@ -541,7 +541,7 @@ export default function Friends() {
             {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
-                className={`bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl ${activity.type === 'post' ? 'cursor-pointer' : ''}`}
+                className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20 ${activity.type === 'post' ? 'cursor-pointer' : ''}`}
                 >
                 {activity.type === 'post' ? (
                   // Full post layout for posts
@@ -727,7 +727,7 @@ export default function Friends() {
             ))}
           </div>
         ) : (
-          <Card className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 overflow-hidden rounded-xl">
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
             <div className="p-3">
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
@@ -761,7 +761,7 @@ export default function Friends() {
         {/* Add Friend Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6">
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl shadow-black/20">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-white">Add Friend</h3>
                 <Button

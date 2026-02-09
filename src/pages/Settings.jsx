@@ -231,7 +231,7 @@ export default function Settings() {
         </Card>
 
         {/* Appearance */}
-        <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
               {currentUser.dark_mode ? (
@@ -288,7 +288,7 @@ export default function Settings() {
         </Card>
 
         {/* Account Details */}
-        <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
               <Lock className="w-6 h-6 text-white" />
@@ -325,7 +325,7 @@ export default function Settings() {
         </Card>
 
         {/* Privacy */}
-        <Card className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 shadow-sm">
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
               <Lock className="w-6 h-6 text-white" />
@@ -356,7 +356,7 @@ export default function Settings() {
         </Card>
 
         {/* Logout */}
-        <Card className="bg-gradient-to-br from-red-600/15 to-red-500/5 backdrop-blur-sm border border-red-500/40 p-6">
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
               <LogOut className="w-6 h-6 text-red-400" />

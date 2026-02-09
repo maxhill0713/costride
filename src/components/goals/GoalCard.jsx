@@ -101,10 +101,10 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
   const GoalIcon = getGoalIcon();
 
   return (
-    <Card className={`p-5 rounded-2xl backdrop-blur-sm border overflow-hidden ${
+    <Card className={`p-5 rounded-2xl backdrop-blur-xl border overflow-hidden shadow-2xl shadow-black/20 ${
       isCompleted 
         ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/30 border-green-500/40 shadow-lg shadow-green-500/20' 
-        : 'bg-slate-900/70 border-slate-700/50'
+        : 'bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border-white/10'
     }`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
