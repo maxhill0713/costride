@@ -451,7 +451,7 @@ export default function Home() {
 
           {/* Weekly Challenges */}
            {featuredChallenge && (
-             <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block px-4">
+             <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
                <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
              </Link>
            )}
