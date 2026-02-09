@@ -39,6 +39,7 @@ import CreateChallengeModal from '../components/challenges/CreateChallengeModal'
 import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
+import { motion } from 'framer-motion';
 // i18n import removed - using default language
 
 export default function GymCommunity() {
@@ -923,7 +924,14 @@ export default function GymCommunity() {
       <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
 
         {/* Home Tab */}
-        <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
+        <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden" asChild>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+            className="space-y-2 md:space-y-3"
+          >
           {/* Check-in Section */}
           {!showOwnerControls && <CheckInButton gym={gym} />}
 
@@ -1163,10 +1171,18 @@ export default function GymCommunity() {
             </Card>
           )}
 
+        </motion.div>
         </TabsContent>
 
         {/* Feed Tab */}
-        <TabsContent value="feed" className="space-y-2 mt-0 w-full overflow-hidden">
+        <TabsContent value="feed" className="space-y-2 mt-0 w-full overflow-hidden" asChild>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+          className="space-y-2"
+        >
           {/* Upcoming Events This Week */}
            {upcomingEvents.length > 0 && (
              <div className="space-y-2 md:space-y-3">
@@ -1209,10 +1225,18 @@ export default function GymCommunity() {
             ))}
           </div>
           )}
+          </motion.div>
         </TabsContent>
 
         {/* Challenges Tab */}
-        <TabsContent value="challenges" className="space-y-2 md:space-y-4 mt-0 w-full overflow-hidden">
+        <TabsContent value="challenges" className="space-y-2 md:space-y-4 mt-0 w-full overflow-hidden" asChild>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+            className="space-y-2 md:space-y-4"
+          >
           {/* Create Challenge Button for Owners */}
           {showOwnerControls && (
             <Button
@@ -1417,10 +1441,18 @@ export default function GymCommunity() {
               )
             )}
           </Card>
+          </motion.div>
         </TabsContent>
 
         {/* Events Tab */}
-        <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
+        <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden" asChild>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+            className="space-y-2 md:space-y-3"
+          >
           {/* Classes Section */}
           <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
@@ -1629,6 +1661,7 @@ export default function GymCommunity() {
               </div>
             )}
           </Card>
+          </motion.div>
         </TabsContent>
 
 
