@@ -375,13 +375,6 @@ export default function TodayWorkout({ currentUser }) {
                         {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                       </div>
                     <Button
-                      onClick={() => startRestTimer()}
-                      size="sm"
-                      className="h-6 px-2 text-[10px] font-bold bg-green-600 hover:bg-green-700 text-white shrink-0"
-                    >
-                      ✓ Set
-                    </Button>
-                    <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
@@ -396,57 +389,63 @@ export default function TodayWorkout({ currentUser }) {
           ))}
 
           {/* Rest Timer & Tools */}
-          <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-2">
-            {/* Timer Capsule */}
-            <div className="relative">
-              <button
-                onClick={() => setShowTimerOptions(!showTimerOptions)}
-                className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/60 backdrop-blur-md border border-orange-500/40 shadow-lg shadow-orange-500/20 hover:border-orange-400/60 transition-all"
-              >
-                <Clock className="w-3.5 h-3.5 text-orange-400" />
-                <span className="text-orange-300 font-bold text-xs">{restTimer || '90'}s</span>
-                {isTimerActive && (
-                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-orange-400 border-r-orange-400 animate-spin" style={{ width: 'calc(100% + 4px)', height: 'calc(100% + 4px)', left: '-2px', top: '-2px' }} />
-                )}
-              </button>
-
-              {/* Timer Options Dropdown */}
-              {showTimerOptions && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                  <div className="absolute bottom-full mb-2 left-0 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl p-2 z-50 min-w-[200px]">
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {timerPresets.map((preset) => (
-                        <button
-                          key={preset.value}
-                          onClick={() => {
-                            setRestTimer(preset.value);
-                            setShowTimerOptions(false);
-                          }}
-                          className="px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-xs font-bold transition-all active:scale-95 border border-slate-700/30 hover:border-orange-500/50"
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
+          <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
+            {/* Timer Section */}
+            <div className="flex-1 flex items-center gap-3">
+              <div className="relative flex-1">
+                <button
+                  onClick={() => setShowTimerOptions(!showTimerOptions)}
+                  className="relative w-full flex flex-col items-center gap-1 px-5 py-4 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-md border border-orange-500/40 shadow-xl shadow-orange-500/20 hover:border-orange-400/60 transition-all"
+                >
+                  <span className="text-[10px] font-bold text-orange-400/70 uppercase tracking-wider">Rest Timer</span>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-orange-400" />
+                    <span className="text-orange-300 font-black text-2xl tabular-nums">{restTimer || '90'}</span>
+                    <span className="text-orange-300 text-sm font-bold">s</span>
                   </div>
-                </>
-              )}
-            </div>
+                  {isTimerActive && (
+                    <div className="absolute inset-0 rounded-2xl border-2 border-transparent border-t-orange-400 border-r-orange-400 animate-spin" style={{ width: 'calc(100% + 4px)', height: 'calc(100% + 4px)', left: '-2px', top: '-2px' }} />
+                  )}
+                </button>
 
-            <button
-              onClick={() => {
-                if (!isTimerActive) {
-                  const time = parseInt(restTimer) || 90;
-                  setRestTimer(time);
-                  setInitialRestTime(time);
-                }
-                setIsTimerActive(!isTimerActive);
-              }}
-              className="text-xs font-bold px-3 py-1.5 rounded-full bg-orange-500/80 hover:bg-orange-600 text-white transition-all active:scale-95 shadow-lg shadow-orange-500/30"
-            >
-              {isTimerActive ? 'Stop' : 'Go'}
-            </button>
+                {/* Timer Options Dropdown */}
+                {showTimerOptions && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
+                    <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl p-2 z-50">
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {timerPresets.map((preset) => (
+                          <button
+                            key={preset.value}
+                            onClick={() => {
+                              setRestTimer(preset.value);
+                              setShowTimerOptions(false);
+                            }}
+                            className="px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-xs font-bold transition-all active:scale-95 border border-slate-700/30 hover:border-orange-500/50"
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  if (!isTimerActive) {
+                    const time = parseInt(restTimer) || 90;
+                    setRestTimer(time);
+                    setInitialRestTime(time);
+                  }
+                  setIsTimerActive(!isTimerActive);
+                }}
+                className="text-sm font-bold px-6 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white transition-all active:scale-95 shadow-xl shadow-orange-500/40"
+              >
+                {isTimerActive ? 'Stop' : 'Go'}
+              </button>
+            </div>
 
             {/* Quick Action Icons */}
              <div className="flex items-center gap-1.5">
