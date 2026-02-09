@@ -563,34 +563,26 @@ export default function Friends() {
                           />
                         )}
 
-                        {/* Profile info overlay on image */}
-                        <div className="absolute top-3 left-3 flex items-center gap-2">
-                          <Link 
-                            to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {activity.friendAvatar ? (
-                              <img 
-                                src={activity.friendAvatar} 
-                                alt={activity.friendName} 
-                                className="w-10 h-10 rounded-full object-cover ring-2 ring-white" 
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-white">
-                                <span className="text-white font-bold text-sm">
-                                  {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
-                                </span>
-                              </div>
-                            )}
-                          </Link>
-                          <Link 
-                            to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-white font-semibold text-sm"
-                          >
-                            {activity.friendName}
-                          </Link>
-                        </div>
+                        {/* Profile picture in corner */}
+                         <Link 
+                           to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                           onClick={(e) => e.stopPropagation()}
+                           className="absolute top-3 left-3"
+                         >
+                           {activity.friendAvatar ? (
+                             <img 
+                               src={activity.friendAvatar} 
+                               alt={activity.friendName} 
+                               className="w-10 h-10 rounded-full object-cover ring-2 ring-white" 
+                             />
+                           ) : (
+                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-white">
+                               <span className="text-white font-bold text-sm">
+                                 {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                               </span>
+                             </div>
+                           )}
+                         </Link>
                       </div>
                     )}
 
