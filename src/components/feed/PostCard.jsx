@@ -124,28 +124,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
 
       {/* Reaction Bar */}
       <div className="px-4 py-2 flex items-center gap-4 border-t border-gray-100">
-        <button onClick={handleReact} className="hover:scale-110 transition-transform active:scale-95">
-          {reacted ? (
-            currentUser?.streak_variant === 'sunglasses' ? (
-              <div className="relative w-5 h-5 flex items-center justify-center">
-                <Flame className="w-5 h-5 text-orange-500 fill-current" />
-                <svg 
-                  className="absolute w-4 h-2 pointer-events-none"
-                  viewBox="0 0 64 32"
-                  style={{ top: '0px' }}
-                >
-                  <circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
-                  <circle cx="48" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
-                  <line x1="21" y1="16" x2="43" y2="16" stroke="currentColor" strokeWidth="1" className="text-black" />
-                </svg>
-              </div>
-            ) : (
-              <Flame className="w-5 h-5 text-orange-500 fill-current" />
-            )
-          ) : (
-            <Flame className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
-          )}
-        </button>
 
         <button onClick={() => setShowComments(true)} className="hover:scale-110 transition-transform active:scale-95">
           <MessageCircle className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
