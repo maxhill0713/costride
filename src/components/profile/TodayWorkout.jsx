@@ -597,11 +597,11 @@ export default function TodayWorkout({ currentUser }) {
               onClick={() => setIsExpanded(false)}
               variant="ghost"
               size="icon"
-              className="w-6 h-6 text-slate-400 hover:text-white"
+              className="w-9 h-9 text-slate-400 hover:text-white"
             >
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-6 h-6" />
             </Button>
-          </div>
+            </div>
         </div>
       ) : (
         <div className="flex justify-center pt-1">
