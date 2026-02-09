@@ -258,10 +258,12 @@ export default function TodayWorkout({ currentUser }) {
               <strong className="text-blue-100">How to use:</strong>
             </p>
             <ul className="text-[11px] text-blue-200/90 space-y-1.5 leading-relaxed">
-              <li>• <strong>Edit exercises:</strong> Click the pencil icon to update weight/reps</li>
-              <li>• <strong>Track progress:</strong> See your improvements compared to last workout</li>
-              <li>• <strong>Rest timer:</strong> Use the timer between sets</li>
-              <li>• <strong>Log workout:</strong> Click "Log Workout" when done to track completion</li>
+              <li>• <strong>Expand:</strong> Tap the down arrow to view all exercises</li>
+              <li>• <strong>Update weight/reps:</strong> Click the pencil icon next to any exercise, enter new values, then save</li>
+              <li>• <strong>Track progress:</strong> Green/red badges show weight increases/decreases vs. last workout</li>
+              <li>• <strong>Rest timer:</strong> Click timer, choose duration, hit "Go" - full screen countdown between sets</li>
+              <li>• <strong>Plate calculator:</strong> Use calculator icon to see which plates to load on the bar</li>
+              <li>• <strong>Log completion:</strong> Hit "Log Workout" when finished to save progress and maintain your streak</li>
             </ul>
           </div>
         )}
