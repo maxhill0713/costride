@@ -78,8 +78,9 @@ export default function Friends() {
     queryKey: ['posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser,
-    staleTime: 60000,
-    cacheTime: 300000
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000
   });
 
   const updatePostReactionMutation = useMutation({
