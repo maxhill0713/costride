@@ -100,17 +100,17 @@ export default function Layout({ children, currentPageName }) {
                 onClick={(e) => handleTabClick(item, e)}
                 aria-label={item.name}
                 className={`
-                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-200 min-w-0 flex-1 active:scale-95
-                  ${isActive ? 'text-white' : 'text-slate-400'}
+                  relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-300 min-w-0 flex-1 active:scale-95 active:animate-ios-haptic
+                  ${isActive ? 'text-white' : 'text-slate-400'} hover:text-slate-100
                 `}
               >
                 <div className="relative">
                   <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 && (
-                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900">
-                      {item.badge > 9 ? '9+' : item.badge}
-                    </div>
-                  )}
+                     <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
+                       {item.badge > 9 ? '9+' : item.badge}
+                     </div>
+                   )}
                 </div>
                 <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
               </Link>
@@ -123,7 +123,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Side Navigation for Desktop */}
             {!hideNavigation && (
             <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
-        <Link to={createPageUrl('Gyms')} className="mb-8">
+        <Link to={createPageUrl('Gyms')} className="mb-8 hover:animate-ios-spring-in">
           <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
             <span className="text-2xl font-black text-white">G</span>
           </div>
@@ -142,7 +142,7 @@ export default function Layout({ children, currentPageName }) {
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive 
                     ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-600 ${item.color.replace('text-', 'to-')}-700 text-white shadow-md scale-110` 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105'}
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105 active:animate-ios-haptic'}
                 `}
               >
                 <div className="relative">
