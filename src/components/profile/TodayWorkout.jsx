@@ -14,7 +14,7 @@ export default function TodayWorkout({ currentUser }) {
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
-  const [restTimer, setRestTimer] = useState(90);
+  const [restTimer, setRestTimer] = useState('');
   const [initialRestTime, setInitialRestTime] = useState(90);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -42,7 +42,9 @@ export default function TodayWorkout({ currentUser }) {
   }, [isTimerActive, restTimer]);
 
   const startRestTimer = () => {
-    setInitialRestTime(restTimer);
+    const time = parseInt(restTimer) || 90;
+    setRestTimer(time);
+    setInitialRestTime(time);
     setIsTimerActive(true);
   };
 
@@ -390,14 +392,17 @@ export default function TodayWorkout({ currentUser }) {
                 min="0"
                 max="300"
                 value={restTimer}
-                onChange={(e) => setRestTimer(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-10 bg-transparent text-orange-300 font-bold text-xs text-center border-none focus:outline-none"
+                onChange={(e) => setRestTimer(e.target.value)}
+                placeholder="90"
+                className="w-10 bg-transparent text-orange-300 font-bold text-xs text-center border-none focus:outline-none placeholder:text-orange-400/50"
               />
               <span className="text-orange-300 text-xs font-semibold">s</span>
               <button
                 onClick={() => {
                   if (!isTimerActive) {
-                    setInitialRestTime(restTimer);
+                    const time = parseInt(restTimer) || 90;
+                    setRestTimer(time);
+                    setInitialRestTime(time);
                   }
                   setIsTimerActive(!isTimerActive);
                 }}
