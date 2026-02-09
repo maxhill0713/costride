@@ -478,7 +478,7 @@ export default function Profile() {
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
-          <Card className="p-5 bg-gradient-to-br from-yellow-600/15 to-yellow-500/5 backdrop-blur-sm border border-yellow-500/40 shadow-md overflow-hidden">
+          <Card className="p-5 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20 overflow-hidden">
             <h3 className="font-semibold text-yellow-300 mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
               <span className="truncate">Milestones Unlocked</span>
@@ -498,7 +498,7 @@ export default function Profile() {
 
 
                 {/* Workout Split Heatmap */}
-              <Card className="bg-slate-900/70 border border-indigo-500/30 p-4 rounded-2xl">
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
                 <div className="flex items-center gap-2 mb-3">
                   <Dumbbell className="w-4 h-4 text-indigo-400" />
                   <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
@@ -548,7 +548,7 @@ export default function Profile() {
             <TabsContent value="stats" className="space-y-4">
               {/* Key Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <Card className="group relative bg-slate-900/70 backdrop-blur-sm border border-blue-500/40 p-3 rounded-xl hover:border-blue-400/60 transition-all cursor-pointer overflow-hidden">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -565,7 +565,7 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-slate-900/70 backdrop-blur-sm border border-orange-500/40 p-3 rounded-xl hover:border-orange-400/60 transition-all cursor-pointer overflow-hidden">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -582,7 +582,7 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-slate-900/70 backdrop-blur-sm border border-purple-500/40 p-3 rounded-xl hover:border-purple-400/60 transition-all cursor-pointer overflow-hidden">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -599,7 +599,7 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-slate-900/70 backdrop-blur-sm border border-green-500/40 p-3 rounded-xl hover:border-green-400/60 transition-all cursor-pointer overflow-hidden">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -616,7 +616,7 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-slate-900/70 backdrop-blur-sm border border-amber-500/40 p-3 rounded-xl hover:border-amber-400/60 transition-all cursor-pointer overflow-hidden">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-amber-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -633,7 +633,7 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-slate-900/70 backdrop-blur-sm border border-cyan-500/40 p-3 rounded-xl hover:border-cyan-400/60 transition-all cursor-pointer overflow-hidden">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-cyan-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -652,7 +652,7 @@ export default function Profile() {
               </div>
 
               {/* Streak Freezes Section */}
-              <Card className="p-5 bg-gradient-to-br from-cyan-600/15 to-blue-500/5 backdrop-blur-sm border border-cyan-500/40 shadow-md overflow-hidden">
+              <Card className="p-5 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20 overflow-hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 mb-3">
                     <Snowflake className="w-5 h-5 text-cyan-400 flex-shrink-0" />
@@ -725,7 +725,7 @@ export default function Profile() {
 
             <TabsContent value="goals" className="space-y-4">
             {/* Goals Header */}
-            <div className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5 shadow-lg">
+            <div className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/20">
               <div className="flex items-center justify-between mb-4 gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -771,7 +771,7 @@ export default function Profile() {
             </div>
 
             {activeGoals.length === 0 ? (
-              <Card className="bg-gradient-to-br from-slate-800/60 via-slate-900/60 to-slate-800/60 backdrop-blur-sm border-2 border-dashed border-slate-600/50 p-10 text-center rounded-2xl">
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
                 <div className="max-w-sm mx-auto">
                   <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center">
                     <Target className="w-10 h-10 text-blue-400" />
