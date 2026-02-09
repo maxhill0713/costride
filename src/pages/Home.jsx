@@ -317,7 +317,7 @@ export default function Home() {
               {daysSinceCheckIn === 0 ? (
                 <Button 
                   disabled
-                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-green-500/35 to-emerald-500/35 cursor-default tracking-tight backdrop-blur-xl border-2 border-green-400/60 shadow-lg shadow-green-500/20"
+                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-green-500/50 to-emerald-500/50 cursor-default tracking-tight backdrop-blur-xl border-2 border-green-400/80 shadow-lg shadow-green-500/40"
                 >
                   <CheckCircle className="w-6 h-6 mr-2" />
                   Checked In Today
@@ -327,8 +327,8 @@ export default function Home() {
                   onClick={() => setShowCheckIn(true)}
                   className={`w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl tracking-tight backdrop-blur-xl border-2 ${
                     daysSinceCheckIn !== null && daysSinceCheckIn >= 3
-                      ? 'bg-gradient-to-r from-orange-500/35 to-amber-500/35 hover:from-orange-500/40 hover:to-amber-500/40 border-orange-400/60 shadow-lg shadow-orange-500/30'
-                      : 'bg-gradient-to-r from-blue-500/35 to-cyan-500/35 hover:from-blue-500/40 hover:to-cyan-500/40 border-blue-400/60 shadow-lg shadow-cyan-500/30'
+                      ? 'bg-gradient-to-r from-orange-500/50 to-amber-500/50 hover:from-orange-500/55 hover:to-amber-500/55 border-orange-400/80 shadow-lg shadow-orange-500/50'
+                      : 'bg-gradient-to-r from-blue-500/50 to-cyan-500/50 hover:from-blue-500/55 hover:to-cyan-500/55 border-blue-400/80 shadow-lg shadow-cyan-500/50'
                   }`}
                 >
                   Check In Now
