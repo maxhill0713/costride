@@ -133,8 +133,18 @@ export default function TodayWorkout({ currentUser }) {
 
   const handleEdit = (index, exercise) => {
     setEditingIndex(index);
-    setEditWeight(exercise.weight || '');
     setEditReps(exercise.setsReps || '');
+    
+    // Parse sets x reps (e.g., "3x10" -> 3 sets)
+    const match = exercise.setsReps?.match(/(\d+)x/);
+    const numSets = match ? parseInt(match[1]) : 1;
+    
+    // Create array for each set's weight
+    const sets = Array(numSets).fill(null).map(() => ({
+      weight: exercise.weight || '',
+      reps: exercise.setsReps?.split('x')[1] || ''
+    }));
+    setEditSets(sets);
   };
 
   const handleSave = (index) => {
