@@ -5,7 +5,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle } from 'lucide-react';
+import { Dumbbell, Users, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle, Edit2 } from 'lucide-react';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
