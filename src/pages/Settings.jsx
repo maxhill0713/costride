@@ -149,14 +149,20 @@ export default function Settings() {
                <div className="flex gap-2">
                  <Input
                    type="text"
-                   value={displayName}
-                   onChange={(e) => setDisplayName(e.target.value.slice(0, 15))}
+                   value={currentUser?.full_name || ''}
+                   onChange={(e) => {
+                     const newName = e.target.value.slice(0, 15);
+                     queryClient.setQueryData(['currentUser'], (old) => ({
+                       ...old,
+                       full_name: newName
+                     }));
+                   }}
                    maxLength="15"
                    placeholder="Your name"
                    className="bg-white/5 border border-white/10 text-slate-100 rounded-xl flex-1"
                  />
                  <Button
-                   onClick={() => updateSettingsMutation.mutate({ full_name: displayName })}
+                   onClick={() => updateSettingsMutation.mutate({ full_name: currentUser?.full_name })}
                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 font-semibold"
                    disabled={updateSettingsMutation.isPending}
                  >
@@ -169,12 +175,17 @@ export default function Settings() {
              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
                <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
                <Textarea
-                 value={bio}
-                 onChange={(e) => setBio(e.target.value)}
+                 value={currentUser?.bio || ''}
+                 onChange={(e) => {
+                   queryClient.setQueryData(['currentUser'], (old) => ({
+                     ...old,
+                     bio: e.target.value
+                   }));
+                 }}
                  placeholder="Tell us about yourself..."
                  rows={3}
                  className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
-                 onBlur={() => updateSettingsMutation.mutate({ bio })}
+                 onBlur={() => updateSettingsMutation.mutate({ bio: currentUser?.bio })}
                />
              </div>
           </div>
