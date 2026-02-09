@@ -149,11 +149,17 @@ export default function TodayWorkout({ currentUser }) {
   };
 
   const handleSave = (index) => {
+    // Use first set's weight, and reconstructed reps count
+    const weight = editSets[0]?.weight || '';
+    const repsCount = editSets.length;
+    const reps = editSets[0]?.reps || '';
+    const setsReps = `${repsCount}x${reps}`;
+
     const updatedExercises = [...todayWorkout.exercises];
     updatedExercises[index] = {
       ...updatedExercises[index],
-      weight: editWeight,
-      setsReps: editReps
+      weight: weight,
+      setsReps: setsReps
     };
 
     // Find all other days with the same workout name and update them too
