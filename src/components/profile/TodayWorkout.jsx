@@ -29,9 +29,21 @@ export default function TodayWorkout({ currentUser }) {
       }, 1000);
     } else if (restTimer === 0 && isTimerActive) {
       setIsTimerActive(false);
+      // Vibrate and play sound when timer completes
+      if ('vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200]);
+      }
+      // Play beep sound
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE=');
+      audio.play().catch(() => {});
     }
     return () => clearInterval(interval);
   }, [isTimerActive, restTimer]);
+
+  const startRestTimer = (seconds = 90) => {
+    setRestTimer(seconds);
+    setIsTimerActive(true);
+  };
 
   const today = useMemo(() => new Date(), []);
   const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc
@@ -347,6 +359,13 @@ export default function TodayWorkout({ currentUser }) {
                         {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                       </div>
                     <Button
+                      onClick={() => startRestTimer(90)}
+                      size="sm"
+                      className="h-6 px-2 text-[10px] font-bold bg-green-600 hover:bg-green-700 text-white shrink-0"
+                    >
+                      ✓ Set
+                    </Button>
+                    <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
@@ -427,8 +446,36 @@ export default function TodayWorkout({ currentUser }) {
           {isTimerActive && (
             <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-lg flex flex-col items-center justify-center">
               <div className="text-center space-y-8">
-                <div className="text-8xl font-black text-orange-400 tabular-nums">
-                  {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, '0')}
+                {/* Progress Ring */}
+                <div className="relative w-64 h-64 mx-auto">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="128"
+                      cy="128"
+                      r="120"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      className="text-slate-700"
+                    />
+                    <circle
+                      cx="128"
+                      cy="128"
+                      r="120"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 120}`}
+                      strokeDashoffset={`${2 * Math.PI * 120 * (1 - restTimer / 90)}`}
+                      className="text-orange-400 transition-all duration-1000"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-7xl font-black text-orange-400 tabular-nums">
+                      {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, '0')}
+                    </div>
+                  </div>
                 </div>
                 <p className="text-xl text-slate-300 font-semibold">Rest Time</p>
                 <div className="flex gap-4">
