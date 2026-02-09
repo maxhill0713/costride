@@ -255,6 +255,15 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
     <div className="space-y-3">
       {/* Header with Filter */}
       <div className="flex items-center justify-between">
+        {!splitInfo && (
+          <Link 
+            to={createPageUrl('Profile') + '?tab=workout'}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl px-4 py-3 font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit Your Split
+          </Link>
+        )}
         {splitInfo && (
           <div>
             <h4 className="text-sm font-semibold text-white mb-2">{splitInfo.name}</h4>
