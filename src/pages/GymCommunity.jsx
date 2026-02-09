@@ -705,86 +705,8 @@ export default function GymCommunity() {
           </Link>
         </div>
 
-        {/* Gym Profile Section */}
-        <div className="bg-gradient-to-br from-slate-900 via-blue-900/30 to-slate-900 px-4 pt-4 pb-3">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-start gap-3">
-              {/* Gym Logo */}
-              <div className="flex-shrink-0 relative">
-                {gym.logo_url ? (
-                  <button
-                    onClick={() => showOwnerControls && setShowEditGymLogo(true)}
-                    className={`w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border-2 border-white/30 overflow-hidden shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
-                  >
-                    <img src={gym.logo_url} alt={gym.name} className="w-full h-full object-cover" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => showOwnerControls && setShowEditGymLogo(true)}
-                    className={`w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border-2 border-white/30 flex items-center justify-center shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
-                  >
-                    <Dumbbell className="w-8 h-8 text-white" />
-                  </button>
-                )}
-                {showOwnerControls && (
-                  <button
-                    onClick={() => setShowEditGymLogo(true)}
-                    className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-all"
-                    title="Upload profile picture"
-                  >
-                    <ImageIcon className="w-2.5 h-2.5 text-white" />
-                  </button>
-                )}
-              </div>
-
-              {/* Gym Name & Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className="text-xl md:text-2xl font-black text-white drop-shadow-lg break-words">{gym.name}</h1>
-                  {gym.verified && <BadgeCheck className="w-5 h-5 text-white drop-shadow-lg flex-shrink-0" />}
-                </div>
-                <p className="text-white/90 text-xs font-medium drop-shadow-md">Your fitness community 💪</p>
-                <p className="text-white/70 text-[11px] mt-0.5 flex items-center gap-1 drop-shadow-md">
-                  <MapPin className="w-3 h-3" />
-                  {gym.city}
-                </p>
-              </div>
-
-              {/* Header Controls */}
-              <div className="flex gap-2 flex-shrink-0">
-                {isGhostGym && !isGymOwner && (
-                  <Button
-                    onClick={() => setShowInviteOwner(true)}
-                    variant="ghost"
-                    size="sm"
-                    className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
-                  >
-                    <Crown className="w-3 h-3 mr-1" />
-                    Invite
-                  </Button>
-                )}
-                {isGymOwner && (
-                  <Button
-                    onClick={() => setViewAsMember(!viewAsMember)}
-                    variant="ghost"
-                    size="sm"
-                    className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs"
-                  >
-                    {viewAsMember ? '👤' : '👑'}
-                  </Button>
-                )}
-                {isCoach && !isGymOwner && (
-                  <div className="bg-blue-500/90 backdrop-blur text-white px-2 py-1 rounded-full text-xs font-semibold">
-                    🎓
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Header Background with Gym Hero Image */}
-        <div className="relative h-32 bg-black overflow-hidden">
+        <div className="relative h-48 bg-black overflow-hidden">
           {gym.image_url ? (
             <img 
               src={gym.image_url} 
@@ -796,20 +718,92 @@ export default function GymCommunity() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
 
-          {/* Edit Hero Button */}
-          {showOwnerControls && (
-            <div className="absolute top-2 right-2">
+          {/* Header Controls */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            {isGhostGym && !isGymOwner && (
+              <Button
+                onClick={() => setShowInviteOwner(true)}
+                variant="ghost"
+                size="sm"
+                className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
+              >
+                <Crown className="w-4 h-4 mr-1" />
+                Invite Owner
+              </Button>
+            )}
+            {showOwnerControls && (
               <Button
                 onClick={() => setShowEditHeroImage(true)}
                 variant="ghost"
                 size="sm"
                 className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs"
               >
-                <Edit className="w-3 h-3 mr-1" />
+                <Edit className="w-4 h-4 mr-1" />
                 Edit Hero
               </Button>
+            )}
+            {isGymOwner && (
+              <Button
+                onClick={() => setViewAsMember(!viewAsMember)}
+                variant="ghost"
+                size="sm"
+                className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs"
+              >
+                {viewAsMember ? '👤 Member' : '👑 Owner'}
+              </Button>
+            )}
+            {isCoach && !isGymOwner && (
+              <div className="bg-blue-500/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-semibold">
+                🎓 Coach
+              </div>
+            )}
+          </div>
+
+          {/* Gym Info Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 px-6 py-6">
+            <div className="max-w-4xl mx-auto flex items-end gap-4">
+              {/* Gym Logo */}
+              <div className="flex-shrink-0 relative">
+                {gym.logo_url ? (
+                  <button
+                    onClick={() => showOwnerControls && setShowEditGymLogo(true)}
+                    className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 overflow-hidden shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
+                  >
+                    <img src={gym.logo_url} alt={gym.name} className="w-full h-full object-cover" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => showOwnerControls && setShowEditGymLogo(true)}
+                    className={`w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border-3 border-white/30 flex items-center justify-center shadow-lg ${showOwnerControls ? 'hover:border-white/50 transition-all cursor-pointer' : ''}`}
+                  >
+                    <Dumbbell className="w-10 h-10 text-white" />
+                  </button>
+                )}
+                {showOwnerControls && (
+                  <button
+                    onClick={() => setShowEditGymLogo(true)}
+                    className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-all"
+                    title="Upload profile picture"
+                  >
+                    <ImageIcon className="w-3 h-3 text-white" />
+                  </button>
+                )}
+              </div>
+
+              {/* Gym Name & Info */}
+              <div className="flex-1 text-left pb-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h1 className="text-2xl md:text-3xl font-black text-white drop-shadow-lg break-words">{gym.name}</h1>
+                  {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
+                </div>
+                <p className="text-white/90 text-sm font-medium drop-shadow-md">Your fitness community 💪</p>
+                <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
+                  <MapPin className="w-3 h-3" />
+                  {gym.city}
+                </p>
+              </div>
             </div>
-          )}
+          </div>
 
           {/* Small Stats - Bottom Right */}
           <div className="absolute bottom-2 right-2 flex flex-col gap-1.5">
