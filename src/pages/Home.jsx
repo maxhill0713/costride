@@ -422,8 +422,10 @@ export default function Home() {
           {memberGym && (
             <div className="space-y-3">
               {/* Today's Workout */}
-              {currentUser?.workout_split && (
+              {currentUser?.workout_split ? (
                 <TodayWorkout currentUser={currentUser} />
+              ) : (
+                <WorkoutSplitHeatmap currentUser={currentUser} />
               )}
             </div>
           )}
