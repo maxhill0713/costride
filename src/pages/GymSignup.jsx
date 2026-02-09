@@ -655,30 +655,19 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-white font-semibold">Community Language *</Label>
-                  <MobileSelect 
-                    value={formData.language} 
-                    onValueChange={(value) => setFormData({ ...formData, language: value })}
-                    placeholder="Select language"
-                    triggerClassName="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                    options={[
-                      { value: 'en', label: '🇬🇧 English' },
-                      { value: 'es', label: '🇪🇸 Español' }
-                    ]}
-                  />
-                  <p className="text-xs text-slate-400 mt-1">Language for your gym's community</p>
-                </div>
-
-                <div>
-                  <Label className="text-white font-semibold">Monthly Price (£)</Label>
-                  <Input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="29.99"
-                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                  />
-                </div>
+                   <Label className="text-white font-semibold">Community Language *</Label>
+                   <MobileSelect 
+                     value={formData.language} 
+                     onValueChange={(value) => setFormData({ ...formData, language: value })}
+                     placeholder="Select language"
+                     triggerClassName="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
+                     options={[
+                       { value: 'en', label: '🇬🇧 English' },
+                       { value: 'es', label: '🇪🇸 Español' }
+                     ]}
+                   />
+                   <p className="text-xs text-slate-400 mt-1">Language for your gym's community</p>
+                 </div>
               </div>
 
               <Button
