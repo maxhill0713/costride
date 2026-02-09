@@ -11,8 +11,9 @@ import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 
 export default function TodayWorkout({ currentUser }) {
   const [editingIndex, setEditingIndex] = useState(null);
-  const [editSets, setEditSets] = useState([]);
+  const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
+  const [editSets, setEditSets] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [restTimer, setRestTimer] = useState('');
   const [initialRestTime, setInitialRestTime] = useState(90);
