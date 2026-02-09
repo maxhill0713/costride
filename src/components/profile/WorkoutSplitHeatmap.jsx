@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { format, subDays, subWeeks, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../../utils';
+import { Edit2 } from 'lucide-react';
 
 export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {} }) {
   const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
