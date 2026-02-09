@@ -18,8 +18,22 @@ export default function Friends() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFriendsDropdown, setShowFriendsDropdown] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [viewedItems, setViewedItems] = useState(new Set());
-  const [dismissedCardIds, setDismissedCardIds] = useState(new Set());
+  const [viewedItems, setViewedItems] = useState(() => {
+    try {
+      const stored = localStorage.getItem('friendsFeedViewedItems');
+      return new Set(stored ? JSON.parse(stored) : []);
+    } catch {
+      return new Set();
+    }
+  });
+  const [dismissedCardIds, setDismissedCardIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('friendsFeedDismissedCards');
+      return new Set(stored ? JSON.parse(stored) : []);
+    } catch {
+      return new Set();
+    }
+  });
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -588,12 +602,11 @@ export default function Friends() {
          )}
 
          {/* Activity Feed */}
-         {filteredActivityFeed.length > 0 ? (
+         {activityFeed.length > 0 ? (
           <div className="space-y-2">
-            {filteredActivityFeed.map(activity => (
+            {activityFeed.map(activity => (
               <Card 
                 key={activity.id}
-                data-activity-id={activity.id}
                 className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20 ${activity.type === 'post' ? 'cursor-pointer' : ''}`}
                 >
                 {activity.type === 'post' ? (
