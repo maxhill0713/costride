@@ -232,7 +232,7 @@ export default function TodayWorkout({ currentUser }) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-2xl border border-white/15 rounded-2xl p-5 shadow-2xl shadow-black/30">
+    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/20">
       <div className="space-y-3 mb-4">
          <div className="flex items-center justify-between gap-3">
            <div className="flex items-center gap-2">
