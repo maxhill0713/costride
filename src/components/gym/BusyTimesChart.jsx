@@ -51,7 +51,7 @@ export default function BusyTimesChart({ checkIns }) {
   const StatusIcon = status.icon;
 
   return (
-    <Card className="bg-slate-900/50 backdrop-blur-2xl border border-white/20 p-3 md:p-4 shadow-2xl shadow-black/20">
+    <Card className="bg-white/5 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Clock className="w-5 h-5 text-blue-400" />
