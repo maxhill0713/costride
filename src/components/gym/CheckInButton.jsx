@@ -696,8 +696,8 @@ export default function CheckInButton({ gym }) {
             disabled={hasCheckedInToday() || isChecking}
             className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all backdrop-blur-xl border-2 ${
               hasCheckedInToday()
-                ? 'bg-green-500/20 hover:bg-green-500/20 cursor-not-allowed border-green-400/40 text-green-100'
-                : 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 border-blue-400/40 text-white shadow-lg shadow-blue-500/20'
+                ? 'bg-green-500/30 hover:bg-green-500/35 cursor-not-allowed border-green-400/60 text-green-100 shadow-lg shadow-green-500/20'
+                : 'bg-gradient-to-r from-blue-500/35 to-cyan-500/35 hover:from-blue-500/40 hover:to-cyan-500/40 border-blue-400/60 text-white shadow-lg shadow-cyan-500/30'
             }`}
           >
           {hasCheckedInToday() ? (

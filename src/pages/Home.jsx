@@ -317,7 +317,7 @@ export default function Home() {
               {daysSinceCheckIn === 0 ? (
                 <Button 
                   disabled
-                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 cursor-default tracking-tight"
+                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-green-500/35 to-emerald-500/35 cursor-default tracking-tight backdrop-blur-xl border-2 border-green-400/60 shadow-lg shadow-green-500/20"
                 >
                   <CheckCircle className="w-6 h-6 mr-2" />
                   Checked In Today
@@ -325,7 +325,7 @@ export default function Home() {
               ) : (
                 <Button 
                   onClick={() => setShowCheckIn(true)}
-                  className="w-full text-white border-0 shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 tracking-tight"
+                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500/35 to-cyan-500/35 hover:from-blue-500/40 hover:to-cyan-500/40 tracking-tight backdrop-blur-xl border-2 border-blue-400/60 shadow-lg shadow-cyan-500/30"
                 >
                   Check In Now
                 </Button>
