@@ -561,6 +561,13 @@ export default function Home() {
         onClose={() => setShowJoinModal(false)} 
         currentUser={currentUser}
       />
+
+      {/* Create Split Modal */}
+      <CreateSplitModal
+        isOpen={showSplitModal}
+        onClose={() => setShowSplitModal(false)}
+        currentUser={currentUser}
+      />
     </PullToRefresh>
   );
 }
