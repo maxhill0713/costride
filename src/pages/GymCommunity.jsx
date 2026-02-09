@@ -932,8 +932,26 @@ export default function GymCommunity() {
             transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
             className="space-y-2 md:space-y-3"
           >
+          {/* Ghost Gym Join Prompt */}
+          {isGhostGym && !isMember && !showOwnerControls && (
+            <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-xl border border-purple-400/50 p-4 shadow-lg">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-white mb-1">Join this gym community</p>
+                  <p className="text-xs text-slate-300">Start checking in and connecting with members</p>
+                </div>
+                <Button
+                  onClick={() => setShowJoinGymModal(true)}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl whitespace-nowrap"
+                >
+                  Join Gym
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* Check-in Section */}
-          {!showOwnerControls && <CheckInButton gym={gym} />}
+          {!showOwnerControls && isMember && <CheckInButton gym={gym} />}
 
           {/* Polls Section */}
           {polls.length > 0 && (
