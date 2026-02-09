@@ -75,7 +75,8 @@ export default function WorkoutProgressTracker({ currentUser }) {
         exerciseMap.get(exercise.exercise).push({
           weight: parseFloat(exercise.weight) || 0,
           date: log.completed_date,
-          setsReps: exercise.setsReps
+          setsReps: exercise.setsReps,
+          notes: log.notes
         });
       });
     });
@@ -273,7 +274,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
                 </div>
               </div>
               
-              <div className="grid grid-cols-3 gap-2 text-[10px]">
+              <div className="grid grid-cols-3 gap-2 text-[10px] mb-1.5">
                 {exercise.first && exercise.progressFromFirst && (
                   <div>
                     <div className="text-[8px] text-slate-400 mb-0.5">First Workout</div>
@@ -300,6 +301,12 @@ export default function WorkoutProgressTracker({ currentUser }) {
                   <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
                 </div>
               </div>
+              {exercise.latest.notes && (
+                <div className="flex gap-1.5 items-start text-[9px] bg-purple-500/10 border border-purple-500/20 rounded-lg p-1.5">
+                  <MessageSquare className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-purple-200/80 line-clamp-2">{exercise.latest.notes}</p>
+                </div>
+              )}
             </motion.div>
           ))
         )}
