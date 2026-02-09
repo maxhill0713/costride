@@ -24,6 +24,7 @@ export default function Home() {
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
+  const [showSplitModal, setShowSplitModal] = useState(false);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
