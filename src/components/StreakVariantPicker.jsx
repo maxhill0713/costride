@@ -28,9 +28,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
              }`}
            >
              <div className="relative w-10 h-10 flex items-center justify-center">
-               <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-full blur-md opacity-60" />
-               <Flame className="w-10 h-10 text-orange-500 fill-current relative z-10" />
-             </div>
+                 <Flame className="w-10 h-10 text-orange-500 fill-current" />
+               </div>
             {selectedVariant === 'default' && (
               <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
