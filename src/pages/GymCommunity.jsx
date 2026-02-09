@@ -412,7 +412,8 @@ export default function GymCommunity() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
-      setShowJoinGymModal(false);
+      // Navigate to home after successfully joining
+      window.location.href = createPageUrl('Home');
     }
   });
 
