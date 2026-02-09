@@ -957,27 +957,17 @@ export default function GymCommunity() {
                 onClick={() => setLeaderboardView('checkins')}
                 size="sm"
                 className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
-                  leaderboardView === 'checkins' ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                  leaderboardView === 'checkins' ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-0' : 'bg-black border-slate-600 text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 Check-ins
-              </Button>
-              <Button
-                variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
-                onClick={() => setLeaderboardView('challenges')}
-                size="sm"
-                className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
-                  leaderboardView === 'challenges' ? 'bg-purple-500 hover:bg-purple-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white'
-                }`}
-              >
-                Challenges
               </Button>
               <Button
                 variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
                 onClick={() => setLeaderboardView('streaks')}
                 size="sm"
                 className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
-                  leaderboardView === 'streaks' ? 'bg-orange-500 hover:bg-orange-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                  leaderboardView === 'streaks' ? 'bg-orange-500 hover:bg-orange-600 text-white border-0' : 'bg-black border-slate-600 text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 Streaks
@@ -987,7 +977,7 @@ export default function GymCommunity() {
                 onClick={() => setLeaderboardView('progress')}
                 size="sm"
                 className={`rounded-lg text-xs px-3 h-8 transition-all font-semibold ${
-                  leaderboardView === 'progress' ? 'bg-cyan-500 hover:bg-cyan-600 text-white border-0' : 'border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                  leaderboardView === 'progress' ? 'bg-cyan-500 hover:bg-cyan-600 text-white border-0' : 'bg-black border-slate-600 text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 Progress
@@ -1022,40 +1012,6 @@ export default function GymCommunity() {
                         <p className="text-xs text-slate-400">{member.count} check-ins</p>
                       </div>
                       <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-
-            {leaderboardView === 'challenges' && (
-              challengeLeaderboard.length === 0 ? (
-                <div className="py-12 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-400 text-sm">No challenges completed</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {challengeLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                      idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
-                      idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
-                      idx === 2 ? 'bg-orange-500/10 border border-orange-500/30' :
-                      'bg-slate-800/40 border border-slate-700/40'
-                    }`}>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
-                        idx === 0 ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white' : 
-                        idx === 1 ? 'bg-gradient-to-br from-slate-400 to-slate-600 text-white' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white' : 
-                        'bg-slate-700 text-slate-300'
-                      }`}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-sm truncate">{member.userName}</p>
-                        <p className="text-xs text-slate-400">{member.count} completed</p>
-                      </div>
-                      <Trophy className="w-5 h-5 text-purple-400 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -1323,29 +1279,18 @@ export default function GymCommunity() {
                   onClick={() => setLeaderboardView('checkins')}
                   size="sm"
                   className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0' : 'border-slate-600 text-slate-300'
+                    leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'
                   }`}
                 >
                   <CheckCircle className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   <span className="hidden sm:inline">Weekly </span>Check-ins
                 </Button>
                 <Button
-                  variant={leaderboardView === 'challenges' ? 'default' : 'outline'}
-                  onClick={() => setLeaderboardView('challenges')}
-                  size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'challenges' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0' : 'border-slate-600 text-slate-300'
-                  }`}
-                >
-                  <Trophy className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
-                  <span className="hidden sm:inline">Challenges</span>
-                </Button>
-                <Button
                   variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
                   onClick={() => setLeaderboardView('streaks')}
                   size="sm"
                   className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white border-0' : 'border-slate-600 text-slate-300'
+                    leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'
                   }`}
                 >
                   <Flame className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
@@ -1356,7 +1301,7 @@ export default function GymCommunity() {
                   onClick={() => setLeaderboardView('progress')}
                   size="sm"
                   className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'progress' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0' : 'border-slate-600 text-slate-300'
+                    leaderboardView === 'progress' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'
                   }`}
                 >
                   <TrendingUp className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
@@ -1392,40 +1337,6 @@ export default function GymCommunity() {
                         <p className="text-xs text-slate-300">{member.count} check-ins</p>
                       </div>
                       <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-400 flex-shrink-0" />
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-
-            {leaderboardView === 'challenges' && (
-              challengeLeaderboard.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-2 text-slate-600" />
-                  <p className="text-slate-400 text-sm">No challenges completed yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 md:space-y-2">
-                  {challengeLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
-                      'bg-slate-700/40 border-slate-600/30'
-                    }`}>
-                      <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
-                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
-                        'bg-slate-600'
-                      }`}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-white text-xs md:text-sm">{member.userName}</p>
-                        <p className="text-xs text-slate-300">{member.count} completed</p>
-                      </div>
-                      <Trophy className="w-4 md:w-5 h-4 md:h-5 text-purple-400 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
