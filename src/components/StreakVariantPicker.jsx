@@ -19,15 +19,18 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
       <div className="bg-slate-800/90 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/50 shadow-2xl backdrop-blur-sm">
         <div className="grid grid-cols-4 gap-8">
           {/* Default Flame */}
-          <button
-            onClick={() => onSelect('default')}
-            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
-              selectedVariant === 'default'
-                ? 'ring-2 ring-green-500'
-                : 'hover:opacity-80'
-            }`}
-          >
-            <Flame className="w-10 h-10 text-orange-500 fill-current" />
+           <button
+             onClick={() => onSelect('default')}
+             className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
+               selectedVariant === 'default'
+                 ? 'ring-2 ring-green-500'
+                 : 'hover:opacity-80'
+             }`}
+           >
+             <div className="relative w-10 h-10 flex items-center justify-center">
+               <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-full blur-md opacity-60" />
+               <Flame className="w-10 h-10 text-orange-500 fill-current relative z-10" />
+             </div>
             {selectedVariant === 'default' && (
               <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
