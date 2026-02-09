@@ -14,7 +14,8 @@ export default function TodayWorkout({ currentUser }) {
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
-  const [restTimer, setRestTimer] = useState(0);
+  const [restTimer, setRestTimer] = useState(90);
+  const [initialRestTime, setInitialRestTime] = useState(90);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
@@ -40,8 +41,8 @@ export default function TodayWorkout({ currentUser }) {
     return () => clearInterval(interval);
   }, [isTimerActive, restTimer]);
 
-  const startRestTimer = (seconds = 90) => {
-    setRestTimer(seconds);
+  const startRestTimer = () => {
+    setInitialRestTime(restTimer);
     setIsTimerActive(true);
   };
 
@@ -359,7 +360,7 @@ export default function TodayWorkout({ currentUser }) {
                         {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                       </div>
                     <Button
-                      onClick={() => startRestTimer(90)}
+                      onClick={() => startRestTimer()}
                       size="sm"
                       className="h-6 px-2 text-[10px] font-bold bg-green-600 hover:bg-green-700 text-white shrink-0"
                     >
@@ -395,8 +396,8 @@ export default function TodayWorkout({ currentUser }) {
               <span className="text-orange-300 text-xs font-semibold">s</span>
               <button
                 onClick={() => {
-                  if (!isTimerActive && restTimer === 0) {
-                    setRestTimer(90); // Default rest time
+                  if (!isTimerActive) {
+                    setInitialRestTime(restTimer);
                   }
                   setIsTimerActive(!isTimerActive);
                 }}
@@ -466,7 +467,7 @@ export default function TodayWorkout({ currentUser }) {
                       strokeWidth="8"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 120}`}
-                      strokeDashoffset={`${2 * Math.PI * 120 * (1 - restTimer / 90)}`}
+                      strokeDashoffset={`${2 * Math.PI * 120 * (1 - restTimer / initialRestTime)}`}
                       className="text-orange-400 transition-all duration-1000"
                       strokeLinecap="round"
                     />
