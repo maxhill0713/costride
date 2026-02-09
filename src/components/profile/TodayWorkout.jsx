@@ -255,7 +255,10 @@ export default function TodayWorkout({ currentUser }) {
   }
 
   return (
-    <Card className={`bg-gradient-to-br from-slate-900/50 via-slate-900/40 to-slate-950/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl shadow-black/30 ${isExpanded ? 'p-5' : 'p-3'}`}>
+    <Card 
+      onClick={() => !isExpanded && setIsExpanded(true)}
+      className={`bg-gradient-to-br from-slate-900/50 via-slate-900/40 to-slate-950/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl shadow-black/30 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer'}`}
+    >
       <div className={isExpanded ? "space-y-3 mb-4" : "space-y-2"}>
          <div className={`flex items-center justify-between ${isExpanded ? 'gap-3' : 'gap-2'}`}>
           <div className="flex items-center gap-2">
