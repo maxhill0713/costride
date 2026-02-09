@@ -427,44 +427,34 @@ export default function Home() {
               {currentUser?.workout_split ? (
                 <TodayWorkout currentUser={currentUser} />
               ) : (
-                <WorkoutSplitHeatmap currentUser={currentUser} />
+                <>
+                  <WorkoutSplitHeatmap currentUser={currentUser} />
+
+                  {/* Your Split Progress Card - For New Users */}
+                  <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Dumbbell className="w-4 h-4 text-indigo-400" />
+                      <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+                    </div>
+
+                    <button
+                      onClick={() => setShowSplitModal(true)}
+                      className="w-full mb-3 p-3 rounded-lg bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/40 transition-all text-xs font-semibold flex items-center justify-center gap-2"
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Create Your Workout Split
+                    </button>
+
+                    <WorkoutSplitHeatmap 
+                      checkIns={userCheckIns}
+                      workoutSplit={currentUser?.workout_split}
+                      weeklyGoal={currentUser?.weekly_goal}
+                      trainingDays={currentUser?.training_days}
+                      customWorkoutTypes={currentUser?.custom_workout_types || {}}
+                    />
+                  </Card>
+                </>
               )}
-
-              {/* Your Split Progress Card */}
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <Dumbbell className="w-4 h-4 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-                </div>
-
-                {currentUser?.workout_split && (
-                  <button
-                    onClick={() => setShowSplitModal(true)}
-                    className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                    Edit Your Split
-                  </button>
-                )}
-
-                {!currentUser?.workout_split && (
-                  <button
-                    onClick={() => setShowSplitModal(true)}
-                    className="w-full mb-3 p-3 rounded-lg bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 hover:bg-indigo-500/40 transition-all text-xs font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    Create Your Workout Split
-                  </button>
-                )}
-
-                <WorkoutSplitHeatmap 
-                  checkIns={userCheckIns}
-                  workoutSplit={currentUser?.workout_split}
-                  weeklyGoal={currentUser?.weekly_goal}
-                  trainingDays={currentUser?.training_days}
-                  customWorkoutTypes={currentUser?.custom_workout_types || {}}
-                />
-              </Card>
             </div>
           )}
 
