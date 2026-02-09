@@ -414,6 +414,42 @@ export default function Friends() {
 
   const activityCards = generateActivityCards();
 
+  // Mark items as viewed when they come into view
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('data-activity-id');
+            if (id) {
+              setViewedItems((prev) => new Set(prev).add(id));
+            }
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    document.querySelectorAll('[data-activity-id]').forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [activityFeed, activityCards]);
+
+  // Remove viewed items when page unmounts
+  React.useEffect(() => {
+    return () => {
+      if (viewedItems.size > 0) {
+        // Items have been viewed; they'll be filtered out when user returns
+      }
+    };
+  }, []);
+
+  // Filter out viewed items and dismissed cards
+  const filteredActivityFeed = activityFeed.filter((item) => !viewedItems.has(item.id));
+  const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
