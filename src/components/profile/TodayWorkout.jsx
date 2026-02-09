@@ -19,7 +19,20 @@ export default function TodayWorkout({ currentUser }) {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showTimerOptions, setShowTimerOptions] = useState(false);
   const queryClient = useQueryClient();
+
+  const timerPresets = [
+    { label: '10s', value: 10 },
+    { label: '30s', value: 30 },
+    { label: '45s', value: 45 },
+    { label: '60s', value: 60 },
+    { label: '90s', value: 90 },
+    { label: '2m', value: 120 },
+    { label: '3m', value: 180 },
+    { label: '5m', value: 300 },
+    { label: '10m', value: 600 }
+  ];
 
   // Rest timer effect
   React.useEffect(() => {
@@ -385,35 +398,55 @@ export default function TodayWorkout({ currentUser }) {
           {/* Rest Timer & Tools */}
           <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-2">
             {/* Timer Capsule */}
-            <div className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/60 backdrop-blur-md border border-orange-500/40 shadow-lg shadow-orange-500/20">
-              <Clock className="w-3.5 h-3.5 text-orange-400" />
-              <input
-                type="number"
-                min="0"
-                max="300"
-                value={restTimer}
-                onChange={(e) => setRestTimer(e.target.value)}
-                placeholder="90"
-                className="w-10 bg-transparent text-orange-300 font-bold text-xs text-center border-none focus:outline-none placeholder:text-orange-400/50"
-              />
-              <span className="text-orange-300 text-xs font-semibold">s</span>
+            <div className="relative">
               <button
-                onClick={() => {
-                  if (!isTimerActive) {
-                    const time = parseInt(restTimer) || 90;
-                    setRestTimer(time);
-                    setInitialRestTime(time);
-                  }
-                  setIsTimerActive(!isTimerActive);
-                }}
-                className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500/80 hover:bg-orange-600 text-white transition-all active:scale-95"
+                onClick={() => setShowTimerOptions(!showTimerOptions)}
+                className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/60 backdrop-blur-md border border-orange-500/40 shadow-lg shadow-orange-500/20 hover:border-orange-400/60 transition-all"
               >
-                {isTimerActive ? 'Stop' : 'Go'}
+                <Clock className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-orange-300 font-bold text-xs">{restTimer || '90'}s</span>
+                {isTimerActive && (
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-orange-400 border-r-orange-400 animate-spin" style={{ width: 'calc(100% + 4px)', height: 'calc(100% + 4px)', left: '-2px', top: '-2px' }} />
+                )}
               </button>
-              {isTimerActive && (
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-orange-400 border-r-orange-400 animate-spin" style={{ width: 'calc(100% + 4px)', height: 'calc(100% + 4px)', left: '-2px', top: '-2px' }} />
+
+              {/* Timer Options Dropdown */}
+              {showTimerOptions && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
+                  <div className="absolute bottom-full mb-2 left-0 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl p-2 z-50 min-w-[200px]">
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {timerPresets.map((preset) => (
+                        <button
+                          key={preset.value}
+                          onClick={() => {
+                            setRestTimer(preset.value);
+                            setShowTimerOptions(false);
+                          }}
+                          className="px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-xs font-bold transition-all active:scale-95 border border-slate-700/30 hover:border-orange-500/50"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
+
+            <button
+              onClick={() => {
+                if (!isTimerActive) {
+                  const time = parseInt(restTimer) || 90;
+                  setRestTimer(time);
+                  setInitialRestTime(time);
+                }
+                setIsTimerActive(!isTimerActive);
+              }}
+              className="text-xs font-bold px-3 py-1.5 rounded-full bg-orange-500/80 hover:bg-orange-600 text-white transition-all active:scale-95 shadow-lg shadow-orange-500/30"
+            >
+              {isTimerActive ? 'Stop' : 'Go'}
+            </button>
 
             {/* Quick Action Icons */}
              <div className="flex items-center gap-1.5">
