@@ -375,7 +375,12 @@ export default function TodayWorkout({ currentUser }) {
               />
               <span className="text-orange-300 text-xs font-semibold">s</span>
               <button
-                onClick={() => setIsTimerActive(!isTimerActive)}
+                onClick={() => {
+                  if (!isTimerActive && restTimer === 0) {
+                    setRestTimer(90); // Default rest time
+                  }
+                  setIsTimerActive(!isTimerActive);
+                }}
                 className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500/80 hover:bg-orange-600 text-white transition-all active:scale-95"
               >
                 {isTimerActive ? 'Stop' : 'Go'}
@@ -417,6 +422,33 @@ export default function TodayWorkout({ currentUser }) {
               <ChevronUp className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* Full Screen Timer Overlay */}
+          {isTimerActive && (
+            <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-lg flex flex-col items-center justify-center">
+              <div className="text-center space-y-8">
+                <div className="text-8xl font-black text-orange-400 tabular-nums">
+                  {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, '0')}
+                </div>
+                <p className="text-xl text-slate-300 font-semibold">Rest Time</p>
+                <div className="flex gap-4">
+                  <Button
+                    onClick={() => setIsTimerActive(false)}
+                    className="px-8 py-6 text-lg font-bold bg-orange-500 hover:bg-orange-600"
+                  >
+                    Stop Timer
+                  </Button>
+                  <Button
+                    onClick={() => setRestTimer(t => t + 30)}
+                    variant="outline"
+                    className="px-8 py-6 text-lg font-bold border-orange-500 text-orange-400"
+                  >
+                    +30s
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           </div>
       ) : isExpanded && todayWorkout.exercises.length === 0 ? (
         <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">

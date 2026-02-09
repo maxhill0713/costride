@@ -7,19 +7,21 @@ export default function PlateCalculatorModal({ isOpen, onClose }) {
   const [targetWeight, setTargetWeight] = useState('');
   const [barWeight, setBarWeight] = useState('20');
 
-  const plates = [25, 20, 15, 10, 5, 2.5, 2, 1.25, 1];
+  const plates = [25, 20, 15, 10, 5, 2.5, 1.25];
 
   const calculatePlates = () => {
     const target = parseFloat(targetWeight) || 0;
     const bar = parseFloat(barWeight) || 20;
     let remaining = (target - bar) / 2;
 
+    if (remaining < 0) return {};
+
     const result = {};
     plates.forEach(plate => {
       const count = Math.floor(remaining / plate);
       if (count > 0) {
         result[plate] = count;
-        remaining -= count * plate;
+        remaining = Math.round((remaining - count * plate) * 100) / 100;
       }
     });
 
