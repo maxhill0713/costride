@@ -18,6 +18,8 @@ export default function Friends() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFriendsDropdown, setShowFriendsDropdown] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [viewedItems, setViewedItems] = useState(new Set());
+  const [dismissedCardIds, setDismissedCardIds] = useState(new Set());
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
