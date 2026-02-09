@@ -901,7 +901,7 @@ export default function GymCommunity() {
           <BusyTimesChart checkIns={checkIns} />
 
           {/* Leaderboard Section */}
-          <Card className="bg-white/5 backdrop-blur-3xl border border-white/30 p-3 md:p-5 shadow-2xl shadow-black/30 transition-all duration-300">
+          <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-5 shadow-2xl shadow-black/30 transition-all duration-300">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-cyan-400" />
@@ -1050,7 +1050,7 @@ export default function GymCommunity() {
 
           {/* Upcoming Events */}
           {upcomingEvents.length > 0 && (
-           <Card className="bg-white/5 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
+           <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-5 h-5 text-orange-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">This Week</h3>
@@ -1073,7 +1073,7 @@ export default function GymCommunity() {
 
           {/* New Challenges */}
           {gymChallenges.length > 0 && (
-            <Card className="bg-white/5 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
+            <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
               <div className="flex items-center gap-2 mb-3">
                 <Trophy className="w-5 h-5 text-purple-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">New Challenges</h3>
@@ -1097,7 +1097,7 @@ export default function GymCommunity() {
 
           {/* Recent Posts */}
           {posts.length > 0 && (
-            <Card className="bg-white/5 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
+            <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 text-blue-400" />
@@ -1226,7 +1226,7 @@ export default function GymCommunity() {
               )}
 
           {/* Leaderboard Section */}
-          <Card className="bg-gradient-to-br from-white/10 via-white/5 to-white/8 backdrop-blur-3xl border border-white/30 p-3 md:p-5 shadow-2xl shadow-black/30 transition-all duration-300">
+          <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-3 md:p-5 shadow-2xl shadow-black/30 transition-all duration-300">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-cyan-400" />
@@ -1377,7 +1377,7 @@ export default function GymCommunity() {
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden">
           {/* Classes Section */}
-          <Card className="bg-gradient-to-br from-white/10 via-white/5 to-white/8 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
+          <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Classes</h3>
               {showOwnerControls && (
@@ -1452,7 +1452,7 @@ export default function GymCommunity() {
           </Card>
 
           {/* Events Section */}
-          <Card className="bg-gradient-to-br from-white/10 via-white/5 to-white/8 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
+          <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Upcoming Events</h3>
               {showOwnerControls && (
@@ -1497,7 +1497,7 @@ export default function GymCommunity() {
 
 
           {/* Coaches Section */}
-          <Card className="bg-gradient-to-br from-white/10 via-white/5 to-white/8 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
+          <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Coaches</h3>
               {showOwnerControls && (
