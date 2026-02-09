@@ -325,7 +325,11 @@ export default function Home() {
               ) : (
                 <Button 
                   onClick={() => setShowCheckIn(true)}
-                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500/35 to-cyan-500/35 hover:from-blue-500/40 hover:to-cyan-500/40 tracking-tight backdrop-blur-xl border-2 border-blue-400/60 shadow-lg shadow-cyan-500/30"
+                  className={`w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl tracking-tight backdrop-blur-xl border-2 ${
+                    daysSinceCheckIn !== null && daysSinceCheckIn >= 3
+                      ? 'bg-gradient-to-r from-orange-500/35 to-amber-500/35 hover:from-orange-500/40 hover:to-amber-500/40 border-orange-400/60 shadow-lg shadow-orange-500/30'
+                      : 'bg-gradient-to-r from-blue-500/35 to-cyan-500/35 hover:from-blue-500/40 hover:to-cyan-500/40 border-blue-400/60 shadow-lg shadow-cyan-500/30'
+                  }`}
                 >
                   Check In Now
                 </Button>
