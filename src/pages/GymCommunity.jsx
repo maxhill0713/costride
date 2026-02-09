@@ -993,10 +993,10 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-2">
                   {checkInLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                      idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
-                      idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
-                      idx === 2 ? 'bg-orange-500/10 border border-orange-500/30' :
+                    <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all backdrop-blur-xl ${
+                      idx === 0 ? 'bg-amber-500/15 border border-amber-400/40 shadow-lg shadow-amber-500/10' :
+                      idx === 1 ? 'bg-slate-400/15 border border-slate-400/40 shadow-lg shadow-slate-400/10' :
+                      idx === 2 ? 'bg-orange-500/15 border border-orange-400/40 shadow-lg shadow-orange-500/10' :
                       'bg-slate-800/40 border border-slate-700/40'
                     }`}>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
@@ -1027,10 +1027,10 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-2">
                   {streakLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                      idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
-                      idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
-                      idx === 2 ? 'bg-orange-500/10 border border-orange-500/30' :
+                    <div key={member.userId} className={`flex items-center gap-3 p-3 rounded-lg transition-all backdrop-blur-xl ${
+                      idx === 0 ? 'bg-amber-500/15 border border-amber-400/40 shadow-lg shadow-amber-500/10' :
+                      idx === 1 ? 'bg-slate-400/15 border border-slate-400/40 shadow-lg shadow-slate-400/10' :
+                      idx === 2 ? 'bg-orange-500/15 border border-orange-400/40 shadow-lg shadow-orange-500/10' :
                       'bg-slate-800/40 border border-slate-700/40'
                     }`}>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
@@ -1061,10 +1061,10 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-2">
                   {progressLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={`${member.userId}-${member.exercise}`} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                      idx === 0 ? 'bg-amber-500/10 border border-amber-500/30' :
-                      idx === 1 ? 'bg-slate-500/10 border border-slate-500/30' :
-                      idx === 2 ? 'bg-orange-500/10 border border-orange-500/30' :
+                    <div key={`${member.userId}-${member.exercise}`} className={`flex items-center gap-3 p-3 rounded-lg transition-all backdrop-blur-xl ${
+                      idx === 0 ? 'bg-amber-500/15 border border-amber-400/40 shadow-lg shadow-amber-500/10' :
+                      idx === 1 ? 'bg-slate-400/15 border border-slate-400/40 shadow-lg shadow-slate-400/10' :
+                      idx === 2 ? 'bg-orange-500/15 border border-orange-400/40 shadow-lg shadow-orange-500/10' :
                       'bg-slate-800/40 border border-slate-700/40'
                     }`}>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
@@ -1318,10 +1318,10 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
                   {checkInLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
+                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all backdrop-blur-xl ${
+                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
+                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
+                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
                       'bg-slate-700/40 border-slate-600/30'
                     }`}>
                       <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
@@ -1352,10 +1352,10 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
                   {streakLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
+                    <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all backdrop-blur-xl ${
+                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
+                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
+                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
                       'bg-slate-700/40 border-slate-600/30'
                     }`}>
                       <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
@@ -1386,10 +1386,10 @@ export default function GymCommunity() {
               ) : (
                 <div className="space-y-1.5 md:space-y-2">
                   {progressLeaderboard.slice(0, 3).map((member, idx) => (
-                    <div key={`${member.userId}-${member.exercise}`} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-500/40 shadow-md shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/40 shadow-md shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/40 shadow-md shadow-orange-500/20' :
+                    <div key={`${member.userId}-${member.exercise}`} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all backdrop-blur-xl ${
+                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
+                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
+                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
                       'bg-slate-700/40 border-slate-600/30'
                     }`}>
                       <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
