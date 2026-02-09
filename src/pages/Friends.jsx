@@ -570,13 +570,17 @@ export default function Friends() {
                  data-activity-id={card.id}
                  className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all shadow-2xl shadow-black/20 relative"
                >
-                 <button
-                   onClick={() => setDismissedCardIds((prev) => new Set(prev).add(card.id))}
-                   className="absolute top-2 right-2 text-slate-400 hover:text-white transition-colors"
-                   aria-label="Dismiss"
-                 >
-                   <X className="w-4 h-4" />
-                 </button>
+                  <button
+                    onClick={() => {
+                      const updated = new Set(dismissedCardIds).add(card.id);
+                      setDismissedCardIds(updated);
+                      localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
+                    }}
+                    className="absolute top-2 right-2 text-slate-400 hover:text-white transition-colors"
+                    aria-label="Dismiss"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                  <div className="p-4">
                    <div className="flex items-start gap-3">
                      {/* Icon */}
