@@ -436,7 +436,11 @@ export default function Friends() {
           if (entry.isIntersecting) {
             const id = entry.target.getAttribute('data-activity-id');
             if (id) {
-              setViewedItems((prev) => new Set(prev).add(id));
+              setViewedItems((prev) => {
+                const updated = new Set(prev).add(id);
+                localStorage.setItem('friendsFeedViewedItems', JSON.stringify(Array.from(updated)));
+                return updated;
+              });
             }
           }
         });
@@ -450,15 +454,6 @@ export default function Friends() {
 
     return () => observer.disconnect();
   }, [activityFeed, activityCards]);
-
-  // Remove viewed items when page unmounts
-  React.useEffect(() => {
-    return () => {
-      if (viewedItems.size > 0) {
-        // Items have been viewed; they'll be filtered out when user returns
-      }
-    };
-  }, []);
 
   // Filter out viewed items and dismissed cards
   const filteredActivityFeed = activityFeed.filter((item) => !viewedItems.has(item.id));
