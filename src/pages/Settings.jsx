@@ -17,8 +17,6 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
-  const [displayName, setDisplayName] = useState('');
-  const [bio, setBio] = useState('');
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
@@ -44,21 +42,13 @@ export default function Settings() {
     queryFn: () => base44.auth.me()
   });
 
-  React.useEffect(() => {
-    if (currentUser && !displayName) {
-      setDisplayName(currentUser.full_name || '');
-      setBio(currentUser.bio || '');
-    }
-  }, []);
-
   const updateSettingsMutation = useMutation({
-    mutationFn: (settings) => base44.auth.updateMe(settings),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(['currentUser'], (old) => {
-        if (!old) return old;
-        return { ...old, ...variables };
-      });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    mutationFn: async (settings) => {
+      await base44.auth.updateMe(settings);
+      return base44.auth.me();
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(['currentUser'], updatedUser);
     }
   });
 
