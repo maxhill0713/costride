@@ -113,7 +113,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       </div>
 
       {/* Caption Section - Thin Block */}
-      <div className="px-4 py-2 border-t border-gray-100 text-sm text-gray-900">
+      <div className="px-4 py-0.5 border-t border-gray-100 text-sm text-gray-900">
         <p className="leading-snug">{post.content}</p>
         {post.weight && (
           <span className="block mt-1 text-blue-600 font-semibold">
