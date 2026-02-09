@@ -760,8 +760,8 @@ export default function GymCommunity() {
           </div>
 
           {/* Gym Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 px-6 py-6">
-            <div className="max-w-4xl mx-auto flex items-end gap-4">
+          <div className="absolute top-0 left-0 right-0 px-6 py-6">
+            <div className="max-w-4xl mx-auto flex items-start gap-4">
               {/* Gym Logo */}
               <div className="flex-shrink-0 relative">
                 {gym.logo_url ? (
@@ -791,7 +791,7 @@ export default function GymCommunity() {
               </div>
 
               {/* Gym Name & Info */}
-              <div className="flex-1 text-left pb-1 min-w-0">
+              <div className="flex-1 text-left pt-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h1 className="text-2xl md:text-3xl font-black text-white drop-shadow-lg break-words">{gym.name}</h1>
                   {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
