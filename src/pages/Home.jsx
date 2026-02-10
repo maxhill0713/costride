@@ -435,15 +435,15 @@ export default function Home() {
 
                   {/* Back Side - Stats Text */}
                   <div
-                    className="absolute inset-0 flex items-center justify-center px-4"
+                    className="absolute inset-0 flex items-center justify-center"
                     style={{ 
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
                       transform: "rotateY(180deg)"
                     }}
                   >
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg">
-                      <p className="text-white text-sm font-semibold text-center">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg max-w-full">
+                      <p className="text-white text-sm font-semibold text-center whitespace-nowrap">
                         {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today
                       </p>
                       <p className="text-slate-400 text-xs text-center mt-0.5">
