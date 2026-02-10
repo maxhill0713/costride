@@ -427,32 +427,20 @@ export default function Home() {
               {currentUser?.workout_split ? (
                 <TodayWorkout currentUser={currentUser} />
               ) : (
-                <>
-                  <WorkoutSplitHeatmap currentUser={currentUser} />
+                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Dumbbell className="w-4 h-4 text-indigo-400" />
+                    <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+                  </div>
 
-                  <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Dumbbell className="w-4 h-4 text-indigo-400" />
-                      <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-                    </div>
-
-                    <button
-                      onClick={() => setShowSplitModal(true)}
-                      className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
-                    >
-                      <Calendar className="w-3 h-3" />
-                      Create Your Workout Split
-                    </button>
-
-                    <WorkoutSplitHeatmap 
-                      checkIns={userCheckIns}
-                      workoutSplit={currentUser?.workout_split}
-                      weeklyGoal={currentUser?.weekly_goal}
-                      trainingDays={currentUser?.training_days}
-                      customWorkoutTypes={currentUser?.custom_workout_types || {}}
-                    />
-                  </Card>
-                </>
+                  <button
+                    onClick={() => setShowSplitModal(true)}
+                    className="w-full p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+                  >
+                    <Calendar className="w-3 h-3" />
+                    Create Your Workout Split
+                  </button>
+                </Card>
               )}
             </div>
           )}
