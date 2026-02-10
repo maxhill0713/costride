@@ -18,14 +18,6 @@ export default function Friends() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFriendsDropdown, setShowFriendsDropdown] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [viewedItems, setViewedItems] = useState(() => {
-    try {
-      const stored = localStorage.getItem('friendsFeedViewedItems');
-      return new Set(stored ? JSON.parse(stored) : []);
-    } catch {
-      return new Set();
-    }
-  });
   const [dismissedCardIds, setDismissedCardIds] = useState(() => {
     try {
       const stored = localStorage.getItem('friendsFeedDismissedCards');
@@ -429,35 +421,14 @@ export default function Friends() {
 
   const activityCards = generateActivityCards();
 
-  // Mark items as viewed when they come into view
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-activity-id');
-            if (id) {
-              setViewedItems((prev) => {
-                const updated = new Set(prev).add(id);
-                localStorage.setItem('friendsFeedViewedItems', JSON.stringify(Array.from(updated)));
-                return updated;
-              });
-            }
-          }
-        });
-      },
-      { threshold: 0.3 }
-    );
+  // Filter out dismissed cards (keep activity feed items for 30 minutes)
+  const isItemExpired = (timestamp) => {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    return new Date(timestamp) < thirtyMinutesAgo;
+  };
 
-    document.querySelectorAll('[data-activity-id]').forEach((el) => {
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [activityFeed, activityCards]);
-
-  // Filter out viewed items and dismissed cards
-  const filteredActivityFeed = activityFeed.filter((item) => !viewedItems.has(item.id));
+  // Filter out dismissed cards, keep posts for 30 minutes
+  const filteredActivityFeed = activityFeed.filter((item) => !isItemExpired(item.timestamp));
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
   return (
