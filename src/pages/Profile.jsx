@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake, Info } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -552,11 +552,20 @@ export default function Profile() {
             <TabsContent value="stats" className="space-y-4">
               {/* Key Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
+                        <div className="group/info relative z-[100]">
+                          <Info className="w-3 h-3 text-slate-500 hover:text-blue-400 cursor-help transition-colors" />
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                            Total number of times you've checked into gyms
+                          </div>
+                        </div>
+                      </div>
                       <div className="relative">
                         <div className="absolute inset-0 bg-blue-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Calendar className="w-4 h-4 text-blue-400 relative group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg" />
@@ -569,11 +578,20 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
+                        <div className="group/info relative z-[100]">
+                          <Info className="w-3 h-3 text-slate-500 hover:text-orange-400 cursor-help transition-colors" />
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                            Longest consecutive days you've maintained a workout streak
+                          </div>
+                        </div>
+                      </div>
                       <div className="relative">
                         <div className="absolute inset-0 bg-orange-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Flame className="w-4 h-4 text-orange-400 relative group-hover:scale-125 transition-all duration-300 drop-shadow-lg group-hover:drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
@@ -586,70 +604,77 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Challenges</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Top Percentile</span>
+                        <div className="group/info relative z-[100]">
+                          <Info className="w-3 h-3 text-slate-500 hover:text-purple-400 cursor-help transition-colors" />
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                            Your ranking among all users based on check-ins and consistency
+                          </div>
+                        </div>
+                      </div>
                       <div className="relative">
                         <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <Trophy className="w-4 h-4 text-purple-400 relative group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-lg" />
+                        <TrendingUp className="w-4 h-4 text-purple-400 relative group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-lg" />
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <div className="text-2xl font-bold text-white">{completedChallenges}</div>
-                      {completedChallenges > 0 && <span className="text-xs text-purple-400 animate-pulse">🏆</span>}
+                      <div className="text-2xl font-bold text-white">
+                        {userCheckIns.length >= 100 ? '1%' : userCheckIns.length >= 50 ? '5%' : userCheckIns.length >= 25 ? '10%' : userCheckIns.length >= 10 ? '25%' : '50%'}
+                      </div>
+                      {userCheckIns.length >= 50 && <span className="text-xs text-purple-400 animate-pulse">🌟</span>}
                     </div>
                   </div>
                 </Card>
 
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Total Lifts</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Weight Increase</span>
+                        <div className="group/info relative z-[100]">
+                          <Info className="w-3 h-3 text-slate-500 hover:text-green-400 cursor-help transition-colors" />
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                            Total weight increase tracked from your first to latest workout
+                          </div>
+                        </div>
+                      </div>
                       <div className="relative">
                         <div className="absolute inset-0 bg-green-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <Dumbbell className="w-4 h-4 text-green-400 relative group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 drop-shadow-lg" />
+                        <Zap className="w-4 h-4 text-green-400 relative group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 drop-shadow-lg" />
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <div className="text-2xl font-bold text-white">{stats.totalLifts}</div>
-                      {stats.totalLifts >= 100 && <span className="text-xs text-green-400 animate-pulse">💪</span>}
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-amber-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">PRs</span>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-amber-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <Award className="w-4 h-4 text-amber-400 relative group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg group-hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+                      <div className="text-2xl font-bold text-white">
+                        {(() => {
+                          const { data: workoutLogs = [] } = useQuery({
+                            queryKey: ['workoutLogs', currentUser?.id],
+                            queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
+                            enabled: !!currentUser
+                          });
+                          
+                          const sortedLogs = [...workoutLogs].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+                          
+                          if (sortedLogs.length < 2) return 0;
+                          
+                          const firstLog = sortedLogs[0];
+                          const latestLog = sortedLogs[sortedLogs.length - 1];
+                          
+                          const firstWeight = firstLog.sets?.reduce((sum, set) => sum + (parseFloat(set.weight) || 0), 0) || 0;
+                          const latestWeight = latestLog.sets?.reduce((sum, set) => sum + (parseFloat(set.weight) || 0), 0) || 0;
+                          
+                          const increase = latestWeight - firstWeight;
+                          return Math.round(increase);
+                        })()}
                       </div>
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <div className="text-2xl font-bold text-white">{stats.personalRecords}</div>
-                      {stats.personalRecords >= 5 && <span className="text-xs text-amber-400 animate-pulse">⭐</span>}
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-cyan-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Lift</span>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-cyan-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <BarChart3 className="w-4 h-4 text-cyan-400 relative group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300 drop-shadow-lg" />
-                      </div>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <div className="text-2xl font-bold text-white">{stats.bestLift}</div>
-                      <span className="text-xs text-cyan-300">lbs</span>
+                      <span className="text-xs text-green-300">kg</span>
                     </div>
                   </div>
                 </Card>
