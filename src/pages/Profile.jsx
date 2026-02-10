@@ -553,6 +553,7 @@ export default function Profile() {
               {/* Key Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -578,6 +579,7 @@ export default function Profile() {
                 </Card>
 
                 <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -603,6 +605,7 @@ export default function Profile() {
                 </Card>
 
                 <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
@@ -630,6 +633,7 @@ export default function Profile() {
                 </Card>
 
                 <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
