@@ -774,15 +774,16 @@ export default function GymCommunity() {
           {/* Header Controls */}
           <div className="absolute top-4 right-4 flex gap-2">
             {isGhostGym && !isGymOwner && (
-              <Button
-                onClick={() => setShowInviteOwner(true)}
-                variant="ghost"
-                size="sm"
-                className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
-              >
-                <Crown className="w-4 h-4 mr-1" />
-                Invite Owner
-              </Button>
+              <Link to={createPageUrl('ClaimGym') + `?id=${gymId}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
+                >
+                  <Crown className="w-4 h-4 mr-1" />
+                  Invite Owner
+                </Button>
+              </Link>
             )}
             {showOwnerControls && (
               <Button
