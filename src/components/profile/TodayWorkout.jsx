@@ -359,7 +359,7 @@ export default function TodayWorkout({ currentUser }) {
                     {editSets.map((set, setIndex) => (
                       <div key={setIndex} className="flex gap-2 items-end">
                         <div className="flex-1">
-                          <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Set {setIndex + 1}</label>
+                          <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Reps - Set {setIndex + 1}</label>
                           <Input
                             type="text"
                             placeholder="Reps"
