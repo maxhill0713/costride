@@ -631,29 +631,19 @@ export default function Friends() {
                         <p className="text-sm text-slate-200 mb-3">{activity.content}</p>
                       )}
 
-                      {/* Reaction buttons */}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const streakIcon = currentUser?.streak_icon || '🔥';
-                            updatePostReactionMutation.mutate(activity.id.replace('post-', ''), streakIcon);
-                          }}
-                          className="text-slate-300 hover:text-white gap-1"
-                        >
-                          <span>{currentUser?.streak_icon || '🔥'}</span>
-                          <span className="text-xs">React</span>
-                        </Button>
-
-                        {/* Show reactions count */}
-                        {activity.type === 'post' && allPosts.find(p => p.id === activity.id.replace('post-', ''))?.reactions && Object.keys(allPosts.find(p => p.id === activity.id.replace('post-', ''))?.reactions || {}).length > 0 && (
-                          <span className="text-xs text-slate-400">
-                            {Object.keys(allPosts.find(p => p.id === activity.id.replace('post-', ''))?.reactions || {}).length} reactions
-                          </span>
-                        )}
-                      </div>
+                      {/* Reaction button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const streakIcon = currentUser?.streak_variant === 'sunglasses' ? '😎' : currentUser?.streak_variant === 'cowboy' ? '🤠' : '🔥';
+                          updatePostReactionMutation.mutate(activity.id.replace('post-', ''), streakIcon);
+                        }}
+                        className="text-slate-300 hover:text-white text-lg"
+                      >
+                        <span>{currentUser?.streak_variant === 'sunglasses' ? '😎' : currentUser?.streak_variant === 'cowboy' ? '🤠' : '🔥'}</span>
+                      </Button>
                     </div>
                   </div>
                 ) : (
