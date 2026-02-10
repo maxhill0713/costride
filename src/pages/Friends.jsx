@@ -584,78 +584,79 @@ export default function Friends() {
                 >
                 {activity.type === 'post' ? (
                   // Full post layout for posts
-                  <div className="flex flex-col">
-                    {/* Media - takes up full width */}
-                    {(activity.imageUrl || activity.videoUrl) && (
-                      <div className="relative">
-                        {activity.videoUrl ? (
-                          <video 
-                            src={activity.videoUrl} 
-                            className="w-full aspect-video object-cover"
-                            playsInline
-                          />
-                        ) : (
-                          <img 
-                            src={activity.imageUrl} 
-                            alt="post" 
-                            className="w-full aspect-video object-cover" 
-                          />
-                        )}
+                  <div className="relative">
+                    {/* Reaction button - Left side, large */}
+                    {(() => {
+                      const postId = activity.id.replace('post-', '');
+                      const post = allPosts.find(p => p.id === postId);
+                      const hasReacted = post?.reactions && Object.values(post.reactions).some(r => r === currentUser?.id);
 
-                        {/* Profile picture in corner */}
-                         <Link 
-                           to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                           onClick={(e) => e.stopPropagation()}
-                           className="absolute top-3 left-3"
-                         >
-                           {activity.friendAvatar ? (
-                             <img 
-                               src={activity.friendAvatar} 
-                               alt={activity.friendName} 
-                               className="w-10 h-10 rounded-full object-cover ring-2 ring-white" 
-                             />
-                           ) : (
-                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-white">
-                               <span className="text-white font-bold text-sm">
-                                 {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
-                               </span>
-                             </div>
-                           )}
-                         </Link>
-                      </div>
-                    )}
+                      return (
+                        <Button
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const streakIcon = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
+                            updatePostReactionMutation.mutate(postId, streakIcon);
+                          }}
+                          className="absolute left-4 top-4 p-0 hover:bg-transparent z-10"
+                        >
+                          <StreakIcon 
+                            variant={currentUser?.streak_variant || 'default'} 
+                            className="w-16 h-16"
+                            outline={!hasReacted}
+                          />
+                        </Button>
+                      );
+                    })()}
 
-                    {/* Description and reactions */}
-                    <div className="p-4 bg-slate-800/60">
-                      {/* Description */}
-                      {activity.content && (
-                        <p className="text-sm text-slate-200 mb-3">{activity.content}</p>
+                    <div className="flex flex-col">
+                      {/* Media - takes up full width */}
+                      {(activity.imageUrl || activity.videoUrl) && (
+                        <div className="relative">
+                          {activity.videoUrl ? (
+                            <video 
+                              src={activity.videoUrl} 
+                              className="w-full aspect-video object-cover"
+                              playsInline
+                            />
+                          ) : (
+                            <img 
+                              src={activity.imageUrl} 
+                              alt="post" 
+                              className="w-full aspect-video object-cover" 
+                            />
+                          )}
+
+                          {/* Profile picture in corner */}
+                           <Link 
+                             to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                             onClick={(e) => e.stopPropagation()}
+                             className="absolute top-3 left-3"
+                           >
+                             {activity.friendAvatar ? (
+                               <img 
+                                 src={activity.friendAvatar} 
+                                 alt={activity.friendName} 
+                                 className="w-10 h-10 rounded-full object-cover ring-2 ring-white" 
+                               />
+                             ) : (
+                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-white">
+                                 <span className="text-white font-bold text-sm">
+                                   {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                                 </span>
+                               </div>
+                             )}
+                           </Link>
+                        </div>
                       )}
 
-                      {/* Reaction button */}
-                      {(() => {
-                        const postId = activity.id.replace('post-', '');
-                        const post = allPosts.find(p => p.id === postId);
-                        const hasReacted = post?.reactions && Object.values(post.reactions).some(r => r === currentUser?.id);
-
-                        return (
-                          <Button
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const streakIcon = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
-                              updatePostReactionMutation.mutate(postId, streakIcon);
-                            }}
-                            className="p-2 hover:bg-orange-500/10 rounded-xl transition-colors mt-1"
-                          >
-                            <StreakIcon 
-                              variant={currentUser?.streak_variant || 'default'} 
-                              className="w-12 h-12"
-                              outline={!hasReacted}
-                            />
-                          </Button>
-                        );
-                      })()}
+                      {/* Description */}
+                      <div className="p-4 bg-slate-800/60">
+                        {activity.content && (
+                          <p className="text-sm text-slate-200">{activity.content}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
