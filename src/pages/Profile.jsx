@@ -561,7 +561,7 @@ export default function Profile() {
                         <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
                         <div className="group/info relative z-[100]">
                           <Info className="w-3 h-3 text-slate-500 hover:text-blue-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none z-[200]">
                             Total number of times you've checked into gyms
                           </div>
                         </div>
@@ -587,7 +587,7 @@ export default function Profile() {
                         <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
                         <div className="group/info relative z-[100]">
                           <Info className="w-3 h-3 text-slate-500 hover:text-orange-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none z-[200]">
                             Longest consecutive days you've maintained a workout streak
                           </div>
                         </div>
@@ -613,7 +613,7 @@ export default function Profile() {
                         <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Top Percentile</span>
                         <div className="group/info relative z-[100]">
                           <Info className="w-3 h-3 text-slate-500 hover:text-purple-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none z-[200]">
                             Your ranking among all users based on check-ins and consistency
                           </div>
                         </div>
@@ -641,7 +641,7 @@ export default function Profile() {
                         <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Weight Increase</span>
                         <div className="group/info relative z-[100]">
                           <Info className="w-3 h-3 text-slate-500 hover:text-green-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
+                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none z-[200]">
                             Total weight increase tracked from your first to latest workout
                           </div>
                         </div>
