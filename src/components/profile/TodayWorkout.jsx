@@ -330,10 +330,18 @@ export default function TodayWorkout({ currentUser }) {
 
       {/* Exercises - Collapsible */}
       {isExpanded && (
-        <div className="text-[10px] text-slate-400 mb-3 leading-relaxed">Log your lifts to track progress</div>
+        <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
       )}
       {isExpanded && todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
         <div className="space-y-2">
+          {/* Headers */}
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-0">Sets x Reps</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-0">Weight</div>
+            <div className="w-6"></div>
+          </div>
+
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
             <div key={index} className={`p-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-lg shadow-black/10 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center'} hover:border-white/20 transition-all`}>
