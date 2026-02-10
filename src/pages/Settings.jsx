@@ -143,34 +143,6 @@ export default function Settings() {
                </div>
              </div>
 
-            {/* Display Name */}
-             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-               <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Display Name</Label>
-               <div className="flex gap-2">
-                 <Input
-                   type="text"
-                   value={currentUser?.full_name || ''}
-                   onChange={(e) => {
-                     const newName = e.target.value.slice(0, 15);
-                     queryClient.setQueryData(['currentUser'], (old) => ({
-                       ...old,
-                       full_name: newName
-                     }));
-                   }}
-                   maxLength="15"
-                   placeholder="Your name"
-                   className="bg-white/5 border border-white/10 text-slate-100 rounded-xl flex-1"
-                 />
-                 <Button
-                   onClick={() => updateSettingsMutation.mutate({ full_name: currentUser?.full_name })}
-                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 font-semibold"
-                   disabled={updateSettingsMutation.isPending}
-                 >
-                   {updateSettingsMutation.isPending ? 'Saving...' : 'Save'}
-                 </Button>
-               </div>
-             </div>
-
             {/* Bio */}
              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
                <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
