@@ -637,20 +637,20 @@ export default function Friends() {
                         const postId = activity.id.replace('post-', '');
                         const post = allPosts.find(p => p.id === postId);
                         const hasReacted = post?.reactions && Object.values(post.reactions).some(r => r === currentUser?.id);
+                        const userVariant = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
 
                         return (
                           <Button
                             variant="ghost"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const streakIcon = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
-                              updatePostReactionMutation.mutate(postId, streakIcon);
+                              updatePostReactionMutation.mutate(postId, userVariant);
                             }}
-                            className="p-2 hover:bg-orange-500/10 rounded-xl transition-colors mt-1"
+                            className="p-2 hover:bg-orange-500/10 rounded-xl transition-all mt-2"
                           >
                             <StreakIcon 
-                              variant={currentUser?.streak_variant || 'default'} 
-                              className="w-12 h-12"
+                              variant={hasReacted ? userVariant : 'default'} 
+                              className="w-16 h-16"
                               outline={!hasReacted}
                             />
                           </Button>
