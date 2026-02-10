@@ -394,19 +394,23 @@ export default function Home() {
 
               {/* Check-In Stats - Flippable Card */}
               <div 
-                className="perspective-1000 cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => setStatsCardFlipped(!statsCardFlipped)}
+                style={{ perspective: "1000px" }}
               >
                 <motion.div
-                  className="relative w-full"
+                  className="relative w-full h-[60px]"
                   animate={{ rotateY: statsCardFlipped ? 180 : 0 }}
-                  transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+                  transition={{ duration: 0.6 }}
                   style={{ transformStyle: "preserve-3d" }}
                 >
                   {/* Front Side - Avatars */}
                   <div 
-                    className="flex flex-col items-center justify-center gap-2 min-h-[60px]"
-                    style={{ backfaceVisibility: "hidden" }}
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-2"
+                    style={{ 
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden"
+                    }}
                   >
                     <div className="flex items-center -space-x-2">
                       {(checkInUsers.length > 0 ? checkInUsers : [
@@ -429,9 +433,10 @@ export default function Home() {
 
                   {/* Back Side - Stats Text */}
                   <div
-                    className="absolute inset-0 flex items-center justify-center min-h-[60px]"
+                    className="absolute inset-0 flex items-center justify-center"
                     style={{ 
                       backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
                       transform: "rotateY(180deg)"
                     }}
                   >
