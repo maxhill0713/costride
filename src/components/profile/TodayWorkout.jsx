@@ -8,6 +8,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
 import WorkoutNotesModal from './WorkoutNotesModal.jsx';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function TodayWorkout({ currentUser }) {
   const [editingIndex, setEditingIndex] = useState(null);
@@ -22,6 +23,7 @@ export default function TodayWorkout({ currentUser }) {
   const [showNotes, setShowNotes] = useState(false);
   const [showTimerOptions, setShowTimerOptions] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [showLogConfirm, setShowLogConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const timerPresets = [
@@ -352,7 +354,7 @@ export default function TodayWorkout({ currentUser }) {
                   Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
                 </p>
                 <Button
-                  onClick={() => logWorkoutMutation.mutate()}
+                  onClick={() => setShowLogConfirm(true)}
                   disabled={logWorkoutMutation.isPending}
                   size="sm"
                   className="h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-3 shadow-lg shadow-orange-500/30 rounded-lg"
@@ -363,7 +365,7 @@ export default function TodayWorkout({ currentUser }) {
             )}
             {!lastWorkout && todayWorkout.exercises.length > 0 && (
               <Button
-                onClick={() => logWorkoutMutation.mutate()}
+                onClick={() => setShowLogConfirm(true)}
                 disabled={logWorkoutMutation.isPending}
                 size="sm"
                 className="h-7 text-[10px] font-bold w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
@@ -670,6 +672,29 @@ export default function TodayWorkout({ currentUser }) {
       {/* Modals */}
       <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
       <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
+
+      <AlertDialog open={showLogConfirm} onOpenChange={setShowLogConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log Workout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log this workout as completed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                logWorkoutMutation.mutate();
+                setShowLogConfirm(false);
+              }}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            >
+              Yes, Log It
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </Card>
       );
       }
