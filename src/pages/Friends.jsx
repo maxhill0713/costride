@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X, ChevronDown, Heart, MessageCircle, Image as ImageIcon } from 'lucide-react';
+import StreakIcon from '../components/StreakIcon';
 import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -637,12 +638,12 @@ export default function Friends() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          const streakIcon = currentUser?.streak_variant === 'sunglasses' ? '😎' : currentUser?.streak_variant === 'cowboy' ? '🤠' : '🔥';
+                          const streakIcon = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
                           updatePostReactionMutation.mutate(activity.id.replace('post-', ''), streakIcon);
                         }}
-                        className="text-slate-300 hover:text-white text-lg"
+                        className="p-2 hover:bg-orange-500/20 rounded-lg transition-colors"
                       >
-                        <span>{currentUser?.streak_variant === 'sunglasses' ? '😎' : currentUser?.streak_variant === 'cowboy' ? '🤠' : '🔥'}</span>
+                        <StreakIcon variant={currentUser?.streak_variant || 'default'} className="w-6 h-6" />
                       </Button>
                     </div>
                   </div>
