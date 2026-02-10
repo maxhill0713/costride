@@ -52,11 +52,13 @@ import AdminGyms from './pages/AdminGyms';
 import BrandDiscounts from './pages/BrandDiscounts';
 import ClaimGym from './pages/ClaimGym';
 import Friends from './pages/Friends';
+import GymCommunity from './pages/GymCommunity';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymRewards from './pages/GymRewards';
 import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import Home from './pages/Home';
+import InviteOwner from './pages/InviteOwner';
 import Leaderboard from './pages/Leaderboard';
 import MemberSignup from './pages/MemberSignup';
 import Members from './pages/Members';
@@ -65,14 +67,12 @@ import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
 import Plus from './pages/Plus';
 import Premium from './pages/Premium';
+import Profile from './pages/Profile';
 import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
-import GymCommunity from './pages/GymCommunity';
-import InviteOwner from './pages/InviteOwner';
-import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -82,11 +82,13 @@ export const PAGES = {
     "BrandDiscounts": BrandDiscounts,
     "ClaimGym": ClaimGym,
     "Friends": Friends,
+    "GymCommunity": GymCommunity,
     "GymOwnerDashboard": GymOwnerDashboard,
     "GymRewards": GymRewards,
     "GymSignup": GymSignup,
     "Gyms": Gyms,
     "Home": Home,
+    "InviteOwner": InviteOwner,
     "Leaderboard": Leaderboard,
     "MemberSignup": MemberSignup,
     "Members": Members,
@@ -95,14 +97,12 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Plus": Plus,
     "Premium": Premium,
+    "Profile": Profile,
     "RedeemReward": RedeemReward,
     "Routines": Routines,
     "Search": Search,
     "Settings": Settings,
     "UserProfile": UserProfile,
-    "GymCommunity": GymCommunity,
-    "InviteOwner": InviteOwner,
-    "Profile": Profile,
 }
 
 export const pagesConfig = {

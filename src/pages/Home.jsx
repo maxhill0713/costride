@@ -18,7 +18,6 @@ import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { motion } from 'framer-motion';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -27,7 +26,6 @@ export default function Home() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
-  const [statsCardFlipped, setStatsCardFlipped] = useState(false);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -392,49 +390,29 @@ export default function Home() {
                 </Button>
               )}
 
-              {/* Check-In Stats - Collapsible Card */}
-              <div 
-                className="cursor-pointer"
-                onClick={() => setStatsCardFlipped(!statsCardFlipped)}
-              >
-                <div className="flex flex-col items-center justify-center gap-2">
-                  {/* Avatars */}
-                  <div className="flex items-center -space-x-2">
-                    {(checkInUsers.length > 0 ? checkInUsers : [
-                      { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
-                      { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
-                      { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
-                    ]).slice(0, 3).map((user) => (
-                      <div key={user.id} className="relative">
-                        {user.avatar_url ? (
-                          <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
-                            {user.full_name?.[0] || 'U'}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Collapsible Text */}
-                  <motion.div
-                    initial={false}
-                    animate={{ height: statsCardFlipped ? 'auto' : 0, opacity: statsCardFlipped ? 1 : 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="overflow-hidden w-full"
-                  >
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg">
-                      <p className="text-white text-sm font-semibold text-center">
-                        {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today
-                      </p>
-                      <p className="text-slate-400 text-xs text-center mt-0.5">
-                        Tap to see who's here
-                      </p>
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
+              {/* Check-In Stats */}
+               <div className="flex flex-col items-center justify-center gap-2">
+                 <div className="flex items-center -space-x-2">
+                   {(checkInUsers.length > 0 ? checkInUsers : [
+                     { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
+                     { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
+                     { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
+                   ]).slice(0, 3).map((user) => (
+                     <div key={user.id} className="relative group">
+                       {user.avatar_url ? (
+                         <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
+                       ) : (
+                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
+                           {user.full_name?.[0] || 'U'}
+                         </div>
+                       )}
+                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                         {user.full_name}
+                       </span>
+                     </div>
+                   ))}
+                 </div>
+               </div>
             </>
           )}
 
@@ -454,6 +432,27 @@ export default function Home() {
                   <div className="flex items-center gap-2 mb-3">
                     <Dumbbell className="w-4 h-4 text-indigo-400" />
                     <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="ml-auto">
+                          <Info className="w-4 h-4 text-slate-400 hover:text-indigo-400 transition-colors" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 bg-slate-900 border-slate-700 text-white">
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-sm">How it works</h4>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            Create your custom workout split by defining your training days and exercises. 
+                          </p>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            Once set up, you'll see today's workout here. You can edit sets, reps, and weights for each exercise before and after your workout.
+                          </p>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            Track your progress over time and stay consistent with your routine!
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <button

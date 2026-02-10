@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake, Info } from 'lucide-react';
+import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -552,20 +552,11 @@ export default function Profile() {
             <TabsContent value="stats" className="space-y-4">
               {/* Key Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
-
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
-                        <div className="group/info relative z-[100]">
-                          <Info className="w-3 h-3 text-slate-500 hover:text-blue-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
-                            Total number of times you've checked into gyms
-                          </div>
-                        </div>
-                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
                       <div className="relative">
                         <div className="absolute inset-0 bg-blue-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Calendar className="w-4 h-4 text-blue-400 relative group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg" />
@@ -578,20 +569,11 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
-
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
-                        <div className="group/info relative z-[100]">
-                          <Info className="w-3 h-3 text-slate-500 hover:text-orange-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
-                            Longest consecutive days you've maintained a workout streak
-                          </div>
-                        </div>
-                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
                       <div className="relative">
                         <div className="absolute inset-0 bg-orange-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Flame className="w-4 h-4 text-orange-400 relative group-hover:scale-125 transition-all duration-300 drop-shadow-lg group-hover:drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
@@ -604,20 +586,11 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
-
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Top Percentile</span>
-                        <div className="group/info relative z-[100]">
-                          <Info className="w-3 h-3 text-slate-500 hover:text-purple-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
-                            Your ranking among all users based on check-ins and consistency
-                          </div>
-                        </div>
-                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Top Percentile</span>
                       <div className="relative">
                         <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                         <TrendingUp className="w-4 h-4 text-purple-400 relative group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-lg" />
@@ -632,20 +605,11 @@ export default function Profile() {
                   </div>
                 </Card>
 
-                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
-
+                <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Weight Increase</span>
-                        <div className="group/info relative z-[100]">
-                          <Info className="w-3 h-3 text-slate-500 hover:text-green-400 cursor-help transition-colors" />
-                          <div className="absolute left-0 top-full mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-slate-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all shadow-xl pointer-events-none">
-                            Total weight increase tracked from your first to latest workout
-                          </div>
-                        </div>
-                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Weight Up</span>
                       <div className="relative">
                         <div className="absolute inset-0 bg-green-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Zap className="w-4 h-4 text-green-400 relative group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 drop-shadow-lg" />
