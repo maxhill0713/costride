@@ -97,7 +97,8 @@ export default function Home() {
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 10000
   });
 
   const { data: friends = [] } = useQuery({
@@ -363,8 +364,8 @@ export default function Home() {
               }}>
                 <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
                      <Users className="w-14 h-14 text-cyan-400" />
-                   {friendPosts.length > 0 && (!currentUser?.last_friends_view || new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />}
-                 </Button>
+                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+                  </Button>
               </Link>
             </div>
           </div>
