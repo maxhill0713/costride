@@ -37,6 +37,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
   const isOwner = currentUser?.id === post.member_id;
   const isNudgePost = post.exercise === 'workout_completion_nudge';
   const isWeightIncreasePost = post.content?.includes('increased their weight');
+  const isGymJoinPost = post.gym_join === true;
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
   const hasReacted = useMemo(() => post.reactions && post.reactions[currentUser?.id], [post.reactions, currentUser?.id]);
@@ -221,8 +222,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
          </button>
        )}
 
-       {/* Weight Increase Reaction */}
-       {isWeightIncreasePost && (
+       {/* Reaction System for Weight Increases & Gym Joins */}
+       {(isWeightIncreasePost || isGymJoinPost) && (
          <div className="absolute bottom-2 left-4 flex items-center gap-2">
            {/* Reaction Button */}
            <motion.button
