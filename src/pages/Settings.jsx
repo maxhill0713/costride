@@ -149,16 +149,16 @@ export default function Settings() {
                <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Username</Label>
                <Input
                  type="text"
-                 value={currentUser?.full_name || ''}
+                 value={currentUser?.username || ''}
                  onChange={(e) => {
                    queryClient.setQueryData(['currentUser'], (old) => ({
                      ...old,
-                     full_name: e.target.value
+                     username: e.target.value
                    }));
                  }}
                  placeholder="Your name"
                  className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-                 onBlur={() => updateSettingsMutation.mutate({ full_name: currentUser?.full_name })}
+                 onBlur={() => updateSettingsMutation.mutate({ username: currentUser?.username })}
                />
              </div>
 
