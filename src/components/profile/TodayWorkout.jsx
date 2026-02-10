@@ -249,6 +249,18 @@ export default function TodayWorkout({ currentUser }) {
           });
         }
       }
+
+      // Create workout completion post with nudge button
+      await base44.entities.Post.create({
+        member_id: currentUser.id,
+        member_name: currentUser.full_name || currentUser.username || 'User',
+        member_avatar: currentUser.avatar_url || '',
+        content: 'Well done, workout finished! Now its time to get your friends involved!',
+        likes: 0,
+        comments: [],
+        reactions: {},
+        exercise: 'workout_completion_nudge' // Special flag for nudge posts
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['workoutLog']);

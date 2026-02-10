@@ -34,6 +34,63 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
   });
 
   const isOwner = currentUser?.id === post.member_id;
+  const isNudgePost = post.exercise === 'workout_completion_nudge';
+
+  const nudgeMutation = useMutation({
+    mutationFn: async () => {
+      // Get user's friends
+      const friends = await base44.entities.Friend.filter({
+        user_id: currentUser.id,
+        status: 'accepted'
+      });
+
+      const todayDate = new Date().toISOString().split('T')[0];
+      const dayOfWeek = new Date().getDay();
+      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+      // Check each friend
+      for (const friend of friends) {
+        // Get friend's user data
+        const friendUser = await base44.entities.User.filter({ id: friend.friend_id });
+        if (!friendUser.length) continue;
+
+        const friendData = friendUser[0];
+
+        // Check if friend has a rest day (no exercises scheduled)
+        const trainingDays = friendData.training_days || [];
+        const isRestDay = !trainingDays.includes(adjustedDay);
+        const hasNoExercises = !friendData.custom_workout_types?.[adjustedDay]?.exercises?.length;
+
+        if (isRestDay || hasNoExercises) continue; // Skip friends on rest days
+
+        // Check if friend already logged workout today
+        const friendWorkouts = await base44.entities.WorkoutLog.filter({
+          user_id: friend.friend_id,
+          completed_date: todayDate
+        });
+
+        if (friendWorkouts.length === 0) {
+          // Friend hasn't logged workout - send nudge
+          await base44.entities.Post.create({
+            member_id: friend.friend_id,
+            member_name: friendData.full_name || friendData.username || 'User',
+            member_avatar: friendData.avatar_url || '',
+            content: `${currentUser.full_name || currentUser.username || 'User'} wants you to stop being lazy and get in the gym!`,
+            likes: 0,
+            comments: [],
+            reactions: {}
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      toast.success('Friends nudged!');
+      queryClient.invalidateQueries(['posts']);
+    },
+    onError: () => {
+      toast.error('Failed to nudge friends');
+    }
+  });
 
   const handleReact = () => {
     setReacted(!reacted);
@@ -119,6 +176,15 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
           <span className="block mt-1 text-blue-600 font-semibold">
             💪 {post.weight} lbs
           </span>
+        )}
+        {isNudgePost && isOwner && (
+          <button
+            onClick={() => nudgeMutation.mutate()}
+            disabled={nudgeMutation.isPending}
+            className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
+          >
+            {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
+          </button>
         )}
       </div>
 
