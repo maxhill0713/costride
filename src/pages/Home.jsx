@@ -508,22 +508,9 @@ export default function Home() {
 
           {/* Weekly Challenges */}
            {featuredChallenge && (
-             <div className="space-y-3">
-               <div className="flex items-center justify-between px-1">
-                 <h2 className="text-lg font-black bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent tracking-tight">
-                   Weekly Challenges
-                 </h2>
-                 <Link to={createPageUrl('RedeemReward') + '?tab=challenges'}>
-                   <Button variant="ghost" size="sm" className="text-yellow-300 hover:text-yellow-200 hover:bg-yellow-500/10 font-semibold">
-                     See All
-                     <ChevronRight className="w-4 h-4 ml-1" />
-                   </Button>
-                 </Link>
-               </div>
-               <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
-                 <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
-               </Link>
-             </div>
+             <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
+               <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
+             </Link>
            )}
 
         {/* Join a Gym Prompt */}
