@@ -337,8 +337,8 @@ export default function TodayWorkout({ currentUser }) {
           {/* Headers */}
           <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-1.5">
             <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
             <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
           </div>
 
           {/* Exercise Rows */}
@@ -420,9 +420,6 @@ export default function TodayWorkout({ currentUser }) {
                       </div>
                     )}
                   </div>
-                  <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg">
-                    {exercise.setsReps || '-'}
-                  </div>
                   <div className="flex items-center gap-2 justify-end">
                     <div className="flex items-center gap-2">
                         <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500/80 to-orange-600/80 px-2.5 py-1 rounded-lg shadow-md shadow-orange-500/10">
@@ -439,6 +436,9 @@ export default function TodayWorkout({ currentUser }) {
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
+                  </div>
+                  <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg">
+                    {exercise.setsReps || '-'}
                   </div>
                 </>
               )}
