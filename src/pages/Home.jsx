@@ -472,27 +472,6 @@ export default function Home() {
                   <div className="flex items-center gap-2 mb-3">
                     <Dumbbell className="w-4 h-4 text-indigo-400" />
                     <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="ml-auto">
-                          <Info className="w-4 h-4 text-slate-400 hover:text-indigo-400 transition-colors" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72 bg-slate-900 border-slate-700 text-white">
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm">How it works</h4>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            Create your custom workout split by defining your training days and exercises. 
-                          </p>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            Once set up, you'll see today's workout here. You can edit sets, reps, and weights for each exercise before and after your workout.
-                          </p>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            Track your progress over time and stay consistent with your routine!
-                          </p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
                   </div>
 
                   <button
