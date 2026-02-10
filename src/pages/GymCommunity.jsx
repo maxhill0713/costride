@@ -772,7 +772,7 @@ export default function GymCommunity() {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
 
           {/* Header Controls */}
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
             {isGhostGym && !isGymOwner && (
               <Button
                 onClick={() => window.location.href = createPageUrl('ClaimGym') + `?id=${gymId}`}
