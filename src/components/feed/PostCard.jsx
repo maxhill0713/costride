@@ -7,6 +7,7 @@ import ShareModal from './ShareModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { useMemo } from 'react';
 
 export default function PostCard({ post, onLike, onComment, onSave, onDelete }) {
   const [reacted, setReacted] = useState(false);
@@ -35,6 +36,39 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
 
   const isOwner = currentUser?.id === post.member_id;
   const isNudgePost = post.exercise === 'workout_completion_nudge';
+  const isWeightIncreasePost = post.content?.includes('increased their weight');
+
+  const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
+  const hasReacted = useMemo(() => post.reactions && post.reactions[currentUser?.id], [post.reactions, currentUser?.id]);
+
+  const getStreakIcon = (variant) => {
+    switch (variant) {
+      case 'sunglasses':
+        return '😎';
+      case 'cowboy':
+        return '🤠';
+      default:
+        return '🔥';
+    }
+  };
+
+  const reactMutation = useMutation({
+    mutationFn: async (isReacting) => {
+      const updatedReactions = { ...post.reactions };
+      if (isReacting) {
+        updatedReactions[currentUser.id] = userStreakVariant;
+      } else {
+        delete updatedReactions[currentUser.id];
+      }
+      await base44.entities.Post.update(post.id, { reactions: updatedReactions });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+    onError: () => {
+      toast.error('Failed to react to post');
+    }
+  });
 
   const nudgeMutation = useMutation({
     mutationFn: async () => {
@@ -170,22 +204,72 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       </div>
 
       {/* Caption Section - Thin Block */}
-      <div className="px-4 py-1 text-sm text-gray-900">
-        <p className="leading-snug">{post.content}</p>
-        {post.weight && (
-          <span className="block mt-1 text-blue-600 font-semibold">
-            💪 {post.weight} lbs
-          </span>
-        )}
-        {isNudgePost && isOwner && (
-          <button
-            onClick={() => nudgeMutation.mutate()}
-            disabled={nudgeMutation.isPending}
-            className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
-          >
-            {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
-          </button>
-        )}
+      <div className="px-4 py-1 text-sm text-gray-900 relative pb-12">
+       <p className="leading-snug">{post.content}</p>
+       {post.weight && (
+         <span className="block mt-1 text-blue-600 font-semibold">
+           💪 {post.weight} lbs
+         </span>
+       )}
+       {isNudgePost && isOwner && (
+         <button
+           onClick={() => nudgeMutation.mutate()}
+           disabled={nudgeMutation.isPending}
+           className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
+         >
+           {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
+         </button>
+       )}
+
+       {/* Weight Increase Reaction */}
+       {isWeightIncreasePost && (
+         <div className="absolute bottom-2 left-4 flex items-center gap-2">
+           {/* Reaction Button */}
+           <motion.button
+             onClick={() => reactMutation.mutate(!hasReacted)}
+             disabled={reactMutation.isPending}
+             className={`relative w-10 h-10 rounded-full flex items-center justify-center text-2xl transition-all ${
+               hasReacted ? 'bg-orange-100' : 'bg-gray-100 border-2 border-dashed border-gray-400'
+             }`}
+             whileHover={{ scale: 1.1 }}
+             whileTap={{ scale: 0.95 }}
+           >
+             {getStreakIcon(userStreakVariant)}
+             {hasReacted && (
+               <motion.div
+                 layoutId={`reaction-check-${post.id}`}
+                 className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 -z-10"
+                 initial={{ scale: 0 }}
+                 animate={{ scale: 1 }}
+               />
+             )}
+           </motion.button>
+
+           {/* Reaction Count & Avatars */}
+           {Object.keys(post.reactions || {}).length > 0 && (
+             <div className="flex items-center ml-2">
+               <div className="flex relative h-8">
+                 {Object.entries(post.reactions || {}).slice(0, 3).map(([userId, variant], idx) => (
+                   <div
+                     key={userId}
+                     className="relative"
+                     style={{ marginLeft: idx > 0 ? '-12px' : '0' }}
+                   >
+                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-sm shadow-md border border-white">
+                       {getStreakIcon(variant)}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+               {Object.keys(post.reactions || {}).length > 3 && (
+                 <span className="ml-1 text-xs text-gray-600 font-semibold">
+                   +{Object.keys(post.reactions).length - 3}
+                 </span>
+               )}
+             </div>
+           )}
+         </div>
+       )}
       </div>
 
       {/* Modals */}
