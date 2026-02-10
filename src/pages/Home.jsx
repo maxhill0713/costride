@@ -392,65 +392,47 @@ export default function Home() {
                 </Button>
               )}
 
-              {/* Check-In Stats - Flippable Card */}
+              {/* Check-In Stats - Collapsible Card */}
               <div 
-                className="cursor-pointer h-[60px]"
+                className="cursor-pointer"
                 onClick={() => setStatsCardFlipped(!statsCardFlipped)}
-                style={{ perspective: "1000px" }}
               >
-                <div
-                  className="relative w-full h-full"
-                  style={{ 
-                    transformStyle: "preserve-3d",
-                    transform: statsCardFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                    transition: "transform 0.6s"
-                  }}
-                >
-                  {/* Front Side - Avatars */}
-                  <div 
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-                    style={{ 
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden"
-                    }}
-                  >
-                    <div className="flex items-center -space-x-2">
-                      {(checkInUsers.length > 0 ? checkInUsers : [
-                        { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
-                        { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
-                        { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
-                      ]).slice(0, 3).map((user) => (
-                        <div key={user.id} className="relative">
-                          {user.avatar_url ? (
-                            <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
-                              {user.full_name?.[0] || 'U'}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                <div className="flex flex-col items-center justify-center gap-2">
+                  {/* Avatars */}
+                  <div className="flex items-center -space-x-2">
+                    {(checkInUsers.length > 0 ? checkInUsers : [
+                      { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
+                      { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
+                      { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
+                    ]).slice(0, 3).map((user) => (
+                      <div key={user.id} className="relative">
+                        {user.avatar_url ? (
+                          <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
+                            {user.full_name?.[0] || 'U'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Back Side - Stats Text */}
-                  <div
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{ 
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                      transform: "rotateY(180deg)"
-                    }}
+                  {/* Collapsible Text */}
+                  <motion.div
+                    initial={false}
+                    animate={{ height: statsCardFlipped ? 'auto' : 0, opacity: statsCardFlipped ? 1 : 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="overflow-hidden w-full"
                   >
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg max-w-full">
-                      <p className="text-white text-sm font-semibold text-center whitespace-nowrap">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg">
+                      <p className="text-white text-sm font-semibold text-center">
                         {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today
                       </p>
                       <p className="text-slate-400 text-xs text-center mt-0.5">
                         Tap to see who's here
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </>
