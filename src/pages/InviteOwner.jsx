@@ -142,7 +142,7 @@ export default function InviteOwner() {
             <h3 className="text-lg font-bold text-white">What's a Ghost Gym?</h3>
           </div>
           <p className="text-slate-300 text-sm leading-relaxed">
-            This gym exists in our community but hasn't been claimed by its owner yet. Help us reach them so they can unlock all the features to engage with their members!
+            This gym exists in our community but hasn't been claimed by its owner yet. Help us reach them so they can unlock all the features such as challenge rewards, community participation, and full engagement in the gym community!
           </p>
         </Card>
 
@@ -180,7 +180,7 @@ export default function InviteOwner() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  Why should this gym be official? (optional)
+                  Additional information (optional)
                 </label>
                 <Textarea
                   value={requestMessage}
@@ -195,7 +195,7 @@ export default function InviteOwner() {
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl h-12 font-semibold"
               >
                 <Send className="w-4 h-4 mr-2" />
-                {submitOfficialRequestMutation.isPending ? 'Submitting...' : 'Submit Request'}
+                {submitOfficialRequestMutation.isPending ? 'Submitting...' : 'Request Official Status'}
               </Button>
               <p className="text-xs text-slate-400 text-center">
                 Our team will review and reach out to the gym owner
