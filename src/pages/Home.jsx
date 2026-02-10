@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function Home() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
+  const [statsCardFlipped, setStatsCardFlipped] = useState(false);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -390,29 +392,60 @@ export default function Home() {
                 </Button>
               )}
 
-              {/* Check-In Stats */}
-               <div className="flex flex-col items-center justify-center gap-2">
-                 <div className="flex items-center -space-x-2">
-                   {(checkInUsers.length > 0 ? checkInUsers : [
-                     { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
-                     { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
-                     { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
-                   ]).slice(0, 3).map((user) => (
-                     <div key={user.id} className="relative group">
-                       {user.avatar_url ? (
-                         <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
-                       ) : (
-                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
-                           {user.full_name?.[0] || 'U'}
-                         </div>
-                       )}
-                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                         {user.full_name}
-                       </span>
-                     </div>
-                   ))}
-                 </div>
-               </div>
+              {/* Check-In Stats - Flippable Card */}
+              <div 
+                className="perspective-1000 cursor-pointer"
+                onClick={() => setStatsCardFlipped(!statsCardFlipped)}
+              >
+                <motion.div
+                  className="relative w-full"
+                  animate={{ rotateY: statsCardFlipped ? 180 : 0 }}
+                  transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  {/* Front Side - Avatars */}
+                  <div 
+                    className="flex flex-col items-center justify-center gap-2 min-h-[60px]"
+                    style={{ backfaceVisibility: "hidden" }}
+                  >
+                    <div className="flex items-center -space-x-2">
+                      {(checkInUsers.length > 0 ? checkInUsers : [
+                        { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
+                        { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
+                        { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
+                      ]).slice(0, 3).map((user) => (
+                        <div key={user.id} className="relative">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
+                              {user.full_name?.[0] || 'U'}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Back Side - Stats Text */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center min-h-[60px]"
+                    style={{ 
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)"
+                    }}
+                  >
+                    <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg w-full">
+                      <p className="text-white text-sm font-semibold text-center">
+                        {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today
+                      </p>
+                      <p className="text-slate-400 text-xs text-center mt-0.5">
+                        Tap to see who's here
+                      </p>
+                    </Card>
+                  </div>
+                </motion.div>
+              </div>
             </>
           )}
 
