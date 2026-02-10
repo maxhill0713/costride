@@ -394,15 +394,16 @@ export default function Home() {
 
               {/* Check-In Stats - Flippable Card */}
               <div 
-                className="cursor-pointer"
+                className="cursor-pointer h-[60px]"
                 onClick={() => setStatsCardFlipped(!statsCardFlipped)}
                 style={{ perspective: "1000px" }}
               >
-                <motion.div
-                  className="relative w-full h-[60px]"
-                  animate={{ rotateY: statsCardFlipped ? 180 : 0 }}
-                  transition={{ duration: 0.6 }}
-                  style={{ transformStyle: "preserve-3d" }}
+                <div
+                  className="relative w-full h-full transition-transform duration-600"
+                  style={{ 
+                    transformStyle: "preserve-3d",
+                    transform: statsCardFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
+                  }}
                 >
                   {/* Front Side - Avatars */}
                   <div 
@@ -449,7 +450,7 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
             </>
           )}
