@@ -646,11 +646,11 @@ export default function Friends() {
                               e.stopPropagation();
                               updatePostReactionMutation.mutate(postId, userVariant);
                             }}
-                            className="p-2 hover:bg-orange-500/10 rounded-xl transition-all mt-2"
+                            className="p-0 hover:bg-orange-500/10 rounded-xl transition-all mt-2"
                           >
                             <StreakIcon 
                               variant={hasReacted ? userVariant : 'default'} 
-                              className="w-16 h-16"
+                              className="w-32 h-32"
                               outline={!hasReacted}
                             />
                           </Button>
