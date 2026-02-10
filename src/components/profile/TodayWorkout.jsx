@@ -215,9 +215,44 @@ export default function TodayWorkout({ currentUser }) {
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0]
       });
+
+      // Create posts for weight increases
+      if (lastWorkout?.exercises) {
+        const improvements = todayWorkout.exercises
+          .map((exercise, index) => {
+            const lastExercise = lastWorkout.exercises[index];
+            if (!lastExercise) return null;
+            
+            const currentWeight = parseFloat(exercise.weight) || 0;
+            const lastWeight = parseFloat(lastExercise.weight) || 0;
+            
+            if (currentWeight > lastWeight) {
+              return {
+                exercise: exercise.exercise,
+                increase: currentWeight - lastWeight
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+
+        // Create a post for each improvement
+        for (const improvement of improvements) {
+          await base44.entities.Post.create({
+            member_id: currentUser.id,
+            member_name: currentUser.full_name || currentUser.username || 'User',
+            member_avatar: currentUser.avatar_url || '',
+            content: `${currentUser.full_name || currentUser.username || 'User'} increased their weight on ${improvement.exercise} by ${improvement.increase.toFixed(1)}kg!`,
+            likes: 0,
+            comments: [],
+            reactions: {}
+          });
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['workoutLog']);
+      queryClient.invalidateQueries(['posts']);
     }
   });
 
