@@ -435,14 +435,14 @@ export default function Home() {
                       transform: "rotateY(180deg)"
                     }}
                   >
-                    <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg w-full">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-xl shadow-lg w-full">
                       <p className="text-white text-sm font-semibold text-center">
                         {todayCheckIns.length} {todayCheckIns.length === 1 ? 'person' : 'people'} checked in today
                       </p>
                       <p className="text-slate-400 text-xs text-center mt-0.5">
                         Tap to see who's here
                       </p>
-                    </Card>
+                    </div>
                   </div>
                 </motion.div>
               </div>
