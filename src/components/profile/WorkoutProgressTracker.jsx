@@ -134,7 +134,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900/50 via-slate-900/40 to-slate-950/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl shadow-black/30 p-5">
+    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
       {todayWorkoutLogged && (
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.98 }}
