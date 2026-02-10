@@ -650,27 +650,7 @@ export default function Profile() {
                 </Card>
               </div>
 
-              {/* Streak Freezes Section */}
-              <Card className="p-5 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20 overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Snowflake className="w-5 h-5 text-cyan-400 flex-shrink-0" />
-                    <span className="font-semibold text-cyan-300 truncate">Streak Freezes</span>
-                  </div>
-                  <div className="text-2xl font-bold text-cyan-300 flex items-center gap-1">
-                    {currentUser?.streak_freezes || 2}
-                    <Snowflake className="w-5 h-5 text-cyan-400" />
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-3">
-                  {Array.from({ length: Math.min(currentUser?.streak_freezes || 2, 5) }).map((_, i) => (
-                    <div key={i} className="w-8 h-8 rounded-lg bg-cyan-500/40 border border-cyan-400/60 flex items-center justify-center flex-shrink-0">
-                      <Snowflake className="w-4 h-4 text-cyan-300" />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-slate-400 mt-2">Use a freeze to prevent your streak from breaking if you miss a day.</p>
-              </Card>
+
 
               {/* Badges Section */}
               <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
