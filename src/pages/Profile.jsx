@@ -97,7 +97,8 @@ export default function Profile() {
 
 
 
-  const memberLifts = lifts.filter(l => l.member_name === currentUser?.full_name);
+  const displayName = currentUser?.username || currentUser?.full_name;
+  const memberLifts = lifts.filter(l => l.member_name === displayName);
   const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
 
   // Get gyms user is a member of
@@ -196,7 +197,7 @@ export default function Profile() {
     mutationFn: async (data) => {
       const postData = {
         member_id: currentUser.id,
-        member_name: currentUser.full_name,
+        member_name: displayName,
         member_avatar: currentUser.avatar_url,
         content: data.content,
         image_url: data.image_url || null,
@@ -357,16 +358,16 @@ export default function Profile() {
             <div className="flex items-center gap-5 flex-1">
               <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50">
                 {currentUser.avatar_url ? (
-                  <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
+                  <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                 ) : (
                    <span className="text-3xl font-semibold text-white tracking-tight">
-                     {currentUser.full_name?.charAt(0)?.toUpperCase()}
+                     {displayName?.charAt(0)?.toUpperCase()}
                    </span>
                  )}
               </div>
               <div className="flex-1">
                 <div className="flex flex-col gap-2 mb-2">
-                   <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight truncate">{currentUser.full_name}</h1>
+                   <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight truncate">{displayName}</h1>
                   <div className="flex items-center flex-wrap gap-2">
                     <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
                   </div>
