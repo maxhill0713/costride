@@ -399,10 +399,11 @@ export default function Home() {
                 style={{ perspective: "1000px" }}
               >
                 <div
-                  className="relative w-full h-full transition-transform duration-600"
+                  className="relative w-full h-full"
                   style={{ 
                     transformStyle: "preserve-3d",
-                    transform: statsCardFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
+                    transform: statsCardFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                    transition: "transform 0.6s"
                   }}
                 >
                   {/* Front Side - Avatars */}
