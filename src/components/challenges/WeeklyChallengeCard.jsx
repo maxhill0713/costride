@@ -41,7 +41,6 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
          <div className="relative">
            <div className="flex items-start justify-between mb-3">
              <div className="flex-1 min-w-0">
-               <h3 className="font-bold text-white mb-2 text-base md:text-lg">Weekly Challenges</h3>
                <h4 className="font-bold text-white mb-2 text-sm text-slate-300">{challenge.title}</h4>
               <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
               <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] inline-block">
