@@ -134,7 +134,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 border border-purple-500/40 p-3 rounded-2xl">
+    <Card className="bg-gradient-to-br from-slate-900/50 via-slate-900/40 to-slate-950/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl shadow-black/30 p-5">
       {todayWorkoutLogged && (
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -178,8 +178,10 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
       <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2">
-          <Activity className="w-3.5 h-3.5 text-purple-400" />
-          <h3 className="text-xs font-bold text-white">Workout Progress</h3>
+          <div className="rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 w-8 h-8 flex items-center justify-center shadow-md shadow-orange-500/10">
+            <Activity className="w-4 h-4 text-white" />
+          </div>
+          <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Workout Progress</h3>
         </div>
         
         {/* Filters */}
@@ -217,17 +219,17 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-1.5 mb-3">
-        <div className="bg-gradient-to-br from-purple-600/30 to-purple-700/20 rounded-lg p-1.5 text-center border border-purple-500/30 hover:border-purple-400/50 transition-colors">
-          <div className="text-base font-bold text-purple-300">{workoutLogs.length}</div>
-          <div className="text-[8px] text-purple-300/60 font-medium">Logs</div>
+        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-1.5 text-center border border-orange-500/30 hover:border-orange-400/50 transition-colors">
+          <div className="text-base font-bold text-orange-300">{workoutLogs.length}</div>
+          <div className="text-[8px] text-orange-300/60 font-medium">Logs</div>
         </div>
-        <div className="bg-gradient-to-br from-emerald-600/30 to-emerald-700/20 rounded-lg p-1.5 text-center border border-emerald-500/30 hover:border-emerald-400/50 transition-colors">
+        <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 rounded-lg p-1.5 text-center border border-emerald-500/30 hover:border-emerald-400/50 transition-colors">
           <div className="text-base font-bold text-emerald-300">
             {exerciseProgress.filter(e => e.progressFromPrevious?.direction === 'up').length}
           </div>
           <div className="text-[8px] text-emerald-300/60 font-medium">Up</div>
         </div>
-        <div className="bg-gradient-to-br from-cyan-600/30 to-cyan-700/20 rounded-lg p-1.5 text-center border border-cyan-500/30 hover:border-cyan-400/50 transition-colors">
+        <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg p-1.5 text-center border border-cyan-500/30 hover:border-cyan-400/50 transition-colors">
           <div className="text-base font-bold text-cyan-300">
             {new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size}
           </div>
@@ -251,7 +253,7 @@ export default function WorkoutProgressTracker({ currentUser }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-              className="p-2 bg-gradient-to-r from-slate-800/60 to-slate-700/40 rounded-lg border border-slate-600/40 hover:border-purple-500/50 hover:bg-gradient-to-r hover:from-slate-800/80 hover:to-slate-700/60 transition-all"
+              className="p-2 bg-white/5 backdrop-blur-md rounded-lg border border-white/10 hover:border-white/20 transition-all"
             >
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <span className="text-[10px] font-semibold text-white">{exercise.name}</span>
@@ -302,9 +304,9 @@ export default function WorkoutProgressTracker({ currentUser }) {
                 </div>
               </div>
               {exercise.latest.notes && (
-                <div className="flex gap-1.5 items-start text-[9px] bg-purple-500/10 border border-purple-500/20 rounded-lg p-1.5">
-                  <MessageSquare className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-purple-200/80 line-clamp-2">{exercise.latest.notes}</p>
+                <div className="flex gap-1.5 items-start text-[9px] bg-orange-500/10 border border-orange-500/20 rounded-lg p-1.5">
+                  <MessageSquare className="w-3 h-3 text-orange-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-orange-200/80 line-clamp-2">{exercise.latest.notes}</p>
                 </div>
               )}
             </motion.div>

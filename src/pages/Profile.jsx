@@ -481,9 +481,6 @@ export default function Profile() {
 
 
             <TabsContent value="progress" className="space-y-4 mt-0">
-        {/* Consistency Journey */}
-        <ConsistencyJourney totalCheckIns={userCheckIns.length} />
-
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
           <Card className="p-5 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20 overflow-hidden">
