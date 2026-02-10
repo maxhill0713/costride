@@ -1,11 +1,11 @@
 import React from 'react';
 import { Flame } from 'lucide-react';
 
-export default function StreakIcon({ variant = 'default', className = 'w-9 h-9' }) {
+export default function StreakIcon({ variant = 'default', className = 'w-9 h-9', outline = false }) {
   if (variant === 'sunglasses') {
     return (
       <div className={`relative ${className}`}>
-        <Flame className={`${className} text-orange-500 fill-current`} />
+        <Flame className={`${className} ${outline ? 'text-orange-500 fill-none stroke-current stroke-1.5' : 'text-orange-500 fill-current'}`} />
         <svg 
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox="0 0 64 64"
@@ -21,22 +21,24 @@ export default function StreakIcon({ variant = 'default', className = 'w-9 h-9' 
   if (variant === 'cowboy') {
     return (
       <div className={`relative ${className}`}>
-        <Flame className={`${className} text-orange-500 fill-current`} />
+        <Flame className={`${className} ${outline ? 'text-orange-500 fill-none stroke-current stroke-1.5' : 'text-orange-500 fill-current'}`} />
         <svg 
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox="0 0 64 64"
         >
           <path 
             d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
-            fill="currentColor" 
+            fill={outline ? "none" : "currentColor"}
+            stroke={outline ? "currentColor" : "none"}
+            strokeWidth={outline ? "1.5" : "0"}
             className="text-amber-800"
           />
-          <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-          <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+          <ellipse cx="32" cy="28" rx="24" ry="6" fill={outline ? "none" : "currentColor"} stroke={outline ? "currentColor" : "none"} strokeWidth={outline ? "1.5" : "0"} className="text-amber-700" />
+          <rect x="14" y="26" width="36" height="1.5" fill={outline ? "none" : "currentColor"} stroke={outline ? "currentColor" : "none"} strokeWidth={outline ? "1.5" : "0"} className="text-amber-900" />
         </svg>
       </div>
     );
   }
 
-  return <Flame className={`${className} text-orange-500 fill-current`} />;
+  return <Flame className={`${className} ${outline ? 'text-orange-500 fill-none stroke-current stroke-1.5' : 'text-orange-500 fill-current'}`} />;
 }

@@ -633,18 +633,29 @@ export default function Friends() {
                       )}
 
                       {/* Reaction button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const streakIcon = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
-                          updatePostReactionMutation.mutate(activity.id.replace('post-', ''), streakIcon);
-                        }}
-                        className="p-2 hover:bg-orange-500/20 rounded-lg transition-colors"
-                      >
-                        <StreakIcon variant={currentUser?.streak_variant || 'default'} className="w-6 h-6" />
-                      </Button>
+                      {(() => {
+                        const postId = activity.id.replace('post-', '');
+                        const post = allPosts.find(p => p.id === postId);
+                        const hasReacted = post?.reactions && Object.values(post.reactions).some(r => r === currentUser?.id);
+
+                        return (
+                          <Button
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const streakIcon = currentUser?.streak_variant === 'sunglasses' ? 'sunglasses' : currentUser?.streak_variant === 'cowboy' ? 'cowboy' : 'default';
+                              updatePostReactionMutation.mutate(postId, streakIcon);
+                            }}
+                            className="p-2 hover:bg-orange-500/10 rounded-xl transition-colors mt-1"
+                          >
+                            <StreakIcon 
+                              variant={currentUser?.streak_variant || 'default'} 
+                              className="w-12 h-12"
+                              outline={!hasReacted}
+                            />
+                          </Button>
+                        );
+                      })()}
                     </div>
                   </div>
                 ) : (
