@@ -27,12 +27,17 @@ Deno.serve(async (req) => {
       no_photos: 0
     };
 
+    console.log(`Found ${gymsToUpdate.length} gyms to update`);
+
     for (const gym of gymsToUpdate) {
       try {
         console.log(`Processing ${gym.name} (${gym.google_place_id})...`);
         
-        // Fetch place details with photos
-        const url = `https://places.googleapis.com/v1/${gym.google_place_id}`;
+        // Fetch place details with photos using correct format
+        const placeId = gym.google_place_id.replace('places/', '');
+        const url = `https://places.googleapis.com/v1/places/${placeId}`;
+        
+        console.log(`Fetching from: ${url}`);
         
         const response = await fetch(url, {
           method: 'GET',
