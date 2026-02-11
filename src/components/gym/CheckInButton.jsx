@@ -460,7 +460,7 @@ export default function CheckInButton({ gym }) {
     
     setIsChecking(true);
     try {
-      // Get user's location
+      // Get user's location with permission dialog
       const position = await new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -522,7 +522,7 @@ export default function CheckInButton({ gym }) {
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {
         toast.error('Location access denied', {
-          description: 'Please enable location access to check in.'
+          description: 'We use your location to confirm you are at the gym when checking in. Please enable location access.'
         });
       } else if (error.code === error.POSITION_UNAVAILABLE) {
         toast.error('Location unavailable', {
