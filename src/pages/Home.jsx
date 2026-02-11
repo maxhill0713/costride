@@ -356,16 +356,23 @@ export default function Home() {
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
               </h1>
-              <Link to={createPageUrl('Friends')} onClick={async () => {
-                if (currentUser) {
-                  await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-                }
-              }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
-                     <Users className="w-14 h-14 text-cyan-400" />
-                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+              <div className="flex items-center gap-2">
+                <Link to={createPageUrl('Gyms')}>
+                  <Button variant="ghost" size="icon" className="rounded-full w-12 h-12">
+                    <Dumbbell className="w-6 h-6 text-purple-400" />
                   </Button>
-              </Link>
+                </Link>
+                <Link to={createPageUrl('Friends')} onClick={async () => {
+                  if (currentUser) {
+                    await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+                  }
+                }}>
+                  <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
+                       <Users className="w-14 h-14 text-cyan-400" />
+                      {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+                    </Button>
+                </Link>
+              </div>
             </div>
           </div>
 
