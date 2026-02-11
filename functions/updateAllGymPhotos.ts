@@ -29,34 +29,42 @@ Deno.serve(async (req) => {
 
     for (const gym of gymsToUpdate) {
       try {
+        console.log(`Processing ${gym.name} (${gym.google_place_id})...`);
+        
         // Fetch place details with photos
         const url = `https://places.googleapis.com/v1/${gym.google_place_id}`;
         
         const response = await fetch(url, {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
             'X-Goog-Api-Key': apiKey,
             'X-Goog-FieldMask': 'photos'
           }
         });
 
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`API error for ${gym.name}:`, errorData);
+          results.failed++;
+          continue;
+        }
+
         const data = await response.json();
 
-        if (response.ok && data.photos && data.photos.length > 0) {
+        if (data.photos && data.photos.length > 0) {
           const photoName = data.photos[0].name;
           const photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
           
           await base44.asServiceRole.entities.Gym.update(gym.id, { image_url: photoUrl });
           results.updated++;
-          console.log(`Updated photo for ${gym.name}`);
+          console.log(`✓ Updated photo for ${gym.name}`);
         } else {
           results.no_photos++;
-          console.log(`No photos available for ${gym.name}`);
+          console.log(`✗ No photos available for ${gym.name}`);
         }
 
-        // Rate limiting - wait 100ms between requests
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Rate limiting - wait 200ms between requests
+        await new Promise(resolve => setTimeout(resolve, 200));
       } catch (error) {
         results.failed++;
         console.error(`Failed to update ${gym.name}:`, error.message);
