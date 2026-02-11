@@ -125,6 +125,9 @@ export default function Gyms() {
     setShowAddGymModal(true);
   };
 
+  const [showConfirmJoin, setShowConfirmJoin] = useState(false);
+  const [pendingGymData, setPendingGymData] = useState(null);
+
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
       const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
@@ -139,7 +142,9 @@ export default function Gyms() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setShowAddGymModal(false);
+      setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
+      setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
       navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
@@ -168,7 +173,20 @@ export default function Gyms() {
       members_count: 0
     };
 
-    createGymMutation.mutate(gymData);
+    // If user already has a gym and is not claiming ownership, show confirmation
+    const isGhostCommunity = !isOwner;
+    if (gymMemberships.length > 0 || isGhostCommunity) {
+      setPendingGymData(gymData);
+      setShowConfirmJoin(true);
+    } else {
+      createGymMutation.mutate(gymData);
+    }
+  };
+
+  const handleConfirmJoin = () => {
+    if (pendingGymData) {
+      createGymMutation.mutate(pendingGymData);
+    }
   };
 
   useEffect(() => {
@@ -837,6 +855,56 @@ export default function Gyms() {
                 <p>No photos available</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Join Modal */}
+      <Dialog open={showConfirmJoin} onOpenChange={() => {
+        setShowConfirmJoin(false);
+        setPendingGymData(null);
+      }}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {gymMemberships.length > 0 ? 'Replace Primary Gym?' : 'Join This Community?'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {gymMemberships.length > 0 ? (
+              <p className="text-slate-300 text-sm">
+                You're currently a member of <span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span>. 
+                Joining <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> will replace your primary gym.
+              </p>
+            ) : (
+              <p className="text-slate-300 text-sm">
+                Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? 
+                This is an unclaimed community gym.
+              </p>
+            )}
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={() => {
+                  setShowConfirmJoin(false);
+                  setPendingGymData(null);
+                }}
+                variant="outline"
+                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmJoin}
+                disabled={createGymMutation.isPending}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+              >
+                {createGymMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Confirm'
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
