@@ -410,11 +410,15 @@ export default function Gyms() {
                           </Link>
 
                           {/* Badges */}
-                          <div className="absolute top-3 left-3 flex gap-2">
-                           {gym.verified && (
-                             <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                          <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+                           {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ? (
+                             <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold">
                                <BadgeCheck className="w-3 h-3 mr-1" />
-                               Verified
+                               Official
+                             </Badge>
+                           ) : (
+                             <Badge className="bg-slate-600/90 text-slate-200 text-xs shadow-lg font-semibold">
+                               Unofficial
                              </Badge>
                            )}
                            {currentUser && currentUser.email === gym.owner_email ? (
@@ -685,11 +689,15 @@ export default function Gyms() {
                         </Link>
 
                         {/* Badges */}
-                        <div className="absolute top-3 left-3 flex gap-2">
-                          {gym.verified && (
-                            <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+                          {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ? (
+                            <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold">
                               <BadgeCheck className="w-3 h-3 mr-1" />
-                              Verified
+                              Official
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-slate-600/90 text-slate-200 text-xs shadow-lg font-semibold">
+                              Unofficial
                             </Badge>
                           )}
                         </div>
