@@ -425,41 +425,31 @@ export default function Home() {
           {memberGym && (
             <div className="space-y-3">
               {/* Today's Workout */}
-              {currentUser?.workout_split ? (
+              {currentUser?.custom_workout_types ? (
                 <TodayWorkout currentUser={currentUser} />
               ) : (
-                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Dumbbell className="w-4 h-4 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="ml-auto">
-                          <Info className="w-4 h-4 text-slate-400 hover:text-indigo-400 transition-colors" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72 bg-slate-900 border-slate-700 text-white">
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm">How it works</h4>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            Create your custom workout split by defining your training days and exercises. 
-                          </p>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            Once set up, you'll see today's workout here. You can edit sets, reps, and weights for each exercise before and after your workout.
-                          </p>
-                          <p className="text-xs text-slate-300 leading-relaxed">
-                            Track your progress over time and stay consistent with your routine!
-                          </p>
+                <Card className="bg-gradient-to-br from-slate-900/50 via-slate-900/40 to-slate-950/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl shadow-black/30 p-3">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
+                          <Dumbbell className="w-3.5 h-3.5 text-white" />
                         </div>
-                      </PopoverContent>
-                    </Popover>
+                        <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
+                      </div>
+                      <h2 className="text-base font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight">
+                        No Split
+                      </h2>
+                    </div>
                   </div>
 
+                  <div className="text-[10px] text-slate-400 mb-3 leading-relaxed text-center">Create a workout split to start tracking</div>
+                  
                   <button
                     onClick={() => setShowSplitModal(true)}
-                    className="w-full p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+                    className="w-full p-2.5 rounded-lg bg-orange-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30 transition-all text-xs font-semibold flex items-center justify-center gap-2"
                   >
-                    <Calendar className="w-3 h-3" />
+                    <Calendar className="w-3.5 h-3.5" />
                     Create Your Workout Split
                   </button>
                 </Card>
