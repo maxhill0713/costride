@@ -356,16 +356,23 @@ export default function Home() {
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
               </h1>
-              <Link to={createPageUrl('Friends')} onClick={async () => {
-                if (currentUser) {
-                  await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-                }
-              }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
-                     <Users className="w-14 h-14 text-cyan-400" />
-                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+              <div className="flex items-center gap-2">
+                <Link to={createPageUrl('Gyms')}>
+                  <Button variant="ghost" size="icon" className="rounded-full w-12 h-12">
+                    <Dumbbell className="w-6 h-6 text-purple-400" />
                   </Button>
-              </Link>
+                </Link>
+                <Link to={createPageUrl('Friends')} onClick={async () => {
+                  if (currentUser) {
+                    await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+                  }
+                }}>
+                  <Button variant="ghost" size="icon" className="relative rounded-full w-12 h-12">
+                       <Users className="w-14 h-14 text-cyan-400" />
+                      {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+                    </Button>
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -457,21 +464,41 @@ export default function Home() {
             </div>
           )}
 
-          {/* Gyms Section */}
-          <Link to={createPageUrl('Gyms')} className="block">
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-purple-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
-              <div className="p-4">
-                <div className="mb-3">
-                  <p className="text-white font-semibold text-sm tracking-tight">Gyms</p>
-                  <p className="text-slate-400 text-xs mt-0.5 font-medium">Find and join gyms</p>
+          {/* Community Section */}
+          {memberGym && (
+            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20">
+                <div className="p-4">
+                  <div className="mb-3">
+                    <p className="text-white font-semibold text-sm tracking-tight">Community</p>
+                    <p className="text-slate-400 text-xs mt-0.5 font-medium">Connect with your gym</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-300 font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} people checked in` : '3 people checked in'}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center -space-x-2">
+                        {(checkInUsers.length > 0 ? checkInUsers : [
+                          { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
+                          { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }
+                        ]).slice(0, 2).map((user) => (
+                          <div key={user.id} className="relative group">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
+                                {user.full_name?.[0] || 'U'}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300 font-medium">Explore gyms near you</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                </div>
-              </div>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
+          )}
 
 
 
