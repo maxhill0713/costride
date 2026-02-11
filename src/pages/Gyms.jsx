@@ -171,7 +171,8 @@ export default function Gyms() {
       owner_email: isOwner ? currentUser?.email : null,
       verified: isOwner,
       status: 'approved',
-      members_count: 0
+      members_count: 0,
+      image_url: selectedPlaceGym.photo_url || null
     };
 
     // If user already has a gym and is not claiming ownership, show confirmation
