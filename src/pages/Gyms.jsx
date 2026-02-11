@@ -31,6 +31,7 @@ export default function Gyms() {
   const [selectedPlaceGym, setSelectedPlaceGym] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [gymType, setGymType] = useState('general');
+  const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -324,14 +325,15 @@ export default function Gyms() {
               </h1>
             </div>
             <div className="flex gap-2">
-              <Link to={createPageUrl('AddGym')}>
+              {gymMemberships.length > 0 && (
                 <Button 
-                  className="bg-green-600/80 hover:bg-green-600 text-white border border-green-500/50 gap-2 rounded-xl text-sm"
+                  onClick={() => setShowPrimaryGymModal(true)}
+                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-xl text-sm"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden md:inline">Add Gym</span>
+                  <Star className="w-4 h-4" />
+                  <span className="hidden md:inline">Primary Gym</span>
                 </Button>
-              </Link>
+              )}
               <Button 
                 onClick={() => setShowJoinWithCode(true)}
                 className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm"
@@ -855,6 +857,79 @@ export default function Gyms() {
                 <p>No photos available</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Primary Gym Selection Modal */}
+      <Dialog open={showPrimaryGymModal} onOpenChange={setShowPrimaryGymModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Star className="w-5 h-5 text-purple-400" />
+              Set Primary Gym
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
+              <p className="text-purple-200 text-sm">
+                Your primary gym is the default community shown on the Home page and accessed via the Community navigation button.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {userGyms.map((gym) => {
+                const isPrimary = gymMemberships[0]?.gym_id === gym.id;
+                return (
+                  <button
+                    key={gym.id}
+                    onClick={async () => {
+                      // Move this membership to the front of the array
+                      const membership = gymMemberships.find(m => m.gym_id === gym.id);
+                      if (membership) {
+                        await base44.auth.updateMe({ primary_gym_id: gym.id });
+                        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+                        queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+                        setShowPrimaryGymModal(false);
+                      }
+                    }}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      isPrimary 
+                        ? 'bg-purple-500/20 border-purple-400/50' 
+                        : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          isPrimary ? 'bg-purple-500' : 'bg-slate-700'
+                        }`}>
+                          <Dumbbell className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white">{gym.name}</h4>
+                          <p className="text-xs text-slate-400">{gym.city}</p>
+                        </div>
+                      </div>
+                      {isPrimary && (
+                        <Badge className="bg-purple-500 text-white">
+                          <Star className="w-3 h-3 mr-1" />
+                          Primary
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <Button
+              onClick={() => setShowPrimaryGymModal(false)}
+              variant="outline"
+              className="w-full border-slate-600 text-slate-300 hover:bg-slate-800"
+            >
+              Close
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
