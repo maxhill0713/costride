@@ -290,65 +290,53 @@ export default function RedeemReward() {
                     transition={{ duration: 0.2 }}
                   >
                     <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
-                      {/* Sparkle effect on hover */}
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
-                      </div>
-                      
                       <div className="relative">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-white mb-2 text-sm md:text-base truncate">{challenge.title}</h3>
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
-                                {challenge.category}
-                              </Badge>
-                              {challenge.progress >= 75 && (
-                                <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-[10px] md:text-xs inline-flex items-center gap-1">
-                                  <Star className="w-3 h-3" />
-                                  Hot
-                                </Badge>
-                              )}
-                            </div>
+                            <h4 className="font-bold text-white mb-2 text-sm text-slate-300">{challenge.title}</h4>
+                            <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
+                            <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] inline-block">
+                              {challenge.targetValue} {challenge.goal_type === 'participation' ? 'participants' : 'check-ins'}
+                            </Badge>
                           </div>
                           <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-amber-500/30">
                             <Trophy className="w-6 h-6 text-white" />
                           </div>
                         </div>
 
-                        <div className="mb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-slate-400 flex items-center gap-1">
-                              <Target className="w-3 h-3" />
-                              Progress
-                            </span>
-                            <span className="text-sm font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                              {challenge.participantCount}/{challenge.targetValue}
-                            </span>
+                        <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mt-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Gift className="w-4 h-4 text-white" />
                           </div>
-                          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden relative">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${challenge.progress}%` }}
-                              transition={{ duration: 1, ease: 'easeOut' }}
-                              className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 rounded-full shadow-lg shadow-cyan-500/50 relative overflow-hidden"
-                            >
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
-                            </motion.div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] text-slate-400">Reward</p>
+                            <p className="text-xs font-bold text-green-400">{challenge.reward || 'Challenge Badge'}</p>
                           </div>
                         </div>
 
-                        {challenge.reward && (
-                          <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Gift className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] text-slate-400 mb-0.5">Reward</p>
-                              <p className="text-xs font-bold text-green-400 truncate">{challenge.reward}</p>
-                            </div>
+                        <div className="mt-3 pt-3 border-t border-slate-700/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-[10px] font-bold text-slate-400">Progress</p>
+                            <p className="text-[10px] font-bold text-amber-400">{Math.round(challenge.progress)}%</p>
                           </div>
-                        )}
+                          <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${challenge.progress}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          <Button
+                            disabled
+                            className="w-full font-bold text-xs md:text-sm h-8 md:h-10 bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50"
+                          >
+                            ✓ Joined
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   </motion.div>
