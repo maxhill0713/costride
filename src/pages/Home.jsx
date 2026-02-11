@@ -12,7 +12,6 @@ import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
 import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
-import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDistanceToNow } from 'date-fns';
