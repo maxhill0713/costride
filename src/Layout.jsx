@@ -62,6 +62,11 @@ export default function Layout({ children, currentPageName }) {
   const navItems = isGymOwner ? [
         { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
         { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
+      ] : primaryGymId ? [
+        { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
+        { name: 'Community', icon: Users, page: 'GymCommunity', params: `?id=${primaryGymId}`, color: 'text-cyan-500' },
+        { name: 'Rewards', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
+        { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
       ] : [
         { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
         { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
