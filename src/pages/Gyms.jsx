@@ -1036,25 +1036,27 @@ export default function Gyms() {
                 </Select>
               </div>
 
-              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isOwner}
-                    onChange={(e) => setIsOwner(e.target.checked)}
-                    className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span>
-                      <Crown className="w-4 h-4 text-purple-400" />
+              {currentUser?.account_type === 'gym_owner' && (
+                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isOwner}
+                      onChange={(e) => setIsOwner(e.target.checked)}
+                      className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span>
+                        <Crown className="w-4 h-4 text-purple-400" />
+                      </div>
+                      <p className="text-slate-300 text-xs">
+                        Check this if you own or manage this gym. You'll have full control over the gym's profile.
+                      </p>
                     </div>
-                    <p className="text-slate-300 text-xs">
-                      Check this if you own or manage this gym. You'll have full control over the gym's profile.
-                    </p>
-                  </div>
-                </label>
-              </div>
+                  </label>
+                </div>
+              )}
 
               <Button
                 onClick={handleCreateGym}
