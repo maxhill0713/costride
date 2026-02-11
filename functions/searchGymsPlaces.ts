@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating'
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.photos'
       },
       body: JSON.stringify({
         textQuery: input + ' gym',
@@ -46,14 +46,25 @@ Deno.serve(async (req) => {
     }
 
     // Format results from new API
-    const results = (data.places || []).map(place => ({
-      place_id: place.id,
-      name: place.displayName?.text || place.displayName,
-      address: place.formattedAddress,
-      latitude: place.location?.latitude,
-      longitude: place.location?.longitude,
-      rating: place.rating
-    }));
+    const results = (data.places || []).map(place => {
+      // Get the first photo if available
+      let photoUrl = null;
+      if (place.photos && place.photos.length > 0) {
+        const photoName = place.photos[0].name;
+        // Construct photo URL using the photo reference
+        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=800&key=${apiKey}`;
+      }
+      
+      return {
+        place_id: place.id,
+        name: place.displayName?.text || place.displayName,
+        address: place.formattedAddress,
+        latitude: place.location?.latitude,
+        longitude: place.location?.longitude,
+        rating: place.rating,
+        photo_url: photoUrl
+      };
+    });
 
     return Response.json({ results });
   } catch (error) {

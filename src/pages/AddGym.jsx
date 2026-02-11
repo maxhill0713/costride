@@ -102,7 +102,8 @@ export default function AddGym() {
       owner_email: isOwner ? currentUser?.email : null,
       verified: isOwner,
       status: 'approved',
-      members_count: 0
+      members_count: 0,
+      image_url: selectedGym.photo_url || null
     };
 
     createGymMutation.mutate(gymData);
