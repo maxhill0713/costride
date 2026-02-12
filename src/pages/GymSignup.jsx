@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,10 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { MobileSelect } from '@/components/ui/mobile-select';
 import { Card } from '@/components/ui/card';
-import { Dumbbell, Loader2, CheckCircle2, Upload, Plus, Search, MapPin } from 'lucide-react';
+import { Dumbbell, Loader2, CheckCircle2, Upload, Plus, Search, MapPin, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GymSignup() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [equipmentSearch, setEquipmentSearch] = useState('');
@@ -20,6 +23,9 @@ export default function GymSignup() {
   const [showPlaceSuggestions, setShowPlaceSuggestions] = useState(false);
   const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [ghostGym, setGhostGym] = useState(null);
+  const [showGhostGymModal, setShowGhostGymModal] = useState(false);
+  const [checkingGhostGym, setCheckingGhostGym] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -482,20 +488,76 @@ export default function GymSignup() {
     }
   };
 
-  const handleSelectPlace = (place) => {
+  const handleSelectPlace = async (place) => {
+    setCheckingGhostGym(true);
     setSelectedPlace(place);
-    setFormData(prev => ({
-      ...prev,
-      name: place.name.slice(0, 15),
-      google_place_id: place.place_id,
-      latitude: place.latitude,
-      longitude: place.longitude,
-      address: place.address || '',
-      city: place.city || '',
-      postcode: place.postcode || ''
-    }));
     setPlaceSearch(place.name);
     setShowPlaceSuggestions(false);
+
+    try {
+      // Check if there's an existing ghost gym with this google_place_id
+      const existingGyms = await base44.entities.Gym.filter({ 
+        google_place_id: place.place_id 
+      });
+
+      const ghostGymMatch = existingGyms.find(gym => gym.claim_status === 'unclaimed');
+
+      if (ghostGymMatch) {
+        // Found a ghost gym - show modal to claim it
+        setGhostGym(ghostGymMatch);
+        setShowGhostGymModal(true);
+      } else {
+        // No ghost gym - proceed with creating official gym
+        setFormData(prev => ({
+          ...prev,
+          name: place.name.slice(0, 15),
+          google_place_id: place.place_id,
+          latitude: place.latitude,
+          longitude: place.longitude,
+          address: place.address || '',
+          city: place.city || '',
+          postcode: place.postcode || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error checking for ghost gym:', error);
+      // If check fails, proceed with creating official gym
+      setFormData(prev => ({
+        ...prev,
+        name: place.name.slice(0, 15),
+        google_place_id: place.place_id,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        address: place.address || '',
+        city: place.city || '',
+        postcode: place.postcode || ''
+      }));
+    } finally {
+      setCheckingGhostGym(false);
+    }
+  };
+
+  const handleClaimGhostGym = () => {
+    if (ghostGym) {
+      // Navigate to the ClaimGym page with the gym ID
+      navigate(createPageUrl('ClaimGym') + `?gymId=${ghostGym.id}`);
+    }
+  };
+
+  const handleCreateOfficialGym = () => {
+    // User chose to create an official gym instead of claiming ghost gym
+    setFormData(prev => ({
+      ...prev,
+      name: selectedPlace.name.slice(0, 15),
+      google_place_id: selectedPlace.place_id,
+      latitude: selectedPlace.latitude,
+      longitude: selectedPlace.longitude,
+      address: selectedPlace.address || '',
+      city: selectedPlace.city || '',
+      postcode: selectedPlace.postcode || ''
+    }));
+    setShowGhostGymModal(false);
+    setGhostGym(null);
   };
 
 
@@ -630,7 +692,13 @@ export default function GymSignup() {
                       ))}
                     </div>
                   )}
-                  {selectedPlace && (
+                  {checkingGhostGym && (
+                    <div className="mt-2 p-2.5 bg-blue-500/20 border border-blue-500/40 rounded-lg flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin text-blue-400" />
+                      <p className="text-xs text-blue-300 font-medium">Checking for existing gym...</p>
+                    </div>
+                  )}
+                  {selectedPlace && !checkingGhostGym && (
                     <div className="mt-2 p-2.5 bg-green-500/20 border border-green-500/40 rounded-lg">
                       <p className="text-xs text-green-300 font-medium">✓ Gym location selected</p>
                     </div>
