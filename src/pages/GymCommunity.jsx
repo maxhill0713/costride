@@ -824,17 +824,22 @@ export default function GymCommunity() {
                   </h1>
                   {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
                 </div>
-                <div className="flex items-center gap-3 mt-1">
-                  <p className="text-white/70 text-xs flex items-center gap-1 drop-shadow-md">
-                    <MapPin className="w-3 h-3" />
-                    {gym.city}
-                  </p>
-                  <div className="flex items-center gap-1.5 text-white/80 text-xs font-medium drop-shadow-md">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{gym?.members_count || 0} members</span>
-                  </div>
+                <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
+                  <MapPin className="w-3 h-3" />
+                  {gym.city}
+                </p>
                 </div>
-                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Member Count - Bottom Left */}
+          <div className="absolute bottom-3 left-4">
+            <div className="bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-full px-3 py-1.5 shadow-lg">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
+                <span className="text-xs text-white/70">members</span>
               </div>
             </div>
           </div>
