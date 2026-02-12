@@ -432,6 +432,16 @@ export default function Gyms() {
                            )}
                           </div>
 
+                          {/* Primary Gym Icon - Bottom Left */}
+                          {currentUser?.primary_gym_id === gym.id && (
+                            <div className="absolute bottom-3 left-3">
+                              <Badge className="bg-purple-500/90 backdrop-blur-md text-white text-xs shadow-lg font-bold">
+                                <Star className="w-3 h-3 mr-1 fill-white" />
+                                Primary
+                              </Badge>
+                            </div>
+                          )}
+
                           {/* Icons: Gallery, Info & Edit */}
                           <div className="absolute top-3 right-3 flex gap-2">
                             <button
@@ -878,19 +888,15 @@ export default function Gyms() {
 
             <div className="space-y-2">
               {userGyms.map((gym) => {
-                const isPrimary = gymMemberships[0]?.gym_id === gym.id;
+                const isPrimary = currentUser?.primary_gym_id === gym.id;
                 return (
                   <button
                     key={gym.id}
-                    onClick={async () => {
-                      // Move this membership to the front of the array
-                      const membership = gymMemberships.find(m => m.gym_id === gym.id);
-                      if (membership) {
-                        await base44.auth.updateMe({ primary_gym_id: gym.id });
-                        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-                        queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-                        setShowPrimaryGymModal(false);
-                      }
+                    onClick={() => {
+                      base44.auth.updateMe({ primary_gym_id: gym.id });
+                      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+                      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+                      setShowPrimaryGymModal(false);
                     }}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                       isPrimary 
@@ -921,14 +927,6 @@ export default function Gyms() {
                 );
               })}
             </div>
-
-            <Button
-              onClick={() => setShowPrimaryGymModal(false)}
-              variant="outline"
-              className="w-full border-slate-600 text-slate-300 hover:bg-slate-800"
-            >
-              Close
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
