@@ -74,6 +74,15 @@ export default function Gyms() {
     }
   });
 
+  const updatePrimaryGymMutation = useMutation({
+    mutationFn: (gymId) => base44.auth.updateMe({ primary_gym_id: gymId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      setShowPrimaryGymModal(false);
+      setSelectedPrimaryGym(null);
+    }
+  });
+
   const userGyms = gymMemberships.length > 0 
     ? gyms.filter(g => gymMemberships.some(m => m.gym_id === g.id))
     : [];
@@ -937,16 +946,23 @@ export default function Gyms() {
               <Button
                 onClick={() => {
                   if (selectedPrimaryGym) {
-                    base44.auth.updateMe({ primary_gym_id: selectedPrimaryGym });
-                    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-                    queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+                    updatePrimaryGymMutation.mutate(selectedPrimaryGym);
+                  } else {
+                    setShowPrimaryGymModal(false);
+                    setSelectedPrimaryGym(null);
                   }
-                  setShowPrimaryGymModal(false);
-                  setSelectedPrimaryGym(null);
                 }}
+                disabled={updatePrimaryGymMutation.isPending}
                 className="flex-1 bg-purple-600 hover:bg-purple-700"
               >
-                Save
+                {updatePrimaryGymMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save'
+                )}
               </Button>
             </div>
           </div>
