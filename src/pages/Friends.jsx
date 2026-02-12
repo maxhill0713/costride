@@ -288,6 +288,19 @@ export default function Friends() {
       }
     });
 
+    // Add notifications
+    notifications.forEach(notification => {
+      const daysSince = differenceInDays(new Date(), new Date(notification.created_date));
+      if (daysSince <= 7) {
+        activities.push({
+          id: `notification-${notification.id}`,
+          type: 'notification',
+          message: notification.message || notification.title,
+          timestamp: new Date(notification.created_date)
+        });
+      }
+    });
+
 
 
     // Sort by most recent first
@@ -539,73 +552,88 @@ export default function Friends() {
          {filteredActivityFeed.length > 0 && (
          <div className="space-y-3">
            {filteredActivityFeed.map(activity => (
-             <Card 
-               key={activity.id}
-               data-activity-id={activity.id}
-               className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20"
-             >
-               <div className="p-3">
-                 <div className="flex items-center gap-3">
-                   {/* Profile Photo */}
-                   <Link 
-                     to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                     className="flex-shrink-0"
-                   >
-                     {activity.friendAvatar ? (
-                       <img 
-                         src={activity.friendAvatar} 
-                         alt={activity.friendName} 
-                         className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" 
-                       />
-                     ) : (
-                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
-                         <span className="text-white font-bold text-sm">
-                           {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+             activity.type === 'notification' ? (
+               // Simple notification layout - just text
+               <Card 
+                 key={activity.id}
+                 data-activity-id={activity.id}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20"
+               >
+                 <div className="p-3">
+                   <p className="text-xs text-white leading-tight">
+                     {activity.message}
+                   </p>
+                 </div>
+               </Card>
+             ) : (
+               <Card 
+                 key={activity.id}
+                 data-activity-id={activity.id}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20"
+               >
+                 <div className="p-3">
+                   <div className="flex items-center gap-3">
+                     {/* Profile Photo */}
+                     <Link 
+                       to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                       className="flex-shrink-0"
+                     >
+                       {activity.friendAvatar ? (
+                         <img 
+                           src={activity.friendAvatar} 
+                           alt={activity.friendName} 
+                           className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" 
+                         />
+                       ) : (
+                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
+                           <span className="text-white font-bold text-sm">
+                             {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                           </span>
+                         </div>
+                       )}
+                     </Link>
+
+                     {/* Activity Content */}
+                     <div className="flex-1 min-w-0">
+                       <p className="text-xs text-white leading-tight">
+                         <span className="font-semibold">{activity.friendName}</span>
+                         {' '}
+                         <span className="text-slate-300">{activity.message}</span>
+                         {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
+                       </p>
+
+                       {/* Timestamp and badges inline */}
+                       <div className="flex items-center gap-2 mt-1">
+                         <span className="text-[10px] text-slate-500">
+                           {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
                          </span>
+
+                         {/* Milestone Badge */}
+                         {activity.type === 'milestone' && (
+                           <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
+                             🔥 {activity.milestone} days
+                           </Badge>
+                         )}
+
+                         {/* PR Badge */}
+                         {activity.type === 'pr' && (
+                           <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">
+                             🏆 PR
+                           </Badge>
+                         )}
+
+                         {/* Check-in Badge */}
+                         {activity.type === 'checkin' && activity.gymName && (
+                           <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] px-1.5 py-0">
+                             {activity.gymName}
+                           </Badge>
+                         )}
                        </div>
-                     )}
-                   </Link>
-
-                   {/* Activity Content */}
-                   <div className="flex-1 min-w-0">
-                     <p className="text-xs text-white leading-tight">
-                       <span className="font-semibold">{activity.friendName}</span>
-                       {' '}
-                       <span className="text-slate-300">{activity.message}</span>
-                       {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
-                     </p>
-
-                     {/* Timestamp and badges inline */}
-                     <div className="flex items-center gap-2 mt-1">
-                       <span className="text-[10px] text-slate-500">
-                         {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
-                       </span>
-
-                       {/* Milestone Badge */}
-                       {activity.type === 'milestone' && (
-                         <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
-                           🔥 {activity.milestone} days
-                         </Badge>
-                       )}
-
-                       {/* PR Badge */}
-                       {activity.type === 'pr' && (
-                         <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">
-                           🏆 PR
-                         </Badge>
-                       )}
-
-                       {/* Check-in Badge */}
-                       {activity.type === 'checkin' && activity.gymName && (
-                         <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] px-1.5 py-0">
-                           {activity.gymName}
-                         </Badge>
-                       )}
                      </div>
                    </div>
                  </div>
-               </div>
-             </Card>
+               </Card>
+             )
            ))}
          </div>
          )}
