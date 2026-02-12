@@ -208,39 +208,36 @@ export default function RedeemReward() {
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('weekly')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center ${
               activeSection === 'weekly'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Zap className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden sm:inline">Weekly Challenges</span>
-            <span className="sm:hidden">Weekly</span>
+            <Zap className="w-4 h-4 mr-1.5 flex-shrink-0" />
+            <span className="truncate">Weekly</span>
           </button>
           <button
             onClick={() => setActiveSection('community')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center ${
               activeSection === 'community'
                 ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Trophy className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden sm:inline">Community Challenges</span>
-            <span className="sm:hidden">Community</span>
+            <Trophy className="w-4 h-4 mr-1.5 flex-shrink-0" />
+            <span className="truncate">Community</span>
           </button>
           <button
             onClick={() => setActiveSection('rewards')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center ${
               activeSection === 'rewards'
                 ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden md:inline">Rewards</span>
-            <span className="md:hidden">Rewards</span>
+            <Gift className="w-4 h-4 mr-1.5 flex-shrink-0" />
+            <span className="truncate">Rewards</span>
           </button>
         </div>
 
@@ -452,36 +449,7 @@ export default function RedeemReward() {
 
 
 
-         {/* Claimed Rewards History */}
-        {claimedBonuses.length > 0 && activeSection === 'rewards' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8">
-            <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-              <CheckCircle className="w-6 h-6 text-green-400" />
-              Claimed Rewards
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {claimedBonuses.map((bonus) => (
-                <Card key={bonus.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-green-400/30 transition-all shadow-2xl shadow-black/20">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{bonus.offer_details}</h3>
-                      <div className="flex items-center gap-1.5 text-[10px] md:text-xs text-slate-400">
-                        <Clock className="w-3 h-3 flex-shrink-0" />
-                        <span>{new Date(bonus.created_date).toLocaleDateString()}</span>
-                      </div>
-                      {bonus.redeemed && (
-                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 text-[10px] md:text-xs mt-1.5 inline-block">
-                          ✓ Redeemed
-                        </Badge>
-                      )}
-                    </div>
-                    <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </motion.div>
-        )}
+
       </div>
 
       {/* QR Code Modal */}
