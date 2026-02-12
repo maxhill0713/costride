@@ -160,8 +160,9 @@ export default function Home() {
   }, [currentUser?.onboarding_completed, navigate]);
 
   // Calculate these values before early return
-  const memberGym = gymMemberships.length > 0 
-    ? allGyms.find(g => g.id === gymMemberships[0].gym_id) 
+  const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
+  const memberGym = primaryGymId 
+    ? allGyms.find(g => g.id === primaryGymId) 
     : null;
 
   const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
