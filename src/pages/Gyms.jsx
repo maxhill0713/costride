@@ -32,6 +32,7 @@ export default function Gyms() {
   const [isOwner, setIsOwner] = useState(false);
   const [gymType, setGymType] = useState('general');
   const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
+  const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -435,10 +436,9 @@ export default function Gyms() {
                           {/* Primary Gym Icon - Bottom Left */}
                           {currentUser?.primary_gym_id === gym.id && (
                             <div className="absolute bottom-3 left-3">
-                              <Badge className="bg-purple-500/90 backdrop-blur-md text-white text-xs shadow-lg font-bold">
-                                <Star className="w-3 h-3 mr-1 fill-white" />
-                                Primary
-                              </Badge>
+                              <div className="w-8 h-8 rounded-lg bg-purple-500/90 backdrop-blur-md flex items-center justify-center shadow-lg">
+                                <Star className="w-4 h-4 text-white fill-white" />
+                              </div>
                             </div>
                           )}
 
@@ -888,16 +888,11 @@ export default function Gyms() {
 
             <div className="space-y-2">
               {userGyms.map((gym) => {
-                const isPrimary = currentUser?.primary_gym_id === gym.id;
+                const isPrimary = selectedPrimaryGym === gym.id || (!selectedPrimaryGym && currentUser?.primary_gym_id === gym.id);
                 return (
                   <button
                     key={gym.id}
-                    onClick={() => {
-                      base44.auth.updateMe({ primary_gym_id: gym.id });
-                      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-                      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-                      setShowPrimaryGymModal(false);
-                    }}
+                    onClick={() => setSelectedPrimaryGym(gym.id)}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                       isPrimary 
                         ? 'bg-purple-500/20 border-purple-400/50' 
@@ -926,6 +921,33 @@ export default function Gyms() {
                   </button>
                 );
               })}
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowPrimaryGymModal(false);
+                  setSelectedPrimaryGym(null);
+                }}
+                variant="outline"
+                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedPrimaryGym) {
+                    base44.auth.updateMe({ primary_gym_id: selectedPrimaryGym });
+                    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+                    queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+                  }
+                  setShowPrimaryGymModal(false);
+                  setSelectedPrimaryGym(null);
+                }}
+                className="flex-1 bg-purple-600 hover:bg-purple-700"
+              >
+                Save
+              </Button>
             </div>
           </div>
         </DialogContent>
