@@ -121,47 +121,30 @@ export default function InviteOwner() {
 
 
         {/* What is a Ghost Gym */}
-        <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-6">
-          <div className="flex items-center gap-3 mb-4">
+        <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-4">
+          <div className="flex items-center gap-3 mb-2">
             <AlertCircle className="w-5 h-5 text-yellow-400" />
-            <h3 className="text-lg font-bold text-white">Why This Matters to You</h3>
+            <h3 className="text-base font-bold text-white">Unlock Exclusive Member Benefits</h3>
           </div>
-          <p className="text-slate-300 text-sm leading-relaxed mb-3">
-            This gym hasn't been claimed by its owner yet, which means you're missing out on exclusive perks and experiences:
-          </p>
-          <div className="space-y-2 text-sm text-slate-300">
-            <div className="flex items-start gap-2">
-              <span className="text-yellow-400 mt-0.5">•</span>
-              <span><strong className="text-white">Earn Real Rewards</strong> - Get free protein, gear discounts, and gym perks for hitting your goals</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-yellow-400 mt-0.5">•</span>
-              <span><strong className="text-white">Exclusive Challenges</strong> - Compete for prizes and recognition in gym-wide competitions</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-yellow-400 mt-0.5">•</span>
-              <span><strong className="text-white">Connect with Your Community</strong> - Get updates, events, and motivation from your actual gym</span>
-            </div>
-          </div>
-          <p className="text-slate-400 text-xs mt-4 italic">
-            Help bring your gym owner onboard and unlock these benefits for everyone!
+          <p className="text-slate-300 text-sm leading-relaxed">
+            This gym isn't claimed yet. Help activate it to unlock <strong className="text-white">rewards, challenges, and exclusive perks</strong> for yourself and all members!
           </p>
         </Card>
 
         {/* Notify Owner Section */}
         {gym.owner_email && (
-          <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-6">
-            <div className="flex items-center gap-3 mb-3">
+          <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-4">
+            <div className="flex items-center gap-3 mb-2">
               <Mail className="w-5 h-5 text-blue-400" />
-              <h3 className="text-lg font-bold text-white">Reach Out to Your Gym Owner</h3>
+              <h3 className="text-base font-bold text-white">Notify the Owner</h3>
             </div>
-            <p className="text-slate-300 text-sm mb-4">
-              Send them a personal invite and be the hero who brings exclusive rewards, challenges, and community features to your gym!
+            <p className="text-slate-300 text-xs mb-3">
+              Send them an invite to unlock rewards for everyone!
             </p>
             <Button
               onClick={() => notifyOwnerMutation.mutate()}
               disabled={notifyOwnerMutation.isPending}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl h-12 font-semibold"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl h-11 font-semibold"
             >
               <Mail className="w-4 h-4 mr-2" />
               {notifyOwnerMutation.isPending ? 'Sending...' : 'Send Invitation Email'}
@@ -171,47 +154,39 @@ export default function InviteOwner() {
 
         {/* Request Official Status */}
         {!hasSubmittedRequest ? (
-          <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-6">
-            <div className="flex items-center gap-3 mb-4">
+          <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-4">
+            <div className="flex items-center gap-3 mb-2">
               <Crown className="w-5 h-5 text-purple-400" />
-              <h3 className="text-lg font-bold text-white">Fast-Track Your Gym's Activation</h3>
+              <h3 className="text-base font-bold text-white">Request Activation</h3>
             </div>
-            <p className="text-slate-300 text-sm mb-4">
-              Can't reach the owner? Request official status and our team will personally contact them. The sooner they join, the sooner you get access to rewards, challenges, and perks!
+            <p className="text-slate-300 text-xs mb-3">
+              Our team will contact the owner to unlock rewards
             </p>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  Additional information (optional)
-                </label>
-                <Textarea
-                  value={requestMessage}
-                  onChange={(e) => setRequestMessage(e.target.value)}
-                  placeholder="e.g., Great local gym with an active community..."
-                  className="bg-slate-800/50 border-slate-700 text-white placeholder-slate-500 min-h-[100px]"
-                />
-              </div>
+            <div className="space-y-3">
+              <Textarea
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                placeholder="Additional info (optional)..."
+                className="bg-slate-800/50 border-slate-700 text-white placeholder-slate-500 text-sm min-h-[70px]"
+              />
               <Button
                 onClick={() => submitOfficialRequestMutation.mutate()}
                 disabled={submitOfficialRequestMutation.isPending}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl h-12 font-semibold"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl h-11 font-semibold"
               >
                 <Send className="w-4 h-4 mr-2" />
                 {submitOfficialRequestMutation.isPending ? 'Submitting...' : 'Request Official Status'}
               </Button>
-              <p className="text-xs text-slate-400 text-center">
-                Our team will personally reach out to activate your gym and unlock member rewards
-              </p>
             </div>
           </Card>
         ) : (
-          <Card className="bg-gradient-to-br from-green-900/20 to-green-900/10 backdrop-blur-xl border border-green-500/30 p-6">
+          <Card className="bg-gradient-to-br from-green-900/20 to-green-900/10 backdrop-blur-xl border border-green-500/30 p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold text-white mb-2">Request Submitted!</h3>
-                <p className="text-slate-300 text-sm">
-                  You're awesome! We're reaching out to the gym owner now. Get ready for exclusive rewards and challenges coming soon! 🎉
+                <h3 className="text-base font-bold text-white mb-1">Request Submitted!</h3>
+                <p className="text-slate-300 text-xs">
+                  We're reaching out to the gym owner now. Get ready for rewards! 🎉
                 </p>
               </div>
             </div>
