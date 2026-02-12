@@ -12,7 +12,7 @@ import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
 export default function RedeemReward() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
-  const [activeSection, setActiveSection] = useState('challenges');
+  const [activeSection, setActiveSection] = useState('weekly');
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -207,55 +207,54 @@ export default function RedeemReward() {
         {/* Section Tabs */}
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
-            onClick={() => setActiveSection('challenges')}
+            onClick={() => setActiveSection('weekly')}
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
-              activeSection === 'challenges'
+              activeSection === 'weekly'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Trophy className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden md:inline">Challenges</span>
-            <span className="md:hidden">Challenges</span>
+            <Zap className="w-4 h-4 inline mr-1.5" />
+            <span className="hidden md:inline">Weekly</span>
+            <span className="md:hidden">Weekly</span>
           </button>
           <button
-            onClick={() => setActiveSection('gym')}
+            onClick={() => setActiveSection('community')}
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
-              activeSection === 'gym'
+              activeSection === 'community'
                 ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden md:inline">In-Gym Rewards</span>
-            <span className="md:hidden">Gym</span>
+            <Trophy className="w-4 h-4 inline mr-1.5" />
+            <span className="hidden md:inline">Community</span>
+            <span className="md:hidden">Community</span>
           </button>
           <button
-            onClick={() => setActiveSection('brand')}
+            onClick={() => setActiveSection('rewards')}
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
-              activeSection === 'brand'
+              activeSection === 'rewards'
                 ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
             <Gift className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden md:inline">Brand Rewards</span>
-            <span className="md:hidden">Brand</span>
+            <span className="hidden md:inline">Rewards</span>
+            <span className="md:hidden">Rewards</span>
           </button>
         </div>
 
 
 
-        {/* Active Challenges Section */}
-        {activeSection === 'challenges' && (
+        {/* Weekly Challenges Section */}
+        {activeSection === 'weekly' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            {/* Weekly Challenges */}
-            {weeklyChallenges.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-                  <Trophy className="w-6 h-6 text-amber-400" />
-                  Weekly Challenges
-                </h2>
+            <div>
+              <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <Zap className="w-6 h-6 text-amber-400" />
+                Weekly Challenges
+              </h2>
+              {weeklyChallenges.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {weeklyChallenges.map((challenge) => (
                     <WeeklyChallengeCard 
@@ -265,14 +264,23 @@ export default function RedeemReward() {
                     />
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
+                  <Zap className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <p className="text-slate-400">No weekly challenges available right now</p>
+                </Card>
+              )}
+            </div>
+          </motion.div>
+        )}
 
-            {/* Community Challenges */}
+        {/* Community Challenges Section */}
+        {activeSection === 'community' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <div className="mb-6">
               <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-amber-400" />
-                Active Challenges
+                <Trophy className="w-6 h-6 text-cyan-400" />
+                Community Challenges
               </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userChallengeProgress.length === 0 ? (
@@ -347,12 +355,12 @@ export default function RedeemReward() {
         </motion.div>
         )}
 
-        {/* In-Gym Rewards Section */}
-        {activeSection === 'gym' && (
+        {/* Rewards Section */}
+        {activeSection === 'rewards' && (
          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <div>
           <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-            <Gift className="w-6 h-6 text-cyan-400" />
+            <Gift className="w-6 h-6 text-purple-400" />
             Available Rewards
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -442,32 +450,10 @@ export default function RedeemReward() {
          </motion.div>
          )}
 
-         {/* Brand Rewards Section */}
-         {activeSection === 'brand' && (
-         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-           <div>
-             <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-               <Gift className="w-6 h-6 text-purple-400" />
-               Brand Rewards
-             </h2>
-             <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
-               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                 <Gift className="w-8 h-8 text-white" />
-               </div>
-               <p className="text-lg text-slate-300 mb-6">Earn brand rewards with Go Fattie Premium</p>
-               <Button
-                 onClick={() => window.location.href = '/pages/BrandDiscounts'}
-                 className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-xl h-12"
-               >
-                 View Brand Discounts
-               </Button>
-             </Card>
-           </div>
-         </motion.div>
-         )}
+
 
          {/* Claimed Rewards History */}
-        {claimedBonuses.length > 0 && activeSection !== 'brand' && (
+        {claimedBonuses.length > 0 && activeSection === 'rewards' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-8">
             <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
               <CheckCircle className="w-6 h-6 text-green-400" />
