@@ -190,7 +190,7 @@ export default function RedeemReward() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
       {/* Header */}
-      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-900/60 bg-gradient-to-b from-slate-950/95 via-blue-950/90 to-transparent backdrop-blur-xl shadow-xl shadow-black/30">
+      <div className="relative pt-8 pb-6 px-3 md:px-4 bg-gradient-to-b from-slate-950/95 via-blue-950/90 to-transparent backdrop-blur-xl">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">Rewards & Challenges</h1>
           <p className="text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
