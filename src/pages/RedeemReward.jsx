@@ -215,8 +215,8 @@ export default function RedeemReward() {
             }`}
           >
             <Zap className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden md:inline">Weekly</span>
-            <span className="md:hidden">Weekly</span>
+            <span className="hidden sm:inline">Weekly Challenges</span>
+            <span className="sm:hidden">Weekly</span>
           </button>
           <button
             onClick={() => setActiveSection('community')}
@@ -227,8 +227,8 @@ export default function RedeemReward() {
             }`}
           >
             <Trophy className="w-4 h-4 inline mr-1.5" />
-            <span className="hidden md:inline">Community</span>
-            <span className="md:hidden">Community</span>
+            <span className="hidden sm:inline">Community Challenges</span>
+            <span className="sm:hidden">Community</span>
           </button>
           <button
             onClick={() => setActiveSection('rewards')}
