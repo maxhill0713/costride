@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, BellOff, Flame, Trophy, Calendar, Target, CheckCircle2, AlertCircle, PartyPopper, TrendingUp, X } from 'lucide-react';
+import { Bell, BellOff, X } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -150,37 +150,6 @@ export default function Notifications() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const getNotificationIcon = (type, icon) => {
-    if (icon) return icon;
-    switch (type) {
-      case 'inactivity': return <AlertCircle className="w-5 h-5 text-orange-400" />;
-      case 'milestone': return <Trophy className="w-5 h-5 text-yellow-400" />;
-      case 'anniversary': return <PartyPopper className="w-5 h-5 text-purple-400" />;
-      case 'engagement': return <TrendingUp className="w-5 h-5 text-cyan-400" />;
-      case 'achievement': return <CheckCircle2 className="w-5 h-5 text-green-400" />;
-      case 'challenge': return <Flame className="w-5 h-5 text-red-400" />;
-      case 'streak': return <Flame className="w-5 h-5 text-orange-400" />;
-      case 'reward': return <Trophy className="w-5 h-5 text-pink-400" />;
-      case 'reminder': return <Bell className="w-5 h-5 text-indigo-400" />;
-      default: return <Bell className="w-5 h-5 text-slate-400" />;
-    }
-  };
-
-  const getNotificationColor = (type) => {
-    switch (type) {
-      case 'inactivity': return 'bg-slate-800/60 backdrop-blur-sm border-orange-500/30';
-      case 'milestone': return 'bg-slate-800/60 backdrop-blur-sm border-yellow-500/30';
-      case 'anniversary': return 'bg-slate-800/60 backdrop-blur-sm border-purple-500/30';
-      case 'engagement': return 'bg-slate-800/60 backdrop-blur-sm border-cyan-500/30';
-      case 'achievement': return 'bg-slate-800/60 backdrop-blur-sm border-green-500/30';
-      case 'challenge': return 'bg-slate-800/60 backdrop-blur-sm border-red-500/30';
-      case 'streak': return 'bg-slate-800/60 backdrop-blur-sm border-orange-500/30';
-      case 'reward': return 'bg-slate-800/60 backdrop-blur-sm border-pink-500/30';
-      case 'reminder': return 'bg-slate-800/60 backdrop-blur-sm border-indigo-500/30';
-      default: return 'bg-slate-800/60 backdrop-blur-sm border-slate-600/40';
-    }
-  };
-
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -234,72 +203,20 @@ export default function Notifications() {
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`${getNotificationColor(notification.type)} border overflow-hidden hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 rounded-2xl ${
-                  !notification.read ? 'ring-2 ring-blue-500/40' : ''
-                }`}
+                className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20"
               >
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
-                    {/* Icon */}
-                    <div className="flex-shrink-0">
-                      {notification.icon && typeof notification.icon === 'string' && notification.icon.length <= 2 ? (
-                        <div className="text-3xl">{notification.icon}</div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center">
-                          {getNotificationIcon(notification.type, null)}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-white">{notification.title}</h3>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                          className="flex-shrink-0 h-8 w-8 hover:bg-slate-700/50 rounded-full"
-                        >
-                          <X className="w-4 h-4 text-slate-400" />
-                        </Button>
-                      </div>
-                      <p className="text-sm font-normal text-slate-200 mb-2 leading-relaxed">{notification.message}</p>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-slate-500">
-                          {format(new Date(notification.created_date), 'MMM d, h:mm a')}
-                        </span>
-                        {!notification.read && (
-                          <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs shadow-lg shadow-cyan-500/30">New</Badge>
-                        )}
-                      </div>
-                      
-                      {/* Action Button */}
-                      <div className="flex gap-2 mt-3">
-                        {notification.action_url && (
-                          <Link to={notification.action_url}>
-                            <Button
-                             size="sm"
-                             className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-2xl shadow-lg"
-                             onClick={() => markAsReadMutation.mutate(notification.id)}
-                            >
-                             View
-                            </Button>
-                          </Link>
-                        )}
-                        {!notification.read && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => markAsReadMutation.mutate(notification.id)}
-                            className="bg-slate-700/50 hover:bg-slate-700 border-cyan-700/50 text-cyan-300 rounded-2xl"
-                          >
-                            Mark as Read
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                <div className="p-3 flex items-start justify-between gap-2">
+                  <p className="text-xs text-white leading-tight flex-1">
+                    {notification.message || notification.title}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                    className="flex-shrink-0 h-8 w-8 hover:bg-slate-700/50 rounded-full"
+                  >
+                    <X className="w-4 h-4 text-slate-400" />
+                  </Button>
                 </div>
               </Card>
             ))}
