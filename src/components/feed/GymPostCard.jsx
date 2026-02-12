@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Edit, Loader2, Trash2, Heart, Share2, MoreHorizontal, Send } from 'lucide-react';
+import { Calendar, Edit, Loader2, Trash2, Heart, Share2, MoreHorizontal, Send, Flame } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -217,8 +217,8 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
               onClick={handleLike}
               className="transition-transform active:scale-90"
             >
-              <Heart 
-                className={`w-7 h-7 ${isLiked || userReaction ? 'fill-red-500 text-red-500' : 'text-white'} transition-colors`}
+              <Flame 
+                className={`w-7 h-7 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
               />
             </button>
             
