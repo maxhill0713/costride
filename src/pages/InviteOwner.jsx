@@ -118,22 +118,7 @@ export default function InviteOwner() {
           </div>
         </div>
 
-        {/* Gym Info Card */}
-        <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-6">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-white mb-1">{gym.name}</h2>
-              <p className="text-slate-300 text-sm">{gym.city}</p>
-              <Badge className="mt-2 bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                Ghost Gym
-              </Badge>
-            </div>
-          </div>
-        </Card>
+
 
         {/* What is a Ghost Gym */}
         <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-6">
@@ -216,22 +201,7 @@ export default function InviteOwner() {
           </Card>
         )}
 
-        {/* Community Stats */}
-        <Card className="bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-xl border border-white/20 p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Current Activity</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 rounded-xl bg-slate-800/50">
-              <Users className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-white">{gym.members_count || 0}</p>
-              <p className="text-xs text-slate-400">Active Members</p>
-            </div>
-            <div className="text-center p-4 rounded-xl bg-slate-800/50">
-              <CheckCircle className="w-6 h-6 text-green-400 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-white">Growing</p>
-              <p className="text-xs text-slate-400">Community</p>
-            </div>
-          </div>
-        </Card>
+
       </div>
     </div>
   );
