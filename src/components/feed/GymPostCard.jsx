@@ -204,7 +204,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
           {/* Action buttons at bottom */}
           <div className="border-t border-white/10">
-            <div className="flex items-center gap-4 px-3 py-2">
+            <div className="flex items-center gap-3 px-3 py-1.5">
               {currentUser && (
                 <>
                   <button
@@ -212,7 +212,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                     className="transition-transform active:scale-90"
                   >
                     <Flame 
-                      className={`w-7 h-7 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
+                      className={`w-6 h-6 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
                     />
                   </button>
                   
@@ -221,7 +221,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                       onClick={() => setShowShareMenu(!showShareMenu)}
                       className="transition-transform active:scale-90"
                     >
-                      <Send className="w-6 h-6 text-white" />
+                      <Send className="w-5 h-5 text-white" />
                     </button>
 
                     {/* Share Menu */}
@@ -257,15 +257,6 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                 </>
               )}
             </div>
-
-            {/* Likes Count */}
-            {totalReactions > 0 && (
-              <div className="px-3 pb-2">
-                <p className="text-sm font-semibold text-white">
-                  {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
-                </p>
-              </div>
-            )}
           </div>
         </>
       ) : (
@@ -289,7 +280,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-4 px-3 py-2">
+          <div className="flex items-center gap-3 px-3 py-1.5">
             {currentUser && (
               <>
                 <button
@@ -297,7 +288,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                   className="transition-transform active:scale-90"
                 >
                   <Flame 
-                    className={`w-7 h-7 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
+                    className={`w-6 h-6 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
                   />
                 </button>
                 
@@ -306,7 +297,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                     onClick={() => setShowShareMenu(!showShareMenu)}
                     className="transition-transform active:scale-90"
                   >
-                    <Send className="w-6 h-6 text-white" />
+                    <Send className="w-5 h-5 text-white" />
                   </button>
 
                   {/* Share Menu */}
@@ -342,15 +333,6 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
               </>
             )}
           </div>
-
-          {/* Likes Count */}
-          {totalReactions > 0 && (
-            <div className="px-3 pb-1">
-              <p className="text-sm font-semibold text-white">
-                {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
-              </p>
-            </div>
-          )}
 
           {/* Caption */}
           <div className="px-3 pb-3">
