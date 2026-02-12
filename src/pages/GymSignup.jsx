@@ -94,8 +94,9 @@ export default function GymSignup() {
         owner_email: user.email,
         join_code: joinCode,
         verified: false,
-        rating: 0,
-        members_count: 0
+        admin_id: user.id,
+        claim_status: 'claimed',
+        status: 'pending'
       });
 
       // Create gym membership for the owner
