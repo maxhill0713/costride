@@ -824,6 +824,7 @@ export default function GymCommunity() {
                   </h1>
                   {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
                 </div>
+                <p className="text-white/90 text-sm font-medium drop-shadow-md">Your fitness community 💪</p>
                 <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
                   <MapPin className="w-3 h-3" />
                   {gym.city}
