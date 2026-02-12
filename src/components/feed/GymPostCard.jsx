@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Edit, Loader2, Trash2 } from 'lucide-react';
+import { Calendar, Edit, Loader2, Trash2, Heart, Share2, MoreHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -17,9 +17,11 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   const queryClient = useQueryClient();
   const [showReactions, setShowReactions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [editImageUrl, setEditImageUrl] = useState(post.image_url || '');
   const [isUploading, setIsUploading] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -121,121 +123,165 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
     return acc;
   }, {});
   const totalReactions = Object.keys(reactions).length;
+
+  React.useEffect(() => {
+    if (userReaction) {
+      setIsLiked(true);
+    }
+  }, [userReaction]);
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    reactionMutation.mutate({ postId: post.id, emoji: '❤️' });
+  };
+
+  const handleShare = async (method) => {
+    const shareUrl = window.location.href;
+    const shareText = `Check out this post from ${post.member_name} at ${gym?.name || 'the gym'}!`;
+    
+    switch(method) {
+      case 'copy':
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied to clipboard!');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+    }
+    setShowShareMenu(false);
+  };
+
   return (
-    <Card className="bg-slate-800/60 backdrop-blur-sm border-2 border-slate-700/50 overflow-hidden hover:shadow-lg transition-all rounded-2xl w-full">
+    <Card className="bg-black border-0 overflow-hidden shadow-lg w-full max-w-lg mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden">
-            {post.member_avatar ? (
-              <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-sm md:text-base font-bold text-white">
-                {post.member_name?.charAt(0)?.toUpperCase() || 'G'}
-              </span>
-            )}
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-0.5">
+            <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+              {post.member_avatar ? (
+                <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-bold text-white">
+                  {post.member_name?.charAt(0)?.toUpperCase() || 'G'}
+                </span>
+              )}
+            </div>
           </div>
           <div>
-            <h3 className="text-sm md:text-base font-semibold text-slate-100">{post.member_name}</h3>
-            <p className="text-xs md:text-sm text-slate-400">
+            <h3 className="text-sm font-semibold text-white">{post.member_name}</h3>
+            <p className="text-[11px] text-slate-400">
               {format(new Date(post.created_date), 'MMM d')}
             </p>
           </div>
         </div>
         {isGymOwner && (
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowEditModal(true)}
-              className="text-slate-400 hover:text-slate-200 h-8 w-8 md:h-10 md:w-10"
-            >
-              <Edit className="w-4 h-4 md:w-5 md:h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                if (window.confirm('Delete this post?')) {
-                  deletePostMutation.mutate();
-                }
-              }}
-              disabled={deletePostMutation.isPending}
-              className="text-red-400 hover:text-red-300 min-h-[44px] min-w-[44px] h-auto w-auto p-2"
-            >
-              <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-            </Button>
-          </div>
+          <button 
+            onClick={() => setShowEditModal(true)}
+            className="text-white hover:text-slate-300 p-2"
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
         )}
       </div>
 
       {/* Media */}
       {(post.video_url || post.image_url) && (
-        <div className="w-full bg-slate-900/50 overflow-hidden">
+        <div className="w-full bg-black overflow-hidden">
           {post.video_url ? (
             <video 
               src={post.video_url} 
               controls 
-              className="w-full h-auto max-h-[300px] md:max-h-[400px] object-cover"
+              className="w-full h-auto aspect-square object-cover"
             />
           ) : post.image_url ? (
             <img 
               src={post.image_url} 
               alt="Post" 
-              className="w-full h-auto max-h-[300px] md:max-h-[400px] object-cover"
+              className="w-full h-auto aspect-square object-cover"
             />
           ) : null}
         </div>
       )}
 
       {/* Action Buttons */}
-      <div className="px-4 md:px-6 pt-3 md:pt-4">
+      <div className="flex items-center gap-4 px-3 py-2">
         {currentUser && (
-          <div className="relative">
+          <>
             <button
-              onClick={() => setShowReactions(!showReactions)}
-              className={`text-2xl md:text-3xl transition-transform active:scale-90 ${userReaction ? '' : 'grayscale-[50%]'}`}
+              onClick={handleLike}
+              className="transition-transform active:scale-90"
             >
-              {userReaction || '❤️'}
+              <Heart 
+                className={`w-7 h-7 ${isLiked || userReaction ? 'fill-red-500 text-red-500' : 'text-white'} transition-colors`}
+              />
             </button>
+            
+            <div className="relative">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="transition-transform active:scale-90"
+              >
+                <Share2 className="w-6 h-6 text-white" />
+              </button>
 
-            {/* Reaction picker */}
-            {showReactions && (
-              <div className="absolute bottom-full left-0 mb-2 p-2 md:p-3 bg-slate-700 rounded-xl shadow-2xl border border-slate-600 flex gap-2 md:gap-3 z-10">
-                {REACTIONS.map((emoji) => (
+              {/* Share Menu */}
+              {showShareMenu && (
+                <div className="absolute top-full left-0 mt-2 p-3 bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-700 z-50 min-w-[160px]">
                   <button
-                    key={emoji}
-                    onClick={() => reactionMutation.mutate({ postId: post.id, emoji })}
-                    className="text-2xl md:text-3xl hover:scale-125 transition-transform active:scale-110"
-                    disabled={reactionMutation.isPending}
+                    onClick={() => handleShare('copy')}
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
                   >
-                    {emoji}
+                    Copy Link
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
+                  <button
+                    onClick={() => handleShare('whatsapp')}
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    Share to WhatsApp
+                  </button>
+                  <button
+                    onClick={() => handleShare('twitter')}
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    Share to Twitter
+                  </button>
+                  <button
+                    onClick={() => handleShare('facebook')}
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    Share to Facebook
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
       {/* Likes Count */}
       {totalReactions > 0 && (
-        <div className="px-4 md:px-6 py-2">
-          <p className="text-sm md:text-base font-semibold text-slate-100">
+        <div className="px-3 pb-1">
+          <p className="text-sm font-semibold text-white">
             {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
           </p>
         </div>
       )}
 
       {/* Caption */}
-      <div className="px-4 md:px-6 pb-3 md:pb-4">
-        <p className="text-sm md:text-base text-slate-200 leading-relaxed">
+      <div className="px-3 pb-3">
+        <p className="text-sm text-white leading-relaxed">
           <span className="font-semibold mr-1">{post.member_name}</span>
           {post.content}
         </p>
         
         {post.exercise && post.weight && (
-          <p className="text-sm md:text-base text-slate-400 mt-2">
+          <p className="text-xs text-slate-400 mt-1.5">
             {post.exercise.replace('_', ' ')} • {post.weight} lbs
           </p>
         )}
@@ -243,9 +289,9 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle>Edit Post</DialogTitle>
+            <DialogTitle className="text-white">Edit Post</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -282,17 +328,32 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
               <Button
                 variant="outline"
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 rounded-2xl"
+                className="flex-1 rounded-2xl border-slate-600 text-slate-300 hover:bg-slate-800"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => updatePostMutation.mutate()}
                 disabled={updatePostMutation.isPending || !editContent.trim()}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl"
+                className="flex-1 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white rounded-2xl"
               >
                 {updatePostMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
               </Button>
+              {isGymOwner && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (window.confirm('Delete this post?')) {
+                      deletePostMutation.mutate();
+                      setShowEditModal(false);
+                    }
+                  }}
+                  disabled={deletePostMutation.isPending}
+                  className="rounded-2xl border-red-500 text-red-500 hover:bg-red-500/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
