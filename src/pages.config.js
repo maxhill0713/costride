@@ -73,6 +73,7 @@ import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
+import GymRequests from './pages/GymRequests';
 import __Layout from './Layout.jsx';
 
 
@@ -103,6 +104,7 @@ export const PAGES = {
     "Search": Search,
     "Settings": Settings,
     "UserProfile": UserProfile,
+    "GymRequests": GymRequests,
 }
 
 export const pagesConfig = {
