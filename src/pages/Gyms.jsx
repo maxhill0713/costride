@@ -432,7 +432,7 @@ export default function Gyms() {
                            )}
                           </div>
 
-                          {/* Icons: Gallery, Info, Heart & Edit */}
+                          {/* Icons: Gallery, Info & Edit */}
                           <div className="absolute top-3 right-3 flex gap-2">
                             <button
                               onClick={(e) => {
@@ -451,12 +451,6 @@ export default function Gyms() {
                               className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
                             >
                               <Dumbbell className="w-4 h-4 text-slate-300" />
-                            </button>
-                            <button
-                              onClick={() => toggleSave(gym.id)}
-                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                            >
-                              <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
                             </button>
                             {currentUser && currentUser.email === gym.owner_email && (
                               <button
@@ -481,26 +475,18 @@ export default function Gyms() {
                           </div>
 
                           {/* Stats Row */}
-                          <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
-                            <div className="flex items-center gap-4">
-                              {gym.rating > 0 && (
-                                <div className="flex items-center gap-1.5">
-                                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="font-bold text-white text-sm">{gym.rating}/5</span>
-                                </div>
-                              )}
-                              {gym.members_count > 0 && (
-                                <div className="flex items-center gap-1.5 text-sm text-slate-400">
-                                  <Users className="w-4 h-4" />
-                                  <span className="font-semibold">{gym.members_count}</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {gym.type && (
-                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
-                                {gym.type}
-                              </Badge>
+                          <div className="flex items-center gap-4 pt-3 border-t border-slate-700/50">
+                            {gym.rating > 0 && (
+                              <div className="flex items-center gap-1.5">
+                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                <span className="font-bold text-white text-sm">{gym.rating}/5</span>
+                              </div>
+                            )}
+                            {gym.members_count > 0 && (
+                              <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                                <Users className="w-4 h-4" />
+                                <span className="font-semibold">{gym.members_count}</span>
+                              </div>
                             )}
                           </div>
 
@@ -509,6 +495,15 @@ export default function Gyms() {
                             <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
                               <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
                               <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
+                            </div>
+                          )}
+
+                          {/* Gym Type at Bottom */}
+                          {gym.type && (
+                            <div className="flex justify-center pt-2">
+                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                                {gym.type}
+                              </Badge>
                             </div>
                           )}
                         </div>
@@ -702,7 +697,7 @@ export default function Gyms() {
                           )}
                         </div>
 
-                        {/* Icons: Gallery, Info, Heart & Edit */}
+                        {/* Icons: Gallery, Info & Edit */}
                         <div className="absolute top-3 right-3 flex gap-2">
                           <button
                             onClick={(e) => {
@@ -721,12 +716,6 @@ export default function Gyms() {
                             className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
                           >
                             <Dumbbell className="w-4 h-4 text-slate-300" />
-                          </button>
-                          <button
-                            onClick={() => toggleSave(gym.id)}
-                            className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                          >
-                            <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
                           </button>
                           {currentUser && currentUser.email === gym.owner_email && (
                             <button
@@ -751,26 +740,18 @@ export default function Gyms() {
                         </div>
 
                         {/* Stats Row */}
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
-                          <div className="flex items-center gap-4">
-                            {gym.rating > 0 && (
-                              <div className="flex items-center gap-1.5">
-                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                <span className="font-bold text-white text-sm">{gym.rating}/5</span>
-                              </div>
-                            )}
-                            {gym.members_count > 0 && (
-                              <div className="flex items-center gap-1.5 text-sm text-slate-400">
-                                <Users className="w-4 h-4" />
-                                <span className="font-semibold">{gym.members_count}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {gym.type && (
-                            <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
-                              {gym.type}
-                            </Badge>
+                        <div className="flex items-center gap-4 pt-3 border-t border-slate-700/50">
+                          {gym.rating > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-bold text-white text-sm">{gym.rating}/5</span>
+                            </div>
+                          )}
+                          {gym.members_count > 0 && (
+                            <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                              <Users className="w-4 h-4" />
+                              <span className="font-semibold">{gym.members_count}</span>
+                            </div>
                           )}
                         </div>
 
@@ -779,6 +760,15 @@ export default function Gyms() {
                           <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
                             <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
                             <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
+                          </div>
+                        )}
+
+                        {/* Gym Type at Bottom */}
+                        {gym.type && (
+                          <div className="flex justify-center pt-2">
+                            <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                              {gym.type}
+                            </Badge>
                           </div>
                         )}
                       </div>
