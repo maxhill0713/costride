@@ -1174,50 +1174,55 @@ export default function GymCommunity() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-          className="space-y-2"
+          className="space-y-4"
         >
-          {/* Upcoming Events This Week */}
-           {upcomingEvents.length > 0 && (
-             <div className="space-y-2 md:space-y-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base md:text-lg font-bold text-gray-900">📅 This Week</h2>
+          {/* Glass Container with Navy Blue Background */}
+          <div className="bg-gradient-to-br from-blue-950/40 via-slate-900/40 to-blue-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-2xl">
+            {/* Upcoming Events This Week */}
+            {upcomingEvents.length > 0 && (
+              <div className="space-y-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base md:text-lg font-bold text-white">📅 This Week</h2>
+                </div>
+                {upcomingEvents.map((event) => (
+                  <WeeklyEventCard
+                    key={event.id}
+                    event={event}
+                    onRSVP={!showOwnerControls ? (eventId) => {
+                      const event = events.find(e => e.id === eventId);
+                      rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                    } : null}
+                    disabled={showOwnerControls}
+                  />
+                ))}
               </div>
-              {upcomingEvents.map((event) => (
-                <WeeklyEventCard
-                  key={event.id}
-                  event={event}
-                  onRSVP={!showOwnerControls ? (eventId) => {
-                    const event = events.find(e => e.id === eventId);
-                    rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
-                  } : null}
-                  disabled={showOwnerControls}
-                />
-              ))}
-            </div>
-          )}
+            )}
 
-          {/* Posts Feed - Scrollable */}
-          {showOwnerControls && (
-            <CreateGymPostButton
-              gym={gym}
-              currentUser={currentUser}
-              onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-            />
-          )}
-          
-          {posts.length === 0 ? (
-          <Card className="p-8 text-center bg-slate-800/50 border-2 border-dashed border-slate-600/50">
-            <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-500" />
-            <p className="text-slate-200 font-semibold mb-1">No community posts yet</p>
-            <p className="text-sm text-slate-400">Be the first to share your workout! 💪</p>
-          </Card>
-          ) : (
-          <div className="space-y-3">
-            {posts.slice(0, 10).map((post) => (
-              <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
-            ))}
+            {/* Posts Feed - Scrollable */}
+            {showOwnerControls && (
+              <div className="mb-4">
+                <CreateGymPostButton
+                  gym={gym}
+                  currentUser={currentUser}
+                  onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+                />
+              </div>
+            )}
+            
+            {posts.length === 0 ? (
+              <Card className="p-8 text-center bg-blue-950/30 backdrop-blur-md border-2 border-dashed border-blue-400/30">
+                <MessageCircle className="w-12 h-12 mx-auto mb-3 text-blue-400/50" />
+                <p className="text-white font-semibold mb-1">No community posts yet</p>
+                <p className="text-sm text-slate-300">Be the first to share your workout! 💪</p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {posts.slice(0, 10).map((post) => (
+                  <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
+                ))}
+              </div>
+            )}
           </div>
-          )}
           </motion.div>
         </TabsContent>
 
