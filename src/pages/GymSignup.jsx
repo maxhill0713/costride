@@ -913,6 +913,57 @@ export default function GymSignup() {
             </div>
           </form>
         </Card>
+
+        {/* Ghost Gym Found Modal */}
+        {showGhostGymModal && ghostGym && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="max-w-md w-full p-6 bg-slate-900/95 backdrop-blur-xl border-2 border-amber-500/50">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="w-8 h-8 text-amber-400" />
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">Ghost Gym Found!</h3>
+                <p className="text-slate-300 text-sm">
+                  This gym already exists in our system but hasn't been claimed yet.
+                </p>
+              </div>
+
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 mb-6">
+                <h4 className="font-bold text-white mb-2">{ghostGym.name}</h4>
+                <div className="space-y-1 text-sm text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3 h-3" />
+                    <span>{ghostGym.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Dumbbell className="w-3 h-3" />
+                    <span>{ghostGym.members_count || 0} members</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={handleClaimGhostGym}
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl h-12"
+                >
+                  Claim This Gym
+                </Button>
+                <Button
+                  onClick={handleCreateOfficialGym}
+                  variant="outline"
+                  className="w-full bg-slate-800/60 border-slate-600 text-slate-300 hover:bg-slate-700/60 hover:text-white rounded-xl h-12"
+                >
+                  Create Official Gym Instead
+                </Button>
+              </div>
+
+              <p className="text-xs text-slate-500 text-center mt-4">
+                Claiming will preserve existing members and activity
+              </p>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
