@@ -190,14 +190,14 @@ export default function RedeemReward() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
       {/* Header */}
-      <div className="relative pt-8 pb-6 px-3 md:px-4 border-b border-blue-700/40">
+      <div className="relative pt-4 pb-3 px-3 md:px-4 border-b border-blue-700/40">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">Rewards & Challenges</h1>
-          <p className="text-sm text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-100 mb-1">Rewards & Challenges</h1>
+          <p className="text-xs text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-3 md:px-4 py-6">
+      <div className="max-w-6xl mx-auto px-3 md:px-4 py-3">
         {/* Header */}
         <div className="mb-6 hidden">
           <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Rewards & Challenges</h1>
@@ -205,7 +205,7 @@ export default function RedeemReward() {
         </div>
 
         {/* Section Tabs */}
-        <div className="mb-6 grid grid-cols-3 gap-3">
+        <div className="mb-4 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('weekly')}
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
@@ -247,8 +247,8 @@ export default function RedeemReward() {
         {activeSection === 'weekly' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <div>
-              <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-                <Zap className="w-6 h-6 text-amber-400" />
+              <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-400" />
                 Weekly Challenges
               </h2>
               {weeklyChallenges.length > 0 ? (
@@ -274,9 +274,9 @@ export default function RedeemReward() {
         {/* Community Challenges Section */}
         {activeSection === 'community' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="mb-6">
-              <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-cyan-400" />
+            <div className="mb-4">
+              <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-cyan-400" />
                 Community Challenges
               </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -356,8 +356,8 @@ export default function RedeemReward() {
         {activeSection === 'rewards' && (
          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <div>
-          <h2 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
-            <Gift className="w-6 h-6 text-purple-400" />
+          <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+            <Gift className="w-5 h-5 text-purple-400" />
             Available Rewards
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
