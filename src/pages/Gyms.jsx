@@ -176,13 +176,28 @@ export default function Gyms() {
     }
   });
 
-  const handleCreateGym = () => {
+  const handleCreateGym = async () => {
     if (!selectedPlaceGym) return;
 
     // Check if user already has 3 gym memberships
     if (gymMemberships.length >= 3 && !isOwner) {
       alert('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
       return;
+    }
+
+    // Check if user is trying to create a ghost gym (not claiming ownership)
+    if (!isOwner) {
+      // Count how many ghost gyms this user has created
+      const userCreatedGhostGyms = gyms.filter(g => 
+        g.created_by === currentUser?.email && 
+        !g.admin_id && 
+        !g.owner_email
+      );
+
+      if (userCreatedGhostGyms.length >= 3) {
+        alert('You have reached the limit of 3 ghost gyms you can create. Please claim ownership if you manage this gym.');
+        return;
+      }
     }
 
     const addressParts = selectedPlaceGym.address.split(',');
