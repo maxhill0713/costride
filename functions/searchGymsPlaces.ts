@@ -23,57 +23,54 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    // Use new Places API (Text Search)
-    const url = 'https://places.googleapis.com/v1/places:searchText';
+    // Use Google Places Autocomplete API (more reliable)
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(searchQuery + ' gym')}&key=${apiKey}&components=country:gb&type=establishment`;
     
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.photos'
-      },
-      body: JSON.stringify({
-        textQuery: searchQuery + ' gym',
-        maxResultCount: 10
-      })
-    });
-
+    const response = await fetch(url);
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status !== 'OK') {
       console.error('Google Places API error:', data);
-      return Response.json({ error: data.error?.status, message: data.error?.message }, { status: 500 });
+      // Return empty results instead of error
+      return Response.json({ places: [] });
     }
 
-    // Format results from new API
-    const places = (data.places || []).map(place => {
-      let photoUrl = null;
-      
-      // Get first photo if available
-      if (place.photos && place.photos.length > 0) {
-        const photoName = place.photos[0].name;
-        // Construct photo URL (max width 800px for good quality)
-        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
+    // Get details for each prediction
+    const places = [];
+    for (const prediction of data.predictions.slice(0, 10)) {
+      try {
+        const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${prediction.place_id}&fields=geometry,formatted_address,name,photos,rating&key=${apiKey}`;
+        const detailResponse = await fetch(detailUrl);
+        const detailData = await detailResponse.json();
+        
+        if (detailData.status === 'OK' && detailData.result) {
+          const result = detailData.result;
+          let photoUrl = null;
+          
+          if (result.photos && result.photos.length > 0) {
+            photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${result.photos[0].photo_reference}&key=${apiKey}`;
+          }
+          
+          const addressParts = result.formatted_address?.split(', ') || [];
+          const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : '';
+          const postcode = addressParts.length >= 1 ? addressParts[addressParts.length - 1] : '';
+          
+          places.push({
+            place_id: prediction.place_id,
+            name: result.name || prediction.main_text,
+            address: result.formatted_address || prediction.description,
+            city: city,
+            postcode: postcode,
+            latitude: result.geometry?.location?.lat,
+            longitude: result.geometry?.location?.lng,
+            rating: result.rating,
+            photo_url: photoUrl
+          });
+        }
+      } catch (error) {
+        console.error('Error getting place details:', error);
       }
-
-      // Extract city and postcode from address
-      const addressParts = place.formattedAddress?.split(', ') || [];
-      const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : '';
-      const postcode = addressParts.length >= 1 ? addressParts[addressParts.length - 1] : '';
-      
-      return {
-        place_id: place.id,
-        name: place.displayName?.text || place.displayName,
-        address: place.formattedAddress,
-        city: city,
-        postcode: postcode,
-        latitude: place.location?.latitude,
-        longitude: place.location?.longitude,
-        rating: place.rating,
-        photo_url: photoUrl
-      };
-    });
+    }
 
     return Response.json({ places });
   } catch (error) {
