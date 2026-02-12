@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Edit, Loader2, Trash2, Heart, Share2, MoreHorizontal } from 'lucide-react';
+import { Calendar, Edit, Loader2, Trash2, Heart, Share2, MoreHorizontal, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -158,7 +158,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   };
 
   return (
-    <Card className="bg-black border-0 overflow-hidden shadow-lg w-full max-w-lg mx-auto">
+    <Card className="bg-gradient-to-br from-blue-950/60 via-slate-900/60 to-blue-900/60 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl w-full max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2.5">
@@ -227,33 +227,33 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
                 onClick={() => setShowShareMenu(!showShareMenu)}
                 className="transition-transform active:scale-90"
               >
-                <Share2 className="w-6 h-6 text-white" />
+                <Send className="w-6 h-6 text-white" />
               </button>
 
               {/* Share Menu */}
               {showShareMenu && (
-                <div className="absolute top-full left-0 mt-2 p-3 bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-700 z-50 min-w-[160px]">
+                <div className="absolute top-full left-0 mt-2 p-3 bg-blue-950/95 backdrop-blur-xl rounded-xl shadow-2xl border border-blue-800/50 z-50 min-w-[160px]">
                   <button
                     onClick={() => handleShare('copy')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
                   >
                     Copy Link
                   </button>
                   <button
                     onClick={() => handleShare('whatsapp')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
                   >
                     Share to WhatsApp
                   </button>
                   <button
                     onClick={() => handleShare('twitter')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
                   >
                     Share to Twitter
                   </button>
                   <button
                     onClick={() => handleShare('facebook')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-700 rounded-lg transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
                   >
                     Share to Facebook
                   </button>
