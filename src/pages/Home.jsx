@@ -315,15 +315,15 @@ export default function Home() {
     }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Header with Streak */}
-        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-2">
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-1.5">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
               <button 
                 onClick={() => setShowStreakVariants(true)}
-                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
               >
                 {streakVariant === 'sunglasses' ? (
-                   <div className="relative w-7 h-7">
-                     <Flame className="w-7 h-7 text-orange-500 fill-current" />
+                   <div className="relative w-6 h-6">
+                     <Flame className="w-6 h-6 text-orange-500 fill-current" />
                      <svg 
                        className="absolute inset-0 w-full h-full pointer-events-none"
                        viewBox="0 0 64 64"
@@ -334,8 +334,8 @@ export default function Home() {
                      </svg>
                    </div>
                  ) : streakVariant === 'cowboy' ? (
-                   <div className="relative w-7 h-7">
-                     <Flame className="w-7 h-7 text-orange-500 fill-current" />
+                   <div className="relative w-6 h-6">
+                     <Flame className="w-6 h-6 text-orange-500 fill-current" />
                      <svg 
                        className="absolute inset-0 w-full h-full pointer-events-none"
                        viewBox="0 0 64 64"
@@ -350,11 +350,11 @@ export default function Home() {
                      </svg>
                    </div>
                  ) : (
-                   <Flame className="w-7 h-7 text-orange-500 fill-current" />
+                   <Flame className="w-6 h-6 text-orange-500 fill-current" />
                  )}
-                <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
+                <span className="text-white font-semibold text-lg tracking-tight">{userStreak}</span>
               </button>
-              <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+              <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
               </h1>
               <Link to={createPageUrl('Friends')} onClick={async () => {
@@ -362,15 +362,15 @@ export default function Home() {
                   await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
                 }
               }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full w-10 h-10">
-                     <Users className="w-12 h-12 text-cyan-400" />
+                <Button variant="ghost" size="icon" className="relative rounded-full w-9 h-9">
+                     <Users className="w-10 h-10 text-cyan-400" />
                     {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
                   </Button>
               </Link>
             </div>
           </div>
 
-        <div className="max-w-4xl mx-auto px-4 py-3 space-y-4">
+        <div className="max-w-4xl mx-auto px-4 py-2 space-y-3">
           {/* Check-In Button - Full Width */}
           {memberGym && (
             <>
