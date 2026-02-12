@@ -158,7 +158,7 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
   };
 
   return (
-    <Card className="bg-gradient-to-br from-blue-950/60 via-slate-900/60 to-blue-900/60 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl w-full max-w-lg mx-auto">
+    <Card className="bg-gradient-to-br from-blue-950/90 via-slate-950/95 to-blue-950/90 backdrop-blur-xl border border-white/5 overflow-hidden shadow-2xl w-full max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2.5">
