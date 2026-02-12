@@ -127,7 +127,7 @@ export default function InviteOwner() {
             <h3 className="text-base font-bold text-white">Unlock Exclusive Member Benefits</h3>
           </div>
           <p className="text-slate-300 text-sm leading-relaxed">
-            This gym isn't claimed yet. Help activate it to unlock <strong className="text-white">rewards, challenges, and exclusive perks</strong> for yourself and all members!
+            This gym isn't claimed yet. Help activate it to unlock <strong className="text-white">rewards, challenges, exclusive perks</strong>, engage in your official community, participate in polls, and get real-time updates from your gym!
           </p>
         </Card>
 
