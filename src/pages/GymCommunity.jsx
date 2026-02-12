@@ -824,47 +824,16 @@ export default function GymCommunity() {
                   </h1>
                   {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
                 </div>
-                <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
-                  <MapPin className="w-3 h-3" />
-                  {gym.city}
-                </p>
+                <div className="flex items-center gap-3 mt-1">
+                  <p className="text-white/70 text-xs flex items-center gap-1 drop-shadow-md">
+                    <MapPin className="w-3 h-3" />
+                    {gym.city}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-white/80 text-xs font-medium drop-shadow-md">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>{gym?.members_count || 0} members</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Small Stats - Bottom Right */}
-          <div className="absolute bottom-2 right-2 flex flex-col gap-1.5">
-            {/* In Gym Now */}
-            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/20 rounded-lg px-2.5 py-1.5 shadow-lg">
-              <div className="flex items-center gap-1.5">
-                <Flame className="w-3 h-3 text-green-400 flex-shrink-0" />
-                <div className="flex items-baseline gap-1">
-                  <span className="text-sm font-bold text-white">
-                    {(() => {
-                      const now = new Date();
-                      const usersInGym = new Set();
-                      checkIns.forEach(checkIn => {
-                        const checkInTime = new Date(checkIn.check_in_date);
-                        if ((now - checkInTime) < 2 * 60 * 60 * 1000) {
-                          usersInGym.add(checkIn.user_id);
-                        }
-                      });
-                      return usersInGym.size;
-                    })()}
-                  </span>
-                  <span className="text-[9px] text-white/70">in gym</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Member Count */}
-            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/20 rounded-lg px-2.5 py-1.5 shadow-lg">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3 h-3 text-blue-400 flex-shrink-0" />
-                <div className="flex items-baseline gap-1">
-                  <span className="text-sm font-bold text-white">{gym?.members_count || 0}</span>
-                  <span className="text-[9px] text-white/70">members</span>
                 </div>
               </div>
             </div>
