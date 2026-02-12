@@ -441,8 +441,8 @@ export default function Gyms() {
                           {/* Primary Gym Icon - Bottom Left */}
                           {currentUser?.primary_gym_id === gym.id && (
                             <div className="absolute bottom-3 left-3">
-                              <div className="w-8 h-8 rounded-lg bg-purple-500/90 backdrop-blur-md flex items-center justify-center shadow-lg">
-                                <Star className="w-4 h-4 text-white fill-white" />
+                              <div className="w-9 h-9 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
+                                <Star className="w-5 h-5 text-white" />
                               </div>
                             </div>
                           )}
@@ -503,14 +503,16 @@ export default function Gyms() {
                                 <span className="font-semibold">{gym.members_count}</span>
                               </div>
                             )}
-                            {gym.type && (
-                              <div className="ml-auto">
-                                <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
-                                  {gym.type}
-                                </Badge>
-                              </div>
-                            )}
                           </div>
+
+                          {/* Gym Type at Bottom Center */}
+                          {gym.type && (
+                            <div className="flex justify-center pt-1">
+                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                                {gym.type}
+                              </Badge>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -754,14 +756,16 @@ export default function Gyms() {
                               <span className="font-semibold">{gym.members_count}</span>
                             </div>
                           )}
-                          {gym.type && (
-                            <div className="ml-auto">
-                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
-                                {gym.type}
-                              </Badge>
-                            </div>
-                          )}
                         </div>
+
+                        {/* Gym Type at Bottom Center */}
+                        {gym.type && (
+                          <div className="flex justify-center pt-1">
+                            <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                              {gym.type}
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -911,7 +915,7 @@ export default function Gyms() {
                   setSelectedPrimaryGym(null);
                 }}
                 variant="outline"
-                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800"
+                className="flex-1 bg-black border-slate-700 text-white hover:bg-slate-900"
               >
                 Cancel
               </Button>
