@@ -9,10 +9,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { input } = await req.json();
+    const { query, input } = await req.json();
+    const searchQuery = query || input;
 
-    if (!input) {
-      return Response.json({ error: 'Search input is required' }, { status: 400 });
+    if (!searchQuery) {
+      return Response.json({ error: 'Search query is required' }, { status: 400 });
     }
 
     const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
         'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.photos'
       },
       body: JSON.stringify({
-        textQuery: input + ' gym',
+        textQuery: searchQuery + ' gym',
         maxResultCount: 10
       })
     });
@@ -46,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     // Format results from new API
-    const results = (data.places || []).map(place => {
+    const places = (data.places || []).map(place => {
       let photoUrl = null;
       
       // Get first photo if available
@@ -55,11 +56,18 @@ Deno.serve(async (req) => {
         // Construct photo URL (max width 800px for good quality)
         photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
       }
+
+      // Extract city and postcode from address
+      const addressParts = place.formattedAddress?.split(', ') || [];
+      const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : '';
+      const postcode = addressParts.length >= 1 ? addressParts[addressParts.length - 1] : '';
       
       return {
         place_id: place.id,
         name: place.displayName?.text || place.displayName,
         address: place.formattedAddress,
+        city: city,
+        postcode: postcode,
         latitude: place.location?.latitude,
         longitude: place.location?.longitude,
         rating: place.rating,
@@ -67,7 +75,7 @@ Deno.serve(async (req) => {
       };
     });
 
-    return Response.json({ results });
+    return Response.json({ places });
   } catch (error) {
     console.error('Error searching gyms:', error);
     return Response.json({ error: error.message }, { status: 500 });
