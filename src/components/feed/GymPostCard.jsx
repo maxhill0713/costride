@@ -193,11 +193,11 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
       </div>
 
       {isTextOnly ? (
-        /* Text-only post - Instagram style */
+        /* Text-only post - compact notification style */
         <>
-          {/* Text in middle */}
-          <div className="flex items-center justify-center min-h-[400px] px-6">
-            <p className="text-lg text-white text-center leading-relaxed">
+          {/* Text content */}
+          <div className="px-4 py-3">
+            <p className="text-sm text-white leading-relaxed">
               {post.content}
             </p>
           </div>
