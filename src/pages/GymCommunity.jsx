@@ -895,7 +895,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-yellow-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
             >
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" />
@@ -904,7 +904,7 @@ export default function GymCommunity() {
             </TabsTrigger>
             <TabsTrigger 
               value="events" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-orange-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
             >
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -1304,9 +1304,9 @@ export default function GymCommunity() {
             </div>
             
             {classes.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-500" />
-                <p className="text-slate-400 text-sm">No classes scheduled</p>
+              <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <Calendar className="w-8 h-8 mx-auto mb-1 text-slate-500" />
+                <p className="text-slate-400 text-xs">No classes scheduled</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
@@ -1378,9 +1378,9 @@ export default function GymCommunity() {
             </div>
             
             {events.filter(e => new Date(e.event_date) >= new Date()).length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-slate-500" />
-                <p className="text-slate-400 text-sm">No upcoming events</p>
+              <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <Calendar className="w-8 h-8 mx-auto mb-1 text-slate-500" />
+                <p className="text-slate-400 text-xs">No upcoming events</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
@@ -1424,9 +1424,9 @@ export default function GymCommunity() {
             </div>
             
             {coaches.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
-                <GraduationCap className="w-12 h-12 mx-auto mb-2 text-slate-500" />
-                <p className="text-slate-400 text-sm">No coaches listed</p>
+              <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+                <GraduationCap className="w-8 h-8 mx-auto mb-1 text-slate-500" />
+                <p className="text-slate-400 text-xs">No coaches listed</p>
               </div>
             ) : (
               <div className="space-y-2 md:space-y-3">
