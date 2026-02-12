@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,6 +80,19 @@ export default function Gyms() {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowPrimaryGymModal(false);
       setSelectedPrimaryGym(null);
+    }
+  });
+
+  const leaveGymMutation = useMutation({
+    mutationFn: async (gymId) => {
+      const membership = gymMemberships.find(m => m.gym_id === gymId);
+      if (membership) {
+        await base44.entities.GymMembership.delete(membership.id);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
   });
 
@@ -164,6 +177,12 @@ export default function Gyms() {
 
   const handleCreateGym = () => {
     if (!selectedPlaceGym) return;
+
+    // Check if user already has 3 gym memberships
+    if (gymMemberships.length >= 3 && !isOwner) {
+      alert('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
+      return;
+    }
 
     const addressParts = selectedPlaceGym.address.split(',');
     const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedPlaceGym.address;
@@ -447,7 +466,7 @@ export default function Gyms() {
                             </div>
                           )}
 
-                          {/* Icons: Gallery, Info & Edit */}
+                          {/* Icons: Gallery, Info, Edit & Leave */}
                           <div className="absolute top-3 right-3 flex gap-2">
                             <button
                               onClick={(e) => {
@@ -475,6 +494,18 @@ export default function Gyms() {
                                 <Edit className="w-4 h-4 text-slate-300" />
                               </button>
                             )}
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (window.confirm(`Are you sure you want to leave ${gym.name}?`)) {
+                                  leaveGymMutation.mutate(gym.id);
+                                }
+                              }}
+                              disabled={leaveGymMutation.isPending}
+                              className="w-9 h-9 rounded-xl bg-red-600/80 backdrop-blur-md flex items-center justify-center hover:bg-red-700 transition-all hover:scale-110"
+                            >
+                              <X className="w-4 h-4 text-white" />
+                            </button>
                           </div>
                         </div>
 
