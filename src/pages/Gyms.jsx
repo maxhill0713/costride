@@ -284,13 +284,13 @@ export default function Gyms() {
 
             {/* Rating & Members */}
             <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
-              {gym.rating && (
+              {gym.rating > 0 && (
                 <div className="flex items-center gap-1.5">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold text-slate-100 text-sm">{gym.rating}/5</span>
                 </div>
               )}
-              {gym.members_count && (
+              {gym.members_count > 0 && (
                 <div className="flex items-center gap-1.5 text-sm text-slate-400">
                   <Users className="w-4 h-4" />
                   <span>{gym.members_count}</span>
@@ -483,13 +483,13 @@ export default function Gyms() {
                           {/* Stats Row */}
                           <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
                             <div className="flex items-center gap-4">
-                              {gym.rating && (
+                              {gym.rating > 0 && (
                                 <div className="flex items-center gap-1.5">
                                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                   <span className="font-bold text-white text-sm">{gym.rating}/5</span>
                                 </div>
                               )}
-                              {gym.members_count && (
+                              {gym.members_count > 0 && (
                                 <div className="flex items-center gap-1.5 text-sm text-slate-400">
                                   <Users className="w-4 h-4" />
                                   <span className="font-semibold">{gym.members_count}</span>
@@ -753,13 +753,13 @@ export default function Gyms() {
                         {/* Stats Row */}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
                           <div className="flex items-center gap-4">
-                            {gym.rating && (
+                            {gym.rating > 0 && (
                               <div className="flex items-center gap-1.5">
                                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                 <span className="font-bold text-white text-sm">{gym.rating}/5</span>
                               </div>
                             )}
-                            {gym.members_count && (
+                            {gym.members_count > 0 && (
                               <div className="flex items-center gap-1.5 text-sm text-slate-400">
                                 <Users className="w-4 h-4" />
                                 <span className="font-semibold">{gym.members_count}</span>
