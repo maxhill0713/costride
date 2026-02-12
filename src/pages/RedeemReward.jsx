@@ -211,7 +211,7 @@ export default function RedeemReward() {
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
               activeSection === 'weekly'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20 scale-105'
-                : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
+                : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80 hover:border-slate-600/40'
             }`}
           >
             <Zap className="w-5 h-5" />
@@ -222,7 +222,7 @@ export default function RedeemReward() {
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
               activeSection === 'community'
                 ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-105'
-                : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
+                : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80 hover:border-slate-600/40'
             }`}
           >
             <Trophy className="w-5 h-5" />
@@ -233,7 +233,7 @@ export default function RedeemReward() {
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
               activeSection === 'rewards'
                 ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/20 scale-105'
-                : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
+                : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80 hover:border-slate-600/40'
             }`}
           >
             <Gift className="w-5 h-5" />
