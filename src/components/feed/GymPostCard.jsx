@@ -157,6 +157,8 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
     setShowShareMenu(false);
   };
 
+  const isTextOnly = !post.video_url && !post.image_url;
+
   return (
     <Card className="bg-gradient-to-br from-blue-950/90 via-slate-950/95 to-blue-950/90 backdrop-blur-xl border border-white/5 overflow-hidden shadow-2xl w-full max-w-lg mx-auto">
       {/* Header */}
@@ -190,102 +192,181 @@ export default function GymPostCard({ post, gym, onDelete = null, isOwner = fals
         )}
       </div>
 
-      {/* Media */}
-      {(post.video_url || post.image_url) && (
-        <div className="w-full bg-black overflow-hidden">
-          {post.video_url ? (
-            <video 
-              src={post.video_url} 
-              controls 
-              className="w-full h-auto aspect-square object-cover"
-            />
-          ) : post.image_url ? (
-            <img 
-              src={post.image_url} 
-              alt="Post" 
-              className="w-full h-auto aspect-square object-cover"
-            />
-          ) : null}
-        </div>
-      )}
+      {isTextOnly ? (
+        /* Text-only post - Instagram style */
+        <>
+          {/* Text in middle */}
+          <div className="flex items-center justify-center min-h-[400px] px-6">
+            <p className="text-lg text-white text-center leading-relaxed">
+              {post.content}
+            </p>
+          </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-4 px-3 py-2">
-        {currentUser && (
-          <>
-            <button
-              onClick={handleLike}
-              className="transition-transform active:scale-90"
-            >
-              <Flame 
-                className={`w-7 h-7 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
-              />
-            </button>
-            
-            <div className="relative">
-              <button
-                onClick={() => setShowShareMenu(!showShareMenu)}
-                className="transition-transform active:scale-90"
-              >
-                <Send className="w-6 h-6 text-white" />
-              </button>
+          {/* Action buttons at bottom */}
+          <div className="border-t border-white/10">
+            <div className="flex items-center gap-4 px-3 py-2">
+              {currentUser && (
+                <>
+                  <button
+                    onClick={handleLike}
+                    className="transition-transform active:scale-90"
+                  >
+                    <Flame 
+                      className={`w-7 h-7 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
+                    />
+                  </button>
+                  
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowShareMenu(!showShareMenu)}
+                      className="transition-transform active:scale-90"
+                    >
+                      <Send className="w-6 h-6 text-white" />
+                    </button>
 
-              {/* Share Menu */}
-              {showShareMenu && (
-                <div className="absolute top-full left-0 mt-2 p-3 bg-blue-950/95 backdrop-blur-xl rounded-xl shadow-2xl border border-blue-800/50 z-50 min-w-[160px]">
-                  <button
-                    onClick={() => handleShare('copy')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
-                  >
-                    Copy Link
-                  </button>
-                  <button
-                    onClick={() => handleShare('whatsapp')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
-                  >
-                    Share to WhatsApp
-                  </button>
-                  <button
-                    onClick={() => handleShare('twitter')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
-                  >
-                    Share to Twitter
-                  </button>
-                  <button
-                    onClick={() => handleShare('facebook')}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
-                  >
-                    Share to Facebook
-                  </button>
-                </div>
+                    {/* Share Menu */}
+                    {showShareMenu && (
+                      <div className="absolute top-full left-0 mt-2 p-3 bg-blue-950/95 backdrop-blur-xl rounded-xl shadow-2xl border border-blue-800/50 z-50 min-w-[160px]">
+                        <button
+                          onClick={() => handleShare('copy')}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                        >
+                          Copy Link
+                        </button>
+                        <button
+                          onClick={() => handleShare('whatsapp')}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                        >
+                          Share to WhatsApp
+                        </button>
+                        <button
+                          onClick={() => handleShare('twitter')}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                        >
+                          Share to Twitter
+                        </button>
+                        <button
+                          onClick={() => handleShare('facebook')}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                        >
+                          Share to Facebook
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
-          </>
-        )}
-      </div>
 
-      {/* Likes Count */}
-      {totalReactions > 0 && (
-        <div className="px-3 pb-1">
-          <p className="text-sm font-semibold text-white">
-            {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
-          </p>
-        </div>
+            {/* Likes Count */}
+            {totalReactions > 0 && (
+              <div className="px-3 pb-2">
+                <p className="text-sm font-semibold text-white">
+                  {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Media post - original layout */
+        <>
+          {/* Media */}
+          <div className="w-full bg-black overflow-hidden">
+            {post.video_url ? (
+              <video 
+                src={post.video_url} 
+                controls 
+                className="w-full h-auto aspect-square object-cover"
+              />
+            ) : post.image_url ? (
+              <img 
+                src={post.image_url} 
+                alt="Post" 
+                className="w-full h-auto aspect-square object-cover"
+              />
+            ) : null}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-4 px-3 py-2">
+            {currentUser && (
+              <>
+                <button
+                  onClick={handleLike}
+                  className="transition-transform active:scale-90"
+                >
+                  <Flame 
+                    className={`w-7 h-7 ${isLiked || userReaction ? 'fill-orange-500 text-orange-500' : 'text-white'} transition-colors`}
+                  />
+                </button>
+                
+                <div className="relative">
+                  <button
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    className="transition-transform active:scale-90"
+                  >
+                    <Send className="w-6 h-6 text-white" />
+                  </button>
+
+                  {/* Share Menu */}
+                  {showShareMenu && (
+                    <div className="absolute top-full left-0 mt-2 p-3 bg-blue-950/95 backdrop-blur-xl rounded-xl shadow-2xl border border-blue-800/50 z-50 min-w-[160px]">
+                      <button
+                        onClick={() => handleShare('copy')}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                      >
+                        Copy Link
+                      </button>
+                      <button
+                        onClick={() => handleShare('whatsapp')}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                      >
+                        Share to WhatsApp
+                      </button>
+                      <button
+                        onClick={() => handleShare('twitter')}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                      >
+                        Share to Twitter
+                      </button>
+                      <button
+                        onClick={() => handleShare('facebook')}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-blue-900/50 rounded-lg transition-colors"
+                      >
+                        Share to Facebook
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Likes Count */}
+          {totalReactions > 0 && (
+            <div className="px-3 pb-1">
+              <p className="text-sm font-semibold text-white">
+                {totalReactions} {totalReactions === 1 ? 'like' : 'likes'}
+              </p>
+            </div>
+          )}
+
+          {/* Caption */}
+          <div className="px-3 pb-3">
+            <p className="text-sm text-white leading-relaxed">
+              <span className="font-semibold mr-1">{post.member_name}</span>
+              {post.content}
+            </p>
+            
+            {post.exercise && post.weight && (
+              <p className="text-xs text-slate-400 mt-1.5">
+                {post.exercise.replace('_', ' ')} • {post.weight} lbs
+              </p>
+            )}
+          </div>
+        </>
       )}
-
-      {/* Caption */}
-      <div className="px-3 pb-3">
-        <p className="text-sm text-white leading-relaxed">
-          <span className="font-semibold mr-1">{post.member_name}</span>
-          {post.content}
-        </p>
-        
-        {post.exercise && post.weight && (
-          <p className="text-xs text-slate-400 mt-1.5">
-            {post.exercise.replace('_', ' ')} • {post.weight} lbs
-          </p>
-        )}
-      </div>
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
