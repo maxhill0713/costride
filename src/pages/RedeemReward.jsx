@@ -208,36 +208,36 @@ export default function RedeemReward() {
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('weekly')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
               activeSection === 'weekly'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Zap className="w-4 h-4 mr-1.5 flex-shrink-0" />
-            <span className="truncate">Weekly</span>
+            <Zap className="w-5 h-5" />
+            <span className="truncate w-full text-center">Weekly</span>
           </button>
           <button
             onClick={() => setActiveSection('community')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
               activeSection === 'community'
                 ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Trophy className="w-4 h-4 mr-1.5 flex-shrink-0" />
-            <span className="truncate">Community</span>
+            <Trophy className="w-5 h-5" />
+            <span className="truncate w-full text-center">Community</span>
           </button>
           <button
             onClick={() => setActiveSection('rewards')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center ${
+            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all flex flex-col items-center justify-center gap-1.5 ${
               activeSection === 'rewards'
                 ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/20 scale-105'
                 : 'bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 text-slate-400 hover:bg-slate-800/60 hover:border-slate-600/50'
             }`}
           >
-            <Gift className="w-4 h-4 mr-1.5 flex-shrink-0" />
-            <span className="truncate">Rewards</span>
+            <Gift className="w-5 h-5" />
+            <span className="truncate w-full text-center">Rewards</span>
           </button>
         </div>
 
