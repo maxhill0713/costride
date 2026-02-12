@@ -835,7 +835,7 @@ export default function GymCommunity() {
 
           {/* Member Count - Bottom Left */}
           <div className="absolute bottom-3 left-4">
-            <div className="bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-full px-3 py-1.5 shadow-lg">
+            <div className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 rounded-full px-3 py-1.5 shadow-2xl shadow-black/30">
               <div className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                 <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
