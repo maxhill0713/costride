@@ -431,13 +431,9 @@ export default function Gyms() {
                                Unofficial
                              </Badge>
                            )}
-                           {currentUser && currentUser.email === gym.owner_email ? (
+                           {currentUser && currentUser.email === gym.owner_email && (
                              <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">
                                Owner
-                             </Badge>
-                           ) : (
-                             <Badge className="bg-blue-500/90 text-white text-xs shadow-lg">
-                               Member
                              </Badge>
                            )}
                           </div>
@@ -483,7 +479,7 @@ export default function Gyms() {
                         </div>
 
                         {/* Content Section */}
-                        <div className="p-5 space-y-4">
+                        <div className="p-4 space-y-2">
                           {/* Header */}
                           <div>
                             <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
@@ -494,7 +490,7 @@ export default function Gyms() {
                           </div>
 
                           {/* Stats Row */}
-                          <div className="flex items-center gap-4 pt-3 border-t border-slate-700/50">
+                          <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
                             {gym.rating > 0 && (
                               <div className="flex items-center gap-1.5">
                                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -507,24 +503,14 @@ export default function Gyms() {
                                 <span className="font-semibold">{gym.members_count}</span>
                               </div>
                             )}
+                            {gym.type && (
+                              <div className="ml-auto">
+                                <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                                  {gym.type}
+                                </Badge>
+                              </div>
+                            )}
                           </div>
-
-                          {/* Reward Offer */}
-                          {gym.reward_offer && (
-                            <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
-                              <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                              <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
-                            </div>
-                          )}
-
-                          {/* Gym Type at Bottom */}
-                          {gym.type && (
-                            <div className="flex justify-center pt-2">
-                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
-                                {gym.type}
-                              </Badge>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -704,14 +690,10 @@ export default function Gyms() {
 
                         {/* Badges */}
                         <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                          {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ? (
+                          {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) && (
                             <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold">
                               <BadgeCheck className="w-3 h-3 mr-1" />
                               Official
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-slate-600/90 text-slate-200 text-xs shadow-lg font-semibold">
-                              Unofficial
                             </Badge>
                           )}
                         </div>
@@ -748,7 +730,7 @@ export default function Gyms() {
                       </div>
 
                       {/* Content Section */}
-                      <div className="p-5 space-y-4">
+                      <div className="p-4 space-y-2">
                         {/* Header */}
                         <div>
                           <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
@@ -759,7 +741,7 @@ export default function Gyms() {
                         </div>
 
                         {/* Stats Row */}
-                        <div className="flex items-center gap-4 pt-3 border-t border-slate-700/50">
+                        <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
                           {gym.rating > 0 && (
                             <div className="flex items-center gap-1.5">
                               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -772,24 +754,14 @@ export default function Gyms() {
                               <span className="font-semibold">{gym.members_count}</span>
                             </div>
                           )}
+                          {gym.type && (
+                            <div className="ml-auto">
+                              <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
+                                {gym.type}
+                              </Badge>
+                            </div>
+                          )}
                         </div>
-
-                        {/* Reward Offer */}
-                        {gym.reward_offer && (
-                          <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/40 rounded-xl p-3 flex items-center gap-2">
-                            <Gift className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                            <span className="text-sm font-bold text-orange-200 line-clamp-1">{gym.reward_offer}</span>
-                          </div>
-                        )}
-
-                        {/* Gym Type at Bottom */}
-                        {gym.type && (
-                          <div className="flex justify-center pt-2">
-                            <Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">
-                              {gym.type}
-                            </Badge>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
