@@ -113,8 +113,8 @@ export default function InviteOwner() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-white">Invite Gym Owner</h1>
-            <p className="text-slate-400 text-sm">Help this gym become official</p>
+            <h1 className="text-2xl font-black text-white">Make Gym Official</h1>
+            <p className="text-slate-400 text-sm">Unlock rewards and exclusive perks</p>
           </div>
         </div>
 
