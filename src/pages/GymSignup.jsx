@@ -942,21 +942,12 @@ export default function GymSignup() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Button
-                  onClick={handleClaimGhostGym}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl h-12"
-                >
-                  Claim This Gym
-                </Button>
-                <Button
-                  onClick={handleCreateOfficialGym}
-                  variant="outline"
-                  className="w-full bg-slate-800/60 border-slate-600 text-slate-300 hover:bg-slate-700/60 hover:text-white rounded-xl h-12"
-                >
-                  Create Official Gym Instead
-                </Button>
-              </div>
+              <Button
+                onClick={handleClaimGhostGym}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl h-12"
+              >
+                Claim This Gym
+              </Button>
 
               <p className="text-xs text-slate-500 text-center mt-4">
                 Claiming will preserve existing members and activity
