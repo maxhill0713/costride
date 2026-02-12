@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X } from 'lucide-react';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function Gyms() {
   const navigate = useNavigate();
@@ -466,7 +467,7 @@ export default function Gyms() {
                             </div>
                           )}
 
-                          {/* Icons: Gallery, Info, Edit & Leave */}
+                          {/* Icons: Gallery, Info & More Options */}
                           <div className="absolute top-3 right-3 flex gap-2">
                             <button
                               onClick={(e) => {
@@ -486,26 +487,43 @@ export default function Gyms() {
                             >
                               <Dumbbell className="w-4 h-4 text-slate-300" />
                             </button>
-                            {currentUser && currentUser.email === gym.owner_email && (
-                              <button
-                                onClick={() => setEditingGym(gym)}
-                                className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
-                              >
-                                <Edit className="w-4 h-4 text-slate-300" />
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                if (window.confirm(`Are you sure you want to leave ${gym.name}?`)) {
-                                  leaveGymMutation.mutate(gym.id);
-                                }
-                              }}
-                              disabled={leaveGymMutation.isPending}
-                              className="w-9 h-9 rounded-xl bg-red-600/80 backdrop-blur-md flex items-center justify-center hover:bg-red-700 transition-all hover:scale-110"
-                            >
-                              <X className="w-4 h-4 text-white" />
-                            </button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  onClick={(e) => e.preventDefault()}
+                                  className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                                >
+                                  <MoreVertical className="w-4 h-4 text-slate-300" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                                {currentUser && currentUser.email === gym.owner_email && (
+                                  <DropdownMenuItem 
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setEditingGym(gym);
+                                    }}
+                                    className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer"
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit Gym
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem 
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (window.confirm(`Are you sure you want to leave ${gym.name}?`)) {
+                                      leaveGymMutation.mutate(gym.id);
+                                    }
+                                  }}
+                                  disabled={leaveGymMutation.isPending}
+                                  className="text-red-400 hover:text-red-300 hover:bg-slate-700 cursor-pointer"
+                                >
+                                  <LogOut className="w-4 h-4 mr-2" />
+                                  Leave Gym
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
 
