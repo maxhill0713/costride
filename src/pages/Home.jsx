@@ -314,7 +314,7 @@ export default function Home() {
     }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Header with Streak */}
-        <div className="bg-gradient-to-b from-slate-950/95 via-blue-950/90 to-transparent backdrop-blur-xl px-4 py-3">
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
               <button 
                 onClick={() => setShowStreakVariants(true)}
