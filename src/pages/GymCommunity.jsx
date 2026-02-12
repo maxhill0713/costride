@@ -818,17 +818,16 @@ export default function GymCommunity() {
               <div className="flex flex-col gap-3 mb-4 pr-32">
                 {/* Gym Name & Info */}
                 <div className="flex-1 text-left min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-lg md:text-xl' : gym.name.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
-                      {gym.name}
-                    </h1>
-                    {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
-                  </div>
-                  <p className="text-white/90 text-sm font-medium drop-shadow-md">Your fitness community 💪</p>
-                  <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
-                    <MapPin className="w-3 h-3" />
-                    {gym.city}
-                  </p>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-lg md:text-xl' : gym.name.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
+                    {gym.name}
+                  </h1>
+                  {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
+                </div>
+                <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
+                  <MapPin className="w-3 h-3" />
+                  {gym.city}
+                </p>
                 </div>
               </div>
             </div>
@@ -1147,7 +1146,7 @@ export default function GymCommunity() {
                 <h3 className="text-sm md:text-base font-bold text-slate-100">New Challenges</h3>
               </div>
               <div className="space-y-2">
-                {gymChallenges.slice(0, 2).map((challenge) => (
+                {gymChallenges.slice(0, 1).map((challenge) => (
                   <GymChallengeCard
                     key={challenge.id}
                     challenge={challenge}
@@ -1163,28 +1162,7 @@ export default function GymCommunity() {
             </Card>
           )}
 
-          {/* Recent Posts */}
-          {posts.length > 0 && (
-            <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 text-blue-400" />
-                  <h3 className="text-sm md:text-base font-bold text-slate-100">Recent Posts</h3>
-                </div>
-                <button 
-                  onClick={() => setActiveTab('feed')}
-                  className="text-xs text-blue-400 hover:text-blue-300 underline"
-                >
-                  View All →
-                </button>
-              </div>
-              <div className="space-y-2">
-                {posts.slice(0, 1).map((post) => (
-                  <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
-                ))}
-              </div>
-            </Card>
-          )}
+
 
         </motion.div>
         </TabsContent>
@@ -1267,20 +1245,7 @@ export default function GymCommunity() {
 
           {/* Gym Challenges - Gym-specific challenges */}
           {gymChallenges.length > 0 && (
-            <div className="space-y-11">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                  <Trophy className="w-6 h-6 text-white drop-shadow-lg" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-extrabold text-transparent bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text tracking-tight">
-                    Gym Challenges
-                  </h2>
-                  <p className="text-sm text-slate-300/80 font-medium mt-0.5">
-                    Exclusive from {gym.name}
-                  </p>
-                </div>
-              </div>
+            <div className="space-y-3">
               {gymChallenges.map((challenge) => (
                 <GymChallengeCard
                   key={challenge.id}
