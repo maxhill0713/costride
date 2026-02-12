@@ -192,7 +192,11 @@ export default function Friends() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id));
+  // Only include actual user-created posts (with content, images, or videos)
+  const friendPosts = allPosts.filter(post => 
+    friendIds.includes(post.member_id) && 
+    (post.content || post.image_url || post.video_url)
+  );
 
   // Create unified activity feed
   const createActivityFeed = () => {
