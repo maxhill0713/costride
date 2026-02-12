@@ -35,6 +35,16 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
 
       const gym = gyms[0];
 
+      // Check if user already has 3 gym memberships
+      const userMemberships = await base44.entities.GymMembership.filter({
+        user_id: currentUser.id,
+        status: 'active'
+      });
+
+      if (userMemberships.length >= 3) {
+        throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
+      }
+
       // Check if banned
       if (gym.banned_members?.includes(currentUser.id)) {
         throw new Error('You are banned from this gym');
