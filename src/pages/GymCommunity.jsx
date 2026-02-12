@@ -781,7 +781,7 @@ export default function GymCommunity() {
                 className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
               >
                 <Crown className="w-4 h-4 mr-1" />
-                Invite Owner
+                Make Official
               </Button>
             )}
             {showOwnerControls && (
