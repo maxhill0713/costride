@@ -220,7 +220,8 @@ export default function Profile() {
         video_url: data.video_url || null,
         likes: 0,
         comments: [],
-        reactions: {}
+        reactions: {},
+        allow_gym_repost: data.allow_gym_repost || false
       };
       return base44.entities.Post.create(postData);
     },
@@ -230,6 +231,7 @@ export default function Profile() {
       setPostContent('');
       setPostImage('');
       setPostVideo('');
+      setAllowGymRepost(false);
     }
   });
 
