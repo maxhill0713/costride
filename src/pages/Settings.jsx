@@ -267,71 +267,7 @@ export default function Settings() {
          </div>
 
 
-        {/* Logout */}
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-              <LogOut className="w-6 h-6 text-red-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Danger Zone</h3>
-              <p className="text-sm text-slate-300">Irreversible account actions</p>
-            </div>
-          </div>
 
-          <div className="space-y-3">
-            <Button 
-              className="w-full bg-red-600 hover:bg-red-700 text-white rounded-2xl font-semibold h-10 flex items-center gap-2"
-              onClick={() => {
-                if (confirm('Are you sure you want to logout?')) {
-                  base44.auth.logout();
-                }
-              }}
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
-            <p className="text-xs text-slate-400 text-center">You will be logged out from all sessions</p>
-            
-            <div className="border-t border-red-500/20 pt-3 mt-4">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="outline"
-                    className="w-full border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-2xl font-semibold h-10"
-                  >
-                    Delete Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="bg-slate-800 border-red-600/50">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white">⚠️ Delete Account?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-slate-300">
-                      This will permanently delete your account and all your data including check-ins, posts, progress{currentUser.account_type === 'gym_owner' ? ', and all gyms you own' : ''}. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
-                      onClick={async () => {
-                        try {
-                          await base44.functions.invoke('deleteUserAccount');
-                          base44.auth.logout();
-                        } catch (error) {
-                          console.error('Failed to delete account:', error);
-                        }
-                      }}
-                    >
-                      Delete Permanently
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <p className="text-xs text-red-400 text-center mt-2">⚠️ This action is permanent and cannot be undone</p>
-            </div>
-          </div>
-        </Card>
         </div>
         </div>
         </div>
