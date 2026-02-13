@@ -687,10 +687,14 @@ export default function Friends() {
                 {friends.length === 0 && friendRequests.length === 0 ? (
                   <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 ) : (
-                  friendsWithActivity.filter(friend => 
-                    friend.friend_name.toLowerCase().includes(friendsSearchQuery.toLowerCase())
-                  ).map(friend => {
+                  friendsWithActivity.filter(friend => {
+                    const friendUser = allUsers.find(u => u.id === friend.friend_id);
+                    const displayName = friendUser?.full_name || friend.friend_name;
+                    return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
+                  }).map(friend => {
                     const { activity } = friend;
+                    const friendUser = allUsers.find(u => u.id === friend.friend_id);
+                    const currentName = friendUser?.full_name || friend.friend_name;
                     return (
                       <div
                         key={friend.id}
@@ -703,15 +707,15 @@ export default function Friends() {
                         >
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {friend.friend_avatar ? (
-                              <img src={friend.friend_avatar} alt={friend.friend_name} className="w-full h-full object-cover" />
+                              <img src={friend.friend_avatar} alt={currentName} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-semibold text-white">
-                                {friend.friend_name?.charAt(0)?.toUpperCase()}
+                                {currentName?.charAt(0)?.toUpperCase()}
                               </span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-white text-xs truncate">{friend.friend_name}</p>
+                            <p className="font-semibold text-white text-xs truncate">{currentName}</p>
                             {activity.daysSinceCheckIn === 0 && (
                               <Badge className="bg-green-500/20 text-green-300 border-green-500/40 text-[10px] mt-1">
                                 Checked in
