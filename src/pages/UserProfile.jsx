@@ -71,6 +71,15 @@ export default function UserProfile() {
     queryFn: () => base44.entities.Gym.list()
   });
 
+  const { data: userPosts = [] } = useQuery({
+    queryKey: ['userPosts', userId],
+    queryFn: async () => {
+      const allPosts = await base44.entities.Post.list('-created_date');
+      return allPosts.filter(p => p.member_id === userId);
+    },
+    enabled: !!userId
+  });
+
   const { data: friendshipStatus } = useQuery({
     queryKey: ['friendship', currentUser?.id, userId],
     queryFn: async () => {
