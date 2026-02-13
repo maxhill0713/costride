@@ -4,38 +4,20 @@ export default function FriendsIcon({ className = "w-7 h-7" }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
     >
-      {/* Left person head */}
-      <circle cx="7" cy="6" r="2.5" />
-      {/* Left person body */}
-      <path d="M7 9v4" />
-      {/* Left person left arm */}
-      <path d="M4 11l-2 2" />
-      {/* Left person right arm */}
-      <path d="M10 11l2 2" />
+      {/* Left person */}
+      <circle cx="6" cy="7" r="2.5" opacity="0.8" />
+      <path d="M 4 11 Q 4 10 6 10 Q 8 10 8 11 L 8 14 Q 8 15 6 15 Q 4 15 4 14 Z" opacity="0.8" />
       
-      {/* Right person head */}
-      <circle cx="17" cy="6" r="2.5" />
-      {/* Right person body */}
-      <path d="M17 9v4" />
-      {/* Right person left arm */}
-      <path d="M14 11l-2 2" />
-      {/* Right person right arm */}
-      <path d="M20 11l2 2" />
+      {/* Right person */}
+      <circle cx="18" cy="7" r="2.5" opacity="0.8" />
+      <path d="M 16 11 Q 16 10 18 10 Q 20 10 20 11 L 20 14 Q 20 15 18 15 Q 16 15 16 14 Z" opacity="0.8" />
       
-      {/* Center person (bigger) */}
-      <circle cx="12" cy="13" r="3" />
-      {/* Center person body */}
-      <path d="M12 16v3" />
-      {/* Center person arms */}
-      <path d="M8 18l-1.5 2" />
-      <path d="M16 18l1.5 2" />
+      {/* Center person (featured) */}
+      <circle cx="12" cy="9.5" r="3.5" />
+      <path d="M 9 14.5 Q 9 13 12 13 Q 15 13 15 14.5 L 15 18 Q 15 19.5 12 19.5 Q 9 19.5 9 18 Z" />
     </svg>
   );
 }
