@@ -280,10 +280,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['workoutLog']);
-      queryClient.invalidateQueries(['posts']);
-    }
-  });
+       queryClient.invalidateQueries(['workoutLog']);
+       queryClient.invalidateQueries(['posts']);
+       setShowSummary(false);
+     }
+    });
 
   const getProgressIndicator = (exercise, index) => {
     if (!lastWorkout?.exercises?.[index]) return null;
