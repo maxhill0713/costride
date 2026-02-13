@@ -192,7 +192,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       )}
 
       {/* Video or Image - Full Size */}
-      <div className="relative w-full aspect-square bg-gray-100">
+      <div className="relative w-full aspect-square bg-slate-800">
         {post.video_url ? (
           <video 
             src={post.video_url} 
