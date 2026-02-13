@@ -277,16 +277,41 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
 
       {/* Modals */}
       <CommentModal 
-        open={showComments}
-        onClose={() => setShowComments(false)}
-        post={post}
-        onAddComment={handleAddComment}
+       open={showComments}
+       onClose={() => setShowComments(false)}
+       post={post}
+       onAddComment={handleAddComment}
       />
       <ShareModal
-        open={showShare}
-        onClose={() => setShowShare(false)}
-        post={post}
+       open={showShare}
+       onClose={() => setShowShare(false)}
+       post={post}
       />
-    </motion.div>
-  );
-}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+       <AlertDialogContent>
+         <AlertDialogHeader>
+           <AlertDialogTitle>Delete Post?</AlertDialogTitle>
+           <AlertDialogDescription>
+             Are you sure you want to delete your post? This action cannot be undone.
+           </AlertDialogDescription>
+         </AlertDialogHeader>
+         <div className="flex gap-3 justify-end">
+           <AlertDialogCancel>Cancel</AlertDialogCancel>
+           <AlertDialogAction
+             onClick={() => {
+               deleteMutation.mutate();
+               setShowDeleteConfirm(false);
+             }}
+             disabled={deleteMutation.isPending}
+             className="bg-red-600 hover:bg-red-700"
+           >
+             {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+           </AlertDialogAction>
+         </div>
+       </AlertDialogContent>
+      </AlertDialog>
+      </motion.div>
+      );
+      }
