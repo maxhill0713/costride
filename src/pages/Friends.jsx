@@ -17,7 +17,6 @@ export default function Friends() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showFriendsDropdown, setShowFriendsDropdown] = useState(false);
 
   const [dismissedCardIds, setDismissedCardIds] = useState(() => {
     try {
