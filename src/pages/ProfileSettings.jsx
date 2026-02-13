@@ -16,6 +16,8 @@ export default function ProfileSettings() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [nameTimeout, setNameTimeout] = useState(null);
   const [bioTimeout, setBioTimeout] = useState(null);
+  const [localFullName, setLocalFullName] = useState('');
+  const [localBio, setLocalBio] = useState('');
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
