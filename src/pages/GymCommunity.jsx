@@ -100,7 +100,7 @@ export default function GymCommunity() {
       const allPosts = await base44.entities.Post.list('-created_date');
       return allPosts.filter(p => p.allow_gym_repost === true);
     },
-    enabled: !!gymId && !!coaches.length
+    enabled: !!gymId
   });
 
   const { data: checkIns = [] } = useQuery({
