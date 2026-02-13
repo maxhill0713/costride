@@ -541,24 +541,7 @@ export default function Home() {
         )}
         </div>
 
-        {/* Full Width Posts Section */}
-        <div className="w-full">
-          {friendPosts.length > 0 && (
-            <div className="space-y-0">
-              {friendPosts.map((post) => (
-                <div key={post.id} className="w-full">
-                  <PostCard 
-                    post={post}
-                    onLike={() => {}}
-                    onComment={() => {}}
-                    onSave={() => {}}
-                    onDelete={() => {}}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+
       </div>
 
       {/* Streak Variant Picker */}
