@@ -468,7 +468,7 @@ export default function TodayWorkout({ currentUser }) {
           ))}
 
           {/* Log Workout Button - Only when Expanded */}
-          {!alreadyLoggedToday && (
+          {isExpanded && !alreadyLoggedToday && (
             <div className="mb-3 space-y-2">
               {lastWorkout && (
                 <div className="flex items-center justify-between">
