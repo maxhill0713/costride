@@ -267,8 +267,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         ) : null}
       </div>
 
-      {/* Caption Section - Semi-transparent Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 backdrop-blur-sm bg-black/40 flex items-center z-10 justify-between gap-3">
+      {/* Caption Section */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 flex items-center z-10 justify-between gap-3">
         <div className="flex-1">
           <p className="leading-snug">{post.content}</p>
           {post.weight && (
