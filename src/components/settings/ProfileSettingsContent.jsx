@@ -92,13 +92,14 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
               </div>
             </label>
           </div>
-        </div>
-      </Card>
+          </div>
+          </Card>
+          )}
 
-      {/* Banner Image */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-          <Label className="text-sm font-bold text-slate-100 block mb-3">Banner Image</Label>
+          {showBanner && (
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+            <Label className="text-sm font-bold text-slate-100 block mb-3">Banner Image</Label>
           <div className="flex items-center gap-3">
             {currentUser.hero_image_url && (
               <div className="rounded-xl overflow-hidden h-16 w-24 flex-shrink-0">
