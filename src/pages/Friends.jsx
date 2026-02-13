@@ -438,8 +438,8 @@ export default function Friends() {
             {/* Friends Modal */}
             {showFriendsDropdown && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowFriendsDropdown(false)} />
-                <div className="fixed left-1/2 -translate-x-1/2 top-32 w-11/12 max-w-2xl h-1/2 bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-50 flex flex-col">
+                <div className="fixed inset-0 z-[999]" onClick={() => setShowFriendsDropdown(false)} />
+                <div className="fixed left-1/2 -translate-x-1/2 top-32 w-11/12 max-w-2xl h-1/2 bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-[9999] flex flex-col">
                   <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
                     <h2 className="text-xl font-bold text-white">Friends ({friends.length})</h2>
                     <button
