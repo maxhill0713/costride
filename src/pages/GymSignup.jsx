@@ -507,7 +507,7 @@ export default function GymSignup() {
         setGhostGym(ghostGymMatch);
         setShowGhostGymModal(true);
       } else {
-        // No ghost gym - proceed with creating official gym
+        // No ghost gym - proceed with normal signup
         setFormData(prev => ({
           ...prev,
           name: place.name.slice(0, 15),
