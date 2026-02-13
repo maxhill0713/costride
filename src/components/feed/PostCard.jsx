@@ -17,6 +17,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
   const [showShare, setShowShare] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
