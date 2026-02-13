@@ -581,7 +581,7 @@ export default function Friends() {
         {showFriendsModal && (
           <>
             <div className="fixed inset-0 z-[999]" onClick={() => setShowFriendsModal(false)} />
-            <div className="fixed left-1/2 -translate-x-1/2 top-32 w-11/12 max-w-2xl h-1/2 bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-[9999] flex flex-col">
+            <div className="fixed left-1/2 -translate-x-1/2 top-24 w-11/12 max-w-2xl h-1/2 bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-[9999] flex flex-col">
               <div className="flex-1 overflow-y-auto p-4 space-y-2">
                 {friends.length === 0 ? (
                   <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
