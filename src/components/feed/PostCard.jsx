@@ -192,7 +192,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-xl mb-4 overflow-hidden relative shadow-2xl shadow-black/20"
+      className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden relative shadow-2xl shadow-black/20 ${
+        fullWidth ? 'w-screen ml-[-50vw] left-[50%] mb-0 rounded-none' : 'rounded-xl mb-4'
+      }`}
     >
       {/* Header - Profile Picture Only */}
       <div className="absolute top-3 left-3 z-10">
