@@ -132,12 +132,7 @@ export default function Settings() {
              return (
                <Link key={setting.page} to={createPageUrl(setting.page)} className="block pb-2">
                  <div className="w-full bg-slate-800/40 backdrop-blur border border-slate-700/50 hover:bg-slate-800/60 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-                   <div className="flex items-center gap-3">
-                     <div className="w-6 h-6 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                       {IconComponent ? <IconComponent className="w-4 h-4 text-slate-300" /> : <span className="text-slate-300 font-bold text-sm">{setting.icon}</span>}
-                     </div>
-                     <span className="font-semibold text-slate-200">{setting.name}</span>
-                   </div>
+                   <span className="font-semibold text-slate-200">{setting.name}</span>
                    <ChevronRight className="w-5 h-5 text-slate-400" />
                  </div>
                </Link>
