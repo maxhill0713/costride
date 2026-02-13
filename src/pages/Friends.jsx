@@ -427,21 +427,31 @@ export default function Friends() {
             </h1>
             
             {/* Friends Button with Count */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
-              >
-                <span className="text-sm font-semibold">{friends.length}</span>
-                <span className="text-sm font-medium">Friends</span>
-              </button>
+            <button
+              onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
+            >
+              <span className="text-sm font-semibold">{friends.length}</span>
+              <span className="text-sm font-medium">Friends</span>
+            </button>
 
-              {/* Friends Dropdown Menu */}
-              {showFriendsDropdown && (
-                <div className="absolute -right-2 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-[9999]">
-                  <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
+            {/* Friends Modal */}
+            {showFriendsDropdown && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col">
+                <div className="bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 max-h-[70vh] overflow-hidden flex flex-col">
+                  <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+                    <h2 className="text-xl font-bold text-white">Friends ({friends.length})</h2>
+                    <button
+                      onClick={() => setShowFriendsDropdown(false)}
+                      className="text-slate-400 hover:text-white transition-colors"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-4 space-y-2">
                     {friends.length === 0 ? (
-                      <p className="text-center text-slate-400 text-sm py-4">No friends yet</p>
+                      <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                     ) : (
                       friendsWithActivity.map(friend => {
                         const { activity } = friend;
@@ -453,6 +463,7 @@ export default function Friends() {
                             <Link 
                               to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
                               className="flex items-center gap-2 flex-1 min-w-0"
+                              onClick={() => setShowFriendsDropdown(false)}
                             >
                               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
                                 {friend.friend_avatar ? (
@@ -491,7 +502,8 @@ export default function Friends() {
                       })
                     )}
                   </div>
-                  <div className="border-t border-slate-700 p-3">
+
+                  <div className="border-t border-slate-700 p-4">
                     <Button
                       onClick={() => {
                         setShowAddModal(true);
@@ -504,8 +516,10 @@ export default function Friends() {
                     </Button>
                   </div>
                 </div>
-              )}
-            </div>
+
+                <div className="flex-1" onClick={() => setShowFriendsDropdown(false)} />
+              </div>
+            )}
           </div>
         </div>
       </div>
