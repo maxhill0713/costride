@@ -436,15 +436,13 @@ export default function Home() {
                     <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl" />
 
                     <div className="relative space-y-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                            <Dumbbell className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-                            <p className="text-[10px] text-slate-400 mt-0.5">Not configured</p>
-                          </div>
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                          <Dumbbell className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
+                          <p className="text-[10px] text-slate-400 mt-0.5">Not configured</p>
                         </div>
                       </div>
 
