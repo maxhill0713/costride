@@ -234,36 +234,34 @@ export default function Friends() {
     const activities = [];
 
     // Add check-ins (last 7 days)
-      const recentCheckIns = allCheckIns.filter(checkIn => {
-        const daysSince = differenceInDays(new Date(), new Date(checkIn.check_in_date));
-        return daysSince <= 7 && friendIds.includes(checkIn.user_id);
-      });
+    const recentCheckIns = allCheckIns.filter(checkIn => {
+      const daysSince = differenceInDays(new Date(), new Date(checkIn.check_in_date));
+      return daysSince <= 7 && friendIds.includes(checkIn.user_id);
+    });
 
-      recentCheckIns.forEach(checkIn => {
-        const friend = friends.find(f => f.friend_id === checkIn.user_id);
-        const friendUser = allUsers.find(u => u.id === checkIn.user_id);
-        const isToday = differenceInDays(new Date(), new Date(checkIn.check_in_date)) === 0;
-
-        activities.push({
-          id: `checkin-${checkIn.id}`,
-          type: 'checkin',
-          friendId: checkIn.user_id,
-          friendName: friendUser?.full_name || friend?.friend_name || checkIn.user_name,
-          friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
-          message: isToday ? 'checked in today' : `checked in at ${checkIn.gym_name}`,
-          timestamp: new Date(checkIn.check_in_date),
-          emoji: '💪',
-          gymName: checkIn.gym_name
-        });
+    recentCheckIns.forEach(checkIn => {
+      const friend = friends.find(f => f.friend_id === checkIn.user_id);
+      const isToday = differenceInDays(new Date(), new Date(checkIn.check_in_date)) === 0;
+      
+      activities.push({
+        id: `checkin-${checkIn.id}`,
+        type: 'checkin',
+        friendId: checkIn.user_id,
+        friendName: friend?.friend_name || checkIn.user_name,
+        friendAvatar: friend?.friend_avatar,
+        message: isToday ? 'checked in today' : `checked in at ${checkIn.gym_name}`,
+        timestamp: new Date(checkIn.check_in_date),
+        emoji: '💪',
+        gymName: checkIn.gym_name
       });
+    });
 
     // Add streak milestones
     friendIds.forEach(friendId => {
       const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
       const streak = calculateStreak(friendCheckIns);
       const friend = friends.find(f => f.friend_id === friendId);
-      const friendUser = allUsers.find(u => u.id === friendId);
-
+      
       // Check if they recently hit a milestone (7, 14, 30, 50, 100 days)
       const milestones = [7, 14, 30, 50, 100];
       milestones.forEach(milestone => {
@@ -278,8 +276,8 @@ export default function Friends() {
                 id: `milestone-${friendId}-${milestone}`,
                 type: 'milestone',
                 friendId,
-                friendName: friendUser?.full_name || friend?.friend_name,
-                friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
+                friendName: friend?.friend_name,
+                friendAvatar: friend?.friend_avatar,
                 message: `reached a ${milestone}-day streak!`,
                 timestamp: new Date(milestoneDate),
                 emoji: milestone >= 50 ? '🔥' : milestone >= 30 ? '⚡' : '🎯',
@@ -642,7 +640,6 @@ export default function Friends() {
                 }).map(request => {
                   const requesterUser = allUsers.find(u => u.id === request.user_id);
                   const currentName = requesterUser?.full_name || request.friend_name || request.user_name;
-                  const currentAvatar = requesterUser?.avatar_url || request.friend_avatar;
                   return (
                   <div
                     key={request.id}
@@ -650,8 +647,8 @@ export default function Friends() {
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {currentAvatar ? (
-                          <img src={currentAvatar} alt={currentName} className="w-full h-full object-cover" />
+                        {request.friend_avatar ? (
+                          <img src={request.friend_avatar} alt={currentName} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-xs font-semibold text-white">
                             {currentName?.charAt(0)?.toUpperCase()}
@@ -698,7 +695,6 @@ export default function Friends() {
                     const { activity } = friend;
                     const friendUser = allUsers.find(u => u.id === friend.friend_id);
                     const currentName = friendUser?.full_name || friend.friend_name;
-                    const currentAvatar = friendUser?.avatar_url || friend.friend_avatar;
                     return (
                       <div
                         key={friend.id}
@@ -710,8 +706,8 @@ export default function Friends() {
                           onClick={() => setShowFriendsModal(false)}
                         >
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {currentAvatar ? (
-                              <img src={currentAvatar} alt={currentName} className="w-full h-full object-cover" />
+                            {friend.friend_avatar ? (
+                              <img src={friend.friend_avatar} alt={currentName} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-semibold text-white">
                                 {currentName?.charAt(0)?.toUpperCase()}
