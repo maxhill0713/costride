@@ -90,9 +90,14 @@ export default function GymCommunity() {
     queryFn: async () => {
       const allPosts = await base44.entities.Post.list('-created_date');
       // Show only gym posts (from gym owner/coaches)
-      return allPosts.filter(p => p.member_id === gym?.admin_id || p.member_id === currentUser?.id);
+      const coachEmails = coaches.map(c => c.user_email);
+      return allPosts.filter(p => {
+        const isGymOwner = p.member_id === gym?.admin_id;
+        const isCoach = coaches.some(c => c.user_email === currentUser?.email && c.can_post);
+        return isGymOwner || (isCoach && p.member_id === currentUser?.id);
+      });
     },
-    enabled: !!gymId && !!currentUser
+    enabled: !!gymId && !!currentUser && !!coaches
   });
 
   const { data: checkIns = [] } = useQuery({
