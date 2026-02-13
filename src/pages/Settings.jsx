@@ -90,6 +90,19 @@ export default function Settings() {
            </div>
          </Link>
 
+         {/* Privacy Button - Full Width */}
+         <Link to={createPageUrl('PrivacySettings')}>
+           <div className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                 <Lock className="w-4 h-4 text-white" />
+               </div>
+               <span className="font-semibold text-white">Privacy</span>
+             </div>
+             <ChevronRight className="w-5 h-5 text-white/70" />
+           </div>
+         </Link>
+
          {/* Account Button - Full Width */}
          <Link to={createPageUrl('AccountSettings')}>
            <div className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
