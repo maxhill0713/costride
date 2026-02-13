@@ -76,10 +76,10 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-7">
          {/* Notifications Button - Full Width */}
          <Link to={createPageUrl('NotificationSettings')}>
-           <div className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <Bell className="w-4 h-4 text-white" />
@@ -92,7 +92,7 @@ export default function Settings() {
 
          {/* Privacy Button - Full Width */}
          <Link to={createPageUrl('PrivacySettings')}>
-           <div className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <Lock className="w-4 h-4 text-white" />
@@ -105,7 +105,7 @@ export default function Settings() {
 
          {/* Account Button - Full Width */}
          <Link to={createPageUrl('AccountSettings')}>
-           <div className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <Lock className="w-4 h-4 text-white" />
@@ -118,7 +118,7 @@ export default function Settings() {
 
          {/* Profile Button - Full Width */}
          <Link to={createPageUrl('ProfileSettings')}>
-           <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <User className="w-4 h-4 text-white" />
@@ -131,7 +131,7 @@ export default function Settings() {
 
          {/* Appearance Button - Full Width */}
          <Link to={createPageUrl('AppearanceSettings')}>
-           <div className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <Sun className="w-4 h-4 text-white" />
@@ -144,7 +144,7 @@ export default function Settings() {
 
          {/* Subscriptions Button - Full Width */}
          <Link to={createPageUrl('SubscriptionSettings')}>
-           <div className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <span className="text-white font-bold text-sm">S</span>
@@ -157,7 +157,7 @@ export default function Settings() {
 
          {/* Help & Support Button - Full Width */}
          <Link to={createPageUrl('HelpSupport')}>
-           <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+           <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
              <div className="flex items-center gap-3">
                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                  <HelpCircle className="w-4 h-4 text-white" />
