@@ -341,39 +341,11 @@ export default function TodayWorkout({ currentUser }) {
             </ul>
           </div>
         )}
-        {alreadyLoggedToday ? (
+        {alreadyLoggedToday && !isExpanded && (
           <div className="flex items-center justify-center gap-1.5 py-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             <span className="text-[10px] text-green-400 font-medium">Logged</span>
           </div>
-        ) : (
-          <>
-            {lastWorkout && (
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] text-slate-400 font-medium">
-                  Last: {new Date(lastWorkout.completed_date).toLocaleDateString()}
-                </p>
-                <Button
-                  onClick={() => setShowLogConfirm(true)}
-                  disabled={logWorkoutMutation.isPending}
-                  size="sm"
-                  className="h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-3 shadow-lg shadow-orange-500/30 rounded-lg"
-                >
-                  Log Workout
-                </Button>
-              </div>
-            )}
-            {!lastWorkout && todayWorkout.exercises.length > 0 && (
-              <Button
-                onClick={() => setShowLogConfirm(true)}
-                disabled={logWorkoutMutation.isPending}
-                size="sm"
-                className="h-7 text-[10px] font-bold w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
-              >
-                Log Workout
-              </Button>
-            )}
-          </>
         )}
       </div>
 
