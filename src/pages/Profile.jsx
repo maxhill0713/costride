@@ -344,7 +344,7 @@ export default function Profile() {
         
         {/* Top Right Icons */}
         <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-          <Link to={createPageUrl('Settings')}>
+          <Link to={createPageUrl('Settings')} className="p-2 -m-2">
             <Settings className="w-6 h-6 text-slate-300 hover:text-white transition-colors" />
           </Link>
         </div>
