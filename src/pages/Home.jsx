@@ -535,7 +535,7 @@ export default function Home() {
           {/* Weekly Challenges */}
           {featuredChallenge && (
             <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-blue-500/30 hover:border-blue-400/50 transition-all cursor-pointer shadow-2xl shadow-black/20 rounded-2xl overflow-hidden group">
+              <Card className="bg-gradient-to-br from-slate-900/40 via-slate-900/30 to-slate-950/40 backdrop-blur-3xl border border-blue-500/40 hover:border-blue-400/50 transition-all cursor-pointer shadow-2xl shadow-black/20 rounded-2xl overflow-hidden group">
                 <div className="relative p-4">
                   <div className="flex items-start justify-between gap-3 mb-4">
                      <div className="flex items-center gap-2">
