@@ -409,7 +409,7 @@ export default function Profile() {
 
           {/* Bio & Location */}
           {isEditing ? (
-            <div className="space-y-3 mt-2">
+            <div className="space-y-3 mt-4">
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Bio</label>
                 <Textarea
