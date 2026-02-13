@@ -696,7 +696,7 @@ export default function Profile() {
                 </Card>
               ) : (
                 <div className="space-y-3">
-                  {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).map((post) => (
+                  {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).map((post) => (
                     <PostCard 
                       key={post.id} 
                       post={post}
