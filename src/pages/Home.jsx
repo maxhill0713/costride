@@ -491,14 +491,19 @@ export default function Home() {
                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-60 group-hover:opacity-70 transition-opacity" />
                  )}
                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
-                
+
                 <div className="relative p-4 h-full flex flex-col justify-between">
                   <div>
                     <p className="text-white font-semibold text-sm tracking-tight">Your Gym Community</p>
                     <p className="text-slate-300 text-xs mt-0.5 font-medium">{memberGym.name}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-300 font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} members training today—join them` : 'Members training together daily'}</span>
+                    <span className="text-xs text-slate-300 font-medium">
+                      {todayCheckIns.length > 0 
+                        ? `Join ${todayCheckIns.length} other${todayCheckIns.length === 1 ? '' : 's'} training today`
+                        : 'Members training together daily'
+                      }
+                    </span>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center -space-x-2">
                         {(checkInUsers.length > 0 ? checkInUsers : [
