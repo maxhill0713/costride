@@ -72,8 +72,8 @@ import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
-import UserProfile from './pages/UserProfile';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -103,8 +103,8 @@ export const PAGES = {
     "Routines": Routines,
     "Search": Search,
     "Settings": Settings,
-    "UserProfile": UserProfile,
     "Profile": Profile,
+    "UserProfile": UserProfile,
 }
 
 export const pagesConfig = {

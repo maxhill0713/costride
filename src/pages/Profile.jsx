@@ -107,6 +107,10 @@ export default function Profile() {
   const memberGymIds = gymMemberships.map(m => m.gym_id);
   const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
 
+  // Get primary gym
+  const primaryGymId = currentUser?.primary_gym_id;
+  const primaryGym = allGyms.find(g => g.id === primaryGymId);
+
   React.useEffect(() => {
     if (currentUser) {
       setEditData({
