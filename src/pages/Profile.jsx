@@ -1071,8 +1071,21 @@ export default function Profile() {
                 </div>
               )}
 
+              <div className="flex items-center gap-2 p-3 bg-slate-800/40 border border-slate-600/40 rounded-xl">
+                <input
+                  type="checkbox"
+                  id="gym-repost"
+                  checked={allowGymRepost}
+                  onChange={(e) => setAllowGymRepost(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="gym-repost" className="flex-1 cursor-pointer text-sm text-slate-300">
+                  Allow gym owners to repost this to community
+                </label>
+              </div>
+
               <Button
-                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo })}
+                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
                 disabled={!postContent.trim() || (!postImage && !postVideo) || createPostMutation.isPending}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold disabled:opacity-50"
               >
