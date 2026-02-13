@@ -264,8 +264,8 @@ export default function UserProfile() {
             <p className="text-slate-300 text-sm leading-relaxed mt-4 max-w-xl">{viewingUser.bio}</p>
           )}
 
-          {/* Home Gym */}
-          {primaryGym && (
+          {/* Home Gym - Only show if viewing own profile or if explicitly set */}
+          {primaryGym && isOwnProfile && (
             <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
               <div className="flex items-center gap-2 mt-3 flex-wrap cursor-pointer hover:opacity-80 transition-opacity">
                 <Building2 className="w-4 h-4 text-blue-400" />
