@@ -336,6 +336,33 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
          </div>
        </AlertDialogContent>
       </AlertDialog>
+
+      {/* Favourite Confirmation Dialog */}
+      <AlertDialog open={showFavouriteConfirm} onOpenChange={setShowFavouriteConfirm}>
+       <AlertDialogContent>
+         <AlertDialogHeader>
+           <AlertDialogTitle>{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
+           <AlertDialogDescription>
+             {post.is_favourite 
+               ? 'This post will no longer appear as your favourite on your profile.'
+               : 'This post will appear as your favourite on your profile for others to see.'}
+           </AlertDialogDescription>
+         </AlertDialogHeader>
+         <div className="flex gap-3 justify-end">
+           <AlertDialogCancel>Cancel</AlertDialogCancel>
+           <AlertDialogAction
+             onClick={() => {
+               updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } });
+               setShowFavouriteConfirm(false);
+             }}
+             disabled={updatePostMutation.isPending}
+             className="bg-amber-600 hover:bg-amber-700"
+           >
+             {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
+           </AlertDialogAction>
+         </div>
+       </AlertDialogContent>
+      </AlertDialog>
       </motion.div>
       );
       }
