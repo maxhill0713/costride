@@ -415,9 +415,61 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
            >
              {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
            </AlertDialogAction>
-         </div>
-       </AlertDialogContent>
-      </AlertDialog>
-      </motion.div>
-      );
-      }
+            </div>
+           </AlertDialogContent>
+           </AlertDialog>
+
+           {/* Reactions Modal */}
+           <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
+           <DialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl">
+             <DialogHeader>
+               <DialogTitle className="text-white">Reactions</DialogTitle>
+             </DialogHeader>
+             <div className="space-y-2 max-h-96 overflow-y-auto">
+               {reactedUsers.map(user => {
+                 const variant = post.reactions[user.id];
+                 return (
+                   <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
+                     <div className="relative w-6 h-6 flex-shrink-0">
+                       {variant === 'sunglasses' ? (
+                         <div className="relative w-full h-full flex items-center justify-center">
+                           <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                           <svg 
+                             className="absolute inset-0 w-full h-full pointer-events-none"
+                             viewBox="0 0 64 64"
+                           >
+                             <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                             <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                             <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                           </svg>
+                         </div>
+                       ) : variant === 'cowboy' ? (
+                         <div className="relative w-full h-full flex items-center justify-center">
+                           <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                           <svg 
+                             className="absolute inset-0 w-full h-full pointer-events-none"
+                             viewBox="0 0 64 64"
+                           >
+                             <path 
+                               d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
+                               fill="currentColor" 
+                               className="text-amber-800"
+                             />
+                             <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
+                             <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+                           </svg>
+                         </div>
+                       ) : (
+                         <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                       )}
+                     </div>
+                     <span className="text-sm text-slate-200 font-medium">{user.full_name || user.username || 'Unknown'}</span>
+                   </div>
+                 );
+               })}
+             </div>
+           </DialogContent>
+           </Dialog>
+           </motion.div>
+           );
+           }
