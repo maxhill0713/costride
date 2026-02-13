@@ -714,21 +714,44 @@ export default function Profile() {
                   </div>
                 </Card>
               ) : (
-                <div className="w-full">
+                <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
                   {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
                     if (a.is_favourite === b.is_favourite) return 0;
                     return a.is_favourite ? -1 : 1;
-                  }).map((post) => (
-                    <PostCard 
-                      key={post.id} 
-                      post={post}
-                      fullWidth={true}
-                      onLike={() => {}}
-                      onComment={() => {}}
-                      onSave={() => {}}
-                      onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
-                    />
-                  ))}
+                  }).map((post) => {
+                    if (gridView) {
+                      return (
+                        <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity">
+                          {post.video_url ? (
+                            <video src={post.video_url} className="w-full h-full object-cover" />
+                          ) : post.image_url ? (
+                            <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                              <FileText className="w-8 h-8 text-slate-500" />
+                            </div>
+                          )}
+                          {post.is_favourite && (
+                            <div className="absolute top-2 right-2 bg-amber-400/90 rounded-full p-1">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <PostCard 
+                          key={post.id} 
+                          post={post}
+                          fullWidth={true}
+                          onLike={() => {}}
+                          onComment={() => {}}
+                          onSave={() => {}}
+                          onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                        />
+                      );
+                    }
+                  })}
                 </div>
               )}
             </TabsContent>
