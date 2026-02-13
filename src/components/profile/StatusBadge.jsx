@@ -1,5 +1,4 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Shield, Crown, Star, Zap } from 'lucide-react';
 
 export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) {
@@ -9,10 +8,10 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
     if (totalVisits >= 100 || streak >= 90) {
       return {
         name: 'OG',
-        color: 'from-purple-500 to-pink-500',
+        bgGradient: 'from-purple-600 to-pink-600',
         icon: Crown,
-        textColor: 'text-purple-700',
-        bgColor: 'bg-purple-100',
+        textColor: 'text-white',
+        borderColor: 'border-purple-400/50',
         level: 4
       };
     }
@@ -20,10 +19,10 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
     if (totalVisits >= 50 || streak >= 50) {
       return {
         name: 'Veteran',
-        color: 'from-orange-500 to-red-500',
+        bgGradient: 'from-orange-600 to-red-600',
         icon: Shield,
-        textColor: 'text-orange-700',
-        bgColor: 'bg-orange-100',
+        textColor: 'text-white',
+        borderColor: 'border-orange-400/50',
         level: 3
       };
     }
@@ -31,20 +30,20 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
     if (totalVisits >= 20 || streak >= 20) {
       return {
         name: 'Regular',
-        color: 'from-blue-500 to-cyan-500',
+        bgGradient: 'from-blue-600 to-cyan-600',
         icon: Star,
-        textColor: 'text-blue-700',
-        bgColor: 'bg-blue-100',
+        textColor: 'text-white',
+        borderColor: 'border-blue-400/50',
         level: 2
       };
     }
     
     return {
       name: 'Newcomer',
-      color: 'from-gray-400 to-gray-500',
+      bgGradient: 'from-slate-500 to-slate-600',
       icon: Zap,
-      textColor: 'text-gray-700',
-      bgColor: 'bg-gray-100',
+      textColor: 'text-white',
+      borderColor: 'border-slate-400/50',
       level: 1
     };
   };
@@ -53,9 +52,9 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
   const Icon = tier.icon;
 
   const sizeClasses = {
-    sm: 'text-xs px-2 py-0.5',
-    md: 'text-sm px-3 py-1',
-    lg: 'text-base px-4 py-1.5'
+    sm: 'text-xs px-2.5 py-1',
+    md: 'text-sm px-3.5 py-1.5',
+    lg: 'text-base px-4.5 py-2'
   };
 
   const iconSizes = {
@@ -65,10 +64,10 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
   };
 
   return (
-    <Badge className={`${tier.bgColor} ${tier.textColor} border-2 border-current font-bold flex items-center gap-1.5 ${sizeClasses[size]}`}>
-      <Icon className={iconSizes[size]} />
-      {tier.name}
-    </Badge>
+    <div className={`inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${tier.bgGradient} rounded-lg border ${tier.borderColor} shadow-lg shadow-black/30 font-semibold flex-shrink-0 ${sizeClasses[size]}`}>
+      <Icon className={`${iconSizes[size]} ${tier.textColor}`} />
+      <span className={tier.textColor}>{tier.name}</span>
+    </div>
   );
 }
 
