@@ -376,28 +376,44 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const calculateStreak = (checkIns, user) => {
     if (checkIns.length === 0) return 0;
-    
+
     let streak = 1;
     let freezesUsed = 0;
-    const today = startOfDay(new Date());
-    
+    const trainingDays = user?.training_days || [];
+
     for (let i = 0; i < checkIns.length - 1; i++) {
       const current = startOfDay(parseISO(checkIns[i].check_in_date));
       const next = startOfDay(parseISO(checkIns[i + 1].check_in_date));
       const daysDiff = differenceInDays(current, next);
-      
-      // Allow 1 day grace period (1 or 2 days apart still counts as consecutive)
-      if (daysDiff === 1 || daysDiff === 2) {
+
+      // Count only training days for streak
+      let skippedRestDays = 0;
+      for (let j = 1; j < daysDiff; j++) {
+        const dayToCheck = new Date(current);
+        dayToCheck.setDate(dayToCheck.getDate() - j);
+        const dayOfWeek = dayToCheck.getDay();
+        const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+        // If it's a rest day, don't count it
+        if (!trainingDays.includes(adjustedDay)) {
+          skippedRestDays++;
+        }
+      }
+
+      const trainingDaysDiff = daysDiff - skippedRestDays;
+
+      // If consecutive training days (1 or 2 apart after accounting for rest days)
+      if (trainingDaysDiff === 1 || trainingDaysDiff === 2) {
         streak++;
-      } else if (daysDiff === 3 && user?.streak_freezes_available > 0 && freezesUsed === 0) {
-        // Use a streak freeze for a 2-day gap (3 days apart)
+      } else if (trainingDaysDiff === 3 && user?.streak_freezes_available > 0 && freezesUsed === 0) {
+        // Use a streak freeze for a 2-day gap
         streak++;
         freezesUsed++;
-      } else {
+      } else if (trainingDaysDiff > 2) {
         break;
       }
     }
-    
+
     return streak;
   };
 
