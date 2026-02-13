@@ -454,10 +454,10 @@ export default function Home() {
 
                       <div className="space-y-3 pt-2">
                         <div className="bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-sm">
-                          <p className="text-xs text-slate-300 font-medium leading-relaxed">
-                            Create a personalized workout split to start tracking your exercises, monitor progress, and maintain your gym routine.
-                          </p>
-                        </div>
+                           <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                             Create your custom workout split and watch your progress transform. Consistency builds champions—let's build yours.
+                           </p>
+                         </div>
 
                         <button
                           onClick={() => setShowSplitModal(true)}
