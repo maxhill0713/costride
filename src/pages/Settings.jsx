@@ -144,23 +144,23 @@ export default function Settings() {
                </div>
              </div>
 
-            {/* Username */}
-             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-               <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Username</Label>
-               <Input
-                 type="text"
-                 value={currentUser?.username || ''}
-                 onChange={(e) => {
-                   queryClient.setQueryData(['currentUser'], (old) => ({
-                     ...old,
-                     username: e.target.value
-                   }));
-                 }}
-                 placeholder="Your name"
-                 className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-                 onBlur={() => updateSettingsMutation.mutate({ username: currentUser?.username })}
-               />
-             </div>
+            {/* Full Name */}
+              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Full Name</Label>
+                <Input
+                  type="text"
+                  value={currentUser?.full_name || ''}
+                  onChange={(e) => {
+                    queryClient.setQueryData(['currentUser'], (old) => ({
+                      ...old,
+                      full_name: e.target.value
+                    }));
+                  }}
+                  placeholder="Your full name"
+                  className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
+                  onBlur={() => updateSettingsMutation.mutate({ full_name: currentUser?.full_name })}
+                />
+              </div>
 
             {/* Bio */}
              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
