@@ -488,6 +488,18 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
              </div>
            </DialogContent>
            </Dialog>
+
+           {/* Full Content Modal */}
+           <Dialog open={showFullContent} onOpenChange={setShowFullContent}>
+             <DialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl w-full max-w-2xl max-h-[80vh] shadow-2xl shadow-black/40 flex flex-col">
+               <DialogHeader>
+                 <DialogTitle className="text-white">Post</DialogTitle>
+               </DialogHeader>
+               <div className="flex-1 overflow-y-auto">
+                 <p className="text-slate-200 text-base leading-relaxed whitespace-pre-wrap p-4">{post.content}</p>
+               </div>
+             </DialogContent>
+           </Dialog>
            </motion.div>
            );
            }
