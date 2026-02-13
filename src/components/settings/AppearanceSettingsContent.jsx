@@ -7,8 +7,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MobileSelect } from '@/components/ui/mobile-select';
 
-export default function AppearanceSettingsContent() {
+export default function AppearanceSettingsContent({ searchQuery = '' }) {
   const queryClient = useQueryClient();
+  const query = searchQuery.toLowerCase();
+  const showTheme = !searchQuery.trim() || query.includes('dark') || query.includes('mode') || query.includes('theme');
+  const showUnit = !searchQuery.trim() || query.includes('unit') || query.includes('metric') || query.includes('imperial');
+  const showLanguage = !searchQuery.trim() || query.includes('language');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
