@@ -397,7 +397,7 @@ export default function Home() {
                   onClick={() => setShowCheckIn(true)}
                   className="w-full text-white border-0 shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 tracking-tight"
                 >
-                  {daysSinceCheckIn && daysSinceCheckIn > 0 ? `Check In Now—Don't Break Your Streak` : `Check In Now`}
+                  Check In Now
                 </Button>
               )}
 
