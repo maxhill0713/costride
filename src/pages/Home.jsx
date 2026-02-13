@@ -417,7 +417,7 @@ export default function Home() {
               {/* Friends Avatars */}
                <div className="flex flex-col items-center justify-center gap-2">
                  <div className="flex items-center -space-x-2">
-                   {checkInUsers.slice(0, 3).map((user) => (
+                   {checkInUsers.filter(u => friendIds.includes(u.id)).slice(0, 3).map((user) => (
                      <div key={user.id} className="relative group">
                        {user.avatar_url ? (
                          <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
