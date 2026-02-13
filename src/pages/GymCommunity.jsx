@@ -85,6 +85,15 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.GymMember.list()
   });
 
+  const { data: coaches = [] } = useQuery({
+    queryKey: ['coaches', gymId],
+    queryFn: async () => {
+      const allCoaches = await base44.entities.Coach.list();
+      return allCoaches.filter(c => c.gym_id === gymId);
+    },
+    enabled: !!gymId
+  });
+
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: async () => {
@@ -97,7 +106,7 @@ export default function GymCommunity() {
         return isGymOwner || (isCoach && p.member_id === currentUser?.id);
       });
     },
-    enabled: !!gymId && !!currentUser && !!coaches
+    enabled: !!gymId && !!currentUser && coaches.length >= 0
   });
 
   const { data: checkIns = [] } = useQuery({
