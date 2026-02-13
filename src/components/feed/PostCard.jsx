@@ -33,6 +33,17 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
     enabled: !!currentUser
   });
 
+  const { data: reactedUsers = [] } = useQuery({
+    queryKey: ['reactedUsers', Object.keys(post.reactions || {})],
+    queryFn: async () => {
+      const userIds = Object.keys(post.reactions || {});
+      if (userIds.length === 0) return [];
+      const users = await base44.entities.User.list();
+      return users.filter(u => userIds.includes(u.id));
+    },
+    enabled: showReactionsModal && Object.keys(post.reactions || {}).length > 0
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Post.delete(post.id),
     onSuccess: () => {
