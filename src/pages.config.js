@@ -80,6 +80,7 @@ import NotificationSettings from './pages/NotificationSettings';
 import PrivacySettings from './pages/PrivacySettings';
 import AppearanceSettings from './pages/AppearanceSettings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
+import HelpSupport from './pages/HelpSupport';
 import __Layout from './Layout.jsx';
 
 
@@ -117,6 +118,7 @@ export const PAGES = {
     "PrivacySettings": PrivacySettings,
     "AppearanceSettings": AppearanceSettings,
     "SubscriptionSettings": SubscriptionSettings,
+    "HelpSupport": HelpSupport,
 }
 
 export const pagesConfig = {
