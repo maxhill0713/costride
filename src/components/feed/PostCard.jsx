@@ -198,9 +198,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         <div className="absolute top-3 right-3 z-20">
           <div className="relative flex items-center gap-2">
             {post.is_favourite && (
-              <div className="bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 rounded-lg p-1.5 shadow-lg shadow-amber-400/60">
-                <Star className="w-4 h-4 fill-white text-white" />
-              </div>
+              <Star className="w-5 h-5 fill-amber-400 text-amber-400 shadow-lg shadow-amber-400/60" />
             )}
             <button 
               onClick={() => setShowMenu(!showMenu)}
