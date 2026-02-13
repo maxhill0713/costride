@@ -173,7 +173,8 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
             className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
           />
         </div>
-      </Card>
-    </div>
-  );
-}
+        </Card>
+        )}
+        </div>
+        );
+        }
