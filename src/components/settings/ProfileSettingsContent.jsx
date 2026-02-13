@@ -122,13 +122,14 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
               </div>
             </label>
           </div>
-        </div>
-      </Card>
+          </div>
+          </Card>
+          )}
 
-      {/* Full Name */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-          <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Full Name</Label>
+          {showName && (
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+            <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Full Name</Label>
           <Input
             type="text"
             value={currentUser?.full_name || ''}
