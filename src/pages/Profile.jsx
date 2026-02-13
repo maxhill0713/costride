@@ -676,7 +676,7 @@ export default function Profile() {
                {/* Create Post Button */}
                <Button
                  onClick={() => setShowCreatePost(true)}
-                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
+                 className="w-full bg-gradient-to-br from-blue-900/70 to-blue-950/70 backdrop-blur-xl border border-blue-500/30 hover:border-blue-400/50 hover:bg-gradient-to-br hover:from-blue-800/80 hover:to-blue-900/80 text-blue-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all"
                >
                  <Plus className="w-4 h-4 mr-2" />
                  Create Post
