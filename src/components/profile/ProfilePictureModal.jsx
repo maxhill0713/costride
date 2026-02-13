@@ -9,14 +9,6 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
       className="fixed inset-0 z-[100] bg-black/40 flex items-start justify-center pt-12 p-4"
       onClick={onClose}
     >
-      {/* Close Button */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10"
-      >
-        <X className="w-6 h-6 text-white" />
-      </button>
-
       {/* Profile Picture */}
       <div 
         className="relative w-80 h-80 md:w-96 md:h-96"
