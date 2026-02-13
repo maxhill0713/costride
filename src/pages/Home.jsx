@@ -414,14 +414,10 @@ export default function Home() {
                 </Button>
               )}
 
-              {/* Check-In Stats */}
+              {/* Friends Avatars */}
                <div className="flex flex-col items-center justify-center gap-2">
                  <div className="flex items-center -space-x-2">
-                   {(checkInUsers.length > 0 ? checkInUsers : [
-                     { id: 'demo-check1', full_name: 'Alex Johnson', avatar_url: null },
-                     { id: 'demo-check2', full_name: 'Sam Wilson', avatar_url: null },
-                     { id: 'demo-check3', full_name: 'Jordan Lee', avatar_url: null }
-                   ]).slice(0, 3).map((user) => (
+                   {checkInUsers.slice(0, 3).map((user) => (
                      <div key={user.id} className="relative group">
                        {user.avatar_url ? (
                          <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
