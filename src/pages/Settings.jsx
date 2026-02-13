@@ -113,34 +113,38 @@ export default function Settings() {
         </div>
 
         <div className="space-y-1.5">
-         {displayedSettings.map((setting) => {
-           const colorMap = {
-             'NotificationSettings': { from: 'from-orange-600', to: 'to-red-600', fromHover: 'hover:from-orange-700', toHover: 'hover:to-red-700', icon: Bell },
-             'PrivacySettings': { from: 'from-green-600', to: 'to-emerald-600', fromHover: 'hover:from-green-700', toHover: 'hover:to-emerald-700', icon: Lock },
-             'AccountSettings': { from: 'from-purple-600', to: 'to-indigo-600', fromHover: 'hover:from-purple-700', toHover: 'hover:to-indigo-700', icon: Lock },
-             'ProfileSettings': { from: 'from-blue-600', to: 'to-cyan-600', fromHover: 'hover:from-blue-700', toHover: 'hover:to-cyan-700', icon: User },
-             'AppearanceSettings': { from: 'from-yellow-600', to: 'to-orange-600', fromHover: 'hover:from-yellow-700', toHover: 'hover:to-orange-700', icon: Sun },
-             'SubscriptionSettings': { from: 'from-emerald-600', to: 'to-teal-600', fromHover: 'hover:from-emerald-700', toHover: 'hover:to-teal-700', icon: null },
-             'HelpSupport': { from: 'from-indigo-600', to: 'to-purple-600', fromHover: 'hover:from-indigo-700', toHover: 'hover:to-purple-700', icon: HelpCircle }
-           };
+         {searchQuery.trim() && displayedSettings.length > 0 ? (
+           <SearchSettingsDisplay setting={displayedSettings[0]} />
+         ) : (
+           displayedSettings.map((setting) => {
+             const colorMap = {
+               'NotificationSettings': { from: 'from-orange-600', to: 'to-red-600', fromHover: 'hover:from-orange-700', toHover: 'hover:to-red-700', icon: Bell },
+               'PrivacySettings': { from: 'from-green-600', to: 'to-emerald-600', fromHover: 'hover:from-green-700', toHover: 'hover:to-emerald-700', icon: Lock },
+               'AccountSettings': { from: 'from-purple-600', to: 'to-indigo-600', fromHover: 'hover:from-purple-700', toHover: 'hover:to-indigo-700', icon: Lock },
+               'ProfileSettings': { from: 'from-blue-600', to: 'to-cyan-600', fromHover: 'hover:from-blue-700', toHover: 'hover:to-cyan-700', icon: User },
+               'AppearanceSettings': { from: 'from-yellow-600', to: 'to-orange-600', fromHover: 'hover:from-yellow-700', toHover: 'hover:to-orange-700', icon: Sun },
+               'SubscriptionSettings': { from: 'from-emerald-600', to: 'to-teal-600', fromHover: 'hover:from-emerald-700', toHover: 'hover:to-teal-700', icon: null },
+               'HelpSupport': { from: 'from-indigo-600', to: 'to-purple-600', fromHover: 'hover:from-indigo-700', toHover: 'hover:to-purple-700', icon: HelpCircle }
+             };
 
-           const colors = colorMap[setting.page];
-           const IconComponent = colors?.icon;
+             const colors = colorMap[setting.page];
+             const IconComponent = colors?.icon;
 
-           return (
-             <Link key={setting.page} to={createPageUrl(setting.page)} className="block pb-2">
-               <div className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} ${colors.fromHover} ${colors.toHover} rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg`}>
-                 <div className="flex items-center gap-3">
-                   <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                     {IconComponent ? <IconComponent className="w-4 h-4 text-white" /> : <span className="text-white font-bold text-sm">{setting.icon}</span>}
+             return (
+               <Link key={setting.page} to={createPageUrl(setting.page)} className="block pb-2">
+                 <div className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} ${colors.fromHover} ${colors.toHover} rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg`}>
+                   <div className="flex items-center gap-3">
+                     <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                       {IconComponent ? <IconComponent className="w-4 h-4 text-white" /> : <span className="text-white font-bold text-sm">{setting.icon}</span>}
+                     </div>
+                     <span className="font-semibold text-white">{setting.name}</span>
                    </div>
-                   <span className="font-semibold text-white">{setting.name}</span>
+                   <ChevronRight className="w-5 h-5 text-white/70" />
                  </div>
-                 <ChevronRight className="w-5 h-5 text-white/70" />
-               </div>
-             </Link>
-           );
-         })}
+               </Link>
+             );
+           })
+         )}
 
          {/* Logout and Delete Account - Smaller Buttons */}
          <div className="pt-4 space-y-3">
