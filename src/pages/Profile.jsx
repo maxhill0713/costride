@@ -643,30 +643,24 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <div className="text-2xl font-bold text-white">
-                        {(() => {
-                          const { data: workoutLogs = [] } = useQuery({
-                            queryKey: ['workoutLogs', currentUser?.id],
-                            queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
-                            enabled: !!currentUser
-                          });
-                          
-                          const sortedLogs = [...workoutLogs].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-                          
-                          if (sortedLogs.length < 2) return 0;
-                          
-                          const firstLog = sortedLogs[0];
-                          const latestLog = sortedLogs[sortedLogs.length - 1];
-                          
-                          const firstWeight = firstLog.sets?.reduce((sum, set) => sum + (parseFloat(set.weight) || 0), 0) || 0;
-                          const latestWeight = latestLog.sets?.reduce((sum, set) => sum + (parseFloat(set.weight) || 0), 0) || 0;
-                          
-                          const increase = latestWeight - firstWeight;
-                          return Math.round(increase);
-                        })()}
-                      </div>
-                      <span className="text-xs text-green-300">kg</span>
-                    </div>
+                       <div className="text-2xl font-bold text-white">
+                         {(() => {
+                           const sortedLogs = [...workoutLogs].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+
+                           if (sortedLogs.length < 2) return 0;
+
+                           const firstLog = sortedLogs[0];
+                           const latestLog = sortedLogs[sortedLogs.length - 1];
+
+                           const firstWeight = firstLog.sets?.reduce((sum, set) => sum + (parseFloat(set.weight) || 0), 0) || 0;
+                           const latestWeight = latestLog.sets?.reduce((sum, set) => sum + (parseFloat(set.weight) || 0), 0) || 0;
+
+                           const increase = latestWeight - firstWeight;
+                           return Math.round(increase);
+                         })()}
+                       </div>
+                       <span className="text-xs text-green-300">kg</span>
+                     </div>
                   </div>
                 </Card>
               </div>
