@@ -96,6 +96,13 @@ export default function Friends() {
     cacheTime: 300000
   });
 
+  const { data: allGymMembers = [] } = useQuery({
+    queryKey: ['gymMembers'],
+    queryFn: () => base44.entities.GymMember.list(),
+    staleTime: 60000,
+    cacheTime: 300000
+  });
+
   const addFriendMutation = useMutation({
     mutationFn: async (friendUser) => {
       await base44.entities.Friend.create({
