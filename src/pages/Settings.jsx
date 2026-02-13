@@ -138,9 +138,9 @@ export default function Settings() {
          })}
 
          {/* Logout and Delete Account - Smaller Buttons */}
-         <div className="pt-4 flex gap-3">
+         <div className="pt-4 space-y-3">
            <Button 
-             className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium h-9 text-sm flex items-center gap-2 justify-center"
+             className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium h-9 text-sm flex items-center gap-2 justify-center"
              onClick={() => {
                if (confirm('Are you sure you want to logout?')) {
                  base44.auth.logout();
@@ -154,7 +154,7 @@ export default function Settings() {
              <AlertDialogTrigger asChild>
                <Button 
                  variant="outline"
-                 className="flex-1 border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-xl font-medium h-9 text-sm"
+                 className="w-full border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-xl font-medium h-9 text-sm"
                >
                  Delete Account
                </Button>
