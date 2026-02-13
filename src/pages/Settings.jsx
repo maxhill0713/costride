@@ -188,43 +188,6 @@ export default function Settings() {
           </div>
         </Card>
 
-        {/* Account Details */}
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-              <Lock className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Account Details</h3>
-              <p className="text-sm text-slate-300">Manage your email and password</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
-              <Input
-                type="email"
-                value={currentUser.email}
-                disabled
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
-              <p className="text-xs text-slate-400 mt-1">Contact support to change your email</p>
-            </div>
-
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Password</Label>
-              <Input
-                type="password"
-                value="••••••••"
-                disabled
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
-              <p className="text-xs text-slate-400 mt-1">Contact support to reset your password</p>
-            </div>
-          </div>
-        </Card>
-
 
 
         {/* Logout */}
