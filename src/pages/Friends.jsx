@@ -433,9 +433,7 @@ export default function Friends() {
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
               >
                 <span className="text-sm font-semibold">{friends.length}</span>
-                <Users className="w-4 h-4" />
                 <span className="text-sm font-medium">Friends</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFriendsDropdown ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Friends Dropdown Menu */}
