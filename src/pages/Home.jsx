@@ -365,9 +365,9 @@ export default function Home() {
                      </svg>
                    </div>
                  ) : (
-                   <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                   <Flame className="w-8 h-8 text-orange-500 fill-current" />
                  )}
-                <span className="text-white font-semibold text-lg tracking-tight">{userStreak}</span>
+                 <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
               </button>
               <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 CoStride
