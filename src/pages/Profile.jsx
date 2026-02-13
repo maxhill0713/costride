@@ -686,8 +686,7 @@ export default function Profile() {
                   </Button>
                   <Button
                     onClick={() => setGridView(!gridView)}
-                    variant="outline"
-                    className="border-slate-600/40 text-slate-300 hover:bg-slate-700/50 rounded-xl"
+                    className="bg-black hover:bg-slate-900 text-white rounded-xl border border-slate-700/50"
                     title={gridView ? "List view" : "Grid view"}
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
