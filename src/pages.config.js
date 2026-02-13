@@ -74,6 +74,7 @@ import Onboarding from './pages/Onboarding';
 import Plus from './pages/Plus';
 import Premium from './pages/Premium';
 import PrivacySettings from './pages/PrivacySettings';
+import Profile from './pages/Profile';
 import ProfileSettings from './pages/ProfileSettings';
 import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
@@ -81,7 +82,6 @@ import Search from './pages/Search';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import UserProfile from './pages/UserProfile';
 import Settings from './pages/Settings';
-import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -113,6 +113,7 @@ export const PAGES = {
     "Plus": Plus,
     "Premium": Premium,
     "PrivacySettings": PrivacySettings,
+    "Profile": Profile,
     "ProfileSettings": ProfileSettings,
     "RedeemReward": RedeemReward,
     "Routines": Routines,
@@ -120,7 +121,6 @@ export const PAGES = {
     "SubscriptionSettings": SubscriptionSettings,
     "UserProfile": UserProfile,
     "Settings": Settings,
-    "Profile": Profile,
 }
 
 export const pagesConfig = {
