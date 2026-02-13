@@ -342,7 +342,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
              Are you sure you want to delete your post? This action cannot be undone.
            </AlertDialogDescription>
          </AlertDialogHeader>
-         <div className="flex gap-3 justify-end">
+         <div className="flex gap-3 justify-center">
            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
            <AlertDialogAction
              onClick={() => {
