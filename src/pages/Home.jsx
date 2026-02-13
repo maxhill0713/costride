@@ -376,6 +376,16 @@ export default function Home() {
           {/* Check-In Button - Full Width */}
           {memberGym && (
             <>
+              {/* Motivational Text */}
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50">
+                <p className="text-center text-sm font-semibold text-slate-100">
+                  {weeklyComplete 
+                    ? `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done`
+                    : `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
+                  }
+                </p>
+              </div>
+
               {daysSinceCheckIn === 0 ? (
                 <Button 
                   disabled
