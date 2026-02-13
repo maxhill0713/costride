@@ -696,6 +696,7 @@ export default function Friends() {
                     const { activity } = friend;
                     const friendUser = allUsers.find(u => u.id === friend.friend_id);
                     const currentName = friendUser?.full_name || friend.friend_name;
+                    const currentAvatar = friendUser?.avatar_url || friend.friend_avatar;
                     return (
                       <div
                         key={friend.id}
@@ -707,8 +708,8 @@ export default function Friends() {
                           onClick={() => setShowFriendsModal(false)}
                         >
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {friend.friend_avatar ? (
-                              <img src={friend.friend_avatar} alt={currentName} className="w-full h-full object-cover" />
+                            {currentAvatar ? (
+                              <img src={currentAvatar} alt={currentName} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-semibold text-white">
                                 {currentName?.charAt(0)?.toUpperCase()}
