@@ -29,8 +29,8 @@ export default function Settings() {
     { name: 'Help & Support', page: 'HelpSupport', icon: '❓' }
   ];
 
-  const filteredSettings = useMemo(() => {
-    if (!searchQuery.trim()) return [];
+  const displayedSettings = useMemo(() => {
+    if (!searchQuery.trim()) return settings;
     return settings.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [searchQuery]);
 
@@ -94,7 +94,7 @@ export default function Settings() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Search Bar */}
-        <div className="mb-6 relative">
+        <div className="mb-6">
           <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
             <Search className="w-5 h-5 text-slate-400" />
             <input
@@ -105,117 +105,37 @@ export default function Settings() {
               className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none"
             />
           </div>
-          
-          {/* Search Results Dropdown */}
-          {searchQuery.trim() && filteredSettings.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-              {filteredSettings.map((setting) => (
-                <Link
-                  key={setting.page}
-                  to={createPageUrl(setting.page)}
-                  onClick={() => setSearchQuery('')}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0"
-                >
-                  <span className="text-lg">{setting.icon}</span>
-                  <span className="text-white font-medium">{setting.name}</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="space-y-7">
-         {/* Notifications Button - Full Width */}
-         <Link to={createPageUrl('NotificationSettings')}>
-           <div className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <Bell className="w-4 h-4 text-white" />
-               </div>
-               <span className="font-semibold text-white">Notifications</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
+         {displayedSettings.map((setting) => {
+           const colorMap = {
+             'NotificationSettings': { from: 'from-orange-600', to: 'to-red-600', fromHover: 'hover:from-orange-700', toHover: 'hover:to-red-700', icon: Bell },
+             'PrivacySettings': { from: 'from-green-600', to: 'to-emerald-600', fromHover: 'hover:from-green-700', toHover: 'hover:to-emerald-700', icon: Lock },
+             'AccountSettings': { from: 'from-purple-600', to: 'to-indigo-600', fromHover: 'hover:from-purple-700', toHover: 'hover:to-indigo-700', icon: Lock },
+             'ProfileSettings': { from: 'from-blue-600', to: 'to-cyan-600', fromHover: 'hover:from-blue-700', toHover: 'hover:to-cyan-700', icon: User },
+             'AppearanceSettings': { from: 'from-yellow-600', to: 'to-orange-600', fromHover: 'hover:from-yellow-700', toHover: 'hover:to-orange-700', icon: Sun },
+             'SubscriptionSettings': { from: 'from-emerald-600', to: 'to-teal-600', fromHover: 'hover:from-emerald-700', toHover: 'hover:to-teal-700', icon: null },
+             'HelpSupport': { from: 'from-indigo-600', to: 'to-purple-600', fromHover: 'hover:from-indigo-700', toHover: 'hover:to-purple-700', icon: HelpCircle }
+           };
 
-         {/* Privacy Button - Full Width */}
-         <Link to={createPageUrl('PrivacySettings')}>
-           <div className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <Lock className="w-4 h-4 text-white" />
-               </div>
-               <span className="font-semibold text-white">Privacy</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
+           const colors = colorMap[setting.page];
+           const IconComponent = colors?.icon;
 
-         {/* Account Button - Full Width */}
-         <Link to={createPageUrl('AccountSettings')}>
-           <div className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <Lock className="w-4 h-4 text-white" />
+           return (
+             <Link key={setting.page} to={createPageUrl(setting.page)}>
+               <div className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} ${colors.fromHover} ${colors.toHover} rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg`}>
+                 <div className="flex items-center gap-3">
+                   <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                     {IconComponent ? <IconComponent className="w-4 h-4 text-white" /> : <span className="text-white font-bold text-sm">{setting.icon}</span>}
+                   </div>
+                   <span className="font-semibold text-white">{setting.name}</span>
+                 </div>
+                 <ChevronRight className="w-5 h-5 text-white/70" />
                </div>
-               <span className="font-semibold text-white">Account</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
-
-         {/* Profile Button - Full Width */}
-         <Link to={createPageUrl('ProfileSettings')}>
-           <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <User className="w-4 h-4 text-white" />
-               </div>
-               <span className="font-semibold text-white">Profile</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
-
-         {/* Appearance Button - Full Width */}
-         <Link to={createPageUrl('AppearanceSettings')}>
-           <div className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <Sun className="w-4 h-4 text-white" />
-               </div>
-               <span className="font-semibold text-white">Appearance</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
-
-         {/* Subscriptions Button - Full Width */}
-         <Link to={createPageUrl('SubscriptionSettings')}>
-           <div className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <span className="text-white font-bold text-sm">S</span>
-               </div>
-               <span className="font-semibold text-white">Subscriptions</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
-
-         {/* Help & Support Button - Full Width */}
-         <Link to={createPageUrl('HelpSupport')}>
-           <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
-             <div className="flex items-center gap-3">
-               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                 <HelpCircle className="w-4 h-4 text-white" />
-               </div>
-               <span className="font-semibold text-white">Help & Support</span>
-             </div>
-             <ChevronRight className="w-5 h-5 text-white/70" />
-           </div>
-         </Link>
+             </Link>
+           );
+         })}
 
          {/* Logout and Delete Account - Smaller Buttons */}
          <div className="pt-4 flex gap-3">
