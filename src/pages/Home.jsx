@@ -26,6 +26,7 @@ export default function Home() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
+  const [workoutStartTime, setWorkoutStartTime] = useState(null);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
