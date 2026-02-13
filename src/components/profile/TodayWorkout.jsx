@@ -695,8 +695,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               onClick={() => {
                 logWorkoutMutation.mutate();
                 setShowLogConfirm(false);
-                setWorkoutStartTime(null);
-                setWorkoutDuration(0);
               }}
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
               >
