@@ -33,8 +33,8 @@ export default function NotificationSettingsContent({ searchQuery = '' }) {
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Push Notifications */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+      {showPush && (
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
