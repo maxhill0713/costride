@@ -140,7 +140,7 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-8">
       {/* Header with Hero Banner */}
-      <div className="relative pt-6 pb-8 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent">
+      <div className="relative pt-6 pb-4 px-4 md:px-6 border-b border-slate-700/50 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent">
         {/* Hero Background */}
         {viewingUser.hero_image_url ? (
           <>
