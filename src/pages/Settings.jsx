@@ -20,18 +20,22 @@ export default function Settings() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const settings = [
-    { name: 'Notifications', page: 'NotificationSettings', icon: '🔔' },
-    { name: 'Privacy', page: 'PrivacySettings', icon: '🔒' },
-    { name: 'Account', page: 'AccountSettings', icon: '🔐' },
-    { name: 'Profile', page: 'ProfileSettings', icon: '👤' },
-    { name: 'Appearance', page: 'AppearanceSettings', icon: '🎨' },
-    { name: 'Subscriptions', page: 'SubscriptionSettings', icon: 'S' },
-    { name: 'Help & Support', page: 'HelpSupport', icon: '❓' }
+    { name: 'Notifications', page: 'NotificationSettings', icon: '🔔', keywords: ['notification', 'alert', 'push', 'email', 'message'] },
+    { name: 'Privacy', page: 'PrivacySettings', icon: '🔒', keywords: ['privacy', 'public', 'profile', 'private', 'visibility'] },
+    { name: 'Account', page: 'AccountSettings', icon: '🔐', keywords: ['account', 'password', 'email', 'security', 'change password'] },
+    { name: 'Profile', page: 'ProfileSettings', icon: '👤', keywords: ['profile', 'avatar', 'banner', 'bio', 'name', 'picture', 'photo'] },
+    { name: 'Appearance', page: 'AppearanceSettings', icon: '🎨', keywords: ['appearance', 'dark mode', 'theme', 'unit', 'language', 'settings'] },
+    { name: 'Subscriptions', page: 'SubscriptionSettings', icon: 'S', keywords: ['subscription', 'plan', 'billing', 'payment'] },
+    { name: 'Help & Support', page: 'HelpSupport', icon: '❓', keywords: ['help', 'support', 'faq', 'question', 'contact'] }
   ];
 
   const displayedSettings = useMemo(() => {
     if (!searchQuery.trim()) return settings;
-    return settings.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const query = searchQuery.toLowerCase();
+    return settings.filter(s => 
+      s.name.toLowerCase().includes(query) || 
+      s.keywords.some(keyword => keyword.includes(query))
+    );
   }, [searchQuery]);
 
   const handleImageUpload = async (file, type) => {
