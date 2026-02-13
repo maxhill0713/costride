@@ -10,7 +10,7 @@ import PlateCalculatorModal from './PlateCalculatorModal.jsx';
 import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-export default function TodayWorkout({ currentUser }) {
+export default function TodayWorkout({ currentUser, onWorkoutStart }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
