@@ -416,17 +416,24 @@ export default function Friends() {
       {/* Header */}
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between">
-            <Link to={createPageUrl('Home')} className="absolute left-4 top-6 z-20">
-              <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
-                <ChevronLeft className="w-7 h-7" />
+            <div className="flex items-center justify-between">
+              <Link to={createPageUrl('Home')} className="absolute left-4 top-6 z-20">
+                <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+                  <ChevronLeft className="w-7 h-7" />
+                </button>
+              </Link>
+              <h1 className="text-xl font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
+                Friend Activity
+              </h1>
+              <button
+                onClick={() => setShowFriendsModal(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
+              >
+                <span className="text-sm font-semibold">{friends.length}</span>
+                <span className="text-sm font-medium">Friends</span>
               </button>
-            </Link>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
-              Friend Activity
-            </h1>
+            </div>
           </div>
-        </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6">
