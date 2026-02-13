@@ -176,7 +176,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                 <button
                   onClick={() => {
-                    deleteMutation.mutate();
+                    setShowDeleteConfirm(true);
                     setShowMenu(false);
                   }}
                   disabled={deleteMutation.isPending}
