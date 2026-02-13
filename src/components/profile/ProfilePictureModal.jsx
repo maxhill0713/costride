@@ -6,7 +6,7 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
 
   return (
     <div 
-      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-start justify-center pt-12 p-4"
       onClick={onClose}
     >
       {/* Close Button */}
@@ -19,18 +19,18 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
 
       {/* Profile Picture */}
       <div 
-        className="relative max-w-2xl w-full aspect-square"
+        className="relative w-80 h-80 md:w-96 md:h-96"
         onClick={(e) => e.stopPropagation()}
       >
         {imageUrl ? (
           <img 
             src={imageUrl} 
             alt={userName}
-            className="w-full h-full object-cover rounded-2xl shadow-2xl"
+            className="w-full h-full object-cover rounded-full shadow-2xl ring-4 ring-white/20"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl flex items-center justify-center shadow-2xl">
-            <span className="text-[120px] font-bold text-white">
+          <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/20">
+            <span className="text-[160px] font-bold text-white">
               {userName?.charAt(0)?.toUpperCase()}
             </span>
           </div>
@@ -38,7 +38,7 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
       </div>
 
       {/* User Name */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full">
+      <div className="absolute top-[420px] md:top-[460px] left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full">
         <p className="text-white font-semibold text-lg">{userName}</p>
       </div>
     </div>
