@@ -370,15 +370,9 @@ export default function Home() {
                 <span className="text-white font-semibold text-lg tracking-tight">{userStreak}</span>
               </button>
               <div className="flex items-center gap-2">
-                {currentUser?.avatar_url ? (
-                  <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-6 h-6 rounded-full object-cover border border-cyan-400" />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-400 flex items-center justify-center text-white text-xs font-bold border border-cyan-400">
-                    {currentUser?.full_name?.[0] || 'U'}
-                  </div>
-                )}
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/1a674d9b2_IMG_8192.jpg" alt="CoStride" className="w-7 h-7 object-contain" />
                 <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
-                  CoStride
+                  oStride
                 </h1>
               </div>
               <Link to={createPageUrl('Friends')} onClick={async () => {
