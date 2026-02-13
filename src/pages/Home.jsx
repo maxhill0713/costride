@@ -447,8 +447,8 @@ export default function Home() {
                           <Dumbbell className="w-5 h-5 text-white" />
                         </div>
                         <div className="text-center">
-                          <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-                          <p className="text-[10px] text-slate-400 mt-0.5">Not configured</p>
+                          <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Your Training Plan</h3>
+                          <p className="text-[10px] text-slate-400 mt-0.5">Start strong today</p>
                         </div>
                       </div>
 
