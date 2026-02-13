@@ -380,8 +380,30 @@ export default function UserProfile() {
           </Card>
         )}
 
+        {/* Favourite Posts */}
+        {userPosts.filter(p => p.is_favourite).length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-semibold text-white mb-3 flex items-center gap-2 text-sm">
+              <Star className="w-4 h-4 text-amber-400" />
+              Favourite Posts
+            </h3>
+            <div className="space-y-3">
+              {userPosts.filter(p => p.is_favourite).map((post) => (
+                <PostCard 
+                  key={post.id} 
+                  post={post}
+                  onLike={() => {}}
+                  onComment={() => {}}
+                  onSave={() => {}}
+                  onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Goals */}
-        {goals.length > 0 && (
+         {goals.length > 0 && (
           <Card className="p-4 mb-4 bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 rounded-xl">
             <h3 className="font-semibold text-white mb-3 flex items-center gap-2 text-sm">
               <Trophy className="w-4 h-4 text-blue-400" />
