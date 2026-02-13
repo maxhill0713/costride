@@ -68,11 +68,11 @@ import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
 import Plus from './pages/Plus';
 import Premium from './pages/Premium';
+import Profile from './pages/Profile';
 import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
-import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
@@ -99,11 +99,11 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Plus": Plus,
     "Premium": Premium,
+    "Profile": Profile,
     "RedeemReward": RedeemReward,
     "Routines": Routines,
     "Search": Search,
     "Settings": Settings,
-    "Profile": Profile,
     "UserProfile": UserProfile,
 }
 

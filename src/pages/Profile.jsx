@@ -463,7 +463,7 @@ export default function Profile() {
               {/* Home Gym */}
               {primaryGym && (
                 <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
-                  <div className="flex items-center gap-2 flex-wrap cursor-pointer hover:opacity-80 transition-opacity">
+                  <div className="flex items-center gap-2 flex-wrap cursor-pointer hover:opacity-80 transition-opacity mt-3">
                     <Building2 className="w-4 h-4 text-blue-400" />
                     <Badge 
                       className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
