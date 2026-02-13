@@ -382,14 +382,14 @@ export default function Home() {
                   className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 cursor-default tracking-tight"
                 >
                   <CheckCircle className="w-6 h-6 mr-2" />
-                  Checked In Today
+                  Great Work—Checked In Today! Keep the Streak Alive 🔥
                 </Button>
               ) : (
                 <Button 
                   onClick={() => setShowCheckIn(true)}
                   className="w-full text-white border-0 shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 tracking-tight"
                 >
-                  Check In Now
+                  {daysSinceCheckIn && daysSinceCheckIn > 0 ? `Check In Now—Don't Break Your Streak` : `Check In Now`}
                 </Button>
               )}
 
