@@ -430,31 +430,41 @@ export default function Home() {
               {currentUser?.custom_workout_types ? (
                 <TodayWorkout currentUser={currentUser} />
               ) : (
-                <Card className="bg-gradient-to-br from-slate-900/50 via-slate-900/40 to-slate-950/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl shadow-black/30 p-3">
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
-                          <Dumbbell className="w-3.5 h-3.5 text-white" />
-                        </div>
-                        <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-                      </div>
-                      <h2 className="text-base font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight">
-                        No Split
-                      </h2>
-                    </div>
-                  </div>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-2xl shadow-2xl shadow-black/30 p-5 relative overflow-hidden">
+                    {/* Decorative elements */}
+                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
+                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl" />
 
-                  <div className="text-[10px] text-slate-400 mb-3 leading-relaxed text-center">Create a workout split to start tracking</div>
-                  
-                  <button
-                    onClick={() => setShowSplitModal(true)}
-                    className="w-full p-2.5 rounded-lg bg-orange-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30 transition-all text-xs font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    Create Your Workout Split
-                  </button>
-                </Card>
+                    <div className="relative space-y-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                            <Dumbbell className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
+                            <p className="text-[10px] text-slate-400 mt-0.5">Not configured</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 pt-2">
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-sm">
+                          <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                            Create a personalized workout split to start tracking your exercises, monitor progress, and maintain your gym routine.
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => setShowSplitModal(true)}
+                          className="w-full p-3 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          Create Your Workout Split
+                        </button>
+                      </div>
+                    </div>
+                  </Card>
               )}
             </div>
           )}
