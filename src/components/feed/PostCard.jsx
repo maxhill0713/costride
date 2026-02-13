@@ -207,13 +207,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       </div>
 
       {/* Caption Section - Thin Block */}
-      <div className="px-4 py-1 text-sm text-gray-900 relative pb-12">
+      <div className="px-4 py-1 text-sm text-slate-200 relative pb-12">
        <p className="leading-snug">{post.content}</p>
        {post.weight && (
-         <span className="block mt-1 text-blue-600 font-semibold">
-           💪 {post.weight} lbs
-         </span>
-       )}
+          <span className="block mt-1 text-blue-400 font-semibold">
+            💪 {post.weight} lbs
+          </span>
+        )}
        {isNudgePost && isOwner && (
          <button
            onClick={() => nudgeMutation.mutate()}
