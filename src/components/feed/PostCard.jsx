@@ -15,11 +15,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [showShare, setShowShare] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
-  const queryClient = useQueryClient();
+    const [showShare, setShowShare] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
+    const [showReactionsModal, setShowReactionsModal] = useState(false);
+    const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
