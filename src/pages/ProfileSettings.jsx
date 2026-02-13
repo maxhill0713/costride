@@ -181,7 +181,10 @@ export default function ProfileSettings() {
                   ...old,
                   bio: newValue
                 }));
-                updateSettingsMutation.mutate({ bio: newValue });
+                clearTimeout(bioTimeout);
+                setBioTimeout(setTimeout(() => {
+                  updateSettingsMutation.mutate({ bio: newValue });
+                }, 800));
               }}
               placeholder="Tell us about yourself..."
               rows={3}
