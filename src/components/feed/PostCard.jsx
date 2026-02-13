@@ -271,7 +271,21 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       {/* Caption Section */}
       <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 flex items-center z-10 justify-between gap-3">
         <div className="flex-1">
-          <p className="leading-snug">{post.content}</p>
+          <p className="leading-snug">
+            {post.content && post.content.length > 40 ? (
+              <>
+                {post.content.substring(0, 40)}...{' '}
+                <button
+                  onClick={() => setShowFullContent(true)}
+                  className="text-blue-400 hover:text-blue-300 font-semibold"
+                >
+                  more
+                </button>
+              </>
+            ) : (
+              post.content
+            )}
+          </p>
           {post.weight && (
             <span className="block mt-1 text-blue-400 font-semibold">
               💪 {post.weight} lbs
