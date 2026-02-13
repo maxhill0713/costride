@@ -148,7 +148,7 @@ export default function UserProfile() {
         </Link>
 
         {/* Streak Display - Top Right */}
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-1">
+        <div className="absolute top-4 right-8 z-20 flex items-center gap-1">
           {viewingUser?.streak_variant === 'sunglasses' ? (
             <div className="relative w-6 h-6">
               <Flame className="w-6 h-6 text-orange-500 fill-current" />
