@@ -202,14 +202,16 @@ export default function UserProfile() {
 
           {/* Home Gym */}
           {primaryGym && (
-            <div className="flex items-center gap-2 mt-3 flex-wrap">
-              <Building2 className="w-4 h-4 text-blue-400" />
-              <Badge 
-                className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
-              >
-                {primaryGym.name}
-              </Badge>
-            </div>
+            <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
+              <div className="flex items-center gap-2 mt-3 flex-wrap cursor-pointer hover:opacity-80 transition-opacity">
+                <Building2 className="w-4 h-4 text-blue-400" />
+                <Badge 
+                  className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
+                >
+                  {primaryGym.name}
+                </Badge>
+              </div>
+            </Link>
           )}
         </div>
       </div>
