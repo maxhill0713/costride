@@ -268,7 +268,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       </div>
 
       {/* Caption Section - Thin Block */}
-      <div className="px-4 py-0.5 text-sm text-slate-200 relative pb-6">
+      <div className="px-4 py-6 text-sm text-slate-200 relative pb-6">
         {/* Reactions in Bottom Right */}
         {Object.keys(post.reactions || {}).length > 0 && (
           <button
