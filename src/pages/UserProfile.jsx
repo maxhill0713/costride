@@ -271,6 +271,14 @@ export default function UserProfile() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {shouldHideContent ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <p className="text-slate-400 text-lg font-medium">Private Account</p>
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Streak Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Card className="p-4 bg-slate-900/70 backdrop-blur-sm border border-orange-500/40 rounded-xl">
