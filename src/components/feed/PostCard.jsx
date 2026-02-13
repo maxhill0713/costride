@@ -273,7 +273,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         {Object.keys(post.reactions || {}).length > 0 && (
           <button
             onClick={() => setShowReactionsModal(true)}
-            className="absolute bottom-2 right-4 flex items-center gap-1 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1 hover:opacity-80 transition-opacity ml-auto"
           >
             {Object.entries(post.reactions || {}).map(([userId, variant]) => (
               <div
