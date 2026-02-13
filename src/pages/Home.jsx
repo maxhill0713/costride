@@ -512,10 +512,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-300 font-medium">
-                      {todayCheckIns.length > 0 
-                        ? `Join ${todayCheckIns.length} other${todayCheckIns.length === 1 ? '' : 's'} training today`
-                        : 'Members training together daily'
-                      }
+                      {getCommunityText()}
                     </span>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center -space-x-2">
