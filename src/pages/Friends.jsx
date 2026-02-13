@@ -580,7 +580,7 @@ export default function Friends() {
         {showFriendsModal && (
           <>
             <div className="fixed inset-0 z-[999]" onClick={() => setShowFriendsModal(false)} />
-            <div className="fixed left-1/2 -translate-x-1/2 top-24 w-11/12 max-w-2xl h-1/2 bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-[9999] flex flex-col">
+            <div className="fixed left-1/2 -translate-x-1/2 top-16 w-11/12 max-w-2xl h-1/2 bg-gradient-to-b from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-[9999] flex flex-col">
               <div className="p-4 border-b border-slate-700/50 flex items-center gap-3">
                 <div className="relative flex-1 w-70">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
