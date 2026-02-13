@@ -426,6 +426,9 @@ export default function UserProfile() {
         </Card>
       </div>
 
+        </>
+        )}
+
       <ProfilePictureModal
         isOpen={showProfilePicture}
         onClose={() => setShowProfilePicture(false)}
