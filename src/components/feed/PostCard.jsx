@@ -11,7 +11,7 @@ import { useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-export default function PostCard({ post, onLike, onComment, onSave, onDelete }) {
+export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
