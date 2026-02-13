@@ -251,55 +251,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         ) : null}
       </div>
 
-      {/* Reactions Below Image */}
-      {Object.keys(post.reactions || {}).length > 0 && (
-        <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/30 border-t border-white/5">
-          <div className="flex items-center gap-1.5">
-            {Object.entries(post.reactions || {}).slice(0, 5).map(([userId, variant]) => (
-              <div
-                key={userId}
-                className="relative w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md"
-              >
-                {variant === 'sunglasses' ? (
-                  <div className="relative w-full h-full flex items-center justify-center text-xs">
-                    🔥
-                    <svg 
-                      className="absolute inset-0 w-full h-full pointer-events-none"
-                      viewBox="0 0 64 64"
-                    >
-                      <circle cx="16" cy="20" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
-                      <circle cx="48" cy="20" r="5" fill="none" stroke="currentColor" strokeWidth="1" className="text-black" />
-                      <line x1="21" y1="20" x2="43" y2="20" stroke="currentColor" strokeWidth="1" className="text-black" />
-                    </svg>
-                  </div>
-                ) : variant === 'cowboy' ? (
-                  <div className="relative w-full h-full flex items-center justify-center text-xs">
-                    🔥
-                    <svg 
-                      className="absolute inset-0 w-full h-full pointer-events-none"
-                      viewBox="0 0 64 64"
-                    >
-                      <path 
-                        d="M 8 24 L 6 14 Q 6 4 32 1 Q 58 4 58 14 L 56 24" 
-                        fill="currentColor" 
-                        className="text-amber-800"
-                      />
-                      <ellipse cx="32" cy="24" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-                      <rect x="14" y="22" width="36" height="1" fill="currentColor" className="text-amber-900" />
-                    </svg>
-                  </div>
-                ) : (
-                  <span className="text-lg">🔥</span>
-                )}
-              </div>
-            ))}
-          </div>
-          {Object.keys(post.reactions || {}).length > 5 && (
-            <span className="text-xs font-bold text-slate-300">+{Object.keys(post.reactions).length - 5}</span>
-          )}
-        </div>
-      )}
-
       {/* Caption Section - Thin Block */}
       <div className="px-4 py-1 text-sm text-slate-200 relative pb-12">
        <p className="leading-snug">{post.content}</p>
