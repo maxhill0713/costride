@@ -834,8 +834,8 @@ export default function GymSignup() {
                 </div>
 
                 <div>
-                  <Label className="text-white font-semibold mb-2 block">Gym Equipment</Label>
-                  <p className="text-sm text-slate-300 mb-3">Select equipment or add your own</p>
+                  <Label className="text-white font-semibold mb-2 block">Gym Equipment (Optional)</Label>
+                  <p className="text-sm text-slate-300 mb-3">Add equipment now or skip and add later from your dashboard</p>
                   
                   {/* Custom Equipment Input */}
                   <div className="mb-3 flex gap-2">
