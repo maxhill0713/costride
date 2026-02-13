@@ -104,7 +104,8 @@ export default function AppearanceSettingsContent({ searchQuery = '' }) {
             ]}
           />
         </div>
-      </Card>
-    </div>
-  );
-}
+        </Card>
+        )}
+        </div>
+        );
+        }
