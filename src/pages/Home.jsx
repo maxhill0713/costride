@@ -452,37 +452,22 @@ export default function Home() {
                   onWorkoutStart={() => setWorkoutStartTime(Date.now())}
                 />
               ) : (
-                <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-2xl shadow-2xl shadow-black/30 p-5 relative overflow-hidden">
-                    {/* Decorative elements */}
-                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
-                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl" />
-
-                    <div className="relative space-y-4">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                          <Dumbbell className="w-5 h-5 text-white" />
+                <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
+                    <div className="relative space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                          <Dumbbell className="w-4 h-4 text-white" />
                         </div>
-                        <div className="text-center">
-                          <h3 className="text-xs font-bold text-slate-100 tracking-tight uppercase">Your Training Plan</h3>
-                          <p className="text-[10px] text-slate-400 mt-0.5">Start strong today</p>
-                        </div>
+                        <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Create Workout Split</h3>
                       </div>
 
-                      <div className="space-y-3 pt-2">
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-sm">
-                           <p className="text-xs text-slate-300 font-medium leading-relaxed">
-                             Create your custom workout split and watch your progress transform. Consistency builds champions—let's build yours.
-                           </p>
-                         </div>
-
-                        <button
-                          onClick={() => setShowSplitModal(true)}
-                          className="w-full p-3 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
-                        >
-                          <Calendar className="w-4 h-4" />
-                          Create Your Workout Split
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => setShowSplitModal(true)}
+                        className="w-full p-2 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-orange-500/20"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        Start Building
+                      </button>
                     </div>
                   </Card>
               )}
