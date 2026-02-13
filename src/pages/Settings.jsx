@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut, User, Camera, Image, ChevronRight, ChevronLeft, HelpCircle, Bell as BellIcon } from 'lucide-react';
+import { Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut, User, Camera, Image, ChevronRight, ChevronLeft, HelpCircle, Search, Bell as BellIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -17,6 +17,22 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const settings = [
+    { name: 'Notifications', page: 'NotificationSettings', icon: '🔔' },
+    { name: 'Privacy', page: 'PrivacySettings', icon: '🔒' },
+    { name: 'Account', page: 'AccountSettings', icon: '🔐' },
+    { name: 'Profile', page: 'ProfileSettings', icon: '👤' },
+    { name: 'Appearance', page: 'AppearanceSettings', icon: '🎨' },
+    { name: 'Subscriptions', page: 'SubscriptionSettings', icon: 'S' },
+    { name: 'Help & Support', page: 'HelpSupport', icon: '❓' }
+  ];
+
+  const filteredSettings = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return settings.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [searchQuery]);
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
@@ -76,7 +92,40 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-7">
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {/* Search Bar */}
+        <div className="mb-6 relative">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+            <Search className="w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search settings..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none"
+            />
+          </div>
+          
+          {/* Search Results Dropdown */}
+          {searchQuery.trim() && filteredSettings.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+              {filteredSettings.map((setting) => (
+                <Link
+                  key={setting.page}
+                  to={createPageUrl(setting.page)}
+                  onClick={() => setSearchQuery('')}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0"
+                >
+                  <span className="text-lg">{setting.icon}</span>
+                  <span className="text-white font-medium">{setting.name}</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-7">
          {/* Notifications Button - Full Width */}
          <Link to={createPageUrl('NotificationSettings')}>
            <div className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg">
