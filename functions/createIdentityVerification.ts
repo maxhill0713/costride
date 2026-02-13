@@ -21,7 +21,8 @@ Deno.serve(async (req) => {
         user_id: user.id,
         user_email: user.email,
         base44_app_id: Deno.env.get("BASE44_APP_ID")
-      }
+      },
+      return_url: `${req.headers.get('origin')}/GymSignup`
     });
 
     return Response.json({
