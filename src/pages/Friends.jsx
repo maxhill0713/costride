@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -28,8 +28,6 @@ export default function Friends() {
       return new Set();
     }
   });
-  const [viewedItemIds, setViewedItemIds] = useState(new Set());
-  const [viewedTimestamps, setViewedTimestamps] = useState({});
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -235,6 +233,29 @@ export default function Friends() {
   const createActivityFeed = () => {
     const activities = [];
 
+    // Add check-ins (last 7 days)
+    const recentCheckIns = allCheckIns.filter(checkIn => {
+      const daysSince = differenceInDays(new Date(), new Date(checkIn.check_in_date));
+      return daysSince <= 7 && friendIds.includes(checkIn.user_id);
+    });
+
+    recentCheckIns.forEach(checkIn => {
+      const friend = friends.find(f => f.friend_id === checkIn.user_id);
+      const isToday = differenceInDays(new Date(), new Date(checkIn.check_in_date)) === 0;
+      
+      activities.push({
+        id: `checkin-${checkIn.id}`,
+        type: 'checkin',
+        friendId: checkIn.user_id,
+        friendName: friend?.friend_name || checkIn.user_name,
+        friendAvatar: friend?.friend_avatar,
+        message: isToday ? 'checked in today' : `checked in at ${checkIn.gym_name}`,
+        timestamp: new Date(checkIn.check_in_date),
+        emoji: '💪',
+        gymName: checkIn.gym_name
+      });
+    });
+
     // Add streak milestones
     friendIds.forEach(friendId => {
       const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
@@ -302,19 +323,14 @@ export default function Friends() {
       }
     });
 
-    // Add notifications (exclude gym official request notifications)
+    // Add notifications
     notifications.forEach(notification => {
       const daysSince = differenceInDays(new Date(), new Date(notification.created_date));
-      const message = notification.message || notification.title || '';
-      const isGymOfficialRequest = message.toLowerCase().includes('gym official') || 
-                                    message.toLowerCase().includes('official request') ||
-                                    notification.type === 'gym_official_request';
-      
-      if (daysSince <= 7 && !isGymOfficialRequest) {
+      if (daysSince <= 7) {
         activities.push({
           id: `notification-${notification.id}`,
           type: 'notification',
-          message: message,
+          message: notification.message || notification.title,
           timestamp: new Date(notification.created_date)
         });
       }
@@ -383,6 +399,21 @@ export default function Friends() {
       }
     });
 
+    // Inactive friends warning
+    friendsWithActivity.forEach(friend => {
+      if (friend.activity.daysSinceCheckIn >= 7) {
+        cards.push({
+          id: `inactive-${friend.friend_id}`,
+          type: 'friend-inactive',
+          title: `${friend.friend_name} Needs a Nudge`,
+          message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days. Send them some motivation! 👋`,
+          emoji: '👋',
+          color: 'from-slate-500 to-slate-600',
+          borderColor: 'border-slate-500/30'
+        });
+      }
+    });
+
     // Streak freeze warning
     if (lastCheckIn && daysSinceLastCheckIn === 1) {
       cards.push({
@@ -401,47 +432,14 @@ export default function Friends() {
 
   const activityCards = generateActivityCards();
 
-  // Auto-dismiss viewed items after 10 minutes
-  useEffect(() => {
-    const timers = [];
-    
-    viewedItemIds.forEach(itemId => {
-      const viewedTime = viewedTimestamps[itemId];
-      if (viewedTime) {
-        const timeElapsed = Date.now() - viewedTime;
-        const remainingTime = 10 * 60 * 1000 - timeElapsed; // 10 minutes
-        
-        if (remainingTime > 0) {
-          const timer = setTimeout(() => {
-            setDismissedCardIds(prev => new Set(prev).add(itemId));
-          }, remainingTime);
-          timers.push(timer);
-        }
-      }
-    });
-    
-    return () => timers.forEach(timer => clearTimeout(timer));
-  }, [viewedItemIds, viewedTimestamps]);
+  // Filter out dismissed cards (keep activity feed items for 30 minutes)
+  const isItemExpired = (timestamp) => {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    return new Date(timestamp) < thirtyMinutesAgo;
+  };
 
-  // Mark items as viewed when rendered
-  useEffect(() => {
-    activityFeed.forEach(item => {
-      if (!viewedItemIds.has(item.id)) {
-        setViewedItemIds(prev => new Set(prev).add(item.id));
-        setViewedTimestamps(prev => ({ ...prev, [item.id]: Date.now() }));
-      }
-    });
-    
-    activityCards.forEach(card => {
-      if (!viewedItemIds.has(card.id)) {
-        setViewedItemIds(prev => new Set(prev).add(card.id));
-        setViewedTimestamps(prev => ({ ...prev, [card.id]: Date.now() }));
-      }
-    });
-  }, [activityFeed, activityCards, viewedItemIds]);
-
-  // Filter out dismissed items
-  const filteredActivityFeed = activityFeed.filter((item) => !dismissedCardIds.has(item.id));
+  // Filter out dismissed cards, keep posts for 30 minutes
+  const filteredActivityFeed = activityFeed.filter((item) => !isItemExpired(item.timestamp));
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
   return (
