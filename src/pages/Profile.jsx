@@ -97,6 +97,12 @@ export default function Profile() {
     queryFn: () => base44.entities.Challenge.list()
   });
 
+  const { data: workoutLogs = [] } = useQuery({
+    queryKey: ['workoutLogs', currentUser?.id],
+    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser
+  });
+
 
 
   const displayName = currentUser?.username || currentUser?.full_name;
