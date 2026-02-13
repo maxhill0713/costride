@@ -24,6 +24,7 @@ import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
+import PostCard from '../components/feed/PostCard';
 
 
 export default function Profile() {
