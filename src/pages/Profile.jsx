@@ -695,7 +695,7 @@ export default function Profile() {
                 </Card>
               ) : (
                 <div className="space-y-3">
-                  {userPosts.map((post) => (
+                  {userPosts.filter(post => post.content || post.image_url || post.video_url).map((post) => (
                     <Card key={post.id} className="bg-slate-800/40 border border-slate-600/40 rounded-xl overflow-hidden">
                       {post.image_url && (
                         <img src={post.image_url} alt="" className="w-full h-48 object-cover" />
