@@ -496,7 +496,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 </div>
               )}
               <Button
-                onClick={() => setShowLogConfirm(true)}
+                onClick={() => setShowSummary(true)}
                 disabled={logWorkoutMutation.isPending}
                 size="sm"
                 className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
