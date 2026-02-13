@@ -25,6 +25,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [showTimerOptions, setShowTimerOptions] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showLogConfirm, setShowLogConfirm] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(0);
   const queryClient = useQueryClient();
 
