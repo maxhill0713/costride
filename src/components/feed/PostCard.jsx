@@ -323,21 +323,16 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               ))}
               </button>
               )}
-              <p className="leading-snug">{post.content}</p>
-       {post.weight && (
-          <span className="block mt-1 text-blue-400 font-semibold">
-            💪 {post.weight} lbs
-          </span>
-        )}
-       {isNudgePost && isOwner && (
-         <button
-           onClick={() => nudgeMutation.mutate()}
-           disabled={nudgeMutation.isPending}
-           className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
-         >
-           {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
-         </button>
-       )}
+
+              {isNudgePost && isOwner && (
+              <button
+              onClick={() => nudgeMutation.mutate()}
+              disabled={nudgeMutation.isPending}
+              className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
+              >
+              {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
+              </button>
+              )}
 
        {/* Reaction Button for Weight Increases & Gym Joins */}
        {(isWeightIncreasePost || isGymJoinPost) && (
