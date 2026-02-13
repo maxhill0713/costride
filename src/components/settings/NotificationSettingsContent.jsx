@@ -6,8 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
-export default function NotificationSettingsContent() {
+export default function NotificationSettingsContent({ searchQuery = '' }) {
   const queryClient = useQueryClient();
+  const query = searchQuery.toLowerCase();
+  const showPush = !searchQuery.trim() || query.includes('push') || query.includes('notification');
+  const showEmail = !searchQuery.trim() || query.includes('email') || query.includes('notification');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
