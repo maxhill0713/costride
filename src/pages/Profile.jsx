@@ -449,7 +449,7 @@ export default function Profile() {
               </div>
             </div>
           ) : (
-            <div className="space-y-2 mt-2">
+            <div className="space-y-3 mt-4">
               {currentUser.bio && (
                 <p className="text-slate-300 text-sm leading-relaxed font-normal max-w-2xl tracking-[-0.01em]">{currentUser.bio}</p>
               )}
@@ -458,6 +458,20 @@ export default function Profile() {
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                 </div>
+              )}
+
+              {/* Home Gym */}
+              {primaryGym && (
+                <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
+                  <div className="flex items-center gap-2 flex-wrap cursor-pointer hover:opacity-80 transition-opacity">
+                    <Building2 className="w-4 h-4 text-blue-400" />
+                    <Badge 
+                      className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
+                    >
+                      {primaryGym.name}
+                    </Badge>
+                  </div>
+                </Link>
               )}
             </div>
           )}
