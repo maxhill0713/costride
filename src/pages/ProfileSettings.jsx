@@ -158,7 +158,10 @@ export default function ProfileSettings() {
                   ...old,
                   full_name: newValue
                 }));
-                updateSettingsMutation.mutate({ full_name: newValue });
+                clearTimeout(nameTimeout);
+                setNameTimeout(setTimeout(() => {
+                  updateSettingsMutation.mutate({ full_name: newValue });
+                }, 800));
               }}
               placeholder="Your full name"
               className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
