@@ -210,7 +210,20 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       }
 
       // Show streak in toast with premium bonus
-      if (streak > 1) {
+      if (isRestDay) {
+        toast.success('💚 Great news! Your streak is paused, not broken.', {
+          description: 'Enjoy your rest day—recovery is progress!',
+          duration: 4000
+        });
+        // Create rest day notification
+        await base44.entities.Notification.create({
+          user_id: currentUser.id,
+          type: 'rest_day',
+          title: '💚 Enjoying Your Rest Day',
+          message: 'Good news! Your streak is on pause today, not broken. Rest is part of your progress. See you tomorrow!',
+          icon: '🌿'
+        });
+      } else if (streak > 1) {
         toast.success(`✅ Checked in! You're on a ${streak}-day streak 🔥`, {
           description: isPremium ? '+20 points (Premium 2x Bonus) 🌟' : '+10 points',
           duration: 4000
