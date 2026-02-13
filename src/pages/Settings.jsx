@@ -116,47 +116,7 @@ export default function Settings() {
            </div>
          </Link>
 
-         {/* Notifications */}
-         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
-              <Bell className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-base font-semibold text-white">Notifications</h3>
-          </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="flex items-center gap-3">
-                {currentUser.notifications_enabled ? (
-                  <Bell className="w-4 h-4 text-slate-400" />
-                ) : (
-                  <BellOff className="w-4 h-4 text-slate-500" />
-                )}
-                <Label className="text-sm font-semibold text-slate-100">Push Notifications</Label>
-              </div>
-              <Switch
-                checked={currentUser.notifications_enabled ?? true}
-                onCheckedChange={(checked) => updateSettingsMutation.mutate({ notifications_enabled: checked })}
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="flex items-center gap-3">
-                {currentUser.email_notifications ? (
-                  <Bell className="w-4 h-4 text-slate-400" />
-                ) : (
-                  <BellOff className="w-4 h-4 text-slate-500" />
-                )}
-                <Label className="text-sm font-semibold text-slate-100">Email Notifications</Label>
-              </div>
-              <Switch
-                checked={currentUser.email_notifications ?? true}
-                onCheckedChange={(checked) => updateSettingsMutation.mutate({ email_notifications: checked })}
-              />
-            </div>
-          </div>
-        </Card>
 
         {/* Appearance */}
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
