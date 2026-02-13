@@ -68,8 +68,9 @@ export default function UserProfile() {
     queryFn: () => base44.entities.Gym.list()
   });
 
-  const memberGymIds = gymMemberships.map(m => m.gym_id);
-  const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
+  // Only show primary gym for other users
+  const primaryGymId = viewingUser?.primary_gym_id;
+  const primaryGym = allGyms.find(g => g.id === primaryGymId);
 
   if (isLoading) {
     return (
@@ -207,18 +208,15 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* Gym Memberships */}
-          {memberGyms.length > 0 && (
+          {/* Home Gym */}
+          {primaryGym && (
             <div className="flex items-center gap-2 mt-3 flex-wrap">
               <Building2 className="w-4 h-4 text-blue-400" />
-              {memberGyms.map((gym) => (
-                <Badge 
-                  key={gym.id}
-                  className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
-                >
-                  {gym.name}
-                </Badge>
-              ))}
+              <Badge 
+                className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs"
+              >
+                {primaryGym.name}
+              </Badge>
             </div>
           )}
         </div>
