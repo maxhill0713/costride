@@ -21,10 +21,10 @@ export default function Settings() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const settings = [
-    { name: 'Notifications', page: 'NotificationSettings', icon: '🔔', keywords: ['notification', 'alert', 'push', 'email', 'message'] },
-    { name: 'Privacy', page: 'PrivacySettings', icon: '🔒', keywords: ['privacy', 'public', 'profile', 'private', 'visibility'] },
     { name: 'Account', page: 'AccountSettings', icon: '🔐', keywords: ['account', 'password', 'email', 'security', 'change password'] },
     { name: 'Profile', page: 'ProfileSettings', icon: '👤', keywords: ['profile', 'avatar', 'banner', 'bio', 'name', 'picture', 'photo'] },
+    { name: 'Notifications', page: 'NotificationSettings', icon: '🔔', keywords: ['notification', 'alert', 'push', 'email', 'message'] },
+    { name: 'Privacy', page: 'PrivacySettings', icon: '🔒', keywords: ['privacy', 'public', 'profile', 'private', 'visibility'] },
     { name: 'Appearance', page: 'AppearanceSettings', icon: '🎨', keywords: ['appearance', 'dark mode', 'theme', 'unit', 'language', 'settings'] },
     { name: 'Subscriptions', page: 'SubscriptionSettings', icon: 'S', keywords: ['subscription', 'plan', 'billing', 'payment'] },
     { name: 'Help & Support', page: 'HelpSupport', icon: '❓', keywords: ['help', 'support', 'faq', 'question', 'contact'] }
