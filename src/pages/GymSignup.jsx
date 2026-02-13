@@ -922,9 +922,9 @@ export default function GymSignup() {
                 <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-amber-400" />
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">Ghost Gym Found!</h3>
+                <h3 className="text-2xl font-black text-white mb-2">Unofficial Gym Found!</h3>
                 <p className="text-slate-300 text-sm">
-                  This gym already exists in our system but hasn't been claimed yet.
+                  This gym is already in our system and <span className="font-semibold text-white">{ghostGym.members_count || 0} members</span> are using it. Claim it to make it official and take control of your community.
                 </p>
               </div>
 
@@ -949,8 +949,8 @@ export default function GymSignup() {
                 Claim This Gym
               </Button>
 
-              <p className="text-xs text-slate-500 text-center mt-4">
-                Claiming will preserve existing members and activity
+              <p className="text-xs text-slate-400 text-center mt-4">
+                ✓ All existing members and activity will be preserved
               </p>
             </Card>
           </div>
