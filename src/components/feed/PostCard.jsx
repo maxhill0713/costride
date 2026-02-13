@@ -268,12 +268,20 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       </div>
 
       {/* Caption Section - Semi-transparent Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 backdrop-blur-sm bg-black/40 flex items-center z-10 justify-between">
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 backdrop-blur-sm bg-black/40 flex items-center z-10 justify-between gap-3">
+        <div className="flex-1">
+          <p className="leading-snug">{post.content}</p>
+          {post.weight && (
+            <span className="block mt-1 text-blue-400 font-semibold">
+              💪 {post.weight} lbs
+            </span>
+          )}
+        </div>
         {/* Reactions in Bottom Right */}
         {Object.keys(post.reactions || {}).length > 0 && (
           <button
             onClick={() => setShowReactionsModal(true)}
-            className="flex items-center gap-1 hover:opacity-80 transition-opacity ml-auto"
+            className="flex items-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0"
           >
             {Object.entries(post.reactions || {}).map(([userId, variant]) => (
               <div
