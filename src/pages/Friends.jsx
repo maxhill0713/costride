@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, ArrowLeft, Search, UserMinus, X, ChevronDown } from 'lucide-react';
+import { Users, Flame, CheckCircle, Trophy, TrendingUp, UserPlus, Search, UserMinus, X, ChevronDown, ChevronLeft } from 'lucide-react';
 import StreakIcon from '../components/StreakIcon';
 import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
