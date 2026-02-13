@@ -370,7 +370,7 @@ export default function Home() {
                 <span className="text-white font-semibold text-lg tracking-tight">{userStreak}</span>
               </button>
               <div className="flex items-center gap-0.5">
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/1a674d9b2_IMG_8192.jpg" alt="CoStride" className="w-6 h-6 object-contain" />
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/1a674d9b2_IMG_8192.jpg" alt="CoStride" className="w-6 h-6 object-contain" style={{ mixBlendMode: 'screen' }} />
                 <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                   oStride
                 </h1>
