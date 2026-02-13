@@ -424,10 +424,9 @@ export default function UserProfile() {
             </div>
           )}
         </Card>
-      </div>
-
         </>
         )}
+        </div>
 
       <ProfilePictureModal
         isOpen={showProfilePicture}
