@@ -721,7 +721,7 @@ export default function Profile() {
                   }).map((post) => {
                     if (gridView) {
                       return (
-                        <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity">
+                        <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedGridPost(post)}>
                           {post.video_url ? (
                             <video src={post.video_url} className="w-full h-full object-cover" />
                           ) : post.image_url ? (
