@@ -674,14 +674,32 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
-               {/* Create Post Button */}
-               <Button
-                 onClick={() => setShowCreatePost(true)}
-                 className="w-full bg-gradient-to-br from-blue-900/70 to-blue-950/70 backdrop-blur-xl border border-blue-500/30 hover:border-blue-400/50 hover:bg-gradient-to-br hover:from-blue-800/80 hover:to-blue-900/80 text-blue-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all"
-               >
-                 <Plus className="w-4 h-4 mr-2" />
-                 Create Post
-               </Button>
+                {/* Create Post Button & Grid Toggle */}
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowCreatePost(true)}
+                    className="flex-1 bg-gradient-to-br from-blue-900/70 to-blue-950/70 backdrop-blur-xl border border-blue-500/30 hover:border-blue-400/50 hover:bg-gradient-to-br hover:from-blue-800/80 hover:to-blue-900/80 text-blue-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Post
+                  </Button>
+                  <Button
+                    onClick={() => setGridView(!gridView)}
+                    variant="outline"
+                    className="border-slate-600/40 text-slate-300 hover:bg-slate-700/50 rounded-xl"
+                    title={gridView ? "List view" : "Grid view"}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      {gridView ? (
+                        // List icon
+                        <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
+                      ) : (
+                        // Grid icon
+                        <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
+                      )}
+                    </svg>
+                  </Button>
+                </div>
 
                {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
                 <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
