@@ -137,54 +137,7 @@ export default function Settings() {
            );
          })}
 
-         {/* Logout and Delete Account - Smaller Buttons */}
-         <div className="pt-4 space-y-3">
-           <Button 
-             className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium h-9 text-sm flex items-center gap-2 justify-center"
-             onClick={() => {
-               if (confirm('Are you sure you want to logout?')) {
-                 base44.auth.logout();
-               }
-             }}
-           >
-             <LogOut className="w-4 h-4" />
-             Logout
-           </Button>
-           <AlertDialog>
-             <AlertDialogTrigger asChild>
-               <Button 
-                 variant="outline"
-                 className="w-full border-red-600 text-red-500 hover:bg-red-600 hover:text-white rounded-xl font-medium h-9 text-sm"
-               >
-                 Delete Account
-               </Button>
-             </AlertDialogTrigger>
-             <AlertDialogContent className="bg-slate-800 border-red-600/50">
-               <AlertDialogHeader>
-                 <AlertDialogTitle className="text-white">⚠️ Delete Account?</AlertDialogTitle>
-                 <AlertDialogDescription className="text-slate-300">
-                   This will permanently delete your account and all your data including check-ins, posts, progress{currentUser.account_type === 'gym_owner' ? ', and all gyms you own' : ''}. This action cannot be undone.
-                 </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                 <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                 <AlertDialogAction
-                   className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
-                   onClick={async () => {
-                     try {
-                       await base44.functions.invoke('deleteUserAccount');
-                       base44.auth.logout();
-                     } catch (error) {
-                       console.error('Failed to delete account:', error);
-                     }
-                   }}
-                 >
-                   Delete Permanently
-                 </AlertDialogAction>
-               </AlertDialogFooter>
-             </AlertDialogContent>
-           </AlertDialog>
-         </div>
+
 
 
 
