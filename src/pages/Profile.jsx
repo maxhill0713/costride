@@ -942,6 +942,7 @@ export default function Profile() {
                   setPostContent('');
                   setPostImage('');
                   setPostVideo('');
+                  setAllowGymRepost(false);
                 }}
                 className="text-slate-400 hover:text-white"
               >
