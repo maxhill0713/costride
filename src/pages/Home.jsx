@@ -542,12 +542,12 @@ export default function Home() {
           <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-semibold text-white text-base mb-1 tracking-tight">Get Started</h3>
-                <p className="text-blue-100 text-xs font-medium">Join a gym to start tracking workouts</p>
+                <h3 className="font-semibold text-white text-base mb-1 tracking-tight">Ready to Transform?</h3>
+                <p className="text-blue-100 text-xs font-medium">Join a gym and build your winning streak today</p>
               </div>
               <Link to={createPageUrl('Gyms')}>
                 <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold">
-                  Join Gym
+                  Find Your Gym
                 </Button>
               </Link>
             </div>
