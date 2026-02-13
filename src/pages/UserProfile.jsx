@@ -199,14 +199,6 @@ export default function UserProfile() {
           {viewingUser.bio && (
             <p className="text-slate-300 text-sm leading-relaxed mt-4 max-w-xl">{viewingUser.bio}</p>
           )}
-          
-          {/* Location */}
-          {viewingUser.gym_location && (
-            <div className="flex items-center gap-2 text-slate-400 mt-2">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm">{viewingUser.gym_location}</span>
-            </div>
-          )}
 
           {/* Home Gym */}
           {primaryGym && (
