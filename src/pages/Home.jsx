@@ -429,7 +429,11 @@ export default function Home() {
             <div className="space-y-3">
               {/* Today's Workout */}
               {currentUser?.custom_workout_types ? (
-                <TodayWorkout currentUser={currentUser} />
+                <TodayWorkout 
+                  currentUser={currentUser}
+                  workoutStartTime={workoutStartTime}
+                  onWorkoutStart={() => setWorkoutStartTime(Date.now())}
+                />
               ) : (
                 <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-2xl shadow-2xl shadow-black/30 p-5 relative overflow-hidden">
                     {/* Decorative elements */}
