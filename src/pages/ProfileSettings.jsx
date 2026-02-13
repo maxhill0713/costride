@@ -173,13 +173,10 @@ export default function ProfileSettings() {
           <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
             <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
             <Textarea
-              value={currentUser?.bio || ''}
+              value={localBio}
               onChange={(e) => {
                 const newValue = e.target.value;
-                queryClient.setQueryData(['currentUser'], (old) => ({
-                  ...old,
-                  bio: newValue
-                }));
+                setLocalBio(newValue);
                 clearTimeout(bioTimeout);
                 setBioTimeout(setTimeout(() => {
                   updateSettingsMutation.mutate({ bio: newValue });
