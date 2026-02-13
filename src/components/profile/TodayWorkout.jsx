@@ -58,9 +58,21 @@ export default function TodayWorkout({ currentUser }) {
       audio.play().catch(() => {});
     }
     return () => clearInterval(interval);
-  }, [isTimerActive, restTimer]);
+    }, [isTimerActive, restTimer]);
 
-  const startRestTimer = () => {
+    // Workout duration timer effect
+    React.useEffect(() => {
+    let interval;
+    if (workoutStartTime) {
+      interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
+        setWorkoutDuration(elapsed);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+    }, [workoutStartTime]);
+
+    const startRestTimer = () => {
     const time = parseInt(restTimer) || 90;
     setRestTimer(time);
     setInitialRestTime(time);
