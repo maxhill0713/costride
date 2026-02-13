@@ -695,7 +695,7 @@ export default function Profile() {
                   </div>
                 </Card>
               ) : (
-                <div className="space-y-3">
+                <div className="w-full">
                   {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
                     if (a.is_favourite === b.is_favourite) return 0;
                     return a.is_favourite ? -1 : 1;
@@ -703,6 +703,7 @@ export default function Profile() {
                     <PostCard 
                       key={post.id} 
                       post={post}
+                      fullWidth={true}
                       onLike={() => {}}
                       onComment={() => {}}
                       onSave={() => {}}
