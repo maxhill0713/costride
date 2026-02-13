@@ -195,7 +195,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
     >
       {/* Header - Profile Picture Only */}
       <div className="absolute top-3 left-3 z-10">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center overflow-hidden border-2 border-white shadow-lg flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border-2 border-white shadow-lg flex-shrink-0">
           {post.member_avatar ? (
             <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
           ) : (
