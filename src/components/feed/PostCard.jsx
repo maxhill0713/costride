@@ -274,9 +274,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 flex items-center z-10 justify-between gap-3">
         <div className="flex-1">
           <p className="leading-snug">
-            {post.content && post.content.length > 40 ? (
+            {post.content && post.content.length > 30 ? (
               <>
-                {post.content.substring(0, 40)}...{' '}
+                {post.content.substring(0, 30)}...{' '}
                 <button
                   onClick={() => setShowFullContent(true)}
                   className="text-blue-400 hover:text-blue-300 font-semibold"
