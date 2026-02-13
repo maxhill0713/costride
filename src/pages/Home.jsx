@@ -575,7 +575,10 @@ export default function Home() {
                 <X className="w-5 h-5" />
               </Button>
             </div>
-            <CheckInButton gym={memberGym} />
+            <CheckInButton 
+              gym={memberGym} 
+              onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
+            />
           </div>
         </div>
       )}
