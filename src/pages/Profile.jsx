@@ -695,12 +695,12 @@ export default function Profile() {
                   </div>
                 </Card>
               ) : (
-                <div className="w-full grid grid-cols-2 gap-2">
+                <div className="w-full grid grid-cols-2 gap-4">
                    {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
                      if (a.is_favourite === b.is_favourite) return 0;
                      return a.is_favourite ? -1 : 1;
                    }).map((post) => (
-                     <div key={post.id} className="col-span-1 aspect-square overflow-hidden rounded-lg">
+                     <div key={post.id} className="col-span-1">
                        <PostCard 
                          post={post}
                          fullWidth={false}
