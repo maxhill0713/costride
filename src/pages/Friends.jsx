@@ -644,7 +644,7 @@ export default function Friends() {
 
          {/* Friend Posts - Using GymPostCard */}
          {friendPosts.length > 0 && (
-           <div className="space-y-3 mt-3">
+           <div className="space-y-3 mt-0">
              {friendPosts.map((post) => (
                <GymPostCard key={post.id} post={post} />
              ))}
