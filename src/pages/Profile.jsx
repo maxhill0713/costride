@@ -700,7 +700,7 @@ export default function Profile() {
                      if (a.is_favourite === b.is_favourite) return 0;
                      return a.is_favourite ? -1 : 1;
                    }).map((post) => (
-                     <div key={post.id} className="col-span-1 h-96">
+                     <div key={post.id} className="col-span-1">
                        <PostCard 
                          post={post}
                          fullWidth={false}
