@@ -77,6 +77,19 @@ export default function Settings() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+         {/* Notifications Button - Full Width */}
+         <Link to={createPageUrl('NotificationSettings')}>
+           <div className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                 <Bell className="w-4 h-4 text-white" />
+               </div>
+               <span className="font-semibold text-white">Notifications</span>
+             </div>
+             <ChevronRight className="w-5 h-5 text-white/70" />
+           </div>
+         </Link>
+
          {/* Account Button - Full Width */}
          <Link to={createPageUrl('AccountSettings')}>
            <div className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
