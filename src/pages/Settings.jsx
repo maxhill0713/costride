@@ -77,6 +77,19 @@ export default function Settings() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+         {/* Account Button - Full Width */}
+         <Link to={createPageUrl('AccountSettings')}>
+           <div className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                 <Lock className="w-4 h-4 text-white" />
+               </div>
+               <span className="font-semibold text-white">Account</span>
+             </div>
+             <ChevronRight className="w-5 h-5 text-white/70" />
+           </div>
+         </Link>
+
          {/* Profile Button - Full Width */}
          <Link to={createPageUrl('ProfileSettings')}>
            <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
