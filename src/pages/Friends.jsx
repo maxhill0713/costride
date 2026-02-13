@@ -688,7 +688,7 @@ export default function Friends() {
                     return (
                       <div
                         key={friend.id}
-                        className="p-3 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
+                        className="p-2 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
                       >
                         <Link 
                           to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
