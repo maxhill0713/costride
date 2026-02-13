@@ -25,6 +25,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
     queryFn: () => base44.auth.me()
   });
 
+  const { data: userPosts = [] } = useQuery({
+    queryKey: ['userPosts', currentUser?.id],
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
+    enabled: !!currentUser
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Post.delete(post.id),
     onSuccess: () => {
