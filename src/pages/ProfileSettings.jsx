@@ -144,14 +144,15 @@ export default function ProfileSettings() {
               type="text"
               value={currentUser?.full_name || ''}
               onChange={(e) => {
-                queryClient.setQueryData?.(['currentUser'], (old) => ({
+                const newValue = e.target.value;
+                queryClient.setQueryData(['currentUser'], (old) => ({
                   ...old,
-                  full_name: e.target.value
+                  full_name: newValue
                 }));
+                updateSettingsMutation.mutate({ full_name: newValue });
               }}
               placeholder="Your full name"
               className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              onBlur={() => updateSettingsMutation.mutate({ full_name: currentUser?.full_name })}
             />
           </div>
         </Card>
@@ -163,15 +164,16 @@ export default function ProfileSettings() {
             <Textarea
               value={currentUser?.bio || ''}
               onChange={(e) => {
-                queryClient.setQueryData?.(['currentUser'], (old) => ({
+                const newValue = e.target.value;
+                queryClient.setQueryData(['currentUser'], (old) => ({
                   ...old,
-                  bio: e.target.value
+                  bio: newValue
                 }));
+                updateSettingsMutation.mutate({ bio: newValue });
               }}
               placeholder="Tell us about yourself..."
               rows={3}
               className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
-              onBlur={() => updateSettingsMutation.mutate({ bio: currentUser?.bio })}
             />
           </div>
         </Card>
