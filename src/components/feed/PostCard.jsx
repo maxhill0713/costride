@@ -44,14 +44,26 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
   });
 
   const updatePostMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Post.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      if (data.is_favourite && !post.is_favourite) {
+        const favouriteCount = userPosts.filter(p => p.is_favourite).length;
+        if (favouriteCount >= 3) {
+          throw new Error('You can only have 3 favourite posts');
+        }
+      }
+      return base44.entities.Post.update(id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
       toast.success(post.is_favourite ? 'Removed from favourites' : 'Added to favourites');
     },
-    onError: () => {
-      toast.error('Failed to update post');
+    onError: (error) => {
+      if (error.message === 'You can only have 3 favourite posts') {
+        toast.error('You can only have 3 favourite posts');
+      } else {
+        toast.error('Failed to update post');
+      }
     }
   });
 
