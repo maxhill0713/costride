@@ -518,7 +518,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             <Button
               onClick={() => setShowSummary(true)}
               size="sm"
-              className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30 rounded-lg"
+              className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white"
             >
               View Summary
             </Button>
