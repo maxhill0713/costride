@@ -81,6 +81,7 @@ import AppearanceSettings from './pages/AppearanceSettings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import HelpSupport from './pages/HelpSupport';
 import Settings from './pages/Settings';
+import Activity from './pages/Activity';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +120,7 @@ export const PAGES = {
     "SubscriptionSettings": SubscriptionSettings,
     "HelpSupport": HelpSupport,
     "Settings": Settings,
+    "Activity": Activity,
 }
 
 export const pagesConfig = {
