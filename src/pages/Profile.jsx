@@ -672,16 +672,16 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
-              {/* Create Post Button */}
-              <Button
-                onClick={() => setShowCreatePost(true)}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Post
-              </Button>
+               {/* Create Post Button */}
+               <Button
+                 onClick={() => setShowCreatePost(true)}
+                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
+               >
+                 <Plus className="w-4 h-4 mr-2" />
+                 Create Post
+               </Button>
 
-              {userPosts.length === 0 ? (
+               {userPosts.filter(post => post.content || post.image_url || post.video_url).length === 0 ? (
                 <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                   <div className="max-w-sm mx-auto">
                     <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
