@@ -273,11 +273,11 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       {/* Caption Section */}
       <div className={`absolute left-0 right-0 px-4 z-10 transition-all duration-300 ${
         showFullContent 
-          ? 'bottom-0 top-0 py-6 flex items-center bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent' 
+          ? 'bottom-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/40 py-4' 
           : 'bottom-0 py-2.5'
-      } flex justify-between gap-3`}>
-        <div className="flex-1">
-          <p className={`leading-snug text-sm text-slate-200 ${showFullContent ? 'text-base' : ''}`}>
+      }`}>
+        <div className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
+          <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
             {post.content && post.content.length > 30 && !showFullContent ? (
               <>
                 {post.content.substring(0, 30)}...{' '}
