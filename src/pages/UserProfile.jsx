@@ -70,6 +70,16 @@ export default function UserProfile() {
     queryFn: () => base44.entities.Gym.list()
   });
 
+  const { data: friendshipStatus } = useQuery({
+    queryKey: ['friendship', currentUser?.id, userId],
+    queryFn: async () => {
+      if (!currentUser?.id || !userId) return null;
+      const friendships = await base44.entities.Friend.filter({ user_id: currentUser.id, friend_id: userId });
+      return friendships.length > 0 ? friendships[0] : null;
+    },
+    enabled: !!currentUser?.id && !!userId
+  });
+
   // Only show primary gym for other users
   const primaryGymId = viewingUser?.primary_gym_id;
   const primaryGym = allGyms.find(g => g.id === primaryGymId);
