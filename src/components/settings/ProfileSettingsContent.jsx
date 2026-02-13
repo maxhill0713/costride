@@ -7,12 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
-export default function ProfileSettingsContent() {
+export default function ProfileSettingsContent({ searchQuery = '' }) {
   const queryClient = useQueryClient();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [nameTimeout, setNameTimeout] = useState(null);
   const [bioTimeout, setBioTimeout] = useState(null);
+
+  const query = searchQuery.toLowerCase();
+  const showAvatar = !searchQuery.trim() || query.includes('avatar') || query.includes('picture') || query.includes('photo');
+  const showBanner = !searchQuery.trim() || query.includes('banner') || query.includes('image');
+  const showName = !searchQuery.trim() || query.includes('name');
+  const showBio = !searchQuery.trim() || query.includes('bio');
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
