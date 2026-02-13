@@ -39,9 +39,9 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Places API error:', errorData);
-      return Response.json({ places: [] });
+      const errorText = await response.text();
+      console.error('Places API error:', response.status, errorText);
+      return Response.json({ error: 'Places API failed', details: errorText }, { status: response.status });
     }
 
     const data = await response.json();
