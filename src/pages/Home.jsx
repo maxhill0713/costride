@@ -377,8 +377,8 @@ export default function Home() {
                   await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
                 }
               }}>
-                <Button variant="ghost" size="icon" className="relative rounded-full w-9 h-9">
-                     <Users className="w-10 h-10 text-cyan-400" />
+                <Button variant="ghost" size="icon" className="relative rounded-full w-11 h-11">
+                     <Users className="w-6 h-6 text-cyan-400" />
                     {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
                   </Button>
               </Link>
