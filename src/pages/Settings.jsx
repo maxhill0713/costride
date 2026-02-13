@@ -144,63 +144,6 @@ export default function Settings() {
 
 
 
-        {/* Appearance */}
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-              {currentUser.dark_mode ? (
-                <Moon className="w-6 h-6 text-white" />
-              ) : (
-                <Sun className="w-6 h-6 text-white" />
-              )}
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Appearance</h3>
-              <p className="text-sm text-slate-300">Customize your app experience</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
-              <div className="flex items-center gap-3">
-                {currentUser.dark_mode ? (
-                  <Moon className="w-5 h-5 text-indigo-400" />
-                ) : (
-                  <Sun className="w-5 h-5 text-orange-400" />
-                )}
-                <div>
-                  <Label className="text-sm font-bold text-slate-100">Dark Mode</Label>
-                  <p className="text-xs text-slate-400">Switch between light and dark theme</p>
-                </div>
-              </div>
-              <Switch
-                checked={currentUser.dark_mode ?? false}
-                onCheckedChange={(checked) => updateSettingsMutation.mutate({ dark_mode: checked })}
-              />
-            </div>
-
-            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="flex items-center gap-3 mb-3">
-                <Ruler className="w-5 h-5 text-slate-400" />
-                <div>
-                  <Label className="text-sm font-bold text-slate-100">Unit System</Label>
-                  <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
-                </div>
-              </div>
-              <MobileSelect 
-                value={currentUser.units || 'imperial'} 
-                onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
-                placeholder="Select units"
-                triggerClassName="rounded-2xl border border-white/20 bg-white/5 text-slate-100"
-                options={[
-                  { value: 'imperial', label: 'Imperial (lbs, ft)' },
-                  { value: 'metric', label: 'Metric (kg, m)' }
-                ]}
-              />
-            </div>
-          </div>
-        </Card>
-
 
 
         {/* Logout */}
