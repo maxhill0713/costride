@@ -713,13 +713,16 @@ export default function Friends() {
                           onClick={() => setShowFriendsModal(false)}
                         >
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {friendUser?.avatar_url ? (
-                              <img src={friendUser.avatar_url} alt={currentName} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-xs font-semibold text-white">
-                                {currentName?.charAt(0)?.toUpperCase()}
-                              </span>
-                            )}
+                            {(() => {
+                              const gymMember = allGymMembers.find(m => m.id === friend.friend_id);
+                              return gymMember?.avatar_url ? (
+                                <img src={gymMember.avatar_url} alt={currentName} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-xs font-semibold text-white">
+                                  {currentName?.charAt(0)?.toUpperCase()}
+                                </span>
+                              );
+                            })()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-white text-xs truncate">{currentName}</p>
