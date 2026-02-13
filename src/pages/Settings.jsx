@@ -77,18 +77,21 @@ export default function Settings() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {/* Profile */}
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-base font-semibold text-white">Profile</h3>
-          </div>
+         {/* Profile Button - Full Width */}
+         <Link to={createPageUrl('ProfileSettings')}>
+           <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                 <User className="w-4 h-4 text-white" />
+               </div>
+               <span className="font-semibold text-white">Profile</span>
+             </div>
+             <ChevronRight className="w-5 h-5 text-white/70" />
+           </div>
+         </Link>
 
-          <div className="space-y-3">
-            {/* Profile Picture */}
-             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+         {/* Notifications */}
+         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
                <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
                <div className="flex items-center gap-4">
                  <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
