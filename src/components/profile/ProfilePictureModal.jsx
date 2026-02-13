@@ -6,7 +6,7 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
 
   return (
     <div 
-      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-start justify-center pt-12 p-4"
+      className="fixed inset-0 z-[100] bg-black/40 flex items-start justify-center pt-12 p-4"
       onClick={onClose}
     >
       {/* Close Button */}
@@ -35,11 +35,6 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
             </span>
           </div>
         )}
-      </div>
-
-      {/* User Name */}
-      <div className="absolute top-[420px] md:top-[460px] left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full">
-        <p className="text-white font-semibold text-lg">{userName}</p>
       </div>
     </div>
   );
