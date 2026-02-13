@@ -601,7 +601,7 @@ export default function Friends() {
                   <UserPlus className="w-5 h-5" />
                 </Button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/50 [&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
                 {friends.length === 0 ? (
                   <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 ) : (
