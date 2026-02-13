@@ -153,13 +153,10 @@ export default function ProfileSettings() {
             <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Full Name</Label>
             <Input
               type="text"
-              value={currentUser?.full_name || ''}
+              value={localFullName}
               onChange={(e) => {
                 const newValue = e.target.value;
-                queryClient.setQueryData(['currentUser'], (old) => ({
-                  ...old,
-                  full_name: newValue
-                }));
+                setLocalFullName(newValue);
                 clearTimeout(nameTimeout);
                 setNameTimeout(setTimeout(() => {
                   updateSettingsMutation.mutate({ full_name: newValue });
