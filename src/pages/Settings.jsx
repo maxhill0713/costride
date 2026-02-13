@@ -111,7 +111,7 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-1.5">
          {displayedSettings.map((setting) => {
            const colorMap = {
              'NotificationSettings': { from: 'from-orange-600', to: 'to-red-600', fromHover: 'hover:from-orange-700', toHover: 'hover:to-red-700', icon: Bell },
