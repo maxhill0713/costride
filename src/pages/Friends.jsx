@@ -633,9 +633,14 @@ export default function Friends() {
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
                 {/* Friend Requests */}
-                {friendRequests.filter(req => 
-                  (req.friend_name || req.user_name || '').toLowerCase().includes(friendsSearchQuery.toLowerCase())
-                ).map(request => (
+                {friendRequests.filter(req => {
+                  const requesterUser = allUsers.find(u => u.id === req.user_id);
+                  const displayName = requesterUser?.full_name || req.friend_name || req.user_name || '';
+                  return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
+                }).map(request => {
+                  const requesterUser = allUsers.find(u => u.id === request.user_id);
+                  const currentName = requesterUser?.full_name || request.friend_name || request.user_name;
+                  return (
                   <div
                     key={request.id}
                     className="p-2 rounded-lg bg-blue-700/40 hover:bg-blue-700/60 transition-colors flex items-start justify-between gap-2 border border-blue-500/30"
@@ -643,15 +648,15 @@ export default function Friends() {
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {request.friend_avatar ? (
-                          <img src={request.friend_avatar} alt={request.friend_name} className="w-full h-full object-cover" />
+                          <img src={request.friend_avatar} alt={currentName} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-xs font-semibold text-white">
-                            {(request.friend_name || request.user_name)?.charAt(0)?.toUpperCase()}
+                            {currentName?.charAt(0)?.toUpperCase()}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-xs truncate">{request.friend_name || request.user_name}</p>
+                        <p className="font-semibold text-white text-xs truncate">{currentName}</p>
                         <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
                           Request pending
                         </Badge>
@@ -675,7 +680,8 @@ export default function Friends() {
                       </Button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Friends List */}
                 {friends.length === 0 && friendRequests.length === 0 ? (
