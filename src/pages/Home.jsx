@@ -460,11 +460,11 @@ export default function Home() {
           )}
 
           {/* Community Section */}
-          {memberGym && (
-            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym?.id}`} className="block">
+          {memberGym?.id && (
+            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20 relative h-32 overflow-hidden group">
                 {/* Gym Image Background */}
-                {memberGym.image_url ? (
+                {memberGym?.image_url ? (
                   <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-20 group-hover:opacity-30 transition-opacity" />
