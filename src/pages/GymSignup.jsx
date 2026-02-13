@@ -62,13 +62,22 @@ export default function GymSignup() {
   const startVerification = async () => {
     try {
       setVerifying(true);
+      toast.loading('Creating verification session...');
       const { data } = await base44.functions.invoke('createIdentityVerification');
-      
+
       if (data.url) {
-        window.location.href = data.url;
+        toast.dismiss();
+        toast.success('Redirecting to Stripe...');
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 500);
+      } else {
+        toast.error('No verification URL received');
+        setVerifying(false);
       }
     } catch (error) {
       console.error('Verification error:', error);
+      toast.dismiss();
       toast.error('Failed to start verification');
       setVerifying(false);
     }
