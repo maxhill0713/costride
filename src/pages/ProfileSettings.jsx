@@ -75,14 +75,14 @@ export default function ProfileSettings() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {/* Activity Button */}
-        <Link to={createPageUrl('Activity')}>
-          <div className="px-4 py-3 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl transition-all flex items-center gap-2 cursor-pointer font-medium">
-            <Activity className="w-4 h-4" />
-            View Activity
-          </div>
-        </Link>
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-20">
+         {/* Activity Button */}
+         <Link to={createPageUrl('Activity')}>
+           <div className="px-4 py-3 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl transition-all flex items-center gap-2 cursor-pointer font-medium shadow-lg">
+             <Activity className="w-4 h-4" />
+             View Activity
+           </div>
+         </Link>
         {/* Profile Picture */}
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
           <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
