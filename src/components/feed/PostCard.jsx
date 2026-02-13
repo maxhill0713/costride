@@ -267,8 +267,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         ) : null}
       </div>
 
-      {/* Caption Section - Thin Block */}
-      <div className="px-4 py-0.5 text-sm text-slate-200 relative pb-6 flex items-center">
+      {/* Caption Section - Semi-transparent Overlay */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-0.5 text-sm text-slate-200 backdrop-blur-sm bg-black/40 flex items-center z-10">
         {/* Reactions in Bottom Right */}
         {Object.keys(post.reactions || {}).length > 0 && (
           <button
