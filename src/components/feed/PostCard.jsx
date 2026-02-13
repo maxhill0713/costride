@@ -298,10 +298,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
          </button>
        )}
 
-       {/* Reaction System for Weight Increases & Gym Joins */}
+       {/* Reaction Button for Weight Increases & Gym Joins */}
        {(isWeightIncreasePost || isGymJoinPost) && (
-         <div className="absolute bottom-2 left-4 flex items-center gap-2">
-           {/* Reaction Button */}
+         <div className="absolute bottom-2 left-4">
            <motion.button
              onClick={() => reactMutation.mutate(!hasReacted)}
              disabled={reactMutation.isPending}
@@ -321,30 +320,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
                />
              )}
            </motion.button>
-
-           {/* Reaction Count & Avatars */}
-           {Object.keys(post.reactions || {}).length > 0 && (
-             <div className="flex items-center ml-2">
-               <div className="flex relative h-8">
-                 {Object.entries(post.reactions || {}).slice(0, 3).map(([userId, variant], idx) => (
-                   <div
-                     key={userId}
-                     className="relative"
-                     style={{ marginLeft: idx > 0 ? '-12px' : '0' }}
-                   >
-                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-sm shadow-md border border-white">
-                       {getStreakIcon(variant)}
-                     </div>
-                   </div>
-                 ))}
-               </div>
-               {Object.keys(post.reactions || {}).length > 3 && (
-                 <span className="ml-1 text-xs text-gray-600 font-semibold">
-                   +{Object.keys(post.reactions).length - 3}
-                 </span>
-               )}
-             </div>
-           )}
          </div>
        )}
       </div>
