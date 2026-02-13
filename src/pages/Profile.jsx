@@ -44,6 +44,7 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false);
   const [gridView, setGridView] = useState(false);
   const [selectedGridPost, setSelectedGridPost] = useState(null);
+  const [allowGymRepost, setAllowGymRepost] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
