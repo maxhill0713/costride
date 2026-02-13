@@ -43,6 +43,15 @@ export default function Friends() {
     enabled: !!currentUser
   });
 
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ 
+      friend_id: currentUser.id, 
+      status: 'pending' 
+    }),
+    enabled: !!currentUser
+  });
+
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.entities.User.list(),
