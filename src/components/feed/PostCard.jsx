@@ -256,7 +256,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       )}
 
       {/* Video or Image - Full Size */}
-      <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%]">
+      <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%]" onClick={() => showFullContent && setShowFullContent(false)}>
         {post.video_url ? (
           <video 
             src={post.video_url} 
@@ -266,7 +266,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             preload="metadata"
           />
         ) : post.image_url ? (
-          <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
+          <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />
         ) : null}
       </div>
 
