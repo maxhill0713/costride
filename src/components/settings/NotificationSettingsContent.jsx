@@ -74,7 +74,8 @@ export default function NotificationSettingsContent({ searchQuery = '' }) {
             />
           </div>
         </div>
-      </Card>
-    </div>
-  );
-}
+        </Card>
+        )}
+        </div>
+        );
+        }
