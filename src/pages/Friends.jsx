@@ -434,14 +434,47 @@ export default function Friends() {
 
   const activityCards = generateActivityCards();
 
-  // Filter out dismissed cards (keep activity feed items for 30 minutes)
-  const isItemExpired = (timestamp) => {
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    return new Date(timestamp) < thirtyMinutesAgo;
-  };
+  // Auto-dismiss viewed items after 10 minutes
+  useEffect(() => {
+    const timers = [];
+    
+    viewedItemIds.forEach(itemId => {
+      const viewedTime = viewedTimestamps[itemId];
+      if (viewedTime) {
+        const timeElapsed = Date.now() - viewedTime;
+        const remainingTime = 10 * 60 * 1000 - timeElapsed; // 10 minutes
+        
+        if (remainingTime > 0) {
+          const timer = setTimeout(() => {
+            setDismissedCardIds(prev => new Set(prev).add(itemId));
+          }, remainingTime);
+          timers.push(timer);
+        }
+      }
+    });
+    
+    return () => timers.forEach(timer => clearTimeout(timer));
+  }, [viewedItemIds, viewedTimestamps]);
 
-  // Filter out dismissed cards, keep posts for 30 minutes
-  const filteredActivityFeed = activityFeed.filter((item) => !isItemExpired(item.timestamp));
+  // Mark items as viewed when rendered
+  useEffect(() => {
+    activityFeed.forEach(item => {
+      if (!viewedItemIds.has(item.id)) {
+        setViewedItemIds(prev => new Set(prev).add(item.id));
+        setViewedTimestamps(prev => ({ ...prev, [item.id]: Date.now() }));
+      }
+    });
+    
+    activityCards.forEach(card => {
+      if (!viewedItemIds.has(card.id)) {
+        setViewedItemIds(prev => new Set(prev).add(card.id));
+        setViewedTimestamps(prev => ({ ...prev, [card.id]: Date.now() }));
+      }
+    });
+  }, [activityFeed, activityCards, viewedItemIds]);
+
+  // Filter out dismissed items
+  const filteredActivityFeed = activityFeed.filter((item) => !dismissedCardIds.has(item.id));
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
   return (
