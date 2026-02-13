@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Flame } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Flame, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import CommentModal from './CommentModal';
 import ShareModal from './ShareModal';
