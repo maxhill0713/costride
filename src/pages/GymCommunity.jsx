@@ -145,15 +145,6 @@ export default function GymCommunity() {
     enabled: !!gymId
   });
 
-  const { data: coaches = [] } = useQuery({
-    queryKey: ['coaches', gymId],
-    queryFn: async () => {
-      const allCoaches = await base44.entities.Coach.list();
-      return allCoaches.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
-  });
-
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', gymId],
     queryFn: async () => {
