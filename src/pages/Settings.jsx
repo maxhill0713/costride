@@ -111,7 +111,7 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-3">
          {displayedSettings.map((setting) => {
            const colorMap = {
              'NotificationSettings': { from: 'from-orange-600', to: 'to-red-600', fromHover: 'hover:from-orange-700', toHover: 'hover:to-red-700', icon: Bell },
@@ -127,7 +127,7 @@ export default function Settings() {
            const IconComponent = colors?.icon;
 
            return (
-             <Link key={setting.page} to={createPageUrl(setting.page)}>
+             <Link key={setting.page} to={createPageUrl(setting.page)} className="block pb-2">
                <div className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} ${colors.fromHover} ${colors.toHover} rounded-xl h-10 flex items-center justify-between px-4 transition-all shadow-lg`}>
                  <div className="flex items-center gap-3">
                    <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
