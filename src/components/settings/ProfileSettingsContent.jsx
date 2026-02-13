@@ -62,10 +62,10 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Profile Picture */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-          <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
+      {showAvatar && (
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+            <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
               {currentUser.avatar_url ? (
