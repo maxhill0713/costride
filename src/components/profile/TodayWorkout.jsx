@@ -359,18 +359,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           </div>
         )}
         {alreadyLoggedToday && !isExpanded && (
-          <div className="flex items-center justify-center gap-1.5 py-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(true);
-              }}
-              className="text-[10px] text-green-400 font-medium hover:underline"
-            >
-              Logged
-            </button>
-          </div>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSummary(true);
+            }}
+            size="sm"
+            className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30 rounded-lg"
+          >
+            View Summary
+          </Button>
         )}
 
         </div>
