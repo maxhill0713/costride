@@ -16,6 +16,7 @@ import GymPostCard from '../components/feed/GymPostCard';
 export default function Friends() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [friendsSearchQuery, setFriendsSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
 
