@@ -332,58 +332,58 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Header with Streak */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-1.5">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <button 
-                onClick={() => setShowStreakVariants(true)}
-                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-              >
-                {streakVariant === 'sunglasses' ? (
-                   <div className="relative w-8 h-8">
+          <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
+                <button 
+                  onClick={() => setShowStreakVariants(true)}
+                  className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0"
+                >
+                  {streakVariant === 'sunglasses' ? (
+                     <div className="relative w-8 h-8">
+                       <Flame className="w-8 h-8 text-orange-500 fill-current" />
+                       <svg 
+                         className="absolute inset-0 w-full h-full pointer-events-none"
+                         viewBox="0 0 64 64"
+                       >
+                         <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                         <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                         <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                       </svg>
+                     </div>
+                   ) : streakVariant === 'cowboy' ? (
+                     <div className="relative w-8 h-8">
+                       <Flame className="w-8 h-8 text-orange-500 fill-current" />
+                       <svg 
+                         className="absolute inset-0 w-full h-full pointer-events-none"
+                         viewBox="0 0 64 64"
+                       >
+                         <path 
+                           d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
+                           fill="currentColor" 
+                           className="text-amber-800"
+                         />
+                         <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
+                         <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+                       </svg>
+                     </div>
+                   ) : (
                      <Flame className="w-8 h-8 text-orange-500 fill-current" />
-                     <svg 
-                       className="absolute inset-0 w-full h-full pointer-events-none"
-                       viewBox="0 0 64 64"
-                     >
-                       <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                       <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                       <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                     </svg>
-                   </div>
-                 ) : streakVariant === 'cowboy' ? (
-                   <div className="relative w-8 h-8">
-                     <Flame className="w-8 h-8 text-orange-500 fill-current" />
-                     <svg 
-                       className="absolute inset-0 w-full h-full pointer-events-none"
-                       viewBox="0 0 64 64"
-                     >
-                       <path 
-                         d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
-                         fill="currentColor" 
-                         className="text-amber-800"
-                       />
-                       <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-                       <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
-                     </svg>
-                   </div>
-                 ) : (
-                   <Flame className="w-8 h-8 text-orange-500 fill-current" />
-                 )}
-                 <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
-              </button>
-              <h1 className="text-xl font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
-                CoStride
-              </h1>
-              <Link to={createPageUrl('Friends')} onClick={async () => {
-                if (currentUser) {
-                  await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-                }
-              }}>
-                <div className="relative">
-                  <FriendsIcon className="w-7 h-7 text-cyan-400" />
-                  {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
-                </div>
-              </Link>
-            </div>
+                   )}
+                   <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
+                </button>
+                <h1 className="text-xl font-black text-white tracking-tight">
+                  CoStride
+                </h1>
+                <Link to={createPageUrl('Friends')} onClick={async () => {
+                  if (currentUser) {
+                    await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+                  }
+                }} className="absolute right-0">
+                  <div className="relative">
+                    <FriendsIcon className="w-7 h-7 text-cyan-400" />
+                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+                  </div>
+                </Link>
+              </div>
           </div>
 
         <div className="max-w-4xl mx-auto px-4 py-2 space-y-3">
