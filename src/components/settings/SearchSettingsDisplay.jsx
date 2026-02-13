@@ -6,17 +6,17 @@ import ProfileSettingsContent from './ProfileSettingsContent';
 import AppearanceSettingsContent from './AppearanceSettingsContent';
 import HelpSupportContent from './HelpSupportContent';
 
-export default function SearchSettingsDisplay({ setting, searchQuery }) {
+export default function SearchSettingsDisplay({ setting }) {
   if (!setting) return null;
 
   const componentMap = {
-    'NotificationSettings': <NotificationSettingsContent searchQuery={searchQuery} />,
-    'PrivacySettings': <PrivacySettingsContent searchQuery={searchQuery} />,
-    'AccountSettings': <AccountSettingsContent searchQuery={searchQuery} />,
-    'ProfileSettings': <ProfileSettingsContent searchQuery={searchQuery} />,
-    'AppearanceSettings': <AppearanceSettingsContent searchQuery={searchQuery} />,
+    'NotificationSettings': <NotificationSettingsContent />,
+    'PrivacySettings': <PrivacySettingsContent />,
+    'AccountSettings': <AccountSettingsContent />,
+    'ProfileSettings': <ProfileSettingsContent />,
+    'AppearanceSettings': <AppearanceSettingsContent />,
     'SubscriptionSettings': null,
-    'HelpSupport': <HelpSupportContent searchQuery={searchQuery} />
+    'HelpSupport': <HelpSupportContent />
   };
 
   return (

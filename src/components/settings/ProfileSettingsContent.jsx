@@ -7,18 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
-export default function ProfileSettingsContent({ searchQuery = '' }) {
+export default function ProfileSettingsContent() {
   const queryClient = useQueryClient();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [nameTimeout, setNameTimeout] = useState(null);
   const [bioTimeout, setBioTimeout] = useState(null);
-
-  const query = searchQuery.toLowerCase();
-  const showAvatar = !searchQuery.trim() || query.includes('avatar') || query.includes('picture') || query.includes('photo');
-  const showBanner = !searchQuery.trim() || query.includes('banner') || query.includes('image');
-  const showName = !searchQuery.trim() || query.includes('name');
-  const showBio = !searchQuery.trim() || query.includes('bio');
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
@@ -62,10 +56,10 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
 
   return (
     <div className="space-y-4 pb-20">
-      {showAvatar && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
+      {/* Profile Picture */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
               {currentUser.avatar_url ? (
@@ -92,14 +86,13 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
               </div>
             </label>
           </div>
-          </div>
-          </Card>
-          )}
+        </div>
+      </Card>
 
-          {showBanner && (
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <Label className="text-sm font-bold text-slate-100 block mb-3">Banner Image</Label>
+      {/* Banner Image */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <Label className="text-sm font-bold text-slate-100 block mb-3">Banner Image</Label>
           <div className="flex items-center gap-3">
             {currentUser.hero_image_url && (
               <div className="rounded-xl overflow-hidden h-16 w-24 flex-shrink-0">
@@ -122,14 +115,13 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
               </div>
             </label>
           </div>
-          </div>
-          </Card>
-          )}
+        </div>
+      </Card>
 
-          {showName && (
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Full Name</Label>
+      {/* Full Name */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Full Name</Label>
           <Input
             type="text"
             value={currentUser?.full_name || ''}
@@ -147,14 +139,13 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
             placeholder="Your full name"
             className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
           />
-          </div>
-          </Card>
-          )}
+        </div>
+      </Card>
 
-          {showBio && (
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
+      {/* Bio */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
           <Textarea
             value={currentUser?.bio || ''}
             onChange={(e) => {
@@ -173,8 +164,7 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
             className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
           />
         </div>
-        </Card>
-        )}
-        </div>
-        );
-        }
+      </Card>
+    </div>
+  );
+}

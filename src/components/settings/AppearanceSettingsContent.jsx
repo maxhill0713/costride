@@ -7,12 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MobileSelect } from '@/components/ui/mobile-select';
 
-export default function AppearanceSettingsContent({ searchQuery = '' }) {
+export default function AppearanceSettingsContent() {
   const queryClient = useQueryClient();
-  const query = searchQuery.toLowerCase();
-  const showTheme = !searchQuery.trim() || query.includes('dark') || query.includes('mode') || query.includes('theme');
-  const showUnit = !searchQuery.trim() || query.includes('unit') || query.includes('metric') || query.includes('imperial');
-  const showLanguage = !searchQuery.trim() || query.includes('language');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -37,7 +33,7 @@ export default function AppearanceSettingsContent({ searchQuery = '' }) {
 
   return (
     <div className="space-y-4 pb-20">
-      {showTheme && (
+      {/* Dark Mode */}
       <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center justify-between">
@@ -60,11 +56,10 @@ export default function AppearanceSettingsContent({ searchQuery = '' }) {
             />
           </div>
         </div>
-        </Card>
-        )}
+      </Card>
 
-        {showUnit && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+      {/* Unit System */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center gap-3 mb-3">
             <Ruler className="w-5 h-5 text-cyan-400" />
@@ -81,11 +76,10 @@ export default function AppearanceSettingsContent({ searchQuery = '' }) {
             ]}
           />
         </div>
-        </Card>
-        )}
+      </Card>
 
-        {showLanguage && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+      {/* Language */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center gap-3 mb-3">
             <Globe className="w-5 h-5 text-green-400" />
@@ -104,8 +98,7 @@ export default function AppearanceSettingsContent({ searchQuery = '' }) {
             ]}
           />
         </div>
-        </Card>
-        )}
-        </div>
-        );
-        }
+      </Card>
+    </div>
+  );
+}

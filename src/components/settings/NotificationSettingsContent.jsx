@@ -6,11 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
-export default function NotificationSettingsContent({ searchQuery = '' }) {
+export default function NotificationSettingsContent() {
   const queryClient = useQueryClient();
-  const query = searchQuery.toLowerCase();
-  const showPush = !searchQuery.trim() || query.includes('push') || query.includes('notification');
-  const showEmail = !searchQuery.trim() || query.includes('email') || query.includes('notification');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -33,8 +30,8 @@ export default function NotificationSettingsContent({ searchQuery = '' }) {
 
   return (
     <div className="space-y-4 pb-20">
-      {showPush && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+      {/* Push Notifications */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -52,11 +49,10 @@ export default function NotificationSettingsContent({ searchQuery = '' }) {
             />
           </div>
         </div>
-        </Card>
-        )}
+      </Card>
 
-        {showEmail && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+      {/* Email Notifications */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -74,8 +70,7 @@ export default function NotificationSettingsContent({ searchQuery = '' }) {
             />
           </div>
         </div>
-        </Card>
-        )}
-        </div>
-        );
-        }
+      </Card>
+    </div>
+  );
+}

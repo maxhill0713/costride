@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
-export default function PrivacySettingsContent({ searchQuery = '' }) {
+export default function PrivacySettingsContent() {
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({

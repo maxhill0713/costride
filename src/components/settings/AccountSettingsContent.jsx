@@ -6,14 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
-export default function AccountSettingsContent({ searchQuery = '' }) {
+export default function AccountSettingsContent() {
   const queryClient = useQueryClient();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  const showEmail = !searchQuery.trim() || searchQuery.toLowerCase().includes('email');
-  const showPassword = !searchQuery.trim() || searchQuery.toLowerCase().includes('password');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -48,23 +45,22 @@ export default function AccountSettingsContent({ searchQuery = '' }) {
 
   return (
     <div className="space-y-4 pb-20">
-      {showEmail && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
-            <Input
-              type="email"
-              value={currentUser.email || ''}
-              disabled
-              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl disabled:opacity-75"
-            />
-            <p className="text-xs text-slate-500 mt-2">Email cannot be changed</p>
-          </div>
-        </Card>
-      )}
+      {/* Email */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Email Address</Label>
+          <Input
+            type="email"
+            value={currentUser.email || ''}
+            disabled
+            className="bg-white/5 border border-white/10 text-slate-100 rounded-xl disabled:opacity-75"
+          />
+          <p className="text-xs text-slate-500 mt-2">Email cannot be changed</p>
+        </div>
+      </Card>
 
-      {showPassword && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+      {/* Change Password */}
+      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <Label className="text-xs font-bold text-slate-400 uppercase mb-4 block">Change Password</Label>
           <form onSubmit={handleChangePassword} className="space-y-3">
@@ -107,8 +103,7 @@ export default function AccountSettingsContent({ searchQuery = '' }) {
             </Button>
           </form>
         </div>
-        </Card>
-      )}
+      </Card>
     </div>
   );
 }
