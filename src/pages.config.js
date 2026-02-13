@@ -78,6 +78,7 @@ import ProfileSettings from './pages/ProfileSettings';
 import AccountSettings from './pages/AccountSettings';
 import NotificationSettings from './pages/NotificationSettings';
 import PrivacySettings from './pages/PrivacySettings';
+import AppearanceSettings from './pages/AppearanceSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -113,6 +114,7 @@ export const PAGES = {
     "AccountSettings": AccountSettings,
     "NotificationSettings": NotificationSettings,
     "PrivacySettings": PrivacySettings,
+    "AppearanceSettings": AppearanceSettings,
 }
 
 export const pagesConfig = {
