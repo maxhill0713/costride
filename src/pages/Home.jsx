@@ -478,11 +478,11 @@ export default function Home() {
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20 relative h-32 overflow-hidden group">
                 {/* Gym Image Background */}
                 {memberGym?.image_url ? (
-                  <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity" />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-20 group-hover:opacity-30 transition-opacity" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                   <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-60 transition-opacity" />
+                 ) : (
+                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-35 group-hover:opacity-45 transition-opacity" />
+                 )}
+                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
                 
                 <div className="relative p-4 h-full flex flex-col justify-between">
                   <div>
