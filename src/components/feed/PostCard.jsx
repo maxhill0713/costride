@@ -312,7 +312,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               ))}
               </button>
               )}
-       <p className="leading-snug">{post.content}</p>
+              <p className="leading-snug">{post.content}</p>
        {post.weight && (
           <span className="block mt-1 text-blue-400 font-semibold">
             💪 {post.weight} lbs
