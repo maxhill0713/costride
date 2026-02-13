@@ -419,7 +419,7 @@ export default function Friends() {
           <div className="flex items-center justify-between">
             <Link to={createPageUrl('Home')} className="absolute left-4 top-6 z-20">
               <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
-                <ArrowLeft className="w-7 h-7" />
+                <ChevronLeft className="w-7 h-7" />
               </button>
             </Link>
             <h1 className="text-xl font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
