@@ -1,27 +1,26 @@
 import React from 'react';
-import NotificationSettings from '@/pages/NotificationSettings';
-import PrivacySettings from '@/pages/PrivacySettings';
-import AccountSettings from '@/pages/AccountSettings';
-import ProfileSettings from '@/pages/ProfileSettings';
-import AppearanceSettings from '@/pages/AppearanceSettings';
-import SubscriptionSettings from '@/pages/SubscriptionSettings';
-import HelpSupport from '@/pages/HelpSupport';
+import NotificationSettingsContent from './NotificationSettingsContent';
+import PrivacySettingsContent from './PrivacySettingsContent';
+import AccountSettingsContent from './AccountSettingsContent';
+import ProfileSettingsContent from './ProfileSettingsContent';
+import AppearanceSettingsContent from './AppearanceSettingsContent';
+import HelpSupportContent from './HelpSupportContent';
 
 export default function SearchSettingsDisplay({ setting }) {
   if (!setting) return null;
 
   const componentMap = {
-    'NotificationSettings': <NotificationSettings />,
-    'PrivacySettings': <PrivacySettings />,
-    'AccountSettings': <AccountSettings />,
-    'ProfileSettings': <ProfileSettings />,
-    'AppearanceSettings': <AppearanceSettings />,
-    'SubscriptionSettings': <SubscriptionSettings />,
-    'HelpSupport': <HelpSupport />
+    'NotificationSettings': <NotificationSettingsContent />,
+    'PrivacySettings': <PrivacySettingsContent />,
+    'AccountSettings': <AccountSettingsContent />,
+    'ProfileSettings': <ProfileSettingsContent />,
+    'AppearanceSettings': <AppearanceSettingsContent />,
+    'SubscriptionSettings': null,
+    'HelpSupport': <HelpSupportContent />
   };
 
   return (
-    <div className="mb-6">
+    <div className="mb-6 max-w-2xl mx-auto px-4 py-6">
       {componentMap[setting.page]}
     </div>
   );
