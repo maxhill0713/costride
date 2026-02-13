@@ -491,7 +491,7 @@ export default function Home() {
                     <p className="text-slate-300 text-xs mt-0.5 font-medium">{memberGym.name}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-300 font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} people checked in` : '3 people checked in'}</span>
+                    <span className="text-xs text-slate-300 font-medium">{todayCheckIns.length > 0 ? `${todayCheckIns.length} members training today—join them` : 'Members training together daily'}</span>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center -space-x-2">
                         {(checkInUsers.length > 0 ? checkInUsers : [
