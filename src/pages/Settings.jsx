@@ -76,7 +76,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
          {/* Notifications Button - Full Width */}
          <Link to={createPageUrl('NotificationSettings')}>
            <div className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
