@@ -697,22 +697,14 @@ export default function Profile() {
               ) : (
                 <div className="space-y-3">
                   {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).map((post) => (
-                    <Card key={post.id} className="bg-slate-800/40 border border-slate-600/40 rounded-xl overflow-hidden">
-                      {post.image_url && (
-                        <img src={post.image_url} alt="" className="w-full h-48 object-cover" />
-                      )}
-                      {post.video_url && (
-                        <video src={post.video_url} controls className="w-full h-64 bg-black" />
-                      )}
-                      <div className="p-4">
-                        <p className="text-sm text-slate-200 mb-3">{post.content}</p>
-                        <div className="flex items-center gap-4 text-xs text-slate-400">
-                          <span>❤️ {post.likes || 0}</span>
-                          <span>💬 {post.comments?.length || 0}</span>
-                          <span className="ml-auto">{new Date(post.created_date).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </Card>
+                    <PostCard 
+                      key={post.id} 
+                      post={post}
+                      onLike={() => {}}
+                      onComment={() => {}}
+                      onSave={() => {}}
+                      onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                    />
                   ))}
                 </div>
               )}
