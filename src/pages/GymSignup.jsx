@@ -524,9 +524,9 @@ export default function GymSignup() {
 
     try {
       const response = await base44.functions.invoke('searchGymsPlaces', { 
-        query,
-        type: 'gym' 
+        query
       });
+      console.log('Places response:', response.data);
       setPlaceSuggestions(response.data.places || []);
     } catch (error) {
       console.error('Error searching places:', error);
