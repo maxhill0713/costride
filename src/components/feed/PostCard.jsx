@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function PostCard({ post, onLike, onComment, onSave, onDelete }) {
   const [reacted, setReacted] = useState(false);
