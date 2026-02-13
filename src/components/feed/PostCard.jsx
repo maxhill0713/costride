@@ -220,30 +220,33 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               <MoreHorizontal className="w-6 h-6" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
-                <button
-                  onClick={() => {
-                    setShowFavouriteConfirm(true);
-                    setShowMenu(false);
-                  }}
-                  disabled={updatePostMutation.isPending}
-                  className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50"
-                >
-                  <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
-                  {post.is_favourite ? 'Unfavourite' : 'Favourite'}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowDeleteConfirm(true);
-                    setShowMenu(false);
-                  }}
-                  disabled={deleteMutation.isPending}
-                  className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
-              </div>
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
+                  <button
+                    onClick={() => {
+                      setShowFavouriteConfirm(true);
+                      setShowMenu(false);
+                    }}
+                    disabled={updatePostMutation.isPending}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50"
+                  >
+                    <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
+                    {post.is_favourite ? 'Unfavourite' : 'Favourite'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(true);
+                      setShowMenu(false);
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
