@@ -1005,8 +1005,8 @@ export default function Profile() {
 
               <Button
                 onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo })}
-                disabled={!postContent.trim() || createPostMutation.isPending}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold"
+                disabled={!postContent.trim() || (!postImage && !postVideo) || createPostMutation.isPending}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold disabled:opacity-50"
               >
                 {createPostMutation.isPending ? 'Posting...' : 'Post'}
               </Button>
