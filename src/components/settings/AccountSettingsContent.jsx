@@ -107,7 +107,8 @@ export default function AccountSettingsContent({ searchQuery = '' }) {
             </Button>
           </form>
         </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 }
