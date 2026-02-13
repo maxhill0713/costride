@@ -486,7 +486,7 @@ export default function Profile() {
       </div>
 
       {/* Main Content Section */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="flex w-full bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 p-1 rounded-xl gap-1 mb-4">
