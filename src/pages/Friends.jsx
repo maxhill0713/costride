@@ -417,14 +417,10 @@ export default function Friends() {
       <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between">
-            <Link to={createPageUrl('Home')} className="absolute left-4 top-6">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-xl"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
+            <Link to={createPageUrl('Home')} className="absolute left-4 top-6 z-20">
+              <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+                <ArrowLeft className="w-7 h-7" />
+              </button>
             </Link>
             <h1 className="text-xl font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
               Friend Activity
