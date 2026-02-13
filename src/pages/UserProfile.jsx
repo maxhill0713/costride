@@ -101,6 +101,9 @@ export default function UserProfile() {
   }
 
   const isOwnProfile = currentUser?.id === userId;
+  const isPrivate = viewingUser?.is_private && !isOwnProfile;
+  const isFriend = friendshipStatus?.status === 'accepted';
+  const shouldHideContent = isPrivate && !isFriend;
 
   // Calculate stats
   const totalLifts = lifts.length;
