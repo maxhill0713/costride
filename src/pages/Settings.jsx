@@ -114,7 +114,7 @@ export default function Settings() {
 
         <div className="space-y-1.5">
          {searchQuery.trim() && displayedSettings.length > 0 ? (
-           <SearchSettingsDisplay setting={displayedSettings[0]} />
+           <SearchSettingsDisplay setting={displayedSettings[0]} searchQuery={searchQuery} />
          ) : (
            displayedSettings.map((setting) => {
              const iconMap = {
