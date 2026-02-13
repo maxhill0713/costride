@@ -88,8 +88,13 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       queryClient.setQueryData(['allCheckIns', currentUser?.id], context.previousAllCheckIns);
     },
     onSuccess: async (newCheckIn) => {
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+       setShowSuccess(true);
+       setTimeout(() => setShowSuccess(false), 3000);
+
+       // Trigger workout start timer
+       if (onCheckInSuccess) {
+         onCheckInSuccess();
+       }
       
       // Epic confetti for every check-in
       confetti({ 
