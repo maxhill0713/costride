@@ -683,29 +683,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       {/* Modals */}
       <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
       <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
-
-      <AlertDialog open={showLogConfirm} onOpenChange={setShowLogConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Log Workout?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to log this workout as completed?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                logWorkoutMutation.mutate();
-                setShowLogConfirm(false);
-              }}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-              >
-              Yes, Log It
-              </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      
+      <WorkoutSummaryModal 
+        isOpen={showSummary} 
+        duration={workoutDuration * 1000}
+        onConfirm={() => logWorkoutMutation.mutate()}
+        onCancel={() => setShowSummary(false)}
+        isLoading={logWorkoutMutation.isPending}
+      />
       </Card>
       );
       }
