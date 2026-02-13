@@ -389,17 +389,20 @@ export default function Settings() {
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-white">⚠️ Delete Account?</AlertDialogTitle>
                     <AlertDialogDescription className="text-slate-300">
-                      This will permanently delete your account and all your data including check-ins, posts, and progress. This action cannot be undone.
+                      This will permanently delete your account and all your data including check-ins, posts, progress{currentUser.account_type === 'gym_owner' ? ', and all gyms you own' : ''}. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
-                      onClick={() => {
-                        base44.entities.User.delete(currentUser.id).then(() => {
+                      onClick={async () => {
+                        try {
+                          await base44.functions.invoke('deleteUserAccount');
                           base44.auth.logout();
-                        });
+                        } catch (error) {
+                          console.error('Failed to delete account:', error);
+                        }
                       }}
                     >
                       Delete Permanently
