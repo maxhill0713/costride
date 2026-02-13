@@ -681,7 +681,7 @@ export default function Profile() {
                  Create Post
                </Button>
 
-               {userPosts.filter(post => post.content || post.image_url || post.video_url).length === 0 ? (
+               {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
                 <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                   <div className="max-w-sm mx-auto">
                     <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
