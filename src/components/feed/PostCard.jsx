@@ -178,7 +178,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
       {/* Delete Menu */}
       {isOwner && (
         <div className="absolute top-3 right-3 z-20">
-          <div className="relative">
+          <div className="relative flex items-center gap-2">
+            {post.is_favourite && (
+              <div className="text-amber-400 animate-pulse">
+                <Star className="w-5 h-5 fill-amber-400" />
+              </div>
+            )}
             <button 
               onClick={() => setShowMenu(!showMenu)}
               className="text-slate-300 hover:text-white bg-slate-800/60 rounded-full p-2 shadow-lg border border-slate-700/40"
