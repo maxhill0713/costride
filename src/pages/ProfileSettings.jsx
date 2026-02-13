@@ -45,9 +45,9 @@ export default function ProfileSettings() {
       return base44.auth.me();
     },
     onSuccess: (updatedUser) => {
-      queryClient.setQueryData?.(['currentUser'], updatedUser);
-      queryClient.invalidateQueries?.({ queryKey: ['currentUser'] });
-      queryClient.invalidateQueries?.({ queryKey: ['user'] });
+      queryClient.setQueryData(['currentUser'], updatedUser);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
     }
   });
 
