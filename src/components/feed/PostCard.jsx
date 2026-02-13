@@ -271,10 +271,14 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       </div>
 
       {/* Caption Section */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 py-2.5 text-sm text-slate-200 flex items-center z-10 justify-between gap-3">
+      <div className={`absolute left-0 right-0 px-4 z-10 transition-all duration-300 ${
+        showFullContent 
+          ? 'bottom-0 top-0 py-6 flex items-center bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent' 
+          : 'bottom-0 py-2.5'
+      } flex justify-between gap-3`}>
         <div className="flex-1">
-          <p className="leading-snug">
-            {post.content && post.content.length > 30 ? (
+          <p className={`leading-snug text-sm text-slate-200 ${showFullContent ? 'text-base' : ''}`}>
+            {post.content && post.content.length > 30 && !showFullContent ? (
               <>
                 {post.content.substring(0, 30)}...{' '}
                 <button
