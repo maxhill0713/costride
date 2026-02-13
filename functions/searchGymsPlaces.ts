@@ -23,7 +23,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    // Use new Places API (Text Search)
     const url = 'https://places.googleapis.com/v1/places:searchText';
     
     const response = await fetch(url, {
@@ -39,25 +38,22 @@ Deno.serve(async (req) => {
       })
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      console.error('Google Places API error:', data);
+      const errorData = await response.json();
+      console.error('Places API error:', errorData);
       return Response.json({ places: [] });
     }
 
-    // Format results from new API
+    const data = await response.json();
+
     const places = (data.places || []).map(place => {
       let photoUrl = null;
       
-      // Get first photo if available
       if (place.photos && place.photos.length > 0) {
         const photoName = place.photos[0].name;
-        // Construct photo URL
         photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
       }
 
-      // Extract city and postcode from address
       const addressParts = place.formattedAddress?.split(', ') || [];
       const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : '';
       const postcode = addressParts.length >= 1 ? addressParts[addressParts.length - 1] : '';
