@@ -306,10 +306,23 @@ export default function Home() {
   const goalsComplete = goals.length === 0 || goalsOnTrack >= goals.length * 0.5;
   const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
   const totalCount = goals.length > 0 ? 2 : 1;
-  
+
   const isOnTrack = completedCount === totalCount;
   const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
   const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
+
+  // Dynamic community card text that changes daily
+  const getCommunityText = () => {
+    const dayOfMonth = new Date().getDate();
+    const messages = [
+      `Join ${todayCheckIns.length} other${todayCheckIns.length === 1 ? '' : 's'} training today`,
+      `${todayCheckIns.length} members crushing it right now`,
+      `See who's at the gym today—${todayCheckIns.length} members active`,
+      `${todayCheckIns.length} gym warriors training today`,
+      `Join ${todayCheckIns.length} member${todayCheckIns.length === 1 ? '' : 's'} on the floor`
+    ];
+    return todayCheckIns.length > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
+  };
 
   return (
     <PullToRefresh onRefresh={async () => {
