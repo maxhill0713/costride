@@ -75,6 +75,7 @@ import Search from './pages/Search';
 import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
 import ProfileSettings from './pages/ProfileSettings';
+import AccountSettings from './pages/AccountSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +108,7 @@ export const PAGES = {
     "Settings": Settings,
     "UserProfile": UserProfile,
     "ProfileSettings": ProfileSettings,
+    "AccountSettings": AccountSettings,
 }
 
 export const pagesConfig = {
