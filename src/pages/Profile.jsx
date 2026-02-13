@@ -673,6 +673,28 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
+               {/* Favourite Posts Section */}
+               {userPosts.filter(post => post.is_favourite && (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length > 0 && (
+                 <Card className="bg-gradient-to-br from-amber-900/30 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-amber-500/40 p-5 rounded-2xl shadow-2xl shadow-black/20">
+                   <div className="flex items-center gap-2 mb-4">
+                     <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                     <h3 className="text-sm font-bold text-amber-300">Your Favourite Post</h3>
+                   </div>
+                   <div className="space-y-3">
+                     {userPosts.filter(post => post.is_favourite && (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).map((post) => (
+                       <PostCard 
+                         key={post.id} 
+                         post={post}
+                         onLike={() => {}}
+                         onComment={() => {}}
+                         onSave={() => {}}
+                         onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                       />
+                     ))}
+                   </div>
+                 </Card>
+               )}
+
                {/* Create Post Button */}
                <Button
                  onClick={() => setShowCreatePost(true)}
