@@ -515,6 +515,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </div>
           )}
 
+          {/* Summary Button - Show after logged */}
+          {isExpanded && alreadyLoggedToday && (
+            <Button
+              onClick={() => setShowSummary(true)}
+              size="sm"
+              className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30 rounded-lg"
+            >
+              View Summary
+            </Button>
+          )}
+
           {/* Rest Timer & Tools */}
           <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
             {/* Timer Section */}
