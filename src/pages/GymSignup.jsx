@@ -26,6 +26,7 @@ export default function GymSignup() {
   const [ghostGym, setGhostGym] = useState(null);
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
   const [checkingGhostGym, setCheckingGhostGym] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -57,6 +58,21 @@ export default function GymSignup() {
   React.useEffect(() => {
     refetchUser();
   }, []);
+
+  const startVerification = async () => {
+    try {
+      setVerifying(true);
+      const { data } = await base44.functions.invoke('createIdentityVerification');
+      
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      toast.error('Failed to start verification');
+      setVerifying(false);
+    }
+  };
 
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
@@ -156,6 +172,13 @@ export default function GymSignup() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if user is verified before submission
+    if (!currentUser?.identity_verified) {
+      toast.error('Please verify your identity first');
+      return;
+    }
+    
     createGymMutation.mutate(formData);
   };
 
@@ -909,6 +932,22 @@ export default function GymSignup() {
                 </div>
               </div>
 
+              {!currentUser?.identity_verified && (
+                <div className="mb-4 p-4 bg-amber-500/20 border-2 border-amber-500/50 rounded-2xl">
+                  <p className="text-amber-200 text-sm mb-3">
+                    <strong>Identity Verification Required:</strong> To register your gym, you must verify your identity through Stripe. This ensures all gyms on our platform are legitimate.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={startVerification}
+                    disabled={verifying}
+                    className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl"
+                  >
+                    {verifying ? 'Starting Verification...' : 'Verify My Identity'}
+                  </Button>
+                </div>
+              )}
+
               <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
@@ -919,13 +958,15 @@ export default function GymSignup() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={createGymMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12"
+                  disabled={createGymMutation.isPending || !currentUser?.identity_verified}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-2xl h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {createGymMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
+                  ) : currentUser?.identity_verified ? (
                     'Register Gym'
+                  ) : (
+                    'Complete Verification First'
                   )}
                 </Button>
               </div>

@@ -123,6 +123,25 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case 'identity.verification_session.verified': {
+        const session = event.data.object;
+        const userId = session.metadata.user_id;
+        
+        if (userId) {
+          await base44.asServiceRole.entities.User.update(userId, {
+            identity_verified: true,
+            identity_verification_session_id: session.id
+          });
+          console.log('Identity verified for user:', userId);
+        }
+        break;
+      }
+
+      case 'identity.verification_session.requires_input':
+      case 'identity.verification_session.processing':
+        console.log('Identity verification status:', event.type);
+        break;
+
       default:
         console.log('Unhandled event type:', event.type);
     }
