@@ -51,6 +51,7 @@ import AddGym from './pages/AddGym';
 import AdminGyms from './pages/AdminGyms';
 import BrandDiscounts from './pages/BrandDiscounts';
 import ClaimGym from './pages/ClaimGym';
+import Friends from './pages/Friends';
 import GymCommunity from './pages/GymCommunity';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymRequests from './pages/GymRequests';
@@ -73,7 +74,6 @@ import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
-import Friends from './pages/Friends';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +82,7 @@ export const PAGES = {
     "AdminGyms": AdminGyms,
     "BrandDiscounts": BrandDiscounts,
     "ClaimGym": ClaimGym,
+    "Friends": Friends,
     "GymCommunity": GymCommunity,
     "GymOwnerDashboard": GymOwnerDashboard,
     "GymRequests": GymRequests,
@@ -104,7 +105,6 @@ export const PAGES = {
     "Search": Search,
     "Settings": Settings,
     "UserProfile": UserProfile,
-    "Friends": Friends,
 }
 
 export const pagesConfig = {
