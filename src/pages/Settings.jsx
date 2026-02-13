@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MobileSelect } from '@/components/ui/mobile-select';
+import SearchSettingsDisplay from '@/components/settings/SearchSettingsDisplay';
 
 export default function Settings() {
   const queryClient = useQueryClient();
