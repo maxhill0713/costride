@@ -147,13 +147,14 @@ export default function ProfileSettingsContent({ searchQuery = '' }) {
             placeholder="Your full name"
             className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
           />
-        </div>
-      </Card>
+          </div>
+          </Card>
+          )}
 
-      {/* Bio */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-          <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
+          {showBio && (
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+            <Label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Bio</Label>
           <Textarea
             value={currentUser?.bio || ''}
             onChange={(e) => {
