@@ -487,7 +487,7 @@ export default function Home() {
                 
                 <div className="relative p-4 h-full flex flex-col justify-between">
                   <div>
-                    <p className="text-white font-semibold text-sm tracking-tight">Community</p>
+                    <p className="text-white font-semibold text-sm tracking-tight">Your Gym Community</p>
                     <p className="text-slate-300 text-xs mt-0.5 font-medium">{memberGym.name}</p>
                   </div>
                   <div className="flex items-center justify-between">
