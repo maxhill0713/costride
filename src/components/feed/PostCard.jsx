@@ -369,7 +369,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
                : 'This post will appear as your favourite on your profile for others to see.'}
            </AlertDialogDescription>
          </AlertDialogHeader>
-         <div className="flex gap-3 justify-end">
+         <div className="flex gap-3 justify-center">
            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
            <AlertDialogAction
              onClick={() => {
