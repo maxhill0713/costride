@@ -545,6 +545,12 @@ export default function GymSignup() {
           postcode: place.postcode || ''
         }));
       }
+
+      // Check email verification if email is already entered
+      if (formData.email && place.website) {
+        const status = verifyEmailDomain(formData.email, place.website);
+        setEmailVerificationStatus(status);
+      }
     } catch (error) {
       console.error('Error checking for ghost gym:', error);
       // If check fails, proceed with creating official gym
@@ -669,15 +675,37 @@ export default function GymSignup() {
               
               <div className="space-y-4">
                 <div>
-                  <Label className="text-white font-semibold">Email *</Label>
+                  <Label className="text-white font-semibold">Work Email *</Label>
                   <Input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="owner@gym.com"
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    placeholder="manager@yourgym.com"
                     required
                     className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
                   />
+                  <p className="text-xs text-slate-400 mt-1">Use your gym's domain email for instant verification</p>
+
+                  {emailVerificationStatus === 'verified' && (
+                    <div className="mt-2 p-2.5 bg-green-500/20 border border-green-500/40 rounded-lg flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                      <p className="text-xs text-green-300 font-medium">✓ Email verified! Domain matches gym website.</p>
+                    </div>
+                  )}
+
+                  {emailVerificationStatus === 'manual_review' && (
+                    <div className="mt-2 p-3 bg-amber-500/20 border border-amber-500/40 rounded-lg">
+                      <div className="flex items-start gap-2 mb-2">
+                        <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-amber-300 font-semibold">Manual Review Required</p>
+                          <p className="text-xs text-amber-200 mt-1">
+                            Since you're using a personal email, we'll need 24 hours to verify ownership. You can still complete signup and we'll notify you once approved.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
