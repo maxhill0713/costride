@@ -325,14 +325,19 @@ export default function Friends() {
       }
     });
 
-    // Add notifications
+    // Add notifications (exclude gym official request notifications)
     notifications.forEach(notification => {
       const daysSince = differenceInDays(new Date(), new Date(notification.created_date));
-      if (daysSince <= 7) {
+      const message = notification.message || notification.title || '';
+      const isGymOfficialRequest = message.toLowerCase().includes('gym official') || 
+                                    message.toLowerCase().includes('official request') ||
+                                    notification.type === 'gym_official_request';
+      
+      if (daysSince <= 7 && !isGymOfficialRequest) {
         activities.push({
           id: `notification-${notification.id}`,
           type: 'notification',
-          message: notification.message || notification.title,
+          message: message,
           timestamp: new Date(notification.created_date)
         });
       }
