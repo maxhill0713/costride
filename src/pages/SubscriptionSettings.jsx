@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 
 export default function SubscriptionSettings() {
@@ -11,8 +11,8 @@ export default function SubscriptionSettings() {
       <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-slate-700/60 transition-colors active:scale-95">
-              <ArrowLeft className="w-5 h-5 text-slate-300" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-slate-700/60 transition-colors active:scale-95 text-2xl font-light text-slate-300">
+              &lt;
             </div>
           </Link>
           <h1 className="text-xl font-bold text-white">Subscriptions</h1>
