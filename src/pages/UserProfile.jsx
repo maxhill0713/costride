@@ -368,6 +368,13 @@ export default function UserProfile() {
           )}
         </Card>
       </div>
+
+      <ProfilePictureModal
+        isOpen={showProfilePicture}
+        onClose={() => setShowProfilePicture(false)}
+        imageUrl={viewingUser?.avatar_url}
+        userName={viewingUser?.full_name}
+      />
     </div>
   );
 }
