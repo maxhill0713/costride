@@ -335,22 +335,22 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-       <AlertDialogContent>
+       <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
          <AlertDialogHeader>
-           <AlertDialogTitle>Delete Post?</AlertDialogTitle>
-           <AlertDialogDescription>
+           <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
+           <AlertDialogDescription className="text-slate-300">
              Are you sure you want to delete your post? This action cannot be undone.
            </AlertDialogDescription>
          </AlertDialogHeader>
          <div className="flex gap-3 justify-end">
-           <AlertDialogCancel>Cancel</AlertDialogCancel>
+           <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
            <AlertDialogAction
              onClick={() => {
                deleteMutation.mutate();
                setShowDeleteConfirm(false);
              }}
              disabled={deleteMutation.isPending}
-             className="bg-red-600 hover:bg-red-700"
+             className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50"
            >
              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
            </AlertDialogAction>
