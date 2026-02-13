@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut, User, Camera, Image } from 'lucide-react';
+import { ArrowLeft, Bell, BellOff, Moon, Sun, Lock, Globe, Ruler, LogOut, User, Camera, Image, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
