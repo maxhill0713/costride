@@ -426,83 +426,87 @@ export default function Friends() {
               Friend Activity
             </h1>
             
-            {/* Friends Dropdown in Header */}
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <button
-                  onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
-                >
-                  <Users className="w-4 h-4" />
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFriendsDropdown ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {showFriendsDropdown && (
-                  <div className="absolute -right-2 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-[9999]">
-                    <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
-                      {friends.length === 0 ? (
-                        <p className="text-center text-slate-400 text-sm py-4">No friends yet</p>
-                      ) : (
-                        friendsWithActivity.map(friend => {
-                          const { activity } = friend;
-                          return (
-                            <div
-                              key={friend.id}
-                              className="p-3 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
-                            >
-                              <Link 
-                                to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
-                                className="flex items-center gap-2 flex-1 min-w-0"
-                              >
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
-                                  {friend.friend_avatar ? (
-                                    <img src={friend.friend_avatar} alt={friend.friend_name} className="w-full h-full object-cover rounded-lg" />
-                                  ) : (
-                                    <span className="text-xs font-semibold text-white">
-                                      {friend.friend_name?.charAt(0)?.toUpperCase()}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-semibold text-white text-xs truncate">{friend.friend_name}</p>
-                                  {activity.daysSinceCheckIn === 0 && (
-                                    <Badge className="bg-green-500/20 text-green-300 border-green-500/40 text-[10px] mt-1">
-                                      Checked in
-                                    </Badge>
-                                  )}
-                                  {activity.streak >= 7 && (
-                                    <div className="flex items-center gap-0.5 mt-0.5">
-                                      <Flame className="w-2 h-2 text-orange-400" />
-                                      <span className="text-[10px] text-orange-300">{activity.streak}d</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeFriendMutation.mutate(friend.friend_id)}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0"
-                              >
-                                <UserMinus className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                onClick={() => setShowAddModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
-                size="sm"
+            {/* Friends Button with Count */}
+            <div className="relative">
+              <button
+                onClick={() => setShowFriendsDropdown(!showFriendsDropdown)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600 hover:border-blue-500/50 transition-all text-white"
               >
-                <UserPlus className="w-4 h-4" />
-              </Button>
+                <span className="text-sm font-semibold">{friends.length}</span>
+                <Users className="w-4 h-4" />
+                <span className="text-sm font-medium">Friends</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFriendsDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Friends Dropdown Menu */}
+              {showFriendsDropdown && (
+                <div className="absolute -right-2 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-[9999]">
+                  <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
+                    {friends.length === 0 ? (
+                      <p className="text-center text-slate-400 text-sm py-4">No friends yet</p>
+                    ) : (
+                      friendsWithActivity.map(friend => {
+                        const { activity } = friend;
+                        return (
+                          <div
+                            key={friend.id}
+                            className="p-3 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
+                          >
+                            <Link 
+                              to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
+                              className="flex items-center gap-2 flex-1 min-w-0"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
+                                {friend.friend_avatar ? (
+                                  <img src={friend.friend_avatar} alt={friend.friend_name} className="w-full h-full object-cover rounded-lg" />
+                                ) : (
+                                  <span className="text-xs font-semibold text-white">
+                                    {friend.friend_name?.charAt(0)?.toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-white text-xs truncate">{friend.friend_name}</p>
+                                {activity.daysSinceCheckIn === 0 && (
+                                  <Badge className="bg-green-500/20 text-green-300 border-green-500/40 text-[10px] mt-1">
+                                    Checked in
+                                  </Badge>
+                                )}
+                                {activity.streak >= 7 && (
+                                  <div className="flex items-center gap-0.5 mt-0.5">
+                                    <Flame className="w-2 h-2 text-orange-400" />
+                                    <span className="text-[10px] text-orange-300">{activity.streak}d</span>
+                                  </div>
+                                )}
+                              </div>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeFriendMutation.mutate(friend.friend_id)}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0"
+                            >
+                              <UserMinus className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                  <div className="border-t border-slate-700 p-3">
+                    <Button
+                      onClick={() => {
+                        setShowAddModal(true);
+                        setShowFriendsDropdown(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Friend
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
