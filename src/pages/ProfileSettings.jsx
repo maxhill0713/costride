@@ -43,6 +43,13 @@ export default function ProfileSettings() {
     queryFn: () => base44.auth.me()
   });
 
+  React.useEffect(() => {
+    if (currentUser) {
+      setLocalFullName(currentUser.full_name || '');
+      setLocalBio(currentUser.bio || '');
+    }
+  }, [currentUser?.id]);
+
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings) => {
       await base44.auth.updateMe(settings);
