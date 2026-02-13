@@ -415,23 +415,23 @@ export default function Friends() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-6">
+      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between">
-              <Link to={createPageUrl('Home')} className="absolute left-4 top-6 z-20">
-                <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
-                  <ChevronLeft className="w-7 h-7" />
+              <Link to={createPageUrl('Home')} className="absolute left-4 top-3.5 z-20">
+                <button className="w-9 h-9 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+                  <ChevronLeft className="w-6 h-6" />
                 </button>
               </Link>
-              <h1 className="text-xl font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
+              <h1 className="text-lg font-semibold tracking-tight text-slate-100 whitespace-nowrap mx-auto">
                 Friend Activity
               </h1>
               <button
                 onClick={() => setShowFriendsModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800/60 backdrop-blur-md border border-slate-600/40 hover:bg-slate-700/70 hover:border-slate-500/60 transition-all text-white shadow-lg shadow-black/30"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/60 backdrop-blur-md border border-slate-600/40 hover:bg-slate-700/70 hover:border-slate-500/60 transition-all text-white shadow-lg shadow-black/30"
               >
-                <span className="text-sm font-semibold">{friends.length}</span>
-                <span className="text-sm font-medium">Friends</span>
+                <span className="text-xs font-semibold">{friends.length}</span>
+                <span className="text-xs font-medium">Friends</span>
               </button>
             </div>
           </div>
