@@ -494,9 +494,6 @@ export default function GymOwnerDashboard() {
     onSuccess: () => {
       setShowDeleteAccountConfirm(false);
       base44.auth.logout();
-    },
-    onError: (error) => {
-      alert('Failed to delete account: ' + error.message);
     }
   });
 
