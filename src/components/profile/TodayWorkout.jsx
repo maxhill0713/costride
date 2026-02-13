@@ -361,14 +361,7 @@ export default function TodayWorkout({ currentUser, onWorkoutStart }) {
             <span className="text-[10px] text-green-400 font-medium">Logged</span>
           </div>
         )}
-        {!isExpanded && workoutStartTime && (
-          <div className="flex items-center justify-center gap-1.5 py-2">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[10px] text-amber-400 font-medium">
-              {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
-        )}
+
         </div>
 
       {/* Exercises - Collapsible */}
