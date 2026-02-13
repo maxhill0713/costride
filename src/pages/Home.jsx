@@ -540,7 +540,7 @@ export default function Home() {
                   <div className="flex items-start justify-between gap-3 mb-4">
                      <div className="flex items-center gap-2">
                        <Trophy className="w-5 h-5 text-amber-400" />
-                       <h3 className="text-base font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent tracking-tight">Compete & Crush It</h3>
+                       <h3 className="text-base font-bold text-white tracking-tight">Compete & Crush It</h3>
                      </div>
                      <ChevronRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
                    </div>
