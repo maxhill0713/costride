@@ -418,20 +418,35 @@ export default function Home() {
               {/* Friends Avatars */}
                <div className="flex flex-col items-center justify-center gap-2">
                  <div className="flex items-center -space-x-2">
-                   {checkInUsers.filter(u => friendIds.includes(u.id)).slice(0, 3).map((user) => (
-                     <div key={user.id} className="relative group">
-                       {user.avatar_url ? (
-                         <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
-                       ) : (
-                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
-                           {user.full_name?.[0] || 'U'}
-                         </div>
-                       )}
-                       <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                         {user.full_name}
-                       </span>
-                     </div>
-                   ))}
+                   {(() => {
+                     const friendCheckInUsers = checkInUsers.filter(u => friendIds.includes(u.id));
+                     const displayedUsers = friendCheckInUsers.slice(0, 5);
+                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
+
+                     return (
+                       <>
+                         {displayedUsers.map((user) => (
+                           <div key={user.id} className="relative group">
+                             {user.avatar_url ? (
+                               <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
+                             ) : (
+                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
+                                 {user.full_name?.[0] || 'U'}
+                               </div>
+                             )}
+                             <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                               {user.full_name}
+                             </span>
+                           </div>
+                         ))}
+                         {remainingCount > 0 && (
+                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-500">
+                             +{remainingCount}
+                           </div>
+                         )}
+                       </>
+                     );
+                   })()}
                  </div>
                  </div>
             </>
