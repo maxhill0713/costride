@@ -1072,17 +1072,20 @@ export default function Profile() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2 p-3 bg-slate-800/40 border border-slate-600/40 rounded-xl">
-                <input
-                  type="checkbox"
-                  id="gym-repost"
-                  checked={allowGymRepost}
-                  onChange={(e) => setAllowGymRepost(e.target.checked)}
-                  className="w-4 h-4 cursor-pointer"
-                />
-                <label htmlFor="gym-repost" className="flex-1 cursor-pointer text-sm text-slate-300">
-                  Allow gym owners to repost this to community
-                </label>
+              <div className="flex flex-col gap-2 p-3 bg-slate-800/40 border border-slate-600/40 rounded-xl">
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="gym-repost"
+                    checked={allowGymRepost}
+                    onChange={(e) => setAllowGymRepost(e.target.checked)}
+                    className="w-4 h-4 cursor-pointer mt-0.5 flex-shrink-0"
+                  />
+                  <label htmlFor="gym-repost" className="flex-1 cursor-pointer">
+                    <p className="text-sm font-medium text-white mb-1">Allow gym community sharing</p>
+                    <p className="text-xs text-slate-400">Gym admins can see and repost this to your gym's community feed</p>
+                  </label>
+                </div>
               </div>
 
               <Button
