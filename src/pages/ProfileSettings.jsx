@@ -14,6 +14,8 @@ export default function ProfileSettings() {
   const queryClient = useQueryClient();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [nameTimeout, setNameTimeout] = useState(null);
+  const [bioTimeout, setBioTimeout] = useState(null);
 
   const handleImageUpload = async (file, type) => {
     if (type === 'avatar') setUploadingAvatar(true);
