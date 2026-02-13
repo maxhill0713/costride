@@ -908,62 +908,19 @@ export default function Profile() {
 
       {/* Grid Post Modal */}
       {selectedGridPost && gridView && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedGridPost(null)}>
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="relative w-full aspect-square bg-slate-800">
-              {selectedGridPost.video_url ? (
-                <video src={selectedGridPost.video_url} className="w-full h-full object-cover" controls />
-              ) : selectedGridPost.image_url ? (
-                <img src={selectedGridPost.image_url} alt="Post" className="w-full h-full object-cover" />
-              ) : null}
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-200 leading-relaxed break-words">{selectedGridPost.content}</p>
-                  {selectedGridPost.weight && (
-                    <span className="block mt-2 text-blue-400 font-semibold">💪 {selectedGridPost.weight} lbs</span>
-                  )}
-                </div>
-                {selectedGridPost.reactions && Object.keys(selectedGridPost.reactions).length > 0 && (
-                  <div className="flex gap-1 flex-shrink-0">
-                    {Object.entries(selectedGridPost.reactions).slice(0, 3).map(([userId, variant]) => (
-                      <div key={userId} className="text-xl">
-                        {variant === 'sunglasses' ? '😎' : variant === 'cowboy' ? '🤠' : '🔥'}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {isOwner && (
-                <div className="flex gap-2 pt-2 border-t border-slate-700">
-                  <Button
-                    onClick={() => {
-                      setSelectedGridPost(null);
-                      setShowDeleteConfirm(true);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-400 hover:bg-red-500/20"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      updatePostMutation.mutate({ id: selectedGridPost.id, data: { is_favourite: !selectedGridPost.is_favourite } });
-                      setSelectedGridPost(null);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-amber-400 hover:bg-amber-500/20 ml-auto"
-                  >
-                    <Star className={`w-4 h-4 mr-2 ${selectedGridPost.is_favourite ? 'fill-amber-400' : ''}`} />
-                    {selectedGridPost.is_favourite ? 'Unfavourite' : 'Favourite'}
-                  </Button>
-                </div>
-              )}
-            </div>
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center overflow-y-auto" onClick={() => setSelectedGridPost(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="relative w-full">
+            <PostCard 
+              post={selectedGridPost}
+              fullWidth={false}
+              onLike={() => {}}
+              onComment={() => {}}
+              onSave={() => {}}
+              onDelete={() => {
+                queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+                setSelectedGridPost(null);
+              }}
+            />
           </div>
         </div>
       )}
