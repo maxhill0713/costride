@@ -202,9 +202,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
             )}
             <button 
               onClick={() => setShowMenu(!showMenu)}
-              className="text-slate-300 hover:text-white"
+              className="text-black hover:text-gray-700"
             >
-              <MoreHorizontal className="w-5 h-5" />
+              <MoreHorizontal className="w-7 h-7" />
             </button>
             {showMenu && (
               <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
