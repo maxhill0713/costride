@@ -147,6 +147,12 @@ export default function UserProfile() {
           </button>
         </Link>
 
+        {/* Streak Display - Top Right */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-gradient-to-br from-slate-900/80 to-slate-800/80 backdrop-blur-xl border border-orange-500/40 rounded-xl px-3 py-2 shadow-lg">
+          <span className="text-lg">{viewingUser?.streak_icon || '🔥'}</span>
+          <span className="font-bold text-white text-sm">{currentStreak}</span>
+        </div>
+
         <div className="max-w-4xl mx-auto relative z-10 pt-8">
           <div className="flex items-start gap-5">
             <button 
