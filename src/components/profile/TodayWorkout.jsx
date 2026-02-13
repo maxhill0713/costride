@@ -655,9 +655,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           )}
           </div>
       ) : isExpanded && todayWorkout.exercises.length === 0 ? (
-        <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600/30 text-center">
-          <p className="text-slate-300 text-xs font-medium">Rest day - No exercises scheduled</p>
-          <div className="flex justify-center mt-3 pt-2 border-t border-slate-600/30">
+        <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center">
+          <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
+          <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
+          <div className="flex justify-center mt-4 pt-3 border-t border-slate-600/30">
             <Button
               onClick={() => setIsExpanded(false)}
               variant="ghost"
