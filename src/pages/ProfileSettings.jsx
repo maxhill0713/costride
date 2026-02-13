@@ -48,7 +48,7 @@ export default function ProfileSettings() {
       setLocalFullName(currentUser.full_name || '');
       setLocalBio(currentUser.bio || '');
     }
-  }, [currentUser?.id]);
+  }, []);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings) => {
