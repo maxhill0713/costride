@@ -85,28 +85,13 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.GymMember.list()
   });
 
-  const { data: coaches = [] } = useQuery({
-    queryKey: ['coaches', gymId],
-    queryFn: async () => {
-      const allCoaches = await base44.entities.Coach.list();
-      return allCoaches.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
-  });
-
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: async () => {
       const allPosts = await base44.entities.Post.list('-created_date');
-      // Show only gym posts (from gym owner/coaches)
-      const coachEmails = coaches.map(c => c.user_email);
-      return allPosts.filter(p => {
-        const isGymOwner = p.member_id === gym?.admin_id;
-        const isCoach = coaches.some(c => c.user_email === currentUser?.email && c.can_post);
-        return isGymOwner || (isCoach && p.member_id === currentUser?.id);
-      });
+      return allPosts.filter(p => p.allow_gym_repost === true);
     },
-    enabled: !!gymId && !!currentUser && coaches.length >= 0
+    enabled: !!gymId
   });
 
   const { data: checkIns = [] } = useQuery({
