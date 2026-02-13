@@ -129,6 +129,19 @@ export default function Settings() {
            </div>
          </Link>
 
+         {/* Appearance Button - Full Width */}
+         <Link to={createPageUrl('AppearanceSettings')}>
+           <div className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                 <Sun className="w-4 h-4 text-white" />
+               </div>
+               <span className="font-semibold text-white">Appearance</span>
+             </div>
+             <ChevronRight className="w-5 h-5 text-white/70" />
+           </div>
+         </Link>
+
 
 
         {/* Appearance */}
