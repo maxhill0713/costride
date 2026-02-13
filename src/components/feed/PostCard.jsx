@@ -360,24 +360,24 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
 
       {/* Favourite Confirmation Dialog */}
       <AlertDialog open={showFavouriteConfirm} onOpenChange={setShowFavouriteConfirm}>
-       <AlertDialogContent>
+       <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
          <AlertDialogHeader>
-           <AlertDialogTitle>{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
-           <AlertDialogDescription>
+           <AlertDialogTitle className="text-white">{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
+           <AlertDialogDescription className="text-slate-300">
              {post.is_favourite 
                ? 'This post will no longer appear as your favourite on your profile.'
                : 'This post will appear as your favourite on your profile for others to see.'}
            </AlertDialogDescription>
          </AlertDialogHeader>
          <div className="flex gap-3 justify-end">
-           <AlertDialogCancel>Cancel</AlertDialogCancel>
+           <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
            <AlertDialogAction
              onClick={() => {
                updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } });
                setShowFavouriteConfirm(false);
              }}
              disabled={updatePostMutation.isPending}
-             className="bg-amber-600 hover:bg-amber-700"
+             className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50"
            >
              {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
            </AlertDialogAction>
