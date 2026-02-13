@@ -28,6 +28,8 @@ export default function Friends() {
       return new Set();
     }
   });
+  const [viewedItemIds, setViewedItemIds] = useState(new Set());
+  const [viewedTimestamps, setViewedTimestamps] = useState({});
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
