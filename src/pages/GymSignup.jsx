@@ -943,7 +943,14 @@ export default function GymSignup() {
                     disabled={verifying}
                     className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl"
                   >
-                    {verifying ? 'Starting Verification...' : 'Verify My Identity'}
+                    {verifying ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Redirecting to Stripe...
+                      </span>
+                    ) : (
+                      'Verify My Identity'
+                    )}
                   </Button>
                 </div>
               )}
