@@ -95,16 +95,23 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
        if (onCheckInSuccess) {
          onCheckInSuccess();
        }
-      
-      // Epic confetti for every check-in
-      confetti({ 
-        particleCount: 150, 
-        spread: 120, 
-        origin: { y: 0.6 },
-        colors: ['#10b981', '#06b6d4', '#3b82f6']
-      });
-      setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 60, origin: { x: 0 } }), 150);
-      setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 60, origin: { x: 1 } }), 300);
+
+       // Check if today is a rest day
+       const today = new Date();
+       const dayOfWeek = today.getDay();
+       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+       const trainingDays = currentUser?.training_days || [];
+       const isRestDay = !trainingDays.includes(adjustedDay);
+
+       // Epic confetti for every check-in
+       confetti({ 
+         particleCount: 150, 
+         spread: 120, 
+         origin: { y: 0.6 },
+         colors: ['#10b981', '#06b6d4', '#3b82f6']
+       });
+       setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 60, origin: { x: 0 } }), 150);
+       setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 60, origin: { x: 1 } }), 300);
       
       queryClient.invalidateQueries({ queryKey: ['checkIns'] });
       queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
