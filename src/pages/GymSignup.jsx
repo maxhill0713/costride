@@ -922,9 +922,9 @@ export default function GymSignup() {
                 <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-amber-400" />
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">Unofficial Gym Found!</h3>
-                <p className="text-slate-300 text-sm">
-                  This gym is already in our system and <span className="font-semibold text-white">{ghostGym.members_count || 0} members</span> are using it. Claim it to make it official and take control of your community.
+                <h3 className="text-2xl font-black text-white mb-2">Unofficial Community Found!</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Great news! Members have already created an unofficial community for your gym, and <span className="font-semibold text-white">{ghostGym.members_count || 0} members</span> are actively using it. Claim this community to make it official and take full control.
                 </p>
               </div>
 
