@@ -112,6 +112,7 @@ export default function GymSignup() {
       if (data.claimingGymId) {
         // Claiming existing ghost gym - update it
         const gymLanguage = data.language || detectLanguageFromCity(data.city);
+        const isVerified = emailVerificationStatus === 'verified';
         gym = await base44.asServiceRole.entities.Gym.update(data.claimingGymId, {
           name: data.name,
           type: data.type,
@@ -124,8 +125,8 @@ export default function GymSignup() {
           reward_offer: data.reward_offer || '',
           image_url: data.image_url || '',
           claim_status: 'claimed',
-          status: 'pending',
-          verified: false
+          status: isVerified ? 'approved' : 'pending',
+          verified: isVerified
         });
       } else {
         // Creating new gym
@@ -152,18 +153,19 @@ export default function GymSignup() {
         };
 
         const joinCode = await generateCode();
-        
+
         // Auto-detect language based on city if not set
         const gymLanguage = data.language || detectLanguageFromCity(data.city);
+        const isVerified = emailVerificationStatus === 'verified';
         gym = await base44.entities.Gym.create({
           ...data,
           language: gymLanguage,
           owner_email: user.email,
           join_code: joinCode,
-          verified: false,
+          verified: isVerified,
           admin_id: user.id,
           claim_status: 'claimed',
-          status: 'pending'
+          status: isVerified ? 'approved' : 'pending'
         });
       }
 
