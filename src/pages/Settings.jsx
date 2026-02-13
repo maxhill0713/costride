@@ -225,36 +225,7 @@ export default function Settings() {
           </div>
         </Card>
 
-        {/* Privacy */}
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center">
-              <Lock className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Privacy</h3>
-              <p className="text-sm text-slate-300">Control your profile visibility</p>
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <div className="flex items-center gap-3">
-              {currentUser.public_profile ? (
-                <Globe className="w-5 h-5 text-slate-400" />
-              ) : (
-                <Lock className="w-5 h-5 text-slate-500" />
-              )}
-              <div>
-                <Label className="text-sm font-bold text-slate-100">Public Profile</Label>
-                <p className="text-xs text-slate-400">Allow others to view your profile and stats</p>
-              </div>
-            </div>
-            <Switch
-              checked={currentUser.public_profile ?? true}
-              onCheckedChange={(checked) => updateSettingsMutation.mutate({ public_profile: checked })}
-            />
-          </div>
-        </Card>
 
         {/* Logout */}
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
