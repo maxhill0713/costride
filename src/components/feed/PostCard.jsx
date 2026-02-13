@@ -173,14 +173,14 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
               <MoreHorizontal className="w-5 h-5" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+              <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
                 <button
                   onClick={() => {
                     setShowDeleteConfirm(true);
                     setShowMenu(false);
                   }}
                   disabled={deleteMutation.isPending}
-                  className="flex items-center gap-2 w-full px-4 py-2 text-red-600 hover:bg-red-50 text-sm font-medium disabled:opacity-50"
+                  className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
