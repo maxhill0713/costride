@@ -907,27 +907,6 @@ export default function GymSignup() {
                     </div>
                   )}
                 </div>
-
-                <div>
-                  <Label className="text-white font-semibold">Special Offer</Label>
-                  <Input
-                    value={formData.reward_offer}
-                    onChange={(e) => setFormData({ ...formData, reward_offer: e.target.value })}
-                    placeholder="£5 Free Day Pass"
-                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                  />
-                  <p className="text-xs text-slate-400 mt-1">Attract new members with a special offer</p>
-                </div>
-
-                <div>
-                  <Label className="text-white font-semibold">Gym Image URL</Label>
-                  <Input
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    placeholder="https://..."
-                    className="mt-1 rounded-2xl border-2 border-slate-600 bg-slate-700/50 text-white"
-                  />
-                </div>
               </div>
 
               <div className="flex gap-3 mt-6">
