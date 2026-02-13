@@ -36,6 +36,18 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
     }
   });
 
+  const updatePostMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Post.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+      toast.success(post.is_favourite ? 'Removed from favourites' : 'Added to favourites');
+    },
+    onError: () => {
+      toast.error('Failed to update post');
+    }
+  });
+
   const isOwner = currentUser?.id === post.member_id;
   const isNudgePost = post.exercise === 'workout_completion_nudge';
   const isWeightIncreasePost = post.content?.includes('increased their weight');
