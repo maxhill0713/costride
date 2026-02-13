@@ -42,6 +42,7 @@ export default function Profile() {
   const [postImage, setPostImage] = useState('');
   const [postVideo, setPostVideo] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [gridView, setGridView] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
