@@ -60,10 +60,11 @@ export default function AppearanceSettingsContent({ searchQuery = '' }) {
             />
           </div>
         </div>
-      </Card>
+        </Card>
+        )}
 
-      {/* Unit System */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
+        {showUnit && (
+        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
           <div className="flex items-center gap-3 mb-3">
             <Ruler className="w-5 h-5 text-cyan-400" />
