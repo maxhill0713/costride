@@ -6,11 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
-export default function AccountSettingsContent() {
+export default function AccountSettingsContent({ searchQuery = '' }) {
   const queryClient = useQueryClient();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const showEmail = !searchQuery.trim() || searchQuery.toLowerCase().includes('email');
+  const showPassword = !searchQuery.trim() || searchQuery.toLowerCase().includes('password');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
