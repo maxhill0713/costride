@@ -15,6 +15,7 @@ Deno.serve(async (req) => {
     }
 
     // Create a verification session
+    const origin = req.headers.get('origin') || 'https://gymunityapp.base44.app';
     const verificationSession = await stripe.identity.verificationSessions.create({
       type: 'document',
       metadata: {
@@ -22,7 +23,7 @@ Deno.serve(async (req) => {
         user_email: user.email,
         base44_app_id: Deno.env.get("BASE44_APP_ID")
       },
-      return_url: `${req.headers.get('origin')}/GymSignup`
+      return_url: `${origin}/GymSignup`
     });
 
     return Response.json({
