@@ -142,6 +142,19 @@ export default function Settings() {
            </div>
          </Link>
 
+         {/* Subscriptions Button - Full Width */}
+         <Link to={createPageUrl('SubscriptionSettings')}>
+           <div className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl h-12 flex items-center justify-between px-4 transition-all shadow-lg">
+             <div className="flex items-center gap-3">
+               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                 <span className="text-white font-bold text-sm">S</span>
+               </div>
+               <span className="font-semibold text-white">Subscriptions</span>
+             </div>
+             <ChevronRight className="w-5 h-5 text-white/70" />
+           </div>
+         </Link>
+
 
 
 
