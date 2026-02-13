@@ -486,40 +486,21 @@ export default function TodayWorkout({ currentUser, onWorkoutStart }) {
           {isExpanded && !alreadyLoggedToday && (
             <div className="mb-3 space-y-2">
               {workoutStartTime && (
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
                   <Clock className="w-4 h-4 text-amber-400" />
                   <span className="text-[11px] text-amber-300 font-semibold">
-                    Workout Duration: {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
+                    {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
                   </span>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                {!workoutStartTime ? (
-                  <Button
-                    onClick={() => setWorkoutStartTime(Date.now())}
-                    size="sm"
-                    className="flex-1 h-7 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30 rounded-lg"
-                  >
-                    Start Workout
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setWorkoutStartTime(null)}
-                    size="sm"
-                    className="flex-1 h-7 text-[10px] font-bold bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-lg shadow-slate-500/30 rounded-lg"
-                  >
-                    Stop Timer
-                  </Button>
-                )}
-                <Button
-                  onClick={() => setShowLogConfirm(true)}
-                  disabled={logWorkoutMutation.isPending || !workoutStartTime}
-                  size="sm"
-                  className="flex-1 h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 shadow-lg shadow-orange-500/30 rounded-lg"
-                >
-                  Log Workout
-                </Button>
-              </div>
+              <Button
+                onClick={() => setShowLogConfirm(true)}
+                disabled={logWorkoutMutation.isPending}
+                size="sm"
+                className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
+              >
+                Log Workout
+              </Button>
             </div>
           )}
 
