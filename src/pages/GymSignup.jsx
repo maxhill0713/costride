@@ -26,6 +26,7 @@ export default function GymSignup() {
   const [ghostGym, setGhostGym] = useState(null);
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
   const [checkingGhostGym, setCheckingGhostGym] = useState(false);
+  const [emailVerificationStatus, setEmailVerificationStatus] = useState(null); // 'verified', 'manual_review', or null
 
   const [formData, setFormData] = useState({
     email: '',
@@ -59,7 +60,42 @@ export default function GymSignup() {
     refetchUser();
   }, []);
 
-
+  const verifyEmailDomain = (email, website) => {
+    if (!email || !website) return null;
+    
+    // Extract domain from email
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    
+    // Generic email providers
+    const genericProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com'];
+    
+    if (genericProviders.includes(emailDomain)) {
+      return 'manual_review';
+    }
+    
+    // Extract domain from website
+    let websiteDomain = website.toLowerCase()
+      .replace('http://', '')
+      .replace('https://', '')
+      .replace('www.', '')
+      .split('/')[0];
+    
+    // Check if email domain matches website domain
+    if (emailDomain === websiteDomain || websiteDomain.includes(emailDomain)) {
+      return 'verified';
+    }
+    
+    return 'manual_review';
+  };
+  
+  const handleEmailChange = (email) => {
+    setFormData({ ...formData, email });
+    
+    if (selectedPlace?.website) {
+      const status = verifyEmailDomain(email, selectedPlace.website);
+      setEmailVerificationStatus(status);
+    }
+  };
 
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
@@ -955,6 +991,10 @@ export default function GymSignup() {
                 >
                   {createGymMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : emailVerificationStatus === 'verified' ? (
+                    'Register Gym'
+                  ) : emailVerificationStatus === 'manual_review' ? (
+                    'Submit for Review'
                   ) : (
                     'Register Gym'
                   )}
