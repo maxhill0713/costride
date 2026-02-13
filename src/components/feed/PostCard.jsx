@@ -309,9 +309,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
                   <Flame className="w-6 h-6 text-orange-500 fill-current" />
                 )}
               </div>
-            ))}
-          </div>
-        )}
+              ))}
+              </button>
+              )}
        <p className="leading-snug">{post.content}</p>
        {post.weight && (
           <span className="block mt-1 text-blue-400 font-semibold">
