@@ -103,21 +103,42 @@ export default function Friends() {
         friend_id: friendUser.id,
         friend_name: friendUser.full_name,
         friend_avatar: friendUser.avatar_url,
-        status: 'accepted'
-      });
-      await base44.entities.Friend.create({
-        user_id: friendUser.id,
-        friend_id: currentUser.id,
-        friend_name: currentUser.full_name,
-        friend_avatar: currentUser.avatar_url,
-        status: 'accepted'
+        status: 'pending'
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['friends']);
-      toast.success('Friend added!');
+      toast.success('Friend request sent!');
       setShowAddModal(false);
       setSearchQuery('');
+    }
+  });
+
+  const acceptFriendMutation = useMutation({
+    mutationFn: async (requestId, requesterData) => {
+      const request = await base44.entities.Friend.update(requestId, { status: 'accepted' });
+      await base44.entities.Friend.create({
+        user_id: currentUser.id,
+        friend_id: requesterData.user_id,
+        friend_name: requesterData.user_name || requesterData.friend_name,
+        friend_avatar: requesterData.friend_avatar,
+        status: 'accepted'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries(['friends']);
+      toast.success('Friend request accepted!');
+    }
+  });
+
+  const rejectFriendMutation = useMutation({
+    mutationFn: async (requestId) => {
+      await base44.entities.Friend.delete(requestId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friendRequests']);
+      toast.success('Friend request declined');
     }
   });
 
