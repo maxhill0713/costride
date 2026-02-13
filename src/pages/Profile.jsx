@@ -373,27 +373,27 @@ export default function Profile() {
                 </div>
                 {/* Equipped Badges */}
                 {currentUser?.equipped_badges?.length > 0 && (
-                  <div className="flex items-center gap-2.5 mt-4 pt-3 border-t border-slate-700/50">
+                  <div className="flex items-center gap-2 mt-3">
                     {currentUser.equipped_badges.map((badgeId) => {
                       const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
                                    [
-                                     { id: '10_visits', icon: '🎯', color: 'from-slate-700 to-slate-800' },
-                                     { id: '50_visits', icon: '🔥', color: 'from-slate-700 to-slate-800' },
-                                     { id: '100_visits', icon: '🏆', color: 'from-slate-700 to-slate-800' },
-                                     { id: '7_day_streak', icon: '⚡', color: 'from-slate-700 to-slate-800' },
-                                     { id: '30_day_streak', icon: '🔥', color: 'from-slate-700 to-slate-800' },
-                                     { id: '90_day_streak', icon: '👑', color: 'from-slate-700 to-slate-800' },
-                                     { id: '1_year', icon: '📅', color: 'from-slate-700 to-slate-800' },
-                                     { id: 'community_leader', icon: '👥', color: 'from-slate-700 to-slate-800' }
+                                     { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+                                     { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+                                     { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+                                     { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+                                     { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+                                     { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+                                     { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+                                     { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
                                    ].find(b => b.id === badgeId);
                       if (!badge) return null;
                       return (
                         <div 
                           key={badgeId}
-                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-md ring-1 ring-slate-600/60 hover:scale-110 transition-transform`}
+                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40`}
                           title={badge.name || badgeId}
                         >
-                          <span className="text-lg">{badge.icon}</span>
+                          <span className="text-base">{badge.icon}</span>
                         </div>
                       );
                     })}
