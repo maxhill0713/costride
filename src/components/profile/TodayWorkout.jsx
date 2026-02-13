@@ -365,7 +365,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               setShowSummary(true);
             }}
             size="sm"
-            className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-blue-500/60 to-cyan-500/60 hover:from-blue-500/80 hover:to-cyan-500/80 shadow-lg shadow-blue-500/20 rounded-lg text-white"
+            className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white"
           >
             View Summary
           </Button>

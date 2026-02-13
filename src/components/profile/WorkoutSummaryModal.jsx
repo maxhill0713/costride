@@ -42,6 +42,19 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
     })
     .filter(Boolean) : [];
 
+  const motivationalTexts = [
+    "You're getting stronger every day! 💪",
+    "Keep crushing those goals! 🔥",
+    "That's what consistency looks like! 🎯",
+    "You're on fire! Keep it up! 🚀",
+    "Building your best self! 💎",
+    "That's a personal record mindset! 🏆",
+    "Your dedication is paying off! ⭐",
+    "Unstoppable momentum! 💥"
+  ];
+
+  const motivationalText = motivationalTexts[Math.floor(Math.random() * motivationalTexts.length)];
+
   return (
     <AlertDialog open={isOpen}>
       <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40">
@@ -58,6 +71,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
             <AlertDialogTitle className="text-2xl font-black text-white text-center">
               {workoutName} Complete
             </AlertDialogTitle>
+            <p className="text-sm text-blue-300 font-semibold">{motivationalText}</p>
           </div>
           <AlertDialogDescription className="text-center space-y-3 pt-2">
             {/* Duration */}
