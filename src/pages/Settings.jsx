@@ -286,7 +286,8 @@ export default function Settings() {
             </div>
           </div>
         </Card>
-      </div>
-    </div>
-  );
-}
+        </div>
+        </div>
+        </div>
+        );
+        }
