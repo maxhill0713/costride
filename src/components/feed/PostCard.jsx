@@ -249,6 +249,35 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete }) 
         ) : post.image_url ? (
           <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
         ) : null}
+
+        {/* Reactions in Bottom Right */}
+        {Object.keys(post.reactions || {}).length > 0 && (
+          <div className="absolute bottom-3 right-3 flex items-center gap-1">
+            <div className="flex relative h-8">
+              {Object.entries(post.reactions || {}).slice(0, 6).map(([userId, variant], idx) => (
+                <div
+                  key={userId}
+                  className="relative"
+                  style={{ marginLeft: idx > 0 ? '-12px' : '0' }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-sm shadow-lg border border-white">
+                    {getStreakIcon(variant)}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {Object.keys(post.reactions || {}).length > 6 && (
+              <div className="flex items-center gap-1 ml-1">
+                <button className="w-8 h-8 rounded-full bg-slate-800/80 backdrop-blur-sm border border-white/30 flex items-center justify-center text-sm font-bold text-white hover:bg-slate-700/80 transition-all">
+                  +
+                </button>
+                <span className="text-xs font-bold text-white bg-black/40 px-1.5 py-0.5 rounded-full">
+                  {Object.keys(post.reactions).length - 6}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Caption Section - Thin Block */}
