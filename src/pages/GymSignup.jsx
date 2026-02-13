@@ -68,42 +68,65 @@ export default function GymSignup() {
         onboarding_completed: true 
       });
       
-      // Generate unique join code
-      const generateCode = async () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code;
-        let isUnique = false;
-        let attempts = 0;
+      let gym;
 
-        while (!isUnique && attempts < 10) {
-          code = '';
-          for (let i = 0; i < 6; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
+      if (data.claimingGymId) {
+        // Claiming existing ghost gym - update it
+        const gymLanguage = data.language || detectLanguageFromCity(data.city);
+        gym = await base44.asServiceRole.entities.Gym.update(data.claimingGymId, {
+          name: data.name,
+          type: data.type,
+          language: gymLanguage,
+          owner_email: user.email,
+          admin_id: user.id,
+          amenities: data.amenities,
+          equipment: data.equipment,
+          specializes_in: data.specializes_in,
+          reward_offer: data.reward_offer || '',
+          image_url: data.image_url || '',
+          claim_status: 'claimed',
+          status: 'pending',
+          verified: false
+        });
+      } else {
+        // Creating new gym
+        // Generate unique join code
+        const generateCode = async () => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+          let code;
+          let isUnique = false;
+          let attempts = 0;
+
+          while (!isUnique && attempts < 10) {
+            code = '';
+            for (let i = 0; i < 6; i++) {
+              code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            // Check if code already exists
+            const existing = await base44.entities.Gym.filter({ join_code: code });
+            isUnique = existing.length === 0;
+            attempts++;
           }
-          
-          // Check if code already exists
-          const existing = await base44.entities.Gym.filter({ join_code: code });
-          isUnique = existing.length === 0;
-          attempts++;
-        }
 
-        return code;
-      };
+          return code;
+        };
 
-      const joinCode = await generateCode();
-      
-      // Auto-detect language based on city if not set
-      const gymLanguage = data.language || detectLanguageFromCity(data.city);
-      const gym = await base44.entities.Gym.create({
-        ...data,
-        language: gymLanguage,
-        owner_email: user.email,
-        join_code: joinCode,
-        verified: false,
-        admin_id: user.id,
-        claim_status: 'claimed',
-        status: 'pending'
-      });
+        const joinCode = await generateCode();
+        
+        // Auto-detect language based on city if not set
+        const gymLanguage = data.language || detectLanguageFromCity(data.city);
+        gym = await base44.entities.Gym.create({
+          ...data,
+          language: gymLanguage,
+          owner_email: user.email,
+          join_code: joinCode,
+          verified: false,
+          admin_id: user.id,
+          claim_status: 'claimed',
+          status: 'pending'
+        });
+      }
 
       // Create gym membership for the owner
       await base44.entities.GymMembership.create({
@@ -539,8 +562,25 @@ export default function GymSignup() {
 
   const handleClaimGhostGym = () => {
     if (ghostGym) {
-      // Navigate to the ClaimGym page with the gym ID
-      navigate(createPageUrl('ClaimGym') + `?gymId=${ghostGym.id}`);
+      // Set form data with ghost gym information
+      setFormData(prev => ({
+        ...prev,
+        name: ghostGym.name,
+        google_place_id: ghostGym.google_place_id,
+        latitude: ghostGym.latitude,
+        longitude: ghostGym.longitude,
+        address: ghostGym.address || '',
+        city: ghostGym.city || '',
+        postcode: ghostGym.postcode || '',
+        type: ghostGym.type || 'general',
+        amenities: ghostGym.amenities || [],
+        equipment: ghostGym.equipment || [],
+        specializes_in: ghostGym.specializes_in || [],
+        image_url: ghostGym.image_url || '',
+        claimingGymId: ghostGym.id // Store the ID to update instead of create
+      }));
+      setShowGhostGymModal(false);
+      toast.success('Gym claimed! Complete the signup to finalize.');
     }
   };
 
@@ -944,9 +984,9 @@ export default function GymSignup() {
 
               <Button
                 onClick={handleClaimGhostGym}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl h-12"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl h-12 mb-2"
               >
-                Claim This Gym
+                Claim & Continue Signup
               </Button>
 
               <p className="text-xs text-slate-400 text-center mt-4">
