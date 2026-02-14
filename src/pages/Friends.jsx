@@ -11,7 +11,7 @@ import { formatDistanceToNow, differenceInDays, startOfDay } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
-import GymPostCard from '../components/feed/GymPostCard';
+import PostCard from '../components/feed/PostCard';
 
 export default function Friends() {
   const queryClient = useQueryClient();
@@ -602,11 +602,19 @@ export default function Friends() {
          </div>
          )}
 
-         {/* Friend Posts - Using GymPostCard */}
+         {/* Friend Posts */}
          {friendPosts.length > 0 && (
            <div className="space-y-3 mt-0">
              {friendPosts.map((post) => (
-               <GymPostCard key={post.id} post={post} />
+               <PostCard 
+                 key={post.id} 
+                 post={post}
+                 fullWidth={true}
+                 onLike={() => {}}
+                 onComment={() => {}}
+                 onSave={() => {}}
+                 onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+               />
              ))}
            </div>
          )}
