@@ -466,10 +466,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       </div>
                     )}
                   </div>
-                  <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg">
+                  <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg text-center">
                     {exercise.setsReps || '-'}
                   </div>
-                  <div className="flex items-center gap-2 justify-end">
+                  <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2">
                         <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500/80 to-orange-600/80 px-2.5 py-1 rounded-lg shadow-md shadow-orange-500/10">
                           {exercise.weight || '-'}
