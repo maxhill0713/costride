@@ -863,24 +863,48 @@ export default function Gyms() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
-                {equipmentGym.equipment.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2 p-2 bg-slate-700/50 rounded-lg border border-slate-600/50"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                    <span className="text-slate-200 text-sm">{item}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-slate-400">
-                <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No equipment information available</p>
-              </div>
-            )}
+            {(() => {
+              // Check if this is a bodystreak gym (mock equipment)
+              const isBodystreakGym = equipmentGym?.name?.toLowerCase().includes('bodystreak');
+              const mockEquipment = [
+                'Nautilus Rows',
+                'Hammer Strength Chest Press',
+                'Leg Press',
+                'Smith Machine',
+                'Cable Crossover',
+                'Hack Squat',
+                'Preacher Curl Bench',
+                'Seated Calf Raise',
+                'Lat Pulldown',
+                'Pec Deck',
+                'Leg Extension',
+                'Leg Curl',
+                'Shoulder Press Machine',
+                'Cable Fly',
+                'T-Bar Row'
+              ];
+              
+              const equipmentList = isBodystreakGym ? mockEquipment : equipmentGym?.equipment;
+              
+              return equipmentList && equipmentList.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {equipmentList.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 p-2 bg-slate-700/50 rounded-lg border border-slate-600/50"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                      <span className="text-slate-200 text-sm">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No equipment information available</p>
+                </div>
+              );
+            })()}
           </div>
         </DialogContent>
       </Dialog>
