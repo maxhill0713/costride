@@ -379,6 +379,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       )}
       {isExpanded && todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
         <div className="space-y-2">
+          {/* Headers */}
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets x Reps</div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Weight</div>
+            <div className="w-6"></div>
+          </div>
+
           {/* Exercise Rows */}
           {todayWorkout.exercises.map((exercise, index) => (
             <div key={index} className={`p-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-lg shadow-black/10 ${editingIndex === index ? 'block' : 'grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center'} hover:border-white/20 transition-all`}>
@@ -458,23 +466,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col items-center gap-0.5">
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sets x Reps</div>
-                    <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg">
-                      {exercise.setsReps || '-'}
-                    </div>
+                  <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg">
+                    {exercise.setsReps || '-'}
                   </div>
                   <div className="flex items-center gap-2 justify-end">
-                    <div className="flex flex-col items-end gap-0.5">
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight</div>
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                         <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500/80 to-orange-600/80 px-2.5 py-1 rounded-lg shadow-md shadow-orange-500/10">
                           {exercise.weight || '-'}
                           <span className="text-[10px] font-bold ml-1">kg</span>
                         </div>
                         {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                       </div>
-                    </div>
                     <Button
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
