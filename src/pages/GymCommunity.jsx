@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import GymPostCard from '../components/feed/GymPostCard';
+import PostCard from '../components/feed/PostCard';
 import CreateGymPostButton from '../components/feed/CreateGymPostButton';
 import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
 import EventCard from '../components/events/EventCard';
@@ -1187,7 +1187,15 @@ export default function GymCommunity() {
           ) : (
             <div className="space-y-3">
               {posts.slice(0, 10).map((post) => (
-                <GymPostCard key={post.id} post={post} gym={gym} isOwner={showOwnerControls} />
+                <PostCard 
+                  key={post.id} 
+                  post={post}
+                  fullWidth={true}
+                  onLike={() => {}}
+                  onComment={() => {}}
+                  onSave={() => {}}
+                  onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+                />
               ))}
             </div>
           )}
