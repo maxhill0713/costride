@@ -373,11 +373,11 @@ export default function Home() {
                 <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   CoStride
                 </h1>
-                <Link to={createPageUrl('Friends')} onClick={async () => {
-                  if (currentUser) {
-                    await base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-                  }
-                }} className="absolute right-0">
+                <Link to={createPageUrl('Friends')} onClick={() => {
+                   if (currentUser) {
+                     base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+                   }
+                 }} className="absolute right-0 hover:opacity-80 transition-opacity">
                   <div className="relative">
                     <FriendsIcon className="w-7 h-7 text-cyan-400" />
                     {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
