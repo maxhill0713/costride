@@ -256,15 +256,14 @@ export default function Friends() {
 
     recentCheckIns.forEach(checkIn => {
       const friend = friends.find(f => f.friend_id === checkIn.user_id);
-      const friendUser = allUsers.find(u => u.id === checkIn.user_id);
       const isToday = differenceInDays(new Date(), new Date(checkIn.check_in_date)) === 0;
       
       activities.push({
         id: `checkin-${checkIn.id}`,
         type: 'checkin',
         friendId: checkIn.user_id,
-        friendName: friendUser?.full_name || friend?.friend_name || checkIn.user_name,
-        friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
+        friendName: friend?.friend_name || checkIn.user_name,
+        friendAvatar: friend?.friend_avatar,
         message: isToday ? 'checked in today' : `checked in at ${checkIn.gym_name}`,
         timestamp: new Date(checkIn.check_in_date),
         emoji: '💪',
@@ -277,7 +276,6 @@ export default function Friends() {
       const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
       const streak = calculateStreak(friendCheckIns);
       const friend = friends.find(f => f.friend_id === friendId);
-      const friendUser = allUsers.find(u => u.id === friendId);
       
       // Check if they recently hit a milestone (7, 14, 30, 50, 100 days)
       const milestones = [7, 14, 30, 50, 100];
@@ -293,8 +291,8 @@ export default function Friends() {
                 id: `milestone-${friendId}-${milestone}`,
                 type: 'milestone',
                 friendId,
-                friendName: friendUser?.full_name || friend?.friend_name,
-                friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
+                friendName: friend?.friend_name,
+                friendAvatar: friend?.friend_avatar,
                 message: `reached a ${milestone}-day streak!`,
                 timestamp: new Date(milestoneDate),
                 emoji: milestone >= 50 ? '🔥' : milestone >= 30 ? '⚡' : '🎯',
@@ -313,7 +311,6 @@ export default function Friends() {
 
     friendPRs.forEach(lift => {
       const friend = friends.find(f => f.friend_id === lift.member_id);
-      const friendUser = allUsers.find(u => u.id === lift.member_id);
       const daysSince = differenceInDays(new Date(), new Date(lift.created_date));
       
       if (daysSince <= 7) {
@@ -330,8 +327,8 @@ export default function Friends() {
           id: `pr-${lift.id}`,
           type: 'pr',
           friendId: lift.member_id,
-          friendName: friendUser?.full_name || friend?.friend_name || lift.member_name,
-          friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
+          friendName: friend?.friend_name || lift.member_name,
+          friendAvatar: friend?.friend_avatar,
           message: `hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`,
           timestamp: new Date(lift.created_date),
           emoji: '🏆',
@@ -384,14 +381,12 @@ export default function Friends() {
 
     // Friend milestones
     friendsWithActivity.forEach(friend => {
-      const friendUser = allUsers.find(u => u.id === friend.friend_id);
-      const displayName = friendUser?.full_name || friend.friend_name;
       if (friend.activity.streak === 7) {
         cards.push({
           id: `milestone-${friend.friend_id}-7`,
           type: 'friend-milestone',
-          title: `${displayName} Hit a Streak!`,
-          message: `${displayName} is on a 7-day check-in streak! 🔥`,
+          title: `${friend.friend_name} Hit a Streak!`,
+          message: `${friend.friend_name} is on a 7-day check-in streak! 🔥`,
           emoji: '🔥',
           color: 'from-red-500 to-orange-500',
           borderColor: 'border-red-500/30'
@@ -400,8 +395,8 @@ export default function Friends() {
         cards.push({
           id: `milestone-${friend.friend_id}-14`,
           type: 'friend-milestone',
-          title: `${displayName} is On Fire!`,
-          message: `${displayName} just hit a 14-day streak! ⚡`,
+          title: `${friend.friend_name} is On Fire!`,
+          message: `${friend.friend_name} just hit a 14-day streak! ⚡`,
           emoji: '⚡',
           color: 'from-yellow-500 to-orange-500',
           borderColor: 'border-yellow-500/30'
@@ -410,8 +405,8 @@ export default function Friends() {
         cards.push({
           id: `milestone-${friend.friend_id}-30`,
           type: 'friend-milestone',
-          title: `${displayName} is a Beast!`,
-          message: `${displayName} hit a 30-day streak! That's legendary! 🏆`,
+          title: `${friend.friend_name} is a Beast!`,
+          message: `${friend.friend_name} hit a 30-day streak! That's legendary! 🏆`,
           emoji: '🏆',
           color: 'from-purple-500 to-pink-500',
           borderColor: 'border-purple-500/30'
@@ -421,14 +416,12 @@ export default function Friends() {
 
     // Inactive friends warning
     friendsWithActivity.forEach(friend => {
-      const friendUser = allUsers.find(u => u.id === friend.friend_id);
-      const displayName = friendUser?.full_name || friend.friend_name;
       if (friend.activity.daysSinceCheckIn >= 7) {
         cards.push({
           id: `inactive-${friend.friend_id}`,
           type: 'friend-inactive',
-          title: `${displayName} Needs a Nudge`,
-          message: `${displayName} hasn't checked in for ${friend.activity.daysSinceCheckIn} days. Send them some motivation! 👋`,
+          title: `${friend.friend_name} Needs a Nudge`,
+          message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days. Send them some motivation! 👋`,
           emoji: '👋',
           color: 'from-slate-500 to-slate-600',
           borderColor: 'border-slate-500/30'
