@@ -755,14 +755,15 @@ export default function Profile() {
                     } else {
                       return (
                         <PostCard 
-                          key={post.id} 
-                          post={post}
-                          fullWidth={true}
-                          onLike={() => {}}
-                          onComment={() => {}}
-                          onSave={() => {}}
-                          onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
-                        />
+                           key={post.id} 
+                           post={post}
+                           fullWidth={true}
+                           isOwnProfile={true}
+                           onLike={() => {}}
+                           onComment={() => {}}
+                           onSave={() => {}}
+                           onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                         />
                       );
                     }
                   })}
