@@ -102,37 +102,28 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(-10); // Last 10 sessions
   }, [filteredLogs, selectedExercise]);
 
-  // Weight increase by split day
-  const weightIncreaseByDay = useMemo(() => {
-    const dayData = {};
+  // Volume by split day
+  const volumeByDay = useMemo(() => {
+    const dayVolumes = {};
 
     filteredLogs.forEach(log => {
       const day = log.split_day || 'Other';
-      if (!dayData[day]) {
-        dayData[day] = { firstSession: null, lastSession: null };
-      }
+      if (!dayVolumes[day]) dayVolumes[day] = 0;
 
       log.exercises?.forEach(ex => {
-        const maxWeight = Math.max(...(ex.sets?.map(s => parseFloat(s.weight) || 0) || [0]));
-        
-        if (!dayData[day].firstSession || new Date(log.created_date) < new Date(dayData[day].firstSession.date)) {
-          dayData[day].firstSession = { weight: maxWeight, date: log.created_date };
-        }
-        
-        if (!dayData[day].lastSession || new Date(log.created_date) > new Date(dayData[day].lastSession.date)) {
-          dayData[day].lastSession = { weight: maxWeight, date: log.created_date };
-        }
+        const volume = ex.sets?.reduce((sum, set) => {
+          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
+        }, 0) || 0;
+        dayVolumes[day] += volume;
       });
     });
 
-    return Object.entries(dayData)
-      .filter(([_, data]) => data.firstSession && data.lastSession)
-      .map(([day, data]) => ({
+    return Object.entries(dayVolumes)
+      .map(([day, volume]) => ({
         day: day,
-        increase: Math.round(data.lastSession.weight - data.firstSession.weight)
+        volume: Math.round(volume)
       }))
-      .filter(item => item.increase !== 0)
-      .sort((a, b) => b.increase - a.increase);
+      .sort((a, b) => b.volume - a.volume);
   }, [filteredLogs]);
 
   // Frequency analysis
@@ -715,16 +706,16 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </Card>
           )}
 
-          {/* Weight Increase by Split Day */}
-      {weightIncreaseByDay.length > 0 && (
+          {/* Volume by Split Day */}
+      {volumeByDay.length > 0 && (
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-green-400" />
-            <h4 className="text-sm font-bold text-white">Weight Increase by Split Day</h4>
+            <Target className="w-4 h-4 text-blue-400" />
+            <h4 className="text-sm font-bold text-white">Volume by Split Day</h4>
           </div>
 
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weightIncreaseByDay} layout="vertical">
+            <BarChart data={volumeByDay} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis 
                 type="number" 
@@ -749,10 +740,10 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                 }}
               />
               <Bar 
-                dataKey="increase" 
-                fill="#10b981"
+                dataKey="volume" 
+                fill="#8b5cf6"
                 radius={[0, 4, 4, 0]}
-                name="Weight Increase (kg)"
+                name="Total Volume (kg)"
               />
             </BarChart>
           </ResponsiveContainer>
