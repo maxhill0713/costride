@@ -358,20 +358,20 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 </button>
               )}
 
-              {/* Reaction Button - Streak Icon */}
+              {/* Reaction Button - Streak Icon with Ring */}
               {!isOwnProfile && (
               <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute bottom-14 left-4 text-2xl transition-all"
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
+                className={`absolute bottom-14 left-4 w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                  hasReacted ? 'bg-orange-500/20 ring-2 ring-orange-500' : 'bg-transparent ring-2 ring-white/40'
+                }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {hasReacted ? (
-                  <span className="text-orange-500 drop-shadow-lg">{getStreakIcon(userStreakVariant)}</span>
-                ) : (
-                  <span className="text-white opacity-50 drop-shadow-lg">{getStreakIcon(userStreakVariant)}</span>
-                )}
+                <span className={`text-2xl drop-shadow-lg ${hasReacted ? 'text-orange-500' : 'text-white/60'}`}>
+                  {getStreakIcon(userStreakVariant)}
+                </span>
               </motion.button>
               )}
 
