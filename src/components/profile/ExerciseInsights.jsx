@@ -379,7 +379,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {workoutDays.length > 0 && viewMode === 'exercises' && (
+          {workoutDays.length > 0 && (
             <div>
               <label className="text-xs text-slate-400 font-semibold mb-2 block">Workout Day</label>
               <Select value={selectedWorkoutDay} onValueChange={setSelectedWorkoutDay}>
@@ -433,31 +433,32 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {/* Overview View */}
       {viewMode === 'overview' && (
         <>
-
-          {/* Strength Progress Indicators */}
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
-            <h4 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
-              <Target className="w-3.5 h-3.5 text-cyan-400" />
-              Strength Progress
-            </h4>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2.5 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <ArrowUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
-                <div className="text-xl font-bold text-white">{strengthTrends.improving}</div>
-                <p className="text-[10px] text-slate-400 mt-0.5">Improving</p>
-              </div>
-              <div className="text-center p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <Minus className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-                <div className="text-xl font-bold text-white">{strengthTrends.maintaining}</div>
-                <p className="text-[10px] text-slate-400 mt-0.5">Stable</p>
-              </div>
-              <div className="text-center p-2.5 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                <ArrowDown className="w-4 h-4 text-orange-400 mx-auto mb-1" />
-                <div className="text-xl font-bold text-white">{strengthTrends.declining}</div>
-                <p className="text-[10px] text-slate-400 mt-0.5">Declining</p>
-              </div>
-            </div>
-          </Card>
+          {filteredLogs.length > 0 ? (
+            <>
+              {/* Strength Progress Indicators */}
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
+                <h4 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
+                  <Target className="w-3.5 h-3.5 text-cyan-400" />
+                  Strength Progress
+                </h4>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center p-2.5 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <ArrowUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
+                    <div className="text-xl font-bold text-white">{strengthTrends.improving}</div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Improving</p>
+                  </div>
+                  <div className="text-center p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <Minus className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+                    <div className="text-xl font-bold text-white">{strengthTrends.maintaining}</div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Stable</p>
+                  </div>
+                  <div className="text-center p-2.5 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                    <ArrowDown className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+                    <div className="text-xl font-bold text-white">{strengthTrends.declining}</div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Declining</p>
+                  </div>
+                </div>
+              </Card>
 
           {/* Volume Progression Chart */}
           {volumeProgression.length > 0 && (
@@ -555,8 +556,18 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
               </ResponsiveContainer>
             </Card>
           )}
-        </>
-      )}
+          </>
+          ) : (
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
+          <Activity className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+          <h4 className="text-lg font-bold text-white mb-2">No Workout Data</h4>
+          <p className="text-slate-400 text-sm">
+            Log your workouts to see detailed insights and track your progress.
+          </p>
+          </Card>
+          )}
+          </>
+          )}
 
       {/* Exercises View */}
       {viewMode === 'exercises' && (
@@ -810,16 +821,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </>
       )}
 
-      {/* Empty State */}
-      {workoutLogs.length === 0 && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
-          <Activity className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-          <h4 className="text-lg font-bold text-white mb-2">No Workout Data Yet</h4>
-          <p className="text-slate-400 text-sm">
-            Start logging your workouts to see detailed insights and track your progress over time.
-          </p>
-        </Card>
-      )}
+
     </div>
   );
 }
