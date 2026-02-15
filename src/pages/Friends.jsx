@@ -458,9 +458,9 @@ export default function Friends() {
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Header */}
-      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col">
+      {/* Header - Sticky */}
+      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-6xl mx-auto relative flex items-center justify-center">
           <Link to={createPageUrl('Home')} className="absolute left-0">
             <button className="w-9 h-9 flex items-center justify-center text-white/80 hover:text-white transition-colors">
@@ -480,7 +480,7 @@ export default function Friends() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-6">
          {/* Activity Nudge Cards */}
          {filteredActivityCards.length > 0 && (
            <div className="space-y-3 mb-6">
