@@ -587,7 +587,7 @@ export default function Profile() {
               {/* Exercise Insights */}
               <ExerciseInsights 
                 workoutLogs={workoutLogs}
-                workoutSplit={currentUser?.workout_split}
+                workoutSplit={currentUser?.custom_workout_types}
                 trainingDays={currentUser?.training_days}
               />
 
