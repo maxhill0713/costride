@@ -1,14 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity, Flame, ArrowUp, ArrowDown, Minus, Trophy, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function ExerciseInsights({ workoutLogs = [], workoutSplit, trainingDays = [] }) {
   const [selectedDay, setSelectedDay] = useState('all');
   const [selectedExercise, setSelectedExercise] = useState('all');
   const [timeRange, setTimeRange] = useState('30');
+  const [viewMode, setViewMode] = useState('overview');
 
   // Extract unique exercises and split days
   const { exercises, splitDays } = useMemo(() => {
@@ -147,14 +149,153 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(0, 5);
   }, [workoutLogs]);
 
+  // Volume progression over time
+  const volumeProgression = useMemo(() => {
+    const dailyVolume = {};
+
+    filteredLogs.forEach(log => {
+      const date = new Date(log.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      if (!dailyVolume[date]) dailyVolume[date] = 0;
+
+      log.exercises?.forEach(ex => {
+        const volume = ex.sets?.reduce((sum, set) => {
+          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
+        }, 0) || 0;
+        dailyVolume[date] += volume;
+      });
+    });
+
+    return Object.entries(dailyVolume)
+      .map(([date, volume]) => ({
+        date,
+        volume: Math.round(volume)
+      }))
+      .slice(-14); // Last 14 days
+  }, [filteredLogs]);
+
+  // Strength trends
+  const strengthTrends = useMemo(() => {
+    if (!filteredLogs.length) return { improving: 0, maintaining: 0, declining: 0 };
+
+    const exerciseProgress = {};
+
+    filteredLogs.forEach(log => {
+      log.exercises?.forEach(ex => {
+        if (!ex.name) return;
+        if (!exerciseProgress[ex.name]) exerciseProgress[ex.name] = [];
+        
+        const maxWeight = Math.max(...(ex.sets?.map(s => parseFloat(s.weight) || 0) || [0]));
+        exerciseProgress[ex.name].push(maxWeight);
+      });
+    });
+
+    let improving = 0;
+    let maintaining = 0;
+    let declining = 0;
+
+    Object.values(exerciseProgress).forEach(weights => {
+      if (weights.length < 2) return;
+      
+      const recent = weights.slice(-3);
+      const older = weights.slice(-6, -3);
+      
+      if (recent.length && older.length) {
+        const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+        const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+        
+        if (recentAvg > olderAvg * 1.05) improving++;
+        else if (recentAvg < olderAvg * 0.95) declining++;
+        else maintaining++;
+      }
+    });
+
+    return { improving, maintaining, declining };
+  }, [filteredLogs]);
+
+  // Workout consistency
+  const workoutStreak = useMemo(() => {
+    if (!workoutLogs.length) return { current: 0, longest: 0 };
+
+    const sortedDates = workoutLogs
+      .map(log => new Date(log.created_date).toDateString())
+      .filter((date, idx, arr) => arr.indexOf(date) === idx)
+      .sort((a, b) => new Date(b) - new Date(a));
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      const current = new Date(sortedDates[i]);
+      const next = sortedDates[i + 1] ? new Date(sortedDates[i + 1]) : null;
+      
+      tempStreak++;
+      
+      if (next) {
+        const diffDays = Math.floor((current - next) / (1000 * 60 * 60 * 24));
+        if (diffDays > 2) {
+          longestStreak = Math.max(longestStreak, tempStreak);
+          if (i === 0) currentStreak = tempStreak;
+          tempStreak = 0;
+        }
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        if (i === 0) currentStreak = tempStreak;
+      }
+    }
+
+    return { current: currentStreak, longest: longestStreak };
+  }, [workoutLogs]);
+
+  // Top exercises by volume
+  const topExercises = useMemo(() => {
+    const exerciseVolumes = {};
+
+    filteredLogs.forEach(log => {
+      log.exercises?.forEach(ex => {
+        if (!ex.name) return;
+        if (!exerciseVolumes[ex.name]) exerciseVolumes[ex.name] = 0;
+        
+        const volume = ex.sets?.reduce((sum, set) => {
+          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
+        }, 0) || 0;
+        
+        exerciseVolumes[ex.name] += volume;
+      });
+    });
+
+    return Object.entries(exerciseVolumes)
+      .map(([exercise, volume]) => ({
+        exercise,
+        volume: Math.round(volume)
+      }))
+      .sort((a, b) => b.volume - a.volume)
+      .slice(0, 5);
+  }, [filteredLogs]);
+
   return (
     <div className="space-y-4">
-      {/* Filters */}
+      {/* Header with View Tabs */}
       <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-        <div className="flex items-center gap-2 mb-4">
-          <Activity className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-base font-bold text-white">Exercise Insights</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white">Exercise Analytics</h3>
+              <p className="text-xs text-slate-400">Track your progress & performance</p>
+            </div>
+          </div>
         </div>
+
+        <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 p-1 rounded-lg mb-4">
+            <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
+            <TabsTrigger value="exercises" className="text-xs">Exercises</TabsTrigger>
+            <TabsTrigger value="records" className="text-xs">Records</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -208,38 +349,196 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </div>
       </Card>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-gradient-to-br from-blue-900/40 to-blue-950/40 backdrop-blur-xl border border-blue-500/30 p-3 rounded-xl">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="w-4 h-4 text-blue-400" />
-            <span className="text-xs text-slate-400 font-semibold">Sessions</span>
-          </div>
-          <div className="text-2xl font-bold text-white">{frequencyData.total}</div>
-          <p className="text-xs text-blue-300 mt-1">{frequencyData.avgPerWeek}/week avg</p>
-        </Card>
+      {/* Overview View */}
+      {viewMode === 'overview' && (
+        <>
+          {/* Enhanced Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 p-4 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <Calendar className="w-5 h-5 text-blue-400" />
+                  <Badge className="bg-blue-500/20 text-blue-300 border-0 text-xs">
+                    {frequencyData.avgPerWeek}/wk
+                  </Badge>
+                </div>
+                <div className="text-3xl font-black text-white mb-1">{frequencyData.total}</div>
+                <p className="text-xs text-slate-400 font-medium">Total Sessions</p>
+              </div>
+            </Card>
 
-        <Card className="bg-gradient-to-br from-purple-900/40 to-purple-950/40 backdrop-blur-xl border border-purple-500/30 p-3 rounded-xl">
-          <div className="flex items-center gap-2 mb-1">
-            <Zap className="w-4 h-4 text-purple-400" />
-            <span className="text-xs text-slate-400 font-semibold">Most Active</span>
-          </div>
-          <div className="text-lg font-bold text-white truncate">{frequencyData.mostActiveDay}</div>
-          <p className="text-xs text-purple-300 mt-1">Split day</p>
-        </Card>
+            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl border border-orange-500/30 p-4 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <Flame className="w-5 h-5 text-orange-400" />
+                  <Badge className="bg-orange-500/20 text-orange-300 border-0 text-xs">
+                    Best: {workoutStreak.longest}
+                  </Badge>
+                </div>
+                <div className="text-3xl font-black text-white mb-1">{workoutStreak.current}</div>
+                <p className="text-xs text-slate-400 font-medium">Day Streak</p>
+              </div>
+            </Card>
 
-        <Card className="bg-gradient-to-br from-green-900/40 to-green-950/40 backdrop-blur-xl border border-green-500/30 p-3 rounded-xl">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-green-400" />
-            <span className="text-xs text-slate-400 font-semibold">PRs</span>
-          </div>
-          <div className="text-2xl font-bold text-white">{personalRecords.length}</div>
-          <p className="text-xs text-green-300 mt-1">Personal records</p>
-        </Card>
-      </div>
+            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/30 p-4 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <TrendingUp className="w-5 h-5 text-green-400" />
+                  {strengthTrends.improving > 0 && (
+                    <Badge className="bg-green-500/20 text-green-300 border-0 text-xs">
+                      +{strengthTrends.improving}
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-3xl font-black text-white mb-1">{personalRecords.length}</div>
+                <p className="text-xs text-slate-400 font-medium">Personal Records</p>
+              </div>
+            </Card>
 
-      {/* Exercise Progress Chart */}
-      {selectedExercise !== 'all' && progressData.length > 0 && (
+            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 p-4 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <Trophy className="w-5 h-5 text-purple-400" />
+                  <Badge className="bg-purple-500/20 text-purple-300 border-0 text-xs">
+                    Top
+                  </Badge>
+                </div>
+                <div className="text-lg font-black text-white mb-1 truncate">{frequencyData.mostActiveDay}</div>
+                <p className="text-xs text-slate-400 font-medium">Most Active Split</p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Strength Progress Indicators */}
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+            <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <Target className="w-4 h-4 text-cyan-400" />
+              Strength Progress
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                <ArrowUp className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-white">{strengthTrends.improving}</div>
+                <p className="text-xs text-slate-400 mt-1">Improving</p>
+              </div>
+              <div className="text-center p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                <Minus className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-white">{strengthTrends.maintaining}</div>
+                <p className="text-xs text-slate-400 mt-1">Stable</p>
+              </div>
+              <div className="text-center p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+                <ArrowDown className="w-6 h-6 text-orange-400 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-white">{strengthTrends.declining}</div>
+                <p className="text-xs text-slate-400 mt-1">Declining</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Volume Progression Chart */}
+          {volumeProgression.length > 0 && (
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-purple-400" />
+                  Training Volume Trend
+                </h4>
+                <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs">
+                  Last 14 Days
+                </Badge>
+              </div>
+              <ResponsiveContainer width="100%" height={180}>
+                <AreaChart data={volumeProgression}>
+                  <defs>
+                    <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#94a3b8" 
+                    fontSize={10}
+                    tick={{ fill: '#94a3b8' }}
+                  />
+                  <YAxis 
+                    stroke="#94a3b8" 
+                    fontSize={10}
+                    tick={{ fill: '#94a3b8' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
+                      border: '1px solid #475569',
+                      borderRadius: '12px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="volume" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={3}
+                    fill="url(#volumeGradient)"
+                    name="Volume (kg)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* Exercises View */}
+      {viewMode === 'exercises' && (
+        <>
+          {/* Top Exercises by Volume */}
+          {topExercises.length > 0 && (
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+              <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <Dumbbell className="w-4 h-4 text-blue-400" />
+                Top Exercises by Volume
+              </h4>
+              <div className="space-y-3">
+                {topExercises.map((ex, idx) => (
+                  <div key={idx} className="relative">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${
+                          idx === 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                          idx === 1 ? 'bg-slate-400/20 text-slate-300' :
+                          idx === 2 ? 'bg-orange-500/20 text-orange-400' :
+                          'bg-slate-700/40 text-slate-400'
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <span className="text-sm font-semibold text-white truncate max-w-[180px]">{ex.exercise}</span>
+                      </div>
+                      <span className="text-sm font-bold text-white">{ex.volume.toLocaleString()}<span className="text-xs text-slate-400 ml-1">kg</span></span>
+                    </div>
+                    <div className="h-2 bg-slate-800/50 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${
+                          idx === 0 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                          idx === 1 ? 'bg-gradient-to-r from-slate-400 to-slate-500' :
+                          idx === 2 ? 'bg-gradient-to-r from-orange-500 to-red-500' :
+                          'bg-gradient-to-r from-blue-500 to-purple-500'
+                        }`}
+                        style={{ width: `${(ex.volume / topExercises[0].volume) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Exercise Progress Chart */}
+          {selectedExercise !== 'all' && progressData.length > 0 && (
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -325,9 +624,9 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
             </div>
           </div>
         </Card>
-      )}
+          )}
 
-      {/* Volume by Split Day */}
+          {/* Volume by Split Day */}
       {volumeByDay.length > 0 && (
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
           <div className="flex items-center gap-2 mb-4">
@@ -369,42 +668,80 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
             </BarChart>
           </ResponsiveContainer>
         </Card>
+          )}
+        </>
       )}
 
-      {/* Personal Records */}
-      {personalRecords.length > 0 && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="w-4 h-4 text-yellow-400" />
-            <h4 className="text-sm font-bold text-white">Top Personal Records</h4>
-          </div>
-
-          <div className="space-y-2">
-            {personalRecords.map((pr, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-slate-800/40 border border-slate-700/40 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                    idx === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                    idx === 1 ? 'bg-slate-400/20 text-slate-300' :
-                    idx === 2 ? 'bg-orange-500/20 text-orange-400' :
-                    'bg-slate-700/40 text-slate-400'
-                  }`}>
-                    #{idx + 1}
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm truncate max-w-[180px]">{pr.exercise}</p>
-                    <p className="text-xs text-slate-400">
-                      {pr.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                  </div>
+      {/* Records View */}
+      {viewMode === 'records' && (
+        <>
+              {/* Personal Records */}
+          {personalRecords.length > 0 ? (
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-400" />
+                  <h4 className="text-sm font-bold text-white">Personal Records</h4>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-white">{pr.weight}<span className="text-xs text-slate-400 ml-1">kg</span></p>
-                </div>
+                <Badge className="bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs">
+                  Top 5
+                </Badge>
               </div>
-            ))}
-          </div>
-        </Card>
+
+              <div className="space-y-3">
+                {personalRecords.map((pr, idx) => (
+                  <div key={idx} className={`relative p-4 rounded-xl border ${
+                    idx === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30' :
+                    idx === 1 ? 'bg-gradient-to-r from-slate-400/10 to-slate-500/10 border-slate-400/30' :
+                    idx === 2 ? 'bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30' :
+                    'bg-slate-800/40 border-slate-700/40'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-lg ${
+                          idx === 0 ? 'bg-gradient-to-br from-yellow-500 to-orange-500 text-white' :
+                          idx === 1 ? 'bg-gradient-to-br from-slate-400 to-slate-600 text-white' :
+                          idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white' :
+                          'bg-slate-700 text-slate-300'
+                        }`}>
+                          #{idx + 1}
+                        </div>
+                        <div>
+                          <p className="text-white font-bold text-base truncate max-w-[200px]">{pr.exercise}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="w-3 h-3 text-slate-400" />
+                            <p className="text-xs text-slate-400">
+                              {pr.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-white">{pr.weight}</p>
+                        <p className="text-xs text-slate-400 font-semibold">kg</p>
+                      </div>
+                    </div>
+                    {idx === 0 && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                          <Trophy className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-8 text-center rounded-2xl shadow-2xl shadow-black/20">
+              <Trophy className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+              <h4 className="text-base font-bold text-white mb-2">No Records Yet</h4>
+              <p className="text-slate-400 text-sm">
+                Keep pushing your limits to set your first personal records!
+              </p>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Empty State */}
