@@ -126,9 +126,9 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .sort((a, b) => b.volume - a.volume);
   }, [filteredLogs]);
 
-  // Frequency analysis
+  // Frequency analysis - filtered by workout day selection
   const frequencyData = useMemo(() => {
-    if (!workoutLogs.length) return { total: 0, avgPerWeek: 0, mostActiveDay: 'N/A' };
+    if (!filteredLogs.length) return { total: 0, avgPerWeek: 0, mostActiveDay: 'N/A' };
 
     const daysAgo = parseInt(timeRange);
     const weeks = daysAgo / 7;
@@ -147,7 +147,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       avgPerWeek,
       mostActiveDay
     };
-  }, [filteredLogs, timeRange, workoutLogs.length]);
+  }, [filteredLogs, timeRange]);
 
   // Personal records
   const personalRecords = useMemo(() => {
