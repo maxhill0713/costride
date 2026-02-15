@@ -192,7 +192,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       }`}
     >
       {/* Header - Profile Picture and Name */}
-      <Link to={createPageUrl('UserProfile') + `?user=${post.member_id}`} className="absolute top-3 left-3 z-50 cursor-pointer flex items-center gap-2">
+      <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="absolute top-3 left-3 z-50 cursor-pointer flex items-center gap-2">
         <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all">
           {post.member_avatar ? (
             <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
