@@ -10,10 +10,20 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function ExerciseInsights({ workoutLogs = [], workoutSplit, trainingDays = [] }) {
+  const [selectedWorkoutDay, setSelectedWorkoutDay] = useState('all');
   const [selectedDay, setSelectedDay] = useState('all');
   const [selectedExercise, setSelectedExercise] = useState('all');
   const [timeRange, setTimeRange] = useState('30');
   const [viewMode, setViewMode] = useState('overview');
+
+  // Extract workout days from split
+  const workoutDays = useMemo(() => {
+    if (!workoutSplit?.days) return [];
+    return workoutSplit.days.map(day => ({
+      name: day.name || day.workout || 'Unnamed',
+      exercises: day.exercises || []
+    }));
+  }, [workoutSplit]);
 
   // Extract unique exercises and split days
   const { exercises, splitDays } = useMemo(() => {
@@ -44,14 +54,24 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       const inTimeRange = logDate >= cutoffDate;
       const matchesDay = selectedDay === 'all' || log.split_day === selectedDay;
       
+      // Filter by workout day
+      let matchesWorkoutDay = true;
+      if (selectedWorkoutDay !== 'all') {
+        const workoutDay = workoutDays.find(d => d.name === selectedWorkoutDay);
+        if (workoutDay) {
+          const workoutExercises = workoutDay.exercises.map(e => e.name || e);
+          matchesWorkoutDay = log.exercises?.some(ex => workoutExercises.includes(ex.name));
+        }
+      }
+      
       if (selectedExercise === 'all') {
-        return inTimeRange && matchesDay;
+        return inTimeRange && matchesDay && matchesWorkoutDay;
       }
       
       const hasExercise = log.exercises?.some(ex => ex.name === selectedExercise);
-      return inTimeRange && matchesDay && hasExercise;
+      return inTimeRange && matchesDay && hasExercise && matchesWorkoutDay;
     });
-  }, [workoutLogs, selectedDay, selectedExercise, timeRange]);
+  }, [workoutLogs, selectedDay, selectedExercise, timeRange, selectedWorkoutDay, workoutDays]);
 
   // Calculate exercise progress data
   const progressData = useMemo(() => {
@@ -335,6 +355,23 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {workoutDays.length > 0 && (
+            <div>
+              <label className="text-xs text-slate-400 font-semibold mb-2 block">Workout Day</label>
+              <Select value={selectedWorkoutDay} onValueChange={setSelectedWorkoutDay}>
+                <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Workouts</SelectItem>
+                  {workoutDays.map(day => (
+                    <SelectItem key={day.name} value={day.name}>{day.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div>
             <label className="text-xs text-slate-400 font-semibold mb-2 block">Time Range</label>
             <Select value={timeRange} onValueChange={setTimeRange}>
