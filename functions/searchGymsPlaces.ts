@@ -71,9 +71,9 @@ Deno.serve(async (req) => {
       };
     });
 
-    return Response.json({ places });
+    return Response.json({ results: places });
   } catch (error) {
     console.error('Error searching gyms:', error);
-    return Response.json({ places: [] });
+    return Response.json({ results: [] });
   }
 });
