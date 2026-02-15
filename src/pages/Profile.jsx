@@ -25,6 +25,7 @@ import CreateSplitModal from '../components/profile/CreateSplitModal';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 import PostCard from '../components/feed/PostCard';
+import ExerciseInsights from '../components/profile/ExerciseInsights';
 
 
 export default function Profile() {
@@ -583,6 +584,13 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="stats" className="space-y-4">
+              {/* Exercise Insights */}
+              <ExerciseInsights 
+                workoutLogs={workoutLogs}
+                workoutSplit={currentUser?.workout_split}
+                trainingDays={currentUser?.training_days}
+              />
+
               {/* Key Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
