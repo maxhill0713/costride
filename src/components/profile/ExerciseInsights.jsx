@@ -16,20 +16,27 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
   const [timeRange, setTimeRange] = useState('30');
   const [viewMode, setViewMode] = useState('overview');
 
-  // Extract workout days from split
+  // Extract workout days from split using trainingDays and customWorkoutTypes
   const workoutDays = useMemo(() => {
-    console.log('Workout Split:', workoutSplit);
-    if (!workoutSplit) return [];
+    if (!trainingDays || trainingDays.length === 0) return [];
     
-    // Handle both array and object with 'days' property
-    const days = Array.isArray(workoutSplit) ? workoutSplit : workoutSplit.days;
-    if (!days || !Array.isArray(days)) return [];
+    // trainingDays is array of day numbers [1, 3, 5] = Mon, Wed, Fri
+    // customWorkoutTypes is object like { 1: { name: 'Push', exercises: [...] }, 3: { name: 'Pull', exercises: [...] } }
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     
-    return days.map(day => ({
-      name: day.name || day.workout || day.type || 'Unnamed',
-      exercises: day.exercises || []
-    }));
-  }, [workoutSplit]);
+    return trainingDays.map(dayNum => {
+      const dayName = dayNames[dayNum - 1];
+      const workoutType = (workoutSplit && typeof workoutSplit === 'object' && workoutSplit[dayNum]) 
+        ? workoutSplit[dayNum] 
+        : { name: dayName, exercises: [] };
+      
+      return {
+        name: workoutType.name || dayName,
+        dayNum: dayNum,
+        exercises: workoutType.exercises || []
+      };
+    });
+  }, [workoutSplit, trainingDays]);
 
   // Extract unique exercises and split days
   const { exercises, splitDays } = useMemo(() => {
