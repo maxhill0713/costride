@@ -460,22 +460,22 @@ export default function Friends() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col">
       {/* Header - Sticky */}
-      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
+      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-2.5">
         <div className="max-w-6xl mx-auto relative flex items-center justify-center">
           <Link to={createPageUrl('Home')} className="absolute left-0">
-            <button className="w-9 h-9 flex items-center justify-center text-white/80 hover:text-white transition-colors">
-              <ChevronLeft className="w-6 h-6" />
+            <button className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+              <ChevronLeft className="w-5 h-5" />
             </button>
           </Link>
-          <h1 className="text-lg font-semibold tracking-tight text-slate-100 whitespace-nowrap">
+          <h1 className="text-base font-semibold tracking-tight text-slate-100 whitespace-nowrap">
             Friend Activity
           </h1>
           <button
             onClick={() => setShowFriendsModal(true)}
-            className="absolute right-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all text-white shadow-lg shadow-blue-500/10"
+            className="absolute right-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all text-white shadow-lg shadow-blue-500/10"
           >
-            <span className="text-xs font-semibold">{friends.length}</span>
-            <span className="text-xs font-medium">Friends</span>
+            <span className="text-[11px] font-semibold">{friends.length}</span>
+            <span className="text-[11px] font-medium">Friends</span>
           </button>
         </div>
       </div>
