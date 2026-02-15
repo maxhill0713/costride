@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import PostCard from '../components/feed/PostCard';
+import GymJoinNotification from '../components/feed/GymJoinNotification';
 
 export default function Friends() {
   const queryClient = useQueryClient();
