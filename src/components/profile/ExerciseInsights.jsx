@@ -18,9 +18,15 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
   // Extract workout days from split
   const workoutDays = useMemo(() => {
-    if (!workoutSplit?.days) return [];
-    return workoutSplit.days.map(day => ({
-      name: day.name || day.workout || 'Unnamed',
+    console.log('Workout Split:', workoutSplit);
+    if (!workoutSplit) return [];
+    
+    // Handle both array and object with 'days' property
+    const days = Array.isArray(workoutSplit) ? workoutSplit : workoutSplit.days;
+    if (!days || !Array.isArray(days)) return [];
+    
+    return days.map(day => ({
+      name: day.name || day.workout || day.type || 'Unnamed',
       exercises: day.exercises || []
     }));
   }, [workoutSplit]);
