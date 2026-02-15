@@ -256,14 +256,15 @@ export default function Friends() {
 
     recentCheckIns.forEach(checkIn => {
       const friend = friends.find(f => f.friend_id === checkIn.user_id);
+      const friendUser = allUsers.find(u => u.id === checkIn.user_id);
       const isToday = differenceInDays(new Date(), new Date(checkIn.check_in_date)) === 0;
       
       activities.push({
         id: `checkin-${checkIn.id}`,
         type: 'checkin',
         friendId: checkIn.user_id,
-        friendName: friend?.friend_name || checkIn.user_name,
-        friendAvatar: friend?.friend_avatar,
+        friendName: friendUser?.full_name || friend?.friend_name || checkIn.user_name,
+        friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
         message: isToday ? 'checked in today' : `checked in at ${checkIn.gym_name}`,
         timestamp: new Date(checkIn.check_in_date),
         emoji: '💪',
