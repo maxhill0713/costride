@@ -365,7 +365,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {workoutDays.length > 0 && (
+          {workoutDays.length > 0 && viewMode === 'overview' && (
             <div>
               <label className="text-xs text-slate-400 font-semibold mb-2 block">Workout Day</label>
               <Select value={selectedWorkoutDay} onValueChange={setSelectedWorkoutDay}>
@@ -397,24 +397,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
             </Select>
           </div>
 
-          {splitDays.length > 0 && (
-            <div>
-              <label className="text-xs text-slate-400 font-semibold mb-2 block">Split Day</label>
-              <Select value={selectedDay} onValueChange={setSelectedDay}>
-                <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Days</SelectItem>
-                  {splitDays.map(day => (
-                    <SelectItem key={day} value={day}>{day}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {exercises.length > 0 && (
+          {exercises.length > 0 && viewMode === 'exercises' && (
             <div>
               <label className="text-xs text-slate-400 font-semibold mb-2 block">Exercise</label>
               <Select value={selectedExercise} onValueChange={setSelectedExercise}>
