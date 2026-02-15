@@ -56,7 +56,7 @@ export default function Friends() {
     queryKey: ['allUsers'],
     queryFn: () => base44.entities.User.list(),
     enabled: showAddModal || showFriendsModal,
-    staleTime: 30000
+    staleTime: 0
   });
 
   const { data: allCheckIns = [] } = useQuery({
