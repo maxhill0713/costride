@@ -92,14 +92,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const hasReacted = useMemo(() => post.reactions && post.reactions[currentUser?.id], [post.reactions, currentUser?.id]);
 
   const getStreakIcon = (variant) => {
-    switch (variant) {
-      case 'sunglasses':
-        return '😎';
-      case 'cowboy':
-        return '🤠';
-      default:
-        return '🔥';
-    }
+    return variant; // Return the variant itself to render the proper JSX
   };
 
   const reactMutation = useMutation({
