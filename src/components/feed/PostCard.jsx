@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false }) {
   const [reacted, setReacted] = useState(false);
