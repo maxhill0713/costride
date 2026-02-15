@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Flame, Star, Flame as FlameIcon, Plus } from 'lucide-react';
 import { format } from 'date-fns';
