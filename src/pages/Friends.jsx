@@ -685,17 +685,14 @@ export default function Friends() {
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {(() => {
-                          const gymMember = allGymMembers.find(m => m.id === request.user_id);
-                          return gymMember?.avatar_url ? (
-                            <img src={gymMember.avatar_url} alt={currentName} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs font-semibold text-white">
-                              {currentName?.charAt(0)?.toUpperCase()}
-                            </span>
-                          );
-                        })()}
-                      </div>
+                         {request.friend_avatar ? (
+                           <img src={request.friend_avatar} alt={currentName} className="w-full h-full object-cover" />
+                         ) : (
+                           <span className="text-xs font-semibold text-white">
+                             {currentName?.charAt(0)?.toUpperCase()}
+                           </span>
+                         )}
+                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-white text-xs truncate">{currentName}</p>
                         <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
