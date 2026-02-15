@@ -370,7 +370,7 @@ export default function Home() {
                    )}
                    <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
                 </button>
-                <h1 className="text-xl font-black text-slate-400 tracking-tight">
+                <h1 className="text-xl font-black bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent tracking-tight">
                   CoStride
                 </h1>
                 <Link to={createPageUrl('Friends')} onClick={async () => {
