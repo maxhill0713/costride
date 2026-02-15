@@ -746,8 +746,8 @@ export default function Profile() {
                             </div>
                           )}
                           {post.is_favourite && (
-                            <div className="absolute top-2 right-2 bg-amber-400/90 rounded-full p-1">
-                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            <div className="absolute top-2 right-2">
+                              <Star className="w-5 h-5 fill-amber-400 text-amber-400 drop-shadow-lg" />
                             </div>
                           )}
                         </div>
