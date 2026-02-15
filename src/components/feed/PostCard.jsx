@@ -356,7 +356,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute bottom-7 left-4 transition-all flex items-center gap-1"
+                className={`absolute left-4 transition-all flex items-center gap-1 ${showFullContent ? 'bottom-32' : 'bottom-7'}`}
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
               >
