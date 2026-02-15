@@ -373,7 +373,6 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Workouts</SelectItem>
                   {workoutDays.map(day => (
                     <SelectItem key={day.name} value={day.name}>{day.name}</SelectItem>
                   ))}
