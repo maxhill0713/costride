@@ -220,6 +220,9 @@ export default function Home() {
     !post.content?.includes('workout finished')
   );
 
+  // Gym join posts from friends
+  const gymJoinPosts = allPosts.filter(post => post.gym_join === true && friendIds.includes(post.member_id));
+
   // Today's check-ins (all users)
   const todayCheckIns = todayCheckInsForQuery;
 
