@@ -471,7 +471,7 @@ export default function Friends() {
           </h1>
           <button
             onClick={() => setShowFriendsModal(true)}
-            className="absolute right-0 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/60 backdrop-blur-md border border-slate-600/40 hover:bg-slate-700/70 hover:border-slate-500/60 transition-all text-white shadow-lg shadow-black/30"
+            className="absolute right-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all text-white shadow-lg shadow-blue-500/10"
           >
             <span className="text-xs font-semibold">{friends.length}</span>
             <span className="text-xs font-medium">Friends</span>
