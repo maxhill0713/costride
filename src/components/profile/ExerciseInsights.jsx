@@ -35,7 +35,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     return workoutSplit[dayNum]?.name || null;
   };
 
-  const [selectedWorkoutDay, setSelectedWorkoutDay] = useState(getTodaysWorkout() || workoutDays[0]?.name || '');
+  const [selectedWorkoutDay, setSelectedWorkoutDay] = useState('all');
   const [selectedDay, setSelectedDay] = useState('all');
   const [selectedExercise, setSelectedExercise] = useState('all');
   const [timeRange, setTimeRange] = useState('30');
@@ -70,9 +70,9 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       const inTimeRange = logDate >= cutoffDate;
       const matchesDay = selectedDay === 'all' || log.split_day === selectedDay;
       
-      // Filter by workout day ONLY when in Exercises tab
+      // Filter by workout day ONLY when in Exercises tab and a specific day is selected
       let matchesWorkoutDay = true;
-      if (viewMode === 'exercises' && selectedWorkoutDay) {
+      if (viewMode === 'exercises' && selectedWorkoutDay && selectedWorkoutDay !== 'all') {
         // Match by split_day field OR by checking if log contains exercises from this workout day
         const workoutDay = workoutDays.find(d => d.name === selectedWorkoutDay);
         if (workoutDay && workoutDay.exercises && workoutDay.exercises.length > 0) {
@@ -387,6 +387,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">All Workout Days</SelectItem>
                   {workoutDays.map(day => (
                     <SelectItem key={day.name} value={day.name}>{day.name}</SelectItem>
                   ))}
