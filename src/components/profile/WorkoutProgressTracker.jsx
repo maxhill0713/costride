@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { TrendingUp, TrendingDown, Activity, ChevronRight, MessageSquare } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, ChevronRight, MessageSquare, Clock, FileText, BarChart3 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { motion } from 'framer-motion';
 
@@ -124,6 +125,21 @@ export default function WorkoutProgressTracker({ currentUser }) {
 
   const exerciseProgress = getExerciseProgress();
 
+  // Calculate workout stats
+  const totalWorkouts = filteredLogs.length;
+  const workoutsWithNotes = filteredLogs.filter(log => log.notes && log.notes.trim()).length;
+  const workoutsWithDuration = filteredLogs.filter(log => log.duration).length;
+  
+  // Calculate average duration (convert duration strings like "45m" to minutes)
+  const avgDuration = workoutsWithDuration > 0 
+    ? Math.round(filteredLogs
+        .filter(log => log.duration)
+        .reduce((sum, log) => {
+          const match = log.duration.match(/(\d+)/);
+          return sum + (match ? parseInt(match[1]) : 0);
+        }, 0) / workoutsWithDuration)
+    : 0;
+
   if (workoutLogs.length === 0) {
     return (
       <Card className="bg-slate-900/70 border border-purple-500/30 p-6 rounded-2xl text-center">
@@ -229,29 +245,65 @@ export default function WorkoutProgressTracker({ currentUser }) {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-1.5 mb-3">
-        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-1.5 text-center border border-orange-500/30 hover:border-orange-400/50 transition-colors">
-          <div className="text-base font-bold text-orange-300">{workoutLogs.length}</div>
-          <div className="text-[8px] text-orange-300/60 font-medium">Logs</div>
-        </div>
-        <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 rounded-lg p-1.5 text-center border border-emerald-500/30 hover:border-emerald-400/50 transition-colors">
-          <div className="text-base font-bold text-emerald-300">
-            {exerciseProgress.filter(e => e.progressFromPrevious?.direction === 'up').length}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-2 border border-orange-500/30 hover:border-orange-400/50 transition-colors">
+          <div className="flex items-center gap-1.5 mb-1">
+            <BarChart3 className="w-3 h-3 text-orange-300" />
+            <div className="text-[8px] text-orange-300/70 font-bold uppercase tracking-wider">Total Workouts</div>
           </div>
-          <div className="text-[8px] text-emerald-300/60 font-medium">Up</div>
+          <div className="text-xl font-black text-orange-200">{totalWorkouts}</div>
+          <div className="text-[8px] text-orange-300/50 mt-0.5">
+            {exerciseProgress.filter(e => e.progressFromPrevious?.direction === 'up').length} improving
+          </div>
         </div>
-        <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg p-1.5 text-center border border-cyan-500/30 hover:border-cyan-400/50 transition-colors">
-          <div className="text-base font-bold text-cyan-300">
+
+        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-2 border border-blue-500/30 hover:border-blue-400/50 transition-colors">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Clock className="w-3 h-3 text-blue-300" />
+            <div className="text-[8px] text-blue-300/70 font-bold uppercase tracking-wider">Avg Duration</div>
+          </div>
+          <div className="text-xl font-black text-blue-200">{avgDuration}m</div>
+          <div className="text-[8px] text-blue-300/50 mt-0.5">
+            {workoutsWithDuration}/{totalWorkouts} tracked
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-lg p-2 border border-purple-500/30 hover:border-purple-400/50 transition-colors">
+          <div className="flex items-center gap-1.5 mb-1">
+            <MessageSquare className="w-3 h-3 text-purple-300" />
+            <div className="text-[8px] text-purple-300/70 font-bold uppercase tracking-wider">With Notes</div>
+          </div>
+          <div className="text-xl font-black text-purple-200">{workoutsWithNotes}</div>
+          <div className="text-[8px] text-purple-300/50 mt-0.5">
+            {totalWorkouts > 0 ? Math.round((workoutsWithNotes / totalWorkouts) * 100) : 0}% completion
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg p-2 border border-cyan-500/30 hover:border-cyan-400/50 transition-colors">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Activity className="w-3 h-3 text-cyan-300" />
+            <div className="text-[8px] text-cyan-300/70 font-bold uppercase tracking-wider">Exercises</div>
+          </div>
+          <div className="text-xl font-black text-cyan-200">
             {new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size}
           </div>
-          <div className="text-[8px] text-cyan-300/60 font-medium">Exercises</div>
+          <div className="text-[8px] text-cyan-300/50 mt-0.5">
+            Tracked movements
+          </div>
         </div>
       </div>
 
       {/* Exercise Progress List */}
       <div className="space-y-1.5">
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-          Exercises
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+            Exercise Progress
+          </div>
+          {exerciseProgress.length > 5 && (
+            <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/40 text-[8px] px-1.5 py-0">
+              Showing top 5
+            </Badge>
+          )}
         </div>
         {exerciseProgress.length === 0 ? (
           <div className="p-2 bg-slate-700/50 rounded-lg text-center">
