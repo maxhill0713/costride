@@ -6,7 +6,7 @@ import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity, Flame, Ar
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
@@ -845,14 +845,14 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                       <Trophy className="w-5 h-5 text-yellow-400" />
                       <h4 className="text-sm font-bold text-white">Personal Records</h4>
                       <TooltipProvider>
-                        <Tooltip>
+                        <UITooltip>
                           <TooltipTrigger asChild>
                             <Info className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
                             <p>Your heaviest weight for each exercise across all logged workouts. Updated whenever you lift heavier.</p>
                           </TooltipContent>
-                        </Tooltip>
+                        </UITooltip>
                       </TooltipProvider>
                     </div>
                 <Badge className="bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs">
