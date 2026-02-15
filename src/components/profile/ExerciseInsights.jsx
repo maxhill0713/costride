@@ -135,18 +135,15 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     const dayVolumes = {};
     
     workoutLogs.forEach(log => {
-      const day = log.split_day || 'Other';
+      const day = log.split_day || log.workout_name || 'Other';
       if (!dayVolumes[day]) dayVolumes[day] = 0;
 
       if (log.exercises && Array.isArray(log.exercises)) {
         log.exercises.forEach(ex => {
-          if (ex.sets && Array.isArray(ex.sets)) {
-            ex.sets.forEach(set => {
-              const weight = parseFloat(set.weight) || 0;
-              const reps = parseInt(set.reps) || 0;
-              dayVolumes[day] += weight * reps;
-            });
-          }
+          const weight = parseFloat(ex.weight) || 0;
+          const reps = ex.setsReps ? parseInt(ex.setsReps.split('x')[1] || ex.setsReps) || 1 : 1;
+          const sets = ex.setsReps ? parseInt(ex.setsReps.split('x')[0]) || 1 : 1;
+          dayVolumes[day] += weight * reps * sets;
         });
       }
     });
@@ -218,18 +215,16 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     const dailyVolume = {};
     
     workoutLogs.forEach(log => {
-      const date = new Date(log.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      const date = new Date(log.completed_date || log.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       if (!dailyVolume[date]) dailyVolume[date] = 0;
 
       if (log.exercises && Array.isArray(log.exercises)) {
         log.exercises.forEach(ex => {
-          if (ex.sets && Array.isArray(ex.sets)) {
-            ex.sets.forEach(set => {
-              const weight = parseFloat(set.weight) || 0;
-              const reps = parseInt(set.reps) || 0;
-              dailyVolume[date] += weight * reps;
-            });
-          }
+          const weight = parseFloat(ex.weight) || 0;
+          // Parse setsReps like "3x10" or just use 1
+          const reps = ex.setsReps ? parseInt(ex.setsReps.split('x')[1] || ex.setsReps) || 1 : 1;
+          const sets = ex.setsReps ? parseInt(ex.setsReps.split('x')[0]) || 1 : 1;
+          dailyVolume[date] += weight * reps * sets;
         });
       }
     });
@@ -326,16 +321,14 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     workoutLogs.forEach(log => {
       if (log.exercises && Array.isArray(log.exercises)) {
         log.exercises.forEach(ex => {
-          if (!ex.name) return;
-          if (!exerciseVolumes[ex.name]) exerciseVolumes[ex.name] = 0;
+          const exerciseName = ex.exercise || ex.name;
+          if (!exerciseName) return;
+          if (!exerciseVolumes[exerciseName]) exerciseVolumes[exerciseName] = 0;
           
-          if (ex.sets && Array.isArray(ex.sets)) {
-            ex.sets.forEach(set => {
-              const weight = parseFloat(set.weight) || 0;
-              const reps = parseInt(set.reps) || 0;
-              exerciseVolumes[ex.name] += weight * reps;
-            });
-          }
+          const weight = parseFloat(ex.weight) || 0;
+          const reps = ex.setsReps ? parseInt(ex.setsReps.split('x')[1] || ex.setsReps) || 1 : 1;
+          const sets = ex.setsReps ? parseInt(ex.setsReps.split('x')[0]) || 1 : 1;
+          exerciseVolumes[exerciseName] += weight * reps * sets;
         });
       }
     });
