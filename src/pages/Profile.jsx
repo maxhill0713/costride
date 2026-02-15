@@ -496,7 +496,7 @@ export default function Profile() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="flex w-full bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 p-1 rounded-xl gap-1 mb-4">
               <TabsTrigger value="stats" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
-                Stats
+                Insights
               </TabsTrigger>
               <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all text-xs text-slate-400 px-2 py-2">
                 Progress
