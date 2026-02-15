@@ -277,6 +277,7 @@ export default function Friends() {
       const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
       const streak = calculateStreak(friendCheckIns);
       const friend = friends.find(f => f.friend_id === friendId);
+      const friendUser = allUsers.find(u => u.id === friendId);
       
       // Check if they recently hit a milestone (7, 14, 30, 50, 100 days)
       const milestones = [7, 14, 30, 50, 100];
@@ -292,8 +293,8 @@ export default function Friends() {
                 id: `milestone-${friendId}-${milestone}`,
                 type: 'milestone',
                 friendId,
-                friendName: friend?.friend_name,
-                friendAvatar: friend?.friend_avatar,
+                friendName: friendUser?.full_name || friend?.friend_name,
+                friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
                 message: `reached a ${milestone}-day streak!`,
                 timestamp: new Date(milestoneDate),
                 emoji: milestone >= 50 ? '🔥' : milestone >= 30 ? '⚡' : '🎯',
