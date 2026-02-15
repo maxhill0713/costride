@@ -76,7 +76,8 @@ export default function WorkoutProgressTracker({ currentUser }) {
           weight: parseFloat(exercise.weight) || 0,
           date: log.completed_date,
           setsReps: exercise.setsReps,
-          notes: log.notes
+          notes: log.notes,
+          duration: log.duration
         });
       });
     });
