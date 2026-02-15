@@ -504,6 +504,50 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
               </ResponsiveContainer>
             </Card>
           )}
+
+          {/* Volume by Split Day */}
+          {volumeByDay.length > 0 && (
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-4 h-4 text-blue-400" />
+                <h4 className="text-sm font-bold text-white">Volume by Split Day</h4>
+              </div>
+
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={volumeByDay} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis 
+                    type="number" 
+                    stroke="#94a3b8" 
+                    fontSize={10}
+                    tick={{ fill: '#94a3b8' }}
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="day" 
+                    stroke="#94a3b8" 
+                    fontSize={10}
+                    width={80}
+                    tick={{ fill: '#94a3b8' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
+                      border: '1px solid #475569',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="volume" 
+                    fill="#8b5cf6"
+                    radius={[0, 4, 4, 0]}
+                    name="Total Volume (kg)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          )}
         </>
       )}
 
@@ -645,50 +689,6 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
               </ResponsiveContainer>
             </div>
           </div>
-        </Card>
-          )}
-
-          {/* Volume by Split Day */}
-      {volumeByDay.length > 0 && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-4 h-4 text-blue-400" />
-            <h4 className="text-sm font-bold text-white">Volume by Split Day</h4>
-          </div>
-
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={volumeByDay} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis 
-                type="number" 
-                stroke="#94a3b8" 
-                fontSize={10}
-                tick={{ fill: '#94a3b8' }}
-              />
-              <YAxis 
-                type="category" 
-                dataKey="day" 
-                stroke="#94a3b8" 
-                fontSize={10}
-                width={80}
-                tick={{ fill: '#94a3b8' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #475569',
-                  borderRadius: '8px',
-                  fontSize: '12px'
-                }}
-              />
-              <Bar 
-                dataKey="volume" 
-                fill="#8b5cf6"
-                radius={[0, 4, 4, 0]}
-                name="Total Volume (kg)"
-              />
-            </BarChart>
-          </ResponsiveContainer>
         </Card>
           )}
         </>
