@@ -23,7 +23,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
     const [showReactionsModal, setShowReactionsModal] = useState(false);
     const [showFullContent, setShowFullContent] = useState(false);
+    const [contentHeight, setContentHeight] = useState(0);
     const queryClient = useQueryClient();
+    const contentRef = React.useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
