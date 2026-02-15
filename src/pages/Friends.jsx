@@ -674,10 +674,12 @@ export default function Friends() {
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
                 {/* Friend Requests */}
                 {friendRequests.filter(req => {
-                   const displayName = req.user_name || req.friend_name || '';
+                   const requesterUser = allUsers.find(u => u.id === req.user_id);
+                   const displayName = requesterUser?.full_name || req.user_name || req.friend_name || '';
                    return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
                  }).map(request => {
-                   const currentName = request.user_name || request.friend_name;
+                   const requesterUser = allUsers.find(u => u.id === request.user_id);
+                   const currentName = requesterUser?.full_name || request.user_name || request.friend_name;
                   return (
                   <div
                     key={request.id}
