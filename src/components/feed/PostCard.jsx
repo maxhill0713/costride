@@ -500,7 +500,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
            {/* Reactions Modal */}
            <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
-           <DialogContent className="bg-gradient-to-br from-slate-900/50 to-slate-950/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl fixed bottom-4 right-4 w-80 max-h-96 p-4 shadow-2xl shadow-black/20 border-0 focus:outline-none [&>button]:hidden [&~*]:hidden">
+           <DialogContent className="bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl fixed bottom-4 right-4 w-80 max-h-96 p-4 shadow-lg focus:outline-none [&>button]:hidden [&~*]:hidden" style={{background: 'rgba(255, 255, 255, 0.1)'}}>
              <div className="space-y-2 overflow-y-auto">
                {reactedUsers.map(user => {
                  const variant = post.reactions[user.id];
