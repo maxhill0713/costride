@@ -316,6 +316,10 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
               <p className="text-xs text-slate-400">Track your progress & performance</p>
             </div>
           </div>
+          <div className="text-right">
+            <div className="text-lg font-bold text-white">{frequencyData.total}</div>
+            <p className="text-[10px] text-slate-400">workouts</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
