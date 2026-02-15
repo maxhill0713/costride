@@ -511,7 +511,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {viewMode === 'exercises' && (
         <>
           {/* Top Exercises by Volume */}
-          {topExercises.length > 0 && (
+          {topExercises.length > 0 ? (
             <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
               <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                 <Dumbbell className="w-4 h-4 text-blue-400" />
@@ -548,6 +548,14 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                   </div>
                 ))}
               </div>
+            </Card>
+          ) : (
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-8 text-center rounded-2xl shadow-2xl shadow-black/20">
+              <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+              <h4 className="text-base font-bold text-white mb-2">No Exercise Data</h4>
+              <p className="text-slate-400 text-sm">
+                No exercises found for the selected workout day and time range.
+              </p>
             </Card>
           )}
 
