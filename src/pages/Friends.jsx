@@ -726,13 +726,11 @@ export default function Friends() {
                   <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                 ) : (
                   friendsWithActivity.filter(friend => {
-                    const friendUser = allUsers.find(u => u.id === friend.friend_id);
-                    const displayName = friendUser?.full_name || friend.friend_name;
+                    const displayName = friend.friend_name;
                     return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
                   }).map(friend => {
                     const { activity } = friend;
-                    const friendUser = allUsers.find(u => u.id === friend.friend_id);
-                    const currentName = friendUser?.full_name || friend.friend_name;
+                    const currentName = friend.friend_name;
                     return (
                       <div
                         key={friend.id}
