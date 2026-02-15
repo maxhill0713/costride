@@ -213,7 +213,12 @@ export default function Home() {
   }
 
   const friendIds = friends.map(f => f.friend_id);
-  const friendPosts = allPosts.filter(post => friendIds.includes(post.member_id) && !post.is_system_generated);
+  const friendPosts = allPosts.filter(post => 
+    friendIds.includes(post.member_id) && 
+    !post.is_system_generated &&
+    !post.content?.includes('well done') &&
+    !post.content?.includes('workout finished')
+  );
 
   // Today's check-ins (all users)
   const todayCheckIns = todayCheckInsForQuery;
