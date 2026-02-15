@@ -191,6 +191,36 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     }
   }, [showFullContent]);
 
+  // Render gym join posts as compact horizontal rectangles
+  if (isGymJoinPost) {
+    return (
+      <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-blue-500/15 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-2.5 hover:border-blue-400/50 transition-all cursor-pointer h-16 flex items-center gap-2.5 shadow-lg shadow-black/20 mb-2"
+        >
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
+            {post.member_avatar ? (
+              <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xs font-bold text-white">
+                {post.member_name?.charAt(0)?.toUpperCase()}
+              </span>
+            )}
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-white text-xs truncate">{post.member_name}</p>
+            <p className="text-[11px] text-blue-300 truncate">{post.content}</p>
+          </div>
+        </motion.div>
+      </Link>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
