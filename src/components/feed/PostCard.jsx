@@ -393,9 +393,45 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                     <Flame className="w-12 h-12 text-orange-500 fill-current" />
                   )
                 ) : (
-                  <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="0.75">
-                    <path d="M8.5 14.5Q8 13 8 11.5a4 4 0 0 1 8 0q0 1.5-.5 3M12 2s1 3 1 5a3 3 0 0 1-6 0c0-2 1-5 1-5m0 14a2 2 0 0 0-2 2v2h4v-2a2 2 0 0 0-2-2" />
-                  </svg>
+                  <div className="flex items-center gap-2">
+                    {userStreakVariant === 'sunglasses' ? (
+                      <div className="relative w-12 h-12">
+                        <Flame className="w-12 h-12 text-transparent" stroke="black" strokeWidth="0.75" />
+                        <svg 
+                          className="absolute inset-0 w-full h-full pointer-events-none"
+                          viewBox="0 0 64 64"
+                          fill="none"
+                          stroke="black"
+                          strokeWidth="0.75"
+                        >
+                          <circle cx="20" cy="24" r="6" fill="none" />
+                          <circle cx="44" cy="24" r="6" fill="none" />
+                          <line x1="26" y1="24" x2="38" y2="24" />
+                        </svg>
+                      </div>
+                    ) : userStreakVariant === 'cowboy' ? (
+                      <div className="relative w-12 h-12">
+                        <Flame className="w-12 h-12 text-transparent" stroke="black" strokeWidth="0.75" />
+                        <svg 
+                          className="absolute inset-0 w-full h-full pointer-events-none"
+                          viewBox="0 0 64 64"
+                          fill="none"
+                          stroke="black"
+                          strokeWidth="0.75"
+                        >
+                          <path 
+                            d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
+                            fill="none"
+                          />
+                          <ellipse cx="32" cy="28" rx="24" ry="6" fill="none" />
+                          <line x1="14" y1="26" x2="50" y2="26" />
+                        </svg>
+                      </div>
+                    ) : (
+                      <Flame className="w-12 h-12 text-transparent" stroke="black" strokeWidth="0.75" />
+                    )}
+                    <Plus className="w-6 h-6 text-black" strokeWidth={1.5} />
+                  </div>
                 )}
               </motion.button>
               )}
