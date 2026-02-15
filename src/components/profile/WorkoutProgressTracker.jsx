@@ -12,6 +12,8 @@ export default function WorkoutProgressTracker({ currentUser }) {
   const [selectedWorkout, setSelectedWorkout] = useState('all');
   const [selectedDay, setSelectedDay] = useState('all');
   const [todayWorkoutLogged, setTodayWorkoutLogged] = useState(null);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [showWorkoutDetails, setShowWorkoutDetails] = useState(false);
 
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
@@ -244,138 +246,196 @@ export default function WorkoutProgressTracker({ currentUser }) {
         </div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-2 border border-orange-500/30 hover:border-orange-400/50 transition-colors">
-          <div className="flex items-center gap-1.5 mb-1">
-            <BarChart3 className="w-3 h-3 text-orange-300" />
-            <div className="text-[8px] text-orange-300/70 font-bold uppercase tracking-wider">Total Workouts</div>
-          </div>
-          <div className="text-xl font-black text-orange-200">{totalWorkouts}</div>
-          <div className="text-[8px] text-orange-300/50 mt-0.5">
-            {exerciseProgress.filter(e => e.progressFromPrevious?.direction === 'up').length} improving
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-2 border border-blue-500/30 hover:border-blue-400/50 transition-colors">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Clock className="w-3 h-3 text-blue-300" />
-            <div className="text-[8px] text-blue-300/70 font-bold uppercase tracking-wider">Avg Duration</div>
-          </div>
-          <div className="text-xl font-black text-blue-200">{avgDuration}m</div>
-          <div className="text-[8px] text-blue-300/50 mt-0.5">
-            {workoutsWithDuration}/{totalWorkouts} tracked
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-lg p-2 border border-purple-500/30 hover:border-purple-400/50 transition-colors">
-          <div className="flex items-center gap-1.5 mb-1">
-            <MessageSquare className="w-3 h-3 text-purple-300" />
-            <div className="text-[8px] text-purple-300/70 font-bold uppercase tracking-wider">With Notes</div>
-          </div>
-          <div className="text-xl font-black text-purple-200">{workoutsWithNotes}</div>
-          <div className="text-[8px] text-purple-300/50 mt-0.5">
-            {totalWorkouts > 0 ? Math.round((workoutsWithNotes / totalWorkouts) * 100) : 0}% completion
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-lg p-2 border border-cyan-500/30 hover:border-cyan-400/50 transition-colors">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Activity className="w-3 h-3 text-cyan-300" />
-            <div className="text-[8px] text-cyan-300/70 font-bold uppercase tracking-wider">Exercises</div>
-          </div>
-          <div className="text-xl font-black text-cyan-200">
-            {new Set(filteredLogs.flatMap(log => log.exercises?.map(e => e.exercise) || [])).size}
-          </div>
-          <div className="text-[8px] text-cyan-300/50 mt-0.5">
-            Tracked movements
-          </div>
-        </div>
-      </div>
-
-      {/* Exercise Progress List */}
-      <div className="space-y-1.5">
+      {/* Recent Workouts */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-            Exercise Progress
+          <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+            Recent Workouts ({filteredLogs.length})
           </div>
-          {exerciseProgress.length > 5 && (
-            <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/40 text-[8px] px-1.5 py-0">
-              Showing top 5
-            </Badge>
-          )}
         </div>
-        {exerciseProgress.length === 0 ? (
-          <div className="p-2 bg-slate-700/50 rounded-lg text-center">
-            <p className="text-slate-400 text-[10px]">No exercises logged yet</p>
+
+        {filteredLogs.length === 0 ? (
+          <div className="p-4 bg-slate-700/50 rounded-lg text-center">
+            <p className="text-slate-400 text-xs">No workouts logged yet</p>
           </div>
         ) : (
-          exerciseProgress.slice(0, 5).map((exercise, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-              className="p-2 bg-white/5 backdrop-blur-md rounded-lg border border-white/10 hover:border-white/20 transition-all"
-            >
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="text-[10px] font-semibold text-white">{exercise.name}</span>
-                <div className="flex gap-1">
-                  {exercise.progressFromPrevious && (
-                    <Badge 
-                      className={`text-[9px] px-1 py-0 ${
-                        exercise.progressFromPrevious.direction === 'up' 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                          : exercise.progressFromPrevious.direction === 'down'
-                          ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                          : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                      }`}
-                    >
-                      {exercise.progressFromPrevious.direction === 'up' && <TrendingUp className="w-2 h-2 mr-0.5" />}
-                      {exercise.progressFromPrevious.direction === 'down' && <TrendingDown className="w-2 h-2 mr-0.5" />}
-                      {exercise.progressFromPrevious.change > 0 ? '+' : ''}{exercise.progressFromPrevious.change}
-                    </Badge>
+          <div className="space-y-2">
+            {filteredLogs.slice(0, 10).map((log, index) => (
+              <motion.div
+                key={log.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03, duration: 0.3 }}
+                className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 hover:border-white/20 transition-all overflow-hidden"
+              >
+                <div className="p-3">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-white mb-1">{log.workout_name}</h4>
+                      <p className="text-[10px] text-slate-400">
+                        {new Date(log.completed_date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    {log.exercises?.length > 0 && (
+                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px] px-1.5 py-0.5">
+                        {log.exercises.length} exercises
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Duration & Notes Buttons */}
+                  <div className="flex gap-2">
+                    {log.duration && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedLog(log);
+                          setShowWorkoutDetails(true);
+                        }}
+                        className="flex-1 h-auto py-2 px-3 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-200 rounded-lg transition-all"
+                      >
+                        <Clock className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                        <span className="text-[11px] font-semibold">{log.duration}</span>
+                      </Button>
+                    )}
+                    {log.notes && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedLog(log);
+                          setShowWorkoutDetails(true);
+                        }}
+                        className="flex-1 h-auto py-2 px-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-200 rounded-lg transition-all"
+                      >
+                        <MessageSquare className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                        <span className="text-[11px] font-semibold">View Notes</span>
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Quick Exercise Preview */}
+                  {log.exercises?.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-white/5">
+                      <div className="flex flex-wrap gap-1">
+                        {log.exercises.slice(0, 3).map((exercise, idx) => (
+                          <span 
+                            key={idx}
+                            className="text-[9px] px-1.5 py-0.5 bg-slate-700/50 text-slate-300 rounded-md font-medium"
+                          >
+                            {exercise.exercise}
+                          </span>
+                        ))}
+                        {log.exercises.length > 3 && (
+                          <span className="text-[9px] px-1.5 py-0.5 bg-slate-700/50 text-slate-400 rounded-md">
+                            +{log.exercises.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-2 text-[10px] mb-1.5">
-                {exercise.first && exercise.progressFromFirst && (
-                  <div>
-                    <div className="text-[8px] text-slate-400 mb-0.5">First Workout</div>
-                    <div className="font-semibold text-slate-300 text-sm">
-                      {exercise.first.weight}kg
-                    </div>
-                    <div className="text-[9px] text-slate-400">{exercise.first.setsReps}</div>
-                  </div>
-                )}
-                {exercise.previous && (
-                  <div>
-                    <div className="text-[8px] text-slate-400 mb-0.5">Previous</div>
-                    <div className="font-semibold text-slate-300 text-sm">
-                      {exercise.previous.weight}kg
-                    </div>
-                    <div className="text-[9px] text-slate-400">{exercise.previous.setsReps}</div>
-                  </div>
-                )}
-                <div>
-                  <div className="text-[8px] text-slate-400 mb-0.5">Current</div>
-                  <div className="font-bold text-white text-sm">
-                    {exercise.latest.weight}kg
-                  </div>
-                  <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
-                </div>
-              </div>
-              {exercise.latest.notes && (
-                <div className="flex gap-1.5 items-start text-[9px] bg-orange-500/10 border border-orange-500/20 rounded-lg p-1.5">
-                  <MessageSquare className="w-3 h-3 text-orange-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-orange-200/80 line-clamp-2">{exercise.latest.notes}</p>
-                </div>
-              )}
-            </motion.div>
-          ))
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
+
+      {/* Workout Details Modal */}
+      {showWorkoutDetails && selectedLog && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowWorkoutDetails(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-white/20 rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">{selectedLog.workout_name}</h3>
+                  <p className="text-xs text-slate-400">
+                    {new Date(selectedLog.completed_date).toLocaleDateString('en-US', { 
+                      weekday: 'long',
+                      month: 'long', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowWorkoutDetails(false)}
+                  className="p-2 -m-2 text-slate-400 hover:text-white transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5 rotate-90" />
+                </button>
+              </div>
+
+              {/* Duration */}
+              {selectedLog.duration && (
+                <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Duration</span>
+                  </div>
+                  <p className="text-xl font-black text-blue-200">{selectedLog.duration}</p>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedLog.notes && (
+                <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">Workout Notes</span>
+                  </div>
+                  <p className="text-sm text-purple-100 leading-relaxed whitespace-pre-wrap">{selectedLog.notes}</p>
+                </div>
+              )}
+
+              {/* Exercises */}
+              {selectedLog.exercises?.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Activity className="w-4 h-4 text-orange-400" />
+                    <span className="text-xs font-bold text-orange-300 uppercase tracking-wider">
+                      Exercises ({selectedLog.exercises.length})
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {selectedLog.exercises.map((exercise, idx) => (
+                      <div 
+                        key={idx}
+                        className="p-3 bg-white/5 rounded-lg border border-white/10"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="text-sm font-semibold text-white">{exercise.exercise}</span>
+                          {exercise.weight && (
+                            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">
+                              {exercise.weight}kg
+                            </Badge>
+                          )}
+                        </div>
+                        {exercise.setsReps && (
+                          <p className="text-xs text-slate-400">{exercise.setsReps}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </Card>
   );
 }
