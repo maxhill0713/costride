@@ -358,20 +358,21 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 </button>
               )}
 
-              {/* Reaction Button - Streak Icon */}
+              {/* Reaction Button - Streak Icon with Count */}
               {!isOwnProfile && (
               <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute bottom-14 left-4 text-2xl transition-all"
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
+                className="absolute bottom-14 left-4 flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 border border-slate-600/40 rounded-lg hover:bg-slate-700/60 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {hasReacted ? (
-                  <span className="text-orange-500 drop-shadow-lg">{getStreakIcon(userStreakVariant)}</span>
-                ) : (
-                  <span className="text-white opacity-50 drop-shadow-lg">{getStreakIcon(userStreakVariant)}</span>
-                )}
+                <span className={`text-xl ${hasReacted ? 'text-orange-500' : 'text-slate-400'}`}>
+                  {getStreakIcon(userStreakVariant)}
+                </span>
+                <span className={`font-bold text-sm ${hasReacted ? 'text-orange-400' : 'text-slate-300'}`}>
+                  {Object.keys(post.reactions || {}).length}
+                </span>
               </motion.button>
               )}
 
