@@ -280,7 +280,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           ? 'bottom-0 py-4' 
           : 'bottom-0 py-2.5'
       }`}>
-        <div className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
+        <div ref={contentRef} className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
           <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
             {post.content && post.content.length > 30 && !showFullContent ? (
               <>
