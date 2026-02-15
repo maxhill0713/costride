@@ -289,7 +289,8 @@ export default function UserProfile() {
           </div>
         ) : (
         <>
-        {/* Streak Stats */}
+        {/* Streak Stats - Only show on own profile */}
+        {isOwnProfile && (
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Card className="p-4 bg-slate-900/70 backdrop-blur-sm border border-orange-500/40 rounded-xl">
             <div className="flex items-center gap-3 mb-2">
@@ -320,6 +321,7 @@ export default function UserProfile() {
             </div>
           </Card>
         </div>
+        )}
 
         {/* Milestone Badges */}
         {earnedBadges.length > 0 && (
