@@ -421,12 +421,14 @@ export default function Friends() {
 
     // Inactive friends warning
     friendsWithActivity.forEach(friend => {
+      const friendUser = allUsers.find(u => u.id === friend.friend_id);
+      const displayName = friendUser?.full_name || friend.friend_name;
       if (friend.activity.daysSinceCheckIn >= 7) {
         cards.push({
           id: `inactive-${friend.friend_id}`,
           type: 'friend-inactive',
-          title: `${friend.friend_name} Needs a Nudge`,
-          message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days. Send them some motivation! 👋`,
+          title: `${displayName} Needs a Nudge`,
+          message: `${displayName} hasn't checked in for ${friend.activity.daysSinceCheckIn} days. Send them some motivation! 👋`,
           emoji: '👋',
           color: 'from-slate-500 to-slate-600',
           borderColor: 'border-slate-500/30'
