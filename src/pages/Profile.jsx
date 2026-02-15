@@ -50,7 +50,10 @@ export default function Profile() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: async () => {
+      const response = await base44.functions.invoke('syncSupabaseProfile');
+      return response.data;
+    }
   });
 
   const { data: userPosts = [] } = useQuery({
@@ -133,7 +136,7 @@ export default function Profile() {
   }, [currentUser]);
 
   const handleSave = async () => {
-    await base44.auth.updateMe(editData);
+    await base44.functions.invoke('updateProfileBothPlatforms', editData);
     queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     setIsEditing(false);
   };
