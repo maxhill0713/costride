@@ -350,8 +350,8 @@ export default function Home() {
                        </svg>
                      </div>
                    ) : streakVariant === 'cowboy' ? (
-                     <div className="relative w-8 h-8">
-                       <Flame className="w-8 h-8 text-orange-500 fill-current" />
+                     <div className="relative w-8.5 h-8.5">
+                       <Flame className="w-8.5 h-8.5 text-orange-500 fill-current" />
                        <svg 
                          className="absolute inset-0 w-full h-full pointer-events-none"
                          viewBox="0 0 64 64"
