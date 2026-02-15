@@ -241,11 +241,11 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     return { improving, maintaining, declining };
   }, [filteredLogs]);
 
-  // Workout consistency
+  // Workout consistency - filtered by workout day selection
   const workoutStreak = useMemo(() => {
-    if (!workoutLogs.length) return { current: 0, longest: 0 };
+    if (!filteredLogs.length) return { current: 0, longest: 0 };
 
-    const sortedDates = workoutLogs
+    const sortedDates = filteredLogs
       .map(log => new Date(log.created_date).toDateString())
       .filter((date, idx, arr) => arr.indexOf(date) === idx)
       .sort((a, b) => new Date(b) - new Date(a));
@@ -274,7 +274,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     }
 
     return { current: currentStreak, longest: longestStreak };
-  }, [workoutLogs]);
+  }, [filteredLogs]);
 
   // Top exercises by volume
   const topExercises = useMemo(() => {
