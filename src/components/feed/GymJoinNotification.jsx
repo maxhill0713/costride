@@ -5,10 +5,10 @@ import { Building2 } from 'lucide-react';
 
 export default function GymJoinNotification({ post }) {
   return (
-    <div className="flex justify-center mb-4 w-full">
+    <div className="mb-4">
       <Link 
         to={createPageUrl('UserProfile') + `?id=${post.member_id}`}
-        className="max-w-[200px]"
+        className="inline-block"
       >
         <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-xl border border-blue-500/30 rounded-xl p-4 hover:border-blue-400/50 transition-all cursor-pointer">
           {/* Header */}
