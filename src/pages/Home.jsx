@@ -331,12 +331,12 @@ export default function Home() {
     }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Header with Streak */}
-         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3.5">
-           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
-                 <button 
-                   onClick={() => setShowStreakVariants(true)}
-                   className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 pt-1.5"
-                 >
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-1.5">
+          <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
+                <button 
+                  onClick={() => setShowStreakVariants(true)}
+                  className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0"
+                >
                   {streakVariant === 'sunglasses' ? (
                      <div className="relative w-8 h-8">
                        <Flame className="w-8 h-8 text-orange-500 fill-current" />

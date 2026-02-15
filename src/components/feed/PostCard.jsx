@@ -273,7 +273,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           : 'bottom-0 py-2.5'
       }`}>
         <div className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
-          <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words pt-14' : 'text-sm leading-snug pt-14'}`}>
+          <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
             {post.content && post.content.length > 30 && !showFullContent ? (
               <>
                 {post.content.substring(0, 30)}...{' '}
@@ -357,7 +357,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute left-4 bottom-4 transition-all flex items-center gap-1"
+                className={`absolute left-4 transition-all flex items-center gap-1 ${showFullContent ? 'bottom-[3.15rem]' : 'bottom-[2.1rem]'}`}
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
               >
