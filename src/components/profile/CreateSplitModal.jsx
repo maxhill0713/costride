@@ -115,12 +115,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   Name Your Split
                 </Label>
                 <input
-                  type="text"
-                  value={customSplitName}
-                  onChange={(e) => setCustomSplitName(e.target.value)}
-                  placeholder="e.g., Upper/Lower 2x"
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                />
+                   type="text"
+                   value={customSplitName}
+                   onChange={(e) => setCustomSplitName(e.target.value.slice(0, 30))}
+                   placeholder="e.g., Upper/Lower 2x"
+                   maxLength="30"
+                   className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                 />
               </div>
 
               {/* Customize Each Training Day */}
