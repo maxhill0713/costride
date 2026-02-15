@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity, Flame, ArrowUp, ArrowDown, Minus, Trophy, Clock, Download, Share2, Settings, BarChart3, Sparkles } from 'lucide-react';
+import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity, Flame, ArrowUp, ArrowDown, Minus, Trophy, Clock, Download, Share2, Settings, BarChart3, Sparkles, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
@@ -464,11 +465,23 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
           {workoutLogs.length > 0 ? (
             <>
               {/* Strength Progress Indicators */}
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
-                <h4 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
-                  <Target className="w-3.5 h-3.5 text-cyan-400" />
-                  Strength Progress
-                </h4>
+                  <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                        <Target className="w-3.5 h-3.5 text-cyan-400" />
+                        Strength Progress
+                      </h4>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
+                            <p>Compares your last 3 workouts to workouts 3-6 ago. Improving = 5%+ weight increase. Declining = 5%+ decrease.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="text-center p-2.5 bg-green-500/10 border border-green-500/30 rounded-lg">
                     <ArrowUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
@@ -492,10 +505,22 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
           {volumeProgression.length > 0 && (
             <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-purple-400" />
-                  Training Volume Trend
-                </h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-purple-400" />
+                    Training Volume Trend
+                  </h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
+                        <p>Total volume = weight × reps × sets for all exercises. Higher volume = more work done per day.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs">
                   Last 14 Days
                 </Badge>
@@ -547,6 +572,16 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-4 h-4 text-blue-400" />
                 <h4 className="text-sm font-bold text-white">Volume by Split Day</h4>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
+                      <p>Shows total training volume for each workout day (e.g., Push, Pull, Legs). Helps balance your weekly training load.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               <ResponsiveContainer width="100%" height={200}>
@@ -603,10 +638,22 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
           {/* Top Exercises by Volume */}
           {topExercises.length > 0 ? (
             <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-              <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                <Dumbbell className="w-4 h-4 text-blue-400" />
-                Top Exercises by Volume
-              </h4>
+              <div className="flex items-center gap-2 mb-4">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Dumbbell className="w-4 h-4 text-blue-400" />
+                  Top Exercises by Volume
+                </h4>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
+                      <p>Your most worked exercises ranked by total volume across all logged workouts.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div className="space-y-3">
                 {topExercises.map((ex, idx) => (
                   <div key={idx} className="relative">
@@ -651,11 +698,21 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
           {/* Exercise Progress Chart */}
           {selectedExercise !== 'all' && progressData.length > 0 && (
-        <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Dumbbell className="w-4 h-4 text-orange-400" />
               <h4 className="text-sm font-bold text-white">{selectedExercise} Progress</h4>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
+                    <p>Max Weight = heaviest single rep. Volume = weight × reps × sets per session. Tracks your last 10 sessions.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/30 text-xs">
               Last 10 Sessions
@@ -781,13 +838,23 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {viewMode === 'records' && (
         <>
               {/* Personal Records */}
-          {personalRecords.length > 0 ? (
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-400" />
-                  <h4 className="text-sm font-bold text-white">Personal Records</h4>
-                </div>
+              {personalRecords.length > 0 ? (
+                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-yellow-400" />
+                      <h4 className="text-sm font-bold text-white">Personal Records</h4>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs text-xs bg-slate-950 border-slate-700">
+                            <p>Your heaviest weight for each exercise across all logged workouts. Updated whenever you lift heavier.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                 <Badge className="bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs">
                   Top 5
                 </Badge>
