@@ -185,6 +185,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     onComment(post.id, commentText);
   };
 
+  useEffect(() => {
+    if (contentRef.current && showFullContent) {
+      setContentHeight(contentRef.current.offsetHeight);
+    }
+  }, [showFullContent]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
