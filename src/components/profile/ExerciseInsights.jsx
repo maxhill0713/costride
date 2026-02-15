@@ -93,6 +93,18 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     });
   }, [workoutLogs, selectedDay, selectedExercise, timeRange, selectedWorkoutDay, workoutDays, viewMode]);
 
+  // For Overview tab - use all logs without workout day filter
+  const overviewLogs = useMemo(() => {
+    const now = new Date();
+    const daysAgo = parseInt(timeRange);
+    const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+
+    return workoutLogs.filter(log => {
+      const logDate = new Date(log.created_date);
+      return logDate >= cutoffDate;
+    });
+  }, [workoutLogs, timeRange]);
+
   // Calculate exercise progress data
   const progressData = useMemo(() => {
     if (selectedExercise === 'all') return [];
@@ -116,11 +128,12 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(-10); // Last 10 sessions
   }, [filteredLogs, selectedExercise]);
 
-  // Volume by split day
+  // Volume by split day - uses overviewLogs for Overview tab
   const volumeByDay = useMemo(() => {
     const dayVolumes = {};
+    const logsToUse = viewMode === 'overview' ? overviewLogs : filteredLogs;
 
-    filteredLogs.forEach(log => {
+    logsToUse.forEach(log => {
       const day = log.split_day || 'Other';
       if (!dayVolumes[day]) dayVolumes[day] = 0;
 
@@ -138,7 +151,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         volume: Math.round(volume)
       }))
       .sort((a, b) => b.volume - a.volume);
-  }, [filteredLogs]);
+  }, [filteredLogs, overviewLogs, viewMode]);
 
   // Frequency analysis - filtered by workout day selection
   const frequencyData = useMemo(() => {
@@ -192,11 +205,12 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(0, 5);
   }, [filteredLogs]);
 
-  // Volume progression over time
+  // Volume progression over time - uses overviewLogs for Overview tab
   const volumeProgression = useMemo(() => {
     const dailyVolume = {};
+    const logsToUse = viewMode === 'overview' ? overviewLogs : filteredLogs;
 
-    filteredLogs.forEach(log => {
+    logsToUse.forEach(log => {
       const date = new Date(log.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       if (!dailyVolume[date]) dailyVolume[date] = 0;
 
@@ -214,15 +228,16 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         volume: Math.round(volume)
       }))
       .slice(-14); // Last 14 days
-  }, [filteredLogs]);
+  }, [filteredLogs, overviewLogs, viewMode]);
 
-  // Strength trends
+  // Strength trends - uses overviewLogs for Overview tab
   const strengthTrends = useMemo(() => {
-    if (!filteredLogs.length) return { improving: 0, maintaining: 0, declining: 0 };
+    const logsToUse = viewMode === 'overview' ? overviewLogs : filteredLogs;
+    if (!logsToUse.length) return { improving: 0, maintaining: 0, declining: 0 };
 
     const exerciseProgress = {};
 
-    filteredLogs.forEach(log => {
+    logsToUse.forEach(log => {
       log.exercises?.forEach(ex => {
         if (!ex.name) return;
         if (!exerciseProgress[ex.name]) exerciseProgress[ex.name] = [];
@@ -253,7 +268,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     });
 
     return { improving, maintaining, declining };
-  }, [filteredLogs]);
+  }, [filteredLogs, overviewLogs, viewMode]);
 
   // Workout consistency - filtered by workout day selection
   const workoutStreak = useMemo(() => {
@@ -433,7 +448,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {/* Overview View */}
       {viewMode === 'overview' && (
         <>
-          {filteredLogs.length > 0 ? (
+          {overviewLogs.length > 0 ? (
             <>
               {/* Strength Progress Indicators */}
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
