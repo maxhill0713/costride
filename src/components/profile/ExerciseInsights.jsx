@@ -128,30 +128,36 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(-10); // Last 10 sessions
   }, [filteredLogs, selectedExercise]);
 
-  // Volume by split day - uses overviewLogs for Overview tab
+  // Volume by split day
   const volumeByDay = useMemo(() => {
+    if (!workoutLogs.length) return [];
+    
     const dayVolumes = {};
-    const logsToUse = viewMode === 'overview' ? overviewLogs : filteredLogs;
-
-    logsToUse.forEach(log => {
+    
+    workoutLogs.forEach(log => {
       const day = log.split_day || 'Other';
       if (!dayVolumes[day]) dayVolumes[day] = 0;
 
-      log.exercises?.forEach(ex => {
-        const volume = ex.sets?.reduce((sum, set) => {
-          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
-        }, 0) || 0;
-        dayVolumes[day] += volume;
-      });
+      if (log.exercises && Array.isArray(log.exercises)) {
+        log.exercises.forEach(ex => {
+          if (ex.sets && Array.isArray(ex.sets)) {
+            ex.sets.forEach(set => {
+              const weight = parseFloat(set.weight) || 0;
+              const reps = parseInt(set.reps) || 0;
+              dayVolumes[day] += weight * reps;
+            });
+          }
+        });
+      }
     });
 
     return Object.entries(dayVolumes)
       .map(([day, volume]) => ({
-        day: day,
+        day,
         volume: Math.round(volume)
       }))
       .sort((a, b) => b.volume - a.volume);
-  }, [filteredLogs, overviewLogs, viewMode]);
+  }, [workoutLogs]);
 
   // Frequency analysis - filtered by workout day selection
   const frequencyData = useMemo(() => {
@@ -205,21 +211,27 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(0, 5);
   }, [filteredLogs]);
 
-  // Volume progression over time - uses overviewLogs for Overview tab
+  // Volume progression over time
   const volumeProgression = useMemo(() => {
+    if (!workoutLogs.length) return [];
+    
     const dailyVolume = {};
-    const logsToUse = viewMode === 'overview' ? overviewLogs : filteredLogs;
-
-    logsToUse.forEach(log => {
+    
+    workoutLogs.forEach(log => {
       const date = new Date(log.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       if (!dailyVolume[date]) dailyVolume[date] = 0;
 
-      log.exercises?.forEach(ex => {
-        const volume = ex.sets?.reduce((sum, set) => {
-          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
-        }, 0) || 0;
-        dailyVolume[date] += volume;
-      });
+      if (log.exercises && Array.isArray(log.exercises)) {
+        log.exercises.forEach(ex => {
+          if (ex.sets && Array.isArray(ex.sets)) {
+            ex.sets.forEach(set => {
+              const weight = parseFloat(set.weight) || 0;
+              const reps = parseInt(set.reps) || 0;
+              dailyVolume[date] += weight * reps;
+            });
+          }
+        });
+      }
     });
 
     return Object.entries(dailyVolume)
@@ -227,8 +239,8 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         date,
         volume: Math.round(volume)
       }))
-      .slice(-14); // Last 14 days
-  }, [filteredLogs, overviewLogs, viewMode]);
+      .slice(-14);
+  }, [workoutLogs]);
 
   // Strength trends - uses overviewLogs for Overview tab
   const strengthTrends = useMemo(() => {
@@ -307,19 +319,25 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
   // Top exercises by volume
   const topExercises = useMemo(() => {
+    if (!workoutLogs.length) return [];
+    
     const exerciseVolumes = {};
 
-    filteredLogs.forEach(log => {
-      log.exercises?.forEach(ex => {
-        if (!ex.name) return;
-        if (!exerciseVolumes[ex.name]) exerciseVolumes[ex.name] = 0;
-        
-        const volume = ex.sets?.reduce((sum, set) => {
-          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
-        }, 0) || 0;
-        
-        exerciseVolumes[ex.name] += volume;
-      });
+    workoutLogs.forEach(log => {
+      if (log.exercises && Array.isArray(log.exercises)) {
+        log.exercises.forEach(ex => {
+          if (!ex.name) return;
+          if (!exerciseVolumes[ex.name]) exerciseVolumes[ex.name] = 0;
+          
+          if (ex.sets && Array.isArray(ex.sets)) {
+            ex.sets.forEach(set => {
+              const weight = parseFloat(set.weight) || 0;
+              const reps = parseInt(set.reps) || 0;
+              exerciseVolumes[ex.name] += weight * reps;
+            });
+          }
+        });
+      }
     });
 
     return Object.entries(exerciseVolumes)
@@ -329,7 +347,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       }))
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 5);
-  }, [filteredLogs]);
+  }, [workoutLogs]);
 
   return (
     <div className="space-y-4">
@@ -448,7 +466,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {/* Overview View */}
       {viewMode === 'overview' && (
         <>
-          {overviewLogs.length > 0 ? (
+          {workoutLogs.length > 0 ? (
             <>
               {/* Strength Progress Indicators */}
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
