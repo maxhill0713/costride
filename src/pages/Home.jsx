@@ -377,7 +377,7 @@ export default function Home() {
                    if (currentUser) {
                      base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
                    }
-                 }} className="absolute right-0 top-0 hover:opacity-80 transition-opacity p-2 -mr-2">
+                 }} className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
                    <div className="relative">
                     <FriendsIcon className="w-7 h-7 text-cyan-400" />
                     {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
