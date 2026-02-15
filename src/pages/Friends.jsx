@@ -234,7 +234,14 @@ export default function Friends() {
   // Only include actual user-created posts (with content, images, or videos)
   const friendPosts = allPosts.filter(post => 
     friendIds.includes(post.member_id) && 
-    (post.content || post.image_url || post.video_url)
+    (post.content || post.image_url || post.video_url) &&
+    !post.gym_join
+  );
+
+  // Gym join posts (displayed separately with compact layout)
+  const gymJoinPosts = allPosts.filter(post =>
+    friendIds.includes(post.member_id) &&
+    post.gym_join === true
   );
 
   // Create unified activity feed
