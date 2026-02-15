@@ -110,18 +110,18 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     if (selectedExercise === 'all') return [];
 
     return filteredLogs
-      .filter(log => log.exercises?.some(ex => ex.name === selectedExercise))
+      .filter(log => log.exercises?.some(ex => (ex.exercise || ex.name) === selectedExercise))
       .map((log, idx) => {
-        const exercise = log.exercises.find(ex => ex.name === selectedExercise);
-        const maxWeight = Math.max(...(exercise?.sets?.map(s => parseFloat(s.weight) || 0) || [0]));
-        const totalVolume = exercise?.sets?.reduce((sum, set) => {
-          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
-        }, 0) || 0;
+        const exercise = log.exercises.find(ex => (ex.exercise || ex.name) === selectedExercise);
+        const weight = parseFloat(exercise?.weight) || 0;
+        const reps = exercise?.setsReps ? parseInt(exercise.setsReps.split('x')[1] || exercise.setsReps) || 1 : 1;
+        const sets = exercise?.setsReps ? parseInt(exercise.setsReps.split('x')[0]) || 1 : 1;
+        const totalVolume = weight * reps * sets;
 
         return {
           session: `S${idx + 1}`,
           date: new Date(log.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-          maxWeight: maxWeight,
+          maxWeight: weight,
           volume: Math.round(totalVolume)
         };
       })
@@ -185,13 +185,14 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
     filteredLogs.forEach(log => {
       log.exercises?.forEach(ex => {
-        if (!ex.name || !ex.sets) return;
+        const exerciseName = ex.exercise || ex.name;
+        if (!exerciseName) return;
         
-        const maxWeight = Math.max(...ex.sets.map(s => parseFloat(s.weight) || 0));
+        const weight = parseFloat(ex.weight) || 0;
         
-        if (!records[ex.name] || maxWeight > records[ex.name].weight) {
-          records[ex.name] = {
-            weight: maxWeight,
+        if (!records[exerciseName] || weight > records[exerciseName].weight) {
+          records[exerciseName] = {
+            weight: weight,
             date: new Date(log.created_date)
           };
         }
@@ -246,11 +247,12 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
     logsToUse.forEach(log => {
       log.exercises?.forEach(ex => {
-        if (!ex.name) return;
-        if (!exerciseProgress[ex.name]) exerciseProgress[ex.name] = [];
+        const exerciseName = ex.exercise || ex.name;
+        if (!exerciseName) return;
+        if (!exerciseProgress[exerciseName]) exerciseProgress[exerciseName] = [];
         
-        const maxWeight = Math.max(...(ex.sets?.map(s => parseFloat(s.weight) || 0) || [0]));
-        exerciseProgress[ex.name].push(maxWeight);
+        const weight = parseFloat(ex.weight) || 0;
+        exerciseProgress[exerciseName].push(weight);
       });
     });
 
