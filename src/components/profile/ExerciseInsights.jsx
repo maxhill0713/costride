@@ -2,9 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity, Flame, ArrowUp, ArrowDown, Minus, Trophy, Clock } from 'lucide-react';
+import { TrendingUp, Calendar, Dumbbell, Zap, Target, Award, Activity, Flame, ArrowUp, ArrowDown, Minus, Trophy, Clock, Download, Share2, Settings, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function ExerciseInsights({ workoutLogs = [], workoutSplit, trainingDays = [] }) {
   const [selectedDay, setSelectedDay] = useState('all');
@@ -289,13 +292,47 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
           </div>
         </div>
 
-        <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 p-1 rounded-lg mb-4">
-            <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-            <TabsTrigger value="exercises" className="text-xs">Exercises</TabsTrigger>
-            <TabsTrigger value="records" className="text-xs">Records</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-2 mb-4">
+          <Tabs value={viewMode} onValueChange={setViewMode} className="flex-1">
+            <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 p-1 rounded-lg">
+              <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
+              <TabsTrigger value="exercises" className="text-xs">Exercises</TabsTrigger>
+              <TabsTrigger value="records" className="text-xs">Records</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50 text-white h-9">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-700">
+              <DropdownMenuItem 
+                onClick={() => toast.info('Export feature coming soon!')}
+                className="text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <Download className="w-4 h-4 mr-2 text-blue-400" />
+                Export as PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => toast.info('Share feature coming soon!')}
+                className="text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <Share2 className="w-4 h-4 mr-2 text-green-400" />
+                Share Progress
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-700" />
+              <DropdownMenuItem 
+                onClick={() => toast.info('Detailed stats coming soon!')}
+                className="text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <BarChart3 className="w-4 h-4 mr-2 text-purple-400" />
+                View Detailed Stats
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
