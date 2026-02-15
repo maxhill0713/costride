@@ -432,66 +432,6 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {/* Overview View */}
       {viewMode === 'overview' && (
         <>
-          {/* Enhanced Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 p-3 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-full blur-xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-1">
-                  <Calendar className="w-4 h-4 text-blue-400" />
-                  <Badge className="bg-blue-500/20 text-blue-300 border-0 text-[10px] px-1.5 py-0">
-                    {frequencyData.avgPerWeek}/wk
-                  </Badge>
-                </div>
-                <div className="text-2xl font-black text-white mb-0.5">{frequencyData.total}</div>
-                <p className="text-[10px] text-slate-400 font-medium">Total Sessions</p>
-              </div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl border border-orange-500/30 p-3 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 rounded-full blur-xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-1">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                  <Badge className="bg-orange-500/20 text-orange-300 border-0 text-[10px] px-1.5 py-0">
-                    Best: {workoutStreak.longest}
-                  </Badge>
-                </div>
-                <div className="text-2xl font-black text-white mb-0.5">{workoutStreak.current}</div>
-                <p className="text-[10px] text-slate-400 font-medium">Day Streak</p>
-              </div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/30 p-3 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-green-500/10 rounded-full blur-xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-1">
-                  <TrendingUp className="w-4 h-4 text-green-400" />
-                  {strengthTrends.improving > 0 && (
-                    <Badge className="bg-green-500/20 text-green-300 border-0 text-[10px] px-1.5 py-0">
-                      +{strengthTrends.improving}
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-2xl font-black text-white mb-0.5">{personalRecords.length}</div>
-                <p className="text-[10px] text-slate-400 font-medium">Personal Records</p>
-              </div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 p-3 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-full blur-xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-1">
-                  <Trophy className="w-4 h-4 text-purple-400" />
-                  <Badge className="bg-purple-500/20 text-purple-300 border-0 text-[10px] px-1.5 py-0">
-                    Top
-                  </Badge>
-                </div>
-                <div className="text-base font-black text-white mb-0.5 truncate">{frequencyData.mostActiveDay}</div>
-                <p className="text-[10px] text-slate-400 font-medium">Most Active Split</p>
-              </div>
-            </Card>
-          </div>
 
           {/* Strength Progress Indicators */}
           <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
