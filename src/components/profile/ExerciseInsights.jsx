@@ -365,7 +365,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {workoutDays.length > 0 && viewMode === 'overview' && (
+          {workoutDays.length > 0 && viewMode === 'exercises' && (
             <div>
               <label className="text-xs text-slate-400 font-semibold mb-2 block">Workout Day</label>
               <Select value={selectedWorkoutDay} onValueChange={setSelectedWorkoutDay}>
