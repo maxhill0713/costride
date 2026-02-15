@@ -68,9 +68,9 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       const inTimeRange = logDate >= cutoffDate;
       const matchesDay = selectedDay === 'all' || log.split_day === selectedDay;
       
-      // Filter by workout day (always filter if selectedWorkoutDay is set)
+      // Filter by workout day ONLY when in Exercises tab
       let matchesWorkoutDay = true;
-      if (selectedWorkoutDay) {
+      if (viewMode === 'exercises' && selectedWorkoutDay) {
         const workoutDay = workoutDays.find(d => d.name === selectedWorkoutDay);
         if (workoutDay) {
           const workoutExercises = workoutDay.exercises.map(e => e.name || e);
@@ -85,7 +85,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       const hasExercise = log.exercises?.some(ex => ex.name === selectedExercise);
       return inTimeRange && matchesDay && hasExercise && matchesWorkoutDay;
     });
-  }, [workoutLogs, selectedDay, selectedExercise, timeRange, selectedWorkoutDay, workoutDays]);
+  }, [workoutLogs, selectedDay, selectedExercise, timeRange, selectedWorkoutDay, workoutDays, viewMode]);
 
   // Calculate exercise progress data
   const progressData = useMemo(() => {
