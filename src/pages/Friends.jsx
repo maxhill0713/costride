@@ -609,18 +609,6 @@ export default function Friends() {
          </div>
          )}
 
-         {/* Gym Join Notifications */}
-         {gymJoinPosts.length > 0 && (
-           <div className="space-y-2 mb-4">
-             {gymJoinPosts.map((post) => (
-               <GymJoinNotification
-                 key={post.id}
-                 post={post}
-               />
-             ))}
-           </div>
-         )}
-
          {/* Friend Posts */}
          {friendPosts.length > 0 && (
            <div className="space-y-3 mt-0">
