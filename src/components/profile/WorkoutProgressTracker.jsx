@@ -164,16 +164,20 @@ export default function WorkoutProgressTracker({ currentUser }) {
                       +{todayWorkoutLogged.exercises.length - 3} more exercises
                     </div>
                   )}
-                  {todayWorkoutLogged.duration && (
-                    <div className="mt-2 pt-2 border-t border-green-500/20 flex gap-1.5 items-center">
-                      <Activity className="w-3 h-3 text-green-400 flex-shrink-0" />
-                      <p className="text-green-200/80 text-[9px] font-semibold">{todayWorkoutLogged.duration}</p>
-                    </div>
-                  )}
-                  {todayWorkoutLogged.notes && (
-                    <div className="mt-2 pt-2 border-t border-green-500/20 flex gap-1.5 items-start">
-                      <MessageSquare className="w-3 h-3 text-green-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-green-200/80 text-[9px] line-clamp-2">{todayWorkoutLogged.notes}</p>
+                  {(todayWorkoutLogged.duration || todayWorkoutLogged.notes) && (
+                    <div className="mt-2 pt-2 border-t border-green-500/20 space-y-1.5">
+                      {todayWorkoutLogged.duration && (
+                        <div className="flex gap-1.5 items-center">
+                          <Activity className="w-3 h-3 text-green-400 flex-shrink-0" />
+                          <p className="text-green-200/80 text-[9px] font-semibold">{todayWorkoutLogged.duration}</p>
+                        </div>
+                      )}
+                      {todayWorkoutLogged.notes && (
+                        <div className="flex gap-1.5 items-start">
+                          <MessageSquare className="w-3 h-3 text-green-400 flex-shrink-0 mt-0.5" />
+                          <p className="text-green-200/80 text-[9px] line-clamp-2">{todayWorkoutLogged.notes}</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
