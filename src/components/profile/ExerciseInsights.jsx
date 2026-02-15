@@ -717,12 +717,17 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                 Get complex exercise-specific data, detailed performance insights, personalized guidance, and AI-powered recommendations to optimize your training.
               </p>
               
-              <Link to={createPageUrl('Premium')}>
-                <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Get Premium
-                </Button>
-              </Link>
+              <div className="space-y-2">
+                <Link to={createPageUrl('Premium')}>
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start Free Trial
+                  </Button>
+                </Link>
+                <p className="text-center text-xs text-slate-400">
+                  2 weeks free, then £4.99/month
+                </p>
+              </div>
             </div>
           </Card>
         </>
