@@ -325,21 +325,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer'}`}
     >
       <div className={isExpanded ? "space-y-3 mb-4" : "space-y-2"}>
-         <div className={`flex items-center justify-between ${isExpanded ? 'gap-3' : 'gap-2'}`}>
-          <div className="flex items-center gap-2">
+         <div className={`flex items-center gap-2 flex-wrap ${isExpanded ? '' : ''}`}>
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <div className={`rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10 ${isExpanded ? 'w-8 h-8' : 'w-7 h-7'}`}>
               <Dumbbell className={isExpanded ? 'w-4 h-4 text-white' : 'w-3.5 h-3.5 text-white'} />
             </div>
             <h3 className={`font-bold text-slate-100 tracking-tight uppercase ${isExpanded ? 'text-xs' : 'text-[11px]'}`}>Today's Workout</h3>
             <button
               onClick={() => setShowInfo(!showInfo)}
-              className="relative text-slate-400 hover:text-slate-200 transition-colors"
+              className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
             >
               <Info className="w-3.5 h-3.5" />
             </button>
           </div>
-          <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${isExpanded ? 'text-lg' : 'text-base'}`}>
-          {todayWorkout.name}
+          <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight truncate ${isExpanded ? 'text-sm' : 'text-xs'}`}>
+          {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
           </h2>
          </div>
         {showInfo && (
