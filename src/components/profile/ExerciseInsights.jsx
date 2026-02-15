@@ -149,11 +149,11 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
     };
   }, [filteredLogs, timeRange]);
 
-  // Personal records
+  // Personal records - filtered by workout day selection
   const personalRecords = useMemo(() => {
     const records = {};
 
-    workoutLogs.forEach(log => {
+    filteredLogs.forEach(log => {
       log.exercises?.forEach(ex => {
         if (!ex.name || !ex.sets) return;
         
@@ -176,7 +176,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       }))
       .sort((a, b) => b.weight - a.weight)
       .slice(0, 5);
-  }, [workoutLogs]);
+  }, [filteredLogs]);
 
   // Volume progression over time
   const volumeProgression = useMemo(() => {
