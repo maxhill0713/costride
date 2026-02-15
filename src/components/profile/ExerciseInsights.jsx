@@ -18,25 +18,18 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
   // Extract workout days from split using trainingDays and customWorkoutTypes
   const workoutDays = useMemo(() => {
-    if (!trainingDays || trainingDays.length === 0) return [];
+    if (!workoutSplit || typeof workoutSplit !== 'object') return [];
     
-    // trainingDays is array of day numbers [1, 3, 5] = Mon, Wed, Fri
-    // customWorkoutTypes is object like { 1: { name: 'Push', exercises: [...] }, 3: { name: 'Pull', exercises: [...] } }
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
-    return trainingDays.map(dayNum => {
-      const dayName = dayNames[dayNum - 1];
-      const workoutType = (workoutSplit && typeof workoutSplit === 'object' && workoutSplit[dayNum]) 
-        ? workoutSplit[dayNum] 
-        : { name: dayName, exercises: [] };
-      
-      return {
-        name: workoutType.name || dayName,
-        dayNum: dayNum,
-        exercises: workoutType.exercises || []
-      };
-    });
-  }, [workoutSplit, trainingDays]);
+    // workoutSplit is object like { 1: { name: 'Push', exercises: [...] }, 3: { name: 'Pull', exercises: [...] } }
+    return Object.entries(workoutSplit)
+      .filter(([dayNum, workout]) => workout && workout.name)
+      .map(([dayNum, workout]) => ({
+        name: workout.name,
+        dayNum: parseInt(dayNum),
+        exercises: workout.exercises || []
+      }))
+      .sort((a, b) => a.dayNum - b.dayNum);
+  }, [workoutSplit]);
 
   // Extract unique exercises and split days
   const { exercises, splitDays } = useMemo(() => {
