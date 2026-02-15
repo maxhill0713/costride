@@ -147,7 +147,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             <input
                               type="text"
                               value={workoutType.name || ''}
-                              onChange={(e) => updateWorkoutType(day, 'name', e.target.value)}
+                              onChange={(e) => updateWorkoutType(day, 'name', e.target.value.slice(0, 30))}
+                              maxLength="30"
                               placeholder="e.g., Upper, Push"
                               className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                             />
