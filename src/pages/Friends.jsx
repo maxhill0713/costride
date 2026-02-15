@@ -384,12 +384,14 @@ export default function Friends() {
 
     // Friend milestones
     friendsWithActivity.forEach(friend => {
+      const friendUser = allUsers.find(u => u.id === friend.friend_id);
+      const displayName = friendUser?.full_name || friend.friend_name;
       if (friend.activity.streak === 7) {
         cards.push({
           id: `milestone-${friend.friend_id}-7`,
           type: 'friend-milestone',
-          title: `${friend.friend_name} Hit a Streak!`,
-          message: `${friend.friend_name} is on a 7-day check-in streak! 🔥`,
+          title: `${displayName} Hit a Streak!`,
+          message: `${displayName} is on a 7-day check-in streak! 🔥`,
           emoji: '🔥',
           color: 'from-red-500 to-orange-500',
           borderColor: 'border-red-500/30'
@@ -398,8 +400,8 @@ export default function Friends() {
         cards.push({
           id: `milestone-${friend.friend_id}-14`,
           type: 'friend-milestone',
-          title: `${friend.friend_name} is On Fire!`,
-          message: `${friend.friend_name} just hit a 14-day streak! ⚡`,
+          title: `${displayName} is On Fire!`,
+          message: `${displayName} just hit a 14-day streak! ⚡`,
           emoji: '⚡',
           color: 'from-yellow-500 to-orange-500',
           borderColor: 'border-yellow-500/30'
@@ -408,8 +410,8 @@ export default function Friends() {
         cards.push({
           id: `milestone-${friend.friend_id}-30`,
           type: 'friend-milestone',
-          title: `${friend.friend_name} is a Beast!`,
-          message: `${friend.friend_name} hit a 30-day streak! That's legendary! 🏆`,
+          title: `${displayName} is a Beast!`,
+          message: `${displayName} hit a 30-day streak! That's legendary! 🏆`,
           emoji: '🏆',
           color: 'from-purple-500 to-pink-500',
           borderColor: 'border-purple-500/30'
