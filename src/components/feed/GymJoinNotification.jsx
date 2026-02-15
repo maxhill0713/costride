@@ -8,7 +8,7 @@ export default function GymJoinNotification({ post }) {
     <div className="flex justify-center mb-4 w-full">
       <Link 
         to={createPageUrl('UserProfile') + `?id=${post.member_id}`}
-        className="w-1/4 max-w-xs"
+        className="max-w-[200px]"
       >
         <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-xl border border-blue-500/30 rounded-xl p-4 hover:border-blue-400/50 transition-all cursor-pointer">
           {/* Header */}
