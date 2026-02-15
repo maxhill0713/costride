@@ -313,6 +313,7 @@ export default function Friends() {
 
     friendPRs.forEach(lift => {
       const friend = friends.find(f => f.friend_id === lift.member_id);
+      const friendUser = allUsers.find(u => u.id === lift.member_id);
       const daysSince = differenceInDays(new Date(), new Date(lift.created_date));
       
       if (daysSince <= 7) {
@@ -329,8 +330,8 @@ export default function Friends() {
           id: `pr-${lift.id}`,
           type: 'pr',
           friendId: lift.member_id,
-          friendName: friend?.friend_name || lift.member_name,
-          friendAvatar: friend?.friend_avatar,
+          friendName: friendUser?.full_name || friend?.friend_name || lift.member_name,
+          friendAvatar: friendUser?.avatar_url || friend?.friend_avatar,
           message: `hit a new PR: ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`,
           timestamp: new Date(lift.created_date),
           emoji: '🏆',
