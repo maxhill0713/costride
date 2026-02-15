@@ -10,7 +10,15 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function ExerciseInsights({ workoutLogs = [], workoutSplit, trainingDays = [] }) {
-  const [selectedWorkoutDay, setSelectedWorkoutDay] = useState('all');
+  // Get today's workout
+  const getTodaysWorkout = () => {
+    if (!workoutSplit) return null;
+    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayNum = today === 0 ? 7 : today; // Convert to 1-7 format
+    return workoutSplit[dayNum]?.name || null;
+  };
+
+  const [selectedWorkoutDay, setSelectedWorkoutDay] = useState(getTodaysWorkout() || 'all');
   const [selectedDay, setSelectedDay] = useState('all');
   const [selectedExercise, setSelectedExercise] = useState('all');
   const [timeRange, setTimeRange] = useState('30');
