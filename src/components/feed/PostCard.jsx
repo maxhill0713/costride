@@ -358,8 +358,32 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 </button>
               )}
 
+              {/* Reaction Button - Streak Icon Above Comments */}
+              {!isOwnProfile && (
+              <div className="absolute bottom-14 left-4">
+              <motion.button
+              onClick={() => reactMutation.mutate(!hasReacted)}
+              disabled={reactMutation.isPending}
+              className={`relative w-10 h-10 rounded-full flex items-center justify-center text-2xl transition-all ${
+              hasReacted ? 'bg-orange-100' : 'bg-slate-700/40 border-2 border-dashed border-slate-400/60'
+              }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              >
+              {getStreakIcon(userStreakVariant)}
+              {hasReacted && (
+              <motion.div
+                layoutId={`reaction-check-${post.id}`}
+                className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 -z-10"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+              />
+              )}
+              </motion.button>
+              </div>
+              )}
 
-      </div>
+              </div>
 
       {/* Modals */}
       <CommentModal 
