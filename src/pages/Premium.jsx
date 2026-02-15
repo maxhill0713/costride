@@ -170,13 +170,21 @@ export default function Premium() {
                     ))}
                   </ul>
 
-                  <Button
-                    onClick={() => handleSubscribe(plan)}
-                    disabled={true}
-                    className={`w-full bg-gradient-to-r ${plan.color} opacity-60 cursor-not-allowed text-white font-bold h-12 rounded-xl`}
-                  >
-                    Coming Soon
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={() => handleSubscribe(plan)}
+                      disabled={true}
+                      className={`w-full bg-gradient-to-r ${plan.color} opacity-60 cursor-not-allowed text-white font-bold h-12 rounded-xl`}
+                    >
+                      Start Free Trial
+                    </Button>
+                    <p className="text-center text-sm text-slate-400">
+                      2 weeks free, then {billingCycle === 'monthly' ? `$${plan.monthlyPrice}/month` : `$${plan.yearlyPrice}/year`}
+                    </p>
+                    <p className="text-center text-xs text-slate-500">
+                      Coming Soon
+                    </p>
+                  </div>
                 </div>
               </Card>
             );
