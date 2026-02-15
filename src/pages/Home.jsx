@@ -570,23 +570,6 @@ export default function Home() {
             </Link>
           )}
 
-        {/* Gym Join Posts */}
-          {gymJoinPosts.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-slate-400 px-2 uppercase tracking-wide">Gym Activity</h3>
-              {gymJoinPosts.map((post) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post}
-                  onLike={() => {}}
-                  onComment={() => {}}
-                  onSave={() => {}}
-                  onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-                />
-              ))}
-            </div>
-          )}
-
         {/* Join a Gym Prompt */}
          {gymMemberships.length === 0 && (
            <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
