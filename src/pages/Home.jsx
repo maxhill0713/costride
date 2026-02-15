@@ -502,7 +502,7 @@ export default function Home() {
           {/* Community Section */}
           {memberGym?.id && (
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20 relative h-32 overflow-hidden group">
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
                 {/* Gym Image Background */}
                 {memberGym?.image_url ? (
                    <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" />
@@ -511,10 +511,10 @@ export default function Home() {
                  )}
                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
 
-                <div className="relative p-4 h-full flex flex-col justify-between">
+                <div className="relative p-6 h-full flex flex-col justify-between">
                   <div>
-                    <p className="text-white font-semibold text-sm tracking-tight">Your Gym Community</p>
-                    <p className="text-slate-300 text-xs mt-0.5 font-medium">{memberGym.name}</p>
+                    <p className="text-white font-semibold text-base tracking-tight">Your Gym Community</p>
+                    <p className="text-slate-300 text-sm mt-1 font-medium">{memberGym.name}</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-300 font-medium">
