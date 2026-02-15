@@ -356,14 +356,44 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute bottom-14 left-4 text-2xl transition-all"
+                className="absolute bottom-14 left-4 transition-all flex items-center gap-1"
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
               >
                 {hasReacted ? (
-                  <span className="text-orange-500 drop-shadow-lg">{getStreakIcon(userStreakVariant)}</span>
+                  userStreakVariant === 'sunglasses' ? (
+                    <div className="relative w-6 h-6">
+                      <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                      <svg 
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                        viewBox="0 0 64 64"
+                      >
+                        <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                        <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                        <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                      </svg>
+                    </div>
+                  ) : userStreakVariant === 'cowboy' ? (
+                    <div className="relative w-6 h-6">
+                      <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                      <svg 
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                        viewBox="0 0 64 64"
+                      >
+                        <path 
+                          d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
+                          fill="currentColor" 
+                          className="text-amber-800"
+                        />
+                        <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
+                        <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                  )
                 ) : (
-                  <span className="text-white opacity-50 drop-shadow-lg">{getStreakIcon(userStreakVariant)}</span>
+                  <Flame className="w-6 h-6 text-slate-400 opacity-40" />
                 )}
               </motion.button>
               )}
