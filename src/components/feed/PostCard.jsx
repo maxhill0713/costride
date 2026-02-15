@@ -393,7 +393,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                     <Flame className="w-12 h-12 text-orange-500 fill-current" />
                   )
                 ) : (
-                  <Flame className="w-12 h-12 text-slate-400 opacity-40" />
+                  <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="0.75">
+                    <path d="M8.5 14.5Q8 13 8 11.5a4 4 0 0 1 8 0q0 1.5-.5 3M12 2s1 3 1 5a3 3 0 0 1-6 0c0-2 1-5 1-5m0 14a2 2 0 0 0-2 2v2h4v-2a2 2 0 0 0-2-2" />
+                  </svg>
                 )}
               </motion.button>
               )}
