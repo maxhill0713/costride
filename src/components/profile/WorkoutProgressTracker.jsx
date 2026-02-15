@@ -304,10 +304,21 @@ export default function WorkoutProgressTracker({ currentUser }) {
                   <div className="text-[9px] text-slate-400">{exercise.latest.setsReps}</div>
                 </div>
               </div>
-              {exercise.latest.notes && (
-                <div className="flex gap-1.5 items-start text-[9px] bg-orange-500/10 border border-orange-500/20 rounded-lg p-1.5">
-                  <MessageSquare className="w-3 h-3 text-orange-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-orange-200/80 line-clamp-2">{exercise.latest.notes}</p>
+              
+              {(exercise.latest.notes || exercise.latest.duration) && (
+                <div className="space-y-1.5">
+                  {exercise.latest.duration && (
+                    <div className="flex gap-1.5 items-center text-[9px] bg-blue-500/10 border border-blue-500/20 rounded-lg p-1.5">
+                      <Activity className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                      <p className="text-blue-200/80 font-medium">{exercise.latest.duration}</p>
+                    </div>
+                  )}
+                  {exercise.latest.notes && (
+                    <div className="flex gap-1.5 items-start text-[9px] bg-orange-500/10 border border-orange-500/20 rounded-lg p-1.5">
+                      <MessageSquare className="w-3 h-3 text-orange-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-orange-200/80 line-clamp-2">{exercise.latest.notes}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>
