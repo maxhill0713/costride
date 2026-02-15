@@ -353,87 +353,87 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       {viewMode === 'overview' && (
         <>
           {/* Enhanced Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 p-4 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 p-3 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-full blur-xl" />
               <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <Calendar className="w-5 h-5 text-blue-400" />
-                  <Badge className="bg-blue-500/20 text-blue-300 border-0 text-xs">
+                <div className="flex items-center justify-between mb-1">
+                  <Calendar className="w-4 h-4 text-blue-400" />
+                  <Badge className="bg-blue-500/20 text-blue-300 border-0 text-[10px] px-1.5 py-0">
                     {frequencyData.avgPerWeek}/wk
                   </Badge>
                 </div>
-                <div className="text-3xl font-black text-white mb-1">{frequencyData.total}</div>
-                <p className="text-xs text-slate-400 font-medium">Total Sessions</p>
+                <div className="text-2xl font-black text-white mb-0.5">{frequencyData.total}</div>
+                <p className="text-[10px] text-slate-400 font-medium">Total Sessions</p>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl border border-orange-500/30 p-4 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full blur-2xl" />
+            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl border border-orange-500/30 p-3 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 rounded-full blur-xl" />
               <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <Flame className="w-5 h-5 text-orange-400" />
-                  <Badge className="bg-orange-500/20 text-orange-300 border-0 text-xs">
+                <div className="flex items-center justify-between mb-1">
+                  <Flame className="w-4 h-4 text-orange-400" />
+                  <Badge className="bg-orange-500/20 text-orange-300 border-0 text-[10px] px-1.5 py-0">
                     Best: {workoutStreak.longest}
                   </Badge>
                 </div>
-                <div className="text-3xl font-black text-white mb-1">{workoutStreak.current}</div>
-                <p className="text-xs text-slate-400 font-medium">Day Streak</p>
+                <div className="text-2xl font-black text-white mb-0.5">{workoutStreak.current}</div>
+                <p className="text-[10px] text-slate-400 font-medium">Day Streak</p>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/30 p-4 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-2xl" />
+            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/30 p-3 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-green-500/10 rounded-full blur-xl" />
               <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
+                <div className="flex items-center justify-between mb-1">
+                  <TrendingUp className="w-4 h-4 text-green-400" />
                   {strengthTrends.improving > 0 && (
-                    <Badge className="bg-green-500/20 text-green-300 border-0 text-xs">
+                    <Badge className="bg-green-500/20 text-green-300 border-0 text-[10px] px-1.5 py-0">
                       +{strengthTrends.improving}
                     </Badge>
                   )}
                 </div>
-                <div className="text-3xl font-black text-white mb-1">{personalRecords.length}</div>
-                <p className="text-xs text-slate-400 font-medium">Personal Records</p>
+                <div className="text-2xl font-black text-white mb-0.5">{personalRecords.length}</div>
+                <p className="text-[10px] text-slate-400 font-medium">Personal Records</p>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 p-4 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl" />
+            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 p-3 rounded-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-full blur-xl" />
               <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <Trophy className="w-5 h-5 text-purple-400" />
-                  <Badge className="bg-purple-500/20 text-purple-300 border-0 text-xs">
+                <div className="flex items-center justify-between mb-1">
+                  <Trophy className="w-4 h-4 text-purple-400" />
+                  <Badge className="bg-purple-500/20 text-purple-300 border-0 text-[10px] px-1.5 py-0">
                     Top
                   </Badge>
                 </div>
-                <div className="text-lg font-black text-white mb-1 truncate">{frequencyData.mostActiveDay}</div>
-                <p className="text-xs text-slate-400 font-medium">Most Active Split</p>
+                <div className="text-base font-black text-white mb-0.5 truncate">{frequencyData.mostActiveDay}</div>
+                <p className="text-[10px] text-slate-400 font-medium">Most Active Split</p>
               </div>
             </Card>
           </div>
 
           {/* Strength Progress Indicators */}
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-            <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-cyan-400" />
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl shadow-black/20">
+            <h4 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
+              <Target className="w-3.5 h-3.5 text-cyan-400" />
               Strength Progress
             </h4>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-                <ArrowUp className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-white">{strengthTrends.improving}</div>
-                <p className="text-xs text-slate-400 mt-1">Improving</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center p-2.5 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <ArrowUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
+                <div className="text-xl font-bold text-white">{strengthTrends.improving}</div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Improving</p>
               </div>
-              <div className="text-center p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                <Minus className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-white">{strengthTrends.maintaining}</div>
-                <p className="text-xs text-slate-400 mt-1">Stable</p>
+              <div className="text-center p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <Minus className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+                <div className="text-xl font-bold text-white">{strengthTrends.maintaining}</div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Stable</p>
               </div>
-              <div className="text-center p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
-                <ArrowDown className="w-6 h-6 text-orange-400 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-white">{strengthTrends.declining}</div>
-                <p className="text-xs text-slate-400 mt-1">Declining</p>
+              <div className="text-center p-2.5 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                <ArrowDown className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+                <div className="text-xl font-bold text-white">{strengthTrends.declining}</div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Declining</p>
               </div>
             </div>
           </Card>
