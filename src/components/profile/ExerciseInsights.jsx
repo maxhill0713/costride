@@ -73,8 +73,15 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       // Filter by workout day ONLY when in Exercises tab
       let matchesWorkoutDay = true;
       if (viewMode === 'exercises' && selectedWorkoutDay) {
-        // Match by split_day field in the workout log
-        matchesWorkoutDay = log.split_day === selectedWorkoutDay;
+        // Match by split_day field OR by checking if log contains exercises from this workout day
+        const workoutDay = workoutDays.find(d => d.name === selectedWorkoutDay);
+        if (workoutDay && workoutDay.exercises && workoutDay.exercises.length > 0) {
+          const workoutExerciseNames = workoutDay.exercises.map(e => e.name || e);
+          const hasWorkoutExercise = log.exercises?.some(ex => workoutExerciseNames.includes(ex.name));
+          matchesWorkoutDay = hasWorkoutExercise || log.split_day === selectedWorkoutDay;
+        } else {
+          matchesWorkoutDay = log.split_day === selectedWorkoutDay;
+        }
       }
       
       if (selectedExercise === 'all') {
