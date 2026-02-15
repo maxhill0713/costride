@@ -102,28 +102,37 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       .slice(-10); // Last 10 sessions
   }, [filteredLogs, selectedExercise]);
 
-  // Volume by split day
-  const volumeByDay = useMemo(() => {
-    const dayVolumes = {};
+  // Weight increase by split day
+  const weightIncreaseByDay = useMemo(() => {
+    const dayData = {};
 
     filteredLogs.forEach(log => {
       const day = log.split_day || 'Other';
-      if (!dayVolumes[day]) dayVolumes[day] = 0;
+      if (!dayData[day]) {
+        dayData[day] = { firstSession: null, lastSession: null };
+      }
 
       log.exercises?.forEach(ex => {
-        const volume = ex.sets?.reduce((sum, set) => {
-          return sum + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
-        }, 0) || 0;
-        dayVolumes[day] += volume;
+        const maxWeight = Math.max(...(ex.sets?.map(s => parseFloat(s.weight) || 0) || [0]));
+        
+        if (!dayData[day].firstSession || new Date(log.created_date) < new Date(dayData[day].firstSession.date)) {
+          dayData[day].firstSession = { weight: maxWeight, date: log.created_date };
+        }
+        
+        if (!dayData[day].lastSession || new Date(log.created_date) > new Date(dayData[day].lastSession.date)) {
+          dayData[day].lastSession = { weight: maxWeight, date: log.created_date };
+        }
       });
     });
 
-    return Object.entries(dayVolumes)
-      .map(([day, volume]) => ({
+    return Object.entries(dayData)
+      .filter(([_, data]) => data.firstSession && data.lastSession)
+      .map(([day, data]) => ({
         day: day,
-        volume: Math.round(volume)
+        increase: Math.round(data.lastSession.weight - data.firstSession.weight)
       }))
-      .sort((a, b) => b.volume - a.volume);
+      .filter(item => item.increase !== 0)
+      .sort((a, b) => b.increase - a.increase);
   }, [filteredLogs]);
 
   // Frequency analysis
