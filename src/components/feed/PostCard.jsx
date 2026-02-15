@@ -356,14 +356,14 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               <motion.button
                 onClick={() => reactMutation.mutate(!hasReacted)}
                 disabled={reactMutation.isPending}
-                className="absolute bottom-14 left-4 transition-all flex items-center gap-1"
+                className="absolute bottom-24 left-4 transition-all flex items-center gap-1"
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
               >
                 {hasReacted ? (
                   userStreakVariant === 'sunglasses' ? (
-                    <div className="relative w-6 h-6">
-                      <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                    <div className="relative w-12 h-12">
+                      <Flame className="w-12 h-12 text-orange-500 fill-current" />
                       <svg 
                         className="absolute inset-0 w-full h-full pointer-events-none"
                         viewBox="0 0 64 64"
@@ -374,8 +374,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                       </svg>
                     </div>
                   ) : userStreakVariant === 'cowboy' ? (
-                    <div className="relative w-6 h-6">
-                      <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                    <div className="relative w-12 h-12">
+                      <Flame className="w-12 h-12 text-orange-500 fill-current" />
                       <svg 
                         className="absolute inset-0 w-full h-full pointer-events-none"
                         viewBox="0 0 64 64"
@@ -390,10 +390,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                       </svg>
                     </div>
                   ) : (
-                    <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                    <Flame className="w-12 h-12 text-orange-500 fill-current" />
                   )
                 ) : (
-                  <Flame className="w-6 h-6 text-slate-400 opacity-40" />
+                  <Flame className="w-12 h-12 text-slate-400 opacity-40" />
                 )}
               </motion.button>
               )}
