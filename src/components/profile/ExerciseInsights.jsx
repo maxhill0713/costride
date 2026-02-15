@@ -715,16 +715,16 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </Card>
           )}
 
-          {/* Volume by Split Day */}
-      {volumeByDay.length > 0 && (
+          {/* Weight Increase by Split Day */}
+      {weightIncreaseByDay.length > 0 && (
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
           <div className="flex items-center gap-2 mb-4">
-            <Target className="w-4 h-4 text-blue-400" />
-            <h4 className="text-sm font-bold text-white">Volume by Split Day</h4>
+            <TrendingUp className="w-4 h-4 text-green-400" />
+            <h4 className="text-sm font-bold text-white">Weight Increase by Split Day</h4>
           </div>
 
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={volumeByDay} layout="vertical">
+            <BarChart data={weightIncreaseByDay} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis 
                 type="number" 
@@ -749,10 +749,10 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                 }}
               />
               <Bar 
-                dataKey="volume" 
-                fill="#8b5cf6"
+                dataKey="increase" 
+                fill="#10b981"
                 radius={[0, 4, 4, 0]}
-                name="Total Volume (kg)"
+                name="Weight Increase (kg)"
               />
             </BarChart>
           </ResponsiveContainer>
