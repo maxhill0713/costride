@@ -90,20 +90,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'gym_id is required' }, { status: 400 });
     }
 
-    // Convert ObjectId to UUID format if needed
-    const convertToUuid = (id) => {
-      if (id.length === 24) {
-        // ObjectId to UUID: pad the 24-char hex to 32-char hex, then format as UUID
-        const padded = id + '00000000';
-        return `${padded.slice(0, 8)}-${padded.slice(8, 12)}-${padded.slice(12, 16)}-${padded.slice(16, 20)}-${padded.slice(20, 32)}`;
-      }
-      return id;
-    };
-
     const checkInData = {
-      user_id: convertToUuid(user.id),
+      user_id: user.id,
       user_name: user.full_name,
-      gym_id: convertToUuid(gym_id),
+      gym_id,
       gym_name: gym_name || '',
       check_in_date: check_in_date || new Date().toISOString(),
       first_visit: first_visit || false,
