@@ -1,5 +1,49 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Helper to ensure user profile exists in Supabase profiles table
+const ensureProfileExists = async (user) => {
+  try {
+    const checkProfileResponse = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${user.id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const existingProfiles = await checkProfileResponse.json();
+    
+    if (!Array.isArray(existingProfiles) || existingProfiles.length === 0) {
+      const createProfileResponse = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            id: user.id,
+            email: user.email,
+            full_name: user.full_name,
+            avatar_url: user.avatar_url
+          })
+        }
+      );
+
+      if (!createProfileResponse.ok) {
+        console.warn('Could not create profile in Supabase:', await createProfileResponse.json());
+      }
+    }
+  } catch (err) {
+    console.warn('Error ensuring profile exists:', err);
+  }
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -8,6 +52,9 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Ensure profile exists in Supabase (handle legacy users)
+    await ensureProfileExists(user);
 
     const body = await req.json();
     const { title, description, goal_type, target_value, current_value, unit, exercise, frequency_period, deadline, reminder_enabled, status } = body;
