@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -16,32 +15,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'gym_id is required' }, { status: 400 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_ANON_KEY')
-    );
-
     const checkInData = {
       user_id: user.id,
       user_name: user.full_name,
-      gym_id: gym_id,
+      gym_id,
       gym_name: gym_name || '',
       check_in_date: new Date().toISOString(),
       first_visit: false,
       is_rest_day: false
     };
 
-    const { data, error } = await supabase
-      .from('check_ins')
-      .insert([checkInData])
-      .select();
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/check_ins`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(checkInData)
+      }
+    );
 
-    if (error) {
-      console.error('Supabase check-in error:', error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create check-in');
     }
 
-    return Response.json({ success: true, data: data[0] });
+    const data = await response.json();
+    return Response.json({ success: true, data: Array.isArray(data) ? data[0] : data });
   } catch (error) {
     console.error('Check-in error:', error);
     return Response.json({ error: error.message }, { status: 500 });
