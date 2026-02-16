@@ -16,21 +16,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Supabase credentials not configured' }, { status: 500 });
     }
 
-    const sql = `
-      ALTER TABLE check_ins 
-        ALTER COLUMN user_id TYPE text,
-        ALTER COLUMN gym_id TYPE text;
-    `;
+    const sql = `ALTER TABLE check_ins ALTER COLUMN user_id TYPE text, ALTER COLUMN gym_id TYPE text;`;
 
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/exec_sql`,
+      `${supabaseUrl}/graphql/v1`,
       {
         method: 'POST',
         headers: {
           'apikey': supabaseKey,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ sql })
+        body: JSON.stringify({ query: sql })
       }
     );
 
