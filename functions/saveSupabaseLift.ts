@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const hexToUuid = (hex) => {
+  if (!hex || typeof hex !== 'string') return hex;
+  if (hex.includes('-') && hex.length === 36) return hex;
+  if (hex.length === 24) {
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`.toLowerCase();
+  }
+  return hex;
+};
+
 // Helper to ensure user profile exists in Supabase profiles table
 const ensureProfileExists = async (user) => {
   try {
@@ -61,7 +70,7 @@ Deno.serve(async (req) => {
     const { member_id, member_name, exercise, weight_lbs, reps, is_pr, lift_date, notes, video_url, gym_id } = body;
 
     const liftData = {
-      member_id: member_id || user.id,
+      member_id: hexToUuid(member_id || user.id),
       member_name: member_name || user.full_name,
       exercise,
       weight_lbs,
@@ -70,7 +79,7 @@ Deno.serve(async (req) => {
       lift_date: lift_date || new Date().toISOString().split('T')[0],
       notes,
       video_url,
-      gym_id
+      gym_id: gym_id ? hexToUuid(gym_id) : null
     };
 
     const response = await fetch(
