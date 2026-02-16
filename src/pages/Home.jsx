@@ -285,6 +285,8 @@ export default function Home() {
     if (currentUser) {
       setShowStreakVariants(false);
       await base44.auth.updateMe({ streak_variant: variant });
+      // Sync to Supabase
+      await base44.functions.invoke('syncSupabaseProfile');
       // Refetch current user to update UI with new streak variant
       await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
