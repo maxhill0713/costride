@@ -41,22 +41,119 @@ export default function Home() {
     }
   });
 
-  // Temporarily disabled - switching from Base44 entities to Supabase
-  const gymMemberships = [];
-  const allGyms = [];
-  const gymsLoading = false;
-  const allCheckIns = [];
-  const challenges = [];
-  const weeklyChallenges = [];
-  const lifts = [];
-  const goals = [];
-  const notifications = [];
-  const friends = [];
-  const allPosts = [];
-  const recentChallengeActivity = [];
-  const todayCheckInsForQuery = [];
-  const checkInUserIdsForQuery = [];
-  const checkInUsers = [];
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
+    queryKey: ['gyms'],
+    queryFn: () => base44.entities.Gym.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  const { data: allCheckIns = [] } = useQuery({
+    queryKey: ['checkIns'],
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
+  });
+
+  const { data: challenges = [] } = useQuery({
+    queryKey: ['challenges'],
+    queryFn: () => base44.entities.Challenge.list('-created_date'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  const { data: weeklyChallenges = [] } = useQuery({
+    queryKey: ['weeklyChallenges'],
+    queryFn: () => base44.entities.Challenge.filter({ 
+      status: 'active'
+    }, '-created_date', 3),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  const { data: lifts = [] } = useQuery({
+    queryKey: ['lifts'],
+    queryFn: () => base44.entities.Lift.list('-created_date'),
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
+  });
+
+  const { data: goals = [] } = useQuery({
+    queryKey: ['goals', currentUser?.id],
+    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 10000
+  });
+
+  const { data: friends = [] } = useQuery({
+    queryKey: ['friends', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  const { data: allPosts = [] } = useQuery({
+    queryKey: ['posts'],
+    queryFn: () => base44.entities.Post.list('-created_date', 50),
+    enabled: !!currentUser && !!friends.length,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
+  });
+
+  const { data: recentChallengeActivity = [] } = useQuery({
+    queryKey: ['recentChallengeActivity'],
+    queryFn: async () => {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      return base44.entities.ChallengeParticipant.filter({
+        created_date: { $gte: oneDayAgo.toISOString() }
+      }, '-created_date', 5);
+    },
+    enabled: !!currentUser && !!challenges.length,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+
+  // Pre-calculate for check-in users query
+  const todayCheckInsForQuery = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
+  const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map(c => c.user_id))];
+
+  const { data: checkInUsers = [] } = useQuery({
+    queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
+    queryFn: async () => {
+      if (checkInUserIdsForQuery.length === 0) return [];
+      try {
+        const users = await Promise.all(
+          checkInUserIdsForQuery.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
+        );
+        return users.filter(Boolean);
+      } catch (error) {
+        console.error('Error fetching check-in users:', error);
+        return [];
+      }
+    },
+    enabled: checkInUserIdsForQuery.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
+  });
 
   // Redirect to onboarding if not completed
   useEffect(() => {
@@ -75,7 +172,34 @@ export default function Home() {
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
-  // Disabled - switching to Supabase
+  // Create reminder notification if inactive for 3+ days
+  useEffect(() => {
+    const createReminderNotification = async () => {
+      if (!currentUser || daysSinceCheckIn === null || daysSinceCheckIn < 3) return;
+
+      // Check if we already sent a recent reminder
+      const recentReminder = await base44.entities.Notification.filter({
+        user_id: currentUser.id,
+        type: 'reminder'
+      }, '-created_date', 1);
+
+      if (recentReminder.length > 0) {
+        const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
+        if (daysSinceReminder < 2) return;
+      }
+
+      await base44.entities.Notification.create({
+        user_id: currentUser.id,
+        type: 'reminder',
+        title: 'Time for your next workout! 💪',
+        message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
+        icon: '⏰',
+        action_url: createPageUrl('Gyms')
+      });
+    };
+
+    createReminderNotification();
+  }, [currentUser, daysSinceCheckIn]);
 
   if (userLoading || !currentUser || gymsLoading) {
     return (
