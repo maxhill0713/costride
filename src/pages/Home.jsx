@@ -59,7 +59,15 @@ export default function Home() {
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.CheckIn.list('-check_in_date');
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Error fetching check-ins:', error);
+        return [];
+      }
+    },
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
