@@ -26,7 +26,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onCancel();
     }}>
-      <DialogContent className="bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border-0 rounded-3xl max-w-sm shadow-2xl shadow-black/40">
+      <DialogContent className="bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border-0 rounded-3xl max-w-sm shadow-2xl shadow-black/40 [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center mb-6">
             {workoutName} workout complete?
