@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,39 +9,44 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const body = await req.json();
     const { content, image_url, video_url, exercise, weight, gym_id } = body;
 
-    const { data, error } = await supabase
-      .from('posts')
-      .insert({
-        member_id: user.id,
-        member_name: user.full_name,
-        member_avatar: user.avatar_url,
-        content,
-        image_url,
-        video_url,
-        exercise,
-        weight,
-        gym_id,
-        likes: 0,
-        comments: [],
-        reactions: {}
-      })
-      .select()
-      .single();
+    const postData = {
+      member_id: user.id,
+      member_name: user.full_name,
+      member_avatar: user.avatar_url,
+      content,
+      image_url,
+      video_url,
+      exercise,
+      weight,
+      gym_id,
+      likes: 0,
+      comments: [],
+      reactions: {}
+    };
 
-    if (error) {
-      console.error('Supabase post insert error:', error);
-      throw error;
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/posts`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(postData)
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to save post');
     }
 
-    return Response.json({ success: true, data });
+    const data = await response.json();
+    return Response.json({ success: true, data: Array.isArray(data) ? data[0] : data });
   } catch (error) {
     console.error('Save post error:', error);
     return Response.json({ error: error.message }, { status: 500 });

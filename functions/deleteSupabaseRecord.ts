@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,11 +9,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const body = await req.json();
     const { table, id } = body;
 
@@ -22,14 +16,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Table and ID required' }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq('id', id);
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/${table}?id=eq.${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+        }
+      }
+    );
 
-    if (error) {
-      console.error('Supabase delete error:', error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete record');
     }
 
     return Response.json({ success: true });

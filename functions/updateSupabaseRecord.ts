@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,11 +9,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const body = await req.json();
     const { table, id, updates } = body;
 
@@ -22,19 +16,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Table, ID, and updates required' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
-      .from(table)
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/${table}?id=eq.${id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(updates)
+      }
+    );
 
-    if (error) {
-      console.error('Supabase update error:', error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to update record');
     }
 
-    return Response.json({ success: true, data });
+    const data = await response.json();
+    return Response.json({ success: true, data: Array.isArray(data) ? data[0] : data });
   } catch (error) {
     console.error('Update record error:', error);
     return Response.json({ error: error.message }, { status: 500 });
