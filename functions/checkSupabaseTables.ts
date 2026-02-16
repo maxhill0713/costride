@@ -7,23 +7,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_KEY')
     );
 
-    // Query information_schema to get all tables
-    const { data, error } = await supabase
-      .rpc('get_tables');
-
-    if (error) {
-      console.error('Error fetching tables:', error);
-      // Fallback - try direct query
-      return Response.json({
-        success: false,
-        error: 'Unable to query tables. Please check your Supabase setup.',
-        details: error.message
-      });
-    }
-
-    const tables = data || [];
-
-    // Expected tables
+    // Expected tables to check
     const expectedTables = [
       'gym_members',
       'lifts',
@@ -55,15 +39,29 @@ Deno.serve(async (req) => {
       'brand_discount_codes'
     ];
 
-    const existingTables = tables.filter(t => expectedTables.includes(t));
-    const missingTables = expectedTables.filter(t => !existingTables.includes(t));
+    const existingTables = [];
+    const missingTables = [];
+
+    // Check each table by trying to query it
+    for (const table of expectedTables) {
+      const { error } = await supabase
+        .from(table)
+        .select('*')
+        .limit(1);
+
+      if (error && error.message.includes('does not exist')) {
+        missingTables.push(table);
+      } else {
+        existingTables.push(table);
+      }
+    }
 
     return Response.json({
       success: true,
-      total_tables: tables.length,
-      existing_expected_tables: existingTables,
+      existing_tables: existingTables,
       missing_tables: missingTables,
-      all_tables: tables
+      total_existing: existingTables.length,
+      total_missing: missingTables.length
     });
   } catch (error) {
     console.error('Check tables error:', error);
