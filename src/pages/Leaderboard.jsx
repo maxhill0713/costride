@@ -11,7 +11,7 @@ export default function Leaderboard() {
 
   const { data: members = [] } = useQuery({
     queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+    queryFn: () => getGymMembers()
   });
 
   const { data: lifts = [], isLoading } = useQuery({

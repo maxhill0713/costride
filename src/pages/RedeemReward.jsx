@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getSubscriptions, getMemberships, getChallenges, getRewards, getClaimedBonuses, saveClaimedBonus, getChallengeParticipants } from '../components/api/supabaseApi';
+import { getSubscriptions, getMemberships, getChallenges, getRewards, getClaimedBonuses, saveClaimedBonus } from '../components/api/supabaseApi';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +87,7 @@ export default function RedeemReward() {
     queryKey: ['activeChallenges'],
     queryFn: async () => {
       const challenges = await getChallenges();
-      return challenges?.filter(c => c.status === 'active' || c.status === 'upcoming') || [];
+      return challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
     }
   });
 
