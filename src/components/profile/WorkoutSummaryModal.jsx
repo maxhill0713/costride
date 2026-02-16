@@ -42,7 +42,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
           </div>
           <Button
             onClick={onConfirm}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-orange-500/30 whitespace-nowrap"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-orange-500/30 whitespace-nowrap px-8"
             disabled={isLoading}
           >
             {isLoading ? 'Logging...' : 'Confirm'}
