@@ -25,10 +25,10 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
 
   return (
     <AlertDialog open={isOpen}>
-      <AlertDialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-blue-500/30 max-w-sm shadow-2xl shadow-black/40">
+      <AlertDialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-orange-500/30 max-w-sm shadow-2xl shadow-black/40">
         <AlertDialogHeader>
           <div className="flex flex-col items-center gap-4">
-            <AlertDialogTitle className="text-2xl font-black text-white text-center">
+            <AlertDialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center">
               {workoutName} workout complete?
             </AlertDialogTitle>
             <div className="bg-white/5 backdrop-blur rounded-xl p-4 border border-blue-500/20 w-full">
@@ -53,7 +53,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
           </Button>
           <Button
             onClick={onConfirm}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-bold shadow-lg shadow-blue-500/30"
+            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-orange-500/30"
             disabled={isLoading}
           >
             {isLoading ? 'Logging...' : 'Confirm'}
