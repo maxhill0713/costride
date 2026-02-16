@@ -151,7 +151,15 @@ export default function Home() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => getNotifications({ user_id: currentUser?.id }),
+    queryFn: async () => {
+      try {
+        const result = await getNotifications({ user_id: currentUser?.id });
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -160,7 +168,15 @@ export default function Home() {
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => getFriends({ user_id: currentUser?.id, status: 'accepted' }),
+    queryFn: async () => {
+      try {
+        const result = await getFriends({ user_id: currentUser?.id, status: 'accepted' });
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -168,7 +184,15 @@ export default function Home() {
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => getPosts(),
+    queryFn: async () => {
+      try {
+        const result = await getPosts();
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser && !!friends.length,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
@@ -176,7 +200,15 @@ export default function Home() {
 
   const { data: recentChallengeActivity = [] } = useQuery({
     queryKey: ['recentChallengeActivity'],
-    queryFn: () => getChallengeParticipants(),
+    queryFn: async () => {
+      try {
+        const result = await getChallengeParticipants();
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Error fetching challenge participants:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser && !!challenges.length,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
