@@ -8,7 +8,7 @@ const ensureProfileExists = async (user) => {
       {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
           'Content-Type': 'application/json'
         }
       }
@@ -23,7 +23,7 @@ const ensureProfileExists = async (user) => {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
           'Prefer': 'return=representation'
         },
         body: JSON.stringify(checkInData)
