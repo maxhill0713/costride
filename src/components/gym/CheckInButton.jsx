@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getCheckIns, saveCheckIn } from '../api/supabaseApi';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Flame, Calendar, MapPin, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -49,26 +50,19 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id, gym?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ 
-      user_id: currentUser.id,
-      gym_id: gym.id 
-    }, '-check_in_date'),
+    queryFn: () => getCheckIns({ user_id: currentUser.id, gym_id: gym.id }),
     enabled: !!currentUser && !!gym
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['allCheckIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
+    queryFn: () => getCheckIns({ user_id: currentUser.id }),
     enabled: !!currentUser
   });
 
   const checkInMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await base44.functions.invoke('checkIn', {
-        gym_id: data.gym_id,
-        gym_name: data.gym_name
-      });
-      return response.data;
+      return await saveCheckIn(data);
     },
     onMutate: async (newCheckIn) => {
       // Cancel outgoing refetches
