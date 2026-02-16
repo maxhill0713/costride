@@ -729,7 +729,7 @@ export default function Profile() {
                   </Button>
                 </div>
 
-               {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
+               {!Array.isArray(userPosts) || userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
                 <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                   <div className="max-w-sm mx-auto">
                     <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
@@ -743,7 +743,7 @@ export default function Profile() {
                 </Card>
               ) : (
                 <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
-                  {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
+                  {(Array.isArray(userPosts) ? userPosts : []).filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
                     if (a.is_favourite === b.is_favourite) return 0;
                     return a.is_favourite ? -1 : 1;
                   }).map((post) => {
