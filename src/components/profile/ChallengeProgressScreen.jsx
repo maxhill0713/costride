@@ -83,5 +83,6 @@ export default function ChallengeProgressScreen({ isOpen, challenges, onContinue
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
