@@ -48,7 +48,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
             {isLoading ? 'Logging...' : 'Confirm'}
           </Button>
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+      </DialogContent>
+    </Dialog>
   );
 }
