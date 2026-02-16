@@ -81,8 +81,8 @@ export default function ChallengeProgressScreen({ isOpen, challenges, onContinue
             </motion.div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
-    </>
-  );
-}
+        </DialogContent>
+        </Dialog>
+        </>
+        );
+        }
