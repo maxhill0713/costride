@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getSubscriptions, getMemberships, getChallenges, getRewards, getClaimedBonuses, saveClaimedBonus } from '../components/api/supabaseApi';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,10 +23,7 @@ export default function RedeemReward() {
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription', currentUser?.id],
-    queryFn: () => base44.entities.Subscription.filter({ 
-      user_id: currentUser.id,
-      status: 'active'
-    }),
+    queryFn: () => getSubscriptions({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser
   });
 
@@ -33,7 +31,7 @@ export default function RedeemReward() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    queryFn: () => getMemberships({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser
   });
 
@@ -88,16 +86,14 @@ export default function RedeemReward() {
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
     queryFn: async () => {
-      const challenges = await base44.entities.Challenge.list();
+      const challenges = await getChallenges();
       return challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
     }
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ 
-      status: 'active'
-    }, '-created_date', 3),
+    queryFn: () => getChallenges({ status: 'active' }),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -110,23 +106,23 @@ export default function RedeemReward() {
 
   const { data: completedChallenges = [] } = useQuery({
     queryKey: ['completedChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' })
+    queryFn: () => getChallenges({ status: 'completed' })
   });
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards'],
-    queryFn: () => base44.entities.Reward.list()
+    queryFn: () => getRewards()
   });
 
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id],
-    queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser?.id }),
+    queryFn: () => getClaimedBonuses({ user_id: currentUser?.id }),
     enabled: !!currentUser
   });
 
   const claimMutation = useMutation({
     mutationFn: async (rewardData) => {
-      return await base44.entities.ClaimedBonus.create({
+      return await saveClaimedBonus({
         user_id: currentUser.id,
         reward_id: rewardData.isChallenge ? null : rewardData.id,
         challenge_id: rewardData.isChallenge ? rewardData.id : null,
