@@ -65,19 +65,21 @@ export default function ChallengeProgressScreen({ isOpen, challenges, onContinue
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="w-full"
-          >
-            <Button
-              onClick={onContinue}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-green-500/30"
+          {showContinue && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-full"
             >
-              Continue
-            </Button>
-          </motion.div>
+              <Button
+                onClick={onContinue}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-bold shadow-lg shadow-green-500/30"
+              >
+                Continue
+              </Button>
+            </motion.div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
