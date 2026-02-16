@@ -25,7 +25,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
 
   return (
     <AlertDialog open={isOpen}>
-      <AlertDialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-orange-500/30 max-w-sm shadow-2xl shadow-black/40">
+      <AlertDialogContent className="bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 max-w-sm shadow-2xl shadow-black/40">
         <AlertDialogHeader>
           <div className="flex flex-col items-center gap-4">
             <AlertDialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center">
