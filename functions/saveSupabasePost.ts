@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const { content, image_url, video_url, exercise, weight, gym_id } = body;
 
     const postData = {
-      member_id: user.id,
+      member_id: hexToUuid(user.id),
       member_name: user.full_name,
       member_avatar: user.avatar_url,
       content,
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       video_url,
       exercise,
       weight,
-      gym_id,
+      gym_id: gym_id ? hexToUuid(gym_id) : null,
       likes: 0,
       comments: [],
       reactions: {}
