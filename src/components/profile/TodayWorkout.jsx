@@ -13,7 +13,7 @@ import ChallengeProgressScreen from './ChallengeProgressScreen.jsx';
 import EmptyProgressScreen from './EmptyProgressScreen.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onCollapse }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
