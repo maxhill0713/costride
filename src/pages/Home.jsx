@@ -44,7 +44,15 @@ export default function Home() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => getMemberships({ user_id: currentUser.id, status: 'active' }),
+    queryFn: async () => {
+      try {
+        const result = await getMemberships({ user_id: currentUser.id, status: 'active' });
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Error fetching memberships:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
