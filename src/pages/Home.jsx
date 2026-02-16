@@ -52,7 +52,7 @@ export default function Home() {
 
   const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => getGyms(),
+    queryFn: async () => await getGyms(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
