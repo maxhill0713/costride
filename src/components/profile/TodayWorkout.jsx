@@ -9,6 +9,8 @@ import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
 import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import WorkoutSummaryModal from './WorkoutSummaryModal.jsx';
+import ChallengeProgressScreen from './ChallengeProgressScreen.jsx';
+import EmptyProgressScreen from './EmptyProgressScreen.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart }) {
@@ -26,7 +28,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [showInfo, setShowInfo] = useState(false);
   const [showLogConfirm, setShowLogConfirm] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showChallengeProgress, setShowChallengeProgress] = useState(false);
+  const [showEmptyScreen, setShowEmptyScreen] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(0);
+  const [challengesWithProgress, setChallengesWithProgress] = useState([]);
   const queryClient = useQueryClient();
 
   const timerPresets = [
@@ -237,6 +242,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       
       // Sync to Supabase
       await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
+      
+      // Fetch challenges and update progress
+      const challenges = await base44.entities.Challenge.filter({ participants: { $in: [currentUser.id] } });
+      const challengesData = challenges.map(challenge => ({
+        id: challenge.id,
+        title: challenge.title,
+        target_value: challenge.target_value,
+        current_value: (challenge.current_value || 0) + 1
+      }));
+      setChallengesWithProgress(challengesData);
 
       // Create posts for weight increases
       if (lastWorkout?.exercises) {
@@ -288,6 +303,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
        queryClient.invalidateQueries(['workoutLog']);
        queryClient.invalidateQueries(['posts']);
        setShowSummary(false);
+       setShowChallengeProgress(true);
      }
     });
 
