@@ -86,94 +86,145 @@ export const saveChallenge = (data) =>
   base44.functions.invoke('saveSupabaseChallenge', data);
 
 // ===== GET/READ FUNCTIONS =====
-const extractData = async (promise) => {
-  const response = await promise;
-  return response?.data || [];
+export const getCheckIns = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseCheckIns', params);
+  return Array.isArray(response?.data) ? response.data : [];
 };
 
-export const getCheckIns = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseCheckIns', params));
+export const getLifts = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseLifts', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getLifts = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseLifts', params));
+export const getGoals = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGoals', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGoals = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGoals', params));
+export const getPosts = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabasePosts', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getPosts = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabasePosts', params));
+export const getBrandDiscountCodes = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseBrandDiscountCodes', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getBrandDiscountCodes = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseBrandDiscountCodes', params));
+export const getAchievements = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseAchievements', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getAchievements = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseAchievements', params));
+export const getChallengeParticipants = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseChallengeParticipants', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getChallengeParticipants = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseChallengeParticipants', params));
+export const getClaimedBonuses = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseClaimedBonuses', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getClaimedBonuses = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseClaimedBonuses', params));
+export const getCoaches = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseCoaches', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getCoaches = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseCoaches', params));
+export const getChallenges = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseChallenges', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getChallenges = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseChallenges', params));
+export const getEvents = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseEvents', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getEvents = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseEvents', params));
+export const getFriends = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseFriends', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getFriends = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseFriends', params));
+export const getGyms = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGyms', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGyms = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGyms', params));
+export const getMemberships = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseMemberships', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getMemberships = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseMemberships', params));
+export const getMessages = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseMessages', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getMessages = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseMessages', params));
+export const getNotifications = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseNotifications', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getNotifications = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseNotifications', params));
+export const getGroups = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGroups', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGroups = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGroups', params));
+export const getGymClasses = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGymClasses', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGymClasses = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGymClasses', params));
+export const getGymMembers = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGymMembers', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGymMembers = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGymMembers', params));
+export const getGymRatings = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGymRatings', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGymRatings = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGymRatings', params));
+export const getGymStats = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseGymStats', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getGymStats = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseGymStats', params));
+export const getPaymentMethods = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabasePaymentMethods', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getPaymentMethods = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabasePaymentMethods', params));
+export const getPayments = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabasePayments', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getPayments = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabasePayments', params));
+export const getPolls = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabasePolls', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getPolls = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabasePolls', params));
+export const getReferrals = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseReferrals', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getReferrals = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseReferrals', params));
+export const getRewards = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseRewards', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getRewards = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseRewards', params));
+export const getSubscriptions = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseSubscriptions', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
-export const getSubscriptions = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseSubscriptions', params));
-
-export const getWorkoutLogs = (params = {}) => 
-  extractData(base44.functions.invoke('getSupabaseWorkoutLogs', params));
+export const getWorkoutLogs = async (params = {}) => {
+  const response = await base44.functions.invoke('getSupabaseWorkoutLogs', params);
+  return Array.isArray(response?.data) ? response.data : [];
+};
 
 // ===== UPDATE FUNCTIONS =====
 export const updateRecord = (table, id, updates) => 
