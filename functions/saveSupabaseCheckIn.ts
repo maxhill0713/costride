@@ -47,6 +47,15 @@ const ensureProfileExists = async (user) => {
 
 Deno.serve(async (req) => {
   try {
+    // Check if secrets are set
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase credentials - URL:', !!supabaseUrl, 'KEY:', !!supabaseKey);
+      return Response.json({ error: 'Supabase credentials not configured' }, { status: 500 });
+    }
+
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
