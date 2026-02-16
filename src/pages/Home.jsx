@@ -52,15 +52,7 @@ export default function Home() {
 
   const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: async () => {
-      try {
-        const result = await getGyms();
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('Error fetching gyms:', error);
-        return [];
-      }
-    },
+    queryFn: async () => await getGyms(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
