@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const hexToUuid = (hex) => {
+  if (!hex || typeof hex !== 'string') return hex;
+  if (hex.includes('-') && hex.length === 36) return hex;
+  if (hex.length === 24) {
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`.toLowerCase();
+  }
+  return hex;
+};
+
 // Helper to ensure user profile exists in Supabase profiles table
 const ensureProfileExists = async (user) => {
   try {
@@ -90,20 +99,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'gym_id is required' }, { status: 400 });
     }
 
-    // Convert MongoDB ObjectId to UUID
-    const objectIdToUuid = (id) => {
-      if (id.length === 24) {
-        // Take the 24-char hex string and format as UUID
-        const hex = id;
-        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`;
-      }
-      return id;
-    };
-
     const checkInData = {
-      user_id: objectIdToUuid(user.id),
+      user_id: hexToUuid(user.id),
       user_name: user.full_name,
-      gym_id: objectIdToUuid(gym_id),
+      gym_id: hexToUuid(gym_id),
       gym_name: gym_name || '',
       check_in_date: check_in_date || new Date().toISOString(),
       first_visit: first_visit || false,
