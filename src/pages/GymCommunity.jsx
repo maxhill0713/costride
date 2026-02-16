@@ -39,6 +39,7 @@ import CreateChallengeModal from '../components/challenges/CreateChallengeModal'
 import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
+import { getGyms, getCheckIns, getLifts, getEvents, getGymClasses, getRewards, getChallenges, getMemberships, getPolls, getPosts, getChallengeParticipants } from '../components/api/supabaseApi';
 import { motion } from 'framer-motion';
 // i18n import removed - using default language
 
@@ -72,8 +73,8 @@ export default function GymCommunity() {
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
     queryFn: async () => {
-      const gyms = await base44.entities.Gym.list();
-      return gyms.find(g => g.id === gymId);
+      const gyms = await getGyms();
+      return gyms?.find(g => g.id === gymId);
     },
     enabled: !!gymId
   });
@@ -97,8 +98,8 @@ export default function GymCommunity() {
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: async () => {
-      const allPosts = await base44.entities.Post.list('-created_date');
-      return allPosts.filter(p => p.allow_gym_repost === true);
+      const allPosts = await getPosts();
+      return allPosts?.filter(p => p.allow_gym_repost === true) || [];
     },
     enabled: !!gymId
   });
@@ -106,8 +107,8 @@ export default function GymCommunity() {
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', gymId],
     queryFn: async () => {
-      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
-      return allCheckIns.filter(c => c.gym_id === gymId);
+      const allCheckIns = await getCheckIns();
+      return allCheckIns?.filter(c => c.gym_id === gymId) || [];
     },
     enabled: !!gymId
   });
@@ -115,8 +116,8 @@ export default function GymCommunity() {
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', gymId],
     queryFn: async () => {
-      const allLifts = await base44.entities.Lift.list('-lift_date');
-      return allLifts.filter(l => l.gym_id === gymId);
+      const allLifts = await getLifts();
+      return allLifts?.filter(l => l.gym_id === gymId) || [];
     },
     enabled: !!gymId
   });
@@ -124,8 +125,8 @@ export default function GymCommunity() {
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
     queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('-event_date');
-      return allEvents.filter(e => e.gym_id === gymId);
+      const allEvents = await getEvents();
+      return allEvents?.filter(e => e.gym_id === gymId) || [];
     },
     enabled: !!gymId
   });
@@ -133,8 +134,8 @@ export default function GymCommunity() {
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', gymId],
     queryFn: async () => {
-      const allClasses = await base44.entities.GymClass.list();
-      return allClasses.filter(c => c.gym_id === gymId);
+      const allClasses = await getGymClasses();
+      return allClasses?.filter(c => c.gym_id === gymId) || [];
     },
     enabled: !!gymId
   });
@@ -142,8 +143,8 @@ export default function GymCommunity() {
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', gymId],
     queryFn: async () => {
-      const allRewards = await base44.entities.Reward.list();
-      return allRewards.filter(r => r.gym_id === gymId);
+      const allRewards = await getRewards();
+      return allRewards?.filter(r => r.gym_id === gymId) || [];
     },
     enabled: !!gymId
   });
@@ -151,8 +152,8 @@ export default function GymCommunity() {
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges', gymId],
     queryFn: async () => {
-      const allChallenges = await base44.entities.Challenge.list();
-      const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
+      const allChallenges = await getChallenges();
+      const filtered = allChallenges?.filter(c => c.gym_id === gymId && c.is_app_challenge !== true) || [];
       console.log('Challenges fetched:', filtered);
       return filtered;
     },
@@ -162,8 +163,8 @@ export default function GymCommunity() {
   const { data: polls = [] } = useQuery({
     queryKey: ['polls', gymId],
     queryFn: async () => {
-      const allPolls = await base44.entities.Poll.list('-created_date');
-      return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
+      const allPolls = await getPolls();
+      return allPolls?.filter(p => p.gym_id === gymId && p.status === 'active') || [];
     },
     enabled: !!gymId
   });
@@ -173,14 +174,14 @@ export default function GymCommunity() {
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => getGyms()
   });
 
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gymId],
     queryFn: async () => {
-      const memberships = await base44.entities.GymMembership.list();
-      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
+      const memberships = await getMemberships();
+      return memberships?.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
     },
     enabled: !!currentUser && !!gymId
   });
