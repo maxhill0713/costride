@@ -1,10 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Helper to ensure user exists in Supabase users table
-const ensureUserExists = async (user) => {
+// Helper to ensure user profile exists in Supabase profiles table
+const ensureProfileExists = async (user) => {
   try {
-    const checkUserResponse = await fetch(
-      `${Deno.env.get('SUPABASE_URL')}/rest/v1/users?id=eq.${user.id}`,
+    const checkProfileResponse = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${user.id}`,
       {
         method: 'GET',
         headers: {
@@ -14,12 +14,12 @@ const ensureUserExists = async (user) => {
       }
     );
 
-    const existingUsers = await checkUserResponse.json();
+    const existingProfiles = await checkProfileResponse.json();
     
-    // If user doesn't exist, create them
-    if (!Array.isArray(existingUsers) || existingUsers.length === 0) {
-      const createUserResponse = await fetch(
-        `${Deno.env.get('SUPABASE_URL')}/rest/v1/users`,
+    // If profile doesn't exist, create it (legacy user)
+    if (!Array.isArray(existingProfiles) || existingProfiles.length === 0) {
+      const createProfileResponse = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles`,
         {
           method: 'POST',
           headers: {
@@ -36,12 +36,12 @@ const ensureUserExists = async (user) => {
         }
       );
 
-      if (!createUserResponse.ok) {
-        console.warn('Could not create user in Supabase:', await createUserResponse.json());
+      if (!createProfileResponse.ok) {
+        console.warn('Could not create profile in Supabase:', await createProfileResponse.json());
       }
     }
   } catch (err) {
-    console.warn('Error ensuring user exists:', err);
+    console.warn('Error ensuring profile exists:', err);
   }
 };
 
@@ -54,8 +54,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Ensure user exists in Supabase
-    await ensureUserExists(user);
+    // Ensure profile exists in Supabase (handle legacy users)
+    await ensureProfileExists(user);
 
     const body = await req.json();
     const { member_id, member_name, exercise, weight_lbs, reps, is_pr, lift_date, notes, video_url, gym_id } = body;
