@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getCheckIns, getLifts, getGoals } from '../components/api/supabaseApi';
 import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
