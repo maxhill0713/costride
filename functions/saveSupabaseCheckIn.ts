@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
         `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${user.id}`,
         {
           headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
+            'apikey': Deno.env.get('SUPABASE_SERVICE_KEY'),
             'Content-Type': 'application/json'
           }
         }
