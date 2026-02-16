@@ -548,7 +548,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         return;
       }
 
-      await checkInMutation.mutateAsync({
+      const checkInData = {
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         gym_id: gym.id,
@@ -556,7 +556,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         check_in_date: new Date().toISOString(),
         first_visit: checkIns.length === 0,
         points_earned: isPremium ? 20 : 10 // Double points for premium
-      });
+      };
+      
+      await checkInMutation.mutateAsync(checkInData);
+      
+      // Sync to Supabase
+      await base44.functions.invoke('saveSupabaseCheckIn', checkInData);
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {
         toast.error('Location access denied', {
