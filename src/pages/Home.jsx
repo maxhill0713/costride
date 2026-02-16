@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getCheckIns, getLifts, getGoals } from '../components/api/supabaseApi';
+import { getCheckIns, getLifts, getGoals, getMemberships, getGyms, getChallenges, getNotifications, getFriends, getPosts, getChallengeParticipants } from '../components/api/supabaseApi';
 import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ export default function Home() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    queryFn: () => getMemberships({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -52,7 +52,7 @@ export default function Home() {
 
   const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
+    queryFn: () => getGyms(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -66,23 +66,21 @@ export default function Home() {
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list('-created_date'),
+    queryFn: () => getChallenges(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ 
-      status: 'active'
-    }, '-created_date', 3),
+    queryFn: () => getChallenges({ status: 'active' }),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date'),
+    queryFn: () => getLifts(),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
@@ -97,7 +95,7 @@ export default function Home() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
+    queryFn: () => getNotifications({ user_id: currentUser?.id }),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -106,7 +104,7 @@ export default function Home() {
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    queryFn: () => getFriends({ user_id: currentUser?.id, status: 'accepted' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -114,7 +112,7 @@ export default function Home() {
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => base44.entities.Post.list('-created_date', 50),
+    queryFn: () => getPosts(),
     enabled: !!currentUser && !!friends.length,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
@@ -122,12 +120,7 @@ export default function Home() {
 
   const { data: recentChallengeActivity = [] } = useQuery({
     queryKey: ['recentChallengeActivity'],
-    queryFn: async () => {
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      return base44.entities.ChallengeParticipant.filter({
-        created_date: { $gte: oneDayAgo.toISOString() }
-      }, '-created_date', 5);
-    },
+    queryFn: () => getChallengeParticipants(),
     enabled: !!currentUser && !!challenges.length,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
