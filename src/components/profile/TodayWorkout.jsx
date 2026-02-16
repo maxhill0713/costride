@@ -353,11 +353,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </div>
             <h3 className={`font-bold text-slate-100 tracking-tight uppercase ${isExpanded ? 'text-xs' : 'text-[11px]'}`}>Today's Workout</h3>
             <button
-              onClick={() => setShowInfo(!showInfo)}
-              className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
-            >
-              <Info className="w-3.5 h-3.5" />
-            </button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowInfo(true);
+                }}
+                className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
           </div>
           <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${todayWorkout.name.length > 12 ? 'text-sm leading-6 break-words' : (isExpanded ? 'text-2xl' : 'text-xl')}`}>
           {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
