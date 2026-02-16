@@ -471,10 +471,11 @@ export default function Home() {
               {/* Today's Workout */}
               {currentUser?.custom_workout_types ? (
                 <TodayWorkout 
-                  currentUser={currentUser}
-                  workoutStartTime={workoutStartTime}
-                  onWorkoutStart={() => setWorkoutStartTime(Date.now())}
-                />
+                    currentUser={currentUser}
+                    workoutStartTime={workoutStartTime}
+                    onWorkoutStart={() => setWorkoutStartTime(Date.now())}
+                    onCollapse={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  />
               ) : (
                 <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
                     <div className="relative space-y-2">
