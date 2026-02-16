@@ -29,6 +29,8 @@ export default function MemberSignup() {
 
   const createMemberMutation = useMutation({
     mutationFn: async (memberData) => {
+      const user = await base44.auth.me();
+      
       // Update user account type to member and mark onboarding as complete
       const updates = { 
         account_type: 'personal',
@@ -49,6 +51,14 @@ export default function MemberSignup() {
       }
       
       await base44.auth.updateMe(updates);
+      
+      // Sync user to Supabase
+      if (user) {
+        await base44.functions.invoke('createSupabaseProfileOnUserCreate', {
+          event: { type: 'create', entity_id: user.id },
+          data: { email: user.email, full_name: updates.full_name || user.full_name, avatar_url: updates.avatar_url }
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });

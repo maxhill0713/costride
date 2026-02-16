@@ -181,6 +181,12 @@ export default function GymSignup() {
         membership_type: 'lifetime'
       });
 
+      // Sync user to Supabase
+      await base44.functions.invoke('createSupabaseProfileOnUserCreate', {
+        event: { type: 'create', entity_id: user.id },
+        data: { email: user.email, full_name: user.full_name, avatar_url: user.avatar_url }
+      });
+
       return gym;
     },
     onSuccess: () => {
