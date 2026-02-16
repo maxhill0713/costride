@@ -27,7 +27,7 @@ export default function RedeemReward() {
     enabled: !!currentUser
   });
 
-  const isPremium = subscription && subscription.length > 0;
+  const isPremium = Array.isArray(subscription) && subscription.length > 0;
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
@@ -153,7 +153,7 @@ export default function RedeemReward() {
   }).sort((a, b) => b.progress - a.progress);
 
   // Filter rewards - only show premium_only rewards to premium users
-  const unclaimedRewards = rewards.filter(r => {
+  const unclaimedRewards = (Array.isArray(rewards) ? rewards : []).filter(r => {
     if (!r.active) return false;
     if (claimedBonuses.find(cb => cb.reward_id === r.id)) return false;
     if (r.premium_only && !isPremium) return false;
@@ -161,7 +161,7 @@ export default function RedeemReward() {
   });
 
   // Convert completed challenges to claimable rewards
-  const completedChallengeRewards = completedChallenges
+  const completedChallengeRewards = (Array.isArray(completedChallenges) ? completedChallenges : [])
     .filter(challenge => {
       // Only show challenges the user participated in AND haven't claimed yet
       const isWinner = challenge.winner_id === currentUser?.id;
