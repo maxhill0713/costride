@@ -64,8 +64,11 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const checkInMutation = useMutation({
     mutationFn: async (data) => {
-      const newCheckIn = await base44.entities.CheckIn.create(data);
-      return newCheckIn;
+      const response = await base44.functions.invoke('checkIn', {
+        gym_id: data.gym_id,
+        gym_name: data.gym_name
+      });
+      return response.data;
     },
     onMutate: async (newCheckIn) => {
       // Cancel outgoing refetches
