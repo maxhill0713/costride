@@ -582,7 +582,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     <div className="space-y-3">
       {/* Location Error Dialog */}
       <Dialog open={showLocationError} onOpenChange={setShowLocationError}>
-        <AlertDialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 max-w-md shadow-2xl shadow-black/40 [&>button]:hidden">
+        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 max-w-md shadow-2xl shadow-black/40 [&>button]:hidden">
           <div className="flex flex-col items-center gap-4">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
