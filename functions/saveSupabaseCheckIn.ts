@@ -58,13 +58,34 @@ Deno.serve(async (req) => {
     await ensureProfileExists(user);
 
     const body = await req.json();
-    const { gym_id, gym_name, check_in_date, first_visit, is_rest_day } = body;
+    let { gym_id, gym_name, check_in_date, first_visit, is_rest_day } = body;
+
+    // If gym_id not provided, try to use user's primary gym
+    if (!gym_id) {
+      const userProfile = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${user.id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      const profiles = await userProfile.json();
+      if (profiles.length > 0 && profiles[0].primary_gym_id) {
+        gym_id = profiles[0].primary_gym_id;
+      }
+    }
+
+    if (!gym_id) {
+      return Response.json({ error: 'gym_id is required' }, { status: 400 });
+    }
 
     const checkInData = {
       user_id: user.id,
       user_name: user.full_name,
       gym_id,
-      gym_name,
+      gym_name: gym_name || '',
       check_in_date: check_in_date || new Date().toISOString(),
       first_visit: first_visit || false,
       is_rest_day: is_rest_day || false
