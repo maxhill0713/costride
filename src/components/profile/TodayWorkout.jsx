@@ -224,14 +224,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       const workout_notes = user?.workout_notes || {};
       const workoutNotes = workout_notes[todayWorkout.name] || '';
       
-      await base44.entities.WorkoutLog.create({
+      const workoutLogData = {
         user_id: currentUser.id,
         workout_name: todayWorkout.name,
         day_of_week: adjustedDay,
         exercises: todayWorkout.exercises,
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0]
-      });
+      };
+      
+      await base44.entities.WorkoutLog.create(workoutLogData);
+      
+      // Sync to Supabase
+      await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
 
       // Create posts for weight increases
       if (lastWorkout?.exercises) {
