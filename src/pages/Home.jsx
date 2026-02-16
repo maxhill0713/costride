@@ -226,7 +226,7 @@ export default function Home() {
 
   // Get the challenge closest to completing (or random if all equal)
   const selectFeaturedChallenge = () => {
-    const activeChallenges = weeklyChallenges.filter(c => c.status === 'active');
+    const activeChallenges = (Array.isArray(weeklyChallenges) ? weeklyChallenges : []).filter(c => c.status === 'active');
     if (activeChallenges.length === 0) return null;
     
     // Calculate progress for each challenge
