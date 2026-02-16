@@ -728,12 +728,26 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         isOpen={showSummary} 
         duration={workoutDuration * 1000}
         workoutName={todayWorkout?.name}
-        exercises={todayWorkout?.exercises}
-        lastWorkout={lastWorkout}
-        notes={currentUser?.workout_notes?.[todayWorkout?.name] || ''}
         onConfirm={() => logWorkoutMutation.mutate()}
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending}
+      />
+
+      <ChallengeProgressScreen
+        isOpen={showChallengeProgress}
+        challenges={challengesWithProgress}
+        onContinue={() => {
+          setShowChallengeProgress(false);
+          setShowEmptyScreen(true);
+        }}
+      />
+
+      <EmptyProgressScreen
+        isOpen={showEmptyScreen}
+        onContinue={() => {
+          setShowEmptyScreen(false);
+          setIsExpanded(false);
+        }}
       />
       </Card>
       );
