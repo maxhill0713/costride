@@ -1,6 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const hexToUuid = (hex) => {
+  if (!hex || typeof hex !== 'string') return hex;
+  if (hex.includes('-') && hex.length === 36) return hex;
+  if (hex.length === 24) {
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`.toLowerCase();
+  }
+  return hex;
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -21,7 +30,7 @@ Deno.serve(async (req) => {
       .from('workout_logs')
       .insert({
         ...body,
-        user_id: user.id,
+        user_id: hexToUuid(user.id),
         created_by: user.email,
         created_date: new Date().toISOString(),
         updated_date: new Date().toISOString()
