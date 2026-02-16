@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getLifts, getGoals, getCheckIns, getWorkoutLogs, getPosts } from '../components/api/supabaseApi';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake, Star } from 'lucide-react';
@@ -58,7 +59,7 @@ export default function Profile() {
 
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
+    queryFn: () => getPosts({ member_id: currentUser.id }),
     enabled: !!currentUser
   });
 
@@ -75,18 +76,18 @@ export default function Profile() {
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date')
+    queryFn: () => getLifts()
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
-    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
+    queryFn: () => getGoals({ user_id: currentUser.id }),
     enabled: !!currentUser
   });
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date')
+    queryFn: () => getCheckIns()
   });
 
   const { data: gymMemberships = [] } = useQuery({
@@ -107,7 +108,7 @@ export default function Profile() {
 
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
-    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
+    queryFn: () => getWorkoutLogs({ user_id: currentUser.id }),
     enabled: !!currentUser
   });
 
