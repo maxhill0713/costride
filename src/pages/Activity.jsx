@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getPosts } from '../components/api/supabaseApi';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ChevronLeft, Heart, Globe } from 'lucide-react';
@@ -16,7 +17,7 @@ export default function Activity() {
 
   const { data: posts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }),
+    queryFn: () => getPosts({ member_id: currentUser?.id }),
     enabled: !!currentUser
   });
 
