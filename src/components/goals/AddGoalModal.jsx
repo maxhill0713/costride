@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MobileSelect } from "@/components/ui/mobile-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Target, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoading }) {
   const [formData, setFormData] = useState({
@@ -25,13 +26,18 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({
+    const goalData = {
       ...formData,
       user_id: currentUser.id,
       user_name: currentUser.full_name,
       target_value: parseFloat(formData.target_value),
       current_value: parseFloat(formData.current_value)
-    });
+    };
+    
+    // Sync to Supabase
+    base44.functions.invoke('saveSupabaseGoal', goalData);
+    
+    onSave(goalData);
     setFormData({
       title: '',
       description: '',
