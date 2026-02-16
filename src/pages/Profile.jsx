@@ -159,7 +159,12 @@ export default function Profile() {
   });
 
   const createGoalMutation = useMutation({
-    mutationFn: (data) => base44.entities.Goal.create(data),
+    mutationFn: async (data) => {
+      const goal = await base44.entities.Goal.create(data);
+      // Sync to Supabase
+      await base44.functions.invoke('saveSupabaseGoal', { ...goal, user_id: currentUser.id });
+      return goal;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowAddGoal(false);
@@ -167,7 +172,12 @@ export default function Profile() {
   });
 
   const updateGoalMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      const goal = await base44.entities.Goal.update(id, data);
+      // Sync to Supabase
+      await base44.functions.invoke('updateSupabaseGoal', { goal_id: id, updates: data });
+      return goal;
+    },
     onMutate: async ({ id, data }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['goals'] });
@@ -228,7 +238,10 @@ export default function Profile() {
         reactions: {},
         allow_gym_repost: data.allow_gym_repost || false
       };
-      return base44.entities.Post.create(postData);
+      const post = await base44.entities.Post.create(postData);
+      // Sync to Supabase
+      await base44.functions.invoke('saveSupabasePost', post);
+      return post;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
