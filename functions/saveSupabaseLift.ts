@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,37 +9,42 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const body = await req.json();
     const { member_id, member_name, exercise, weight_lbs, reps, is_pr, lift_date, notes, video_url, gym_id } = body;
 
-    const { data, error } = await supabase
-      .from('lifts')
-      .insert({
-        member_id: member_id || user.id,
-        member_name: member_name || user.full_name,
-        exercise,
-        weight_lbs,
-        reps,
-        is_pr,
-        lift_date: lift_date || new Date().toISOString().split('T')[0],
-        notes,
-        video_url,
-        gym_id
-      })
-      .select()
-      .single();
+    const liftData = {
+      member_id: member_id || user.id,
+      member_name: member_name || user.full_name,
+      exercise,
+      weight_lbs,
+      reps,
+      is_pr,
+      lift_date: lift_date || new Date().toISOString().split('T')[0],
+      notes,
+      video_url,
+      gym_id
+    };
 
-    if (error) {
-      console.error('Supabase lift insert error:', error);
-      throw error;
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/lifts`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(liftData)
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to save lift');
     }
 
-    return Response.json({ success: true, data });
+    const data = await response.json();
+    return Response.json({ success: true, data: Array.isArray(data) ? data[0] : data });
   } catch (error) {
     console.error('Save lift error:', error);
     return Response.json({ error: error.message }, { status: 500 });
