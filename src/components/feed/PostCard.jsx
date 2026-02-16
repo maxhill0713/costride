@@ -337,46 +337,54 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               {Object.keys(post.reactions || {}).length > 0 && (
                 <button
                   onClick={() => setShowReactionsModal(true)}
-                  className="absolute bottom-3 right-4 flex items-center gap-1 hover:opacity-80 transition-opacity flex-shrink-0"
+                  className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0"
                 >
-                  {Object.entries(post.reactions || {}).map(([userId, variant]) => (
-                    <div
-                      key={userId}
-                      className="relative w-6 h-6"
-                    >
-                      {variant === 'sunglasses' ? (
-                        <div className="relative w-full h-full flex items-center justify-center">
-                          <Flame className="w-6 h-6 text-orange-500 fill-current" />
-                          <svg 
-                            className="absolute inset-0 w-full h-full pointer-events-none"
-                            viewBox="0 0 64 64"
-                          >
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                          </svg>
+                  <div className="flex items-center">
+                    {Object.entries(post.reactions || {})
+                      .slice(0, 4)
+                      .map(([userId, variant], index) => (
+                        <div
+                          key={userId}
+                          className="relative w-6 h-6"
+                          style={{ marginLeft: index > 0 ? '-10px' : '0' }}
+                        >
+                          {variant === 'sunglasses' ? (
+                            <div className="relative w-full h-full flex items-center justify-center">
+                              <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                              <svg 
+                                className="absolute inset-0 w-full h-full pointer-events-none"
+                                viewBox="0 0 64 64"
+                              >
+                                <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                                <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                                <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                              </svg>
+                            </div>
+                          ) : variant === 'cowboy' ? (
+                            <div className="relative w-full h-full flex items-center justify-center">
+                              <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                              <svg 
+                                className="absolute inset-0 w-full h-full pointer-events-none"
+                                viewBox="0 0 64 64"
+                              >
+                                <path 
+                                  d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
+                                  fill="currentColor" 
+                                  className="text-amber-800"
+                                />
+                                <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
+                                <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                          )}
                         </div>
-                      ) : variant === 'cowboy' ? (
-                        <div className="relative w-full h-full flex items-center justify-center">
-                          <Flame className="w-6 h-6 text-orange-500 fill-current" />
-                          <svg 
-                            className="absolute inset-0 w-full h-full pointer-events-none"
-                            viewBox="0 0 64 64"
-                          >
-                            <path 
-                              d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
-                              fill="currentColor" 
-                              className="text-amber-800"
-                            />
-                            <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-                            <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
-                          </svg>
-                        </div>
-                      ) : (
-                        <Flame className="w-6 h-6 text-orange-500 fill-current" />
-                      )}
-                    </div>
-                  ))}
+                      ))}
+                    {Object.keys(post.reactions || {}).length > 4 && (
+                      <span className="text-xs font-bold text-slate-300 ml-1">+{Object.keys(post.reactions || {}).length - 4}</span>
+                    )}
+                  </div>
                 </button>
               )}
 
