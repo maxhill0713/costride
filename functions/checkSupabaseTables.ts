@@ -9,16 +9,19 @@ Deno.serve(async (req) => {
 
     // Query information_schema to get all tables
     const { data, error } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public');
+      .rpc('get_tables');
 
     if (error) {
       console.error('Error fetching tables:', error);
-      throw error;
+      // Fallback - try direct query
+      return Response.json({
+        success: false,
+        error: 'Unable to query tables. Please check your Supabase setup.',
+        details: error.message
+      });
     }
 
-    const tables = data?.map(t => t.table_name) || [];
+    const tables = data || [];
 
     // Expected tables
     const expectedTables = [
