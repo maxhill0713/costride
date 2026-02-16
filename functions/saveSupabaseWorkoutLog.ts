@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       .from('workout_logs')
       .insert({
         ...body,
-        user_id: body.user_id || user.id,
+        user_id: user.id,
         created_by: user.email,
         created_date: new Date().toISOString(),
         updated_date: new Date().toISOString()
