@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,32 +9,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const url = new URL(req.url);
     const memberId = url.searchParams.get('member_id');
     const gymId = url.searchParams.get('gym_id');
     const exercise = url.searchParams.get('exercise');
     const limit = parseInt(url.searchParams.get('limit') || '50');
 
-    let query = supabase.from('lifts').select('*').order('lift_date', { ascending: false });
+    let filters = '';
+    if (memberId) filters += `member_id=eq.${memberId}`;
+    if (gymId) filters += `${filters ? '&' : ''}gym_id=eq.${gymId}`;
+    if (exercise) filters += `${filters ? '&' : ''}exercise=eq.${exercise}`;
 
-    if (memberId) query = query.eq('member_id', memberId);
-    if (gymId) query = query.eq('gym_id', gymId);
-    if (exercise) query = query.eq('exercise', exercise);
-    
-    query = query.limit(limit);
+    const queryUrl = `${Deno.env.get('SUPABASE_URL')}/rest/v1/lifts?${filters}&order=lift_date.desc&limit=${limit}`;
 
-    const { data, error } = await query;
+    const response = await fetch(queryUrl, {
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+      }
+    });
 
-    if (error) {
-      console.error('Supabase lifts query error:', error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to get lifts');
     }
 
+    const data = await response.json();
     return Response.json({ success: true, data });
   } catch (error) {
     console.error('Get lifts error:', error);
