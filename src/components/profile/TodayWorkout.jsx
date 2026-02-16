@@ -355,7 +355,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowInfo(true);
+                  setShowInfo(!showInfo);
                 }}
                 className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
               >
