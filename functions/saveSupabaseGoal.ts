@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,40 +9,45 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const body = await req.json();
     const { title, description, goal_type, target_value, current_value, unit, exercise, frequency_period, deadline, reminder_enabled, status } = body;
 
-    const { data, error } = await supabase
-      .from('goals')
-      .insert({
-        user_id: user.id,
-        user_name: user.full_name,
-        title,
-        description,
-        goal_type: goal_type || 'numerical',
-        target_value,
-        current_value: current_value || 0,
-        unit,
-        exercise,
-        frequency_period,
-        deadline,
-        reminder_enabled: reminder_enabled !== false,
-        status: status || 'active'
-      })
-      .select()
-      .single();
+    const goalData = {
+      user_id: user.id,
+      user_name: user.full_name,
+      title,
+      description,
+      goal_type: goal_type || 'numerical',
+      target_value,
+      current_value: current_value || 0,
+      unit,
+      exercise,
+      frequency_period,
+      deadline,
+      reminder_enabled: reminder_enabled !== false,
+      status: status || 'active'
+    };
 
-    if (error) {
-      console.error('Supabase goal insert error:', error);
-      throw error;
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/goals`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(goalData)
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to save goal');
     }
 
-    return Response.json({ success: true, data });
+    const data = await response.json();
+    return Response.json({ success: true, data: Array.isArray(data) ? data[0] : data });
   } catch (error) {
     console.error('Save goal error:', error);
     return Response.json({ error: error.message }, { status: 500 });
