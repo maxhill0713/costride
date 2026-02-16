@@ -1,8 +1,10 @@
 import { base44 } from '@/api/base44Client';
 
 // ===== SAVE/CREATE FUNCTIONS =====
-export const saveCheckIn = (data) => 
-  base44.functions.invoke('saveSupabaseCheckIn', data);
+export const saveCheckIn = async (data) => {
+  const response = await base44.functions.invoke('saveSupabaseCheckIn', data);
+  return response.data;
+};
 
 export const saveLift = (data) => 
   base44.functions.invoke('saveSupabaseLift', data);
