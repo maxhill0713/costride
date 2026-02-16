@@ -23,15 +23,15 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => {
+    <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onCancel();
     }}>
-      <AlertDialogContent className="bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border-0 rounded-3xl max-w-sm shadow-2xl shadow-black/40">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center mb-6">
+      <DialogContent className="bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border-0 rounded-3xl max-w-sm shadow-2xl shadow-black/40">
+        <DialogHeader>
+          <DialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center mb-6">
             {workoutName} workout complete?
-          </AlertDialogTitle>
-        </AlertDialogHeader>
+          </DialogTitle>
+        </DialogHeader>
 
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-3">
