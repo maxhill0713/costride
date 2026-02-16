@@ -66,45 +66,21 @@ export default function Home() {
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: async () => {
-      try {
-        const result = await getChallenges();
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('Error fetching challenges:', error);
-        return [];
-      }
-    },
+    queryFn: () => getChallenges(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
-    queryFn: async () => {
-      try {
-        const result = await getChallenges({ status: 'active' });
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('Error fetching weekly challenges:', error);
-        return [];
-      }
-    },
+    queryFn: () => getChallenges({ status: 'active' }),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: async () => {
-      try {
-        const result = await getLifts();
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('Error fetching lifts:', error);
-        return [];
-      }
-    },
+    queryFn: () => getLifts(),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
