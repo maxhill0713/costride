@@ -1,13 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Trophy, Flame } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function ChallengeProgressScreen({ isOpen, challenges, onContinue }) {
+  const [showContinue, setShowContinue] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && challenges.length > 0) {
+      // Wait for animations to complete (0.5s delay + 0.8s animation = 1.3s, round up to 1.5s for safety)
+      const timer = setTimeout(() => {
+        setShowContinue(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, challenges.length]);
+
   return (
-    <Dialog open={isOpen}>
-      <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-green-500/30 max-w-md shadow-2xl shadow-black/40 [&>button]:hidden">
+    <>
+      {isOpen && <div className="fixed inset-0 bg-black/40 z-40" />}
+      <Dialog open={isOpen}>
+        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-green-500/30 max-w-md shadow-2xl shadow-black/40 [&>button]:hidden relative z-50">
         <div className="flex flex-col items-center gap-4 py-4">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
