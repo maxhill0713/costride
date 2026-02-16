@@ -3,12 +3,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Clock, TrendingUp, Dumbbell, BookOpen } from 'lucide-react';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onConfirm, onCancel, isLoading }) {
   const formatDuration = (ms) => {
