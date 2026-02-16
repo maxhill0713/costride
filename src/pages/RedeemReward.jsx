@@ -152,11 +152,10 @@ export default function RedeemReward() {
     return { ...challenge, progress, participantCount: participants.length, targetValue };
   }).sort((a, b) => b.progress - a.progress);
 
-  // Filter rewards - only show premium_only rewards to premium users
+  // Filter rewards - show all active unclaimed rewards
   const unclaimedRewards = (Array.isArray(rewards) ? rewards : []).filter(r => {
     if (!r.active) return false;
     if (claimedBonuses.find(cb => cb.reward_id === r.id)) return false;
-    if (r.premium_only && !isPremium) return false;
     return true;
   });
 
