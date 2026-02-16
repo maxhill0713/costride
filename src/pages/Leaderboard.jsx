@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getLifts, getGymMembers } from '../components/api/supabaseApi';
 import { Trophy } from 'lucide-react';
 import LeaderboardCard from '@/components/leaderboard/LeaderboardCard';
 import ExerciseFilter from '@/components/leaderboard/ExerciseFilter';
@@ -10,12 +11,12 @@ export default function Leaderboard() {
 
   const { data: members = [] } = useQuery({
     queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+    queryFn: () => getGymMembers()
   });
 
   const { data: lifts = [], isLoading } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-weight_lbs')
+    queryFn: () => getLifts()
   });
 
   const getLeaderboard = () => {
