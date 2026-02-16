@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, data });
   } catch (error) {
     console.error('Save workout log error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    const errorMessage = error?.message || error?.toString?.() || 'Unknown error';
+    return Response.json({ error: errorMessage }, { status: 500 });
   }
 });
