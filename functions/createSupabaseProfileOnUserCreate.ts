@@ -23,31 +23,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Supabase credentials not configured' }, { status: 500 });
     }
 
-    // Create user in Supabase users table
-    const userDataToSave = {
+    // Create profile in Supabase profiles table
+    const profileDataToSave = {
       id: userId,
       email: userData.email,
       full_name: userData.full_name,
       avatar_url: userData.avatar_url || null
     };
 
-    const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/users`, {
+    const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/profiles`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify(userDataToSave),
+      body: JSON.stringify(profileDataToSave),
     });
 
     if (!supabaseResponse.ok) {
       const error = await supabaseResponse.text();
-      console.error('Supabase user creation failed:', error);
-      return Response.json({ error: 'Failed to create Supabase user' }, { status: 500 });
+      console.error('Supabase profile creation failed:', error);
+      return Response.json({ error: 'Failed to create Supabase profile' }, { status: 500 });
     }
 
-    return Response.json({ success: true, message: 'Supabase user created' });
+    return Response.json({ success: true, message: 'Supabase profile created' });
   } catch (error) {
     console.error('Create Supabase Profile Error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
