@@ -24,36 +24,26 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, onC
   };
 
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onCancel();
+    }}>
       <AlertDialogContent className="bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border-0 rounded-3xl max-w-sm shadow-2xl shadow-black/40">
         <AlertDialogHeader>
-          <div className="flex flex-col items-center gap-4">
-            <AlertDialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center">
-              {workoutName} workout complete?
-            </AlertDialogTitle>
-            <div className="bg-white/5 backdrop-blur rounded-xl p-4 border border-blue-500/20 w-full">
-              <div className="flex items-center justify-center gap-2">
-                <Clock className="w-5 h-5 text-blue-400" />
-                <p className="text-3xl font-black text-white">
-                  {formatDuration(duration)}
-                </p>
-              </div>
-            </div>
-          </div>
+          <AlertDialogTitle className="font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight text-2xl text-center mb-6">
+            {workoutName} workout complete?
+          </AlertDialogTitle>
         </AlertDialogHeader>
 
-        <div className="flex gap-3">
-          <Button
-            onClick={onCancel}
-            variant="outline"
-            className="flex-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800/50"
-            disabled={isLoading}
-          >
-            Cancel
-          </Button>
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <Clock className="w-6 h-6 text-blue-400 flex-shrink-0" />
+            <p className="text-3xl font-black text-white">
+              {formatDuration(duration)}
+            </p>
+          </div>
           <Button
             onClick={onConfirm}
-            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-orange-500/30"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-orange-500/30 whitespace-nowrap"
             disabled={isLoading}
           >
             {isLoading ? 'Logging...' : 'Confirm'}
