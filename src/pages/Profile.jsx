@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getLifts, getGoals, getCheckIns, getWorkoutLogs, getPosts } from '../components/api/supabaseApi';
+import { getLifts, getGoals, getCheckIns, getWorkoutLogs, getPosts, getMemberships, getGyms, getChallenges, saveGoal, updateGoal, deleteRecord, savePost } from '../components/api/supabaseApi';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake, Star } from 'lucide-react';
@@ -92,18 +92,18 @@ export default function Profile() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    queryFn: () => getMemberships({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser
   });
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => getGyms()
   });
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list()
+    queryFn: () => getChallenges()
   });
 
   const { data: workoutLogs = [] } = useQuery({
@@ -159,7 +159,7 @@ export default function Profile() {
   });
 
   const createGoalMutation = useMutation({
-    mutationFn: (data) => base44.entities.Goal.create(data),
+    mutationFn: (data) => saveGoal(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowAddGoal(false);
@@ -167,7 +167,7 @@ export default function Profile() {
   });
 
   const updateGoalMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
+    mutationFn: ({ id, data }) => updateGoal(id, data),
     onMutate: async ({ id, data }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['goals'] });
@@ -192,7 +192,7 @@ export default function Profile() {
   });
 
   const deleteGoalMutation = useMutation({
-    mutationFn: (id) => base44.entities.Goal.delete(id),
+    mutationFn: (id) => deleteRecord('goals', id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
@@ -228,7 +228,7 @@ export default function Profile() {
         reactions: {},
         allow_gym_repost: data.allow_gym_repost || false
       };
-      return base44.entities.Post.create(postData);
+      return savePost(postData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
