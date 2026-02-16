@@ -585,43 +585,26 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     <div className="space-y-3">
       {/* Location Error Dialog */}
       <AlertDialog open={showLocationError} onOpenChange={setShowLocationError}>
-        <AlertDialogContent className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
-          <AlertDialogHeader>
-            <div className="flex flex-col items-center gap-4 mb-2">
-              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-white" strokeWidth={2.5} />
-              </div>
-              <AlertDialogTitle className="text-2xl font-black text-orange-900 text-center">
-                Too Far From Gym
-              </AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="text-center space-y-3">
-              <p className="text-orange-800 text-lg font-semibold">
-                You must be within 500m of the gym to check in
-              </p>
-              <div className="bg-white/60 rounded-xl p-4 border-2 border-orange-200">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <MapPin className="w-5 h-5 text-orange-600" />
-                  <span className="font-bold text-orange-900">Your Distance</span>
-                </div>
-                <p className="text-3xl font-black text-orange-900">
-                  {(locationErrorDistance * 1000).toFixed(0)}m
-                </p>
-                <p className="text-sm text-orange-700 mt-1">
-                  {((locationErrorDistance - 0.5) * 1000).toFixed(0)}m too far
-                </p>
-              </div>
-              <p className="text-sm text-orange-700">
-                Please move closer to {gym?.name} and try again
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <Button
-            onClick={() => setShowLocationError(false)}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-bold h-12"
-          >
-            Got It
-          </Button>
+        <AlertDialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 max-w-md shadow-2xl shadow-black/40 [&>button]:hidden">
+          <div className="flex flex-col items-center gap-4">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 100 }}
+              className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-red-500/30"
+            >
+              <AlertTriangle className="w-7 h-7 text-white" strokeWidth={2.5} />
+            </motion.div>
+            
+            <h2 className="text-2xl font-black text-white text-center">You need to be at your gym to check in!</h2>
+            
+            <Button
+              onClick={() => setShowLocationError(false)}
+              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-bold shadow-lg shadow-red-500/30 mt-4"
+            >
+              Got It
+            </Button>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
 
