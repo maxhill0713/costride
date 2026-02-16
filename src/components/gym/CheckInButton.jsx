@@ -602,8 +602,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
               Got It
             </Button>
           </div>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
 
       {/* Success Animation */}
       <AnimatePresence>
