@@ -23,7 +23,7 @@ const ensureProfileExists = async (user) => {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
+            'apikey': Deno.env.get('SUPABASE_SERVICE_KEY'),
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
