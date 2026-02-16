@@ -9,12 +9,9 @@ import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
 
 export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [isChecking, setIsChecking] = useState(false);
