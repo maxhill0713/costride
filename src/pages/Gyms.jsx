@@ -179,27 +179,45 @@ export default function Gyms() {
         // Check if gym already exists
         const existingGyms = await base44.functions.invoke('getSupabaseGyms', { google_place_id: gymData.google_place_id });
         
-        if (existingGyms.length > 0) {
-          return { exists: true, gym: existingGyms[0] };
+        let gym;
+        if (existingGyms && existingGyms.length > 0) {
+          gym = existingGyms[0];
+        } else {
+          // Create new gym
+          const newGymResponse = await base44.functions.invoke('saveSupabaseGym', gymData);
+          gym = newGymResponse.data || newGymResponse;
         }
 
-        // Create new gym
-        const newGym = await base44.functions.invoke('saveSupabaseGym', gymData);
-        return { exists: false, gym: newGym };
+        // Create membership for the user
+        if (gym && currentUser) {
+          await base44.functions.invoke('saveSupabaseMembership', {
+            user_id: currentUser.id,
+            user_name: currentUser.full_name,
+            user_email: currentUser.email,
+            gym_id: gym.id,
+            gym_name: gym.name,
+            status: 'active',
+            join_date: new Date().toISOString().split('T')[0],
+            membership_type: 'monthly'
+          });
+        }
+
+        return gym;
       } catch (error) {
         console.error('Error creating gym:', error);
         throw error;
       }
     },
-    onSuccess: (result) => {
+    onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
-      navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
+      navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
     }
   });
 
