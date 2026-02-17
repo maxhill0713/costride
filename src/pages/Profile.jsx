@@ -87,7 +87,8 @@ export default function Profile() {
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => getCheckIns()
+    queryFn: () => getCheckIns(),
+    initialData: []
   });
 
   const { data: gymMemberships = [] } = useQuery({
