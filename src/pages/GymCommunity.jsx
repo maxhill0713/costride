@@ -255,7 +255,7 @@ export default function GymCommunity() {
   });
 
   const createEventMutation = useMutation({
-    mutationFn: (eventData) => base44.entities.Event.create({
+    mutationFn: (eventData) => base44.functions.invoke('saveSupabaseEvent', {
       ...eventData,
       gym_id: gymId,
       gym_name: gym?.name,
@@ -269,8 +269,10 @@ export default function GymCommunity() {
 
   const rsvpMutation = useMutation({
     mutationFn: ({ eventId, currentAttendees }) => 
-      base44.entities.Event.update(eventId, {
-        attendees: currentAttendees + 1
+      base44.functions.invoke('updateSupabaseRecord', {
+        table: 'events',
+        id: eventId,
+        data: { attendees: currentAttendees + 1 }
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
@@ -278,7 +280,11 @@ export default function GymCommunity() {
   });
 
   const updateEquipmentMutation = useMutation({
-    mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }),
+    mutationFn: (equipment) => base44.functions.invoke('updateSupabaseRecord', {
+      table: 'gyms',
+      id: gymId,
+      data: { equipment }
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowManageEquipment(false);
@@ -286,14 +292,14 @@ export default function GymCommunity() {
   });
 
   const createRewardMutation = useMutation({
-    mutationFn: (rewardData) => base44.entities.Reward.create(rewardData),
+    mutationFn: (rewardData) => base44.functions.invoke('saveSupabaseReward', rewardData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
     }
   });
 
   const deleteRewardMutation = useMutation({
-    mutationFn: (rewardId) => base44.entities.Reward.delete(rewardId),
+    mutationFn: (rewardId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'rewards', id: rewardId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
     }
@@ -301,8 +307,10 @@ export default function GymCommunity() {
 
   const claimRewardMutation = useMutation({
     mutationFn: ({ rewardId, userId, currentClaimed }) => 
-      base44.entities.Reward.update(rewardId, {
-        claimed_by: [...currentClaimed, userId]
+      base44.functions.invoke('updateSupabaseRecord', {
+        table: 'rewards',
+        id: rewardId,
+        data: { claimed_by: [...currentClaimed, userId] }
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
@@ -310,42 +318,42 @@ export default function GymCommunity() {
   });
 
   const createClassMutation = useMutation({
-    mutationFn: (classData) => base44.entities.GymClass.create(classData),
+    mutationFn: (classData) => base44.functions.invoke('saveSupabaseGymClass', classData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', gymId] });
     }
   });
 
   const deleteClassMutation = useMutation({
-    mutationFn: (classId) => base44.entities.GymClass.delete(classId),
+    mutationFn: (classId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'gym_classes', id: classId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', gymId] });
     }
   });
 
   const createCoachMutation = useMutation({
-    mutationFn: (coachData) => base44.entities.Coach.create(coachData),
+    mutationFn: (coachData) => base44.functions.invoke('saveSupabaseCoach', coachData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
   });
 
   const deleteCoachMutation = useMutation({
-    mutationFn: (coachId) => base44.entities.Coach.delete(coachId),
+    mutationFn: (coachId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'coaches', id: coachId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
   });
 
   const deleteChallengeMutation = useMutation({
-    mutationFn: (challengeId) => base44.entities.Challenge.delete(challengeId),
+    mutationFn: (challengeId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'challenges', id: challengeId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
     }
   });
 
   const deleteEventMutation = useMutation({
-    mutationFn: (eventId) => base44.entities.Event.delete(eventId),
+    mutationFn: (eventId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'events', id: eventId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
     }
@@ -361,9 +369,10 @@ export default function GymCommunity() {
       );
       const updatedVoters = [...(poll.voters || []), currentUser.id];
       
-      await base44.entities.Poll.update(pollId, {
-        options: updatedOptions,
-        voters: updatedVoters
+      return await base44.functions.invoke('updateSupabaseRecord', {
+        table: 'polls',
+        id: pollId,
+        data: { options: updatedOptions, voters: updatedVoters }
       });
     },
     onSuccess: () => {
@@ -372,7 +381,11 @@ export default function GymCommunity() {
   });
 
   const updateCoachMutation = useMutation({
-    mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data),
+    mutationFn: ({ coachId, data }) => base44.functions.invoke('updateSupabaseRecord', {
+      table: 'coaches',
+      id: coachId,
+      data
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
@@ -385,25 +398,22 @@ export default function GymCommunity() {
         gym_id: gymId,
         gym_name: gym?.name
       };
-      console.log('Creating challenge with data:', fullData);
-      return base44.entities.Challenge.create(fullData);
+      return base44.functions.invoke('saveSupabaseChallenge', fullData);
     },
-    onSuccess: (response) => {
-      console.log('Challenge created successfully:', response);
-      console.log('Invalidating queries for gymId:', gymId);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
-      console.log('Modal closing...');
       setShowCreateChallenge(false);
-    },
-    onError: (error) => {
-      console.error('Challenge creation failed:', error);
     }
   });
 
 
 
   const updateGalleryMutation = useMutation({
-    mutationFn: (gallery) => base44.entities.Gym.update(gymId, { gallery }),
+    mutationFn: (gallery) => base44.functions.invoke('updateSupabaseRecord', {
+      table: 'gyms',
+      id: gymId,
+      data: { gallery }
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowManagePhotos(false);
@@ -411,7 +421,11 @@ export default function GymCommunity() {
   });
 
   const updateHeroImageMutation = useMutation({
-    mutationFn: (image_url) => base44.entities.Gym.update(gymId, { image_url }),
+    mutationFn: (image_url) => base44.functions.invoke('updateSupabaseRecord', {
+      table: 'gyms',
+      id: gymId,
+      data: { image_url }
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowEditHeroImage(false);
@@ -419,7 +433,11 @@ export default function GymCommunity() {
   });
 
   const updateGymLogoMutation = useMutation({
-    mutationFn: (logo_url) => base44.entities.Gym.update(gymId, { logo_url }),
+    mutationFn: (logo_url) => base44.functions.invoke('updateSupabaseRecord', {
+      table: 'gyms',
+      id: gymId,
+      data: { logo_url }
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowEditGymLogo(false);
@@ -446,7 +464,7 @@ export default function GymCommunity() {
 
   const claimBonusMutation = useMutation({
     mutationFn: ({ bonusType, offerDetails }) =>
-      base44.entities.ClaimedBonus.create({
+      base44.functions.invoke('saveSupabaseClaimedBonus', {
         user_id: currentUser.id,
         gym_id: gymId,
         bonus_type: bonusType,
@@ -454,8 +472,7 @@ export default function GymCommunity() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] });
-      // Create notification
-      base44.entities.Notification.create({
+      base44.functions.invoke('saveSupabaseNotification', {
         user_id: currentUser.id,
         type: 'reward',
         title: '🎁 Bonus Claimed!',
@@ -467,7 +484,7 @@ export default function GymCommunity() {
 
   const joinGhostGymMutation = useMutation({
     mutationFn: async () => {
-      const membershipData = {
+      return await base44.functions.invoke('saveSupabaseMembership', {
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         user_email: currentUser.email,
@@ -476,34 +493,24 @@ export default function GymCommunity() {
         status: 'active',
         join_date: new Date().toISOString().split('T')[0],
         membership_type: 'lifetime'
-      };
-
-      await base44.entities.GymMembership.create(membershipData);
-
-      // Sync to Supabase
-      try {
-        await base44.functions.invoke('saveSupabaseMembership', membershipData);
-      } catch (error) {
-        console.error('Error syncing membership to Supabase:', error);
-      }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
-      // Navigate to home after successfully joining
       window.location.href = createPageUrl('Home');
     }
   });
 
   const joinChallengeMutation = useMutation({
     mutationFn: async (challenge) => {
-      // Update Challenge participants array first
       const currentParticipants = challenge.participants || [];
-      await base44.entities.Challenge.update(challenge.id, {
-        participants: [...currentParticipants, currentUser.id]
+      await base44.functions.invoke('updateSupabaseRecord', {
+        table: 'challenges',
+        id: challenge.id,
+        data: { participants: [...currentParticipants, currentUser.id] }
       });
 
-      // Create ChallengeParticipant record
-      await base44.entities.ChallengeParticipant.create({
+      return await base44.functions.invoke('saveSupabaseChallengeParticipant', {
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         challenge_id: challenge.id,
@@ -517,8 +524,7 @@ export default function GymCommunity() {
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
       queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });
-      // Create notification
-      base44.entities.Notification.create({
+      base44.functions.invoke('saveSupabaseNotification', {
         user_id: currentUser.id,
         type: 'challenge',
         title: '💪 Challenge Joined!',
@@ -658,8 +664,10 @@ export default function GymCommunity() {
   const banMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
-      return base44.entities.Gym.update(gymId, { 
-        banned_members: [...currentBanned, userId] 
+      return base44.functions.invoke('updateSupabaseRecord', {
+        table: 'gyms',
+        id: gymId,
+        data: { banned_members: [...currentBanned, userId] }
       });
     },
     onSuccess: () => {
@@ -670,8 +678,10 @@ export default function GymCommunity() {
   const unbanMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
-      return base44.entities.Gym.update(gymId, { 
-        banned_members: currentBanned.filter(id => id !== userId) 
+      return base44.functions.invoke('updateSupabaseRecord', {
+        table: 'gyms',
+        id: gymId,
+        data: { banned_members: currentBanned.filter(id => id !== userId) }
       });
     },
     onSuccess: () => {
