@@ -82,6 +82,7 @@ import Search from './pages/Search';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import UserProfile from './pages/UserProfile';
+import FunctionStatus from './pages/FunctionStatus';
 import __Layout from './Layout.jsx';
 
 
@@ -121,6 +122,7 @@ export const PAGES = {
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
     "UserProfile": UserProfile,
+    "FunctionStatus": FunctionStatus,
 }
 
 export const pagesConfig = {
