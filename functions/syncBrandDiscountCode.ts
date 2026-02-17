@@ -67,7 +67,11 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
 
-    return Response.json({ success: true });
+    return Response.json({ 
+      success: true,
+      entity_id: entityId,
+      operation: eventType
+    });
   } catch (error) {
     console.error('Sync brand discount code error:', error);
     return Response.json({ error: error.message }, { status: 500 });
