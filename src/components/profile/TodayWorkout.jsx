@@ -222,28 +222,41 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const logWorkoutMutation = useMutation({
           mutationFn: async () => {
-            console.log('Starting workout log...');
-            const user = await base44.auth.me();
-            const workout_notes = user?.workout_notes || {};
-            const workoutNotes = workout_notes[todayWorkout.name] || '';
+            try {
+              console.log('=== STARTING WORKOUT LOG ===');
+              console.log('Current user:', currentUser);
+              console.log('Today workout:', todayWorkout);
+              console.log('Adjusted day:', adjustedDay);
+              
+              const user = await base44.auth.me();
+              console.log('Authenticated user:', user);
+              
+              const workout_notes = user?.workout_notes || {};
+              const workoutNotes = workout_notes[todayWorkout.name] || '';
 
-            const workoutLogData = {
-              user_id: currentUser.id,
-              workout_name: todayWorkout.name,
-              day_of_week: adjustedDay,
-              exercises: todayWorkout.exercises,
-              notes: workoutNotes,
-              completed_date: new Date().toISOString().split('T')[0]
-            };
+              const workoutLogData = {
+                user_id: currentUser.id,
+                workout_name: todayWorkout.name,
+                day_of_week: adjustedDay,
+                exercises: todayWorkout.exercises,
+                notes: workoutNotes,
+                completed_date: new Date().toISOString().split('T')[0]
+              };
 
-            console.log('Creating Base44 workout log:', workoutLogData);
-            const base44Log = await base44.entities.WorkoutLog.create(workoutLogData);
-            console.log('Base44 log created:', base44Log);
+              console.log('Creating Base44 workout log with data:', JSON.stringify(workoutLogData, null, 2));
+              const base44Log = await base44.entities.WorkoutLog.create(workoutLogData);
+              console.log('✅ Base44 log created successfully:', base44Log);
 
-            // Sync to Supabase
-            console.log('Syncing to Supabase...');
-            const supabaseResult = await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
-            console.log('Supabase sync result:', supabaseResult);
+              // Sync to Supabase
+              console.log('Syncing to Supabase...');
+              const supabaseResult = await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
+              console.log('✅ Supabase sync result:', supabaseResult);
+              
+              return { base44Log, supabaseResult };
+            } catch (error) {
+              console.error('❌ ERROR in mutation function:', error);
+              throw error;
+            }
       
       // Fetch challenges and update progress
       const challenges = await base44.entities.Challenge.filter({ participants: { $in: [currentUser.id] } });
