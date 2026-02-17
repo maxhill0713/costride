@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       throw new Error('name field is required for gym member');
     }
 
-    // Map fields to Supabase schema
+    // Map fields to Supabase schema (only include fields that exist in the table)
     const supabaseMember = {
       id: memberData.id || event?.entity_id,
       name: memberData.name,
@@ -35,10 +35,7 @@ Deno.serve(async (req) => {
       avatar_url: memberData.avatar_url || null,
       join_date: memberData.join_date || null,
       weight_class: memberData.weight_class || null,
-      gym_id: memberData.gym_id || null,
-      created_by: user.email,
-      created_at: memberData.created_date || new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      gym_id: memberData.gym_id || null
     };
 
     const supabase = createClient(
