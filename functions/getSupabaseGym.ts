@@ -9,20 +9,31 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    const { gym_id } = await req.json();
+
+    if (!gym_id) {
+      return Response.json({ error: 'gym_id required' }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from('Gym')
       .select('*')
-      .eq('status', 'approved');
+      .eq('id', gym_id)
+      .single();
 
     if (error) {
       console.error('Supabase error:', error);
       return Response.json({ error: error.message }, { status: 500 });
     }
 
-    return Response.json(data || []);
+    // Check if user can access this gym
+    if (data.status !== 'approved' && data.owner_email !== user?.email && data.admin_id !== user?.id) {
+      return Response.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    return Response.json(data);
   } catch (error) {
-    console.error('Error fetching gyms:', error);
+    console.error('Error fetching gym:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
