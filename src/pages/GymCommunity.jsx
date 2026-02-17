@@ -74,13 +74,17 @@ export default function GymCommunity() {
     queryFn: async () => {
       try {
         const gyms = await base44.functions.invoke('getSupabaseGyms', {});
-        return gyms.find(g => g.id === gymId);
+        const foundGym = gyms.find(g => g.id === gymId);
+        console.log('Found gym:', foundGym);
+        return foundGym;
       } catch (error) {
         console.error('Error fetching gym:', error);
         return null;
       }
     },
-    enabled: !!gymId
+    enabled: !!gymId,
+    retry: 3,
+    staleTime: 0
   });
 
   // Language setting stored on gym
@@ -144,13 +148,14 @@ export default function GymCommunity() {
     queryFn: async () => {
       try {
         const allLifts = await base44.functions.invoke('getSupabaseLifts', {});
-        return allLifts.filter(l => l.gym_id === gymId);
+        return Array.isArray(allLifts) ? allLifts.filter(l => l.gym_id === gymId) : [];
       } catch (error) {
         console.error('Error fetching lifts:', error);
         return [];
       }
     },
-    enabled: !!gymId
+    enabled: !!gymId,
+    retry: 1
   });
 
   const { data: events = [] } = useQuery({
