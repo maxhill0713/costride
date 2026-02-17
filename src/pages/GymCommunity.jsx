@@ -72,8 +72,13 @@ export default function GymCommunity() {
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
     queryFn: async () => {
-      const gyms = await base44.entities.Gym.list();
-      return gyms.find(g => g.id === gymId);
+      try {
+        const gyms = await base44.functions.invoke('getSupabaseGyms', {});
+        return gyms.find(g => g.id === gymId);
+      } catch (error) {
+        console.error('Error fetching gym:', error);
+        return null;
+      }
     },
     enabled: !!gymId
   });
@@ -82,14 +87,26 @@ export default function GymCommunity() {
 
   const { data: members = [] } = useQuery({
     queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseGymMembers', {});
+      } catch (error) {
+        console.error('Error fetching members:', error);
+        return [];
+      }
+    }
   });
 
   const { data: coaches = [] } = useQuery({
     queryKey: ['coaches', gymId],
     queryFn: async () => {
-      const allCoaches = await base44.entities.Coach.list();
-      return allCoaches.filter(c => c.gym_id === gymId);
+      try {
+        const allCoaches = await base44.functions.invoke('getSupabaseCoaches', {});
+        return allCoaches.filter(c => c.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching coaches:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -97,8 +114,13 @@ export default function GymCommunity() {
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: async () => {
-      const allPosts = await base44.entities.Post.list('-created_date');
-      return allPosts.filter(p => p.allow_gym_repost === true);
+      try {
+        const allPosts = await base44.functions.invoke('getSupabasePosts', {});
+        return allPosts.filter(p => p.allow_gym_repost === true);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -106,8 +128,13 @@ export default function GymCommunity() {
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', gymId],
     queryFn: async () => {
-      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
-      return allCheckIns.filter(c => c.gym_id === gymId);
+      try {
+        const allCheckIns = await base44.functions.invoke('getSupabaseCheckIns', {});
+        return allCheckIns.filter(c => c.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching check-ins:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -115,8 +142,13 @@ export default function GymCommunity() {
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', gymId],
     queryFn: async () => {
-      const allLifts = await base44.entities.Lift.list('-lift_date');
-      return allLifts.filter(l => l.gym_id === gymId);
+      try {
+        const allLifts = await base44.functions.invoke('getSupabaseLifts', {});
+        return allLifts.filter(l => l.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching lifts:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -124,8 +156,13 @@ export default function GymCommunity() {
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
     queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('-event_date');
-      return allEvents.filter(e => e.gym_id === gymId);
+      try {
+        const allEvents = await base44.functions.invoke('getSupabaseEvents', {});
+        return allEvents.filter(e => e.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -133,8 +170,13 @@ export default function GymCommunity() {
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', gymId],
     queryFn: async () => {
-      const allClasses = await base44.entities.GymClass.list();
-      return allClasses.filter(c => c.gym_id === gymId);
+      try {
+        const allClasses = await base44.functions.invoke('getSupabaseGymClasses', {});
+        return allClasses.filter(c => c.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching classes:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -142,8 +184,13 @@ export default function GymCommunity() {
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', gymId],
     queryFn: async () => {
-      const allRewards = await base44.entities.Reward.list();
-      return allRewards.filter(r => r.gym_id === gymId);
+      try {
+        const allRewards = await base44.functions.invoke('getSupabaseRewards', {});
+        return allRewards.filter(r => r.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching rewards:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -151,10 +198,15 @@ export default function GymCommunity() {
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges', gymId],
     queryFn: async () => {
-      const allChallenges = await base44.entities.Challenge.list();
-      const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
-      console.log('Challenges fetched:', filtered);
-      return filtered;
+      try {
+        const allChallenges = await base44.functions.invoke('getSupabaseChallenges', {});
+        const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
+        console.log('Challenges fetched:', filtered);
+        return filtered;
+      } catch (error) {
+        console.error('Error fetching challenges:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -162,8 +214,13 @@ export default function GymCommunity() {
   const { data: polls = [] } = useQuery({
     queryKey: ['polls', gymId],
     queryFn: async () => {
-      const allPolls = await base44.entities.Poll.list('-created_date');
-      return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
+      try {
+        const allPolls = await base44.functions.invoke('getSupabasePolls', {});
+        return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
+      } catch (error) {
+        console.error('Error fetching polls:', error);
+        return [];
+      }
     },
     enabled: !!gymId
   });
@@ -173,14 +230,26 @@ export default function GymCommunity() {
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseGyms', {});
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        return [];
+      }
+    }
   });
 
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gymId],
     queryFn: async () => {
-      const memberships = await base44.entities.GymMembership.list();
-      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
+      try {
+        const memberships = await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser.id });
+        return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
+      } catch (error) {
+        console.error('Error fetching gym membership:', error);
+        return null;
+      }
     },
     enabled: !!currentUser && !!gymId
   });
