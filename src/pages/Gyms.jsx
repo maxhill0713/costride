@@ -179,12 +179,22 @@ export default function Gyms() {
 
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      const response = await base44.functions.invoke('saveSupabaseGym', gymData);
-      const gymResult = response.data?.data || response.data;
-      if (!gymResult?.id) throw new Error('No gym ID returned');
-      return gymResult;
+      try {
+        const response = await base44.functions.invoke('saveSupabaseGym', gymData);
+        const gymResult = response?.data?.data || response?.data;
+        if (!gymResult?.id) {
+          console.error('No gym ID in response:', response);
+          throw new Error('No gym ID returned from server');
+        }
+        return gymResult;
+      } catch (error) {
+        console.error('Error creating gym:', error);
+        throw error;
+      }
     },
     onSuccess: (gym) => {
+      console.log('Gym created successfully:', gym);
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
@@ -193,6 +203,10 @@ export default function Gyms() {
       setSearchQuery('');
       // Navigate directly with gym ID - GymCommunity will handle the query
       navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
+    },
+    onError: (error) => {
+      console.error('Gym creation failed:', error);
+      alert(`Failed to create gym: ${error.message || 'Unknown error'}`);
     }
   });
 
