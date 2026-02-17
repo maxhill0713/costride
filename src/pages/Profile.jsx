@@ -122,8 +122,8 @@ export default function Profile() {
 
 
   const displayName = currentUser?.username || currentUser?.full_name;
-  const memberLifts = lifts.filter(l => l.member_name === displayName);
-  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
+  const memberLifts = Array.isArray(lifts) ? lifts.filter(l => l.member_name === displayName) : [];
+  const userCheckIns = Array.isArray(checkIns) ? checkIns.filter(c => c.user_id === currentUser?.id) : [];
 
   // Get gyms user is a member of
   const memberGymIds = gymMemberships.map(m => m.gym_id);
