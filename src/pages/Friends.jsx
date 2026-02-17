@@ -105,15 +105,10 @@ export default function Friends() {
   });
 
   const addFriendMutation = useMutation({
-    mutationFn: async (friendUser) => {
-      await base44.entities.Friend.create({
-        user_id: currentUser.id,
-        friend_id: friendUser.id,
-        friend_name: friendUser.full_name,
-        friend_avatar: friendUser.avatar_url,
-        status: 'pending'
-      });
-    },
+    mutationFn: (friendUser) => base44.functions.invoke('manageFriendship', {
+      friendId: friendUser.id,
+      action: 'add'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries(['friends']);
       toast.success('Friend request sent!');
@@ -123,16 +118,10 @@ export default function Friends() {
   });
 
   const acceptFriendMutation = useMutation({
-    mutationFn: async (requestId, requesterData) => {
-      const request = await base44.entities.Friend.update(requestId, { status: 'accepted' });
-      await base44.entities.Friend.create({
-        user_id: currentUser.id,
-        friend_id: requesterData.user_id,
-        friend_name: requesterData.user_name || requesterData.friend_name,
-        friend_avatar: requesterData.friend_avatar,
-        status: 'accepted'
-      });
-    },
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', {
+      friendId,
+      action: 'accept'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['friends']);
@@ -141,9 +130,10 @@ export default function Friends() {
   });
 
   const rejectFriendMutation = useMutation({
-    mutationFn: async (requestId) => {
-      await base44.entities.Friend.delete(requestId);
-    },
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', {
+      friendId,
+      action: 'reject'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries(['friendRequests']);
       toast.success('Friend request declined');
@@ -151,22 +141,10 @@ export default function Friends() {
   });
 
   const removeFriendMutation = useMutation({
-    mutationFn: async (friendId) => {
-      const friendships = await base44.entities.Friend.filter({
-        user_id: currentUser.id,
-        friend_id: friendId
-      });
-      if (friendships.length > 0) {
-        await base44.entities.Friend.delete(friendships[0].id);
-      }
-      const reverseFriendships = await base44.entities.Friend.filter({
-        user_id: friendId,
-        friend_id: currentUser.id
-      });
-      if (reverseFriendships.length > 0) {
-        await base44.entities.Friend.delete(reverseFriendships[0].id);
-      }
-    },
+    mutationFn: (friendId) => base44.functions.invoke('manageFriendship', {
+      friendId,
+      action: 'remove'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries(['friends']);
       toast.success('Friend removed');
@@ -708,7 +686,7 @@ export default function Friends() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Button
                         size="icon"
-                        onClick={() => acceptFriendMutation.mutate(request.id, request)}
+                        onClick={() => acceptFriendMutation.mutate(request.user_id)}
                         className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"
                       >
                         <CheckCircle className="w-3 h-3" />
@@ -716,7 +694,7 @@ export default function Friends() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => rejectFriendMutation.mutate(request.id)}
+                        onClick={() => rejectFriendMutation.mutate(request.user_id)}
                         className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"
                       >
                         <X className="w-3 h-3" />

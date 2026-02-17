@@ -63,10 +63,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   });
 
   const checkInMutation = useMutation({
-    mutationFn: async (data) => {
-      const newCheckIn = await base44.entities.CheckIn.create(data);
-      return newCheckIn;
-    },
+    mutationFn: (data) => base44.functions.invoke('performCheckIn', { gymId: data.gym_id }),
     onMutate: async (newCheckIn) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['checkIns'] });
@@ -551,15 +548,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         return;
       }
 
-      await checkInMutation.mutateAsync({
-        user_id: currentUser.id,
-        user_name: currentUser.full_name,
-        gym_id: gym.id,
-        gym_name: gym.name,
-        check_in_date: new Date().toISOString(),
-        first_visit: checkIns.length === 0,
-        points_earned: isPremium ? 20 : 10 // Double points for premium
-      });
+      await checkInMutation.mutateAsync({ gym_id: gym.id });
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {
         toast.error('Location access denied', {
