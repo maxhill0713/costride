@@ -324,10 +324,10 @@ export default function Profile() {
 
 
 
-  const completedChallenges = allChallenges.filter(c => 
+  const completedChallenges = Array.isArray(allChallenges) ? allChallenges.filter(c => 
     c.status === 'completed' && 
     c.participants?.includes(currentUser?.id)
-  ).length;
+  ).length : 0;
 
   const stats = {
     totalLifts: memberLifts.length,
