@@ -44,6 +44,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: error.message || 'Failed to insert gym' }, { status: 400 });
     }
 
+    // Auto-create membership for gym creator
+    await supabase
+      .from('gym_memberships')
+      .insert({
+        user_id: user.id,
+        user_name: user.full_name,
+        user_email: user.email,
+        gym_id: data.id,
+        gym_name: data.name,
+        status: 'active',
+        join_date: new Date().toISOString().split('T')[0],
+        membership_type: 'lifetime'
+      });
+
     return Response.json({ success: true, data });
   } catch (error) {
     console.error('Save gym error:', error.message, error);
