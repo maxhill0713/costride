@@ -221,24 +221,29 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   };
 
   const logWorkoutMutation = useMutation({
-    mutationFn: async () => {
-      const user = await base44.auth.me();
-      const workout_notes = user?.workout_notes || {};
-      const workoutNotes = workout_notes[todayWorkout.name] || '';
-      
-      const workoutLogData = {
-        user_id: currentUser.id,
-        workout_name: todayWorkout.name,
-        day_of_week: adjustedDay,
-        exercises: todayWorkout.exercises,
-        notes: workoutNotes,
-        completed_date: new Date().toISOString().split('T')[0]
-      };
-      
-      await base44.entities.WorkoutLog.create(workoutLogData);
-      
-      // Sync to Supabase
-      await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
+          mutationFn: async () => {
+            console.log('Starting workout log...');
+            const user = await base44.auth.me();
+            const workout_notes = user?.workout_notes || {};
+            const workoutNotes = workout_notes[todayWorkout.name] || '';
+
+            const workoutLogData = {
+              user_id: currentUser.id,
+              workout_name: todayWorkout.name,
+              day_of_week: adjustedDay,
+              exercises: todayWorkout.exercises,
+              notes: workoutNotes,
+              completed_date: new Date().toISOString().split('T')[0]
+            };
+
+            console.log('Creating Base44 workout log:', workoutLogData);
+            const base44Log = await base44.entities.WorkoutLog.create(workoutLogData);
+            console.log('Base44 log created:', base44Log);
+
+            // Sync to Supabase
+            console.log('Syncing to Supabase...');
+            const supabaseResult = await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
+            console.log('Supabase sync result:', supabaseResult);
       
       // Fetch challenges and update progress
       const challenges = await base44.entities.Challenge.filter({ participants: { $in: [currentUser.id] } });
@@ -287,10 +292,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
     },
     onSuccess: () => {
+       console.log('Workout logged successfully!');
        queryClient.invalidateQueries(['workoutLog']);
        queryClient.invalidateQueries(['posts']);
        setShowSummary(false);
        setShowChallengeProgress(true);
+     },
+    onError: (error) => {
+       console.error('Error logging workout:', error);
+       alert('Failed to log workout: ' + error.message);
      }
     });
 
