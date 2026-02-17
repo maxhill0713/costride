@@ -10,19 +10,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const body = await req.json();
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL'),
       Deno.env.get('SUPABASE_SERVICE_KEY')
     );
 
-    const body = await req.json();
-    
     const { data, error } = await supabase
       .from('gyms')
       .insert({
-        ...body,
-        owner_email: body.owner_email || user.email,
-        admin_id: body.admin_id || user.id
+        name: body.name,
+        address: body.address,
+        city: body.city,
+        google_place_id: body.google_place_id,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        type: body.type,
+        claim_status: body.claim_status || 'unclaimed',
+        admin_id: body.admin_id || null,
+        owner_email: body.owner_email || null,
+        verified: body.verified || false,
+        status: body.status || 'approved',
+        members_count: body.members_count || 0,
+        image_url: body.image_url || null,
+        created_by: user.email
       })
       .select()
       .single();
