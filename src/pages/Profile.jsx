@@ -99,18 +99,39 @@ export default function Profile() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser.id });
+      } catch (error) {
+        console.error('Error fetching memberships:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser
   });
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseGyms', {});
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        return [];
+      }
+    }
   });
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list()
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseChallenges', {});
+      } catch (error) {
+        console.error('Error fetching challenges:', error);
+        return [];
+      }
+    }
   });
 
   const { data: workoutLogs = [] } = useQuery({

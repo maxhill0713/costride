@@ -65,11 +65,25 @@ export default function Gyms() {
 
   const { data: gyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseGyms', {});
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        return [];
+      }
+    }
   });
 
   const updateGymImageMutation = useMutation({
-    mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
+    mutationFn: async ({ gymId, image_url }) => {
+      try {
+        await base44.functions.invoke('updateSupabaseRecord', { table: 'gyms', id: gymId, data: { image_url } });
+      } catch (error) {
+        console.error('Error updating gym image:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setEditingGym(null);
@@ -89,7 +103,12 @@ export default function Gyms() {
     mutationFn: async (gymId) => {
       const membership = gymMemberships.find(m => m.gym_id === gymId);
       if (membership) {
-        await base44.entities.GymMembership.delete(membership.id);
+        try {
+          await base44.functions.invoke('deleteSupabaseRecord', { table: 'gym_memberships', id: membership.id });
+        } catch (error) {
+          console.error('Error leaving gym:', error);
+          throw error;
+        }
       }
     },
     onSuccess: () => {
@@ -156,14 +175,21 @@ export default function Gyms() {
 
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      
-      if (existingGyms.length > 0) {
-        return { exists: true, gym: existingGyms[0] };
-      }
+      try {
+        // Check if gym already exists
+        const existingGyms = await base44.functions.invoke('getSupabaseGyms', { google_place_id: gymData.google_place_id });
+        
+        if (existingGyms.length > 0) {
+          return { exists: true, gym: existingGyms[0] };
+        }
 
-      const newGym = await base44.entities.Gym.create(gymData);
-      return { exists: false, gym: newGym };
+        // Create new gym
+        const newGym = await base44.functions.invoke('saveSupabaseGym', gymData);
+        return { exists: false, gym: newGym };
+      } catch (error) {
+        console.error('Error creating gym:', error);
+        throw error;
+      }
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
