@@ -39,7 +39,9 @@ export default function Home() {
         console.error('Auth error:', error);
         return null;
       }
-    }
+    },
+    initialData: null,
+    retry: 1
   });
 
   const { data: gymMemberships = [] } = useQuery({
