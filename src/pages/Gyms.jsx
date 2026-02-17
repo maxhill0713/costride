@@ -135,10 +135,11 @@ export default function Gyms() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
     },
     onError: (error) => {
-      alert(`Failed to join gym: ${error.message || 'Unknown error'}`);
+      console.error('Join gym error:', error);
     }
   });
 
