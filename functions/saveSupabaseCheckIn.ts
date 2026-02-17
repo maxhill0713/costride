@@ -3,10 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 const hexToUuid = (hex) => {
   if (!hex || typeof hex !== 'string') return hex;
   if (hex.includes('-') && hex.length === 36) return hex;
-  if (hex.length === 24) {
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`.toLowerCase();
-  }
-  return hex;
+  const cleanHex = hex.replace(/-/g, '');
+  const paddedHex = cleanHex.padEnd(32, '0');
+  return `${paddedHex.slice(0, 8)}-${paddedHex.slice(8, 12)}-${paddedHex.slice(12, 16)}-${paddedHex.slice(16, 20)}-${paddedHex.slice(20, 32)}`.toLowerCase();
 };
 
 // Helper to ensure user profile exists in Supabase profiles table
