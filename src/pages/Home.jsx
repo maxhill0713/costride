@@ -372,7 +372,7 @@ export default function Home() {
   const weeklyTarget = currentUser?.weekly_goal || 3; // Use user's routine goal or default to 3
   
   // Calculate goal progress
-  const goalsOnTrack = goals.filter(g => {
+  const goalsOnTrack = (Array.isArray(goals) ? goals : []).filter(g => {
     const progress = (g.current_value / g.target_value) * 100;
     const daysUntilDeadline = g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null;
     
