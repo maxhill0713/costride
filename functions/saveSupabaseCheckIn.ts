@@ -31,7 +31,7 @@ const ensureProfileExists = async (user) => {
         {
           method: 'POST',
           headers: {
-            'apikey': Deno.env.get('SUPABASE_SERVICE_KEY'),
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
         `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${hexToUuid(user.id)}`,
         {
           headers: {
-            'apikey': Deno.env.get('SUPABASE_SERVICE_KEY'),
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
             'Content-Type': 'application/json'
           }
         }
