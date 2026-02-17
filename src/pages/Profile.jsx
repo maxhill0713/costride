@@ -211,21 +211,12 @@ export default function Profile() {
   };
 
   const createPostMutation = useMutation({
-    mutationFn: async (data) => {
-      const postData = {
-        member_id: currentUser.id,
-        member_name: displayName,
-        member_avatar: currentUser.avatar_url,
-        content: data.content,
-        image_url: data.image_url || null,
-        video_url: data.video_url || null,
-        likes: 0,
-        comments: [],
-        reactions: {},
-        allow_gym_repost: data.allow_gym_repost || false
-      };
-      return base44.entities.Post.create(postData);
-    },
+    mutationFn: (data) => base44.functions.invoke('createPost', {
+      content: data.content,
+      image_url: data.image_url || null,
+      video_url: data.video_url || null,
+      allow_gym_repost: data.allow_gym_repost || false
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
       setShowCreatePost(false);
@@ -1099,7 +1090,7 @@ export default function Profile() {
 
               <Button
                 onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
-                disabled={!postContent.trim() || (!postImage && !postVideo) || createPostMutation.isPending}
+                disabled={!postContent.trim() || createPostMutation.isPending}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold disabled:opacity-50"
               >
                 {createPostMutation.isPending ? 'Posting...' : 'Post'}
