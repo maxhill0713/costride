@@ -5,7 +5,7 @@ const hexToUuid = (hex) => {
   if (!hex || typeof hex !== 'string') return hex;
   if (hex.includes('-') && hex.length === 36) return hex;
   if (hex.length === 24) {
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 24)}`.toLowerCase();
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`.toLowerCase();
   }
   return hex;
 };
