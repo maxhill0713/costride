@@ -88,7 +88,12 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
 
-    return Response.json({ success: true });
+    return Response.json({ 
+      success: true, 
+      gym_name: data.name,
+      gym_id: entityId,
+      supabase_id: hexToUuid(entityId)
+    });
   } catch (error) {
     console.error('Sync gym error:', error);
     return Response.json({ error: error.message }, { status: 500 });
