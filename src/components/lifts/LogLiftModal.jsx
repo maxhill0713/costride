@@ -38,10 +38,10 @@ export default function LogLiftModal({ open, onClose, onSuccess, gym, currentUse
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!formData.weight_lbs) return;
     
-    const liftData = {
+    onSuccess({
       ...formData,
       weight_lbs: parseFloat(formData.weight_lbs),
       reps: parseInt(formData.reps) || 1,
@@ -50,16 +50,7 @@ export default function LogLiftModal({ open, onClose, onSuccess, gym, currentUse
       gym_id: gym?.id,
       lift_date: new Date().toISOString().split('T')[0],
       is_pr: false
-    };
-
-    // Sync to Supabase before calling onSuccess
-    try {
-      await base44.functions.invoke('saveSupabaseLift', liftData);
-    } catch (error) {
-      console.error('Error syncing lift to Supabase:', error);
-    }
-    
-    onSuccess(liftData);
+    });
 
     setFormData({
       exercise: 'bench_press',

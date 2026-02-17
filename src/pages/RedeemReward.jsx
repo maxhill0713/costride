@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getSubscriptions, getMemberships, getChallenges, getRewards, getClaimedBonuses, saveClaimedBonus } from '../components/api/supabaseApi';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,19 +22,22 @@ export default function RedeemReward() {
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription', currentUser?.id],
-    queryFn: () => getSubscriptions({ user_id: currentUser.id, status: 'active' }),
+    queryFn: () => base44.entities.Subscription.filter({ 
+      user_id: currentUser.id,
+      status: 'active'
+    }),
     enabled: !!currentUser
   });
 
-  const isPremium = Array.isArray(subscription) && subscription.length > 0;
+  const isPremium = subscription && subscription.length > 0;
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => getMemberships({ user_id: currentUser?.id, status: 'active' }),
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser
   });
 
-  const gymIds = Array.isArray(gymMemberships) ? gymMemberships.map(m => m.gym_id) : [];
+  const gymIds = gymMemberships.map(m => m.gym_id);
 
   // Get current week number for rotating challenges
   const getWeekNumber = (date = new Date()) => {
@@ -86,14 +88,16 @@ export default function RedeemReward() {
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
     queryFn: async () => {
-      const challenges = await getChallenges();
+      const challenges = await base44.entities.Challenge.list();
       return challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
     }
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
-    queryFn: () => getChallenges({ status: 'active' }),
+    queryFn: () => base44.entities.Challenge.filter({ 
+      status: 'active'
+    }, '-created_date', 3),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -106,23 +110,23 @@ export default function RedeemReward() {
 
   const { data: completedChallenges = [] } = useQuery({
     queryKey: ['completedChallenges'],
-    queryFn: () => getChallenges({ status: 'completed' })
+    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' })
   });
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards'],
-    queryFn: () => getRewards()
+    queryFn: () => base44.entities.Reward.list()
   });
 
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id],
-    queryFn: () => getClaimedBonuses({ user_id: currentUser?.id }),
+    queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser?.id }),
     enabled: !!currentUser
   });
 
   const claimMutation = useMutation({
     mutationFn: async (rewardData) => {
-      return await saveClaimedBonus({
+      return await base44.entities.ClaimedBonus.create({
         user_id: currentUser.id,
         reward_id: rewardData.isChallenge ? null : rewardData.id,
         challenge_id: rewardData.isChallenge ? rewardData.id : null,
@@ -152,15 +156,16 @@ export default function RedeemReward() {
     return { ...challenge, progress, participantCount: participants.length, targetValue };
   }).sort((a, b) => b.progress - a.progress);
 
-  // Filter rewards - show all active unclaimed rewards
-  const unclaimedRewards = (Array.isArray(rewards) ? rewards : []).filter(r => {
+  // Filter rewards - only show premium_only rewards to premium users
+  const unclaimedRewards = rewards.filter(r => {
     if (!r.active) return false;
     if (claimedBonuses.find(cb => cb.reward_id === r.id)) return false;
+    if (r.premium_only && !isPremium) return false;
     return true;
   });
 
   // Convert completed challenges to claimable rewards
-  const completedChallengeRewards = (Array.isArray(completedChallenges) ? completedChallenges : [])
+  const completedChallengeRewards = completedChallenges
     .filter(challenge => {
       // Only show challenges the user participated in AND haven't claimed yet
       const isWinner = challenge.winner_id === currentUser?.id;

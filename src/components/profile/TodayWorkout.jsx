@@ -9,11 +9,9 @@ import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
 import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import WorkoutSummaryModal from './WorkoutSummaryModal.jsx';
-import ChallengeProgressScreen from './ChallengeProgressScreen.jsx';
-import EmptyProgressScreen from './EmptyProgressScreen.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onCollapse }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
@@ -28,10 +26,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [showInfo, setShowInfo] = useState(false);
   const [showLogConfirm, setShowLogConfirm] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [showChallengeProgress, setShowChallengeProgress] = useState(false);
-  const [showEmptyScreen, setShowEmptyScreen] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(0);
-  const [challengesWithProgress, setChallengesWithProgress] = useState([]);
   const queryClient = useQueryClient();
 
   const timerPresets = [
@@ -221,104 +216,73 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   };
 
   const logWorkoutMutation = useMutation({
-          mutationFn: async () => {
-            try {
-              console.log('=== STARTING WORKOUT LOG ===');
-              console.log('Current user:', currentUser);
-              console.log('Today workout:', todayWorkout);
-              console.log('Adjusted day:', adjustedDay);
-              
-              const user = await base44.auth.me();
-              console.log('Authenticated user:', user);
-              
-              const workout_notes = user?.workout_notes || {};
-              const workoutNotes = workout_notes[todayWorkout.name] || '';
+    mutationFn: async () => {
+      if (alreadyLoggedToday) {
+        throw new Error('You have already logged this workout today');
+      }
+      const user = await base44.auth.me();
+      const workout_notes = user?.workout_notes || {};
+      const workoutNotes = workout_notes[todayWorkout.name] || '';
+      
+      await base44.entities.WorkoutLog.create({
+        user_id: currentUser.id,
+        workout_name: todayWorkout.name,
+        day_of_week: adjustedDay,
+        exercises: todayWorkout.exercises,
+        notes: workoutNotes,
+        completed_date: new Date().toISOString().split('T')[0]
+      });
 
-              const workoutLogData = {
-                user_id: currentUser.id,
-                workout_name: todayWorkout.name,
-                day_of_week: adjustedDay,
-                exercises: todayWorkout.exercises,
-                notes: workoutNotes,
-                completed_date: new Date().toISOString().split('T')[0]
+      // Create posts for weight increases
+      if (lastWorkout?.exercises) {
+        const improvements = todayWorkout.exercises
+          .map((exercise, index) => {
+            const lastExercise = lastWorkout.exercises[index];
+            if (!lastExercise) return null;
+            
+            const currentWeight = parseFloat(exercise.weight) || 0;
+            const lastWeight = parseFloat(lastExercise.weight) || 0;
+            
+            if (currentWeight > lastWeight) {
+              return {
+                exercise: exercise.exercise,
+                increase: currentWeight - lastWeight
               };
-
-              console.log('Creating Base44 workout log with data:', JSON.stringify(workoutLogData, null, 2));
-              const base44Log = await base44.entities.WorkoutLog.create(workoutLogData);
-              console.log('✅ Base44 log created successfully:', base44Log);
-
-              // Sync to Supabase
-              console.log('Syncing to Supabase...');
-              const supabaseResult = await base44.functions.invoke('saveSupabaseWorkoutLog', workoutLogData);
-              console.log('✅ Supabase sync result:', supabaseResult);
-              
-              // Fetch challenges and update progress
-              const challenges = await base44.entities.Challenge.filter({ participants: { $in: [currentUser.id] } });
-              const challengesData = challenges.map(challenge => ({
-                id: challenge.id,
-                title: challenge.title,
-                target_value: challenge.target_value,
-                current_value: (challenge.current_value || 0) + 1
-              }));
-              setChallengesWithProgress(challengesData);
-
-              return { challengesData };
-
-              // Create posts for weight increases
-              if (lastWorkout?.exercises) {
-                const improvements = todayWorkout.exercises
-                  .map((exercise, index) => {
-                    const lastExercise = lastWorkout.exercises[index];
-                    if (!lastExercise) return null;
-                    
-                    const currentWeight = parseFloat(exercise.weight) || 0;
-                    const lastWeight = parseFloat(lastExercise.weight) || 0;
-                    
-                    if (currentWeight > lastWeight) {
-                      return {
-                        exercise: exercise.exercise,
-                        increase: currentWeight - lastWeight
-                      };
-                    }
-                    return null;
-                  })
-                  .filter(Boolean);
-
-                // Create a post for each improvement
-                for (const improvement of improvements) {
-                  await base44.entities.Post.create({
-                    member_id: currentUser.id,
-                    member_name: currentUser.full_name || currentUser.username || 'User',
-                    member_avatar: currentUser.avatar_url || '',
-                    content: `${currentUser.full_name || currentUser.username || 'User'} increased their weight on ${improvement.exercise} by ${improvement.increase.toFixed(1)}kg!`,
-                    likes: 0,
-                    comments: [],
-                    reactions: {}
-                  });
-                }
-              }
-              
-              return { base44Log, supabaseResult };
-            } catch (error) {
-              console.error('❌ ERROR in mutation function:', error);
-              throw error;
             }
+            return null;
+          })
+          .filter(Boolean);
+
+        // Create a post for each improvement
+        for (const improvement of improvements) {
+          await base44.entities.Post.create({
+            member_id: currentUser.id,
+            member_name: currentUser.full_name || currentUser.username || 'User',
+            member_avatar: currentUser.avatar_url || '',
+            content: `${currentUser.full_name || currentUser.username || 'User'} increased their weight on ${improvement.exercise} by ${improvement.increase.toFixed(1)}kg!`,
+            likes: 0,
+            comments: [],
+            reactions: {}
+          });
+        }
+      }
+
+      // Create workout completion post with nudge button
+      await base44.entities.Post.create({
+        member_id: currentUser.id,
+        member_name: currentUser.full_name || currentUser.username || 'User',
+        member_avatar: currentUser.avatar_url || '',
+        content: 'Well done, workout finished! Now its time to get your friends involved!',
+        likes: 0,
+        comments: [],
+        reactions: {},
+        exercise: 'workout_completion_nudge' // Special flag for nudge posts
+      });
     },
-    onSuccess: (data) => {
-       console.log('Workout logged successfully!');
+    onSuccess: () => {
        queryClient.invalidateQueries(['workoutLog']);
        queryClient.invalidateQueries(['posts']);
        setShowSummary(false);
-       // Only show challenge progress if there are challenges
-       if (data?.challengesData?.length > 0) {
-         setShowChallengeProgress(true);
-       } else {
-         setIsExpanded(false);
-       }
-     },
-    onError: (error) => {
-       console.error('Error logging workout:', error);
-       alert('Failed to log workout: ' + error.message);
      }
     });
 
@@ -368,14 +332,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </div>
             <h3 className={`font-bold text-slate-100 tracking-tight uppercase ${isExpanded ? 'text-xs' : 'text-[11px]'}`}>Today's Workout</h3>
             <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowInfo(!showInfo);
-                }}
-                className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
-              >
-                <Info className="w-3.5 h-3.5" />
-              </button>
+              onClick={() => setShowInfo(!showInfo)}
+              className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
+            >
+              <Info className="w-3.5 h-3.5" />
+            </button>
           </div>
           <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${todayWorkout.name.length > 12 ? 'text-sm leading-6 break-words' : (isExpanded ? 'text-2xl' : 'text-xl')}`}>
           {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
@@ -531,7 +492,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           ))}
 
           {/* Log Workout Button - Only when Expanded */}
-          {isExpanded && (
+          {isExpanded && !alreadyLoggedToday && (
             <div className="mb-3 space-y-2">
               {workoutStartTime && (
                 <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
@@ -547,7 +508,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 size="sm"
                 className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
               >
-                {alreadyLoggedToday ? 'Log Again (Test)' : 'Log Workout'}
+                Log Workout
               </Button>
             </div>
           )}
@@ -645,17 +606,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
              </div>
 
             {/* Collapse Arrow */}
-             <Button
-               onClick={() => {
-                 setIsExpanded(false);
-                 if (onCollapse) onCollapse();
-               }}
-               variant="ghost"
-               size="icon"
-               className="w-9 h-9 text-slate-400 hover:text-white ml-auto"
-             >
-               <ChevronUp className="w-6 h-6" />
-             </Button>
+            <Button
+              onClick={() => setIsExpanded(false)}
+              variant="ghost"
+              size="icon"
+              className="w-9 h-9 text-slate-400 hover:text-white ml-auto"
+            >
+              <ChevronUp className="w-6 h-6" />
+            </Button>
           </div>
 
           {/* Full Screen Timer Overlay */}
@@ -730,18 +688,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         </div>
       ) : (
         <div className="flex justify-center pt-1">
-         <Button
-           onClick={() => {
-             setIsExpanded(true);
-             window.scrollTo({ top: 0, behavior: 'smooth' });
-           }}
-           variant="ghost"
-           size="icon"
-           className="w-9 h-9 text-slate-400 hover:text-white"
-         >
-           <ChevronDown className="w-6 h-6" />
-           </Button>
-         </div>
+        <Button
+          onClick={() => setIsExpanded(true)}
+          variant="ghost"
+          size="icon"
+          className="w-9 h-9 text-slate-400 hover:text-white"
+        >
+          <ChevronDown className="w-6 h-6" />
+          </Button>
+        </div>
       )}
 
       {/* Modals */}
@@ -752,26 +707,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         isOpen={showSummary} 
         duration={workoutDuration * 1000}
         workoutName={todayWorkout?.name}
+        exercises={todayWorkout?.exercises}
+        lastWorkout={lastWorkout}
+        notes={currentUser?.workout_notes?.[todayWorkout?.name] || ''}
         onConfirm={() => logWorkoutMutation.mutate()}
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending}
-      />
-
-      <ChallengeProgressScreen
-        isOpen={showChallengeProgress}
-        challenges={challengesWithProgress}
-        onContinue={() => {
-          setShowChallengeProgress(false);
-          setShowEmptyScreen(true);
-        }}
-      />
-
-      <EmptyProgressScreen
-        isOpen={showEmptyScreen}
-        onContinue={() => {
-          setShowEmptyScreen(false);
-          setIsExpanded(false);
-        }}
       />
       </Card>
       );

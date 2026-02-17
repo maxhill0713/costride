@@ -31,7 +31,7 @@ export default function Onboarding() {
   const selectAccountTypeMutation = useMutation({
     mutationFn: (accountType) => base44.auth.updateMe({
       account_type: accountType,
-      onboarding_completed: true
+      onboarding_completed: false
     })
   });
 

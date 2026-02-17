@@ -72,7 +72,7 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
         ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
-      const membershipData = {
+      await base44.entities.GymMembership.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         user_email: currentUser.email,
@@ -82,16 +82,7 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
         join_date: new Date().toISOString().split('T')[0],
         expiry_date: expiryDate.toISOString().split('T')[0],
         membership_type: selectedPlan
-      };
-
-      await base44.entities.GymMembership.create(membershipData);
-
-      // Sync to Supabase
-      try {
-        await base44.functions.invoke('saveSupabaseMembership', membershipData);
-      } catch (error) {
-        console.error('Error syncing membership to Supabase:', error);
-      }
+      });
 
       return payment;
     },

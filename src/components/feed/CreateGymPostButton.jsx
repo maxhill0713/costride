@@ -46,23 +46,13 @@ export default function CreateGymPostButton({ gym, currentUser, onPostCreated })
 
     setIsSubmitting(true);
     try {
-      const postData = {
+      await base44.entities.Post.create({
         member_id: currentUser.id,
         member_name: gym.name,
         member_avatar: gym.image_url,
         content,
-        image_url: imageUrl || null,
-        gym_id: gym.id
-      };
-      
-      await base44.entities.Post.create(postData);
-      
-      // Sync to Supabase
-      try {
-        await base44.functions.invoke('saveSupabasePost', postData);
-      } catch (error) {
-        console.error('Error syncing post to Supabase:', error);
-      }
+        image_url: imageUrl || null
+      });
       
       toast.success('Post created successfully');
       setContent('');

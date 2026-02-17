@@ -36,117 +36,77 @@ export default function Friends() {
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseFriends', { user_id: currentUser.id });
-      } catch (error) {
-        console.error('Error fetching friends:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Friend.filter({ 
+      user_id: currentUser.id, 
+      status: 'accepted' 
+    }),
     enabled: !!currentUser
   });
 
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
-    queryFn: async () => {
-      try {
-        const allFriends = await base44.functions.invoke('getSupabaseFriends', {});
-        return allFriends.filter(f => f.friend_id === currentUser.id && f.status === 'pending');
-      } catch (error) {
-        console.error('Error fetching friend requests:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Friend.filter({ 
+      friend_id: currentUser.id, 
+      status: 'pending' 
+    }),
     enabled: !!currentUser
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getUsersByIds', {});
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.User.list(),
     enabled: showAddModal || showFriendsModal,
     staleTime: 0
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseCheckIns', {});
-      } catch (error) {
-        console.error('Error fetching check-ins:', error);
-        return [];
-      }
-    },
-    staleTime: 60000
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    staleTime: 60000,
+    cacheTime: 300000
   });
 
   const { data: currentUserCheckIns = [] } = useQuery({
     queryKey: ['userCheckIns', currentUser?.id],
-    queryFn: async () => {
-      try {
-        const allCheckIns = await base44.functions.invoke('getSupabaseCheckIns', {});
-        return allCheckIns.filter(c => c.user_id === currentUser.id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-      } catch (error) {
-        console.error('Error fetching user check-ins:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
     enabled: !!currentUser
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseNotifications', { user_id: currentUser.id });
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date'),
     enabled: !!currentUser
   });
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabasePosts', {});
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser && !!friends.length,
     staleTime: 0,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000
   });
+
+
 
   const { data: allLifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseLifts', {});
-      } catch (error) {
-        console.error('Error fetching lifts:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Lift.list('-created_date', 100),
     enabled: !!currentUser,
-    staleTime: 60000
+    staleTime: 60000,
+    cacheTime: 300000
+  });
+
+  const { data: allGymMembers = [] } = useQuery({
+    queryKey: ['gymMembers'],
+    queryFn: () => base44.entities.GymMember.list(),
+    staleTime: 60000,
+    cacheTime: 300000
   });
 
   const addFriendMutation = useMutation({
     mutationFn: async (friendUser) => {
-      await base44.functions.invoke('saveSupabaseFriend', {
+      await base44.entities.Friend.create({
         user_id: currentUser.id,
         friend_id: friendUser.id,
         friend_name: friendUser.full_name,
@@ -155,7 +115,7 @@ export default function Friends() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries(['friends']);
       toast.success('Friend request sent!');
       setShowAddModal(false);
       setSearchQuery('');
@@ -164,12 +124,8 @@ export default function Friends() {
 
   const acceptFriendMutation = useMutation({
     mutationFn: async (requestId, requesterData) => {
-      await base44.functions.invoke('updateSupabaseRecord', {
-        table: 'friends',
-        id: requestId,
-        data: { status: 'accepted' }
-      });
-      await base44.functions.invoke('saveSupabaseFriend', {
+      const request = await base44.entities.Friend.update(requestId, { status: 'accepted' });
+      await base44.entities.Friend.create({
         user_id: currentUser.id,
         friend_id: requesterData.user_id,
         friend_name: requesterData.user_name || requesterData.friend_name,
@@ -178,37 +134,41 @@ export default function Friends() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries(['friends']);
       toast.success('Friend request accepted!');
     }
   });
 
   const rejectFriendMutation = useMutation({
     mutationFn: async (requestId) => {
-      await base44.functions.invoke('deleteSupabaseRecord', { table: 'friends', id: requestId });
+      await base44.entities.Friend.delete(requestId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
+      queryClient.invalidateQueries(['friendRequests']);
       toast.success('Friend request declined');
     }
   });
 
   const removeFriendMutation = useMutation({
     mutationFn: async (friendId) => {
-      const allFriends = await base44.functions.invoke('getSupabaseFriends', { user_id: currentUser.id });
-      const friendship = allFriends.find(f => f.friend_id === friendId);
-      if (friendship) {
-        await base44.functions.invoke('deleteSupabaseRecord', { table: 'friends', id: friendship.id });
+      const friendships = await base44.entities.Friend.filter({
+        user_id: currentUser.id,
+        friend_id: friendId
+      });
+      if (friendships.length > 0) {
+        await base44.entities.Friend.delete(friendships[0].id);
       }
-      const reverseFriends = await base44.functions.invoke('getSupabaseFriends', { user_id: friendId });
-      const reverseFriendship = reverseFriends.find(f => f.friend_id === currentUser.id);
-      if (reverseFriendship) {
-        await base44.functions.invoke('deleteSupabaseRecord', { table: 'friends', id: reverseFriendship.id });
+      const reverseFriendships = await base44.entities.Friend.filter({
+        user_id: friendId,
+        friend_id: currentUser.id
+      });
+      if (reverseFriendships.length > 0) {
+        await base44.entities.Friend.delete(reverseFriendships[0].id);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries(['friends']);
       toast.success('Friend removed');
     }
   });

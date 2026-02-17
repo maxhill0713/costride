@@ -3,45 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    let payload;
-    try {
-      payload = await req.json();
-    } catch (e) {
-      return Response.json({ 
-        error: 'Invalid JSON payload',
-        message: 'Request body must be valid JSON with gym_id parameter'
-      }, { status: 400 });
-    }
+    const payload = await req.json();
 
     // Handle both direct calls and entity automation events
-    let gym_id = payload.gym_id || payload.event?.entity_id || payload.data?.id;
-
-    // If this is an automation with event type 'create', extract the ID
-    if (!gym_id && payload.event?.type === 'create') {
-      gym_id = payload.event.entity_id;
-    }
-
-    // Check if payload is empty
-    if (!payload || Object.keys(payload).length === 0) {
-      return Response.json({ 
-        error: 'Empty payload',
-        message: 'Function requires gym_id parameter. Example: {"gym_id": "your-gym-id"}'
-      }, { status: 400 });
-    }
+    const gym_id = payload.gym_id || payload.event?.entity_id || payload.data?.id;
 
     if (!gym_id) {
-      console.error('No gym_id found in payload:', JSON.stringify(payload, null, 2));
-      return Response.json({ 
-        error: 'gym_id is required',
-        message: 'Please provide gym_id in the request body',
-        example: '{"gym_id": "your-gym-id"}',
-        received: {
-          payload_type: payload.event?.type,
-          entity_name: payload.event?.entity_name,
-          payload_keys: Object.keys(payload)
-        }
-      }, { status: 400 });
+      console.error('No gym_id found in payload:', payload);
+      return Response.json({ error: 'gym_id is required' }, { status: 400 });
     }
 
     // Generate unique 6-character code

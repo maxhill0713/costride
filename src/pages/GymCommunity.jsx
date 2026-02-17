@@ -69,48 +69,27 @@ export default function GymCommunity() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: gym, isLoading: gymLoading, error: gymError } = useQuery({
+  const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
     queryFn: async () => {
-      if (!gymId) return null;
-      try {
-        return await base44.functions.invoke('getSupabaseGym', { gym_id: gymId });
-      } catch (error) {
-        console.error('Error fetching gym:', error);
-        throw error;
-      }
+      const gyms = await base44.entities.Gym.list();
+      return gyms.find(g => g.id === gymId);
     },
-    enabled: !!gymId,
-    staleTime: 0,
-    refetchOnMount: 'stale',
-    retry: 3,
-    retryDelay: 500
+    enabled: !!gymId
   });
 
   // Language setting stored on gym
 
   const { data: members = [] } = useQuery({
     queryKey: ['members'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseGymMembers', {});
-      } catch (error) {
-        console.error('Error fetching members:', error);
-        return [];
-      }
-    }
+    queryFn: () => base44.entities.GymMember.list()
   });
 
   const { data: coaches = [] } = useQuery({
     queryKey: ['coaches', gymId],
     queryFn: async () => {
-      try {
-        const allCoaches = await base44.functions.invoke('getSupabaseCoaches', {});
-        return allCoaches.filter(c => c.gym_id === gymId);
-      } catch (error) {
-        console.error('Error fetching coaches:', error);
-        return [];
-      }
+      const allCoaches = await base44.entities.Coach.list();
+      return allCoaches.filter(c => c.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -118,13 +97,8 @@ export default function GymCommunity() {
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: async () => {
-      try {
-        const allPosts = await base44.functions.invoke('getSupabasePosts', {});
-        return allPosts.filter(p => p.allow_gym_repost === true);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-        return [];
-      }
+      const allPosts = await base44.entities.Post.list('-created_date');
+      return allPosts.filter(p => p.allow_gym_repost === true);
     },
     enabled: !!gymId
   });
@@ -132,13 +106,8 @@ export default function GymCommunity() {
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', gymId],
     queryFn: async () => {
-      try {
-        const allCheckIns = await base44.functions.invoke('getSupabaseCheckIns', {});
-        return allCheckIns.filter(c => c.gym_id === gymId);
-      } catch (error) {
-        console.error('Error fetching check-ins:', error);
-        return [];
-      }
+      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
+      return allCheckIns.filter(c => c.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -146,28 +115,17 @@ export default function GymCommunity() {
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', gymId],
     queryFn: async () => {
-      try {
-        const allLifts = await base44.functions.invoke('getSupabaseLifts', {});
-        return Array.isArray(allLifts) ? allLifts.filter(l => l.gym_id === gymId) : [];
-      } catch (error) {
-        console.error('Error fetching lifts:', error);
-        return [];
-      }
+      const allLifts = await base44.entities.Lift.list('-lift_date');
+      return allLifts.filter(l => l.gym_id === gymId);
     },
-    enabled: !!gymId,
-    retry: 1
+    enabled: !!gymId
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
     queryFn: async () => {
-      try {
-        const allEvents = await base44.functions.invoke('getSupabaseEvents', {});
-        return allEvents.filter(e => e.gym_id === gymId);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        return [];
-      }
+      const allEvents = await base44.entities.Event.list('-event_date');
+      return allEvents.filter(e => e.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -175,13 +133,8 @@ export default function GymCommunity() {
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', gymId],
     queryFn: async () => {
-      try {
-        const allClasses = await base44.functions.invoke('getSupabaseGymClasses', {});
-        return allClasses.filter(c => c.gym_id === gymId);
-      } catch (error) {
-        console.error('Error fetching classes:', error);
-        return [];
-      }
+      const allClasses = await base44.entities.GymClass.list();
+      return allClasses.filter(c => c.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -189,13 +142,8 @@ export default function GymCommunity() {
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', gymId],
     queryFn: async () => {
-      try {
-        const allRewards = await base44.functions.invoke('getSupabaseRewards', {});
-        return allRewards.filter(r => r.gym_id === gymId);
-      } catch (error) {
-        console.error('Error fetching rewards:', error);
-        return [];
-      }
+      const allRewards = await base44.entities.Reward.list();
+      return allRewards.filter(r => r.gym_id === gymId);
     },
     enabled: !!gymId
   });
@@ -203,15 +151,10 @@ export default function GymCommunity() {
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges', gymId],
     queryFn: async () => {
-      try {
-        const allChallenges = await base44.functions.invoke('getSupabaseChallenges', {});
-        const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
-        console.log('Challenges fetched:', filtered);
-        return filtered;
-      } catch (error) {
-        console.error('Error fetching challenges:', error);
-        return [];
-      }
+      const allChallenges = await base44.entities.Challenge.list();
+      const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
+      console.log('Challenges fetched:', filtered);
+      return filtered;
     },
     enabled: !!gymId
   });
@@ -219,13 +162,8 @@ export default function GymCommunity() {
   const { data: polls = [] } = useQuery({
     queryKey: ['polls', gymId],
     queryFn: async () => {
-      try {
-        const allPolls = await base44.functions.invoke('getSupabasePolls', {});
-        return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
-      } catch (error) {
-        console.error('Error fetching polls:', error);
-        return [];
-      }
+      const allPolls = await base44.entities.Poll.list('-created_date');
+      return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
     },
     enabled: !!gymId
   });
@@ -235,32 +173,20 @@ export default function GymCommunity() {
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseGyms', {});
-      } catch (error) {
-        console.error('Error fetching gyms:', error);
-        return [];
-      }
-    }
+    queryFn: () => base44.entities.Gym.list()
   });
 
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gymId],
     queryFn: async () => {
-      try {
-        const memberships = await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser.id });
-        return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
-      } catch (error) {
-        console.error('Error fetching gym membership:', error);
-        return null;
-      }
+      const memberships = await base44.entities.GymMembership.list();
+      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
     },
     enabled: !!currentUser && !!gymId
   });
 
   const createEventMutation = useMutation({
-    mutationFn: (eventData) => base44.functions.invoke('saveSupabaseEvent', {
+    mutationFn: (eventData) => base44.entities.Event.create({
       ...eventData,
       gym_id: gymId,
       gym_name: gym?.name,
@@ -274,10 +200,8 @@ export default function GymCommunity() {
 
   const rsvpMutation = useMutation({
     mutationFn: ({ eventId, currentAttendees }) => 
-      base44.functions.invoke('updateSupabaseRecord', {
-        table: 'events',
-        id: eventId,
-        data: { attendees: currentAttendees + 1 }
+      base44.entities.Event.update(eventId, {
+        attendees: currentAttendees + 1
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
@@ -285,11 +209,7 @@ export default function GymCommunity() {
   });
 
   const updateEquipmentMutation = useMutation({
-    mutationFn: (equipment) => base44.functions.invoke('updateSupabaseRecord', {
-      table: 'gyms',
-      id: gymId,
-      data: { equipment }
-    }),
+    mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowManageEquipment(false);
@@ -297,14 +217,14 @@ export default function GymCommunity() {
   });
 
   const createRewardMutation = useMutation({
-    mutationFn: (rewardData) => base44.functions.invoke('saveSupabaseReward', rewardData),
+    mutationFn: (rewardData) => base44.entities.Reward.create(rewardData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
     }
   });
 
   const deleteRewardMutation = useMutation({
-    mutationFn: (rewardId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'rewards', id: rewardId }),
+    mutationFn: (rewardId) => base44.entities.Reward.delete(rewardId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
     }
@@ -312,10 +232,8 @@ export default function GymCommunity() {
 
   const claimRewardMutation = useMutation({
     mutationFn: ({ rewardId, userId, currentClaimed }) => 
-      base44.functions.invoke('updateSupabaseRecord', {
-        table: 'rewards',
-        id: rewardId,
-        data: { claimed_by: [...currentClaimed, userId] }
+      base44.entities.Reward.update(rewardId, {
+        claimed_by: [...currentClaimed, userId]
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
@@ -323,42 +241,42 @@ export default function GymCommunity() {
   });
 
   const createClassMutation = useMutation({
-    mutationFn: (classData) => base44.functions.invoke('saveSupabaseGymClass', classData),
+    mutationFn: (classData) => base44.entities.GymClass.create(classData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', gymId] });
     }
   });
 
   const deleteClassMutation = useMutation({
-    mutationFn: (classId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'gym_classes', id: classId }),
+    mutationFn: (classId) => base44.entities.GymClass.delete(classId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', gymId] });
     }
   });
 
   const createCoachMutation = useMutation({
-    mutationFn: (coachData) => base44.functions.invoke('saveSupabaseCoach', coachData),
+    mutationFn: (coachData) => base44.entities.Coach.create(coachData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
   });
 
   const deleteCoachMutation = useMutation({
-    mutationFn: (coachId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'coaches', id: coachId }),
+    mutationFn: (coachId) => base44.entities.Coach.delete(coachId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
   });
 
   const deleteChallengeMutation = useMutation({
-    mutationFn: (challengeId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'challenges', id: challengeId }),
+    mutationFn: (challengeId) => base44.entities.Challenge.delete(challengeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
     }
   });
 
   const deleteEventMutation = useMutation({
-    mutationFn: (eventId) => base44.functions.invoke('deleteSupabaseRecord', { table: 'events', id: eventId }),
+    mutationFn: (eventId) => base44.entities.Event.delete(eventId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
     }
@@ -374,10 +292,9 @@ export default function GymCommunity() {
       );
       const updatedVoters = [...(poll.voters || []), currentUser.id];
       
-      return await base44.functions.invoke('updateSupabaseRecord', {
-        table: 'polls',
-        id: pollId,
-        data: { options: updatedOptions, voters: updatedVoters }
+      await base44.entities.Poll.update(pollId, {
+        options: updatedOptions,
+        voters: updatedVoters
       });
     },
     onSuccess: () => {
@@ -386,11 +303,7 @@ export default function GymCommunity() {
   });
 
   const updateCoachMutation = useMutation({
-    mutationFn: ({ coachId, data }) => base44.functions.invoke('updateSupabaseRecord', {
-      table: 'coaches',
-      id: coachId,
-      data
-    }),
+    mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coaches', gymId] });
     }
@@ -403,22 +316,25 @@ export default function GymCommunity() {
         gym_id: gymId,
         gym_name: gym?.name
       };
-      return base44.functions.invoke('saveSupabaseChallenge', fullData);
+      console.log('Creating challenge with data:', fullData);
+      return base44.entities.Challenge.create(fullData);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log('Challenge created successfully:', response);
+      console.log('Invalidating queries for gymId:', gymId);
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
+      console.log('Modal closing...');
       setShowCreateChallenge(false);
+    },
+    onError: (error) => {
+      console.error('Challenge creation failed:', error);
     }
   });
 
 
 
   const updateGalleryMutation = useMutation({
-    mutationFn: (gallery) => base44.functions.invoke('updateSupabaseRecord', {
-      table: 'gyms',
-      id: gymId,
-      data: { gallery }
-    }),
+    mutationFn: (gallery) => base44.entities.Gym.update(gymId, { gallery }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowManagePhotos(false);
@@ -426,11 +342,7 @@ export default function GymCommunity() {
   });
 
   const updateHeroImageMutation = useMutation({
-    mutationFn: (image_url) => base44.functions.invoke('updateSupabaseRecord', {
-      table: 'gyms',
-      id: gymId,
-      data: { image_url }
-    }),
+    mutationFn: (image_url) => base44.entities.Gym.update(gymId, { image_url }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowEditHeroImage(false);
@@ -438,11 +350,7 @@ export default function GymCommunity() {
   });
 
   const updateGymLogoMutation = useMutation({
-    mutationFn: (logo_url) => base44.functions.invoke('updateSupabaseRecord', {
-      table: 'gyms',
-      id: gymId,
-      data: { logo_url }
-    }),
+    mutationFn: (logo_url) => base44.entities.Gym.update(gymId, { logo_url }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gym', gymId] });
       setShowEditGymLogo(false);
@@ -452,13 +360,8 @@ export default function GymCommunity() {
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id, gymId],
     queryFn: async () => {
-      try {
-        const allBonuses = await base44.functions.invoke('getSupabaseClaimedBonuses', {});
-        return allBonuses.filter(b => b.user_id === currentUser.id && b.gym_id === gymId);
-      } catch (error) {
-        console.error('Error fetching claimed bonuses:', error);
-        return [];
-      }
+      const bonuses = await base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId });
+      return bonuses;
     },
     enabled: !!currentUser && !!gymId
   });
@@ -466,19 +369,15 @@ export default function GymCommunity() {
   const { data: challengeParticipants = [] } = useQuery({
     queryKey: ['challengeParticipants', currentUser?.id],
     queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseChallengeParticipants', { user_id: currentUser.id });
-      } catch (error) {
-        console.error('Error fetching challenge participants:', error);
-        return [];
-      }
+      const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id });
+      return participants;
     },
     enabled: !!currentUser
   });
 
   const claimBonusMutation = useMutation({
     mutationFn: ({ bonusType, offerDetails }) =>
-      base44.functions.invoke('saveSupabaseClaimedBonus', {
+      base44.entities.ClaimedBonus.create({
         user_id: currentUser.id,
         gym_id: gymId,
         bonus_type: bonusType,
@@ -486,7 +385,8 @@ export default function GymCommunity() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] });
-      base44.functions.invoke('saveSupabaseNotification', {
+      // Create notification
+      base44.entities.Notification.create({
         user_id: currentUser.id,
         type: 'reward',
         title: '🎁 Bonus Claimed!',
@@ -498,7 +398,7 @@ export default function GymCommunity() {
 
   const joinGhostGymMutation = useMutation({
     mutationFn: async () => {
-      return await base44.functions.invoke('saveSupabaseMembership', {
+      await base44.entities.GymMembership.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         user_email: currentUser.email,
@@ -510,22 +410,22 @@ export default function GymCommunity() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
+      // Navigate to home after successfully joining
+      window.location.href = createPageUrl('Home');
     }
   });
 
   const joinChallengeMutation = useMutation({
     mutationFn: async (challenge) => {
+      // Update Challenge participants array first
       const currentParticipants = challenge.participants || [];
-      await base44.functions.invoke('updateSupabaseRecord', {
-        table: 'challenges',
-        id: challenge.id,
-        data: { participants: [...currentParticipants, currentUser.id] }
+      await base44.entities.Challenge.update(challenge.id, {
+        participants: [...currentParticipants, currentUser.id]
       });
 
-      return await base44.functions.invoke('saveSupabaseChallengeParticipant', {
+      // Create ChallengeParticipant record
+      await base44.entities.ChallengeParticipant.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         challenge_id: challenge.id,
@@ -539,7 +439,8 @@ export default function GymCommunity() {
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
       queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });
-      base44.functions.invoke('saveSupabaseNotification', {
+      // Create notification
+      base44.entities.Notification.create({
         user_id: currentUser.id,
         type: 'challenge',
         title: '💪 Challenge Joined!',
@@ -679,10 +580,8 @@ export default function GymCommunity() {
   const banMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
-      return base44.functions.invoke('updateSupabaseRecord', {
-        table: 'gyms',
-        id: gymId,
-        data: { banned_members: [...currentBanned, userId] }
+      return base44.entities.Gym.update(gymId, { 
+        banned_members: [...currentBanned, userId] 
       });
     },
     onSuccess: () => {
@@ -693,10 +592,8 @@ export default function GymCommunity() {
   const unbanMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
-      return base44.functions.invoke('updateSupabaseRecord', {
-        table: 'gyms',
-        id: gymId,
-        data: { banned_members: currentBanned.filter(id => id !== userId) }
+      return base44.entities.Gym.update(gymId, { 
+        banned_members: currentBanned.filter(id => id !== userId) 
       });
     },
     onSuccess: () => {
@@ -746,7 +643,7 @@ export default function GymCommunity() {
   ];
 
   // Mock leaderboard data
-  const weeklyLeaders = (Array.isArray(members) ? members : []).slice(0, 3).map((member, idx) => ({
+  const weeklyLeaders = members.slice(0, 3).map((member, idx) => ({
     id: member.id,
     name: member.name || member.nickname || 'Member',
     progress: ['100%', '95%', '87%'][idx],
@@ -778,7 +675,7 @@ export default function GymCommunity() {
   ).sort((a, b) => b.count - a.count).slice(0, 10);
 
   // Calculate challenge completions (mock data for now)
-  const challengeLeaderboard = (Array.isArray(members) ? members : []).slice(0, 10).map((member, idx) => ({
+  const challengeLeaderboard = members.slice(0, 10).map((member, idx) => ({
     userId: member.id,
     userName: member.name || member.nickname || 'Member',
     count: Math.max(0, 15 - idx * 2)
@@ -921,9 +818,9 @@ export default function GymCommunity() {
                 {/* Gym Name & Info */}
                 <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                   <h1 className={`font-black text-white drop-shadow-lg break-words ${gym?.name?.length > 30 ? 'text-lg md:text-xl' : gym?.name?.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
-                     {gym?.name || 'Gym'}
-                   </h1>
+                  <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-lg md:text-xl' : gym.name.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
+                    {gym.name}
+                  </h1>
                   {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
                 </div>
                 <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">

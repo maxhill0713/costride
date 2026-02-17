@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getCheckIns, getLifts, getGoals } from '../components/api/supabaseApi';
 import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,21 +38,12 @@ export default function Home() {
         console.error('Auth error:', error);
         return null;
       }
-    },
-    initialData: null,
-    retry: 1
+    }
   });
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser.id });
-      } catch (error) {
-        console.error('Error fetching memberships:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -61,85 +51,44 @@ export default function Home() {
 
   const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseGyms', {});
-      } catch (error) {
-        console.error('Error fetching gyms:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Gym.list(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseCheckIns', {});
-      } catch (error) {
-        console.error('Error fetching check-ins:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseChallenges', {});
-      } catch (error) {
-        console.error('Error fetching challenges:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Challenge.list('-created_date'),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
-    queryFn: async () => {
-      try {
-        const allChallenges = await base44.functions.invoke('getSupabaseChallenges', {});
-        return allChallenges.filter(c => c.status === 'active').slice(0, 3);
-      } catch (error) {
-        console.error('Error fetching weekly challenges:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Challenge.filter({ 
+      status: 'active'
+    }, '-created_date', 3),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseLifts', {});
-      } catch (error) {
-        console.error('Error fetching lifts:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Lift.list('-created_date'),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseGoals', { user_id: currentUser?.id });
-      } catch (error) {
-        console.error('Error fetching goals:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -147,14 +96,7 @@ export default function Home() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseNotifications', { user_id: currentUser?.id });
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -163,14 +105,7 @@ export default function Home() {
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseFriends', { user_id: currentUser?.id });
-      } catch (error) {
-        console.error('Error fetching friends:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -178,14 +113,7 @@ export default function Home() {
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabasePosts', {});
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser && !!friends.length,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
@@ -194,12 +122,10 @@ export default function Home() {
   const { data: recentChallengeActivity = [] } = useQuery({
     queryKey: ['recentChallengeActivity'],
     queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseChallengeParticipants', {});
-      } catch (error) {
-        console.error('Error fetching challenge activity:', error);
-        return [];
-      }
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      return base44.entities.ChallengeParticipant.filter({
+        created_date: { $gte: oneDayAgo.toISOString() }
+      }, '-created_date', 5);
     },
     enabled: !!currentUser && !!challenges.length,
     staleTime: 5 * 60 * 1000,
@@ -207,7 +133,7 @@ export default function Home() {
   });
 
   // Pre-calculate for check-in users query
-  const todayCheckInsForQuery = Array.isArray(allCheckIns) ? allCheckIns.filter(c => isToday(new Date(c.check_in_date))) : [];
+  const todayCheckInsForQuery = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map(c => c.user_id))];
 
   const { data: checkInUsers = [] } = useQuery({
@@ -215,7 +141,10 @@ export default function Home() {
     queryFn: async () => {
       if (checkInUserIdsForQuery.length === 0) return [];
       try {
-        return await base44.functions.invoke('getUsersByIds', { user_ids: checkInUserIdsForQuery });
+        const users = await Promise.all(
+          checkInUserIdsForQuery.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
+        );
+        return users.filter(Boolean);
       } catch (error) {
         console.error('Error fetching check-in users:', error);
         return [];
@@ -235,11 +164,11 @@ export default function Home() {
 
   // Calculate these values before early return
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
-  const memberGym = primaryGymId && Array.isArray(allGyms)
+  const memberGym = primaryGymId 
     ? allGyms.find(g => g.id === primaryGymId) 
     : null;
 
-  const userCheckIns = Array.isArray(allCheckIns) ? allCheckIns.filter(c => c.user_id === currentUser?.id) : [];
+  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
@@ -248,29 +177,25 @@ export default function Home() {
     const createReminderNotification = async () => {
       if (!currentUser || daysSinceCheckIn === null || daysSinceCheckIn < 3) return;
 
-      try {
-        // Check if we already sent a recent reminder
-        const recentReminders = await base44.functions.invoke('getSupabaseNotifications', { 
-          user_id: currentUser.id 
-        });
-        
-        const recentReminder = recentReminders.filter(n => n.type === 'reminder').slice(0, 1);
-        if (recentReminder.length > 0) {
-          const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
-          if (daysSinceReminder < 2) return;
-        }
+      // Check if we already sent a recent reminder
+      const recentReminder = await base44.entities.Notification.filter({
+        user_id: currentUser.id,
+        type: 'reminder'
+      }, '-created_date', 1);
 
-        await base44.functions.invoke('saveSupabaseNotification', {
-          user_id: currentUser.id,
-          type: 'reminder',
-          title: 'Time for your next workout! 💪',
-          message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
-          icon: '⏰',
-          action_url: createPageUrl('Gyms')
-        });
-      } catch (error) {
-        console.error('Error creating reminder notification:', error);
+      if (recentReminder.length > 0) {
+        const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
+        if (daysSinceReminder < 2) return;
       }
+
+      await base44.entities.Notification.create({
+        user_id: currentUser.id,
+        type: 'reminder',
+        title: 'Time for your next workout! 💪',
+        message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
+        icon: '⏰',
+        action_url: createPageUrl('Gyms')
+      });
     };
 
     createReminderNotification();
@@ -287,25 +212,25 @@ export default function Home() {
     );
   }
 
-  const friendIds = Array.isArray(friends) ? friends.map(f => f.friend_id) : [];
-  const friendPosts = Array.isArray(allPosts) ? allPosts.filter(post => 
+  const friendIds = friends.map(f => f.friend_id);
+  const friendPosts = allPosts.filter(post => 
     friendIds.includes(post.member_id) && 
     !post.is_system_generated &&
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
-  ) : [];
+  );
 
   // Today's check-ins (all users)
   const todayCheckIns = todayCheckInsForQuery;
 
   // Get the challenge closest to completing (or random if all equal)
   const selectFeaturedChallenge = () => {
-    const activeChallenges = (Array.isArray(challenges) ? challenges : []).filter(c => c.status === 'active' || c.status === 'upcoming').slice(0, 3);
+    const activeChallenges = weeklyChallenges.filter(c => c.status === 'active');
     if (activeChallenges.length === 0) return null;
     
     // Calculate progress for each challenge
     const withProgress = activeChallenges.map(c => {
-      const participants = (Array.isArray(lifts) ? lifts : []).filter(l => c.participants?.includes(l.member_id) || false);
+      const participants = lifts.filter(l => c.participants?.includes(l.member_id) || false);
       const progress = c.target_value ? Math.min((participants.length / c.target_value) * 100, 100) : 0;
       return { ...c, progress };
     });
@@ -317,10 +242,10 @@ export default function Home() {
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
-  const activeChallenges = (Array.isArray(challenges) ? challenges : []).filter(c => c.status === 'active').slice(0, 3);
+  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
 
   // Recent lifts today
-  const todayLifts = (Array.isArray(lifts) ? lifts : []).filter(l => isToday(new Date(l.lift_date))).slice(0, 5);
+  const todayLifts = lifts.filter(l => isToday(new Date(l.created_date))).slice(0, 5);
 
   // Calculate user streak from check-ins
   const calculateStreak = (checkIns) => {
@@ -359,8 +284,6 @@ export default function Home() {
     if (currentUser) {
       setShowStreakVariants(false);
       await base44.auth.updateMe({ streak_variant: variant });
-      // Sync to Supabase
-      await base44.functions.invoke('syncSupabaseProfile');
       // Refetch current user to update UI with new streak variant
       await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
@@ -372,7 +295,7 @@ export default function Home() {
   const weeklyTarget = currentUser?.weekly_goal || 3; // Use user's routine goal or default to 3
   
   // Calculate goal progress
-  const goalsOnTrack = (Array.isArray(goals) ? goals : []).filter(g => {
+  const goalsOnTrack = goals.filter(g => {
     const progress = (g.current_value / g.target_value) * 100;
     const daysUntilDeadline = g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null;
     
@@ -545,11 +468,10 @@ export default function Home() {
               {/* Today's Workout */}
               {currentUser?.custom_workout_types ? (
                 <TodayWorkout 
-                    currentUser={currentUser}
-                    workoutStartTime={workoutStartTime}
-                    onWorkoutStart={() => setWorkoutStartTime(Date.now())}
-                    onCollapse={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  />
+                  currentUser={currentUser}
+                  workoutStartTime={workoutStartTime}
+                  onWorkoutStart={() => setWorkoutStartTime(Date.now())}
+                />
               ) : (
                 <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
                     <div className="relative space-y-2">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getMemberships } from '../components/api/supabaseApi';
 import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,35 +58,17 @@ export default function Gyms() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => getMemberships({ user_id: currentUser.id, status: 'active' }),
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser
   });
 
   const { data: gyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: async () => {
-      try {
-        const result = await base44.functions.invoke('getSupabaseGyms', {});
-        console.log('Fetched gyms:', result);
-        return result || [];
-      } catch (error) {
-        console.error('Error fetching gyms:', error);
-        return [];
-      }
-    },
-    staleTime: 0,
-    refetchOnMount: 'stale'
+    queryFn: () => base44.entities.Gym.list()
   });
 
   const updateGymImageMutation = useMutation({
-    mutationFn: async ({ gymId, image_url }) => {
-      try {
-        await base44.functions.invoke('updateSupabaseRecord', { table: 'gyms', id: gymId, data: { image_url } });
-      } catch (error) {
-        console.error('Error updating gym image:', error);
-        throw error;
-      }
-    },
+    mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setEditingGym(null);
@@ -107,12 +88,7 @@ export default function Gyms() {
     mutationFn: async (gymId) => {
       const membership = gymMemberships.find(m => m.gym_id === gymId);
       if (membership) {
-        try {
-          await base44.functions.invoke('deleteSupabaseRecord', { table: 'gym_memberships', id: membership.id });
-        } catch (error) {
-          console.error('Error leaving gym:', error);
-          throw error;
-        }
+        await base44.entities.GymMembership.delete(membership.id);
       }
     },
     onSuccess: () => {
@@ -121,33 +97,11 @@ export default function Gyms() {
     }
   });
 
-  const joinGymMutation = useMutation({
-    mutationFn: async (gym) => {
-      return await base44.functions.invoke('saveSupabaseMembership', {
-        user_id: currentUser.id,
-        user_name: currentUser.full_name,
-        user_email: currentUser.email,
-        gym_id: gym.id,
-        gym_name: gym.name,
-        status: 'active',
-        join_date: new Date().toISOString().split('T')[0],
-        membership_type: 'monthly'
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
-    },
-    onError: (error) => {
-      console.error('Join gym error:', error);
-    }
-  });
-
-  const userGyms = Array.isArray(gyms) && gymMemberships.length > 0 
+  const userGyms = gymMemberships.length > 0 
     ? gyms.filter(g => gymMemberships.some(m => m.gym_id === g.id))
     : [];
 
-  const filteredGyms = (Array.isArray(gyms) ? gyms : []).filter(gym => {
+  const filteredGyms = gyms.filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || gym.type === selectedType;
@@ -179,7 +133,7 @@ export default function Gyms() {
       const results = response.data.results || [];
       
       // Filter out places that already exist in our database
-      const existingPlaceIds = (Array.isArray(gyms) ? gyms : []).map(g => g.google_place_id).filter(Boolean);
+      const existingPlaceIds = gyms.map(g => g.google_place_id).filter(Boolean);
       const newPlaces = results.filter(place => !existingPlaceIds.includes(place.place_id));
       
       setPlacesResults(newPlaces);
@@ -201,26 +155,24 @@ export default function Gyms() {
 
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      const response = await base44.functions.invoke('saveSupabaseGym', gymData);
-      return response.data?.data || response.data;
-    },
-    onSuccess: (gym) => {
-      if (!gym?.id) {
-        alert('Failed to create gym: No ID returned');
-        return;
+      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
+      
+      if (existingGyms.length > 0) {
+        return { exists: true, gym: existingGyms[0] };
       }
+
+      const newGym = await base44.entities.Gym.create(gymData);
+      return { exists: false, gym: newGym };
+    },
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
-      navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
-    },
-    onError: (error) => {
-      alert(`Failed to create gym: ${error.message || 'Unknown error'}`);
+      navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
     }
   });
 
@@ -236,7 +188,7 @@ export default function Gyms() {
     // Check if user is trying to create a ghost gym (not claiming ownership)
     if (!isOwner) {
       // Count how many ghost gyms this user has created
-      const userCreatedGhostGyms = (Array.isArray(gyms) ? gyms : []).filter(g => 
+      const userCreatedGhostGyms = gyms.filter(g => 
         g.created_by === currentUser?.email && 
         !g.admin_id && 
         !g.owner_email
@@ -795,28 +747,12 @@ export default function Gyms() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                         {/* Quick Action Button */}
-                        <div className="absolute inset-0 flex items-center justify-center gap-3 transition-opacity duration-300">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              joinGymMutation.mutate(gym);
-                            }}
-                            disabled={joinGymMutation.isPending || gymMemberships.some(m => m.gym_id === gym.id)}
-                            className={`px-6 py-2 rounded-xl font-semibold shadow-xl transition-all ${
-                              gymMemberships.some(m => m.gym_id === gym.id)
-                                ? 'bg-green-600 text-white cursor-default'
-                                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                            }`}
-                          >
-                            {joinGymMutation.isPending ? 'Joining...' : gymMemberships.some(m => m.gym_id === gym.id) ? 'Joined' : 'Join Gym'}
-                          </button>
-                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="px-6 py-2">
-                            <Button className="bg-slate-700 hover:bg-slate-600 text-white shadow-xl">
-                              <Dumbbell className="w-4 h-4 mr-2" />
-                              View
-                            </Button>
-                          </Link>
-                        </div>
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
+                            <Dumbbell className="w-4 h-4 mr-2" />
+                            Enter Gym
+                          </Button>
+                        </Link>
 
                         {/* Badges */}
                         <div className="absolute top-3 left-3 flex gap-2 flex-wrap">

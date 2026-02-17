@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getCheckIns, saveCheckIn } from '../api/supabaseApi';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Flame, Calendar, MapPin, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,9 +8,12 @@ import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [isChecking, setIsChecking] = useState(false);
@@ -47,19 +49,23 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id, gym?.id],
-    queryFn: () => getCheckIns({ user_id: currentUser.id, gym_id: gym.id }),
+    queryFn: () => base44.entities.CheckIn.filter({ 
+      user_id: currentUser.id,
+      gym_id: gym.id 
+    }, '-check_in_date'),
     enabled: !!currentUser && !!gym
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['allCheckIns', currentUser?.id],
-    queryFn: () => getCheckIns({ user_id: currentUser.id }),
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
     enabled: !!currentUser
   });
 
   const checkInMutation = useMutation({
     mutationFn: async (data) => {
-      return await saveCheckIn(data);
+      const newCheckIn = await base44.entities.CheckIn.create(data);
+      return newCheckIn;
     },
     onMutate: async (newCheckIn) => {
       // Cancel outgoing refetches
@@ -82,6 +88,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       queryClient.setQueryData(['allCheckIns', currentUser?.id], context.previousAllCheckIns);
     },
     onSuccess: async (newCheckIn) => {
+       setShowSuccess(true);
+       setTimeout(() => setShowSuccess(false), 3000);
 
        // Trigger workout start timer
        if (onCheckInSuccess) {
@@ -543,7 +551,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         return;
       }
 
-      const checkInData = {
+      await checkInMutation.mutateAsync({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         gym_id: gym.id,
@@ -551,16 +559,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         check_in_date: new Date().toISOString(),
         first_visit: checkIns.length === 0,
         points_earned: isPremium ? 20 : 10 // Double points for premium
-      };
-      
-      await checkInMutation.mutateAsync(checkInData);
-      
-      // Sync to Supabase
-      try {
-        await base44.functions.invoke('saveSupabaseCheckIn', checkInData);
-      } catch (error) {
-        console.error('Error syncing to Supabase:', error);
-      }
+      });
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {
         toast.error('Location access denied', {
@@ -585,29 +584,46 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   return (
     <div className="space-y-3">
       {/* Location Error Dialog */}
-      <Dialog open={showLocationError} onOpenChange={setShowLocationError}>
-        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 max-w-md shadow-2xl shadow-black/40 [&>button]:hidden">
-          <div className="flex flex-col items-center gap-4">
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 100 }}
-              className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-red-500/30"
-            >
-              <AlertTriangle className="w-7 h-7 text-white" strokeWidth={2.5} />
-            </motion.div>
-            
-            <h2 className="text-2xl font-black text-white text-center">You need to be at your gym to check in!</h2>
-            
-            <Button
-              onClick={() => setShowLocationError(false)}
-              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-bold shadow-lg shadow-red-500/30 mt-4"
-            >
-              Got It
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={showLocationError} onOpenChange={setShowLocationError}>
+        <AlertDialogContent className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
+          <AlertDialogHeader>
+            <div className="flex flex-col items-center gap-4 mb-2">
+              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-white" strokeWidth={2.5} />
+              </div>
+              <AlertDialogTitle className="text-2xl font-black text-orange-900 text-center">
+                Too Far From Gym
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-center space-y-3">
+              <p className="text-orange-800 text-lg font-semibold">
+                You must be within 500m of the gym to check in
+              </p>
+              <div className="bg-white/60 rounded-xl p-4 border-2 border-orange-200">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <MapPin className="w-5 h-5 text-orange-600" />
+                  <span className="font-bold text-orange-900">Your Distance</span>
+                </div>
+                <p className="text-3xl font-black text-orange-900">
+                  {(locationErrorDistance * 1000).toFixed(0)}m
+                </p>
+                <p className="text-sm text-orange-700 mt-1">
+                  {((locationErrorDistance - 0.5) * 1000).toFixed(0)}m too far
+                </p>
+              </div>
+              <p className="text-sm text-orange-700">
+                Please move closer to {gym?.name} and try again
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Button
+            onClick={() => setShowLocationError(false)}
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-bold h-12"
+          >
+            Got It
+          </Button>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Success Animation */}
       <AnimatePresence>

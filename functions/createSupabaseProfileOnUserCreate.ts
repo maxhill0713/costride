@@ -5,14 +5,12 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
 
-    // Handle both automation payload and manual calls
-    const eventType = payload?.event?.type;
-    const userData = payload?.data || payload;
-    const userId = payload?.event?.entity_id || userData?.id;
-
-    if (!eventType || eventType !== 'create') {
-      return Response.json({ success: true, message: 'Not a create event or no event type' });
+    if (payload.event.type !== 'create') {
+      return Response.json({ success: true, message: 'Not a create event' });
     }
+
+    const userData = payload.data;
+    const userId = payload.event.entity_id;
 
     if (!userId || !userData) {
       return Response.json({ error: 'Missing user data' }, { status: 400 });
@@ -25,27 +23,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Supabase credentials not configured' }, { status: 500 });
     }
 
-    // Create profile in Supabase profiles table
-    const profileDataToSave = {
+    // Create profile in Supabase
+    const profileData = {
       id: userId,
       email: userData.email,
       full_name: userData.full_name,
-      avatar_url: userData.avatar_url || null
+      created_at: new Date().toISOString()
     };
 
     const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/profiles`, {
       method: 'POST',
       headers: {
+        'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify(profileDataToSave),
+      body: JSON.stringify(profileData),
     });
 
     if (!supabaseResponse.ok) {
       const error = await supabaseResponse.text();
-      console.error('Supabase profile creation failed:', error);
+      console.error('Supabase creation failed:', error);
       return Response.json({ error: 'Failed to create Supabase profile' }, { status: 500 });
     }
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { getLifts, getGoals, getCheckIns, getWorkoutLogs, getPosts } from '../components/api/supabaseApi';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Settings, TrendingUp, Award, Calendar, Dumbbell, Target, Share2, MapPin, Edit2, Save, X, Plus, Flame, Trophy, AlertCircle, Building2, CheckCircle, Camera, FileText, BarChart3, Image as ImageIcon, Video, Upload, Zap, Snowflake, Star } from 'lucide-react';
@@ -52,20 +51,14 @@ export default function Profile() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        return null;
-      }
-    },
-    initialData: null,
-    retry: 1
+      const response = await base44.functions.invoke('syncSupabaseProfile');
+      return response.data;
+    }
   });
 
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => getPosts({ member_id: currentUser.id }),
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
     enabled: !!currentUser
   });
 
@@ -82,77 +75,55 @@ export default function Profile() {
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => getLifts()
+    queryFn: () => base44.entities.Lift.list('-created_date')
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
-    queryFn: () => getGoals({ user_id: currentUser.id }),
+    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
     enabled: !!currentUser
   });
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => getCheckIns(),
-    initialData: []
+    queryFn: () => base44.entities.CheckIn.list('-check_in_date')
   });
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser.id });
-      } catch (error) {
-        console.error('Error fetching memberships:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser
   });
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseGyms', {});
-      } catch (error) {
-        console.error('Error fetching gyms:', error);
-        return [];
-      }
-    }
+    queryFn: () => base44.entities.Gym.list()
   });
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: async () => {
-      try {
-        return await base44.functions.invoke('getSupabaseChallenges', {});
-      } catch (error) {
-        console.error('Error fetching challenges:', error);
-        return [];
-      }
-    }
+    queryFn: () => base44.entities.Challenge.list()
   });
 
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
-    queryFn: () => getWorkoutLogs({ user_id: currentUser.id }),
+    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
     enabled: !!currentUser
   });
 
 
 
   const displayName = currentUser?.username || currentUser?.full_name;
-  const memberLifts = Array.isArray(lifts) ? lifts.filter(l => l.member_name === displayName) : [];
-  const userCheckIns = Array.isArray(checkIns) ? checkIns.filter(c => c.user_id === currentUser?.id) : [];
+  const memberLifts = lifts.filter(l => l.member_name === displayName);
+  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
 
   // Get gyms user is a member of
-  const memberGymIds = Array.isArray(gymMemberships) ? gymMemberships.map(m => m.gym_id) : [];
-  const memberGyms = Array.isArray(allGyms) ? allGyms.filter(g => memberGymIds.includes(g.id)) : [];
+  const memberGymIds = gymMemberships.map(m => m.gym_id);
+  const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
 
   // Get primary gym
   const primaryGymId = currentUser?.primary_gym_id;
-  const primaryGym = Array.isArray(allGyms) ? allGyms.find(g => g.id === primaryGymId) : null;
+  const primaryGym = allGyms.find(g => g.id === primaryGymId);
 
   React.useEffect(() => {
     if (currentUser) {
@@ -187,9 +158,7 @@ export default function Profile() {
   });
 
   const createGoalMutation = useMutation({
-    mutationFn: async (data) => {
-      return await base44.functions.invoke('saveSupabaseGoal', { ...data, user_id: currentUser.id });
-    },
+    mutationFn: (data) => base44.entities.Goal.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowAddGoal(false);
@@ -197,18 +166,23 @@ export default function Profile() {
   });
 
   const updateGoalMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
-      return await base44.functions.invoke('updateSupabaseGoal', { goal_id: id, updates: data });
-    },
+    mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
     onMutate: async ({ id, data }) => {
+      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['goals'] });
+      
+      // Snapshot previous value
       const previousGoals = queryClient.getQueryData(['goals', currentUser?.id]);
+      
+      // Optimistically update
       queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
         old.map(goal => goal.id === id ? { ...goal, ...data } : goal)
       );
+      
       return { previousGoals };
     },
     onError: (err, variables, context) => {
+      // Rollback on error
       queryClient.setQueryData(['goals', currentUser?.id], context.previousGoals);
     },
     onSuccess: () => {
@@ -217,7 +191,7 @@ export default function Profile() {
   });
 
   const deleteGoalMutation = useMutation({
-    mutationFn: (id) => base44.functions.invoke('deleteSupabaseRecord', { table: 'goals', id }),
+    mutationFn: (id) => base44.entities.Goal.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
@@ -241,7 +215,7 @@ export default function Profile() {
 
   const createPostMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.functions.invoke('saveSupabasePost', {
+      const postData = {
         member_id: currentUser.id,
         member_name: displayName,
         member_avatar: currentUser.avatar_url,
@@ -252,7 +226,8 @@ export default function Profile() {
         comments: [],
         reactions: {},
         allow_gym_repost: data.allow_gym_repost || false
-      });
+      };
+      return base44.entities.Post.create(postData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
@@ -285,7 +260,7 @@ export default function Profile() {
     });
   };
 
-  const activeGoals = Array.isArray(goals) ? goals.filter(g => g.status === 'active') : [];
+  const activeGoals = goals.filter(g => g.status === 'active');
 
   const currentStreak = currentUser?.current_streak || 0;
   const longestStreak = currentUser?.longest_streak || 0;
@@ -307,10 +282,10 @@ export default function Profile() {
 
 
 
-  const completedChallenges = Array.isArray(allChallenges) ? allChallenges.filter(c => 
+  const completedChallenges = allChallenges.filter(c => 
     c.status === 'completed' && 
     c.participants?.includes(currentUser?.id)
-  ).length : 0;
+  ).length;
 
   const stats = {
     totalLifts: memberLifts.length,
@@ -740,7 +715,7 @@ export default function Profile() {
                   </Button>
                 </div>
 
-               {!Array.isArray(userPosts) || userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
+               {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
                 <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                   <div className="max-w-sm mx-auto">
                     <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
@@ -754,7 +729,7 @@ export default function Profile() {
                 </Card>
               ) : (
                 <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
-                  {(Array.isArray(userPosts) ? userPosts : []).filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
+                  {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
                     if (a.is_favourite === b.is_favourite) return 0;
                     return a.is_favourite ? -1 : 1;
                   }).map((post) => {
@@ -821,7 +796,7 @@ export default function Profile() {
               </div>
 
               {/* Goals Overview Stats */}
-              {Array.isArray(goals) && goals.length > 0 && (
+              {goals.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-4">
                   <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
                     <div className="text-2xl font-black text-blue-400">{goals.filter(g => g.status === 'active').length}</div>
@@ -877,7 +852,7 @@ export default function Profile() {
             )}
 
             {/* Completed Goals Section */}
-            {Array.isArray(goals) && goals.filter(g => g.status === 'completed').length > 0 && (
+            {goals.filter(g => g.status === 'completed').length > 0 && (
               <div className="mt-6">
                 <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
