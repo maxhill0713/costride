@@ -73,11 +73,18 @@ export default function GymCommunity() {
     queryKey: ['gym', gymId],
     queryFn: async () => {
       if (!gymId) return null;
-      return await base44.functions.invoke('getSupabaseGym', { gym_id: gymId });
+      try {
+        return await base44.functions.invoke('getSupabaseGym', { gym_id: gymId });
+      } catch (error) {
+        console.error('Error fetching gym:', error);
+        throw error;
+      }
     },
     enabled: !!gymId,
     staleTime: 0,
-    refetchOnMount: true
+    refetchOnMount: 'stale',
+    retry: 3,
+    retryDelay: 500
   });
 
   // Language setting stored on gym
