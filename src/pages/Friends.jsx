@@ -146,7 +146,7 @@ export default function Friends() {
 
   const addFriendMutation = useMutation({
     mutationFn: async (friendUser) => {
-      await base44.entities.Friend.create({
+      await base44.functions.invoke('saveSupabaseFriend', {
         user_id: currentUser.id,
         friend_id: friendUser.id,
         friend_name: friendUser.full_name,
@@ -155,7 +155,7 @@ export default function Friends() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
       toast.success('Friend request sent!');
       setShowAddModal(false);
       setSearchQuery('');
@@ -164,8 +164,12 @@ export default function Friends() {
 
   const acceptFriendMutation = useMutation({
     mutationFn: async (requestId, requesterData) => {
-      const request = await base44.entities.Friend.update(requestId, { status: 'accepted' });
-      await base44.entities.Friend.create({
+      await base44.functions.invoke('updateSupabaseRecord', {
+        table: 'friends',
+        id: requestId,
+        data: { status: 'accepted' }
+      });
+      await base44.functions.invoke('saveSupabaseFriend', {
         user_id: currentUser.id,
         friend_id: requesterData.user_id,
         friend_name: requesterData.user_name || requesterData.friend_name,
@@ -174,41 +178,37 @@ export default function Friends() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friendRequests']);
-      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
       toast.success('Friend request accepted!');
     }
   });
 
   const rejectFriendMutation = useMutation({
     mutationFn: async (requestId) => {
-      await base44.entities.Friend.delete(requestId);
+      await base44.functions.invoke('deleteSupabaseRecord', { table: 'friends', id: requestId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
       toast.success('Friend request declined');
     }
   });
 
   const removeFriendMutation = useMutation({
     mutationFn: async (friendId) => {
-      const friendships = await base44.entities.Friend.filter({
-        user_id: currentUser.id,
-        friend_id: friendId
-      });
-      if (friendships.length > 0) {
-        await base44.entities.Friend.delete(friendships[0].id);
+      const allFriends = await base44.functions.invoke('getSupabaseFriends', { user_id: currentUser.id });
+      const friendship = allFriends.find(f => f.friend_id === friendId);
+      if (friendship) {
+        await base44.functions.invoke('deleteSupabaseRecord', { table: 'friends', id: friendship.id });
       }
-      const reverseFriendships = await base44.entities.Friend.filter({
-        user_id: friendId,
-        friend_id: currentUser.id
-      });
-      if (reverseFriendships.length > 0) {
-        await base44.entities.Friend.delete(reverseFriendships[0].id);
+      const reverseFriends = await base44.functions.invoke('getSupabaseFriends', { user_id: friendId });
+      const reverseFriendship = reverseFriends.find(f => f.friend_id === currentUser.id);
+      if (reverseFriendship) {
+        await base44.functions.invoke('deleteSupabaseRecord', { table: 'friends', id: reverseFriendship.id });
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
       toast.success('Friend removed');
     }
   });
