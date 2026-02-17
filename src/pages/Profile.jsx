@@ -52,9 +52,15 @@ export default function Profile() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('syncSupabaseProfile');
-      return response.data;
-    }
+      try {
+        return await base44.auth.me();
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        return null;
+      }
+    },
+    initialData: null,
+    retry: 1
   });
 
   const { data: userPosts = [] } = useQuery({
