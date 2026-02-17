@@ -838,7 +838,7 @@ export default function Profile() {
               </div>
 
               {/* Goals Overview Stats */}
-              {goals.length > 0 && (
+              {Array.isArray(goals) && goals.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-4">
                   <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
                     <div className="text-2xl font-black text-blue-400">{goals.filter(g => g.status === 'active').length}</div>
