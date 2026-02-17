@@ -35,7 +35,7 @@ export default function RedeemReward() {
     enabled: !!currentUser
   });
 
-  const gymIds = gymMemberships.map(m => m.gym_id);
+  const gymIds = Array.isArray(gymMemberships) ? gymMemberships.map(m => m.gym_id) : [];
 
   // Get current week number for rotating challenges
   const getWeekNumber = (date = new Date()) => {
