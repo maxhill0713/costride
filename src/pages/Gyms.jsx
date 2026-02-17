@@ -185,7 +185,7 @@ export default function Gyms() {
         } else {
           // Create new gym
           const newGymResponse = await base44.functions.invoke('saveSupabaseGym', gymData);
-          gym = newGymResponse.data || newGymResponse;
+          gym = newGymResponse.data.data || newGymResponse.data;
         }
 
         // Create membership for the user
