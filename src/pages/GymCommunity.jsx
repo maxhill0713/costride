@@ -398,7 +398,7 @@ export default function GymCommunity() {
 
   const joinGhostGymMutation = useMutation({
     mutationFn: async () => {
-      await base44.entities.GymMembership.create({
+      const membershipData = {
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         user_email: currentUser.email,
@@ -407,7 +407,16 @@ export default function GymCommunity() {
         status: 'active',
         join_date: new Date().toISOString().split('T')[0],
         membership_type: 'lifetime'
-      });
+      };
+
+      await base44.entities.GymMembership.create(membershipData);
+
+      // Sync to Supabase
+      try {
+        await base44.functions.invoke('saveSupabaseMembership', membershipData);
+      } catch (error) {
+        console.error('Error syncing membership to Supabase:', error);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
