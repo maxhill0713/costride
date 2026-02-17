@@ -11,13 +11,19 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { event, data } = body;
+    const { event, data, payload_too_large } = body;
 
-    // Handle automation payloads - data contains the actual entity record
-    let memberData = data || body;
+    // Handle automation payloads - fetch full record if payload was too large
+    let memberData = data;
+    if (payload_too_large && event?.entity_id) {
+      const { data: fetchedData } = await base44.asServiceRole.entities.GymMember.get(event.entity_id);
+      memberData = fetchedData;
+    } else if (!memberData) {
+      memberData = body;
+    }
     
     // Ensure required fields exist
-    if (!memberData.name) {
+    if (!memberData || !memberData.name) {
       throw new Error('name field is required for gym member');
     }
 
