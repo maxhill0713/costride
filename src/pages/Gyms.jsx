@@ -794,12 +794,28 @@ export default function Gyms() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                         {/* Quick Action Button */}
-                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
-                            <Dumbbell className="w-4 h-4 mr-2" />
-                            Enter Gym
-                          </Button>
-                        </Link>
+                        <div className="absolute inset-0 flex items-center justify-center gap-3 transition-opacity duration-300">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              joinGymMutation.mutate(gym);
+                            }}
+                            disabled={joinGymMutation.isPending || gymMemberships.some(m => m.gym_id === gym.id)}
+                            className={`px-6 py-2 rounded-xl font-semibold shadow-xl transition-all ${
+                              gymMemberships.some(m => m.gym_id === gym.id)
+                                ? 'bg-green-600 text-white cursor-default'
+                                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+                            }`}
+                          >
+                            {joinGymMutation.isPending ? 'Joining...' : gymMemberships.some(m => m.gym_id === gym.id) ? 'Joined' : 'Join Gym'}
+                          </button>
+                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="px-6 py-2">
+                            <Button className="bg-slate-700 hover:bg-slate-600 text-white shadow-xl">
+                              <Dumbbell className="w-4 h-4 mr-2" />
+                              View
+                            </Button>
+                          </Link>
+                        </div>
 
                         {/* Badges */}
                         <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
