@@ -175,36 +175,17 @@ export default function Gyms() {
 
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      try {
-        const response = await base44.functions.invoke('saveSupabaseGym', gymData);
-        console.log('Gym response:', response);
-        const gymData_result = response.data?.data || response.data;
-        console.log('Extracted gym:', gymData_result);
-        if (!gymData_result || !gymData_result.id) {
-          throw new Error('Invalid gym response: ' + JSON.stringify(response));
-        }
-        return gymData_result;
-      } catch (error) {
-        console.error('Error creating gym:', error);
-        throw error;
-      }
+      const response = await base44.functions.invoke('saveSupabaseGym', gymData);
+      return response.data.data || response.data;
     },
     onSuccess: (gym) => {
-      console.log('Gym created successfully:', gym);
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
-      const url = createPageUrl('GymCommunity') + `?id=${gym.id}`;
-      console.log('Navigating to:', url);
-      navigate(url);
-    },
-    onError: (error) => {
-      console.error('Mutation error:', error);
+      navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
     }
   });
 
