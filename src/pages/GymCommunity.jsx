@@ -920,9 +920,9 @@ export default function GymCommunity() {
                 {/* Gym Name & Info */}
                 <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-lg md:text-xl' : gym.name.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
-                    {gym.name}
-                  </h1>
+                   <h1 className={`font-black text-white drop-shadow-lg break-words ${gym?.name?.length > 30 ? 'text-lg md:text-xl' : gym?.name?.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
+                     {gym?.name || 'Gym'}
+                   </h1>
                   {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
                 </div>
                 <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
