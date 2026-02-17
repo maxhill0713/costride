@@ -136,7 +136,7 @@ export default function Home() {
   });
 
   // Pre-calculate for check-in users query
-  const todayCheckInsForQuery = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
+  const todayCheckInsForQuery = Array.isArray(allCheckIns) ? allCheckIns.filter(c => isToday(new Date(c.check_in_date))) : [];
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map(c => c.user_id))];
 
   const { data: checkInUsers = [] } = useQuery({
