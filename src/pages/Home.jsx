@@ -235,7 +235,7 @@ export default function Home() {
 
   // Calculate these values before early return
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
-  const memberGym = primaryGymId 
+  const memberGym = primaryGymId && Array.isArray(allGyms)
     ? allGyms.find(g => g.id === primaryGymId) 
     : null;
 
