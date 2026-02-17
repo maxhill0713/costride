@@ -753,7 +753,7 @@ export default function GymCommunity() {
   ).sort((a, b) => b.count - a.count).slice(0, 10);
 
   // Calculate challenge completions (mock data for now)
-  const challengeLeaderboard = members.slice(0, 10).map((member, idx) => ({
+  const challengeLeaderboard = (Array.isArray(members) ? members : []).slice(0, 10).map((member, idx) => ({
     userId: member.id,
     userName: member.name || member.nickname || 'Member',
     count: Math.max(0, 15 - idx * 2)
