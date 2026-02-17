@@ -287,13 +287,13 @@ export default function Home() {
     );
   }
 
-  const friendIds = friends.map(f => f.friend_id);
-  const friendPosts = allPosts.filter(post => 
+  const friendIds = Array.isArray(friends) ? friends.map(f => f.friend_id) : [];
+  const friendPosts = Array.isArray(allPosts) ? allPosts.filter(post => 
     friendIds.includes(post.member_id) && 
     !post.is_system_generated &&
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
-  );
+  ) : [];
 
   // Today's check-ins (all users)
   const todayCheckIns = todayCheckInsForQuery;
@@ -320,7 +320,7 @@ export default function Home() {
   const activeChallenges = (Array.isArray(challenges) ? challenges : []).filter(c => c.status === 'active').slice(0, 3);
 
   // Recent lifts today
-  const todayLifts = (Array.isArray(lifts) ? lifts : []).filter(l => isToday(new Date(l.created_date))).slice(0, 5);
+  const todayLifts = (Array.isArray(lifts) ? lifts : []).filter(l => isToday(new Date(l.lift_date))).slice(0, 5);
 
   // Calculate user streak from check-ins
   const calculateStreak = (checkIns) => {
