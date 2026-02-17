@@ -73,14 +73,10 @@ export default function GymCommunity() {
     queryKey: ['gym', gymId],
     queryFn: async () => {
       if (!gymId) return null;
-      const gyms = await base44.functions.invoke('getSupabaseGyms', {});
-      return gyms?.find(g => g.id === gymId) || null;
+      return await base44.functions.invoke('getSupabaseGym', { gym_id: gymId });
     },
     enabled: !!gymId,
-    retry: 10,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     staleTime: 0,
-    refetchInterval: 2000,
     refetchOnMount: true
   });
 
