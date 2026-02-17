@@ -302,7 +302,7 @@ export default function Profile() {
     });
   };
 
-  const activeGoals = goals.filter(g => g.status === 'active');
+  const activeGoals = Array.isArray(goals) ? goals.filter(g => g.status === 'active') : [];
 
   const currentStreak = currentUser?.current_streak || 0;
   const longestStreak = currentUser?.longest_streak || 0;
