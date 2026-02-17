@@ -894,7 +894,7 @@ export default function Profile() {
             )}
 
             {/* Completed Goals Section */}
-            {goals.filter(g => g.status === 'completed').length > 0 && (
+            {Array.isArray(goals) && goals.filter(g => g.status === 'completed').length > 0 && (
               <div className="mt-6">
                 <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
