@@ -245,10 +245,10 @@ export default function Home() {
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
-  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
+  const activeChallenges = (Array.isArray(challenges) ? challenges : []).filter(c => c.status === 'active').slice(0, 3);
 
   // Recent lifts today
-  const todayLifts = lifts.filter(l => isToday(new Date(l.created_date))).slice(0, 5);
+  const todayLifts = (Array.isArray(lifts) ? lifts : []).filter(l => isToday(new Date(l.created_date))).slice(0, 5);
 
   // Calculate user streak from check-ins
   const calculateStreak = (checkIns) => {
