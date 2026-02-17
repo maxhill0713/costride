@@ -6,15 +6,20 @@ Deno.serve(async (req) => {
     const payload = await req.json();
 
     // Handle both direct calls and entity automation events
-    const gym_id = payload.gym_id || payload.event?.entity_id || payload.data?.id;
+    let gym_id = payload.gym_id || payload.event?.entity_id || payload.data?.id;
+
+    // If this is an automation with event type 'create', extract the ID
+    if (!gym_id && payload.event?.type === 'create') {
+      gym_id = payload.event.entity_id;
+    }
 
     if (!gym_id) {
       console.error('No gym_id found in payload:', JSON.stringify(payload, null, 2));
-      console.error('Request headers:', req.headers);
-      console.error('Request URL:', req.url);
       return Response.json({ 
         error: 'gym_id is required',
         received: {
+          payload_type: payload.event?.type,
+          entity_name: payload.event?.entity_name,
           has_gym_id: !!payload.gym_id,
           has_event: !!payload.event,
           has_data: !!payload.data,
