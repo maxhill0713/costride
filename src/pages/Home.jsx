@@ -233,7 +233,7 @@ export default function Home() {
     
     // Calculate progress for each challenge
     const withProgress = activeChallenges.map(c => {
-      const participants = lifts.filter(l => c.participants?.includes(l.member_id) || false);
+      const participants = (Array.isArray(lifts) ? lifts : []).filter(l => c.participants?.includes(l.member_id) || false);
       const progress = c.target_value ? Math.min((participants.length / c.target_value) * 100, 100) : 0;
       return { ...c, progress };
     });
