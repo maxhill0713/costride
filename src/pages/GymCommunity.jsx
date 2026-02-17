@@ -445,8 +445,13 @@ export default function GymCommunity() {
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id, gymId],
     queryFn: async () => {
-      const bonuses = await base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId });
-      return bonuses;
+      try {
+        const allBonuses = await base44.functions.invoke('getSupabaseClaimedBonuses', {});
+        return allBonuses.filter(b => b.user_id === currentUser.id && b.gym_id === gymId);
+      } catch (error) {
+        console.error('Error fetching claimed bonuses:', error);
+        return [];
+      }
     },
     enabled: !!currentUser && !!gymId
   });
@@ -454,8 +459,12 @@ export default function GymCommunity() {
   const { data: challengeParticipants = [] } = useQuery({
     queryKey: ['challengeParticipants', currentUser?.id],
     queryFn: async () => {
-      const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id });
-      return participants;
+      try {
+        return await base44.functions.invoke('getSupabaseChallengeParticipants', { user_id: currentUser.id });
+      } catch (error) {
+        console.error('Error fetching challenge participants:', error);
+        return [];
+      }
     },
     enabled: !!currentUser
   });
