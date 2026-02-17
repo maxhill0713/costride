@@ -123,23 +123,21 @@ export default function Gyms() {
 
   const joinGymMutation = useMutation({
     mutationFn: async (gym) => {
-      return await base44.functions.invoke('saveSupabaseMembership', {
-        user_id: currentUser.id,
-        user_name: currentUser.full_name,
-        user_email: currentUser.email,
+      const response = await base44.functions.invoke('createGymMembershipCheckout', {
         gym_id: gym.id,
         gym_name: gym.name,
-        status: 'active',
-        join_date: new Date().toISOString().split('T')[0],
-        membership_type: 'monthly'
+        price_cents: 999 // £9.99/month default
       });
+      return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
     },
     onError: (error) => {
       console.error('Join gym error:', error);
+      alert('Failed to start checkout. Please try again.');
     }
   });
 
