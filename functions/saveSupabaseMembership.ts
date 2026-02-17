@@ -1,4 +1,3 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.39.0';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
@@ -10,32 +9,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_KEY')
-    );
-
     const body = await req.json();
 
-    const { data, error } = await supabase
-      .from('gym_memberships')
-      .insert({
-        ...body,
-        user_id: body.user_id || user.id,
-        user_name: body.user_name || user.full_name,
-        user_email: body.user_email || user.email
-      })
-      .select()
-      .single();
+    const membershipData = {
+      user_id: body.user_id || user.id,
+      user_name: body.user_name || user.full_name,
+      user_email: body.user_email || user.email,
+      gym_id: body.gym_id,
+      gym_name: body.gym_name,
+      status: body.status || 'active',
+      join_date: body.join_date,
+      membership_type: body.membership_type || 'monthly'
+    };
 
-    if (error) {
-      console.error('Supabase membership insert error:', error);
-      throw error;
-    }
+    const result = await base44.entities.GymMembership.create(membershipData);
 
-    return Response.json({ success: true, data });
+    return Response.json({ success: true, data: result });
   } catch (error) {
-    console.error('Save membership error:', error);
+    console.error('Create membership error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
