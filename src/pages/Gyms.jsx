@@ -121,6 +121,27 @@ export default function Gyms() {
     }
   });
 
+  const joinGymMutation = useMutation({
+    mutationFn: async (gym) => {
+      return await base44.functions.invoke('saveSupabaseMembership', {
+        user_id: currentUser.id,
+        user_name: currentUser.full_name,
+        user_email: currentUser.email,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        status: 'active',
+        join_date: new Date().toISOString().split('T')[0],
+        membership_type: 'monthly'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+    },
+    onError: (error) => {
+      alert(`Failed to join gym: ${error.message || 'Unknown error'}`);
+    }
+  });
+
   const userGyms = Array.isArray(gyms) && gymMemberships.length > 0 
     ? gyms.filter(g => gymMemberships.some(m => m.gym_id === g.id))
     : [];
