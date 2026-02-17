@@ -117,11 +117,11 @@ export default function Gyms() {
     }
   });
 
-  const userGyms = gymMemberships.length > 0 
+  const userGyms = Array.isArray(gyms) && gymMemberships.length > 0 
     ? gyms.filter(g => gymMemberships.some(m => m.gym_id === g.id))
     : [];
 
-  const filteredGyms = gyms.filter(gym => {
+  const filteredGyms = (Array.isArray(gyms) ? gyms : []).filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || gym.type === selectedType;
@@ -153,7 +153,7 @@ export default function Gyms() {
       const results = response.data.results || [];
       
       // Filter out places that already exist in our database
-      const existingPlaceIds = gyms.map(g => g.google_place_id).filter(Boolean);
+      const existingPlaceIds = (Array.isArray(gyms) ? gyms : []).map(g => g.google_place_id).filter(Boolean);
       const newPlaces = results.filter(place => !existingPlaceIds.includes(place.place_id));
       
       setPlacesResults(newPlaces);
@@ -215,7 +215,7 @@ export default function Gyms() {
     // Check if user is trying to create a ghost gym (not claiming ownership)
     if (!isOwner) {
       // Count how many ghost gyms this user has created
-      const userCreatedGhostGyms = gyms.filter(g => 
+      const userCreatedGhostGyms = (Array.isArray(gyms) ? gyms : []).filter(g => 
         g.created_by === currentUser?.email && 
         !g.admin_id && 
         !g.owner_email
