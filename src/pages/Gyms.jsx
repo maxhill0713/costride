@@ -180,50 +180,19 @@ export default function Gyms() {
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
       const response = await base44.functions.invoke('saveSupabaseGym', gymData);
-      console.log('Full response:', response);
       const gymResult = response.data?.data || response.data;
-      console.log('Extracted gym:', gymResult);
-      if (!gymResult?.id) {
-        throw new Error('No gym ID returned');
-      }
+      if (!gymResult?.id) throw new Error('No gym ID returned');
       return gymResult;
     },
-    onSuccess: async (gym) => {
-      console.log('Success callback, gym:', gym);
-      // Force refetch gyms list
-      await queryClient.refetchQueries({ queryKey: ['gyms'] });
-      
-      // If not owner, create membership automatically
-      if (!isOwner && currentUser) {
-        try {
-          await base44.functions.invoke('saveSupabaseMembership', {
-            user_id: currentUser.id,
-            user_name: currentUser.full_name,
-            user_email: currentUser.email,
-            gym_id: gym.id,
-            gym_name: gym.name,
-            status: 'active',
-            join_date: new Date().toISOString().split('T')[0],
-            membership_type: 'monthly'
-          });
-          await queryClient.refetchQueries({ queryKey: ['gymMemberships', currentUser.id] });
-        } catch (error) {
-          console.error('Error creating membership:', error);
-        }
-      }
-      
+    onSuccess: (gym) => {
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
-      setTimeout(() => {
-        navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
-      }, 100);
-    },
-    onError: (error) => {
-      console.error('Create gym error:', error);
+      // Navigate directly with gym ID - GymCommunity will handle the query
+      navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
     }
   });
 
