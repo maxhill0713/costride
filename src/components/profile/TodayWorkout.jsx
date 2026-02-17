@@ -222,9 +222,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const logWorkoutMutation = useMutation({
     mutationFn: async () => {
-      if (alreadyLoggedToday) {
-        throw new Error('You have already logged this workout today');
-      }
       const user = await base44.auth.me();
       const workout_notes = user?.workout_notes || {};
       const workoutNotes = workout_notes[todayWorkout.name] || '';
@@ -506,7 +503,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           ))}
 
           {/* Log Workout Button - Only when Expanded */}
-          {isExpanded && !alreadyLoggedToday && (
+          {isExpanded && (
             <div className="mb-3 space-y-2">
               {workoutStartTime && (
                 <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
@@ -522,7 +519,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 size="sm"
                 className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
               >
-                Log Workout
+                {alreadyLoggedToday ? 'Log Again (Test)' : 'Log Workout'}
               </Button>
             </div>
           )}
