@@ -184,9 +184,10 @@ export default function Gyms() {
       }
       return gymResult;
     },
-    onSuccess: (gym) => {
+    onSuccess: async (gym) => {
       console.log('Success callback, gym:', gym);
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      // Invalidate and wait for refetch before navigating
+      await queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
@@ -195,7 +196,7 @@ export default function Gyms() {
       setSearchQuery('');
       setTimeout(() => {
         navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
-      }, 500);
+      }, 300);
     },
     onError: (error) => {
       console.error('Create gym error:', error);
