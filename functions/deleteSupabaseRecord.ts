@@ -3,14 +3,38 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    
     const body = await req.json();
-    const { table, id } = body;
+    
+    // Handle automation payload (from entity delete events)
+    let table = body.table;
+    let id = body.id;
+    
+    if (body.event?.type === 'delete') {
+      // Map entity name to table name (snake_case pluralized)
+      const entityToTable = {
+        'CheckIn': 'check_ins',
+        'Achievement': 'achievements',
+        'Challenge': 'challenges',
+        'Post': 'posts',
+        'Goal': 'goals',
+        'Gym': 'gyms',
+        'GymMember': 'gym_members',
+        'GymMembership': 'gym_memberships',
+        'Lift': 'lifts',
+        'Event': 'events',
+        'Reward': 'rewards',
+        'Coach': 'coaches',
+        'GymClass': 'gym_classes',
+        'Message': 'messages',
+        'Notification': 'notifications',
+        'ChallengeParticipant': 'challenge_participants',
+        'BrandDiscountCode': 'brand_discount_codes'
+      };
+      
+      table = entityToTable[body.event.entity_name];
+      id = body.event.entity_id;
+    }
 
     if (!table || !id) {
       console.error('Missing parameters - Table:', table, 'ID:', id, 'Full body:', JSON.stringify(body));
