@@ -178,12 +178,14 @@ export default function Friends() {
   };
 
   const friendIds = friends.map(f => f.friend_id);
-  const searchResults = allUsers.filter(user => 
-    user.id !== currentUser?.id &&
-    !friendIds.includes(user.id) &&
-    (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-  ).slice(0, 5);
+  const { data: searchResults = [] } = useQuery({
+    queryKey: ['searchUsers', searchQuery],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: searchQuery, limit: 5 }).then(res => res.data.users || []),
+    enabled: searchQuery.length >= 2,
+    staleTime: 30000
+  });
+
+  const filteredSearchResults = searchResults.filter(user => !friendIds.includes(user.id));
 
   const getFriendActivity = (friendId) => {
     const friendCheckIns = allCheckIns.filter(c => c.user_id === friendId);
@@ -808,12 +810,12 @@ export default function Friends() {
                   <p className="text-center text-slate-400 text-sm py-8">
                     Type at least 2 characters to search
                   </p>
-                ) : searchResults.length === 0 ? (
+                ) : filteredSearchResults.length === 0 ? (
                   <p className="text-center text-slate-400 text-sm py-8">
                     No users found
                   </p>
                 ) : (
-                  searchResults.map(user => (
+                  filteredSearchResults.map(user => (
                     <div
                       key={user.id}
                       className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors"
