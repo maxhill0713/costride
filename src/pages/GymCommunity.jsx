@@ -721,7 +721,7 @@ export default function GymCommunity() {
   ];
 
   // Mock leaderboard data
-  const weeklyLeaders = members.slice(0, 3).map((member, idx) => ({
+  const weeklyLeaders = (Array.isArray(members) ? members : []).slice(0, 3).map((member, idx) => ({
     id: member.id,
     name: member.name || member.nickname || 'Member',
     progress: ['100%', '95%', '87%'][idx],
