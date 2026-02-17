@@ -4,10 +4,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 const hexToUuid = (hex) => {
   if (!hex || typeof hex !== 'string') return hex;
   if (hex.includes('-') && hex.length === 36) return hex;
-  if (hex.length === 24) {
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`.toLowerCase();
-  }
-  return hex;
+  
+  // Remove any existing dashes
+  const cleanHex = hex.replace(/-/g, '');
+  
+  // Pad to 32 characters if shorter
+  const paddedHex = cleanHex.padEnd(32, '0');
+  
+  // Format as UUID: 8-4-4-4-12
+  return `${paddedHex.slice(0, 8)}-${paddedHex.slice(8, 12)}-${paddedHex.slice(12, 16)}-${paddedHex.slice(16, 20)}-${paddedHex.slice(20, 32)}`.toLowerCase();
 };
 
 Deno.serve(async (req) => {
