@@ -79,9 +79,14 @@ Deno.serve(async (req) => {
     let { gym_id, gym_name, check_in_date, first_visit, is_rest_day } = body;
 
     // If gym_id not provided, try to use user's primary gym
+    if (!gym_id && user.primary_gym_id) {
+      gym_id = user.primary_gym_id;
+    }
+
+    // If still no gym_id, try to get from Supabase profile
     if (!gym_id) {
       const userProfile = await fetch(
-        `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${user.id}`,
+        `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${hexToUuid(user.id)}`,
         {
           headers: {
             'apikey': Deno.env.get('SUPABASE_SERVICE_KEY'),
@@ -96,7 +101,7 @@ Deno.serve(async (req) => {
     }
 
     if (!gym_id) {
-      return Response.json({ error: 'gym_id is required' }, { status: 400 });
+      return Response.json({ error: 'gym_id is required. Please join a gym first.' }, { status: 400 });
     }
 
     const checkInData = {
