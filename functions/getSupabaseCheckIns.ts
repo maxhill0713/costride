@@ -30,7 +30,9 @@ Deno.serve(async (req) => {
 
     const response = await fetch(queryUrl, {
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
+        'apikey': Deno.env.get('SUPABASE_SERVICE_KEY'),
+        'Content-Type': 'application/json'
       }
     });
 
