@@ -16,15 +16,26 @@ Deno.serve(async (req) => {
     // Handle automation payloads - fetch full record if payload was too large
     let memberData = data;
     if (payload_too_large && event?.entity_id) {
-      const { data: fetchedData } = await base44.asServiceRole.entities.GymMember.get(event.entity_id);
-      memberData = fetchedData;
+      try {
+        memberData = await base44.asServiceRole.entities.GymMember.get(event.entity_id);
+      } catch (fetchError) {
+        console.error('Failed to fetch GymMember:', fetchError);
+        memberData = body;
+      }
     } else if (!memberData) {
       memberData = body;
     }
     
-    // Ensure required fields exist
-    if (!memberData || !memberData.name) {
-      throw new Error('name field is required for gym member');
+    // Validate we have at least the ID
+    if (!memberData || !memberData.id) {
+      console.warn('Missing memberData or ID:', { memberData, event });
+      return Response.json({ success: false, skipped: true });
+    }
+    
+    // Skip if no name - GymMember creation might not always have name immediately
+    if (!memberData.name) {
+      console.warn('Skipping GymMember without name:', memberData.id);
+      return Response.json({ success: false, skipped: true });
     }
 
     // Map fields to Supabase schema (only include fields that exist in the table)
