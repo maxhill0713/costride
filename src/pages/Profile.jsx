@@ -188,10 +188,7 @@ export default function Profile() {
 
   const createGoalMutation = useMutation({
     mutationFn: async (data) => {
-      const goal = await base44.entities.Goal.create(data);
-      // Sync to Supabase
-      await base44.functions.invoke('saveSupabaseGoal', { ...goal, user_id: currentUser.id });
-      return goal;
+      return await base44.functions.invoke('saveSupabaseGoal', { ...data, user_id: currentUser.id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
@@ -201,27 +198,17 @@ export default function Profile() {
 
   const updateGoalMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const goal = await base44.entities.Goal.update(id, data);
-      // Sync to Supabase
-      await base44.functions.invoke('updateSupabaseGoal', { goal_id: id, updates: data });
-      return goal;
+      return await base44.functions.invoke('updateSupabaseGoal', { goal_id: id, updates: data });
     },
     onMutate: async ({ id, data }) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['goals'] });
-      
-      // Snapshot previous value
       const previousGoals = queryClient.getQueryData(['goals', currentUser?.id]);
-      
-      // Optimistically update
       queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
         old.map(goal => goal.id === id ? { ...goal, ...data } : goal)
       );
-      
       return { previousGoals };
     },
     onError: (err, variables, context) => {
-      // Rollback on error
       queryClient.setQueryData(['goals', currentUser?.id], context.previousGoals);
     },
     onSuccess: () => {
@@ -230,7 +217,7 @@ export default function Profile() {
   });
 
   const deleteGoalMutation = useMutation({
-    mutationFn: (id) => base44.entities.Goal.delete(id),
+    mutationFn: (id) => base44.functions.invoke('deleteSupabaseRecord', { table: 'goals', id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
@@ -254,7 +241,7 @@ export default function Profile() {
 
   const createPostMutation = useMutation({
     mutationFn: async (data) => {
-      const postData = {
+      return await base44.functions.invoke('saveSupabasePost', {
         member_id: currentUser.id,
         member_name: displayName,
         member_avatar: currentUser.avatar_url,
@@ -265,11 +252,7 @@ export default function Profile() {
         comments: [],
         reactions: {},
         allow_gym_repost: data.allow_gym_repost || false
-      };
-      const post = await base44.entities.Post.create(postData);
-      // Sync to Supabase
-      await base44.functions.invoke('saveSupabasePost', post);
-      return post;
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
