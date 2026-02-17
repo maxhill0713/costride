@@ -34,8 +34,11 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase
       .from('workout_logs')
       .insert({
-        ...body,
         user_id: hexToUuid(user.id),
+        workout_name: body.workout_name,
+        day_of_week: body.day_of_week,
+        exercises: body.exercises,
+        notes: body.notes,
         workout_date: body.completed_date || new Date().toISOString().split('T')[0],
         created_by: user.email,
         created_date: new Date().toISOString(),
