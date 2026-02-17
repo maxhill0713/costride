@@ -176,33 +176,8 @@ export default function Gyms() {
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
       try {
-        // Check if gym already exists
-        const existingGyms = await base44.functions.invoke('getSupabaseGyms', { google_place_id: gymData.google_place_id });
-        
-        let gym;
-        if (existingGyms && existingGyms.length > 0) {
-          gym = existingGyms[0];
-        } else {
-          // Create new gym
-          const newGymResponse = await base44.functions.invoke('saveSupabaseGym', gymData);
-          gym = newGymResponse.data.data || newGymResponse.data;
-        }
-
-        // Create membership for the user
-        if (gym && currentUser) {
-          await base44.functions.invoke('saveSupabaseMembership', {
-            user_id: currentUser.id,
-            user_name: currentUser.full_name,
-            user_email: currentUser.email,
-            gym_id: gym.id,
-            gym_name: gym.name,
-            status: 'active',
-            join_date: new Date().toISOString().split('T')[0],
-            membership_type: 'monthly'
-          });
-        }
-
-        return gym;
+        const newGymResponse = await base44.functions.invoke('saveSupabaseGym', gymData);
+        return newGymResponse.data.data || newGymResponse.data;
       } catch (error) {
         console.error('Error creating gym:', error);
         throw error;
