@@ -58,7 +58,11 @@ export default function CreateGymPostButton({ gym, currentUser, onPostCreated })
       await base44.entities.Post.create(postData);
       
       // Sync to Supabase
-      await base44.functions.invoke('saveSupabasePost', postData);
+      try {
+        await base44.functions.invoke('saveSupabasePost', postData);
+      } catch (error) {
+        console.error('Error syncing post to Supabase:', error);
+      }
       
       toast.success('Post created successfully');
       setContent('');
