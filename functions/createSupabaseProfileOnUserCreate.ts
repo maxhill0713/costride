@@ -5,16 +5,14 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
 
-    if (!payload?.event?.type) {
-      return Response.json({ success: true, message: 'No event type provided' });
-    }
+    // Handle both automation payload and manual calls
+    const eventType = payload?.event?.type;
+    const userData = payload?.data || payload;
+    const userId = payload?.event?.entity_id || userData?.id;
 
-    if (payload.event.type !== 'create') {
-      return Response.json({ success: true, message: 'Not a create event' });
+    if (!eventType || eventType !== 'create') {
+      return Response.json({ success: true, message: 'Not a create event or no event type' });
     }
-
-    const userData = payload.data;
-    const userId = payload.event.entity_id;
 
     if (!userId || !userData) {
       return Response.json({ error: 'Missing user data' }, { status: 400 });
