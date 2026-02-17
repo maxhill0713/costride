@@ -556,7 +556,11 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       await checkInMutation.mutateAsync(checkInData);
       
       // Sync to Supabase
-      await base44.functions.invoke('saveSupabaseCheckIn', checkInData);
+      try {
+        await base44.functions.invoke('saveSupabaseCheckIn', checkInData);
+      } catch (error) {
+        console.error('Error syncing to Supabase:', error);
+      }
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {
         toast.error('Location access denied', {
