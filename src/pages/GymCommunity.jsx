@@ -509,9 +509,8 @@ export default function GymCommunity() {
         membership_type: 'lifetime'
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });
     }
   });
 
