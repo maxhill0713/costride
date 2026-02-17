@@ -511,6 +511,8 @@ export default function GymCommunity() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
     }
   });
 
