@@ -29,12 +29,12 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error('Supabase gym insert error:', error);
-      throw error;
+      return Response.json({ error: error.message || 'Failed to insert gym' }, { status: 400 });
     }
 
     return Response.json({ success: true, data });
   } catch (error) {
-    console.error('Save gym error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Save gym error:', error.message, error);
+    return Response.json({ error: error.message || 'Server error' }, { status: 500 });
   }
 });
