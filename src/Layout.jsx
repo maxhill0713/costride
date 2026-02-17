@@ -43,7 +43,14 @@ export default function Layout({ children, currentPageName }) {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id, read: false }),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseNotifications', { user_id: currentUser.id });
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser
   });
 
@@ -53,7 +60,14 @@ export default function Layout({ children, currentPageName }) {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser?.id });
+      } catch (error) {
+        console.error('Error fetching memberships:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser
   });
 

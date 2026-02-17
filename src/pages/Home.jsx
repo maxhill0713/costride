@@ -46,7 +46,14 @@ export default function Home() {
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseMemberships', { user_id: currentUser.id });
+      } catch (error) {
+        console.error('Error fetching memberships:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -54,44 +61,85 @@ export default function Home() {
 
   const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseGyms', {});
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        return [];
+      }
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseCheckIns', {});
+      } catch (error) {
+        console.error('Error fetching check-ins:', error);
+        return [];
+      }
+    },
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list('-created_date'),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseChallenges', {});
+      } catch (error) {
+        console.error('Error fetching challenges:', error);
+        return [];
+      }
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
     queryKey: ['weeklyChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ 
-      status: 'active'
-    }, '-created_date', 3),
+    queryFn: async () => {
+      try {
+        const allChallenges = await base44.functions.invoke('getSupabaseChallenges', {});
+        return allChallenges.filter(c => c.status === 'active').slice(0, 3);
+      } catch (error) {
+        console.error('Error fetching weekly challenges:', error);
+        return [];
+      }
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date'),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseLifts', {});
+      } catch (error) {
+        console.error('Error fetching lifts:', error);
+        return [];
+      }
+    },
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
-    queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseGoals', { user_id: currentUser?.id });
+      } catch (error) {
+        console.error('Error fetching goals:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -99,7 +147,14 @@ export default function Home() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseNotifications', { user_id: currentUser?.id });
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -108,7 +163,14 @@ export default function Home() {
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
-    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabaseFriends', { user_id: currentUser?.id });
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
@@ -116,7 +178,14 @@ export default function Home() {
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
-    queryFn: () => base44.entities.Post.list('-created_date', 50),
+    queryFn: async () => {
+      try {
+        return await base44.functions.invoke('getSupabasePosts', {});
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        return [];
+      }
+    },
     enabled: !!currentUser && !!friends.length,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
@@ -125,10 +194,12 @@ export default function Home() {
   const { data: recentChallengeActivity = [] } = useQuery({
     queryKey: ['recentChallengeActivity'],
     queryFn: async () => {
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      return base44.entities.ChallengeParticipant.filter({
-        created_date: { $gte: oneDayAgo.toISOString() }
-      }, '-created_date', 5);
+      try {
+        return await base44.functions.invoke('getSupabaseChallengeParticipants', {});
+      } catch (error) {
+        console.error('Error fetching challenge activity:', error);
+        return [];
+      }
     },
     enabled: !!currentUser && !!challenges.length,
     staleTime: 5 * 60 * 1000,
@@ -144,10 +215,7 @@ export default function Home() {
     queryFn: async () => {
       if (checkInUserIdsForQuery.length === 0) return [];
       try {
-        const users = await Promise.all(
-          checkInUserIdsForQuery.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
-        );
-        return users.filter(Boolean);
+        return await base44.functions.invoke('getUsersByIds', { user_ids: checkInUserIdsForQuery });
       } catch (error) {
         console.error('Error fetching check-in users:', error);
         return [];
@@ -180,25 +248,29 @@ export default function Home() {
     const createReminderNotification = async () => {
       if (!currentUser || daysSinceCheckIn === null || daysSinceCheckIn < 3) return;
 
-      // Check if we already sent a recent reminder
-      const recentReminder = await base44.entities.Notification.filter({
-        user_id: currentUser.id,
-        type: 'reminder'
-      }, '-created_date', 1);
+      try {
+        // Check if we already sent a recent reminder
+        const recentReminders = await base44.functions.invoke('getSupabaseNotifications', { 
+          user_id: currentUser.id 
+        });
+        
+        const recentReminder = recentReminders.filter(n => n.type === 'reminder').slice(0, 1);
+        if (recentReminder.length > 0) {
+          const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
+          if (daysSinceReminder < 2) return;
+        }
 
-      if (recentReminder.length > 0) {
-        const daysSinceReminder = differenceInDays(new Date(), new Date(recentReminder[0].created_date));
-        if (daysSinceReminder < 2) return;
+        await base44.functions.invoke('saveSupabaseNotification', {
+          user_id: currentUser.id,
+          type: 'reminder',
+          title: 'Time for your next workout! 💪',
+          message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
+          icon: '⏰',
+          action_url: createPageUrl('Gyms')
+        });
+      } catch (error) {
+        console.error('Error creating reminder notification:', error);
       }
-
-      await base44.entities.Notification.create({
-        user_id: currentUser.id,
-        type: 'reminder',
-        title: 'Time for your next workout! 💪',
-        message: `You haven't checked in for ${daysSinceCheckIn} days. Don't forget to check in today!`,
-        icon: '⏰',
-        action_url: createPageUrl('Gyms')
-      });
     };
 
     createReminderNotification();
