@@ -188,6 +188,7 @@ export default function Gyms() {
         return;
       }
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
