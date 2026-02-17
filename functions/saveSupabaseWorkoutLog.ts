@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
       .insert({
         ...body,
         user_id: hexToUuid(user.id),
+        workout_date: body.completed_date || new Date().toISOString().split('T')[0],
         created_by: user.email,
         created_date: new Date().toISOString(),
         updated_date: new Date().toISOString()
