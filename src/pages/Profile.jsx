@@ -147,8 +147,8 @@ export default function Profile() {
   const userCheckIns = Array.isArray(checkIns) ? checkIns.filter(c => c.user_id === currentUser?.id) : [];
 
   // Get gyms user is a member of
-  const memberGymIds = gymMemberships.map(m => m.gym_id);
-  const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
+  const memberGymIds = Array.isArray(gymMemberships) ? gymMemberships.map(m => m.gym_id) : [];
+  const memberGyms = Array.isArray(allGyms) ? allGyms.filter(g => memberGymIds.includes(g.id)) : [];
 
   // Get primary gym
   const primaryGymId = currentUser?.primary_gym_id;
