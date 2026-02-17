@@ -53,7 +53,11 @@ export default function LogLiftModal({ open, onClose, onSuccess, gym, currentUse
     };
 
     // Sync to Supabase before calling onSuccess
-    await base44.functions.invoke('saveSupabaseLift', liftData);
+    try {
+      await base44.functions.invoke('saveSupabaseLift', liftData);
+    } catch (error) {
+      console.error('Error syncing lift to Supabase:', error);
+    }
     
     onSuccess(liftData);
 
