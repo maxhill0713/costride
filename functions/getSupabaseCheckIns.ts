@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const hexToUuid = (hex) => {
+  if (!hex || typeof hex !== 'string') return hex;
+  if (hex.includes('-') && hex.length === 36) return hex;
+  const cleanHex = hex.replace(/-/g, '');
+  const paddedHex = cleanHex.padEnd(32, '0');
+  return `${paddedHex.slice(0, 8)}-${paddedHex.slice(8, 12)}-${paddedHex.slice(12, 16)}-${paddedHex.slice(16, 20)}-${paddedHex.slice(20, 32)}`.toLowerCase();
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -10,8 +18,8 @@ Deno.serve(async (req) => {
     }
 
     const url = new URL(req.url);
-    const userId = url.searchParams.get('user_id') || user.id;
-    const gymId = url.searchParams.get('gym_id');
+    const userId = hexToUuid(url.searchParams.get('user_id') || user.id);
+    const gymId = url.searchParams.get('gym_id') ? hexToUuid(url.searchParams.get('gym_id')) : null;
     const limit = parseInt(url.searchParams.get('limit') || '100');
 
     let filters = '';
