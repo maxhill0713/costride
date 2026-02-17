@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: error.message }, { status: 500 });
     }
 
-    // Check if user can access this gym
-    if (data.status !== 'approved' && data.owner_email !== user?.email && data.admin_id !== user?.id) {
+    // Check if user can access this gym - approved gyms are public, otherwise must be owner
+    if (data.status !== 'approved' && (!user || (data.owner_email !== user.email && data.admin_id !== user.id))) {
       return Response.json({ error: 'Not authorized' }, { status: 403 });
     }
 
