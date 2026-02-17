@@ -9,15 +9,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { gymName } = await req.json();
+    const { gym_id, gymName } = await req.json();
 
-    if (!gymName) {
-      return Response.json({ error: 'Gym name is required' }, { status: 400 });
+    if (!gym_id && !gymName) {
+      return Response.json({ error: 'Gym ID or name is required' }, { status: 400 });
     }
 
-    // Find the gym by name
-    const gyms = await base44.entities.Gym.list();
-    const gym = gyms.find(g => g.name === gymName);
+    let gym;
+    
+    // Find gym by ID or name
+    if (gym_id) {
+      const gyms = await base44.entities.Gym.list();
+      gym = gyms.find(g => g.id === gym_id);
+    } else {
+      const gyms = await base44.entities.Gym.list();
+      gym = gyms.find(g => g.name === gymName);
+    }
 
     if (!gym) {
       return Response.json({ error: 'Gym not found' }, { status: 404 });
