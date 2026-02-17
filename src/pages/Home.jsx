@@ -171,7 +171,7 @@ export default function Home() {
     ? allGyms.find(g => g.id === primaryGymId) 
     : null;
 
-  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
+  const userCheckIns = Array.isArray(allCheckIns) ? allCheckIns.filter(c => c.user_id === currentUser?.id) : [];
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
