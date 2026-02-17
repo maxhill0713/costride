@@ -24,7 +24,7 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
     status: 'active'
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const goalData = {
       ...formData,
@@ -35,7 +35,11 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
     };
     
     // Sync to Supabase
-    base44.functions.invoke('saveSupabaseGoal', goalData);
+    try {
+      await base44.functions.invoke('saveSupabaseGoal', goalData);
+    } catch (error) {
+      console.error('Error syncing goal to Supabase:', error);
+    }
     
     onSave(goalData);
     setFormData({
