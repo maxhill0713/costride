@@ -15,21 +15,13 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY')
     );
 
-    // Parse payload (supports both JSON body and URL params)
-    let payload = {};
-    try {
-      payload = await req.json();
-    } catch (e) {
-      // No JSON body, use URL params instead
-    }
-
     const url = new URL(req.url);
-    const table = payload.table || url.searchParams.get('table');
-    const userId = payload.userId || url.searchParams.get('userId') || user.id;
-    const limit = payload.limit || parseInt(url.searchParams.get('limit')) || 50;
+    const table = url.searchParams.get('table');
+    const userId = url.searchParams.get('userId') || user.id;
+    const limit = parseInt(url.searchParams.get('limit')) || 50;
 
     if (!table) {
-      return Response.json({ error: 'Table parameter required', example: { table: 'workouts', userId: user.id, limit: 50 } }, { status: 400 });
+      return Response.json({ error: 'Table parameter required' }, { status: 400 });
     }
 
     let query = supabase.from(table).select('*');
