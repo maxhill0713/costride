@@ -13,7 +13,11 @@ Deno.serve(async (req) => {
     const { table, id } = body;
 
     if (!table || !id) {
-      return Response.json({ error: 'Table and ID required' }, { status: 400 });
+      console.error('Missing parameters - Table:', table, 'ID:', id, 'Full body:', JSON.stringify(body));
+      return Response.json({ 
+        error: 'Table and ID required',
+        received: { table, id, body }
+      }, { status: 400 });
     }
 
     const response = await fetch(
