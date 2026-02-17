@@ -69,25 +69,19 @@ export default function GymCommunity() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: gym, isLoading: gymLoading } = useQuery({
+  const { data: gym, isLoading: gymLoading, error: gymError } = useQuery({
     queryKey: ['gym', gymId],
     queryFn: async () => {
       if (!gymId) return null;
-      try {
-        const gyms = await base44.functions.invoke('getSupabaseGyms', {});
-        const foundGym = gyms?.find(g => g.id === gymId);
-        if (!foundGym) console.warn('Gym not found, fetched all gyms:', gyms);
-        return foundGym || null;
-      } catch (error) {
-        console.error('Error fetching gym:', error);
-        return null;
-      }
+      const gyms = await base44.functions.invoke('getSupabaseGyms', {});
+      return gyms?.find(g => g.id === gymId) || null;
     },
     enabled: !!gymId,
-    retry: 5,
+    retry: 10,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true
+    refetchInterval: 2000,
+    refetchOnMount: true
   });
 
   // Language setting stored on gym
