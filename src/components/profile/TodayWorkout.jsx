@@ -262,6 +262,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               }));
               setChallengesWithProgress(challengesData);
 
+              return { challengesData };
+
               // Create posts for weight increases
               if (lastWorkout?.exercises) {
                 const improvements = todayWorkout.exercises
