@@ -39,14 +39,22 @@ Deno.serve(async (req) => {
     const allLifts = await base44.asServiceRole.entities.Lift.list();
     const userLifts = allLifts.filter(l => l.member_id === user.id);
     for (const lift of userLifts) {
-      await base44.asServiceRole.entities.Lift.delete(lift.id);
+      try {
+        await base44.asServiceRole.entities.Lift.delete(lift.id);
+      } catch (e) {
+        console.warn('Lift already deleted or not found:', lift.id);
+      }
     }
 
     // Delete all user's goals
     const allGoals = await base44.asServiceRole.entities.Goal.list();
     const userGoals = allGoals.filter(g => g.user_id === user.id);
     for (const goal of userGoals) {
-      await base44.asServiceRole.entities.Goal.delete(goal.id);
+      try {
+        await base44.asServiceRole.entities.Goal.delete(goal.id);
+      } catch (e) {
+        console.warn('Goal already deleted or not found:', goal.id);
+      }
     }
 
     return new Response(JSON.stringify({ success: true, message: 'Account deleted successfully' }), {
