@@ -152,7 +152,7 @@ export default function Profile() {
 
   // Get primary gym
   const primaryGymId = currentUser?.primary_gym_id;
-  const primaryGym = allGyms.find(g => g.id === primaryGymId);
+  const primaryGym = Array.isArray(allGyms) ? allGyms.find(g => g.id === primaryGymId) : null;
 
   React.useEffect(() => {
     if (currentUser) {
