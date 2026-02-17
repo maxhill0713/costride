@@ -67,12 +67,16 @@ export default function Gyms() {
     queryKey: ['gyms'],
     queryFn: async () => {
       try {
-        return await base44.functions.invoke('getSupabaseGyms', {});
+        const result = await base44.functions.invoke('getSupabaseGyms', {});
+        console.log('Fetched gyms:', result);
+        return result || [];
       } catch (error) {
         console.error('Error fetching gyms:', error);
         return [];
       }
-    }
+    },
+    staleTime: 0,
+    refetchOnMount: 'stale'
   });
 
   const updateGymImageMutation = useMutation({
@@ -186,8 +190,28 @@ export default function Gyms() {
     },
     onSuccess: async (gym) => {
       console.log('Success callback, gym:', gym);
-      // Invalidate and wait for refetch before navigating
-      await queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      // Force refetch gyms list
+      await queryClient.refetchQueries({ queryKey: ['gyms'] });
+      
+      // If not owner, create membership automatically
+      if (!isOwner && currentUser) {
+        try {
+          await base44.functions.invoke('saveSupabaseMembership', {
+            user_id: currentUser.id,
+            user_name: currentUser.full_name,
+            user_email: currentUser.email,
+            gym_id: gym.id,
+            gym_name: gym.name,
+            status: 'active',
+            join_date: new Date().toISOString().split('T')[0],
+            membership_type: 'monthly'
+          });
+          await queryClient.refetchQueries({ queryKey: ['gymMemberships', currentUser.id] });
+        } catch (error) {
+          console.error('Error creating membership:', error);
+        }
+      }
+      
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
@@ -196,7 +220,7 @@ export default function Gyms() {
       setSearchQuery('');
       setTimeout(() => {
         navigate(createPageUrl('GymCommunity') + `?id=${gym.id}`);
-      }, 300);
+      }, 100);
     },
     onError: (error) => {
       console.error('Create gym error:', error);
