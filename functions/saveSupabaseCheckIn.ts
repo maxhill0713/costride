@@ -8,50 +8,7 @@ const hexToUuid = (hex) => {
   return `${paddedHex.slice(0, 8)}-${paddedHex.slice(8, 12)}-${paddedHex.slice(12, 16)}-${paddedHex.slice(16, 20)}-${paddedHex.slice(20, 32)}`.toLowerCase();
 };
 
-// Helper to ensure user profile exists in Supabase profiles table
-const ensureProfileExists = async (user) => {
-  try {
-    const checkProfileResponse = await fetch(
-      `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?id=eq.${user.id}`,
-      {
-        method: 'GET',
-        headers: {
-         'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
-         'Content-Type': 'application/json'
-        }
-      }
-    );
 
-    const existingProfiles = await checkProfileResponse.json();
-    
-    // If profile doesn't exist, create it (legacy user)
-    if (!Array.isArray(existingProfiles) || existingProfiles.length === 0) {
-      const createProfileResponse = await fetch(
-        `${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_KEY')}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-          },
-          body: JSON.stringify({
-            id: user.id,
-            email: user.email,
-            full_name: user.full_name,
-            avatar_url: user.avatar_url
-          })
-        }
-      );
-
-      if (!createProfileResponse.ok) {
-        console.warn('Could not create profile in Supabase:', await createProfileResponse.json());
-      }
-    }
-  } catch (err) {
-    console.warn('Error ensuring profile exists:', err);
-  }
-};
 
 Deno.serve(async (req) => {
   try {
