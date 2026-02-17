@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     const { data, error } = await supabase
-      .from('Gym')
+      .from('gyms')
       .select('*')
       .eq('status', 'approved');
 

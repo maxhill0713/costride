@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     const { data, error } = await supabase
-      .from('Gym')
+      .from('gyms')
       .select('*')
       .eq('id', gym_id)
       .single();
