@@ -510,8 +510,8 @@ export default function GymCommunity() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
-      window.location.href = createPageUrl('Home');
+      queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
     }
   });
 
