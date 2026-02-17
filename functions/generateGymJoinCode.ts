@@ -9,8 +9,18 @@ Deno.serve(async (req) => {
     const gym_id = payload.gym_id || payload.event?.entity_id || payload.data?.id;
 
     if (!gym_id) {
-      console.error('No gym_id found in payload:', payload);
-      return Response.json({ error: 'gym_id is required' }, { status: 400 });
+      console.error('No gym_id found in payload:', JSON.stringify(payload, null, 2));
+      console.error('Request headers:', req.headers);
+      console.error('Request URL:', req.url);
+      return Response.json({ 
+        error: 'gym_id is required',
+        received: {
+          has_gym_id: !!payload.gym_id,
+          has_event: !!payload.event,
+          has_data: !!payload.data,
+          payload_keys: Object.keys(payload)
+        }
+      }, { status: 400 });
     }
 
     // Generate unique 6-character code
