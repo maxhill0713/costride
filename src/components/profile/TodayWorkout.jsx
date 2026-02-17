@@ -307,7 +307,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
        queryClient.invalidateQueries(['workoutLog']);
        queryClient.invalidateQueries(['posts']);
        setShowSummary(false);
-       setShowChallengeProgress(true);
+       // Only show challenge progress if there are challenges
+       if (challengesWithProgress.length > 0) {
+         setShowChallengeProgress(true);
+       } else {
+         setIsExpanded(false);
+       }
      },
     onError: (error) => {
        console.error('Error logging workout:', error);
