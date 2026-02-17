@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     const { data: result, error } = await supabase
       .from('gym_members')
-      .insert([memberData])
+      .insert([supabaseMember])
       .select();
 
     if (error) {
