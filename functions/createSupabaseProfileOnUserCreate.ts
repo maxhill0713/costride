@@ -5,6 +5,10 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
 
+    if (!payload?.event?.type) {
+      return Response.json({ success: true, message: 'No event type provided' });
+    }
+
     if (payload.event.type !== 'create') {
       return Response.json({ success: true, message: 'Not a create event' });
     }
