@@ -654,6 +654,15 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
               </AlertDialogTitle>
             </div>
           </AlertDialogHeader>
+          <Button
+            onClick={() => {
+              setShowOutOfRangeDialog(false);
+              navigate('/');
+            }}
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-bold h-12"
+          >
+            Back to Home
+          </Button>
         </AlertDialogContent>
       </AlertDialog>
 
