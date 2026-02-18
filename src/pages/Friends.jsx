@@ -109,6 +109,19 @@ export default function Friends() {
       friendId: friendUser.id,
       action: 'add'
     }),
+    onMutate: async (friendUser) => {
+      await queryClient.cancelQueries(['friends', currentUser?.id]);
+      const previous = queryClient.getQueryData(['friends', currentUser?.id]);
+      // Optimistically add a pending friend entry
+      queryClient.setQueryData(['friends', currentUser?.id], (old = []) => [
+        ...old,
+        { id: `temp-${friendUser.id}`, friend_id: friendUser.id, friend_name: friendUser.full_name, friend_avatar: friendUser.avatar_url, status: 'pending' }
+      ]);
+      return { previous };
+    },
+    onError: (err, friendUser, context) => {
+      queryClient.setQueryData(['friends', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['friends']);
       toast.success('Friend request sent!');
@@ -122,6 +135,17 @@ export default function Friends() {
       friendId,
       action: 'accept'
     }),
+    onMutate: async (friendId) => {
+      await queryClient.cancelQueries(['friendRequests', currentUser?.id]);
+      const previous = queryClient.getQueryData(['friendRequests', currentUser?.id]);
+      queryClient.setQueryData(['friendRequests', currentUser?.id], (old = []) =>
+        old.filter(r => r.user_id !== friendId)
+      );
+      return { previous };
+    },
+    onError: (err, friendId, context) => {
+      queryClient.setQueryData(['friendRequests', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['friends']);
@@ -134,6 +158,17 @@ export default function Friends() {
       friendId,
       action: 'reject'
     }),
+    onMutate: async (friendId) => {
+      await queryClient.cancelQueries(['friendRequests', currentUser?.id]);
+      const previous = queryClient.getQueryData(['friendRequests', currentUser?.id]);
+      queryClient.setQueryData(['friendRequests', currentUser?.id], (old = []) =>
+        old.filter(r => r.user_id !== friendId)
+      );
+      return { previous };
+    },
+    onError: (err, friendId, context) => {
+      queryClient.setQueryData(['friendRequests', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['friendRequests']);
       toast.success('Friend request declined');
@@ -145,6 +180,17 @@ export default function Friends() {
       friendId,
       action: 'remove'
     }),
+    onMutate: async (friendId) => {
+      await queryClient.cancelQueries(['friends', currentUser?.id]);
+      const previous = queryClient.getQueryData(['friends', currentUser?.id]);
+      queryClient.setQueryData(['friends', currentUser?.id], (old = []) =>
+        old.filter(f => f.friend_id !== friendId)
+      );
+      return { previous };
+    },
+    onError: (err, friendId, context) => {
+      queryClient.setQueryData(['friends', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['friends']);
       toast.success('Friend removed');

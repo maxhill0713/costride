@@ -91,6 +91,17 @@ export default function Gyms() {
         await base44.entities.GymMembership.delete(membership.id);
       }
     },
+    onMutate: async (gymId) => {
+      await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+      const previous = queryClient.getQueryData(['gymMemberships', currentUser?.id]);
+      queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) =>
+        old.filter(m => m.gym_id !== gymId)
+      );
+      return { previous };
+    },
+    onError: (err, gymId, context) => {
+      queryClient.setQueryData(['gymMemberships', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });

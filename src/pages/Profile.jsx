@@ -156,6 +156,18 @@ export default function Profile() {
 
   const createGoalMutation = useMutation({
     mutationFn: (data) => base44.entities.Goal.create(data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['goals', currentUser?.id] });
+      const previous = queryClient.getQueryData(['goals', currentUser?.id]);
+      queryClient.setQueryData(['goals', currentUser?.id], (old = []) => [
+        ...old,
+        { id: `temp-${Date.now()}`, ...data, status: 'active', current_value: 0 }
+      ]);
+      return { previous };
+    },
+    onError: (err, data, context) => {
+      queryClient.setQueryData(['goals', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowAddGoal(false);
@@ -189,6 +201,17 @@ export default function Profile() {
 
   const deleteGoalMutation = useMutation({
     mutationFn: (id) => base44.entities.Goal.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['goals', currentUser?.id] });
+      const previous = queryClient.getQueryData(['goals', currentUser?.id]);
+      queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
+        old.filter(g => g.id !== id)
+      );
+      return { previous };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(['goals', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     }
@@ -217,13 +240,25 @@ export default function Profile() {
       video_url: data.video_url || null,
       allow_gym_repost: data.allow_gym_repost || false
     }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['userPosts', currentUser?.id] });
+      const previous = queryClient.getQueryData(['userPosts', currentUser?.id]);
+      queryClient.setQueryData(['userPosts', currentUser?.id], (old = []) => [
+        { id: `temp-${Date.now()}`, member_id: currentUser?.id, member_name: currentUser?.full_name, member_avatar: currentUser?.avatar_url, content: data.content, image_url: data.image_url || null, video_url: data.video_url || null, likes: 0, comments: [], created_date: new Date().toISOString() },
+        ...old
+      ]);
       setShowCreatePost(false);
       setPostContent('');
       setPostImage('');
       setPostVideo('');
       setAllowGymRepost(false);
+      return { previous };
+    },
+    onError: (err, data, context) => {
+      queryClient.setQueryData(['userPosts', currentUser?.id], context.previous);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
     }
   });
 
