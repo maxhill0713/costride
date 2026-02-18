@@ -58,10 +58,22 @@ export default function Friends() {
     gcTime: 10 * 60 * 1000
   });
 
+  // allUsers is only used in the friends modal to show avatars/names for known friend IDs
+  // We scope it to only the IDs we actually need (friends + friend requesters)
+  const knownUserIds = [
+    ...friends.map(f => f.friend_id),
+    ...friendRequests.map(r => r.user_id)
+  ];
   const { data: allUsers = [] } = useQuery({
-    queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list(),
-    enabled: showAddModal || showFriendsModal,
+    queryKey: ['friendUsers', knownUserIds.join(',')],
+    queryFn: async () => {
+      if (knownUserIds.length === 0) return [];
+      const results = await Promise.all(
+        knownUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: (showAddModal || showFriendsModal) && knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
@@ -95,7 +107,7 @@ export default function Friends() {
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.list('-created_date', 30),
+    queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
     enabled: !!currentUser && friends.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

@@ -51,9 +51,9 @@ export default function Home() {
     gcTime: 10 * 60 * 1000
   });
 
-  const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
+  const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0]?.gym_id : null);
 
-  const { data: memberGymData, isLoading: gymsLoading } = useQuery({
+  const { data: memberGymData } = useQuery({
     queryKey: ['gym', primaryGymIdForQuery],
     queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then(r => r[0] || null),
     enabled: !!primaryGymIdForQuery,
