@@ -39,7 +39,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }, '-created_date', 20),
-    enabled: !!currentUser,
+    enabled: !!currentUser && isOwnProfile,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });

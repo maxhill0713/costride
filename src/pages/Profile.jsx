@@ -92,7 +92,7 @@ export default function Profile() {
   });
 
   const { data: checkIns = [] } = useQuery({
-    queryKey: ['userCheckIns', currentUser?.id],
+    queryKey: ['checkIns', currentUser?.id],
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
@@ -132,8 +132,8 @@ export default function Profile() {
 
 
   const displayName = currentUser?.username || currentUser?.full_name;
-  const memberLifts = lifts; // already filtered server-side to current user
-  const userCheckIns = checkIns; // already filtered server-side to current user
+  const memberLifts = lifts;
+  const userCheckIns = checkIns;
 
   // Get gyms user is a member of
   const memberGymIds = gymMemberships.map(m => m.gym_id);

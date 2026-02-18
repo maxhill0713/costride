@@ -233,13 +233,7 @@ export default function GymOwnerDashboard() {
     );
   }
 
-  const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['allCheckIns', selectedGym?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }, '-check_in_date', 500),
-    enabled: !!currentUser && !!selectedGym,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
-  });
+  // allCheckIns reuses checkIns — no separate fetch needed
 
   const { data: allMemberships = [] } = useQuery({
     queryKey: ['allMemberships', selectedGym?.id],
@@ -545,6 +539,8 @@ export default function GymOwnerDashboard() {
       </div>
     );
   }
+
+  const allCheckIns = checkIns; // alias for leaderboard computation
 
   // Calculate stats
   const uniqueMembers = new Set(checkIns.map(c => c.user_id)).size;

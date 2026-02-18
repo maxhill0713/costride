@@ -109,8 +109,8 @@ export default function RedeemReward() {
   });
 
   const { data: completedChallenges = [] } = useQuery({
-    queryKey: ['completedChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' }),
+    queryKey: ['completedChallengesReward'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' }, '-created_date', 30),
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
