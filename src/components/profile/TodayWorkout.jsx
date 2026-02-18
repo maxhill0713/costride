@@ -692,7 +692,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       ) : (
         <div className="flex justify-center pt-1">
         <Button
-          onClick={(e) => { e.stopPropagation(); setShowInfo(false); setIsExpanded(true); }}
+          onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
           variant="ghost"
           size="icon"
           className="w-9 h-9 text-slate-400 hover:text-white"
