@@ -531,16 +531,13 @@ export default function Friends() {
          {friendPosts.length > 0 && (
            <div className="space-y-3 mt-0">
              {friendPosts.map((post) => (
-               <PostCard 
-                 key={post.id} 
-                 post={post}
-                 fullWidth={true}
-                 currentUser={currentUser}
-                 onLike={() => {}}
-                 onComment={() => {}}
-                 onSave={() => {}}
-                 onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-               />
+              <PostCard 
+                key={post.id} 
+                post={post}
+                fullWidth={true}
+                currentUser={currentUser}
+                onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+              />
              ))}
            </div>
          )}
