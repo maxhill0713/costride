@@ -21,17 +21,27 @@ export default function Messages() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: messages = [] } = useQuery({
-    queryKey: ['messages'],
-    queryFn: () => base44.entities.Message.list('-created_date')
+    queryKey: ['messages', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({
+      $or: [{ sender_id: currentUser.id }, { receiver_id: currentUser.id }]
+    }, '-created_date', 200),
+    enabled: !!currentUser,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 15000
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list()
+    queryFn: () => base44.entities.User.list(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   // Auto-open chat if directUserId is present

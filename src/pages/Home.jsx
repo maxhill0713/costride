@@ -38,7 +38,9 @@ export default function Home() {
         console.error('Auth error:', error);
         return null;
       }
-    }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: gymMemberships = [] } = useQuery({
@@ -57,15 +59,16 @@ export default function Home() {
   });
 
   const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    queryKey: ['checkIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
+    enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list('-created_date'),
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 10),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -80,9 +83,10 @@ export default function Home() {
   });
 
   const { data: lifts = [] } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date'),
-    staleTime: 1 * 60 * 1000,
+    queryKey: ['lifts', currentUser?.id],
+    queryFn: () => base44.entities.Lift.filter({ member_id: currentUser?.id }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
 
@@ -111,10 +115,11 @@ export default function Home() {
     gcTime: 10 * 60 * 1000
   });
 
+  const friendIdList = friends.map(f => f.friend_id);
   const { data: allPosts = [] } = useQuery({
-    queryKey: ['posts'],
-    queryFn: () => base44.entities.Post.list('-created_date', 50),
-    enabled: !!currentUser && !!friends.length,
+    queryKey: ['friendPosts', currentUser?.id],
+    queryFn: () => base44.entities.Post.list('-created_date', 30),
+    enabled: !!currentUser && friends.length > 0,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
@@ -174,7 +179,7 @@ export default function Home() {
 
 
 
-  const friendIds = friends.map(f => f.friend_id);
+  const friendIds = friendIdList;
 
   if (userLoading || !currentUser || gymsLoading) {
     return (
@@ -194,6 +199,7 @@ export default function Home() {
   );
 
   // Today's check-ins (all users)
+  // Today's check-ins for community display — use a separate lighter query
   const todayCheckIns = todayCheckInsForQuery;
 
   // Get the challenge closest to completing (or random if all equal)

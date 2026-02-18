@@ -374,20 +374,18 @@ export default function GymCommunity() {
 
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id, gymId],
-    queryFn: async () => {
-      const bonuses = await base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId });
-      return bonuses;
-    },
-    enabled: !!currentUser && !!gymId
+    queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }),
+    enabled: !!currentUser && !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: challengeParticipants = [] } = useQuery({
     queryKey: ['challengeParticipants', currentUser?.id],
-    queryFn: async () => {
-      const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id });
-      return participants;
-    },
-    enabled: !!currentUser
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const claimBonusMutation = useMutation({
