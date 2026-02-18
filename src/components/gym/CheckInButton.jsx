@@ -642,7 +642,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   return (
     <div className="space-y-3">
       {/* Out of Range Dialog */}
-      <AlertDialog open={showOutOfRangeDialog} onOpenChange={() => {}}>
+      <AlertDialog open={showOutOfRangeDialog} onOpenChange={setShowOutOfRangeDialog}>
         <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 rounded-3xl">
           <AlertDialogHeader>
             <div className="flex flex-col items-center gap-4 mb-2">
@@ -654,15 +654,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
               </AlertDialogTitle>
             </div>
           </AlertDialogHeader>
-          <Button
-            onClick={() => {
-              setShowOutOfRangeDialog(false);
-              navigate('/');
-            }}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-bold h-12"
-          >
-            Back to Home
-          </Button>
         </AlertDialogContent>
       </AlertDialog>
 
