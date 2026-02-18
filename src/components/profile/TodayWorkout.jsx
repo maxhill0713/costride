@@ -345,7 +345,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         {showInfo && (
           <>
             <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setShowInfo(false); }} />
-            <div className="relative z-50 bg-blue-500/10 border border-blue-400/30 rounded-lg p-3">
+            <div className="relative z-50 bg-blue-500/10 border border-blue-400/30 rounded-lg p-3" onClick={(e) => e.stopPropagation()}>
               <p className="text-xs text-blue-200 leading-relaxed mb-2 font-medium">
                 <strong className="text-blue-100">How to use:</strong>
               </p>
