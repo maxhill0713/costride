@@ -780,7 +780,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         >
           <Button
             onClick={handleCheckIn}
-            disabled={hasCheckedInToday() || isChecking}
+            disabled={hasCheckedInToday() || isChecking || isWithinRange === false}
             className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
               hasCheckedInToday()
                 ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
