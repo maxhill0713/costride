@@ -82,9 +82,10 @@ export default function Friends() {
     queryKey: ['posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 50),
     enabled: !!currentUser,
-    staleTime: 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 30000
+    placeholderData: (prev) => prev
   });
 
 
