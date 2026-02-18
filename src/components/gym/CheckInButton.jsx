@@ -784,6 +784,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
             className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
               hasCheckedInToday()
                 ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
+                : isWithinRange === false
+                ? 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-400 hover:to-gray-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
             }`}
           >
