@@ -56,7 +56,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
   const motivationalText = motivationalTexts[Math.floor(Math.random() * motivationalTexts.length)];
 
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
       <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40">
         <AlertDialogHeader>
           <div className="flex flex-col items-center gap-3 mb-2">
@@ -123,14 +123,6 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
         </AlertDialogHeader>
 
         <div className="flex gap-3 mt-4">
-          <Button
-            onClick={onCancel}
-            variant="outline"
-            className="flex-1 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800/50"
-            disabled={isLoading}
-          >
-            Close
-          </Button>
           <Button
             onClick={onConfirm}
             className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30"
