@@ -645,6 +645,7 @@ export default function Friends() {
                  key={post.id} 
                  post={post}
                  fullWidth={true}
+                 currentUser={currentUser}
                  onLike={() => {}}
                  onComment={() => {}}
                  onSave={() => {}}
