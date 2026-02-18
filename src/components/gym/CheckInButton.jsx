@@ -648,7 +648,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           navigate('/');
         }
       }}>
-        <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 rounded-3xl">
+        <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 rounded-3xl">
           <AlertDialogHeader>
             <div className="flex flex-col items-center gap-4 mb-2">
               <div className="w-16 h-16 bg-gray-500 rounded-full flex items-center justify-center">
