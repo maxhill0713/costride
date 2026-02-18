@@ -54,7 +54,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
-      <DialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 gap-0" hideCloseButton>
+      <DialogContent hideClose className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 gap-0">
         <div className="flex flex-col items-center gap-3 mb-4">
           <h2 className="text-2xl font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent text-center">
             Workout Complete?
