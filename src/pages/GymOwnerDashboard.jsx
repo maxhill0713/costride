@@ -243,13 +243,7 @@ export default function GymOwnerDashboard() {
     gcTime: 15 * 60 * 1000
   });
 
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list(),
-    enabled: !!currentUser && !!selectedGym,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
-  });
+  // allUsers only needed for ManageMembersModal — fetched lazily inside that component
 
   React.useEffect(() => {
     if (approvedGyms.length > 0 && !selectedGym) {

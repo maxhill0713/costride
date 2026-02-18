@@ -37,25 +37,33 @@ export default function Messages() {
     refetchInterval: 15000
   });
 
+  // Only fetch a specific user when opening a direct message from a URL param
+  const { data: directUser } = useQuery({
+    queryKey: ['userById', directUserId],
+    queryFn: () => base44.entities.User.filter({ id: directUserId }).then(r => r[0]),
+    enabled: !!directUserId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
+  });
+
+  // For user search, fetch lazily only when searching
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.entities.User.list(),
+    enabled: searchQuery.length >= 2,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000
   });
 
   // Auto-open chat if directUserId is present
   useEffect(() => {
-    if (directUserId && allUsers.length > 0 && !selectedChat) {
-      const targetUser = allUsers.find(u => u.id === directUserId);
-      if (targetUser) {
-        setSelectedChat({
-          userId: targetUser.id,
-          userName: targetUser.full_name
-        });
-      }
+    if (directUserId && directUser && !selectedChat) {
+      setSelectedChat({
+        userId: directUser.id,
+        userName: directUser.full_name
+      });
     }
-  }, [directUserId, allUsers, selectedChat]);
+  }, [directUserId, directUser, selectedChat]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
