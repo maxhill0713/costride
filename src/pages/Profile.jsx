@@ -158,10 +158,11 @@ export default function Profile() {
     }
   }, [currentUser]);
 
-  const handleSave = async () => {
-    await base44.auth.updateMe(editData);
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+  const handleSave = () => {
+    // Optimistic update — instant UI
+    queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, ...editData } : old);
     setIsEditing(false);
+    base44.auth.updateMe(editData);
   };
 
   const updateHeroMutation = useMutation({

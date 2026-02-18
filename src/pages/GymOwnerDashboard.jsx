@@ -183,7 +183,7 @@ export default function GymOwnerDashboard() {
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: currentUser, refetch: refetchUser } = useQuery({
+  const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
@@ -192,10 +192,7 @@ export default function GymOwnerDashboard() {
 
   const navigate = useNavigate();
 
-  // Auto-refetch on mount to get latest user data
-  React.useEffect(() => {
-    refetchUser();
-  }, []);
+
 
   // Redirect to onboarding if not completed
   React.useEffect(() => {
@@ -205,9 +202,9 @@ export default function GymOwnerDashboard() {
   }, [currentUser, navigate]);
 
   const { data: gyms = [], isLoading: gymsLoading, error: gymsError } = useQuery({
-    queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
-    enabled: !!currentUser,
+    queryKey: ['ownerGyms', currentUser?.email],
+    queryFn: () => base44.entities.Gym.filter({ owner_email: currentUser.email }),
+    enabled: !!currentUser?.email,
     retry: 3,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
