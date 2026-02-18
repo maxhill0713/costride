@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function CheckInButton({ gym, onCheckInSuccess }) {
+  const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showLocationError, setShowLocationError] = useState(false);
