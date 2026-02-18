@@ -203,6 +203,17 @@ export default function GymCommunity() {
       base44.entities.Event.update(eventId, {
         attendees: currentAttendees + 1
       }),
+    onMutate: async ({ eventId, currentAttendees }) => {
+      await queryClient.cancelQueries({ queryKey: ['events', gymId] });
+      const previous = queryClient.getQueryData(['events', gymId]);
+      queryClient.setQueryData(['events', gymId], (old = []) =>
+        old.map(e => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)
+      );
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['events', gymId], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
     }
@@ -291,11 +302,22 @@ export default function GymCommunity() {
           : opt
       );
       const updatedVoters = [...(poll.voters || []), currentUser.id];
-      
-      await base44.entities.Poll.update(pollId, {
-        options: updatedOptions,
-        voters: updatedVoters
-      });
+      await base44.entities.Poll.update(pollId, { options: updatedOptions, voters: updatedVoters });
+    },
+    onMutate: async ({ pollId, optionId }) => {
+      await queryClient.cancelQueries({ queryKey: ['polls', gymId] });
+      const previous = queryClient.getQueryData(['polls', gymId]);
+      queryClient.setQueryData(['polls', gymId], (old = []) =>
+        old.map(p => p.id === pollId ? {
+          ...p,
+          voters: [...(p.voters || []), currentUser.id],
+          options: p.options.map(opt => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt)
+        } : p)
+      );
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['polls', gymId], context.previous);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['polls', gymId] });
@@ -418,13 +440,10 @@ export default function GymCommunity() {
 
   const joinChallengeMutation = useMutation({
     mutationFn: async (challenge) => {
-      // Update Challenge participants array first
       const currentParticipants = challenge.participants || [];
       await base44.entities.Challenge.update(challenge.id, {
         participants: [...currentParticipants, currentUser.id]
       });
-
-      // Create ChallengeParticipant record
       await base44.entities.ChallengeParticipant.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
@@ -434,12 +453,23 @@ export default function GymCommunity() {
         completed: false
       });
     },
+    onMutate: async (challenge) => {
+      await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
+      const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]);
+      queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [
+        ...old,
+        { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }
+      ]);
+      return { previous };
+    },
+    onError: (err, challenge, context) => {
+      queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
       queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });
-      // Create notification
       base44.entities.Notification.create({
         user_id: currentUser.id,
         type: 'challenge',
