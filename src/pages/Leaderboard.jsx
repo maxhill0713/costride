@@ -8,16 +8,18 @@ import ExerciseFilter from '@/components/leaderboard/ExerciseFilter';
 export default function Leaderboard() {
   const [selectedExercise, setSelectedExercise] = useState('all');
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list(),
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [], isLoading } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-weight_lbs', 200),
+    queryKey: ['leaderboardLifts', selectedExercise],
+    queryFn: () => selectedExercise === 'all'
+      ? base44.entities.Lift.list('-weight_lbs', 200)
+      : base44.entities.Lift.filter({ exercise: selectedExercise }, '-weight_lbs', 100),
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
@@ -73,7 +75,6 @@ export default function Leaderboard() {
                 weight={lift.weight_lbs}
                 exercise={lift.exercise}
                 isPR={lift.is_pr}
-                avatarUrl={members.find(m => m.id === lift.member_id)?.avatar_url}
               />
             ))
           )}

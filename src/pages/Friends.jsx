@@ -91,29 +91,25 @@ export default function Friends() {
     gcTime: 10 * 60 * 1000
   });
 
+  const friendIds = friends.map(f => f.friend_id);
+
   const { data: allPosts = [] } = useQuery({
-    queryKey: ['posts'],
-    queryFn: () => base44.entities.Post.list('-created_date', 50),
-    enabled: !!currentUser,
+    queryKey: ['friendPosts', currentUser?.id],
+    queryFn: () => base44.entities.Post.list('-created_date', 30),
+    enabled: !!currentUser && friends.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
     placeholderData: (prev) => prev
   });
 
+  const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allLifts = [] } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date', 100),
-    enabled: !!currentUser,
+    queryKey: ['recentLifts', 'friends'],
+    queryFn: () => base44.entities.Lift.filter({ is_pr: true, created_date: { $gte: sevenDaysAgoLifts } }, '-created_date', 50),
+    enabled: !!currentUser && friends.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
-  });
-
-  const { data: allGymMembers = [] } = useQuery({
-    queryKey: ['gymMembers'],
-    queryFn: () => base44.entities.GymMember.list(),
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
   });
 
   const addFriendMutation = useMutation({
@@ -235,7 +231,6 @@ export default function Friends() {
     return streak;
   };
 
-  const friendIds = friends.map(f => f.friend_id);
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', searchQuery],
     queryFn: () => base44.functions.invoke('searchUsers', { query: searchQuery, limit: 5 }).then(res => res.data.users || []),

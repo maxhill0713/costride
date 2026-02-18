@@ -76,8 +76,9 @@ export default function Profile() {
   }, [currentUser?.dark_mode]);
 
   const { data: lifts = [] } = useQuery({
-    queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-created_date'),
+    queryKey: ['lifts', currentUser?.id],
+    queryFn: () => base44.entities.Lift.filter({ member_id: currentUser.id }, '-created_date', 100),
+    enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
@@ -91,8 +92,9 @@ export default function Profile() {
   });
 
   const { data: checkIns = [] } = useQuery({
-    queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
+    queryKey: ['userCheckIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
+    enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
@@ -113,10 +115,10 @@ export default function Profile() {
   });
 
   const { data: allChallenges = [] } = useQuery({
-    queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.list(),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    queryKey: ['completedChallenges'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' }, '-created_date', 50),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: workoutLogs = [] } = useQuery({
@@ -130,8 +132,8 @@ export default function Profile() {
 
 
   const displayName = currentUser?.username || currentUser?.full_name;
-  const memberLifts = lifts.filter(l => l.member_name === displayName);
-  const userCheckIns = checkIns.filter(c => c.user_id === currentUser?.id);
+  const memberLifts = lifts; // already filtered server-side to current user
+  const userCheckIns = checkIns; // already filtered server-side to current user
 
   // Get gyms user is a member of
   const memberGymIds = gymMemberships.map(m => m.gym_id);
