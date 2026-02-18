@@ -71,7 +71,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
             <AlertDialogTitle className="text-2xl font-black text-white text-center">
               {workoutName} Complete
             </AlertDialogTitle>
-            <p className="text-sm text-blue-300 font-semibold">{motivationalText}</p>
+
           </div>
           <AlertDialogDescription className="text-center space-y-3 pt-2">
             {/* Duration */}
@@ -129,17 +129,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
               </motion.div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="flex items-center justify-center gap-2 bg-blue-500/10 rounded-xl py-3 px-4 border border-blue-500/20"
-            >
-              <TrendingUp className="w-5 h-5 text-blue-400" />
-              <span className="text-sm font-semibold text-blue-300">
-                Logged to your history
-              </span>
-            </motion.div>
+
           </AlertDialogDescription>
         </AlertDialogHeader>
 
