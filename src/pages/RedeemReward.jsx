@@ -93,10 +93,9 @@ export default function RedeemReward() {
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
-    queryFn: async () => {
-      const challenges = await base44.entities.Challenge.list();
-      return challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
-    }
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: weeklyChallenges = [] } = useQuery({
