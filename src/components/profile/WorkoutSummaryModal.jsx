@@ -128,7 +128,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
 
           </AlertDialogDescription>
           </AlertDialogHeader>
-      </AlertDialogContent>
-    </AlertDialog>
+          </AlertDialogContent>
+          </AlertDialog>
   );
 }
