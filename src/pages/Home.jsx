@@ -197,7 +197,7 @@ export default function Home() {
 
   // Get the challenge closest to completing (or random if all equal)
   const selectFeaturedChallenge = () => {
-    const activeChallenges = weeklyChallenges.filter(c => c.status === 'active');
+    const activeChallenges = challenges.filter(c => c.status === 'active');
     if (activeChallenges.length === 0) return null;
     
     // Calculate progress for each challenge
@@ -211,7 +211,6 @@ export default function Home() {
     return withProgress.sort((a, b) => b.progress - a.progress)[0];
   };
 
-  const weeklyChallenges = challenges;
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
@@ -253,12 +252,12 @@ export default function Home() {
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  const handleStreakVariantSelect = async (variant) => {
+  const handleStreakVariantSelect = (variant) => {
     if (currentUser) {
       setShowStreakVariants(false);
-      await base44.auth.updateMe({ streak_variant: variant });
-      // Refetch current user to update UI with new streak variant
-      await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      // Optimistic update — instant UI, no wait
+      queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, streak_variant: variant } : old);
+      base44.auth.updateMe({ streak_variant: variant });
     }
   };
 

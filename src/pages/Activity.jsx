@@ -18,7 +18,7 @@ export default function Activity() {
 
   const { data: posts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }),
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
