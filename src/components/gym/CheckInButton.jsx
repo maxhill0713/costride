@@ -556,6 +556,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       });
       return;
     }
+
+    // Check if out of range
+    if (isWithinRange === false) {
+      setShowOutOfRangeDialog(true);
+      return;
+    }
     
     setIsChecking(true);
     try {
