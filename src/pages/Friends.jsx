@@ -81,7 +81,7 @@ export default function Friends() {
   const { data: allPosts = [] } = useQuery({
     queryKey: ['posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 50),
-    enabled: !!currentUser && !!friends.length,
+    enabled: !!currentUser,
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchInterval: 30000
