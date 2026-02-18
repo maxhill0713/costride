@@ -17,7 +17,9 @@ export default function RedeemReward() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: subscription } = useQuery({
@@ -26,7 +28,9 @@ export default function RedeemReward() {
       user_id: currentUser.id,
       status: 'active'
     }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const isPremium = subscription && subscription.length > 0;
@@ -34,7 +38,9 @@ export default function RedeemReward() {
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const gymIds = gymMemberships.map(m => m.gym_id);
