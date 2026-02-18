@@ -24,7 +24,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: subscription } = useQuery({
@@ -33,18 +35,23 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       user_id: currentUser.id,
       status: 'active'
     }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const isPremium = subscription && subscription.length > 0;
 
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gym?.id],
-    queryFn: async () => {
-      const memberships = await base44.entities.GymMembership.list();
-      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gym.id && m.status === 'active');
-    },
-    enabled: !!currentUser && !!gym
+    queryFn: () => base44.entities.GymMembership.filter({
+      user_id: currentUser.id,
+      gym_id: gym.id,
+      status: 'active'
+    }).then(r => r[0] || null),
+    enabled: !!currentUser && !!gym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: checkIns = [] } = useQuery({
@@ -52,14 +59,18 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     queryFn: () => base44.entities.CheckIn.filter({ 
       user_id: currentUser.id,
       gym_id: gym.id 
-    }, '-check_in_date'),
-    enabled: !!currentUser && !!gym
+    }, '-check_in_date', 200),
+    enabled: !!currentUser && !!gym,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['allCheckIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
-    enabled: !!currentUser
+    queryKey: ['checkIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
+    enabled: !!currentUser,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const checkInMutation = useMutation({

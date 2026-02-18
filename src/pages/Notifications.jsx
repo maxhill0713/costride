@@ -14,13 +14,17 @@ export default function Notifications() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date'),
-    enabled: !!currentUser
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
   });
 
   const markAsReadMutation = useMutation({
