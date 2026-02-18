@@ -389,12 +389,10 @@ export default function Home() {
                   Great Work—Checked In Today! Keep the Streak Alive 🔥
                 </Button>
               ) : (
-                <Button 
-                  onClick={() => setShowCheckIn(true)}
-                  className="w-full text-white border-0 shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 tracking-tight"
-                >
-                  Check In Now
-                </Button>
+                <CheckInButton 
+                  gym={memberGym}
+                  onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
+                />
               )}
 
               {/* Friends Avatars */}
