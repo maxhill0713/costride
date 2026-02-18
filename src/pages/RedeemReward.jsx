@@ -115,18 +115,24 @@ export default function RedeemReward() {
 
   const { data: completedChallenges = [] } = useQuery({
     queryKey: ['completedChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' })
+    queryFn: () => base44.entities.Challenge.filter({ status: 'completed' }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards'],
-    queryFn: () => base44.entities.Reward.list()
+    queryFn: () => base44.entities.Reward.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: claimedBonuses = [] } = useQuery({
     queryKey: ['claimedBonuses', currentUser?.id],
     queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser?.id }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const claimMutation = useMutation({
