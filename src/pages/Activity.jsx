@@ -11,13 +11,17 @@ export default function Activity() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: posts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const reactedPosts = posts.filter(post => 

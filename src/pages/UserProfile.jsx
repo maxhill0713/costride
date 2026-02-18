@@ -21,73 +21,73 @@ export default function UserProfile() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: viewingUser, isLoading } = useQuery({
     queryKey: ['user', userId],
-    queryFn: async () => {
-      const users = await base44.entities.User.list();
-      return users.find(u => u.id === userId);
-    },
-    enabled: !!userId
+    queryFn: () => base44.entities.User.filter({ id: userId }).then(r => r[0]),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['userLifts', userId],
-    queryFn: async () => {
-      const allLifts = await base44.entities.Lift.list('-created_date');
-      return allLifts.filter(l => l.member_id === userId);
-    },
-    enabled: !!userId
+    queryFn: () => base44.entities.Lift.filter({ member_id: userId }, '-created_date', 100),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['userCheckIns', userId],
-    queryFn: async () => {
-      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
-      return allCheckIns.filter(c => c.user_id === userId);
-    },
-    enabled: !!userId
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: userId }, '-check_in_date', 100),
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['userGoals', userId],
-    queryFn: async () => {
-      const allGoals = await base44.entities.Goal.list();
-      return allGoals.filter(g => g.user_id === userId);
-    },
-    enabled: !!userId
+    queryFn: () => base44.entities.Goal.filter({ user_id: userId }),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['userGymMemberships', userId],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: userId, status: 'active' }),
-    enabled: !!userId
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => base44.entities.Gym.list(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', userId],
-    queryFn: async () => {
-      const allPosts = await base44.entities.Post.list('-created_date');
-      return allPosts.filter(p => p.member_id === userId);
-    },
-    enabled: !!userId
+    queryFn: () => base44.entities.Post.filter({ member_id: userId }, '-created_date', 50),
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: friendshipStatus } = useQuery({
     queryKey: ['friendship', currentUser?.id, userId],
-    queryFn: async () => {
-      if (!currentUser?.id || !userId) return null;
-      const friendships = await base44.entities.Friend.filter({ user_id: currentUser.id, friend_id: userId });
-      return friendships.length > 0 ? friendships[0] : null;
-    },
-    enabled: !!currentUser?.id && !!userId
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser.id, friend_id: userId }).then(r => r[0] || null),
+    enabled: !!currentUser?.id && !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   // Only show primary gym for other users
