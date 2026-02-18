@@ -31,7 +31,9 @@ export default function Friends() {
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: friends = [] } = useQuery({
@@ -40,7 +42,9 @@ export default function Friends() {
       user_id: currentUser.id, 
       status: 'accepted' 
     }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: friendRequests = [] } = useQuery({
@@ -49,33 +53,42 @@ export default function Friends() {
       friend_id: currentUser.id, 
       status: 'pending' 
     }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.entities.User.list(),
     enabled: showAddModal || showFriendsModal,
-    staleTime: 0
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
+  // Only fetch check-ins for the last 7 days to reduce data transfer
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['checkIns'],
-    queryFn: () => base44.entities.CheckIn.list('-check_in_date'),
-    staleTime: 60000,
-    cacheTime: 300000
+    queryKey: ['checkIns', 'recent'],
+    queryFn: () => base44.entities.CheckIn.filter({ check_in_date: { $gte: sevenDaysAgo } }, '-check_in_date', 500),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: currentUserCheckIns = [] } = useQuery({
     queryKey: ['userCheckIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date'),
-    enabled: !!currentUser
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 100),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date'),
-    enabled: !!currentUser
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date', 20),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: allPosts = [] } = useQuery({
@@ -88,21 +101,19 @@ export default function Friends() {
     placeholderData: (prev) => prev
   });
 
-
-
   const { data: allLifts = [] } = useQuery({
     queryKey: ['lifts'],
     queryFn: () => base44.entities.Lift.list('-created_date', 100),
     enabled: !!currentUser,
-    staleTime: 60000,
-    cacheTime: 300000
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: allGymMembers = [] } = useQuery({
     queryKey: ['gymMembers'],
     queryFn: () => base44.entities.GymMember.list(),
-    staleTime: 60000,
-    cacheTime: 300000
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const addFriendMutation = useMutation({
