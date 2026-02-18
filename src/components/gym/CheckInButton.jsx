@@ -732,10 +732,10 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           <Button
             onClick={handleCheckIn}
             disabled={hasCheckedInToday() || isChecking}
-            className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all py-7 text-lg tracking-tight ${
+            className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
               hasCheckedInToday()
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-500 hover:to-emerald-500 cursor-default'
-                : 'bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white'
+                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
             }`}
           >
           {hasCheckedInToday() ? (
