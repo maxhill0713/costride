@@ -494,9 +494,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       try {
         const position = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            enableHighAccuracy: false,
+            timeout: 15000,
+            maximumAge: 30000
           });
         });
 
@@ -505,16 +505,17 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
         const gymPostcode = gym.postcode;
         if (!gymPostcode) {
-          setIsWithinRange(false);
+          setIsWithinRange(null);
           return;
         }
 
         const geocodeResponse = await fetch(
-          `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
+          `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`,
+          { signal: AbortSignal.timeout(5000) }
         );
-        
+
         if (!geocodeResponse.ok) {
-          setIsWithinRange(false);
+          setIsWithinRange(null);
           return;
         }
 
@@ -527,12 +528,13 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
         setIsWithinRange(distance <= maxDistance);
       } catch (error) {
-        setIsWithinRange(false);
+        console.error('Location check error:', error);
+        setIsWithinRange(null);
       }
     };
 
     checkLocationRange();
-  }, [gym, hasCheckedInToday()]);
+  }, [gym]);
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Earth's radius in km
