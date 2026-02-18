@@ -680,7 +680,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
           <div className="flex justify-center mt-4 pt-3 border-t border-slate-600/30">
             <Button
-              onClick={() => setIsExpanded(false)}
+              onClick={() => { setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               variant="ghost"
               size="icon"
               className="w-9 h-9 text-slate-400 hover:text-white"
