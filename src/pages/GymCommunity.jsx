@@ -1214,6 +1214,7 @@ export default function GymCommunity() {
                   key={post.id} 
                   post={post}
                   fullWidth={true}
+                  currentUser={currentUser}
                   onLike={() => {}}
                   onComment={() => {}}
                   onSave={() => {}}
