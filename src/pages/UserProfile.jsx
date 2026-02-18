@@ -18,6 +18,7 @@ export default function UserProfile() {
   const userId = urlParams.get('id');
   const queryClient = useQueryClient();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
+  const [postsView, setPostsView] = useState('grid');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
