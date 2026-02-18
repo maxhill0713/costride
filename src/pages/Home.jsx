@@ -174,6 +174,8 @@ export default function Home() {
 
 
 
+  const friendIds = friends.map(f => f.friend_id);
+
   if (userLoading || !currentUser || gymsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
@@ -184,8 +186,6 @@ export default function Home() {
       </div>
     );
   }
-
-  const friendIds = friends.map(f => f.friend_id);
   const friendPosts = allPosts.filter(post => 
     friendIds.includes(post.member_id) && 
     !post.is_system_generated &&
