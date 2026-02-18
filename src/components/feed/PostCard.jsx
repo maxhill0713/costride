@@ -114,27 +114,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       }
       await base44.entities.Post.update(post.id, { reactions: updatedReactions });
     },
-    onMutate: async (isReacting) => {
-      await queryClient.cancelQueries({ queryKey: ['posts'] });
-      const updatedReactions = { ...post.reactions };
-      if (isReacting) {
-        updatedReactions[currentUser.id] = userStreakVariant;
-      } else {
-        delete updatedReactions[currentUser.id];
-      }
-      // Update all post query keys that might contain this post
-      ['posts', ['posts', post.gym_id]].forEach(key => {
-        queryClient.setQueryData(key, (old) => {
-          if (!Array.isArray(old)) return old;
-          return old.map(p => p.id === post.id ? { ...p, reactions: updatedReactions } : p);
-        });
-      });
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      if (post.gym_id) {
+        queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
+      }
     },
     onError: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
       toast.error('Failed to react to post');
     }
   });
