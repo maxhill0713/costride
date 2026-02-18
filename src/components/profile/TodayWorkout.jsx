@@ -332,7 +332,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </div>
             <h3 className={`font-bold text-slate-100 tracking-tight uppercase ${isExpanded ? 'text-xs' : 'text-[11px]'}`}>Today's Workout</h3>
             <button
-              onClick={() => setShowInfo(!showInfo)}
+              onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
               className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
             >
               <Info className="w-3.5 h-3.5" />
@@ -342,22 +342,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
           </h2>
          </div>
-        {showInfo && (
-          <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3">
-            <p className="text-xs text-blue-200 leading-relaxed mb-2 font-medium">
-              <strong className="text-blue-100">How to use:</strong>
-            </p>
-            <ul className="text-[11px] text-blue-200/90 space-y-1.5 leading-relaxed">
-               <li>• <strong>Expand:</strong> Tap the down arrow to view all exercises</li>
-               <li>• <strong>Update weight/reps:</strong> Click the pencil icon next to any exercise, enter new values, then save</li>
-               <li>• <strong>Track progress:</strong> Green/red badges show weight increases/decreases vs. last workout</li>
-               <li>• <strong>Rest timer:</strong> Click timer, choose duration, hit "Go" - full screen countdown between sets</li>
-               <li>• <strong>Plate calculator:</strong> Use calculator icon to see which plates to load on the bar</li>
-               <li>• <strong>Workout duration:</strong> Auto-starts timer when you check in. Duration displays when you log the workout</li>
-               <li>• <strong>Log completion:</strong> Hit "Log Workout" when finished - see your duration summary and save progress</li>
-             </ul>
-          </div>
-        )}
         {alreadyLoggedToday && !isExpanded && (
           <Button
             onClick={(e) => {
