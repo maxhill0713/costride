@@ -381,14 +381,14 @@ export default function UserProfile() {
         )}
 
         {/* Favourite Posts */}
-        {userPosts.filter(p => p.is_favourite).length > 0 && (
+        {userPosts.filter(p => p.is_favourite && (p.content || p.image_url || p.video_url)).length > 0 && (
           <div className="mb-4">
             <h3 className="font-semibold text-white mb-3 flex items-center gap-2 text-sm">
               <Star className="w-4 h-4 text-amber-400" />
               Favourite Posts
             </h3>
             <div className="space-y-3">
-              {userPosts.filter(p => p.is_favourite).map((post) => (
+              {userPosts.filter(p => p.is_favourite && (p.content || p.image_url || p.video_url)).map((post) => (
                 <PostCard 
                   key={post.id} 
                   post={post}
