@@ -691,9 +691,7 @@ export default function Friends() {
            </div>
          )}
 
-
-
-        {/* Friends Modal */}
+         {/* Friends Modal */}
         {showFriendsModal && (
           <>
             <div className="fixed inset-0 z-[999]" onClick={() => setShowFriendsModal(false)} />
