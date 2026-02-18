@@ -610,7 +610,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
             {/* Collapse Arrow */}
             <Button
-              onClick={() => setIsExpanded(false)}
+              onClick={() => { setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               variant="ghost"
               size="icon"
               className="w-9 h-9 text-slate-400 hover:text-white ml-auto"
