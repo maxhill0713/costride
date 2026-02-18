@@ -60,14 +60,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
       <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40">
         <AlertDialogHeader>
           <div className="flex flex-col items-center gap-3 mb-2">
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 100 }}
-              className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30"
-            >
-              <Dumbbell className="w-8 h-8 text-white" strokeWidth={2} />
-            </motion.div>
+
             <AlertDialogTitle className="text-2xl font-black text-white text-center">
               {workoutName} Complete
             </AlertDialogTitle>
@@ -81,10 +74,6 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
               transition={{ delay: 0.2, type: 'spring' }}
               className="bg-white/5 backdrop-blur rounded-2xl p-4 border border-blue-500/20"
             >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-blue-400" />
-                <span className="text-blue-300 font-semibold text-sm">Duration</span>
-              </div>
               <p className="text-3xl font-black text-white">
                 {formatDuration(duration)}
               </p>
