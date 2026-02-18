@@ -494,9 +494,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       try {
         const position = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: false,
-            timeout: 15000,
-            maximumAge: 30000
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
           });
         });
 
@@ -505,17 +505,16 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
         const gymPostcode = gym.postcode;
         if (!gymPostcode) {
-          setIsWithinRange(null);
+          setIsWithinRange(false);
           return;
         }
 
         const geocodeResponse = await fetch(
-          `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`,
-          { signal: AbortSignal.timeout(5000) }
+          `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
         );
-
+        
         if (!geocodeResponse.ok) {
-          setIsWithinRange(null);
+          setIsWithinRange(false);
           return;
         }
 
@@ -528,13 +527,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
         setIsWithinRange(distance <= maxDistance);
       } catch (error) {
-        console.error('Location check error:', error);
-        setIsWithinRange(null);
+        setIsWithinRange(false);
       }
     };
 
     checkLocationRange();
-  }, [gym]);
+  }, [gym, hasCheckedInToday()]);
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Earth's radius in km
@@ -552,7 +550,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const handleCheckIn = async () => {
     if (!currentUser || !gym) return;
-
+    
     // Claimed gyms require membership
     if (isClaimedGym && !gymMembership) {
       toast.error('Membership required', {
@@ -561,6 +559,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       return;
     }
 
+    // Check if out of range
+    if (isWithinRange === false) {
+      setShowOutOfRangeDialog(true);
+      return;
+    }
+    
     setIsChecking(true);
     try {
       // Get user's location with permission dialog
@@ -608,7 +612,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
       if (distance > maxDistance) {
         setLocationErrorDistance(distance);
-        setShowOutOfRangeDialog(true);
+        setShowLocationError(true);
         setIsChecking(false);
         return;
       }
@@ -638,7 +642,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   return (
     <div className="space-y-3">
       {/* Out of Range Dialog */}
-      <AlertDialog open={showOutOfRangeDialog} onOpenChange={setShowOutOfRangeDialog}>
+      <AlertDialog open={showOutOfRangeDialog} onOpenChange={(open) => {
+        setShowOutOfRangeDialog(open);
+        if (!open) {
+          navigate('/');
+        }
+      }}>
         <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 rounded-3xl">
           <AlertDialogHeader>
             <div className="flex flex-col items-center gap-4 mb-2">
@@ -650,13 +659,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
               </AlertDialogTitle>
             </div>
           </AlertDialogHeader>
-          <AlertDialogDescription className="text-center">
-            {locationErrorDistance > 0 && (
-              <p className="text-slate-300">
-                You are {(locationErrorDistance * 1000).toFixed(0)}m away. Please move closer to the gym.
-              </p>
-            )}
-          </AlertDialogDescription>
         </AlertDialogContent>
       </AlertDialog>
 
