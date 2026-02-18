@@ -164,10 +164,7 @@ export default function Home() {
   }, [currentUser?.onboarding_completed, navigate]);
 
   // Calculate these values before early return
-  const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
-  const memberGym = primaryGymId 
-    ? allGyms.find(g => g.id === primaryGymId) 
-    : null;
+  const memberGym = memberGymData || null;
 
   const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
@@ -177,7 +174,7 @@ export default function Home() {
 
   const friendIds = friendIdList;
 
-  if (userLoading || !currentUser || gymsLoading) {
+  if (userLoading || !currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -214,6 +211,7 @@ export default function Home() {
     return withProgress.sort((a, b) => b.progress - a.progress)[0];
   };
 
+  const weeklyChallenges = challenges;
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
