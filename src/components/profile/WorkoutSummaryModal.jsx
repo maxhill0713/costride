@@ -62,7 +62,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
           <div className="flex flex-col items-center gap-3 mb-2">
 
             <AlertDialogTitle className="text-2xl font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent text-center">
-             {workoutName} Complete?
+             {workoutName} Workout Complete?
             </AlertDialogTitle>
 
           </div>
