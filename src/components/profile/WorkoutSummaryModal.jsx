@@ -68,12 +68,15 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
               transition={{ delay: 0.2, type: 'spring' }}
               className="flex items-center justify-between gap-4"
             >
-              <p className="text-3xl font-black text-white">
-                {formatDuration(duration)}
-              </p>
+              <div className="flex items-center gap-2">
+                <Clock className="w-6 h-6 text-orange-400" />
+                <p className="text-3xl font-black text-white">
+                  {formatDuration(duration)}
+                </p>
+              </div>
               <Button
                 onClick={onConfirm}
-                className="w-32 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/30"
+                className="w-32 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/30 mr-2"
                 disabled={isLoading}
               >
                 {isLoading ? 'Logging...' : 'Confirm'}
