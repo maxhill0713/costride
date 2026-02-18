@@ -118,8 +118,8 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
                 <p className="text-xs text-slate-400 leading-relaxed">{notes}</p>
               </motion.div>
             )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+            </div>
+            </DialogContent>
+            </Dialog>
+            );
+            }
