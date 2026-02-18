@@ -156,6 +156,11 @@ export default function Home() {
     gcTime: 5 * 60 * 1000
   });
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   // Redirect to onboarding if not completed
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false) {
