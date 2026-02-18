@@ -107,9 +107,18 @@ export default function Profile() {
     gcTime: 15 * 60 * 1000
   });
 
-  const { data: allGyms = [] } = useQuery({
-    queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
+  const memberGymIds = gymMemberships.map(m => m.gym_id);
+
+  const { data: memberGymsData = [] } = useQuery({
+    queryKey: ['memberGyms', currentUser?.id],
+    queryFn: async () => {
+      if (memberGymIds.length === 0) return [];
+      const results = await Promise.all(
+        memberGymIds.map(id => base44.entities.Gym.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000
   });
@@ -135,13 +144,9 @@ export default function Profile() {
   const memberLifts = lifts;
   const userCheckIns = checkIns;
 
-  // Get gyms user is a member of
-  const memberGymIds = gymMemberships.map(m => m.gym_id);
-  const memberGyms = allGyms.filter(g => memberGymIds.includes(g.id));
-
-  // Get primary gym
+  const memberGyms = memberGymsData;
   const primaryGymId = currentUser?.primary_gym_id;
-  const primaryGym = allGyms.find(g => g.id === primaryGymId);
+  const primaryGym = memberGymsData.find(g => g.id === primaryGymId);
 
   React.useEffect(() => {
     if (currentUser) {
