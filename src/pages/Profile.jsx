@@ -50,13 +50,18 @@ export default function Profile() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   // Apply dark mode to document
