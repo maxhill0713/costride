@@ -20,7 +20,9 @@ export default function Layout({ children, currentPageName }) {
       full_name: 'Guest',
       email: 'guest@example.com',
       account_type: 'user'
-    }))
+    })),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   // Preserve tab navigation history
@@ -44,7 +46,10 @@ export default function Layout({ children, currentPageName }) {
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id, read: false }),
-    enabled: !!currentUser
+    enabled: !!currentUser && currentUser.id !== 'guest',
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000
   });
 
   const unreadCount = notifications.length;
@@ -54,7 +59,9 @@ export default function Layout({ children, currentPageName }) {
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
-    enabled: !!currentUser
+    enabled: !!currentUser && currentUser.id !== 'guest',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);

@@ -31,24 +31,29 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     initialData: currentUserProp,
-    enabled: !currentUserProp
+    enabled: !currentUserProp,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }),
-    enabled: !!currentUser
+    queryFn: () => base44.entities.Post.filter({ member_id: currentUser.id }, '-created_date', 20),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
+  const reactedUserIds = useMemo(() => Object.keys(post.reactions || {}), [post.reactions]);
   const { data: reactedUsers = [] } = useQuery({
-    queryKey: ['reactedUsers', Object.keys(post.reactions || {})],
+    queryKey: ['reactedUsers', reactedUserIds.join(',')],
     queryFn: async () => {
-      const userIds = Object.keys(post.reactions || {});
-      if (userIds.length === 0) return [];
-      const users = await base44.entities.User.list();
-      return users.filter(u => userIds.includes(u.id));
+      if (reactedUserIds.length === 0) return [];
+      return Promise.all(reactedUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]))).then(r => r.filter(Boolean));
     },
-    enabled: showReactionsModal && Object.keys(post.reactions || {}).length > 0
+    enabled: showReactionsModal && reactedUserIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const deleteMutation = useMutation({

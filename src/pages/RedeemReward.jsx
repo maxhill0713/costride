@@ -93,19 +93,14 @@ export default function RedeemReward() {
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }),
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 20),
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
-  const { data: weeklyChallenges = [] } = useQuery({
-    queryKey: ['weeklyChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ 
-      status: 'active'
-    }, '-created_date', 3),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
-  });
+  // Re-use activeChallenges for weekly challenges — no duplicate fetch
+  const weeklyChallenges = allChallenges.slice(0, 3);
 
   // Show all challenges where the user is a participant (from any source - home, gym, etc.)
   const challenges = allChallenges.filter(challenge => {
@@ -121,8 +116,11 @@ export default function RedeemReward() {
   });
 
   const { data: rewards = [] } = useQuery({
-    queryKey: ['rewards'],
-    queryFn: () => base44.entities.Reward.list(),
+    queryKey: ['gymRewards', gymIds.join(',')],
+    queryFn: () => gymIds.length > 0
+      ? base44.entities.Reward.filter({ gym_id: gymIds[0], active: true })
+      : [],
+    enabled: gymIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
