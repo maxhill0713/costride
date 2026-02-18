@@ -114,27 +114,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       }
       await base44.entities.Post.update(post.id, { reactions: updatedReactions });
     },
-    onMutate: async (isReacting) => {
-      await queryClient.cancelQueries({ queryKey: ['posts'] });
-      const updatedReactions = { ...post.reactions };
-      if (isReacting) {
-        updatedReactions[currentUser.id] = userStreakVariant;
-      } else {
-        delete updatedReactions[currentUser.id];
-      }
-      // Update all post query keys that might contain this post
-      ['posts', ['posts', post.gym_id]].forEach(key => {
-        queryClient.setQueryData(key, (old) => {
-          if (!Array.isArray(old)) return old;
-          return old.map(p => p.id === post.id ? { ...p, reactions: updatedReactions } : p);
-        });
-      });
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      if (post.gym_id) {
+        queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
+      }
     },
     onError: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
       toast.error('Failed to react to post');
     }
   });
@@ -570,8 +556,11 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
            {/* Reactions Modal */}
            <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
-           <DialogContent className="bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl fixed bottom-4 right-4 w-80 max-h-96 p-4 shadow-lg focus:outline-none [&>button]:hidden [&~*]:hidden" style={{background: 'rgba(255, 255, 255, 0.1)'}}>
-             <div className="space-y-2 overflow-y-auto">
+           <DialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40 max-w-sm">
+             <DialogHeader>
+               <DialogTitle className="text-white">Reactions</DialogTitle>
+             </DialogHeader>
+             <div className="space-y-2 overflow-y-auto max-h-80">
                {reactedUsers.map(user => {
                  const variant = post.reactions[user.id];
                  return (
