@@ -66,13 +66,6 @@ export default function UserProfile() {
     gcTime: 15 * 60 * 1000
   });
 
-  const { data: allGyms = [] } = useQuery({
-    queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
-  });
-
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', userId],
     queryFn: () => base44.entities.Post.filter({ member_id: userId }, '-created_date', 50),
@@ -90,9 +83,14 @@ export default function UserProfile() {
     gcTime: 15 * 60 * 1000
   });
 
-  // Only show primary gym for other users
   const primaryGymId = viewingUser?.primary_gym_id;
-  const primaryGym = allGyms.find(g => g.id === primaryGymId);
+  const { data: primaryGym } = useQuery({
+    queryKey: ['gym', primaryGymId],
+    queryFn: () => base44.entities.Gym.filter({ id: primaryGymId }).then(r => r[0] || null),
+    enabled: !!primaryGymId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
+  });
 
   if (isLoading) {
     return (
