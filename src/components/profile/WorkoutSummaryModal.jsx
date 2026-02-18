@@ -53,17 +53,14 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
   const motivationalText = motivationalTexts[Math.floor(Math.random() * motivationalTexts.length)];
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
-      <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40">
-        <AlertDialogHeader>
-          <div className="flex flex-col items-center gap-3 mb-2">
-
-            <AlertDialogTitle className="text-2xl font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent text-center">
-             Workout Complete?
-            </AlertDialogTitle>
-
-          </div>
-          <AlertDialogDescription className="text-center space-y-3 pt-2">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <DialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 gap-0">
+        <div className="flex flex-col items-center gap-3 mb-4">
+          <h2 className="text-2xl font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent text-center">
+            Workout Complete?
+          </h2>
+        </div>
+        <div className="text-center space-y-3">
             {/* Duration and Button Row */}
             <motion.div
               initial={{ scale: 0, y: 20 }}
