@@ -558,12 +558,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       });
       return;
     }
-
-    // Check if out of range
-    if (isWithinRange === false) {
-      setShowOutOfRangeDialog(true);
-      return;
-    }
     
     setIsChecking(true);
     try {
@@ -633,6 +627,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         });
       } else {
         console.error('Check-in error:', error);
+        toast.error('Check-in failed', {
+          description: error.message || 'Please try again.'
+        });
       }
     } finally {
       setIsChecking(false);
