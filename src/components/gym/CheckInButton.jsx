@@ -650,6 +650,13 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
               </AlertDialogTitle>
             </div>
           </AlertDialogHeader>
+          <AlertDialogDescription className="text-center">
+            {locationErrorDistance > 0 && (
+              <p className="text-slate-300">
+                You are {(locationErrorDistance * 1000).toFixed(0)}m away. Please move closer to the gym.
+              </p>
+            )}
+          </AlertDialogDescription>
         </AlertDialogContent>
       </AlertDialog>
 
