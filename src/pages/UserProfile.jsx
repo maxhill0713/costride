@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Flame, Award, TrendingUp, Calendar, Dumbbell, ChevronLeft, MessageCircle, MapPin, Building2, Star, Grid3x3, List } from 'lucide-react';
+import { Trophy, Flame, Award, TrendingUp, Calendar, Dumbbell, ChevronLeft, MessageCircle, MapPin, Building2, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -18,7 +18,6 @@ export default function UserProfile() {
   const userId = urlParams.get('id');
   const queryClient = useQueryClient();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
-  const [postsView, setPostsView] = useState('grid');
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -382,39 +381,22 @@ export default function UserProfile() {
         )}
 
         {/* Favourite Posts */}
-        {userPosts.filter(p => p.is_favourite && (p.content || p.image_url || p.video_url)).length > 0 && (
+        {userPosts.filter(p => p.is_favourite).length > 0 && (
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-white flex items-center gap-2 text-sm">
-                <Star className="w-4 h-4 text-amber-400" />
-                Favourite Posts
-              </h3>
-              <div className="flex items-center gap-1 bg-slate-700/50 rounded-lg p-1">
-                <button
-                  onClick={() => setPostsView('grid')}
-                  className={`p-1.5 rounded transition-colors ${postsView === 'grid' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setPostsView('list')}
-                  className={`p-1.5 rounded transition-colors ${postsView === 'list' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className={postsView === 'grid' ? 'grid grid-cols-2 gap-2' : 'space-y-3'}>
-              {userPosts.filter(p => p.is_favourite && (p.content || p.image_url || p.video_url)).map((post) => (
-                <div key={post.id} className={postsView === 'grid' ? 'overflow-hidden' : ''}>
-                  <PostCard 
-                    post={post}
-                    onLike={() => {}}
-                    onComment={() => {}}
-                    onSave={() => {}}
-                    onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
-                  />
-                </div>
+            <h3 className="font-semibold text-white mb-3 flex items-center gap-2 text-sm">
+              <Star className="w-4 h-4 text-amber-400" />
+              Favourite Posts
+            </h3>
+            <div className="space-y-3">
+              {userPosts.filter(p => p.is_favourite).map((post) => (
+                <PostCard 
+                  key={post.id} 
+                  post={post}
+                  onLike={() => {}}
+                  onComment={() => {}}
+                  onSave={() => {}}
+                  onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                />
               ))}
             </div>
           </div>

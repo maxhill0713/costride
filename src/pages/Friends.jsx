@@ -525,26 +525,175 @@ export default function Friends() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-0">
+      <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-6">
+         {/* Activity Nudge Cards */}
+         {filteredActivityCards.length > 0 && (
+           <div className="space-y-3 mb-6">
+             {filteredActivityCards.map(card => (
+               <Card
+                 key={card.id}
+                 data-activity-id={card.id}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all shadow-2xl shadow-black/20 relative"
+               >
+                  <button
+                    onClick={() => {
+                      const updated = new Set(dismissedCardIds).add(card.id);
+                      setDismissedCardIds(updated);
+                      localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
+                    }}
+                    className="absolute top-2 right-2 text-slate-400 hover:text-white transition-colors"
+                    aria-label="Dismiss"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                 <div className="p-4">
+                   <div className="flex items-start gap-3">
+                     {/* Icon */}
+                     <div className="flex-shrink-0 text-2xl mt-0.5">
+                       {card.emoji}
+                     </div>
+
+                     {/* Content */}
+                     <div className="flex-1 min-w-0">
+                       <h3 className="font-bold text-white text-sm">{card.title}</h3>
+                       <p className="text-xs text-white/90 mt-0.5 leading-snug">{card.message}</p>
+                     </div>
+                   </div>
+                 </div>
+               </Card>
+             ))}
+           </div>
+         )}
+
+         {/* Activity Feed */}
+         {filteredActivityFeed.length > 0 && (
+         <div className="space-y-3">
+           {filteredActivityFeed.map(activity => (
+             activity.type === 'notification' ? (
+               // Simple notification layout - just text
+               <Card 
+                 key={activity.id}
+                 data-activity-id={activity.id}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20"
+               >
+                 <div className="p-3">
+                   <p className="text-xs text-white leading-tight">
+                     {activity.message}
+                   </p>
+                 </div>
+               </Card>
+             ) : (
+               <Card 
+                 key={activity.id}
+                 data-activity-id={activity.id}
+                 className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20"
+               >
+                 <div className="p-3">
+                   <div className="flex items-center gap-3">
+                     {/* Profile Photo */}
+                     <Link 
+                       to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                       className="flex-shrink-0"
+                     >
+                       {activity.friendAvatar ? (
+                         <img 
+                           src={activity.friendAvatar} 
+                           alt={activity.friendName} 
+                           className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" 
+                         />
+                       ) : (
+                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
+                           <span className="text-white font-bold text-sm">
+                             {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                           </span>
+                         </div>
+                       )}
+                     </Link>
+
+                     {/* Activity Content */}
+                     <div className="flex-1 min-w-0">
+                       <p className="text-xs text-white leading-tight">
+                         <span className="font-semibold">{activity.friendName}</span>
+                         {' '}
+                         <span className="text-slate-300">{activity.message}</span>
+                         {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
+                       </p>
+
+                       {/* Timestamp and badges inline */}
+                       <div className="flex items-center gap-2 mt-1">
+                         <span className="text-[10px] text-slate-500">
+                           {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                         </span>
+
+                         {/* Milestone Badge */}
+                         {activity.type === 'milestone' && (
+                           <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
+                             🔥 {activity.milestone} days
+                           </Badge>
+                         )}
+
+                         {/* PR Badge */}
+                         {activity.type === 'pr' && (
+                           <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">
+                             🏆 PR
+                           </Badge>
+                         )}
+
+                         {/* Check-in Badge */}
+                         {activity.type === 'checkin' && activity.gymName && (
+                           <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] px-1.5 py-0">
+                             {activity.gymName}
+                           </Badge>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </Card>
+             )
+           ))}
+         </div>
+         )}
 
          {/* Friend Posts */}
          {friendPosts.length > 0 && (
            <div className="space-y-3 mt-0">
              {friendPosts.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post}
-                fullWidth={true}
-                currentUser={currentUser}
-                onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-              />
+               <PostCard 
+                 key={post.id} 
+                 post={post}
+                 fullWidth={true}
+                 currentUser={currentUser}
+                 onLike={() => {}}
+                 onComment={() => {}}
+                 onSave={() => {}}
+                 onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+               />
+             ))}
+           </div>
+         )}
+
+         {/* Gym Join Posts */}
+         {gymJoinPosts.length > 0 && (
+           <div className="space-y-2 mt-3">
+             <h3 className="text-xs font-bold text-slate-400 px-2 uppercase tracking-wide">Gym Activity</h3>
+             {gymJoinPosts.map((post) => (
+               <PostCard 
+                 key={post.id} 
+                 post={post}
+                 currentUser={currentUser}
+                 onLike={() => {}}
+                 onComment={() => {}}
+                 onSave={() => {}}
+                 onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+               />
              ))}
            </div>
          )}
 
 
 
-         {/* Friends Modal */}
+        {/* Friends Modal */}
         {showFriendsModal && (
           <>
             <div className="fixed inset-0 z-[999]" onClick={() => setShowFriendsModal(false)} />
