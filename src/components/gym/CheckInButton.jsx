@@ -65,9 +65,10 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     gcTime: 5 * 60 * 1000
   });
 
+  // Reuse the same query key as Home/Profile so it shares cache
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
-    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 100),
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
@@ -121,10 +122,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
        setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 60, origin: { x: 0 } }), 150);
        setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 60, origin: { x: 1 } }), 300);
       
-      queryClient.invalidateQueries({ queryKey: ['checkIns'] });
-      queryClient.invalidateQueries({ queryKey: ['allCheckIns'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['goals', currentUser?.id] });
 
       // Notify friends
       try {

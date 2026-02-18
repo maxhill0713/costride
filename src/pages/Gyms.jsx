@@ -68,7 +68,22 @@ export default function Gyms() {
 
   const { data: gyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
+    queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 100),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
+  });
+
+  const memberGymIds = gymMemberships.map(m => m.gym_id);
+  const { data: userGymsData = [] } = useQuery({
+    queryKey: ['memberGyms', currentUser?.id],
+    queryFn: async () => {
+      if (memberGymIds.length === 0) return [];
+      const results = await Promise.all(
+        memberGymIds.map(id => base44.entities.Gym.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000
   });
@@ -83,8 +98,15 @@ export default function Gyms() {
 
   const updatePrimaryGymMutation = useMutation({
     mutationFn: (gymId) => base44.auth.updateMe({ primary_gym_id: gymId }),
+    onMutate: async (gymId) => {
+      const previous = queryClient.getQueryData(['currentUser']);
+      queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, primary_gym_id: gymId } : old);
+      return { previous };
+    },
+    onError: (err, gymId, context) => {
+      queryClient.setQueryData(['currentUser'], context.previous);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowPrimaryGymModal(false);
       setSelectedPrimaryGym(null);
     }
@@ -114,9 +136,7 @@ export default function Gyms() {
     }
   });
 
-  const userGyms = gymMemberships.length > 0 
-    ? gyms.filter(g => gymMemberships.some(m => m.gym_id === g.id))
-    : [];
+  const userGyms = userGymsData;
 
   const filteredGyms = gyms.filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -18,8 +18,8 @@ export default function Leaderboard() {
   const { data: lifts = [], isLoading } = useQuery({
     queryKey: ['leaderboardLifts', selectedExercise],
     queryFn: () => selectedExercise === 'all'
-      ? base44.entities.Lift.list('-weight_lbs', 200)
-      : base44.entities.Lift.filter({ exercise: selectedExercise }, '-weight_lbs', 100),
+      ? base44.entities.Lift.filter({ is_pr: true }, '-weight_lbs', 200)
+      : base44.entities.Lift.filter({ exercise: selectedExercise, is_pr: true }, '-weight_lbs', 100),
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
