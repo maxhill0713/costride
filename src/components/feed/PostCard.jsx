@@ -29,7 +29,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    initialData: currentUserProp,
+    enabled: !currentUserProp
   });
 
   const { data: userPosts = [] } = useQuery({
