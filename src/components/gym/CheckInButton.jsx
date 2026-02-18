@@ -639,6 +639,28 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   return (
     <div className="space-y-3">
+      {/* Out of Range Dialog */}
+      <AlertDialog open={showOutOfRangeDialog} onOpenChange={setShowOutOfRangeDialog}>
+        <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30">
+          <AlertDialogHeader>
+            <div className="flex flex-col items-center gap-4 mb-2">
+              <div className="w-16 h-16 bg-gray-500 rounded-full flex items-center justify-center">
+                <MapPin className="w-8 h-8 text-white" strokeWidth={2.5} />
+              </div>
+              <AlertDialogTitle className="text-2xl font-black text-white text-center">
+                You need to be inside your Gym to check in!
+              </AlertDialogTitle>
+            </div>
+          </AlertDialogHeader>
+          <Button
+            onClick={() => setShowOutOfRangeDialog(false)}
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-bold h-12"
+          >
+            Got It
+          </Button>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Location Error Dialog */}
       <AlertDialog open={showLocationError} onOpenChange={setShowLocationError}>
         <AlertDialogContent className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
