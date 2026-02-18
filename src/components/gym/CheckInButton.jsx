@@ -608,7 +608,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
       if (distance > maxDistance) {
         setLocationErrorDistance(distance);
-        setShowLocationError(true);
+        setShowOutOfRangeDialog(true);
         setIsChecking(false);
         return;
       }
