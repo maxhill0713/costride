@@ -23,7 +23,6 @@ import { createPageUrl } from '../utils';
 export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [showCheckIn, setShowCheckIn] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showStreakVariants, setShowStreakVariants] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
