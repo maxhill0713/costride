@@ -57,7 +57,11 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
-      <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40">
+      <AlertDialogContent 
+        className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40"
+        onPointerDownOutside={(e) => { e.preventDefault(); onCancel(); }}
+        onEscapeKeyDown={(e) => { e.preventDefault(); onCancel(); }}
+      >
         <AlertDialogHeader>
           <div className="flex flex-col items-center gap-3 mb-2">
 
