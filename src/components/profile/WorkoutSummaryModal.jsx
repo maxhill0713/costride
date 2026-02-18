@@ -67,16 +67,23 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
 
           </div>
           <AlertDialogDescription className="text-center space-y-3 pt-2">
-            {/* Duration */}
+            {/* Duration and Button Row */}
             <motion.div
               initial={{ scale: 0, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               transition={{ delay: 0.2, type: 'spring' }}
-              className="bg-white/5 backdrop-blur rounded-2xl p-4 border border-blue-500/20"
+              className="flex items-center justify-between gap-4"
             >
               <p className="text-3xl font-black text-white">
                 {formatDuration(duration)}
               </p>
+              <Button
+                onClick={onConfirm}
+                className="w-32 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Logging...' : 'Confirm'}
+              </Button>
             </motion.div>
 
             {/* Weight Increases */}
