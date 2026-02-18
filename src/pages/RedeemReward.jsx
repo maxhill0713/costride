@@ -136,13 +136,20 @@ export default function RedeemReward() {
         redeemed: false
       });
     },
+    onMutate: async (rewardData) => {
+      await queryClient.cancelQueries({ queryKey: ['claimedBonuses', currentUser?.id] });
+      const previous = queryClient.getQueryData(['claimedBonuses', currentUser?.id]);
+      queryClient.setQueryData(['claimedBonuses', currentUser?.id], (old = []) => [
+        ...old,
+        { id: `temp-${rewardData.id}`, user_id: currentUser.id, reward_id: rewardData.id, challenge_id: rewardData.challengeId || null }
+      ]);
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['claimedBonuses', currentUser?.id], context.previous);
+    },
     onSuccess: () => {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#00E5FF', '#06b6d4', '#3b82f6']
-      });
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#00E5FF', '#06b6d4', '#3b82f6'] });
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
       queryClient.invalidateQueries({ queryKey: ['completedChallenges'] });
       setShowQRModal(true);

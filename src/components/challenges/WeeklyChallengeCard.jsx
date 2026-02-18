@@ -21,9 +21,21 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
   const joinMutation = useMutation({
     mutationFn: async () => {
       const updatedParticipants = [...(challenge.participants || []), currentUser.id];
-      await base44.entities.Challenge.update(challenge.id, {
-        participants: updatedParticipants
-      });
+      await base44.entities.Challenge.update(challenge.id, { participants: updatedParticipants });
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['weeklyChallenges'] });
+      const previous = queryClient.getQueryData(['weeklyChallenges']);
+      queryClient.setQueryData(['weeklyChallenges'], (old = []) =>
+        old.map(c => c.id === challenge.id
+          ? { ...c, participants: [...(c.participants || []), currentUser.id] }
+          : c
+        )
+      );
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['weeklyChallenges'], context.previous);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['weeklyChallenges'] });
