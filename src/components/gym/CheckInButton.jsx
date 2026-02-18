@@ -483,6 +483,54 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const currentStreak = calculateStreak(checkIns, currentUser);
   const isInactive = daysSinceLastCheckIn >= 7;
 
+  // Check location on mount
+  React.useEffect(() => {
+    if (!gym || hasCheckedInToday()) return;
+
+    const checkLocationRange = async () => {
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+
+        const gymPostcode = gym.postcode;
+        if (!gymPostcode) {
+          setIsWithinRange(false);
+          return;
+        }
+
+        const geocodeResponse = await fetch(
+          `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
+        );
+        
+        if (!geocodeResponse.ok) {
+          setIsWithinRange(false);
+          return;
+        }
+
+        const geocodeData = await geocodeResponse.json();
+        const gymLat = geocodeData.result.latitude;
+        const gymLon = geocodeData.result.longitude;
+
+        const distance = getDistance(userLat, userLon, gymLat, gymLon);
+        const maxDistance = 0.5;
+
+        setIsWithinRange(distance <= maxDistance);
+      } catch (error) {
+        setIsWithinRange(false);
+      }
+    };
+
+    checkLocationRange();
+  }, [gym, hasCheckedInToday()]);
+
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Earth's radius in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
