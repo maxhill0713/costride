@@ -60,6 +60,7 @@ export default function GymCommunity() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  // challengeModalOpen state declared near allGyms query
   const [activeTab, setActiveTab] = useState('home');
   const [copiedCoachId, setCopiedCoachId] = useState(null);
   const [showInviteOwner, setShowInviteOwner] = useState(false);
@@ -163,9 +164,12 @@ export default function GymCommunity() {
   // Only gym challenges now
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
 
+  const [challengeModalOpen, setChallengeModalOpen] = useState(false);
+
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
+    queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50),
+    enabled: challengeModalOpen,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000
   });
@@ -423,8 +427,8 @@ export default function GymCommunity() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMembership'] });
-      // Navigate to home after successfully joining
+      queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
       window.location.href = createPageUrl('Home');
     }
   });
