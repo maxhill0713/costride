@@ -127,17 +127,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
 
 
           </AlertDialogDescription>
-        </AlertDialogHeader>
-
-        <div className="flex gap-3 mt-4">
-          <Button
-            onClick={onConfirm}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Logging...' : 'Confirm'}
-          </Button>
-        </div>
+          </AlertDialogHeader>
       </AlertDialogContent>
     </AlertDialog>
   );
