@@ -663,6 +663,7 @@ export default function Friends() {
                <PostCard 
                  key={post.id} 
                  post={post}
+                 currentUser={currentUser}
                  onLike={() => {}}
                  onComment={() => {}}
                  onSave={() => {}}
