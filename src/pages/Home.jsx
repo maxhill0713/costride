@@ -51,11 +51,14 @@ export default function Home() {
     gcTime: 10 * 60 * 1000
   });
 
-  const { data: allGyms = [], isLoading: gymsLoading } = useQuery({
-    queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list(),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+  const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
+
+  const { data: memberGymData, isLoading: gymsLoading } = useQuery({
+    queryKey: ['gym', primaryGymIdForQuery],
+    queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then(r => r[0] || null),
+    enabled: !!primaryGymIdForQuery,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: allCheckIns = [] } = useQuery({
@@ -73,14 +76,7 @@ export default function Home() {
     gcTime: 10 * 60 * 1000
   });
 
-  const { data: weeklyChallenges = [] } = useQuery({
-    queryKey: ['weeklyChallenges'],
-    queryFn: () => base44.entities.Challenge.filter({ 
-      status: 'active'
-    }, '-created_date', 3),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
-  });
+  // weeklyChallenges reuses `challenges` — no separate fetch needed
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', currentUser?.id],
@@ -118,7 +114,7 @@ export default function Home() {
   const friendIdList = friends.map(f => f.friend_id);
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.list('-created_date', 30),
+    queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
     enabled: !!currentUser && friends.length > 0,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000
