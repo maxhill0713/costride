@@ -638,47 +638,27 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   return (
     <div className="space-y-3">
       {/* Out of Range Dialog */}
-      <AnimatePresence>
-        {showOutOfRangeDialog && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center cursor-pointer"
-            onClick={() => setShowOutOfRangeDialog(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 rounded-3xl p-6 relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setShowOutOfRangeDialog(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <div className="flex flex-col items-center gap-4 mb-2">
-                <div className="w-16 h-16 bg-gray-500 rounded-full flex items-center justify-center">
-                  <MapPin className="w-8 h-8 text-white" strokeWidth={2.5} />
-                </div>
-                <h2 className="text-2xl font-black text-white text-center">
-                  You need to be inside your Gym to check in!
-                </h2>
+      <AlertDialog open={showOutOfRangeDialog} onOpenChange={setShowOutOfRangeDialog}>
+        <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 rounded-3xl">
+          <AlertDialogHeader>
+            <div className="flex flex-col items-center gap-4 mb-2">
+              <div className="w-16 h-16 bg-gray-500 rounded-full flex items-center justify-center">
+                <MapPin className="w-8 h-8 text-white" strokeWidth={2.5} />
               </div>
-              {locationErrorDistance > 0 && (
-                <p className="text-center text-slate-300">
-                  You are {(locationErrorDistance * 1000).toFixed(0)}m away. Please move closer to the gym.
-                </p>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <AlertDialogTitle className="text-2xl font-black text-white text-center">
+                You need to be inside your Gym to check in!
+              </AlertDialogTitle>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogDescription className="text-center">
+            {locationErrorDistance > 0 && (
+              <p className="text-slate-300">
+                You are {(locationErrorDistance * 1000).toFixed(0)}m away. Please move closer to the gym.
+              </p>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Location Error Dialog */}
       <AlertDialog open={showLocationError} onOpenChange={setShowLocationError}>
