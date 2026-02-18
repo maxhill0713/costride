@@ -10,12 +10,16 @@ export default function Leaderboard() {
 
   const { data: members = [] } = useQuery({
     queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+    queryFn: () => base44.entities.GymMember.list(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: lifts = [], isLoading } = useQuery({
     queryKey: ['lifts'],
-    queryFn: () => base44.entities.Lift.list('-weight_lbs')
+    queryFn: () => base44.entities.Lift.list('-weight_lbs', 200),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const getLeaderboard = () => {
