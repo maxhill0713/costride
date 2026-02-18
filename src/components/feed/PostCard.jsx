@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false }) {
+export default function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
