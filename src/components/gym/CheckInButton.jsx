@@ -552,7 +552,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const handleCheckIn = async () => {
     if (!currentUser || !gym) return;
-    
+
     // Claimed gyms require membership
     if (isClaimedGym && !gymMembership) {
       toast.error('Membership required', {
@@ -561,12 +561,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       return;
     }
 
-    // Check if out of range
-    if (isWithinRange === false) {
-      setShowOutOfRangeDialog(true);
-      return;
-    }
-    
     setIsChecking(true);
     try {
       // Get user's location with permission dialog
