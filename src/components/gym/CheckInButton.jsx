@@ -502,9 +502,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
         const userLat = position.coords.latitude;
         const userLon = position.coords.longitude;
+        console.log('User location:', userLat, userLon);
 
         const gymPostcode = gym.postcode;
+        console.log('Gym postcode:', gymPostcode);
         if (!gymPostcode) {
+          console.log('No gym postcode set');
           setIsWithinRange(false);
           return;
         }
@@ -512,8 +515,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         const geocodeResponse = await fetch(
           `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
         );
-        
+
         if (!geocodeResponse.ok) {
+          console.log('Geocode API failed:', geocodeResponse.status);
           setIsWithinRange(false);
           return;
         }
@@ -521,12 +525,15 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         const geocodeData = await geocodeResponse.json();
         const gymLat = geocodeData.result.latitude;
         const gymLon = geocodeData.result.longitude;
+        console.log('Gym location:', gymLat, gymLon);
 
         const distance = getDistance(userLat, userLon, gymLat, gymLon);
+        console.log('Distance to gym (km):', distance);
         const maxDistance = 0.5;
 
         setIsWithinRange(distance <= maxDistance);
       } catch (error) {
+        console.error('Location check error:', error);
         setIsWithinRange(false);
       }
     };
