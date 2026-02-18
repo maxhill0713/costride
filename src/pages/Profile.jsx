@@ -796,16 +796,17 @@ export default function Profile() {
                       );
                     } else {
                       return (
-                        <PostCard 
-                           key={post.id} 
-                           post={post}
-                           fullWidth={true}
-                           isOwnProfile={true}
-                           onLike={() => {}}
-                           onComment={() => {}}
-                           onSave={() => {}}
-                           onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
-                         />
+                       <PostCard 
+                          key={post.id} 
+                          post={post}
+                          fullWidth={true}
+                          isOwnProfile={true}
+                          currentUser={currentUser}
+                          onLike={() => {}}
+                          onComment={() => {}}
+                          onSave={() => {}}
+                          onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })}
+                        />
                       );
                     }
                   })}
