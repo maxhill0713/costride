@@ -66,106 +66,98 @@ export default function GymCommunity() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
-    queryFn: async () => {
-      const gyms = await base44.entities.Gym.list();
-      return gyms.find(g => g.id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
-  // Language setting stored on gym
-
   const { data: members = [] } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => base44.entities.GymMember.list()
+    queryKey: ['members', gymId],
+    queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: coaches = [] } = useQuery({
     queryKey: ['coaches', gymId],
-    queryFn: async () => {
-      const allCoaches = await base44.entities.Coach.list();
-      return allCoaches.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }),
+    enabled: !!gymId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000
   });
 
   const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
-    queryFn: async () => {
-      const allPosts = await base44.entities.Post.list('-created_date');
-      return allPosts.filter(p => p.allow_gym_repost === true);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20),
+    enabled: !!gymId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', gymId],
-    queryFn: async () => {
-      const allCheckIns = await base44.entities.CheckIn.list('-check_in_date');
-      return allCheckIns.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200),
+    enabled: !!gymId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', gymId],
-    queryFn: async () => {
-      const allLifts = await base44.entities.Lift.list('-lift_date');
-      return allLifts.filter(l => l.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 100),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events', gymId],
-    queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('-event_date');
-      return allEvents.filter(e => e.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', gymId],
-    queryFn: async () => {
-      const allClasses = await base44.entities.GymClass.list();
-      return allClasses.filter(c => c.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }),
+    enabled: !!gymId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000
   });
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['rewards', gymId],
-    queryFn: async () => {
-      const allRewards = await base44.entities.Reward.list();
-      return allRewards.filter(r => r.gym_id === gymId);
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges', gymId],
-    queryFn: async () => {
-      const allChallenges = await base44.entities.Challenge.list();
-      const filtered = allChallenges.filter(c => c.gym_id === gymId && c.is_app_challenge !== true);
-      console.log('Challenges fetched:', filtered);
-      return filtered;
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }),
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const { data: polls = [] } = useQuery({
     queryKey: ['polls', gymId],
-    queryFn: async () => {
-      const allPolls = await base44.entities.Poll.list('-created_date');
-      return allPolls.filter(p => p.gym_id === gymId && p.status === 'active');
-    },
-    enabled: !!gymId
+    queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'),
+    enabled: !!gymId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   // Only gym challenges now
@@ -173,16 +165,17 @@ export default function GymCommunity() {
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.list()
+    queryFn: () => base44.entities.Gym.list(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gymId],
-    queryFn: async () => {
-      const memberships = await base44.entities.GymMembership.list();
-      return memberships.find(m => m.user_id === currentUser.id && m.gym_id === gymId && m.status === 'active');
-    },
-    enabled: !!currentUser && !!gymId
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]),
+    enabled: !!currentUser && !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const createEventMutation = useMutation({
