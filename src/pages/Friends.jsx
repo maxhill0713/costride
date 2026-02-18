@@ -525,7 +525,7 @@ export default function Friends() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-6">
+      <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-0">
 
          {/* Friend Posts */}
          {friendPosts.length > 0 && (
