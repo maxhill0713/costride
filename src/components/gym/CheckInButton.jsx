@@ -3,18 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Flame, Calendar, MapPin, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Flame, Calendar, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 const CHECKIN_RADIUS_METERS = 500;
 
