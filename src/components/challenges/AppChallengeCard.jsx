@@ -48,7 +48,11 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
             <h3 className="font-bold text-white mb-1 line-clamp-1 text-base">{challenge.title}</h3>
             <p className="text-xs text-slate-400 line-clamp-2">{challenge.description}</p>
           </div>
-          {challenge.reward && isBadgeReward ? (
+          {gymImage ? (
+            <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border-2 border-orange-500/40 shadow-lg">
+              <img src={gymImage} alt="Gym" className="w-full h-full object-cover" />
+            </div>
+          ) : challenge.reward && isBadgeReward ? (
             <div className="relative w-14 h-14 flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-full p-1 shadow-lg shadow-yellow-500/40">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-full flex items-center justify-center">
