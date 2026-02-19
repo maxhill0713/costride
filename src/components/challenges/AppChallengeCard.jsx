@@ -12,6 +12,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
   const daysElapsed = totalDays - daysLeft;
   const progressPercentage = totalDays > 0 ? (daysElapsed / totalDays) * 100 : 0;
   const participantCount = challenge.participants?.length || 0;
+  const isBadgeReward = challenge.reward && challenge.reward.toLowerCase().includes('badge');
 
   return (
     <motion.div
@@ -20,25 +21,38 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="p-4 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-orange-400/30 transition-all duration-300 shadow-2xl shadow-black/20">
+      <Card className="p-5 bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden relative group">
+        {/* Decorative glow */}
+        <div className="absolute -top-12 -right-12 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all" />
+        
+        <div className="relative z-10">
         {/* Header with Title and Reward */}
-        <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/40 flex items-center justify-center">
                 <Trophy className="w-4 h-4 text-orange-400" />
               </div>
-              <Badge className="bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold px-2">
-                APP CHALLENGE
+              <Badge className="bg-orange-500/20 border border-orange-500/40 text-orange-300 text-[10px] font-bold px-2 uppercase tracking-wider">
+                App Challenge
               </Badge>
             </div>
-            <h3 className="font-bold text-white mb-1 line-clamp-1">{challenge.title}</h3>
+            <h3 className="font-bold text-white mb-1 line-clamp-1 text-base">{challenge.title}</h3>
             <p className="text-xs text-slate-400 line-clamp-2">{challenge.description}</p>
           </div>
-          {challenge.reward && (
-            <div className="bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-400/30 rounded-lg px-2.5 py-1.5 text-center shadow-sm">
+          {challenge.reward && isBadgeReward ? (
+            <div className="relative w-14 h-14 flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-full p-1 shadow-lg shadow-yellow-500/40">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-full flex items-center justify-center">
+                  <Award className="w-7 h-7 text-white" />
+                </div>
+              </div>
+              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-yellow-300 animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
+          ) : challenge.reward && (
+            <div className="bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-400/30 rounded-lg px-3 py-2 text-center shadow-sm">
               <p className="text-[9px] font-bold text-emerald-300 uppercase">Reward</p>
-              <p className="text-xs font-bold text-white mt-0.5">{challenge.reward}</p>
+              <p className="text-xs font-bold text-white mt-1">{challenge.reward}</p>
             </div>
           )}
         </div>
