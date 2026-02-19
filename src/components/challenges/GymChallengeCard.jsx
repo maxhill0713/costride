@@ -59,9 +59,15 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
                 {challenge.target_value} {challenge.goal_type === 'participation' ? 'participants' : 'check-ins'}
               </Badge>
             </div>
-            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-amber-500/40">
-              <Trophy className="w-7 h-7 text-white" />
-            </div>
+            {gymImage ? (
+              <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-lg flex-shrink-0 ml-3">
+                <img src={gymImage} alt="Gym" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-amber-500/40">
+                <Trophy className="w-7 h-7 text-white" />
+              </div>
+            )}
           </div>
 
           {/* Reward Section */}
