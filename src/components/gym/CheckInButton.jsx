@@ -524,21 +524,19 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     try {
       await checkInMutation.mutateAsync({ gym_id: gym.id });
     } catch (error) {
-      if (error.code === error.PERMISSION_DENIED) {
+      const msg = error?.message || '';
+      if (msg.toLowerCase().includes('location') || msg.toLowerCase().includes('permission')) {
         toast.error('Location access denied', {
-          description: 'We use your location to confirm you are at the gym when checking in. Please enable location access.'
+          description: 'Please enable location access to check in.'
         });
-      } else if (error.code === error.POSITION_UNAVAILABLE) {
-        toast.error('Location unavailable', {
-          description: 'Could not determine your location. Please try again.'
+      } else if (msg.toLowerCase().includes('range') || msg.toLowerCase().includes('far')) {
+        toast.error('Too far from gym', {
+          description: 'You need to be within 500m of the gym to check in.'
         });
-      } else if (error.code === error.TIMEOUT) {
-        toast.error('Location timeout', {
-          description: 'Location request timed out. Please try again.'
-        });
-      } else {
-        console.error('Check-in error:', error);
+      } else if (msg) {
+        toast.error(msg);
       }
+      console.error('Check-in error:', error);
     } finally {
       setIsChecking(false);
     }
