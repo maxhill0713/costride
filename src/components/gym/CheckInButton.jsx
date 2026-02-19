@@ -693,10 +693,10 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
                   <span className="font-bold text-orange-900">Your Distance</span>
                 </div>
                 <p className="text-3xl font-black text-orange-900">
-                  {(locationErrorDistance * 1000).toFixed(0)}m
+                  {locationErrorDistance.toFixed(0)}m
                 </p>
                 <p className="text-sm text-orange-700 mt-1">
-                  {((locationErrorDistance - 0.5) * 1000).toFixed(0)}m too far
+                  {(locationErrorDistance - CHECKIN_RADIUS_METERS).toFixed(0)}m too far
                 </p>
               </div>
               <p className="text-sm text-orange-700">
