@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import LocationPermissionModal from './LocationPermissionModal';
 
 const CHECKIN_RADIUS_METERS = 500;
 
