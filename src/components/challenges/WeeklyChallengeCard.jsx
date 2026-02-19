@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-export default function WeeklyChallengeCard({ challenge, currentUser }) {
+export default function WeeklyChallengeCard({ challenge, currentUser, gymImage }) {
   const queryClient = useQueryClient();
   const isParticipant = challenge.participants?.includes(currentUser?.id);
   const participantCount = challenge.participants?.length || 0;
