@@ -36,6 +36,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [locationErrorDistance, setLocationErrorDistance] = useState(0);
   const [isWithinRange, setIsWithinRange] = useState(null);
   const [showOutOfRangeDialog, setShowOutOfRangeDialog] = useState(false);
+  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
