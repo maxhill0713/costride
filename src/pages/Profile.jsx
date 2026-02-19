@@ -441,9 +441,15 @@ export default function Profile() {
                    <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{displayName}</h1>
                    <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
                 </div>
-                {/* Equipped Badges */}
+                {/* Equipped Badges - Clickable */}
                 {currentUser?.equipped_badges?.length > 0 && (
-                  <div className="flex items-center gap-2 mt-3">
+                  <button
+                    onClick={() => {
+                      setActiveTab('stats');
+                      setTimeout(() => document.querySelector('[data-badges-section]')?.scrollIntoView({ behavior: 'smooth' }), 0);
+                    }}
+                    className="flex items-center gap-2 mt-3 hover:opacity-80 transition-opacity"
+                  >
                     {currentUser.equipped_badges.map((badgeId) => {
                       const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
                                    [
@@ -460,14 +466,14 @@ export default function Profile() {
                       return (
                         <div 
                           key={badgeId}
-                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40`}
+                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:scale-110 transition-transform`}
                           title={badge.name || badgeId}
                         >
                           <span className="text-base">{badge.icon}</span>
                         </div>
                       );
                     })}
-                  </div>
+                  </button>
                 )}
               </div>
             </div>
