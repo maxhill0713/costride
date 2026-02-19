@@ -1,73 +1,71 @@
 import React from 'react';
-import { Trophy, Flame, Award, Zap, Crown, Heart, Target, Star, Medal, Sparkles } from 'lucide-react';
+import { Trophy, Flame, Award, Zap, Crown, Target, Star, Medal } from 'lucide-react';
 
 export default function UniqueBadge({ reward, size = 'md' }) {
   if (!reward) return null;
 
   const rewardLower = reward.toLowerCase();
   
-  // Define badge types based on keywords
   const getBadgeConfig = () => {
     if (rewardLower.includes('consistency')) {
       return {
-        gradient: 'from-orange-400 via-red-500 to-rose-600',
+        outer: 'from-red-600 via-red-700 to-red-800',
+        inner: 'from-red-500 via-orange-500 to-red-600',
         icon: Flame,
-        glow: 'shadow-orange-500/50',
-        sparkle: true,
-        label: 'Consistency Champion'
+        accent: 'text-red-300',
+        label: 'Consistency'
       };
     }
     if (rewardLower.includes('warrior') || rewardLower.includes('monday')) {
       return {
-        gradient: 'from-blue-400 via-blue-500 to-indigo-600',
+        outer: 'from-blue-700 via-blue-800 to-indigo-800',
+        inner: 'from-blue-600 via-blue-500 to-indigo-600',
         icon: Trophy,
-        glow: 'shadow-blue-500/50',
-        sparkle: false,
+        accent: 'text-blue-300',
         label: 'Warrior'
       };
     }
     if (rewardLower.includes('master') || rewardLower.includes('king')) {
       return {
-        gradient: 'from-purple-400 via-purple-500 to-violet-600',
+        outer: 'from-purple-700 via-purple-800 to-violet-800',
+        inner: 'from-purple-600 via-purple-500 to-violet-600',
         icon: Crown,
-        glow: 'shadow-purple-500/50',
-        sparkle: true,
+        accent: 'text-purple-300',
         label: 'Master'
       };
     }
     if (rewardLower.includes('power') || rewardLower.includes('strength')) {
       return {
-        gradient: 'from-yellow-400 via-amber-500 to-orange-600',
+        outer: 'from-amber-700 via-amber-800 to-orange-800',
+        inner: 'from-amber-600 via-amber-500 to-orange-600',
         icon: Zap,
-        glow: 'shadow-yellow-500/50',
-        sparkle: true,
-        label: 'Power Elite'
+        accent: 'text-amber-300',
+        label: 'Elite'
       };
     }
     if (rewardLower.includes('excellence') || rewardLower.includes('elite')) {
       return {
-        gradient: 'from-emerald-400 via-green-500 to-teal-600',
+        outer: 'from-emerald-700 via-emerald-800 to-teal-800',
+        inner: 'from-emerald-600 via-emerald-500 to-teal-600',
         icon: Star,
-        glow: 'shadow-emerald-500/50',
-        sparkle: true,
+        accent: 'text-emerald-300',
         label: 'Excellence'
       };
     }
     if (rewardLower.includes('legend')) {
       return {
-        gradient: 'from-rose-400 via-pink-500 to-red-600',
+        outer: 'from-pink-700 via-rose-800 to-red-800',
+        inner: 'from-pink-600 via-rose-500 to-red-600',
         icon: Medal,
-        glow: 'shadow-pink-500/50',
-        sparkle: true,
+        accent: 'text-pink-300',
         label: 'Legend'
       };
     }
-    // Default for generic badges
     return {
-      gradient: 'from-cyan-400 via-blue-500 to-blue-600',
+      outer: 'from-blue-700 via-cyan-800 to-blue-800',
+      inner: 'from-blue-600 via-cyan-500 to-blue-600',
       icon: Award,
-      glow: 'shadow-cyan-500/50',
-      sparkle: false,
+      accent: 'text-cyan-300',
       label: 'Achievement'
     };
   };
@@ -81,30 +79,37 @@ export default function UniqueBadge({ reward, size = 'md' }) {
     lg: 'w-20 h-20'
   };
 
+  const iconSizes = {
+    sm: 'w-5 h-5',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10'
+  };
+
   return (
     <div className="relative">
-      <div className={`${sizeClasses[size]} relative`}>
-        {/* Outer glow ring */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} rounded-full p-1 ${config.glow} shadow-lg`}>
-          {/* Inner badge */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} rounded-full flex items-center justify-center`}>
-            <Icon className={`${size === 'lg' ? 'w-10 h-10' : size === 'md' ? 'w-8 h-8' : 'w-5 h-5'} text-white drop-shadow-lg`} />
-          </div>
+      <div className={`${sizeClasses[size]} relative group`}>
+        {/* Outer dark ring */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${config.outer} rounded-full shadow-2xl`} style={{ boxShadow: 'inset -2px -2px 4px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6)' }} />
+        
+        {/* Middle gradient layer */}
+        <div className={`absolute inset-1 bg-gradient-to-br ${config.inner} rounded-full`} />
+        
+        {/* Reflective shine */}
+        <div className="absolute inset-1 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
+        
+        {/* Icon container */}
+        <div className="absolute inset-0 rounded-full flex items-center justify-center">
+          <Icon className={`${iconSizes[size]} text-white opacity-90 drop-shadow-md`} strokeWidth={1.5} />
         </div>
         
-        {/* Sparkle animation */}
-        {config.sparkle && (
-          <>
-            <Sparkles className={`absolute -top-1 -right-1 ${size === 'lg' ? 'w-6 h-6' : size === 'md' ? 'w-5 h-5' : 'w-4 h-4'} text-yellow-300 animate-spin`} style={{ animationDuration: '3s' }} />
-            <Sparkles className={`absolute -bottom-1 -left-1 ${size === 'lg' ? 'w-5 h-5' : size === 'md' ? 'w-4 h-4' : 'w-3 h-3'} text-yellow-200 animate-pulse`} />
-          </>
-        )}
+        {/* Hover glow effect */}
+        <div className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/10 transition-all duration-300" />
       </div>
       
-      {/* Badge name tooltip */}
+      {/* Badge label */}
       <div className="mt-2 text-center">
-        <p className="text-xs font-bold text-white drop-shadow-md">{config.label}</p>
-        <p className="text-[10px] text-slate-300 line-clamp-2">{reward}</p>
+        <p className={`text-xs font-bold ${config.accent}`}>{config.label}</p>
+        <p className="text-[10px] text-slate-400 line-clamp-2">{reward}</p>
       </div>
     </div>
   );
