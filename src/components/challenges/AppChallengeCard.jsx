@@ -58,10 +58,10 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
         </div>
 
         {/* Goal Card */}
-        <div className="bg-gradient-to-r from-indigo-500/12 to-purple-500/12 rounded-lg p-3 mb-3 border border-indigo-400/25">
+        <div className="bg-gradient-to-r from-indigo-500/12 to-purple-500/12 rounded-lg p-4 mb-4 border border-indigo-400/25">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-[10px] font-bold text-indigo-300 uppercase mb-1 flex items-center gap-1">
+              <p className="text-[10px] font-bold text-indigo-300 uppercase mb-1 tracking-wider flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 Goal
               </p>
@@ -86,14 +86,14 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1.5">
-            <p className="text-xs font-bold text-slate-300">Time Progress</p>
+        <div className="mb-5">
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Time Progress</p>
             <p className="text-xs text-slate-400 font-medium">{Math.round(progressPercentage)}%</p>
           </div>
           <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
             <div 
-              className="h-full bg-gradient-to-r from-blue-300 via-cyan-300 to-sky-300 transition-all duration-500 shadow-lg"
+              className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
@@ -103,10 +103,10 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
         <Button
           onClick={() => onJoin && onJoin(challenge)}
           disabled={isJoined}
-          className={`w-full font-bold transition-all duration-200 ${
+          className={`w-full font-bold transition-all duration-200 rounded-lg h-10 ${
             isJoined 
               ? 'bg-slate-700 text-slate-300 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white shadow-lg hover:shadow-green-500/20'
+              : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30'
           }`}
         >
           {isJoined ? '✓ Already Joined' : 'Join Challenge'}
