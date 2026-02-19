@@ -6,7 +6,7 @@ import { Trophy, Users, Target, Award, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 
-export default function AppChallengeCard({ challenge, onJoin, isJoined = false, currentUser, gymImage }) {
+export default function AppChallengeCard({ challenge, onJoin, isJoined = false, currentUser }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const totalDays = differenceInDays(new Date(challenge.end_date), new Date(challenge.start_date));
   const daysElapsed = totalDays - daysLeft;
@@ -21,19 +21,11 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden relative group">
-        {/* Gym Background Image */}
-        {gymImage && (
-          <div className="absolute inset-0 h-20 w-full overflow-hidden">
-            <img src={gymImage} alt="Gym" className="w-full h-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/80" />
-          </div>
-        )}
-        
+      <Card className="p-5 bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden relative group">
         {/* Decorative glow */}
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all" />
         
-        <div className="relative z-10 p-5">
+        <div className="relative z-10">
         {/* Header with Title and Reward */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex-1">
@@ -48,11 +40,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
             <h3 className="font-bold text-white mb-1 line-clamp-1 text-base">{challenge.title}</h3>
             <p className="text-xs text-slate-400 line-clamp-2">{challenge.description}</p>
           </div>
-          {gymImage ? (
-            <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border-2 border-orange-500/40 shadow-lg">
-              <img src={gymImage} alt="Gym" className="w-full h-full object-cover" />
-            </div>
-          ) : challenge.reward && isBadgeReward ? (
+          {challenge.reward && isBadgeReward ? (
             <div className="relative w-14 h-14 flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-full p-1 shadow-lg shadow-yellow-500/40">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-full flex items-center justify-center">

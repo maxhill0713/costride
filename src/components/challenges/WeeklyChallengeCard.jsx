@@ -9,7 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-export default function WeeklyChallengeCard({ challenge, currentUser, gymImage }) {
+export default function WeeklyChallengeCard({ challenge, currentUser }) {
   const queryClient = useQueryClient();
   const isParticipant = challenge.participants?.includes(currentUser?.id);
   const participantCount = challenge.participants?.length || 0;
@@ -52,19 +52,11 @@ export default function WeeklyChallengeCard({ challenge, currentUser, gymImage }
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-cyan-500/20 rounded-2xl overflow-hidden group relative shadow-2xl shadow-black/40">
-        {/* Gym Background Image */}
-        {gymImage && (
-          <div className="absolute inset-0 h-20 w-full overflow-hidden">
-            <img src={gymImage} alt="Gym" className="w-full h-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/80" />
-          </div>
-        )}
-        
+      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-5 hover:border-cyan-500/40 transition-all overflow-hidden group relative shadow-2xl shadow-black/40">
         {/* Decorative glow */}
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all" />
         
-        <div className="relative z-10 p-5">
+        <div className="relative z-10">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-white mb-1 text-base">{challenge.title}</h4>

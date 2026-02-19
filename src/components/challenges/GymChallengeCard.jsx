@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 import confetti from 'canvas-confetti';
 
-export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false, gymImage }) {
+export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const isExpired = daysLeft <= 0;
   const participantCount = challenge.participants?.length || 0;
@@ -38,19 +38,11 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-amber-500/20 rounded-2xl hover:border-amber-500/40 transition-all overflow-hidden group relative shadow-2xl shadow-black/40">
-        {/* Gym Background Image */}
-        {gymImage && (
-          <div className="absolute inset-0 h-20 w-full overflow-hidden">
-            <img src={gymImage} alt="Gym" className="w-full h-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/80" />
-          </div>
-        )}
-        
+      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-amber-500/20 rounded-2xl p-5 hover:border-amber-500/40 transition-all overflow-hidden group relative shadow-2xl shadow-black/40">
         {/* Decorative glow */}
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all" />
         
-        <div className="relative z-10 p-5">
+        <div className="relative z-10">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-white mb-1 text-base">{challenge.title}</h4>
@@ -59,15 +51,9 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
                 {challenge.target_value} {challenge.goal_type === 'participation' ? 'participants' : 'check-ins'}
               </Badge>
             </div>
-            {gymImage ? (
-              <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-lg flex-shrink-0 ml-3">
-                <img src={gymImage} alt="Gym" className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-amber-500/40">
-                <Trophy className="w-7 h-7 text-white" />
-              </div>
-            )}
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-amber-500/40">
+              <Trophy className="w-7 h-7 text-white" />
+            </div>
           </div>
 
           {/* Reward Section */}
