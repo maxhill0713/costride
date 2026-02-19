@@ -520,38 +520,53 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       return;
     }
 
-    // Enforce location check if gym has coordinates
-    if (gym.latitude && gym.longitude) {
-      if (isWithinRange === null) {
-        toast.error('Checking your location...', {
-          description: 'Please wait a moment and try again.'
-        });
-        return;
-      }
-      if (isWithinRange === false) {
-        toast.error('You\'re too far from the gym', {
-          description: 'You need to be within 500m to check in.'
-        });
-        return;
-      }
-    }
-
     setIsChecking(true);
     try {
-      await checkInMutation.mutateAsync({ gym_id: gym.id });
-    } catch (error) {
-      const msg = error?.message || '';
-      if (msg.toLowerCase().includes('location') || msg.toLowerCase().includes('permission')) {
-        toast.error('Location access denied', {
-          description: 'Please enable location access to check in.'
-        });
-      } else if (msg.toLowerCase().includes('range') || msg.toLowerCase().includes('far')) {
-        toast.error('Too far from gym', {
-          description: 'You need to be within 500m of the gym to check in.'
-        });
-      } else if (msg) {
-        toast.error(msg);
+      // Get user location if gym has coordinates
+      let userLat = null, userLon = null;
+      if (gym.latitude && gym.longitude) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { 
+              enableHighAccuracy: true, 
+              timeout: 10000 
+            });
+          });
+          userLat = position.coords.latitude;
+          userLon = position.coords.longitude;
+          
+          // Calculate distance
+          const R = 6371000;
+          const dLat = (gym.latitude - userLat) * Math.PI / 180;
+          const dLon = (gym.longitude - userLon) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(userLat * Math.PI / 180) * Math.cos(gym.latitude * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          
+          if (distance > 500) {
+            toast.error(`Too far (${Math.round(distance)}m away)`, {
+              description: 'You need to be within 500m of the gym to check in.'
+            });
+            setIsChecking(false);
+            return;
+          }
+        } catch (locError) {
+          console.error('Location error:', locError);
+          toast.error('Unable to get location', {
+            description: 'Please enable location permissions and try again.'
+          });
+          setIsChecking(false);
+          return;
+        }
       }
+
+      await checkInMutation.mutateAsync({ gym_id: gym.id, userLat, userLon });
+    } catch (error) {
+      const msg = error?.response?.data?.error || error?.message || 'Check-in failed';
+      toast.error('Check-in failed', {
+        description: msg
+      });
       console.error('Check-in error:', error);
     } finally {
       setIsChecking(false);
