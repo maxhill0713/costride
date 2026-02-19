@@ -28,6 +28,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const queryClient = useQueryClient();
 
   // Request location on button click (requires user gesture on HTTPS)
