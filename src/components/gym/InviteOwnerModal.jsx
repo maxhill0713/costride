@@ -1,121 +1,146 @@
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mail, Loader2, CheckCircle } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Crown, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
-export default function InviteOwnerModal({ open, onClose, gym }) {
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+export default function InviteOwnerModal({ gym, isOpen, onClose, currentUser }) {
+  const queryClient = useQueryClient();
+  const [requestMessage, setRequestMessage] = useState('');
 
-  const handleInvite = async () => {
-    if (!email.trim()) {
-      alert('Please enter an email address');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Send invite via backend function
-      await base44.functions.invoke('inviteGymOwner', { 
-        email: email.trim(),
-        gym_id: gym.id,
-        gym_name: gym.name
+  const { data: existingRequests = [] } = useQuery({
+    queryKey: ['gymOfficialRequests', gym?.id, currentUser?.id],
+    queryFn: async () => {
+      const requests = await base44.entities.Notification.filter({
+        user_id: currentUser.id,
+        type: 'gym_official_request'
       });
-      
-      setSuccess(true);
-      setTimeout(() => {
-        setEmail('');
-        setSuccess(false);
-        onClose();
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to send invite:', error);
-      alert('Failed to send invite. Please try again.');
-    } finally {
-      setIsLoading(false);
+      return requests.filter(r => r.message?.includes(gym?.name));
+    },
+    enabled: isOpen && !!gym && !!currentUser,
+    staleTime: 2 * 60 * 1000
+  });
+
+  const submitOfficialRequestMutation = useMutation({
+    mutationFn: async () => {
+      await base44.entities.Notification.create({
+        user_id: currentUser.id,
+        type: 'gym_official_request',
+        title: `Request: Make ${gym.name} Official`,
+        message: `${currentUser.full_name} (${currentUser.email}) requests that "${gym.name}" in ${gym.city} become an official gym. Reason: ${requestMessage || 'No reason provided'}`,
+        icon: '✅',
+        read: false
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['gymOfficialRequests']);
+      toast.success('Request submitted successfully!');
+      setRequestMessage('');
+      onClose();
     }
-  };
+  });
+
+  const notifyOwnerMutation = useMutation({
+    mutationFn: async () => {
+      if (gym.owner_email) {
+        await base44.integrations.Core.SendEmail({
+          to: gym.owner_email,
+          subject: `${gym.name} - Join Your Gym Community on CoStride`,
+          body: `Hi there!\n\nYour gym "${gym.name}" has been added to CoStride, and members are already checking in and engaging with your community.\n\nClaim your gym page to unlock powerful features:\n\n✅ Post updates and announcements\n✅ Create challenges and events\n✅ Manage coaches and classes\n✅ View member analytics\n✅ Offer exclusive rewards\n\nJoin CoStride today: ${window.location.origin}\n\nBest regards,\nThe CoStride Team`
+        });
+        toast.success('Owner notified!');
+      } else {
+        toast.error('No contact email available for this gym');
+      }
+    }
+  });
+
+  const hasSubmittedRequest = existingRequests.length > 0;
+
+  if (!gym) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900/95 border border-slate-700/50 rounded-2xl">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md bg-slate-900/95 border-slate-700">
         <DialogHeader>
-          <DialogTitle className="text-white text-xl">Invite Gym Owner</DialogTitle>
-          <DialogDescription className="text-slate-300">
-            Send an invite to the owner of {gym?.name} to claim and manage this gym profile
+          <DialogTitle className="text-white">Unlock Exclusive Perks</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Help activate {gym.name} to unlock rewards and challenges
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {success ? (
-            <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4 text-center">
-              <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              <p className="text-green-300 font-semibold">Invite sent successfully!</p>
-              <p className="text-sm text-green-200/70 mt-1">They'll receive an email with instructions to claim the gym.</p>
+        <div className="space-y-4">
+          {/* Info Card */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-300 leading-relaxed">
+                This gym isn't claimed yet. Unlock <strong>rewards, challenges, exclusive perks</strong>, and real-time updates from your gym!
+              </p>
+            </div>
+          </div>
+
+          {/* Notify Owner */}
+          {gym.owner_email && !hasSubmittedRequest && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-400" />
+                <p className="text-sm font-semibold text-white">Notify the Owner</p>
+              </div>
+              <Button
+                onClick={() => notifyOwnerMutation.mutate()}
+                disabled={notifyOwnerMutation.isPending}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm h-9"
+              >
+                {notifyOwnerMutation.isPending ? 'Sending...' : 'Send Invitation Email'}
+              </Button>
+            </div>
+          )}
+
+          {/* Request Official Status */}
+          {!hasSubmittedRequest ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Crown className="w-4 h-4 text-purple-400" />
+                <p className="text-sm font-semibold text-white">Request Activation</p>
+              </div>
+              <Textarea
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                placeholder="Tell us why this gym should be activated (optional)..."
+                className="bg-slate-800/50 border-slate-700 text-white placeholder-slate-500 text-xs min-h-[60px]"
+              />
+              <Button
+                onClick={() => submitOfficialRequestMutation.mutate()}
+                disabled={submitOfficialRequestMutation.isPending}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm h-9"
+              >
+                {submitOfficialRequestMutation.isPending ? 'Submitting...' : 'Request Official Status'}
+              </Button>
             </div>
           ) : (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    type="email"
-                    placeholder="owner@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
-                    className="pl-10 bg-slate-800/60 border-slate-600/40 text-white placeholder:text-slate-500 rounded-xl"
-                    disabled={isLoading}
-                  />
+            <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-white">Request Submitted!</p>
+                  <p className="text-xs text-slate-300">We're reaching out to the gym owner now. 🎉</p>
                 </div>
               </div>
-
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3">
-                <p className="text-sm text-blue-300">
-                  💡 The gym owner will be able to verify the gym, add staff, manage content, and more once they join.
-                </p>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  disabled={isLoading}
-                  className="flex-1 border-slate-600/50 hover:bg-slate-800/50 text-slate-300"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleInvite}
-                  disabled={isLoading || !email.trim()}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4 mr-2" />
-                      Send Invite
-                    </>
-                  )}
-                </Button>
-              </div>
-            </>
+            </div>
           )}
         </div>
+
+        <Button
+          onClick={onClose}
+          variant="ghost"
+          className="w-full text-slate-300 hover:text-white hover:bg-slate-800/50"
+        >
+          Close
+        </Button>
       </DialogContent>
     </Dialog>
   );
