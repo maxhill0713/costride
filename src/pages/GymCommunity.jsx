@@ -85,7 +85,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: coaches = [] } = useQuery({
@@ -93,10 +94,11 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }),
     enabled: !!gymId,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000
+    gcTime: 20 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
-  const { data: posts = [] } = useQuery({
+  const { data: posts = [], isLoading: postsLoading } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20),
     enabled: !!gymId,
@@ -110,7 +112,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200),
     enabled: !!gymId,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: lifts = [] } = useQuery({
@@ -118,7 +121,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 100),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: events = [] } = useQuery({
@@ -126,7 +130,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: classes = [] } = useQuery({
@@ -134,7 +139,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }),
     enabled: !!gymId,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000
+    gcTime: 20 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: rewards = [] } = useQuery({
@@ -142,7 +148,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: challenges = [] } = useQuery({
@@ -150,7 +157,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: polls = [] } = useQuery({
@@ -158,7 +166,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'),
     enabled: !!gymId,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   // Only gym challenges now
