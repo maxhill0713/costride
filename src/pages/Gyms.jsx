@@ -173,15 +173,7 @@ export default function Gyms() {
       // Filter out places that already exist in our database
       const existingPlaceIds = gyms.map(g => g.google_place_id).filter(Boolean);
       const newPlaces = results.filter(place => !existingPlaceIds.includes(place.place_id));
-
-      // Preload images immediately so they're cached when rendered
-      newPlaces.forEach(place => {
-        if (place.photo_url) {
-          const img = new Image();
-          img.src = place.photo_url;
-        }
-      });
-
+      
       setPlacesResults(newPlaces);
     } catch (error) {
       console.error('Places search failed:', error);
@@ -669,17 +661,9 @@ export default function Gyms() {
                           >
                             <div className="flex items-stretch gap-0">
                               {/* Gym photo */}
-                              <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden relative">
+                              <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
                                 {place.photo_url ? (
-                                  <>
-                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-600 to-slate-700 animate-pulse" />
-                                    <img
-                                      src={place.photo_url}
-                                      alt={place.name}
-                                      className="w-full h-full object-cover relative z-10"
-                                      onLoad={(e) => e.target.previousSibling.style.display = 'none'}
-                                    />
-                                  </>
+                                  <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
                                     <Dumbbell className="w-6 h-6 text-slate-500" />
