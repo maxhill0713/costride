@@ -360,12 +360,11 @@ export default function RedeemReward() {
               )}
             </div>
           </div>
-        </motion.div>
         )}
 
         {/* Rewards Section */}
         {activeSection === 'rewards' && (
-         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+         <div>
         <div>
           <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
             <Gift className="w-5 h-5 text-purple-400" />
