@@ -51,43 +51,85 @@ export default function BusyTimesChart({ checkIns }) {
   const StatusIcon = status.icon;
 
   return (
-    <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-blue-400" />
-          <h3 className="text-sm md:text-base font-bold text-slate-100">Busy Times</h3>
+    <Card className="bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-slate-950/80 backdrop-blur-xl border border-blue-500/30 p-4 md:p-6 shadow-2xl shadow-blue-900/20">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30">
+            <Clock className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white">Peak Hours</h3>
+            <p className="text-xs text-slate-400">Real-time congestion forecast</p>
+          </div>
         </div>
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${status.bg} ${status.border}`}>
-          <StatusIcon className={`w-3.5 h-3.5 ${status.color}`} />
-          <span className={`text-xs font-bold ${status.color}`}>Now: {status.text}</span>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${status.bg} ${status.border} backdrop-blur-sm`}>
+          <StatusIcon className={`w-4 h-4 ${status.color}`} />
+          <span className={`text-xs font-semibold ${status.color}`}{status.text}</span>
         </div>
       </div>
 
-      <div className="h-24 mb-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={hourlyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-            <XAxis 
-              dataKey="label" 
-              tick={{ fill: '#94a3b8', fontSize: 10 }}
-              interval={3}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
-              {hourlyData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={index === currentHour ? '#3b82f6' : '#475569'}
-                  opacity={index === currentHour ? 1 : 0.6}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Chart */}
+      <div className="mb-4">
+        <div className="h-32 -mx-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={hourlyData} margin={{ top: 10, right: 8, left: -20, bottom: 20 }}>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  borderRadius: '8px',
+                  padding: '8px 12px'
+                }}
+                labelStyle={{ color: '#fff', fontSize: '12px', fontWeight: '600' }}
+                formatter={(value) => [`${Math.round(value)}%`, 'Busy']}
+              />
+              <XAxis 
+                dataKey="label" 
+                tick={{ fill: '#78909c', fontSize: 11, fontWeight: 500 }}
+                interval={3}
+                axisLine={false}
+                tickLine={false}
+                stroke="rgba(100, 116, 139, 0.2)"
+              />
+              <Bar dataKey="percentage" radius={[6, 6, 0, 0]}>
+                {hourlyData.map((entry, index) => {
+                  let fill = '#475569';
+                  if (index === currentHour) {
+                    fill = '#3b82f6';
+                  } else if (entry.percentage > avgPercentage * 1.3) {
+                    fill = '#f97316';
+                  } else if (entry.percentage > avgPercentage) {
+                    fill = '#06b6d4';
+                  }
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={fill}
+                      opacity={index === currentHour ? 1 : 0.7}
+                    />
+                  );
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      <p className="text-xs text-slate-400 text-center">
-        Based on typical activity for {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][currentDay]}s
+      {/* Stats Footer */}
+      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700/50">
+        <div className="text-center">
+          <p className="text-slate-400 text-xs font-medium mb-1">Now</p>
+          <p className="text-lg font-bold text-white">{Math.round(currentHourData.percentage)}%</p>
+        </div>
+        <div className="text-center">
+          <p className="text-slate-400 text-xs font-medium mb-1">Average</p>
+          <p className="text-lg font-bold text-cyan-400">{Math.round(avgPercentage)}%</p>
+        </div>
+      </div>
+
+      <p className="text-xs text-slate-500 text-center mt-3">
+        Based on activity patterns • {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][currentDay]}
       </p>
     </Card>
   );
