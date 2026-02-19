@@ -6,7 +6,7 @@ import { Trophy, Users, Target, Award, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 
-export default function AppChallengeCard({ challenge, onJoin, isJoined = false, currentUser }) {
+export default function AppChallengeCard({ challenge, onJoin, isJoined = false, currentUser, gymImage }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const totalDays = differenceInDays(new Date(challenge.end_date), new Date(challenge.start_date));
   const daysElapsed = totalDays - daysLeft;
