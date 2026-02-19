@@ -883,6 +883,17 @@ export default function GymCommunity() {
             )}
           </div>
 
+          {/* Back Button - Top Left */}
+          <div className="absolute top-4 left-4 z-30">
+            <button
+              onClick={() => navigate(-1)}
+              className="bg-slate-900/60 backdrop-blur-xl border border-white/30 rounded-full p-2.5 hover:bg-slate-900/80 transition-colors active:scale-95"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </button>
+          </div>
+
           {/* Gym Info Overlay - Top Left */}
           <div className="absolute top-0 left-0 right-0 px-6 py-6">
             <div className="max-w-4xl mx-auto">
