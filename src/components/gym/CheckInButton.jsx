@@ -29,27 +29,31 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [locationError, setLocationError] = useState(null);
   const queryClient = useQueryClient();
 
-  // Request location on mount
-  useEffect(() => {
-    if (!gym?.latitude || !gym?.longitude) return;
-    
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          });
-          setLocationError(null);
-        },
-        (error) => {
-          setLocationError(error.message);
-          console.warn('Location request:', error.message);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-      );
-    }
-  }, [gym?.latitude, gym?.longitude]);
+  // Request location on button click (requires user gesture on HTTPS)
+  const requestLocation = () => {
+    return new Promise((resolve) => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLocation({
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            });
+            setLocationError(null);
+            resolve(true);
+          },
+          (error) => {
+            setLocationError(error.message);
+            console.warn('Location request:', error.message);
+            resolve(false);
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      } else {
+        resolve(false);
+      }
+    });
+  };
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
