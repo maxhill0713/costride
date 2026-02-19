@@ -75,6 +75,9 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
 
       return gym;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+    },
     onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       toast.success(`Joined ${gym.name}! 🎉`);
