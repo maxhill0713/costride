@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Trophy, Flame, Gift, QrCode, Clock, Zap, Star, Target, Dumbbell } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
 
@@ -261,8 +260,7 @@ export default function RedeemReward() {
 
         {/* Weekly Challenges Section */}
         {activeSection === 'weekly' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div>
+          <div>
               <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-amber-400" />
                 Weekly Challenges
