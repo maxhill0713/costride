@@ -1652,9 +1652,10 @@ export default function GymCommunity() {
                 />
 
         <InviteOwnerModal
-          open={showInviteOwner}
-          onClose={() => setShowInviteOwner(false)}
+          isOpen={showInviteOwnerModal}
+          onClose={() => setShowInviteOwnerModal(false)}
           gym={gym}
+          currentUser={currentUser}
         />
       </div>
     </PullToRefresh>
