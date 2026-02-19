@@ -565,24 +565,7 @@ export default function Profile() {
 
 
             <TabsContent value="progress" className="space-y-4 mt-0">
-        {/* Milestone Badges */}
-        {earnedBadges.length > 0 && (
-          <Card className="p-5 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20 overflow-hidden">
-            <h3 className="font-semibold text-yellow-300 mb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-              <span className="truncate">Milestones Unlocked</span>
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {earnedBadges.map((badge) => (
-                <div key={badge.days} className={`p-3 rounded-2xl bg-gradient-to-br ${badge.color} text-white text-center overflow-hidden`}>
-                  <div className="text-3xl mb-1">{badge.icon}</div>
-                  <p className="font-bold text-xs truncate">{badge.name}</p>
-                  <p className="text-xs opacity-90">{badge.days}d</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
+
 
 
 
