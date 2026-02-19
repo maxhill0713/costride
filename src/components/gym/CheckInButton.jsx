@@ -498,38 +498,30 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const currentStreak = calculateStreak(checkIns, currentUser);
   const isInactive = daysSinceLastCheckIn >= 7;
 
-  // Check location on mount
+  // Watch position continuously while on this page
   React.useEffect(() => {
-    if (!gym || hasCheckedInToday()) return;
+    if (!gym || !gym.latitude || !gym.longitude) {
+      setIsWithinRange(false);
+      return;
+    }
 
-    const checkLocationRange = async () => {
-      if (!gym.latitude || !gym.longitude) {
-        setIsWithinRange(false);
-        return;
-      }
-      try {
-        const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-          });
-        });
-
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
         const distanceMeters = getDistanceMeters(
           position.coords.latitude, position.coords.longitude,
           gym.latitude, gym.longitude
         );
-
         setIsWithinRange(distanceMeters <= CHECKIN_RADIUS_METERS);
-      } catch (error) {
-        console.error('Location check error:', error);
+      },
+      (error) => {
+        console.error('Location watch error:', error);
         setIsWithinRange(false);
-      }
-    };
+      },
+      { enableHighAccuracy: true, maximumAge: 10000 }
+    );
 
-    checkLocationRange();
-  }, [gym, hasCheckedInToday()]);
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [gym?.id, gym?.latitude, gym?.longitude]);
 
   const isClaimedGym = gym && (gym.owner_email || gym.admin_id);
 
