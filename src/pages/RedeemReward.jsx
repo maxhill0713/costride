@@ -338,10 +338,8 @@ export default function RedeemReward() {
                             <p className="text-[10px] font-bold text-amber-400">{Math.round(challenge.progress)}%</p>
                           </div>
                           <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: `${challenge.progress}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
+                            <div 
+                              style={{ width: `${challenge.progress}%` }}
                               className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600"
                             />
                           </div>
@@ -357,7 +355,7 @@ export default function RedeemReward() {
                         </div>
                       </div>
                     </Card>
-                  </motion.div>
+                  </div>
                 ))
               )}
             </div>
