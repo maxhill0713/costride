@@ -520,6 +520,22 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       return;
     }
 
+    // Enforce location check if gym has coordinates
+    if (gym.latitude && gym.longitude) {
+      if (isWithinRange === null) {
+        toast.error('Checking your location...', {
+          description: 'Please wait a moment and try again.'
+        });
+        return;
+      }
+      if (isWithinRange === false) {
+        toast.error('You\'re too far from the gym', {
+          description: 'You need to be within 500m to check in.'
+        });
+        return;
+      }
+    }
+
     setIsChecking(true);
     try {
       await checkInMutation.mutateAsync({ gym_id: gym.id });
