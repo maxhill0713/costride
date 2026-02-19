@@ -644,14 +644,8 @@ export default function Gyms() {
               </div>
 
               {/* Google Places Results */}
-              {searchQuery.length >= 2 && (
-                <div className={`rounded-xl p-3 space-y-2 transition-all ${
-                  placesResults.length > 0 
-                    ? 'bg-slate-800/90 border border-green-500/50' 
-                    : searchingPlaces 
-                    ? 'bg-slate-800/90 border border-blue-500/50'
-                    : 'bg-slate-800/50 border border-slate-700/50'
-                }`}>
+              {searchQuery.length >= 2 && placesResults.length > 0 && (
+                <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-green-500/50">
                   {placesResults.length > 0 && (
                     <>
                       <p className="text-xs font-semibold flex items-center gap-2">
