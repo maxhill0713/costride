@@ -102,7 +102,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       queryClient.setQueryData(['checkIns', currentUser?.id, gym?.id], context.previousCheckIns);
       queryClient.setQueryData(['allCheckIns', currentUser?.id], context.previousAllCheckIns);
     },
-    onSuccess: async (newCheckIn) => {
+    onSuccess: async () => {
        setShowSuccess(true);
        setTimeout(() => setShowSuccess(false), 3000);
 
@@ -110,13 +110,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
        if (onCheckInSuccess) {
          onCheckInSuccess();
        }
-
-       // Check if today is a rest day
-       const today = new Date();
-       const dayOfWeek = today.getDay();
-       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-       const trainingDays = currentUser?.training_days || [];
-       const isRestDay = !trainingDays.includes(adjustedDay);
 
        // Epic confetti for every check-in
        confetti({ 
@@ -155,7 +148,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       
       // Check for milestones
       const totalVisits = checkIns.length + 1;
-      const streak = calculateStreak([newCheckIn, ...checkIns], currentUser);
+      const todayCheckIn = { check_in_date: new Date().toISOString(), gym_id: gym.id, user_id: currentUser.id };
+      const streak = calculateStreak([todayCheckIn, ...checkIns], currentUser);
       const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
 
       // Auto-update streak and frequency goals
