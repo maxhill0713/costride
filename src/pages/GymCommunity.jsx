@@ -304,6 +304,15 @@ export default function GymCommunity() {
 
   const deleteEventMutation = useMutation({
     mutationFn: (eventId) => base44.entities.Event.delete(eventId),
+    onMutate: async (eventId) => {
+      await queryClient.cancelQueries({ queryKey: ['events', gymId] });
+      const previous = queryClient.getQueryData(['events', gymId]);
+      queryClient.setQueryData(['events', gymId], (old = []) => old.filter(e => e.id !== eventId));
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['events', gymId], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
     }
