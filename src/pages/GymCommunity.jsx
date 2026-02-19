@@ -187,6 +187,16 @@ export default function GymCommunity() {
       gym_name: gym?.name,
       attendees: 0
     }),
+    onMutate: async (eventData) => {
+      await queryClient.cancelQueries({ queryKey: ['events', gymId] });
+      const previous = queryClient.getQueryData(['events', gymId]);
+      const tempEvent = { ...eventData, id: `temp-${Date.now()}`, gym_id: gymId, gym_name: gym?.name, attendees: 0 };
+      queryClient.setQueryData(['events', gymId], (old = []) => [tempEvent, ...old]);
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['events', gymId], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', gymId] });
       setShowCreateEvent(false);
