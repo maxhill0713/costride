@@ -111,6 +111,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
         >
           {isJoined ? '✓ Already Joined' : 'Join Challenge'}
         </Button>
+        </div>
       </Card>
     </motion.div>
   );
