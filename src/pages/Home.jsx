@@ -228,7 +228,8 @@ export default function Home() {
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
-  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
+  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 4);
+  const challengeWithBadge = activeChallenges.length > 0 ? activeChallenges[0] : null;
 
   // Recent lifts today
   const todayLifts = lifts.filter(l => isToday(new Date(l.created_date))).slice(0, 5);
