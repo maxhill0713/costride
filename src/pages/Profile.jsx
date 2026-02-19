@@ -805,51 +805,13 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="goals" className="space-y-4">
-            {/* Goals Header */}
-            <div className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/20">
-              <div className="flex items-center justify-between mb-4 gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Target className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-white">My Goals</h3>
-                    <p className="text-xs text-slate-400">Track your fitness milestones</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setShowAddGoal(true)}
-                  size="sm"
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg font-semibold"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  <span className="hidden md:inline">New Goal</span>
-                  <span className="md:hidden">Add</span>
-                </Button>
-              </div>
-
-              {/* Goals Overview Stats */}
-              {goals.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
-                    <div className="text-2xl font-black text-blue-400">{goals.filter(g => g.status === 'active').length}</div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Active</div>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
-                    <div className="text-2xl font-black text-green-400">{goals.filter(g => g.status === 'completed').length}</div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Completed</div>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-center">
-                    <div className="text-2xl font-black text-purple-400">
-                      {goals.filter(g => g.status === 'active').length > 0 
-                        ? Math.round(goals.filter(g => g.status === 'active').reduce((sum, g) => sum + ((g.current_value / g.target_value) * 100), 0) / goals.filter(g => g.status === 'active').length)
-                        : 0}%
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Avg Progress</div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Button
+              onClick={() => setShowAddGoal(true)}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Goal
+            </Button>
 
             {activeGoals.length === 0 ? (
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
