@@ -46,6 +46,10 @@ export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [gymId]);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
   const [showManageRewards, setShowManageRewards] = useState(false);
