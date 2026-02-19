@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, ResponsiveContainer, Cell } from 'recharts';
-import { Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
+import { Clock, TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
 
 export default function BusyTimesChart({ checkIns }) {
   const currentHour = new Date().getHours();
