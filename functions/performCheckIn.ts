@@ -9,10 +9,37 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { gymId } = await req.json();
+    const { gymId, userLat, userLon } = await req.json();
 
     if (!gymId) {
       return Response.json({ error: 'Gym ID required' }, { status: 400 });
+    }
+
+    // Fetch gym details for location verification
+    const gymData = await base44.asServiceRole.entities.Gym.filter({ id: gymId });
+    if (!gymData || gymData.length === 0) {
+      return Response.json({ error: 'Gym not found' }, { status: 404 });
+    }
+
+    const gym = gymData[0];
+
+    // If user location provided, verify they're within 500m of gym
+    if (userLat !== null && userLon !== null && gym.latitude && gym.longitude) {
+      const R = 6371000; // Earth's radius in meters
+      const dLat = (gym.latitude - userLat) * Math.PI / 180;
+      const dLon = (gym.longitude - userLon) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(userLat * Math.PI / 180) * Math.cos(gym.latitude * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      if (distance > 500) {
+        return Response.json({ 
+          error: `You're ${Math.round(distance)}m away. Must be within 500m of the gym to check in.`,
+          distance,
+          required: 500
+        }, { status: 400 });
+      }
     }
 
     // Check if already checked in today
