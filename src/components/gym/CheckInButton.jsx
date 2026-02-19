@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -25,8 +25,31 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isWithinRange, setIsWithinRange] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
   const queryClient = useQueryClient();
+
+  // Request location on mount
+  useEffect(() => {
+    if (!gym?.latitude || !gym?.longitude) return;
+    
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          });
+          setLocationError(null);
+        },
+        (error) => {
+          setLocationError(error.message);
+          console.warn('Location request:', error.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    }
+  }, [gym?.latitude, gym?.longitude]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
