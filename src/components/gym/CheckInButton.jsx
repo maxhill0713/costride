@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import LocationPermissionModal from './LocationPermissionModal';
 
 const CHECKIN_RADIUS_METERS = 500;
 
@@ -28,15 +27,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
-  const [showLocationModal, setShowLocationModal] = useState(false);
   const queryClient = useQueryClient();
-
-  // Show location modal on mount if gym has coordinates
-  useEffect(() => {
-    if (gym?.latitude && gym?.longitude && !userLocation && !locationError) {
-      setShowLocationModal(true);
-    }
-  }, [gym?.latitude, gym?.longitude, userLocation, locationError]);
 
   // Request location on button click (requires user gesture on HTTPS)
   const requestLocation = () => {
@@ -731,13 +722,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           </Button>
           </motion.div>
           )}
-
-      {/* Location Permission Modal */}
-      <LocationPermissionModal 
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        onLocationGranted={(location) => setUserLocation(location)}
-      />
 
           {hasCheckedInToday() && (
         <p className="text-center text-sm text-gray-500">
