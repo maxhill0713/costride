@@ -549,16 +549,20 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
     setIsChecking(true);
     try {
-      // Check location if gym has coordinates
-      if (gym.latitude && gym.longitude) {
-        if (!userLocation) {
-          toast.error('Location required', {
+      // Request location if gym has coordinates and we don't have it yet
+      if (gym.latitude && gym.longitude && !userLocation) {
+        const locationGranted = await requestLocation();
+        if (!locationGranted) {
+          toast.error('Location access required', {
             description: 'Please enable location access to check in.'
           });
           setIsChecking(false);
           return;
         }
+      }
 
+      // Check location if gym has coordinates
+      if (gym.latitude && gym.longitude && userLocation) {
         const distance = getDistanceMeters(userLocation.lat, userLocation.lon, gym.latitude, gym.longitude);
         if (distance > CHECKIN_RADIUS_METERS) {
           toast.error(`Too far (${Math.round(distance)}m away)`, {
