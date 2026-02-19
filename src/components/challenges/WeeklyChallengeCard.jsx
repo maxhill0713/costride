@@ -71,34 +71,14 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           </div>
 
           {/* Reward Section */}
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl p-4 mt-4 flex items-center gap-3">
-            {isBadgeReward ? (
-              <>
-                {/* Badge Reward Display */}
-                <div className="relative w-16 h-16 flex-shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-full p-1 shadow-lg shadow-yellow-500/40">
-                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-full flex items-center justify-center">
-                      <Award className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                  <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-yellow-300 animate-spin" style={{ animationDuration: '3s' }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">Unlock</p>
-                  <p className="text-sm font-bold text-yellow-300">{challenge.reward}</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Gift className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">Reward</p>
-                  <p className="text-xs font-bold text-green-400">{challenge.reward || 'Weekly Warrior Badge'}</p>
-                </div>
-              </>
-            )}
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl p-5 mt-4 flex items-center gap-4">
+            <div className="flex-shrink-0">
+              <UniqueBadge reward={challenge.reward} size="md" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Challenge Reward</p>
+              <p className="text-sm font-bold text-cyan-300">{challenge.reward || 'Weekly Challenge Badge'}</p>
+            </div>
           </div>
 
           {/* Progress Bar */}
