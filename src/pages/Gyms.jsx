@@ -70,7 +70,8 @@ export default function Gyms() {
     queryKey: ['gyms'],
     queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 100),
     staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const memberGymIds = gymMemberships.map(m => m.gym_id);
