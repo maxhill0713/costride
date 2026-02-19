@@ -598,9 +598,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       const userLat = position.coords.latitude;
       const userLon = position.coords.longitude;
 
-      // Get gym coordinates from postcode using geocoding API
-      const gymPostcode = gym.postcode;
-      if (!gymPostcode) {
+      // Use gym's stored lat/lng from Google Places
+      if (!gym.latitude || !gym.longitude) {
         toast.error('Gym location not set', {
           description: 'Please contact the gym owner to set their location.'
         });
@@ -608,29 +607,14 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         return;
       }
 
-      // Use free geocoding API to convert postcode to coordinates
-      const geocodeResponse = await fetch(
-        `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
-      );
-      
-      if (!geocodeResponse.ok) {
-        toast.error('Could not verify gym location', {
-          description: 'Please try again or contact support.'
-        });
-        setIsChecking(false);
-        return;
-      }
+      const gymLat = gym.latitude;
+      const gymLon = gym.longitude;
 
-      const geocodeData = await geocodeResponse.json();
-      const gymLat = geocodeData.result.latitude;
-      const gymLon = geocodeData.result.longitude;
+      // Calculate distance in meters
+      const distanceMeters = getDistanceMeters(userLat, userLon, gymLat, gymLon);
 
-      // Calculate distance
-      const distance = getDistance(userLat, userLon, gymLat, gymLon);
-      const maxDistance = 0.5; // 500 meters = 0.5 km
-
-      if (distance > maxDistance) {
-        setLocationErrorDistance(distance);
+      if (distanceMeters > CHECKIN_RADIUS_METERS) {
+        setLocationErrorDistance(distanceMeters);
         setShowLocationError(true);
         setIsChecking(false);
         return;
