@@ -615,25 +615,7 @@ export default function Profile() {
               {/* Workout Progress Tracker */}
               <WorkoutProgressTracker currentUser={currentUser} />
 
-              {/* Gym Memberships - Compact */}
-              {memberGyms.length > 0 && (
-                <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
-                  <div className="flex items-center gap-2 mb-2">
-                      <Building2 className="w-4 h-4 text-blue-400" />
-                      <span className="text-xs font-bold text-slate-300">Member at {memberGyms.length} gym{memberGyms.length > 1 ? 's' : ''}</span>
-                    </div>
-                  <div className="flex flex-wrap gap-2">
-                    {memberGyms.map((gym) => (
-                      <span 
-                        key={gym.id}
-                        className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-medium"
-                      >
-                        {gym.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+
             </TabsContent>
 
             <TabsContent value="stats" className="space-y-4">
