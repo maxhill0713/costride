@@ -652,56 +652,53 @@ export default function Gyms() {
                     ? 'bg-slate-800/90 border border-blue-500/50'
                     : 'bg-slate-800/50 border border-slate-700/50'
                 }`}>
-                  <p className="text-xs font-semibold flex items-center gap-2">
-                    {searchingPlaces ? (
-                      <>
-                        <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
-                        <span className="text-blue-400">Searching Google Places...</span>
-                      </>
-                    ) : placesResults.length > 0 ? (
-                      <>
+                  {placesResults.length > 0 && (
+                    <>
+                      <p className="text-xs font-semibold flex items-center gap-2">
                         <Plus className="w-3 h-3 text-green-400" />
                         <span className="text-green-400">Found {placesResults.length} gyms on Google Places</span>
-                      </>
-                    ) : (
-                      <>
-                        <MapPin className="w-3 h-3 text-slate-400" />
-                        <span className="text-slate-400">No results from Google Places</span>
-                      </>
-                    )}
-                  </p>
-                  {placesResults.length > 0 && (
-                    <div className="space-y-2">
-                      {placesResults.slice(0, 5).map((place) => (
-                        <button
-                          key={place.place_id}
-                          onClick={() => handleSelectPlace(place)}
-                          className="w-full text-left p-3 rounded-lg bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                              <Plus className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-white text-sm mb-0.5">{place.name}</h4>
-                              <div className="flex items-center gap-1 text-slate-400 text-xs">
-                                <MapPin className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate">{place.address}</span>
+                      </p>
+                      <div className="space-y-2">
+                        {placesResults.slice(0, 5).map((place) => (
+                          <button
+                            key={place.place_id}
+                            onClick={() => handleSelectPlace(place)}
+                            className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden"
+                          >
+                            <div className="flex items-stretch gap-0">
+                              {/* Gym photo */}
+                              <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
+                                {place.photo_url ? (
+                                  <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Dumbbell className="w-6 h-6 text-slate-500" />
+                                  </div>
+                                )}
                               </div>
-                              {place.rating && (
-                                <div className="flex items-center gap-1 mt-1">
-                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-slate-300 text-xs">{place.rating}</span>
+                              <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
+                                <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
+                                <div className="flex items-center gap-1 text-slate-400 text-xs">
+                                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{place.address}</span>
                                 </div>
-                              )}
+                                {place.rating && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-slate-300 text-xs">{place.rating}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center pr-3">
+                                <Badge className="bg-green-600/30 text-green-200 border border-green-500/40 text-xs">
+                                  Add
+                                </Badge>
+                              </div>
                             </div>
-                            <Badge className="bg-green-600/30 text-green-200 border border-green-500/40 text-xs">
-                              Add
-                            </Badge>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
