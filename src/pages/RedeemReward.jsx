@@ -261,6 +261,7 @@ export default function RedeemReward() {
         {/* Weekly Challenges Section */}
         {activeSection === 'weekly' && (
           <div>
+            <div>
               <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-amber-400" />
                 Weekly Challenges
@@ -282,6 +283,7 @@ export default function RedeemReward() {
                 </Card>
               )}
             </div>
+          </div>
         )}
 
         {/* Community Challenges Section */}
@@ -299,205 +301,158 @@ export default function RedeemReward() {
                   <p className="text-slate-400">Join gym community challenges to get started</p>
                 </Card>
               ) : (
-                userChallengeProgress.map((challenge) => (
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
-                      <div className="relative">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-white mb-2 text-sm text-slate-300">{challenge.title}</h4>
-                            <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
-                            <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] inline-block">
-                              {challenge.targetValue} {challenge.goal_type === 'participation' ? 'participants' : 'check-ins'}
-                            </Badge>
-                          </div>
-                          <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-amber-500/30">
-                            <Trophy className="w-6 h-6 text-white" />
-                          </div>
-                        </div>
+                 userChallengeProgress.map((challenge) => (
+                   <div key={challenge.id}>
+                     <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
+                       <div className="relative">
+                         <div className="flex items-start justify-between mb-3">
+                           <div className="flex-1 min-w-0">
+                             <h4 className="font-bold text-white mb-2 text-sm text-slate-300">{challenge.title}</h4>
+                             <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
+                             <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] inline-block">
+                               {challenge.targetValue} {challenge.goal_type === 'participation' ? 'participants' : 'check-ins'}
+                             </Badge>
+                           </div>
+                           <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-amber-500/30">
+                             <Trophy className="w-6 h-6 text-white" />
+                           </div>
+                         </div>
 
-                        <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mt-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Gift className="w-4 h-4 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[10px] text-slate-400">Reward</p>
-                            <p className="text-xs font-bold text-green-400">{challenge.reward || 'Challenge Badge'}</p>
-                          </div>
-                        </div>
+                         <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mt-3">
+                           <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                             <Gift className="w-4 h-4 text-white" />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <p className="text-[10px] text-slate-400">Reward</p>
+                             <p className="text-xs font-bold text-green-400">{challenge.reward || 'Challenge Badge'}</p>
+                           </div>
+                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-slate-700/50">
-                          <div className="flex justify-between items-center mb-2">
-                            <p className="text-[10px] font-bold text-slate-400">Progress</p>
-                            <p className="text-[10px] font-bold text-amber-400">{Math.round(challenge.progress)}%</p>
-                          </div>
-                          <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
-                            <div 
-                              style={{ width: `${challenge.progress}%` }}
-                              className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600"
-                            />
-                          </div>
-                        </div>
+                         <div className="mt-3 pt-3 border-t border-slate-700/50">
+                           <div className="flex justify-between items-center mb-2">
+                             <p className="text-[10px] font-bold text-slate-400">Progress</p>
+                             <p className="text-[10px] font-bold text-amber-400">{Math.round(challenge.progress)}%</p>
+                           </div>
+                           <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+                             <div 
+                               style={{ width: `${challenge.progress}%` }}
+                               className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600"
+                             />
+                           </div>
+                         </div>
 
-                        <div className="mt-3">
-                          <Button
-                            disabled
-                            className="w-full font-bold text-xs md:text-sm h-8 md:h-10 bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50"
-                          >
-                            ✓ Joined
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+                         <div className="mt-3">
+                           <Button
+                             disabled
+                             className="w-full font-bold text-xs md:text-sm h-8 md:h-10 bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50"
+                           >
+                             ✓ Joined
+                           </Button>
+                         </div>
+                       </div>
+                     </Card>
+                   </div>
+                 ))
+               )}
+             </div>
+           </div>
+         </div>
         )}
 
         {/* Rewards Section */}
         {activeSection === 'rewards' && (
          <div>
-        <div>
-          <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
-            <Gift className="w-5 h-5 text-purple-400" />
-            Available Rewards
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
-              <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
-                <Gift className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">No rewards available to claim right now</p>
-              </Card>
-            ) : (
-              <>
-                {completedChallengeRewards.map((reward) => (
-                  <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all group overflow-hidden shadow-2xl shadow-black/20">
-                     <div className="flex items-start justify-between mb-2">
-                       <div className="flex-1 min-w-0">
-                         <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
-                         <p className="text-xs md:text-sm text-amber-400 mb-2 line-clamp-1">{reward.earnedText}</p>
-                         <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
-                           Challenge Reward
-                         </Badge>
-                       </div>
-                       <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
-                     </div>
+         <div>
+           <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+             <Gift className="w-5 h-5 text-purple-400" />
+             Available Rewards
+           </h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
+               <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
+                 <Gift className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                 <p className="text-slate-400">No rewards available to claim right now</p>
+               </Card>
+             ) : (
+               <>
+                 {completedChallengeRewards.map((reward) => (
+                   <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 transition-all group overflow-hidden shadow-2xl shadow-black/20">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-white mb-1 text-sm md:text-base truncate">{reward.title}</h3>
+                          <p className="text-xs md:text-sm text-amber-400 mb-2 line-clamp-1">{reward.earnedText}</p>
+                          <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] md:text-xs inline-block">
+                            Challenge Reward
+                          </Badge>
+                        </div>
+                        <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
+                      </div>
 
-                     <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
-                       {reward.reward && (
-                         <div className="mb-2 text-xs md:text-sm text-slate-300">
-                           💝 {reward.reward}
-                         </div>
-                       )}
-                       <Button
-                         onClick={() => {
-                           setSelectedReward(reward);
-                           claimMutation.mutate(reward);
-                         }}
-                         disabled={claimMutation.isPending}
-                         className="w-full h-8 md:h-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
-                       >
-                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
-                       </Button>
-                     </div>
-                   </Card>
-                 ))}
-                 {unclaimedRewards.map((reward) => (
-                   <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all group overflow-hidden shadow-2xl shadow-black/20">
-                     <div className="flex items-start justify-between mb-2">
-                       <div className="flex-1 min-w-0">
-                         <div className="flex items-center gap-2 mb-1">
-                           <h3 className="font-bold text-white text-sm md:text-base truncate">{reward.title}</h3>
-                           {reward.premium_only && (
-                             <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px]">
-                               👑 Premium
-                             </Badge>
-                           )}
-                         </div>
-                         <p className="text-xs md:text-sm text-slate-400 mb-2 line-clamp-1">{reward.description}</p>
-                         <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] md:text-xs inline-block">
-                           {reward.type}
-                         </Badge>
-                       </div>
-                       <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
-                     </div>
+                      <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
+                        {reward.reward && (
+                          <div className="mb-2 text-xs md:text-sm text-slate-300">
+                            💝 {reward.reward}
+                          </div>
+                        )}
+                        <Button
+                          onClick={() => {
+                            setSelectedReward(reward);
+                            claimMutation.mutate(reward);
+                          }}
+                          disabled={claimMutation.isPending}
+                          className="w-full h-8 md:h-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
+                        >
+                          {claimMutation.isPending ? 'Claiming...' : 'Claim'}
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                  {unclaimedRewards.map((reward) => (
+                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all group overflow-hidden shadow-2xl shadow-black/20">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-white text-sm md:text-base truncate">{reward.title}</h3>
+                            {reward.premium_only && (
+                              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] md:text-[10px] inline-block flex-shrink-0">
+                                Pro
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs md:text-sm text-cyan-400 mb-2 line-clamp-1">{reward.description}</p>
+                          <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] md:text-xs inline-block">
+                            Available Now
+                          </Badge>
+                        </div>
+                        <div className="text-lg md:text-xl flex-shrink-0 ml-2">{reward.icon}</div>
+                      </div>
 
-                     <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
-                       {reward.points_required > 0 && (
-                         <div className="mb-2 flex items-center gap-1.5 text-xs md:text-sm text-slate-400">
-                           <Flame className="w-3 md:w-4 h-3 md:h-4 text-orange-500 flex-shrink-0" />
-                           <span>{reward.points_required} pts</span>
-                         </div>
-                       )}
-                       <Button
-                         onClick={() => {
-                           setSelectedReward(reward);
-                           claimMutation.mutate(reward);
-                         }}
-                         disabled={claimMutation.isPending}
-                         className="w-full h-8 md:h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all"
-                       >
-                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
-                       </Button>
-                     </div>
-                   </Card>
-                 ))}
+                      <div className="pt-2 md:pt-2.5 border-t border-slate-700/50 mt-2">
+                        {reward.value && (
+                          <div className="mb-2 text-xs md:text-sm text-slate-300">
+                            💝 {reward.value}
+                          </div>
+                        )}
+                        <Button
+                          onClick={() => {
+                            setSelectedReward(reward);
+                            claimMutation.mutate(reward);
+                          }}
+                          disabled={claimMutation.isPending || (reward.premium_only && !isPremium)}
+                          className="w-full h-8 md:h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm md:text-base rounded-lg md:rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {claimMutation.isPending ? 'Claiming...' : reward.premium_only && !isPremium ? 'Pro Only' : 'Claim'}
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
                </>
              )}
            </div>
          </div>
-         </motion.div>
-         )}
-
-
-
-
-      </div>
-
-      {/* QR Code Modal */}
-      <AnimatePresence>
-        {showQRModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <Card className="bg-slate-900/95 backdrop-blur-xl border border-cyan-500/40 p-8 rounded-3xl max-w-md mx-auto text-center shadow-2xl shadow-cyan-500/20">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-cyan-500/30">
-                  <QrCode className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-3xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-3">Reward Claimed!</h3>
-                <p className="text-slate-400 mb-8 text-lg">Show this QR code at redemption to claim your reward</p>
-                <div className="bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl mb-8">
-                  <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-                    <QrCode className="w-32 h-32 text-slate-900" />
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setShowQRModal(false)}
-                  className="w-full h-12 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20"
-                >
-                  Done
-                </Button>
-              </Card>
-            </motion.div>
-          </motion.div>
+        </div>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 }
