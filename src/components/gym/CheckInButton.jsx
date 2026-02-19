@@ -503,6 +503,10 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     if (!gym || hasCheckedInToday()) return;
 
     const checkLocationRange = async () => {
+      if (!gym.latitude || !gym.longitude) {
+        setIsWithinRange(false);
+        return;
+      }
       try {
         const position = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -512,38 +516,12 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           });
         });
 
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
-        console.log('User location:', userLat, userLon);
-
-        const gymPostcode = gym.postcode;
-        console.log('Gym postcode:', gymPostcode);
-        if (!gymPostcode) {
-          console.log('No gym postcode set');
-          setIsWithinRange(false);
-          return;
-        }
-
-        const geocodeResponse = await fetch(
-          `https://api.postcodes.io/postcodes/${encodeURIComponent(gymPostcode)}`
+        const distanceMeters = getDistanceMeters(
+          position.coords.latitude, position.coords.longitude,
+          gym.latitude, gym.longitude
         );
 
-        if (!geocodeResponse.ok) {
-          console.log('Geocode API failed:', geocodeResponse.status);
-          setIsWithinRange(false);
-          return;
-        }
-
-        const geocodeData = await geocodeResponse.json();
-        const gymLat = geocodeData.result.latitude;
-        const gymLon = geocodeData.result.longitude;
-        console.log('Gym location:', gymLat, gymLon);
-
-        const distance = getDistance(userLat, userLon, gymLat, gymLon);
-        console.log('Distance to gym (km):', distance);
-        const maxDistance = 0.5;
-
-        setIsWithinRange(distance <= maxDistance);
+        setIsWithinRange(distanceMeters <= CHECKIN_RADIUS_METERS);
       } catch (error) {
         console.error('Location check error:', error);
         setIsWithinRange(false);
@@ -552,18 +530,6 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
     checkLocationRange();
   }, [gym, hasCheckedInToday()]);
-
-  const getDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Distance in km
-  };
 
   const isClaimedGym = gym && (gym.owner_email || gym.admin_id);
 
