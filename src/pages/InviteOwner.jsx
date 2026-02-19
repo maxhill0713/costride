@@ -43,7 +43,9 @@ export default function InviteOwner() {
       });
       return requests.filter(r => r.message?.includes(gym?.name));
     },
-    enabled: !!gymId && !!currentUser && !!gym
+    enabled: !!gymId && !!currentUser && !!gym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const submitOfficialRequestMutation = useMutation({
