@@ -173,7 +173,15 @@ export default function Gyms() {
       // Filter out places that already exist in our database
       const existingPlaceIds = gyms.map(g => g.google_place_id).filter(Boolean);
       const newPlaces = results.filter(place => !existingPlaceIds.includes(place.place_id));
-      
+
+      // Preload images immediately so they're cached when rendered
+      newPlaces.forEach(place => {
+        if (place.photo_url) {
+          const img = new Image();
+          img.src = place.photo_url;
+        }
+      });
+
       setPlacesResults(newPlaces);
     } catch (error) {
       console.error('Places search failed:', error);
