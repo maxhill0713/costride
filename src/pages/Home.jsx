@@ -389,15 +389,7 @@ export default function Home() {
                 }
               </p>
 
-              {daysSinceCheckIn === 0 ? (
-                <Button 
-                  disabled
-                  className="w-full text-white shadow-lg py-7 text-lg font-semibold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 cursor-default tracking-tight"
-                >
-                  <CheckCircle className="w-6 h-6 mr-2" />
-                  Great Work—Checked In Today! Keep the Streak Alive 🔥
-                </Button>
-              ) : (
+              {daysSinceCheckIn !== 0 && (
                 <CheckInButton 
                   gym={memberGym}
                   onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
