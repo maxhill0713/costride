@@ -732,6 +732,13 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           </motion.div>
           )}
 
+      {/* Location Permission Modal */}
+      <LocationPermissionModal 
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onLocationGranted={(location) => setUserLocation(location)}
+      />
+
           {hasCheckedInToday() && (
         <p className="text-center text-sm text-gray-500">
           See you tomorrow! Keep the streak alive 🔥
