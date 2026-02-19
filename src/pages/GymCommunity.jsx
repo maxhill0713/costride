@@ -845,7 +845,7 @@ export default function GymCommunity() {
           <div className="absolute top-4 right-4 flex gap-2 z-10">
             {isGhostGym && !isGymOwner && (
               <Button
-                onClick={() => window.location.href = createPageUrl('InviteOwner') + `?id=${gymId}`}
+                onClick={() => setShowInviteOwnerModal(true)}
                 variant="ghost"
                 size="sm"
                 className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
