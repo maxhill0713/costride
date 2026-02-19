@@ -102,7 +102,8 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             </div>
           </div>
 
-          <div className="mt-3 flex gap-2">
+          {/* Action Buttons */}
+          <div className="mt-5 flex gap-2">
             <motion.div 
               whileHover={!userHasJoined && !isExpired && !isOwner ? { scale: 1.02 } : {}}
               whileTap={!userHasJoined && !isExpired && !isOwner ? { scale: 0.98 } : {}}
@@ -111,14 +112,14 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
               <Button
                 onClick={handleJoinClick}
                 disabled={userHasJoined || isExpired || isOwner}
-                className={`w-full font-bold text-xs md:text-sm h-8 md:h-10 transition-all ${
+                className={`w-full font-bold text-sm h-10 transition-all rounded-lg ${
                   userHasJoined 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50' 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50 shadow-lg shadow-green-500/30' 
                     : isExpired
                     ? 'hidden'
                     : isOwner
                     ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-slate-300 cursor-not-allowed border border-slate-600'
-                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border border-amber-400/50'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border border-amber-400/50 shadow-lg shadow-amber-500/30'
                 }`}
               >
                 {userHasJoined ? '✓ Joined' : isOwner ? '👑 Your Challenge' : 'Join Challenge'}
@@ -129,7 +130,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
                 onClick={() => onDelete(challenge.id)}
                 variant="outline"
                 size="icon"
-                className="border border-red-500/50 hover:bg-red-500/10 hover:border-red-500 h-8 md:h-10 flex-shrink-0"
+                className="border border-red-500/50 hover:bg-red-500/10 hover:border-red-500 h-10 flex-shrink-0 rounded-lg"
               >
                 <Trash2 className="w-4 h-4 text-red-500" />
               </Button>
