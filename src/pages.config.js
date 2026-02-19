@@ -81,6 +81,7 @@ import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import UserProfile from './pages/UserProfile';
 import GymCommunity from './pages/GymCommunity';
+import RedeemReward from './pages/RedeemReward';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +120,7 @@ export const PAGES = {
     "SubscriptionSettings": SubscriptionSettings,
     "UserProfile": UserProfile,
     "GymCommunity": GymCommunity,
+    "RedeemReward": RedeemReward,
 }
 
 export const pagesConfig = {
