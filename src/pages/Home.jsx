@@ -540,7 +540,7 @@ export default function Home() {
                      </div>
                      <ChevronRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
                    </div>
-                  <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
+                  <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} gymImage={memberGym?.image_url} />
                 </div>
               </Card>
             </Link>
