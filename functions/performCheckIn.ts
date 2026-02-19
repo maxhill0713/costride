@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       user_name: user.full_name,
       gym_id: gymId,
-      gym_name: (await base44.asServiceRole.entities.Gym.filter({ id: gymId }))[0]?.name,
+      gym_name: gym.name,
       check_in_date: new Date().toISOString(),
       first_visit: false
     });
