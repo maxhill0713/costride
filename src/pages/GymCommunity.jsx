@@ -297,6 +297,15 @@ export default function GymCommunity() {
 
   const deleteChallengeMutation = useMutation({
     mutationFn: (challengeId) => base44.entities.Challenge.delete(challengeId),
+    onMutate: async (challengeId) => {
+      await queryClient.cancelQueries({ queryKey: ['challenges', gymId] });
+      const previous = queryClient.getQueryData(['challenges', gymId]);
+      queryClient.setQueryData(['challenges', gymId], (old = []) => old.filter(c => c.id !== challengeId));
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['challenges', gymId], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });
     }
