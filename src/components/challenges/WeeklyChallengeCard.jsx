@@ -42,6 +42,8 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
     }
   });
 
+  const isBadgeReward = challenge.reward && challenge.reward.toLowerCase().includes('badge');
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -49,47 +51,73 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-cyan-400/30 transition-all overflow-hidden group relative shadow-2xl shadow-black/20">
-         <div className="relative">
-           <div className="flex items-start justify-between mb-3">
-             <div className="flex-1 min-w-0">
-               <h4 className="font-bold text-white mb-2 text-sm text-slate-300">{challenge.title}</h4>
-              <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
-              <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] inline-block">
+      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-5 hover:border-cyan-500/40 transition-all overflow-hidden group relative shadow-2xl shadow-black/40">
+        {/* Decorative glow */}
+        <div className="absolute -top-12 -right-12 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all" />
+        
+        <div className="relative z-10">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-white mb-1 text-base">{challenge.title}</h4>
+              <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
+              <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] inline-block">
                 {challenge.target_value} check-ins
               </Badge>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2 shadow-lg shadow-cyan-500/30">
-              <Trophy className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-cyan-500/40">
+              <Trophy className="w-7 h-7 text-white" />
             </div>
           </div>
 
-          <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-3 flex items-center gap-2 mt-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Gift className="w-4 h-4 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-slate-400">Reward</p>
-              <p className="text-xs font-bold text-green-400">{challenge.reward || 'Weekly Warrior Badge'}</p>
-            </div>
+          {/* Reward Section */}
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl p-4 mt-4 flex items-center gap-3">
+            {isBadgeReward ? (
+              <>
+                {/* Badge Reward Display */}
+                <div className="relative w-16 h-16 flex-shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-full p-1 shadow-lg shadow-yellow-500/40">
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-full flex items-center justify-center">
+                      <Award className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                  <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-yellow-300 animate-spin" style={{ animationDuration: '3s' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">Unlock</p>
+                  <p className="text-sm font-bold text-yellow-300">{challenge.reward}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Gift className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider">Reward</p>
+                  <p className="text-xs font-bold text-green-400">{challenge.reward || 'Weekly Warrior Badge'}</p>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="mt-3 pt-3 border-t border-slate-700/50">
+          {/* Progress Bar */}
+          <div className="mt-4 pt-4 border-t border-slate-700/50">
             <div className="flex justify-between items-center mb-2">
-              <p className="text-[10px] font-bold text-slate-400">Progress</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Progress</p>
               <p className="text-[10px] font-bold text-cyan-400">{Math.round(progress)}%</p>
             </div>
-            <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+            <div className="relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600"
+                className="h-full bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/50"
               />
             </div>
           </div>
 
-          <div className="mt-3 flex gap-2">
+          {/* Action Buttons */}
+          <div className="mt-5 flex gap-2">
             <motion.div 
               whileHover={!isParticipant && !isExpired ? { scale: 1.02 } : {}}
               whileTap={!isParticipant && !isExpired ? { scale: 0.98 } : {}}
@@ -98,12 +126,12 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
               <Button
                 onClick={() => joinMutation.mutate()}
                 disabled={joinMutation.isPending || isExpired || isParticipant}
-                className={`w-full font-bold text-xs md:text-sm h-8 md:h-10 transition-all ${
+                className={`w-full font-bold text-sm h-10 transition-all rounded-lg ${
                   isParticipant 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50' 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50 shadow-lg shadow-green-500/30' 
                     : isExpired
                     ? 'hidden'
-                    : 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-400/50'
+                    : 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-400/50 shadow-lg shadow-cyan-500/30'
                 }`}
               >
                 {isParticipant ? '✓ Joined' : 'Join Challenge'}
