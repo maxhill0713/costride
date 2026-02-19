@@ -11,7 +11,6 @@ import FriendsIcon from '../components/FriendsIcon';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
-import UniqueBadge from '../components/challenges/UniqueBadge';
 import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
@@ -229,8 +228,7 @@ export default function Home() {
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
-  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 4);
-  const challengeWithBadge = activeChallenges.length > 0 ? activeChallenges[0] : null;
+  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
 
   // Recent lifts today
   const todayLifts = lifts.filter(l => isToday(new Date(l.created_date))).slice(0, 5);
@@ -530,30 +528,22 @@ export default function Home() {
 
 
 
-          {/* Weekly Challenges - 4 Grid */}
-          {activeChallenges.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-base font-bold text-white tracking-tight px-1 flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-amber-400" />
-                Weekly Challenges
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {activeChallenges.map((challenge, idx) => (
-                  <Link key={challenge.id} to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
-                    <Card className="relative bg-gradient-to-br from-slate-800/50 via-slate-900/50 to-slate-950/70 border border-blue-500/30 hover:border-blue-400/50 transition-all cursor-pointer shadow-lg shadow-black/20 rounded-xl overflow-hidden group h-full">
-                      <div className="p-3 relative h-full flex flex-col">
-                        {idx === 0 && (
-                          <div className="absolute -top-2 -right-2 z-10">
-                            <UniqueBadge reward={challenge.reward} size="sm" />
-                          </div>
-                        )}
-                        <WeeklyChallengeCard challenge={challenge} currentUser={currentUser} />
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
+          {/* Weekly Challenges */}
+          {featuredChallenge && (
+            <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-[50px] border border-blue-500/40 hover:border-blue-400/50 transition-all cursor-pointer shadow-2xl shadow-black/20 rounded-2xl overflow-hidden group">
+                <div className="relative p-4">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                     <div className="flex items-center gap-2">
+                       <Trophy className="w-5 h-5 text-amber-400" />
+                       <h3 className="text-base font-bold text-white tracking-tight">Compete & Crush It</h3>
+                     </div>
+                     <ChevronRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                   </div>
+                  <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
+                </div>
+              </Card>
+            </Link>
           )}
 
         {/* Join a Gym Prompt */}
