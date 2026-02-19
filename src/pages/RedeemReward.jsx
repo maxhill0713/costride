@@ -282,12 +282,11 @@ export default function RedeemReward() {
                 </Card>
               )}
             </div>
-          </motion.div>
         )}
 
         {/* Community Challenges Section */}
         {activeSection === 'community' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div>
             <div className="mb-4">
               <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-cyan-400" />
