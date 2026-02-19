@@ -21,11 +21,19 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="p-5 bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden relative group">
+      <Card className="bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden relative group">
+        {/* Gym Background Image */}
+        {gymImage && (
+          <div className="absolute inset-0 h-20 w-full overflow-hidden">
+            <img src={gymImage} alt="Gym" className="w-full h-full object-cover opacity-30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/80" />
+          </div>
+        )}
+        
         {/* Decorative glow */}
         <div className="absolute -top-12 -right-12 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all" />
         
-        <div className="relative z-10">
+        <div className="relative z-10 p-5">
         {/* Header with Title and Reward */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex-1">
