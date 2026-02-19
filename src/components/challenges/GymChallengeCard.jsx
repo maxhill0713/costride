@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 import confetti from 'canvas-confetti';
 
-export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
+export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false, gymImage }) {
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const isExpired = daysLeft <= 0;
   const participantCount = challenge.participants?.length || 0;
