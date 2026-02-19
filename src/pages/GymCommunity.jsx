@@ -76,7 +76,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: members = [] } = useQuery({
