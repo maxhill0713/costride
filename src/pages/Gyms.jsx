@@ -669,9 +669,17 @@ export default function Gyms() {
                           >
                             <div className="flex items-stretch gap-0">
                               {/* Gym photo */}
-                              <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
+                              <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden relative">
                                 {place.photo_url ? (
-                                  <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" />
+                                  <>
+                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-600 to-slate-700 animate-pulse" />
+                                    <img
+                                      src={place.photo_url}
+                                      alt={place.name}
+                                      className="w-full h-full object-cover relative z-10"
+                                      onLoad={(e) => e.target.previousSibling.style.display = 'none'}
+                                    />
+                                  </>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
                                     <Dumbbell className="w-6 h-6 text-slate-500" />
