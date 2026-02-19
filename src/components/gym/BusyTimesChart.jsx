@@ -65,7 +65,7 @@ export default function BusyTimesChart({ checkIns }) {
         </div>
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${status.bg} ${status.border} backdrop-blur-sm`}>
           <StatusIcon className={`w-4 h-4 ${status.color}`} />
-          <span className={`text-xs font-semibold ${status.color}`}{status.text}</span>
+          <span className={`text-xs font-semibold ${status.color}`}>{status.text}</span>
         </div>
       </div>
 
