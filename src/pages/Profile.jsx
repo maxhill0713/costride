@@ -706,7 +706,9 @@ export default function Profile() {
 
 
               {/* Badges Section */}
-              <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
+              <div data-badges-section>
+                <BadgesDisplay user={currentUser} checkIns={userCheckIns} />
+              </div>
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
