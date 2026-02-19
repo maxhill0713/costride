@@ -39,8 +39,8 @@ import CreateChallengeModal from '../components/challenges/CreateChallengeModal'
 import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
+import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
 import { motion } from 'framer-motion';
-// i18n import removed - using default language
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
