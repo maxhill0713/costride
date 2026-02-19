@@ -779,7 +779,9 @@ export default function Gyms() {
                           <img 
                             src={gym.image_url} 
                             alt={gym.name} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            loading="eager"
+                            fetchpriority="high"
                           />
                         )}
 
