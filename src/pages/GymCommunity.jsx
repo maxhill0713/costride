@@ -977,13 +977,14 @@ export default function GymCommunity() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-white mb-1">Unlock rewards and challenges</p>
-                  <p className="text-xs text-slate-300">Help activate this gym community</p>
+                  <p className="text-xs text-slate-300">Join this gym community</p>
                 </div>
                 <Button
-                  onClick={() => setShowInviteOwnerModal(true)}
+                  onClick={() => joinGhostGymMutation.mutate()}
+                  disabled={joinGhostGymMutation.isPending}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl whitespace-nowrap"
                 >
-                  Activate
+                  {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
                 </Button>
               </div>
             </Card>
