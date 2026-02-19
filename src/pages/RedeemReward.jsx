@@ -261,8 +261,7 @@ export default function RedeemReward() {
         {/* Weekly Challenges Section */}
         {activeSection === 'weekly' && (
           <div>
-            <div>
-              <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+            <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-amber-400" />
                 Weekly Challenges
               </h2>
@@ -289,11 +288,10 @@ export default function RedeemReward() {
         {/* Community Challenges Section */}
         {activeSection === 'community' && (
           <div>
-            <div className="mb-4">
-              <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-cyan-400" />
-                Community Challenges
-              </h2>
+            <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-cyan-400" />
+              Community Challenges
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userChallengeProgress.length === 0 ? (
                 <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 col-span-2 text-center">
@@ -354,20 +352,18 @@ export default function RedeemReward() {
                    </div>
                  ))
                )}
-             </div>
-           </div>
-         </div>
+            </div>
+          </div>
         )}
 
         {/* Rewards Section */}
         {activeSection === 'rewards' && (
-         <div>
-         <div>
-           <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
-             <Gift className="w-5 h-5 text-purple-400" />
-             Available Rewards
-           </h2>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h2 className="text-xl font-black text-white mb-3 flex items-center gap-2">
+              <Gift className="w-5 h-5 text-purple-400" />
+              Available Rewards
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
                  <Gift className="w-12 h-12 text-slate-600 mx-auto mb-3" />
