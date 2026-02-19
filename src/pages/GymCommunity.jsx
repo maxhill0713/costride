@@ -832,6 +832,8 @@ export default function GymCommunity() {
               src={gym.image_url} 
               alt={gym.name} 
               className="w-full h-full object-cover opacity-70"
+              loading="eager"
+              fetchpriority="high"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
