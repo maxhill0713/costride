@@ -536,48 +536,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       return;
     }
 
-    // Check if out of range
-    if (isWithinRange === false) {
-      setShowOutOfRangeDialog(true);
-      return;
-    }
-    
     setIsChecking(true);
     try {
-      // Get user's location with permission dialog
-      const position = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        });
-      });
-
-      const userLat = position.coords.latitude;
-      const userLon = position.coords.longitude;
-
-      // Use gym's stored lat/lng from Google Places
-      if (!gym.latitude || !gym.longitude) {
-        toast.error('Gym location not set', {
-          description: 'Please contact the gym owner to set their location.'
-        });
-        setIsChecking(false);
-        return;
-      }
-
-      const gymLat = gym.latitude;
-      const gymLon = gym.longitude;
-
-      // Calculate distance in meters
-      const distanceMeters = getDistanceMeters(userLat, userLon, gymLat, gymLon);
-
-      if (distanceMeters > CHECKIN_RADIUS_METERS) {
-        setLocationErrorDistance(distanceMeters);
-        setShowLocationError(true);
-        setIsChecking(false);
-        return;
-      }
-
       await checkInMutation.mutateAsync({ gym_id: gym.id });
     } catch (error) {
       if (error.code === error.PERMISSION_DENIED) {
