@@ -754,9 +754,20 @@ export default function Gyms() {
 
             {/* Gyms Grid */}
             {gymsLoading ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 mx-auto mb-3 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin" />
-                <p className="text-slate-400">Loading gyms...</p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-slate-800/80 border border-slate-700/50 rounded-2xl overflow-hidden animate-pulse">
+                    <div className="h-40 bg-slate-700/60" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-5 bg-slate-700/60 rounded-lg w-3/4" />
+                      <div className="h-4 bg-slate-700/40 rounded-lg w-1/2" />
+                      <div className="flex gap-2">
+                        <div className="h-5 bg-slate-700/40 rounded-full w-20" />
+                        <div className="h-5 bg-slate-700/40 rounded-full w-16" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredGyms.length === 0 ? (
               <div className="text-center py-12">
