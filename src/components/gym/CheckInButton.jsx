@@ -150,7 +150,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       const totalVisits = checkIns.length + 1;
       const todayCheckIn = { check_in_date: new Date().toISOString(), gym_id: gym.id, user_id: currentUser.id };
       const streak = calculateStreak([todayCheckIn, ...checkIns], currentUser);
-      const gymAnniversary = checkGymAnniversary(checkIns, newCheckIn);
+      const gymAnniversary = checkGymAnniversary(checkIns, todayCheckIn);
 
       // Auto-update streak and frequency goals
       try {
