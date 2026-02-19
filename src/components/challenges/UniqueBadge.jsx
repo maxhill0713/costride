@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Flame, Award, Zap, Crown, Target, Star, Medal } from 'lucide-react';
+import { Trophy, Flame, Crown, Zap, Star, Medal, Target, Award } from 'lucide-react';
 
 export default function UniqueBadge({ reward, size = 'md' }) {
   if (!reward) return null;
@@ -9,107 +9,260 @@ export default function UniqueBadge({ reward, size = 'md' }) {
   const getBadgeConfig = () => {
     if (rewardLower.includes('consistency')) {
       return {
-        outer: 'from-red-600 via-red-700 to-red-800',
-        inner: 'from-red-500 via-orange-500 to-red-600',
+        topText: 'CONSISTENCY',
+        bottomText: 'CHAMPION',
+        primary: '#FFA500',
+        secondary: '#FF6B35',
+        accent: '#1E3A8A',
         icon: Flame,
-        accent: 'text-red-300',
-        label: 'Consistency'
+        glow: 'orange'
       };
     }
     if (rewardLower.includes('warrior') || rewardLower.includes('monday')) {
       return {
-        outer: 'from-blue-700 via-blue-800 to-indigo-800',
-        inner: 'from-blue-600 via-blue-500 to-indigo-600',
+        topText: 'MONDAY',
+        bottomText: 'WARRIOR',
+        primary: '#60A5FA',
+        secondary: '#3B82F6',
+        accent: '#1E40AF',
         icon: Trophy,
-        accent: 'text-blue-300',
-        label: 'Warrior'
+        glow: 'blue'
       };
     }
     if (rewardLower.includes('master') || rewardLower.includes('king')) {
       return {
-        outer: 'from-purple-700 via-purple-800 to-violet-800',
-        inner: 'from-purple-600 via-purple-500 to-violet-600',
+        topText: 'STRENGTH',
+        bottomText: 'MASTER',
+        primary: '#C084FC',
+        secondary: '#A855F7',
+        accent: '#6B21A8',
         icon: Crown,
-        accent: 'text-purple-300',
-        label: 'Master'
+        glow: 'purple'
       };
     }
     if (rewardLower.includes('power') || rewardLower.includes('strength')) {
       return {
-        outer: 'from-amber-700 via-amber-800 to-orange-800',
-        inner: 'from-amber-600 via-amber-500 to-orange-600',
+        topText: 'POWER',
+        bottomText: 'ELITE',
+        primary: '#FBBF24',
+        secondary: '#F59E0B',
+        accent: '#B45309',
         icon: Zap,
-        accent: 'text-amber-300',
-        label: 'Elite'
+        glow: 'amber'
       };
     }
     if (rewardLower.includes('excellence') || rewardLower.includes('elite')) {
       return {
-        outer: 'from-emerald-700 via-emerald-800 to-teal-800',
-        inner: 'from-emerald-600 via-emerald-500 to-teal-600',
+        topText: 'EXCELLENCE',
+        bottomText: 'TIER',
+        primary: '#34D399',
+        secondary: '#10B981',
+        accent: '#047857',
         icon: Star,
-        accent: 'text-emerald-300',
-        label: 'Excellence'
+        glow: 'emerald'
       };
     }
     if (rewardLower.includes('legend')) {
       return {
-        outer: 'from-pink-700 via-rose-800 to-red-800',
-        inner: 'from-pink-600 via-rose-500 to-red-600',
+        topText: 'LEGENDARY',
+        bottomText: 'ACHIEVER',
+        primary: '#F472B6',
+        secondary: '#EC4899',
+        accent: '#BE185D',
         icon: Medal,
-        accent: 'text-pink-300',
-        label: 'Legend'
+        glow: 'pink'
       };
     }
     return {
-      outer: 'from-blue-700 via-cyan-800 to-blue-800',
-      inner: 'from-blue-600 via-cyan-500 to-blue-600',
+      topText: 'CHALLENGE',
+      bottomText: 'MASTERY',
+      primary: '#06B6D4',
+      secondary: '#0891B2',
+      accent: '#164E63',
       icon: Award,
-      accent: 'text-cyan-300',
-      label: 'Achievement'
+      glow: 'cyan'
     };
   };
 
   const config = getBadgeConfig();
   const Icon = config.icon;
-  
-  const sizeClasses = {
-    sm: 'w-10 h-10',
-    md: 'w-16 h-16',
-    lg: 'w-20 h-20'
+
+  const sizeValues = {
+    sm: { width: 80, height: 100, scale: 0.6 },
+    md: { width: 140, height: 170, scale: 1 },
+    lg: { width: 200, height: 240, scale: 1.4 }
   };
 
-  const iconSizes = {
-    sm: 'w-5 h-5',
-    md: 'w-8 h-8',
-    lg: 'w-10 h-10'
-  };
+  const dimensions = sizeValues[size];
 
   return (
-    <div className="relative">
-      <div className={`${sizeClasses[size]} relative group`}>
-        {/* Outer dark ring */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${config.outer} rounded-full shadow-2xl`} style={{ boxShadow: 'inset -2px -2px 4px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6)' }} />
-        
-        {/* Middle gradient layer */}
-        <div className={`absolute inset-1 bg-gradient-to-br ${config.inner} rounded-full`} />
-        
-        {/* Reflective shine */}
-        <div className="absolute inset-1 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
-        
-        {/* Icon container */}
-        <div className="absolute inset-0 rounded-full flex items-center justify-center">
-          <Icon className={`${iconSizes[size]} text-white opacity-90 drop-shadow-md`} strokeWidth={1.5} />
-        </div>
-        
-        {/* Hover glow effect */}
-        <div className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/10 transition-all duration-300" />
+    <div className="relative flex flex-col items-center" style={{ perspective: '1000px' }}>
+      <style>{`
+        @keyframes badgeGlow {
+          0%, 100% { filter: drop-shadow(0 0 8px ${config.primary}80) drop-shadow(0 0 16px ${config.primary}40); }
+          50% { filter: drop-shadow(0 0 16px ${config.primary}); }
+        }
+        .badge-glow-${config.glow} {
+          animation: badgeGlow 3s ease-in-out infinite;
+        }
+        .badge-shine {
+          background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%);
+        }
+      `}</style>
+
+      <svg
+        width={dimensions.width}
+        height={dimensions.height}
+        viewBox="0 0 140 170"
+        className={`badge-glow-${config.glow}`}
+        style={{ filter: `drop-shadow(0 0 20px ${config.primary}60)` }}
+      >
+        <defs>
+          <radialGradient id={`grad-${config.glow}`} cx="50%" cy="30%">
+            <stop offset="0%" stopColor={config.primary} stopOpacity="1" />
+            <stop offset="100%" stopColor={config.accent} stopOpacity="1" />
+          </radialGradient>
+          <filter id={`glow-${config.glow}`}>
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Outer Shield Border - Gold/Primary */}
+        <path
+          d="M 70 10 L 95 30 L 95 75 Q 70 120 70 150 Q 70 120 45 75 L 45 30 Z"
+          fill="none"
+          stroke={config.primary}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          filter={`url(#glow-${config.glow})`}
+        />
+
+        {/* Second Border - Darker */}
+        <path
+          d="M 70 10 L 95 30 L 95 75 Q 70 120 70 150 Q 70 120 45 75 L 45 30 Z"
+          fill="none"
+          stroke={config.secondary}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.8"
+        />
+
+        {/* Shield Fill */}
+        <path
+          d="M 70 15 L 92 32 L 92 73 Q 70 115 70 145 Q 70 115 48 73 L 48 32 Z"
+          fill={`url(#grad-${config.glow})`}
+        />
+
+        {/* Inner Highlight/Shine */}
+        <ellipse
+          cx="65"
+          cy="50"
+          rx="18"
+          ry="22"
+          fill="white"
+          opacity="0.15"
+        />
+
+        {/* Decorative Top Arc */}
+        <path
+          d="M 48 32 Q 70 20 92 32"
+          fill="none"
+          stroke={config.primary}
+          strokeWidth="2"
+          opacity="0.6"
+        />
+
+        {/* Left Wing */}
+        <path
+          d="M 48 45 Q 25 40 20 50 Q 25 55 35 50"
+          fill={config.primary}
+          opacity="0.7"
+          filter={`url(#glow-${config.glow})`}
+        />
+
+        {/* Right Wing */}
+        <path
+          d="M 92 45 Q 115 40 120 50 Q 115 55 105 50"
+          fill={config.primary}
+          opacity="0.7"
+          filter={`url(#glow-${config.glow})`}
+        />
+
+        {/* Center Icon Background Circle */}
+        <circle
+          cx="70"
+          cy="65"
+          r="22"
+          fill="rgba(255,255,255,0.1)"
+          stroke={config.primary}
+          strokeWidth="1"
+          opacity="0.4"
+        />
+
+        {/* Center Star Accent */}
+        <text
+          x="70"
+          y="118"
+          textAnchor="middle"
+          fontSize="14"
+          fill={config.primary}
+          opacity="0.8"
+          fontWeight="bold"
+        >
+          ★
+        </text>
+      </svg>
+
+      {/* Icon Overlay - Positioned over SVG */}
+      <div
+        className="absolute flex items-center justify-center"
+        style={{
+          top: `${dimensions.height * 0.32}px`,
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}
+      >
+        <Icon
+          size={Math.max(24, dimensions.width * 0.25)}
+          color="white"
+          strokeWidth={1.5}
+          fill="currentColor"
+          className="drop-shadow-lg"
+          style={{ opacity: 0.95 }}
+        />
       </div>
-      
-      {/* Badge label */}
-      <div className="mt-2 text-center">
-        <p className={`text-xs font-bold ${config.accent}`}>{config.label}</p>
-        <p className="text-[10px] text-slate-400 line-clamp-2">{reward}</p>
+
+      {/* Badge Text */}
+      <div
+        className="mt-2 text-center"
+        style={{ transform: `scale(${dimensions.scale})`, transformOrigin: 'top center' }}
+      >
+        <p
+          className="font-black tracking-wider leading-none"
+          style={{
+            color: config.primary,
+            fontSize: '11px',
+            textShadow: `0 0 8px ${config.primary}40`
+          }}
+        >
+          {config.topText}
+        </p>
+        <p
+          className="font-black tracking-wider"
+          style={{
+            color: config.primary,
+            fontSize: '12px',
+            textShadow: `0 0 8px ${config.primary}40`
+          }}
+        >
+          {config.bottomText}
+        </p>
       </div>
     </div>
   );
