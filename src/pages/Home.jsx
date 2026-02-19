@@ -47,7 +47,8 @@ export default function Home() {
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0]?.gym_id : null);
@@ -57,7 +58,8 @@ export default function Home() {
     queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then(r => r[0] || null),
     enabled: !!primaryGymIdForQuery,
     staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: allCheckIns = [] } = useQuery({
@@ -65,14 +67,16 @@ export default function Home() {
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 10),
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   // weeklyChallenges reuses `challenges` — no separate fetch needed
@@ -82,7 +86,8 @@ export default function Home() {
     queryFn: () => base44.entities.Lift.filter({ member_id: currentUser?.id }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: goals = [] } = useQuery({
@@ -90,7 +95,8 @@ export default function Home() {
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: notifications = [] } = useQuery({
@@ -99,7 +105,8 @@ export default function Home() {
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchInterval: 10000
+    refetchInterval: 10000,
+    placeholderData: (prev) => prev
   });
 
   const { data: friends = [] } = useQuery({
@@ -107,7 +114,8 @@ export default function Home() {
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const friendIdList = friends.map(f => f.friend_id);
@@ -116,7 +124,8 @@ export default function Home() {
     queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
     enabled: !!currentUser && friends.length > 0,
     staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: recentChallengeActivity = [] } = useQuery({
@@ -129,7 +138,8 @@ export default function Home() {
     },
     enabled: !!currentUser && !!challenges.length,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   // Pre-calculate for check-in users query
