@@ -545,46 +545,31 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
     setIsChecking(true);
     try {
-      // Get user location if gym has coordinates
-      let userLat = null, userLon = null;
+      // Check location if gym has coordinates
       if (gym.latitude && gym.longitude) {
-        try {
-          const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { 
-              enableHighAccuracy: true, 
-              timeout: 10000 
-            });
+        if (!userLocation) {
+          toast.error('Location required', {
+            description: 'Please enable location access to check in.'
           });
-          userLat = position.coords.latitude;
-          userLon = position.coords.longitude;
-          
-          // Calculate distance
-          const R = 6371000;
-          const dLat = (gym.latitude - userLat) * Math.PI / 180;
-          const dLon = (gym.longitude - userLon) * Math.PI / 180;
-          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(userLat * Math.PI / 180) * Math.cos(gym.latitude * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-          const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          
-          if (distance > 500) {
-            toast.error(`Too far (${Math.round(distance)}m away)`, {
-              description: 'You need to be within 500m of the gym to check in.'
-            });
-            setIsChecking(false);
-            return;
-          }
-        } catch (locError) {
-          console.error('Location error:', locError);
-          toast.error('Unable to get location', {
-            description: 'Please enable location permissions and try again.'
+          setIsChecking(false);
+          return;
+        }
+
+        const distance = getDistanceMeters(userLocation.lat, userLocation.lon, gym.latitude, gym.longitude);
+        if (distance > CHECKIN_RADIUS_METERS) {
+          toast.error(`Too far (${Math.round(distance)}m away)`, {
+            description: `You need to be within ${CHECKIN_RADIUS_METERS}m of the gym to check in.`
           });
           setIsChecking(false);
           return;
         }
       }
 
-      await checkInMutation.mutateAsync({ gym_id: gym.id, userLat, userLon });
+      await checkInMutation.mutateAsync({ 
+        gym_id: gym.id, 
+        userLat: userLocation?.lat, 
+        userLon: userLocation?.lon 
+      });
     } catch (error) {
       const msg = error?.response?.data?.error || error?.message || 'Check-in failed';
       toast.error('Check-in failed', {
