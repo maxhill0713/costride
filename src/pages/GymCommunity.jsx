@@ -241,6 +241,17 @@ export default function GymCommunity() {
       base44.entities.Reward.update(rewardId, {
         claimed_by: [...currentClaimed, userId]
       }),
+    onMutate: async ({ rewardId, userId, currentClaimed }) => {
+      await queryClient.cancelQueries({ queryKey: ['rewards', gymId] });
+      const previous = queryClient.getQueryData(['rewards', gymId]);
+      queryClient.setQueryData(['rewards', gymId], (old = []) =>
+        old.map(r => r.id === rewardId ? { ...r, claimed_by: [...currentClaimed, userId] } : r)
+      );
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(['rewards', gymId], context.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards', gymId] });
     }
