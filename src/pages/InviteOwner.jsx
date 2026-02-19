@@ -25,10 +25,12 @@ export default function InviteOwner() {
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
     queryFn: async () => {
-      const gyms = await base44.entities.Gym.list();
-      return gyms.find(g => g.id === gymId);
+      const gyms = await base44.entities.Gym.filter({ id: gymId });
+      return gyms[0] || null;
     },
-    enabled: !!gymId
+    enabled: !!gymId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   // Check if user already submitted a request
