@@ -530,22 +530,30 @@ export default function Home() {
 
 
 
-          {/* Weekly Challenges */}
-          {featuredChallenge && (
-            <Link to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-[50px] border border-blue-500/40 hover:border-blue-400/50 transition-all cursor-pointer shadow-2xl shadow-black/20 rounded-2xl overflow-hidden group">
-                <div className="relative p-4">
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                     <div className="flex items-center gap-2">
-                       <Trophy className="w-5 h-5 text-amber-400" />
-                       <h3 className="text-base font-bold text-white tracking-tight">Compete & Crush It</h3>
-                     </div>
-                     <ChevronRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
-                   </div>
-                  <WeeklyChallengeCard challenge={featuredChallenge} currentUser={currentUser} />
-                </div>
-              </Card>
-            </Link>
+          {/* Weekly Challenges - 4 Grid */}
+          {activeChallenges.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-base font-bold text-white tracking-tight px-1 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-400" />
+                Weekly Challenges
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {activeChallenges.map((challenge, idx) => (
+                  <Link key={challenge.id} to={createPageUrl('RedeemReward') + '?tab=challenges'} className="block">
+                    <Card className="relative bg-gradient-to-br from-slate-800/50 via-slate-900/50 to-slate-950/70 border border-blue-500/30 hover:border-blue-400/50 transition-all cursor-pointer shadow-lg shadow-black/20 rounded-xl overflow-hidden group h-full">
+                      <div className="p-3 relative h-full flex flex-col">
+                        {idx === 0 && (
+                          <div className="absolute -top-2 -right-2 z-10">
+                            <UniqueBadge reward={challenge.reward} size="sm" />
+                          </div>
+                        )}
+                        <WeeklyChallengeCard challenge={challenge} currentUser={currentUser} />
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
 
         {/* Join a Gym Prompt */}
