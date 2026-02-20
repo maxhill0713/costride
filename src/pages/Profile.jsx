@@ -13,19 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Progress } from '@/components/ui/progress';
-import AddGoalModal from '@/components/goals/AddGoalModal';
-import GoalCard from '@/components/goals/GoalCard';
-import BadgesDisplay from '@/components/profile/BadgesDisplay';
-import StatusBadge from '@/components/profile/StatusBadge';
-import ConsistencyJourney from '@/components/profile/ConsistencyJourney';
-import CheckInHeatmap from '@/components/profile/CheckInHeatmap';
-import WorkoutSplitHeatmap from '@/components/profile/WorkoutSplitHeatmap';
-import EditHeroImageModal from '@/components/gym/EditHeroImageModal';
-import CreateSplitModal from '@/components/profile/CreateSplitModal';
-import WorkoutProgressTracker from '@/components/profile/WorkoutProgressTracker';
-import ProfilePictureModal from '@/components/profile/ProfilePictureModal';
-import PostCard from '@/components/feed/PostCard';
-import ExerciseInsights from '@/components/profile/ExerciseInsights';
+import AddGoalModal from '../components/goals/AddGoalModal';
+import GoalCard from '../components/goals/GoalCard';
+import BadgesDisplay from '../components/profile/BadgesDisplay';
+import StatusBadge from '../components/profile/StatusBadge';
+import ConsistencyJourney from '../components/profile/ConsistencyJourney';
+import CheckInHeatmap from '../components/profile/CheckInHeatmap';
+import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
+import EditHeroImageModal from '../components/gym/EditHeroImageModal';
+import CreateSplitModal from '../components/profile/CreateSplitModal';
+import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
+import ProfilePictureModal from '../components/profile/ProfilePictureModal';
+import PostCard from '../components/feed/PostCard';
+import ExerciseInsights from '../components/profile/ExerciseInsights';
 
 
 export default function Profile() {
@@ -580,7 +580,6 @@ export default function Profile() {
                       weeklyGoal={currentUser?.weekly_goal}
                       trainingDays={currentUser?.training_days}
                       customWorkoutTypes={currentUser?.custom_workout_types || {}}
-                      isPremium={currentUser?.subscription_status === 'active' || currentUser?.subscription_status === 'trial'}
                     />
                   </Card>
                 </>

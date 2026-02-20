@@ -3,9 +3,8 @@ import { format, subDays, subWeeks, eachDayOfInterval, isSameDay, startOfWeek, e
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { Edit2 } from 'lucide-react';
-import PremiumPaywall from './PremiumPaywall';
 
-export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}, isPremium = false }) {
+export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {} }) {
   const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
   // Define split schedules
   const splitSchedules = {
@@ -221,18 +220,21 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
       if (trainingDays.includes(adjustedDay)) {
         const trainingDayIndex = trainingDays.indexOf(adjustedDay);
         const workoutTypes = splitInfo.schedule.filter(w => w !== 'Rest');
-        
-        if (workoutTypes.length === 0) return 'Rest';
         return workoutTypes[trainingDayIndex % workoutTypes.length];
       } else {
         return 'Rest';
       }
     }
 
-    // Standard split schedule (uses day of week)
-    const dayOfWeek = day.getDay();
-    const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-    return splitInfo.schedule[adjustedDay - 1] || 'Rest';
+    // Otherwise use default schedule (resets weekly)
+    const firstCheckIn = checkIns.length > 0 
+      ? new Date(checkIns[checkIns.length - 1].check_in_date)
+      : startOfWeek(today, { weekStartsOn: 1 });
+
+    const daysDiff = Math.floor((day - firstCheckIn) / (1000 * 60 * 60 * 24));
+    const scheduleIndex = ((daysDiff % 7) + 7) % 7;
+
+    return splitInfo.schedule[scheduleIndex];
   };
 
   const getConsistencyRate = () => {
@@ -288,7 +290,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
               }
             `}
           >
-            1M
+            4W
           </button>
           <button
             onClick={() => setTimeRange('monthly')}
@@ -306,8 +308,7 @@ export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weekl
       </div>
 
       {/* Mobile-Optimized Heatmap Grid */}
-      <div className="relative bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40 overflow-hidden">
-        <PremiumPaywall isPremium={isPremium} />
+      <div className="bg-slate-900/50 rounded-2xl p-3 border border-slate-700/40">
         {/* Days of week header - Abbreviated for mobile */}
         <div className="grid grid-cols-7 gap-1.5 mb-2">
           {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
