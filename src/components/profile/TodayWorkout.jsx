@@ -332,11 +332,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <div className="relative z-10">
       <div className="space-y-2 mb-4">
          <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
-              <Dumbbell className="w-3.5 h-3.5 text-white" />
+          <div className="flex items-center gap-2.5 whitespace-nowrap">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-400/20 to-orange-500/20 flex items-center justify-center border border-orange-500/30">
+              <Dumbbell className="w-4 h-4 text-orange-400" />
             </div>
-            <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
+            <h3 className="text-xs font-semibold text-slate-300 tracking-wide uppercase opacity-80">Today's Workout</h3>
             <button
               onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
               className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
