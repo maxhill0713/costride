@@ -4,15 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 const quotes = [
   {
     text: "We can't become what we need to be by remaining what we are.",
-    author: "Oprah Winfrey"
+    author: "Oprah Winfrey",
+    context: "Growth requires change. We must evolve, challenge ourselves, and adopt new perspectives to reach our full potential and transform into our best selves."
   },
   {
     text: "Be not afraid of growing slowly; be afraid only of standing still.",
-    author: "Chinese Proverb"
+    author: "Chinese Proverb",
+    context: "Progress matters more than pace. Stagnation is the real danger. Continuous, steady improvement—no matter how gradual—creates meaningful growth and prevents regression."
   },
   {
     text: "Do the best you can until you know better. Then when you know better, do better.",
-    author: "Maya Angelou"
+    author: "Maya Angelou",
+    context: "Self-improvement is a journey, not judgment. We act with our current knowledge, but once we gain new insight, we evolve and improve accordingly."
   }
 ];
 
