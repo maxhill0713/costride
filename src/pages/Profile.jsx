@@ -557,16 +557,16 @@ export default function Profile() {
         <div className="w-full bg-slate-900/40 border-b border-slate-700/50 sticky top-0 z-40">
           <div className="max-w-4xl mx-auto px-4 md:px-6">
             <TabsList className="flex w-full bg-transparent backdrop-blur-0 border-0 p-0 rounded-none gap-0">
-              <TabsTrigger value="stats" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
+              <TabsTrigger value="stats" className="flex-1 rounded-lg rounded-l-xl flex items-center justify-center font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
                 Insights
               </TabsTrigger>
-              <TabsTrigger value="progress" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
+              <TabsTrigger value="progress" className="flex-1 rounded-lg flex items-center justify-center font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
                 Progress
               </TabsTrigger>
-              <TabsTrigger value="goals" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
+              <TabsTrigger value="goals" className="flex-1 rounded-lg flex items-center justify-center font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
                 Goals
               </TabsTrigger>
-              <TabsTrigger value="posts" className="flex-1 rounded-lg font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
+              <TabsTrigger value="posts" className="flex-1 rounded-lg rounded-r-xl flex items-center justify-center font-semibold data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm text-slate-400 px-6 py-2 border border-slate-700/30">
                 Posts
               </TabsTrigger>
             </TabsList>
