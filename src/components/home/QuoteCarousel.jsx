@@ -65,7 +65,7 @@ export default function QuoteCarousel() {
               layoutId={i === current ? 'active-dot' : undefined}
               onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
               animate={{
-                width: i === current ? '24px' : '8px',
+                width: i === current ? '14px' : '8px',
               }}
               transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
               className={`h-2 rounded-full transition-colors duration-300 ${i === current ? 'bg-gradient-to-r from-blue-400 to-blue-500' : 'bg-slate-600/60 hover:bg-slate-500'}`}
