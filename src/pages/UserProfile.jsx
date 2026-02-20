@@ -273,6 +273,97 @@ export default function UserProfile() {
         </div>
       </div>
 
+       <ProfilePictureModal
+        isOpen={showProfilePicture}
+        onClose={() => setShowProfilePicture(false)}
+        imageUrl={viewingUser?.avatar_url}
+        userName={viewingUser?.full_name}
+      >
+        <div className="space-y-4">
+          {/* Key Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Check-ins</span>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-blue-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Calendar className="w-4 h-4 text-blue-400 relative group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <div className="text-2xl font-bold text-white">{checkIns.length}</div>
+                  {checkIns.length >= 10 && <span className="text-xs text-blue-400 animate-pulse">🎯</span>}
+                </div>
+              </div>
+            </Card>
+
+            <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Best Streak</span>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-orange-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Flame className="w-4 h-4 text-orange-400 relative group-hover:scale-125 transition-all duration-300 drop-shadow-lg group-hover:drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <div className="text-2xl font-bold text-white">{longestStreak}</div>
+                  <span className="text-xs text-orange-300">days</span>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Top Percentile</span>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <TrendingUp className="w-4 h-4 text-purple-400 relative group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-lg" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <div className="text-2xl font-bold text-white">
+                    {checkIns.length >= 100 ? '1%' : checkIns.length >= 50 ? '5%' : checkIns.length >= 25 ? '10%' : checkIns.length >= 10 ? '25%' : '50%'}
+                  </div>
+                  {checkIns.length >= 50 && <span className="text-xs text-purple-400 animate-pulse">🌟</span>}
+                </div>
+              </div>
+            </Card>
+
+            <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Weight Up</span>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-green-500/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Zap className="w-4 h-4 text-green-400 relative group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 drop-shadow-lg" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <div className="text-2xl font-bold text-white">
+                    {(() => {
+                      const sortedLifts = [...lifts].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+                      if (sortedLifts.length < 2) return 0;
+                      const firstWeight = sortedLifts[0].weight_lbs || 0;
+                      const latestWeight = sortedLifts[sortedLifts.length - 1].weight_lbs || 0;
+                      return Math.round(latestWeight - firstWeight);
+                    })()}
+                  </div>
+                  <span className="text-xs text-green-300">lbs</span>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </ProfilePictureModal>
+
+
       <div className="max-w-4xl mx-auto px-4 py-6">
         {shouldHideContent ? (
           <div className="flex items-center justify-center min-h-[60vh]">
