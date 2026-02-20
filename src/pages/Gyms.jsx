@@ -87,7 +87,8 @@ export default function Gyms() {
     },
     enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const updateGymImageMutation = useMutation({
