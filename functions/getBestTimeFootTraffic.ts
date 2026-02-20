@@ -30,18 +30,23 @@ Deno.serve(async (req) => {
     const venueName = gym.name;
     const venueAddress = [gym.address, gym.city, gym.postcode].filter(Boolean).join(', ');
 
-    if (!venueAddress) {
-      return Response.json({ error: 'Gym has no address to look up foot traffic' }, { status: 400 });
+    if (!venueAddress && !gym.google_place_id) {
+      return Response.json({ error: 'Gym has no address or place ID to look up foot traffic' }, { status: 400 });
     }
 
-    console.log(`Fetching BestTime foot traffic for: ${venueName}, ${venueAddress}`);
+    // Prefer Google Place ID for precise branch lookup (solves chains like Everlast with same name)
+    const params = new URLSearchParams({ api_key_private: apiKey });
 
-    // Call BestTime new forecast endpoint
-    const params = new URLSearchParams({
-      api_key_private: apiKey,
-      venue_name: venueName,
-      venue_address: venueAddress
-    });
+    if (gym.google_place_id) {
+      // BestTime accepts venue_address as a Google Place ID directly when prefixed with "place_id:"
+      params.set('venue_name', venueName);
+      params.set('venue_address', `place_id:${gym.google_place_id}`);
+      console.log(`Fetching BestTime foot traffic via Place ID: ${gym.google_place_id} (${venueName})`);
+    } else {
+      params.set('venue_name', venueName);
+      params.set('venue_address', venueAddress);
+      console.log(`Fetching BestTime foot traffic via address: ${venueName}, ${venueAddress}`);
+    }
 
     const response = await fetch(`https://besttime.app/api/v1/forecasts?${params}`, {
       method: 'POST'
