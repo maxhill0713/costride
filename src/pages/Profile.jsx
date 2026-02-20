@@ -476,19 +476,9 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Bio & Location */}
+          {/* Gym Location & Home Gym */}
           {isEditing ? (
             <div className="space-y-3 mt-4">
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Bio</label>
-                <Textarea
-                  value={editData.bio}
-                  onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                  placeholder="Tell us about yourself..."
-                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500"
-                  rows={3}
-                />
-              </div>
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
                 <Input
@@ -519,9 +509,6 @@ export default function Profile() {
             </div>
           ) : (
             <div className="space-y-3 mt-4">
-              {currentUser.bio && (
-                <p className="text-slate-300 text-sm leading-relaxed font-normal max-w-2xl tracking-[-0.01em]">{currentUser.bio}</p>
-              )}
               {currentUser.gym_location && (
                 <div className="flex items-center gap-2 text-slate-400">
                   <MapPin className="w-4 h-4" />
