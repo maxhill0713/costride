@@ -184,10 +184,10 @@ export default function BusyTimesChart({ checkIns, gymId }) {
       {/* Legend */}
       <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-slate-700/50">
         {[
-          { color: 'bg-green-500/70', label: 'Quiet' },
-          { color: 'bg-yellow-500/60', label: 'Moderate' },
-          { color: 'bg-orange-500/70', label: 'Busy' },
-          { color: 'bg-red-500/80', label: 'Very Busy' },
+          { color: 'bg-pink-400/30', label: 'Plenty of Space' },
+          { color: 'bg-purple-500/60', label: 'Active' },
+          { color: 'bg-pink-500/70', label: 'High Energy' },
+          { color: 'bg-gradient-to-t from-pink-500 to-purple-500', label: 'Peak Hours' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1">
             <div className={`w-2 h-2 rounded-sm ${color}`} />
