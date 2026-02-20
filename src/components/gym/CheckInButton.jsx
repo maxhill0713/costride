@@ -178,11 +178,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
         </motion.div>
       )}
 
-      {hasCheckedInToday() && (
-        <p className="text-center text-sm text-gray-500">
-          See you tomorrow! Keep the streak alive 🔥
-        </p>
-      )}
+
     </div>
   );
 }
