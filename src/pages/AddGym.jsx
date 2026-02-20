@@ -26,39 +26,10 @@ export default function AddGym() {
 
   const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      // Check if gym already exists with this google_place_id
-      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      
-      let gym;
-      let isNew = false;
-
-      if (existingGyms.length > 0) {
-        // Gym already exists
-        gym = existingGyms[0];
-      } else {
-        // Create new gym
-        gym = await base44.entities.Gym.create(gymData);
-        isNew = true;
-      }
-
-      // Create gym membership for current user
-      if (currentUser) {
-        await base44.entities.GymMembership.create({
-          user_id: currentUser.id,
-          user_name: currentUser.full_name,
-          user_email: currentUser.email,
-          gym_id: gym.id,
-          gym_name: gym.name,
-          status: 'active',
-          join_date: new Date().toISOString().split('T')[0],
-          membership_type: 'monthly'
-        });
-      }
-
-      return { isNew, gym };
+      const res = await base44.functions.invoke('addGym', { gymData });
+      return res.data;
     },
     onSuccess: (result) => {
-      // Redirect to gym community page
       navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
     }
   });
