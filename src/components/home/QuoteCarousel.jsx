@@ -24,6 +24,7 @@ export default function QuoteCarousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [dragStart, setDragStart] = useState(null);
+  const [expanded, setExpanded] = useState(false);
 
   const paginate = (newDirection) => {
     const next = current + newDirection;
