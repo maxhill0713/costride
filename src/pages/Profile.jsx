@@ -80,7 +80,8 @@ export default function Profile() {
     queryFn: () => base44.entities.Lift.filter({ member_id: currentUser.id }, '-created_date', 100),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: goals = [] } = useQuery({
@@ -88,7 +89,8 @@ export default function Profile() {
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: checkIns = [] } = useQuery({
@@ -96,7 +98,8 @@ export default function Profile() {
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: gymMemberships = [] } = useQuery({
@@ -104,7 +107,8 @@ export default function Profile() {
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const memberGymIds = gymMemberships.map(m => m.gym_id);
