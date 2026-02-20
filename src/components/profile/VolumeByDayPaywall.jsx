@@ -9,31 +9,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 export default function VolumeByDayPaywall({ volumeByDay = [] }) {
-  const [showLearnMore, setShowLearnMore] = useState(false);
   const containerRef = useRef(null);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      // Check if content is scrolled past the blur fade
-      const scrollTop = container.scrollTop;
-      const scrollHeight = container.scrollHeight;
-      const clientHeight = container.clientHeight;
-
-      // Show "Learn More" button when content is mostly scrolled or at bottom
-      if (scrollHeight - (scrollTop + clientHeight) < 40) {
-        setShowLearnMore(true);
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20 overflow-hidden relative">
+    <Card className="bg-black border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20 overflow-hidden relative">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4 relative z-10">
         <Target className="w-4 h-4 text-blue-400" />
