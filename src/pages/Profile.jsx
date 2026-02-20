@@ -420,7 +420,7 @@ export default function Profile() {
         
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-5 flex-1">
+            <div className="flex items-center gap-8 flex-1">
               <button 
                 onClick={() => setShowProfilePicture(true)}
                 className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95"
