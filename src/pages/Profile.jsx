@@ -124,14 +124,16 @@ export default function Profile() {
     },
     enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['completedChallenges'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'completed' }, '-created_date', 50),
     staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: workoutLogs = [] } = useQuery({
@@ -139,7 +141,8 @@ export default function Profile() {
     queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
 
