@@ -4,11 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Zap, Star, BarChart3, Check } from 'lucide-react';
+import { Crown, Zap, Star, BarChart3, Check, Brain, TrendingUp, Target, Award, Sparkles, Flame, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Premium() {
-  const [selectedPlan, setSelectedPlan] = useState(null);
   const [billingCycle, setBillingCycle] = useState('monthly');
   const queryClient = useQueryClient();
 
@@ -26,16 +25,15 @@ export default function Premium() {
   const hasActiveSub = subscription?.[0]?.status === 'active';
 
   const checkoutMutation = useMutation({
-    mutationFn: async (plan) => {
+    mutationFn: async (priceId) => {
       const response = await base44.functions.invoke('createSubscriptionCheckout', {
-        priceId: plan.priceId,
-        subscriptionType: plan.id
+        priceId: priceId,
+        subscriptionType: 'user_premium'
       });
       return response.data;
     },
     onSuccess: (data) => {
       if (data.url) {
-        // Check if running in iframe
         if (window.self !== window.top) {
           toast.error('Please open this page in a new tab to complete checkout');
           return;
@@ -49,191 +47,293 @@ export default function Premium() {
     }
   });
 
-  const monthlyPrice = 4.99;
-  const yearlyPrice = 49.99; // ~2 months free
+  const monthlyPrice = 7.99;
+  const yearlyPrice = 79.99; // ~2 months free
 
-  const userPlans = [
+  const premiumFeatures = [
     {
-      id: 'user_premium',
-      name: 'Premium Member',
-      monthlyPrice: monthlyPrice,
-      yearlyPrice: yearlyPrice,
-      monthlyPriceId: 'price_1SsCGXBzxbKKg1zZT7cHR7uh',
-      yearlyPriceId: 'price_1SsCqKBzxbKKg1zZ5INp9GWN',
-      icon: Crown,
-      color: 'from-purple-500 to-pink-500',
+      category: 'Advanced Analytics',
+      icon: Brain,
+      color: 'text-blue-400',
       features: [
-        'Unlock brand rewards - earn double the rewards',
-        'Exclusive discounts & limited drops',
-        'Free products from premium partners',
-        'Early access + priority redemption',
-        'Exclusive leaderboard badges',
-        'Ad-free experience'
+        'AI-powered workout analysis and personalized guidance',
+        'Real-time form improvement suggestions',
+        'Advanced exercise metrics and body part tracking',
+        'Weekly AI fitness recommendations'
+      ]
+    },
+    {
+      category: 'Performance Tracking',
+      icon: TrendingUp,
+      color: 'text-green-400',
+      features: [
+        'Exercise-specific weight progression trackers',
+        'Personal records with detailed history',
+        'Muscle group intensity heatmaps',
+        'Peak performance time analysis'
+      ]
+    },
+    {
+      category: 'Challenges & Rewards',
+      icon: Target,
+      color: 'text-purple-400',
+      features: [
+        'Access to 2x more exclusive challenges',
+        'Premium challenge categories',
+        'Double reward points on all challenges',
+        'Priority leaderboard placement'
+      ]
+    },
+    {
+      category: 'Exclusive Features',
+      icon: Crown,
+      color: 'text-amber-400',
+      features: [
+        'Advanced split day volume progress',
+        'Workout program customization AI',
+        'Unlimited workout notes and analytics',
+        'Premium community access'
+      ]
+    },
+    {
+      category: 'Rewards & Earnings',
+      icon: Sparkles,
+      color: 'text-pink-400',
+      features: [
+        'Double brand rewards earnings',
+        'Exclusive brand partnerships',
+        'Early access to limited drops',
+        'Ad-free experience everywhere'
+      ]
+    },
+    {
+      category: 'Community & Badges',
+      icon: Award,
+      color: 'text-orange-400',
+      features: [
+        'Exclusive premium member badge',
+        'Access to elite leaderboards',
+        'Priority in community features',
+        'Special recognition & status'
       ]
     }
   ];
 
-
-
-
-
-  const handleSubscribe = (plan) => {
-    const priceId = billingCycle === 'yearly' ? plan.yearlyPriceId : plan.monthlyPriceId;
-    checkoutMutation.mutate({ ...plan, priceId });
+  const handleSubscribe = () => {
+    const priceId = billingCycle === 'yearly' 
+      ? 'price_1SsCqKBzxbKKg1zZ5INp9GWN' 
+      : 'price_1SsCGXBzxbKKg1zZT7cHR7uh';
+    checkoutMutation.mutate(priceId);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Hero */}
-      <div className="bg-gradient-to-b from-slate-900/50 to-transparent px-4 pt-8 pb-12 border-b border-blue-700/40">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-20">
+      {/* Hero Section */}
+      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-transparent backdrop-blur-md px-4 pt-6 pb-8 border-b border-blue-700/40">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Crown className="w-8 h-8 text-white" />
-          </div>
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <h1 className="text-3xl md:text-4xl font-black text-white">Premium Membership</h1>
-            <Badge className="bg-amber-500 text-amber-950 font-bold text-sm px-3 py-1.5 animate-pulse">
-              COMING SOON
-            </Badge>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <Crown className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black text-white">Go Premium</h1>
           </div>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Unlock exclusive rewards, early access to drops, and double your earnings
+            Unlock advanced AI analysis, 2x challenges, and exclusive features designed to transform your fitness journey
           </p>
         </div>
       </div>
 
-      {/* User Plans */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid gap-8 max-w-lg mx-auto">
-          {userPlans.map((plan) => {
-            const Icon = plan.icon;
-            return (
-              <Card key={plan.id} className="relative overflow-hidden bg-gradient-to-br from-slate-800/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/30 shadow-lg">
-                <div className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center shadow-lg`}>
-                      <Icon className="w-7 h-7 text-white" />
+      {/* Pricing Card - Sticky */}
+      <div className="sticky top-24 z-30 px-4 py-4 bg-gradient-to-b from-slate-900/90 via-slate-900/80 to-transparent backdrop-blur-md border-b border-blue-700/20">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-gradient-to-br from-slate-800/90 via-slate-800/95 to-slate-900/90 backdrop-blur-sm border border-purple-600/40 shadow-xl">
+            <div className="p-6">
+              {/* Billing Toggle */}
+              <div className="flex items-center gap-2 mb-6 p-1 bg-slate-700/50 rounded-xl border border-slate-600/30">
+                <button
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`flex-1 px-4 py-2 rounded-lg font-bold transition-all text-sm ${
+                    billingCycle === 'monthly'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingCycle('yearly')}
+                  className={`flex-1 px-4 py-2 rounded-lg font-bold transition-all text-sm ${
+                    billingCycle === 'yearly'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    Yearly
+                    <Badge className="bg-green-500 text-white text-xs">Save 17%</Badge>
+                  </div>
+                </button>
+              </div>
+
+              {/* Price Display */}
+              <div className="bg-slate-700/30 rounded-xl p-4 mb-6 border border-slate-600/30">
+                {billingCycle === 'monthly' ? (
+                  <div>
+                    <span className="text-5xl font-black text-white">${monthlyPrice}</span>
+                    <span className="text-slate-400 ml-2">/month</span>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="text-5xl font-black text-white">${yearlyPrice}</span>
+                    <span className="text-slate-400 ml-2">/year</span>
+                    <div className="text-sm text-slate-300 mt-2">
+                      ${(yearlyPrice / 12).toFixed(2)}/month
                     </div>
-                    <h3 className="text-2xl font-black text-white">{plan.name}</h3>
                   </div>
+                )}
+              </div>
 
-                  {/* Billing Cycle Toggle */}
-                  <div className="flex items-center gap-2 mb-8 p-1 bg-slate-700/50 rounded-2xl border border-slate-600/30">
-                    <button
-                      onClick={() => setBillingCycle('monthly')}
-                      className={`flex-1 px-4 py-2 rounded-xl font-bold transition-all text-sm ${
-                        billingCycle === 'monthly'
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      onClick={() => setBillingCycle('yearly')}
-                      className={`flex-1 px-4 py-2 rounded-xl font-bold transition-all text-sm ${
-                        billingCycle === 'yearly'
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        Yearly
-                        <Badge className="bg-green-500 text-white text-xs">17% OFF</Badge>
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="mb-8 bg-slate-700/30 rounded-2xl p-6 border border-slate-600/30">
-                    {billingCycle === 'monthly' ? (
-                      <div>
-                        <span className="text-5xl font-black text-white">${plan.monthlyPrice}</span>
-                        <span className="text-slate-400 ml-2">/month</span>
-                      </div>
-                    ) : (
-                      <div>
-                        <span className="text-5xl font-black text-white">${plan.yearlyPrice}</span>
-                        <span className="text-slate-400 ml-2">/year</span>
-                        <div className="text-sm text-slate-300 mt-3">
-                          ${(plan.yearlyPrice / 12).toFixed(2)}/month • Save 2 months
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="space-y-3">
-                    <Button
-                      onClick={() => handleSubscribe(plan)}
-                      disabled={true}
-                      className={`w-full bg-gradient-to-r ${plan.color} opacity-60 cursor-not-allowed text-white font-bold h-12 rounded-xl`}
-                    >
-                      Start Free Trial
-                    </Button>
-                    <p className="text-center text-sm text-slate-400">
-                      2 weeks free, then {billingCycle === 'monthly' ? `$${plan.monthlyPrice}/month` : `$${plan.yearlyPrice}/year`}
-                    </p>
-                    <p className="text-center text-xs text-slate-500">
-                      Coming Soon
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+              <Button
+                onClick={handleSubscribe}
+                disabled={checkoutMutation.isPending || hasActiveSub}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold h-12 rounded-lg flex items-center justify-center gap-2"
+              >
+                {hasActiveSub ? 'Already Premium' : 'Start Free Trial'} <ArrowRight className="w-4 h-4" />
+              </Button>
+              <p className="text-center text-xs text-slate-400 mt-3">
+                14 days free, then {billingCycle === 'monthly' ? `$${monthlyPrice}/month` : `$${yearlyPrice}/year`}. Cancel anytime.
+              </p>
+            </div>
+          </Card>
         </div>
       </div>
 
+      {/* Features Grid */}
+      <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
+        {premiumFeatures.map((featureGroup, idx) => {
+          const Icon = featureGroup.icon;
+          return (
+            <div key={idx} className="space-y-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center border border-slate-700/50`}>
+                  <Icon className={`w-5 h-5 ${featureGroup.color}`} />
+                </div>
+                <h3 className="text-2xl font-bold text-white">{featureGroup.category}</h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {featureGroup.features.map((feature, i) => (
+                  <Card 
+                    key={i} 
+                    className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/30 hover:border-purple-500/30 transition-all hover:shadow-lg hover:shadow-purple-500/10 p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
+                      <p className="text-slate-200">{feature}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-
-      {/* Benefits Section */}
+      {/* Comparison Section */}
       <div className="max-w-6xl mx-auto px-4 py-16 border-t border-blue-700/40">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-white mb-3">What You Get</h2>
-          <p className="text-slate-400">Everything you need to maximize your fitness rewards</p>
+        <h2 className="text-3xl font-black text-white mb-12 text-center">Premium vs Free</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Free */}
+          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/30 p-8">
+            <h3 className="text-xl font-bold text-white mb-6">Free Member</h3>
+            <ul className="space-y-3">
+              {[
+                'Basic workout logging',
+                'Standard leaderboards',
+                'Limited challenges',
+                'Basic analytics',
+                'Single reward tier'
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-slate-500 mt-1 flex-shrink-0" />
+                  <span className="text-slate-400">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          {/* Premium */}
+          <Card className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/50 p-8 ring-2 ring-purple-500/30">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Premium Member</h3>
+              <Badge className="bg-purple-600">Popular</Badge>
+            </div>
+            <ul className="space-y-3">
+              {[
+                'AI-powered form coaching',
+                'Elite premium leaderboards',
+                '2x exclusive challenges',
+                'Advanced AI analysis & guidance',
+                'Double reward earnings',
+                'Exercise-specific weight trackers',
+                'Unlimited analytics access',
+                'Priority feature access'
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-purple-400 mt-1 flex-shrink-0" />
+                  <span className="text-slate-100 font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-4 gap-6">
-          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-purple-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-              <Star className="w-6 h-6 text-purple-400" />
-            </div>
-            <h3 className="font-bold text-white mb-2">Exclusive Rewards</h3>
-            <p className="text-sm text-slate-400">Premium-only discounts & limited drops</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-blue-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-6 h-6 text-blue-400" />
-            </div>
-            <h3 className="font-bold text-white mb-2">Double Rewards</h3>
-            <p className="text-sm text-slate-400">Earn 2x rewards on every check-in</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-orange-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-orange-400" />
-            </div>
-            <h3 className="font-bold text-white mb-2">Early Access</h3>
-            <p className="text-sm text-slate-400">First to claim limited quantity rewards</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-600/40 hover:border-green-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-6 h-6 text-green-400" />
-            </div>
-            <h3 className="font-bold text-white mb-2">Free Products</h3>
-            <p className="text-sm text-slate-400">Premium partner gifts & samples</p>
-          </Card>
+      {/* Social Proof */}
+      <div className="max-w-6xl mx-auto px-4 py-16 border-t border-blue-700/40">
+        <h2 className="text-3xl font-black text-white mb-12 text-center">Why Members Love Premium</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {
+              title: '3x More PRs',
+              description: 'Premium members hit personal records 3x faster with AI guidance'
+            },
+            {
+              title: '2x Earnings',
+              description: 'Double your rewards and unlock exclusive brand partnerships'
+            },
+            {
+              title: 'Elite Status',
+              description: 'Stand out with premium badges and priority community placement'
+            }
+          ].map((item, idx) => (
+            <Card 
+              key={idx}
+              className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/30 p-6 text-center hover:border-purple-500/30 transition-all"
+            >
+              <h4 className="text-xl font-bold text-white mb-2">{item.title}</h4>
+              <p className="text-slate-400">{item.description}</p>
+            </Card>
+          ))}
         </div>
+      </div>
+
+      {/* Final CTA */}
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <Card className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/50 p-8 text-center">
+          <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+          <h3 className="text-2xl font-bold text-white mb-3">Start Your Premium Journey</h3>
+          <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
+            Get 14 days free to experience advanced AI coaching, 2x challenges, and comprehensive analytics designed to accelerate your fitness goals.
+          </p>
+          <Button
+            onClick={handleSubscribe}
+            disabled={checkoutMutation.isPending || hasActiveSub}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-8 py-3 rounded-lg inline-flex items-center gap-2"
+          >
+            {hasActiveSub ? 'Already Premium' : `Get Premium for $${monthlyPrice}/month`}
+            {!hasActiveSub && <ArrowRight className="w-4 h-4" />}
+          </Button>
+        </Card>
       </div>
     </div>
   );
