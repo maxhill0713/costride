@@ -561,7 +561,7 @@ export default function Profile() {
                 Insights
               </TabsTrigger>
               <TabsTrigger value="progress" className="flex-1 rounded-lg flex items-center justify-center font-semibold bg-slate-800/40 text-slate-400 data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm py-2 outline-none">
-                Progress
+                Split
               </TabsTrigger>
               <TabsTrigger value="goals" className="flex-1 rounded-lg flex items-center justify-center font-semibold bg-slate-800/40 text-slate-400 data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white transition-all text-sm py-2 outline-none">
                 Goals
