@@ -39,6 +39,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     }),
     enabled: !!currentUser,
     staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const isPremium = subscription && subscription.length > 0;
@@ -52,6 +54,8 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     }).then(r => r[0] || null),
     enabled: !!currentUser && !!gym,
     staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const isClaimedGym = gym?.claim_status === 'claimed';
