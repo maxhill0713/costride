@@ -136,16 +136,17 @@ export default function BusyTimesChart({ checkIns, gymId }) {
             {visibleData.map((d, i) => {
               const hour = VISIBLE_HOURS[i];
               const isNow = isToday && hour === currentHour;
-              const pct = Math.max(d.percentage, 0);
+              const pct = Math.max(d.percentage || 0, 0);
+              const isClosed = d.isClosed;
               const heightPct = pct > 0 ? Math.max((pct / 100) * 100, 8) : 0;
-              const { color } = getBusynessLabel(pct, avg);
+              const { color } = getBusynessLabel(pct, avg, isClosed);
 
               return (
                 <div key={hour} className="flex-1 flex flex-col items-center justify-end h-full group relative">
                   {/* Tooltip */}
                   <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
                     <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap border border-slate-600 shadow-lg">
-                      {formatHour(hour)} — {pct > 0 ? `${Math.round(pct)}% busy` : 'Closed'}
+                      {formatHour(hour)} — {isClosed ? 'Closed' : pct > 0 ? `${Math.round(pct)}% busy` : 'No data'}
                     </div>
                     <div className="w-1.5 h-1.5 bg-slate-800 rotate-45 -mt-1 border-b border-r border-slate-600" />
                   </div>
