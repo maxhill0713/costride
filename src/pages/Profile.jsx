@@ -893,7 +893,7 @@ export default function Profile() {
 
       {/* Grid Post Modal */}
       {selectedGridPost && gridView && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto" onClick={() => setSelectedGridPost(null)}>
+        <div className="fixed inset-0 bg-transparent backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto" onClick={() => setSelectedGridPost(null)}>
           <div onClick={(e) => e.stopPropagation()} className="relative w-full">
             <PostCard 
               post={selectedGridPost}
