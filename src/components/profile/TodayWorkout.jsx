@@ -320,23 +320,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   }
 
   return (
-    <div 
+    <Card 
       onClick={() => !isExpanded && setIsExpanded(true)}
-      className={`bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-950/80 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-950/50 relative overflow-hidden ${isExpanded ? 'p-6' : 'p-5 cursor-pointer'}`}
-      style={{
-        background: isExpanded ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)' : 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
-      }}
+      className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer'}`}
     >
-      {/* Decorative gradient accent */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-      <div className="relative z-10">
       <div className="space-y-2 mb-4">
          <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 whitespace-nowrap">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-400/20 to-orange-500/20 flex items-center justify-center border border-orange-500/30">
-              <Dumbbell className="w-4 h-4 text-orange-400" />
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
+              <Dumbbell className="w-3.5 h-3.5 text-white" />
             </div>
-            <h3 className="text-xs font-semibold text-slate-300 tracking-wide uppercase opacity-80">Today's Workout</h3>
+            <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
             <button
               onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
               className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
@@ -722,7 +716,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending}
       />
-      </div>
-      </div>
+      </Card>
       );
       }
