@@ -408,24 +408,6 @@ export default function Gyms() {
               </div>
 
             </div>
-            <div className="flex gap-2">
-              {gymMemberships.length > 0 && (
-                <Button 
-                  onClick={() => setShowPrimaryGymModal(true)}
-                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-xl text-sm"
-                >
-                  <Star className="w-4 h-4" />
-                  <span className="hidden md:inline">Primary Gym</span>
-                </Button>
-              )}
-              <Button 
-                onClick={() => setShowJoinWithCode(true)}
-                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm"
-              >
-                <Key className="w-4 h-4" />
-                <span className="hidden md:inline">Join with Code</span>
-              </Button>
-            </div>
           </div>
         </div>
       </div>
