@@ -813,42 +813,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         </Card>
           )}
 
-          {/* Premium Pitch */}
-          <Card className="bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-950/40 backdrop-blur-xl border-2 border-purple-500/30 p-6 rounded-2xl shadow-2xl shadow-purple-500/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-pink-500/20 to-purple-500/20 rounded-full blur-2xl" />
-            
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-xs font-bold">
-                  Premium
-                </Badge>
-              </div>
-              
-              <h4 className="text-lg font-bold text-white mb-2">
-                Unlock Advanced Exercise Analytics
-              </h4>
-              
-              <p className="text-slate-300 text-sm mb-4 leading-relaxed">
-                Get complex exercise-specific data, detailed performance insights, personalized guidance, and AI-powered recommendations to optimize your training.
-              </p>
-              
-              <div className="space-y-2">
-                <Link to={createPageUrl('Premium')}>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Start Free Trial
-                  </Button>
-                </Link>
-                <p className="text-center text-xs text-slate-400">
-                  2 weeks free, then £4.99/month
-                </p>
-              </div>
-            </div>
-          </Card>
+
         </>
       )}
 

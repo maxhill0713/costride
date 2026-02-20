@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import BadgesDisplay from '../components/profile/BadgesDisplay';
+import BadgesModal from '../components/profile/BadgesModal';
 import StatusBadge from '../components/profile/StatusBadge';
 import ConsistencyJourney from '../components/profile/ConsistencyJourney';
 import CheckInHeatmap from '../components/profile/CheckInHeatmap';
@@ -36,6 +37,7 @@ export default function Profile() {
   const [showEditAvatar, setShowEditAvatar] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [showProfilePicture, setShowProfilePicture] = useState(false);
+  const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [activeTab, setActiveTab] = useState('stats');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -438,16 +440,13 @@ export default function Profile() {
                    <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{displayName}</h1>
                    <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
                 </div>
-                {/* Equipped Badges - Clickable */}
-                {currentUser?.equipped_badges?.length > 0 && (
-                  <button
-                    onClick={() => {
-                      setActiveTab('stats');
-                      setTimeout(() => document.querySelector('[data-badges-section]')?.scrollIntoView({ behavior: 'smooth' }), 0);
-                    }}
-                    className="flex items-center gap-2 mt-3 hover:opacity-80 transition-opacity"
-                  >
-                    {currentUser.equipped_badges.map((badgeId) => {
+                {/* Equipped Badges - Clickable to open modal */}
+                <button
+                  onClick={() => setShowBadgesModal(true)}
+                  className="flex items-center gap-2 mt-3 hover:opacity-80 transition-opacity"
+                >
+                  {currentUser?.equipped_badges?.length > 0 ? (
+                    currentUser.equipped_badges.map((badgeId) => {
                       const badge = streakMilestones.find(m => `${m.days}_day_streak` === badgeId) || 
                                    [
                                      { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
@@ -469,9 +468,19 @@ export default function Profile() {
                           <span className="text-base">{badge.icon}</span>
                         </div>
                       );
-                    })}
-                  </button>
-                )}
+                    })
+                  ) : (
+                    /* Empty badge slots when no badges equipped */
+                    [0, 1, 2].map((i) => (
+                      <div
+                        key={`empty-${i}`}
+                        className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:ring-blue-400/50 transition-all opacity-60 hover:opacity-80"
+                      >
+                        <span className="text-base">✨</span>
+                      </div>
+                    ))
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -796,6 +805,13 @@ export default function Profile() {
         isOpen={showSplitModal}
         onClose={() => setShowSplitModal(false)}
         currentUser={currentUser}
+      />
+
+      <BadgesModal
+        isOpen={showBadgesModal}
+        onClose={() => setShowBadgesModal(false)}
+        user={currentUser}
+        checkIns={userCheckIns}
       />
 
       <ProfilePictureModal
