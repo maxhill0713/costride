@@ -629,7 +629,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                   </Button>
                 </div>
               </div>
-              </div>
+            </div>
             </Card>
           )}
           </>
