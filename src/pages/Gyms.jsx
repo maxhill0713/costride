@@ -432,9 +432,9 @@ export default function Gyms() {
               </TabsList>
               <Button 
                 onClick={() => setShowJoinWithCode(true)}
-                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-base h-10 px-4"
+                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-lg text-xs h-8.5 px-3"
               >
-                <Key className="w-5 h-5" />
+                <Key className="w-4 h-4" />
                 <span className="hidden md:inline">Join with Code</span>
               </Button>
             </div>
