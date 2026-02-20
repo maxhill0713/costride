@@ -537,18 +537,18 @@ export default function Profile() {
       {/* Tabs Container */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Tabs Section - Full Width Below Header */}
-        <div className="w-full bg-slate-900/40 border-b border-slate-700/50 sticky top-0 z-40">
+        <div className="w-full bg-gradient-to-b from-slate-900/60 to-slate-950/40 border-b border-slate-700/50 sticky top-0 z-40 backdrop-blur-md">
           <TabsList className="grid grid-cols-4 w-full bg-transparent backdrop-blur-0 border-0 p-0 rounded-none gap-0">
-            <TabsTrigger value="stats" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-800/40 text-slate-400 data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none">
+            <TabsTrigger value="stats" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-blue-500/80 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/50 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
               Insights
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-800/40 text-slate-400 data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none">
+            <TabsTrigger value="progress" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-blue-500/80 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/50 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
               Split
             </TabsTrigger>
-            <TabsTrigger value="goals" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-800/40 text-slate-400 data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none">
+            <TabsTrigger value="goals" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-blue-500/80 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/50 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
               Goals
             </TabsTrigger>
-            <TabsTrigger value="posts" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-800/40 text-slate-400 data-[state=active]:bg-blue-500 data-[state=active]:border data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none">
+            <TabsTrigger value="posts" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-blue-500/80 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/50 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
               Posts
             </TabsTrigger>
           </TabsList>
