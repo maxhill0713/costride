@@ -76,7 +76,7 @@ export default function GymCommunity() {
     gcTime: 10 * 60 * 1000
   });
 
-  const { data: gym, isLoading: gymLoading } = useQuery({
+  const { data: gym } = useQuery({
     queryKey: ['gym', gymId],
     queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]),
     enabled: !!gymId,
