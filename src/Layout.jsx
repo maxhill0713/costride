@@ -81,13 +81,10 @@ export default function Layout({ children, currentPageName }) {
     return tabHistory[item.page] || (createPageUrl(item.page) + (item.params || ''));
   };
 
-  // Handle tab click - reset to root if already active
+  // Handle tab click - do nothing if already on that tab
   const handleTabClick = (item, e) => {
     if (currentPageName === item.page) {
       e.preventDefault();
-      // Navigate to root page and clear history
-      setTabHistory(prev => ({ ...prev, [item.page]: undefined }));
-      window.location.href = createPageUrl(item.page);
     }
   };
 
