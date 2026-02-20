@@ -736,7 +736,7 @@ export default function Profile() {
                 </Card>
               ) : (
                 <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
-                  {userPosts.filter(post => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
+                  {userPosts.filter(post => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
                     if (a.is_favourite === b.is_favourite) return 0;
                     return a.is_favourite ? -1 : 1;
                   }).map((post) => {
