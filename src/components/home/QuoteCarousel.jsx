@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { LayoutGroup } from 'framer-motion';
 
 const quotes = [
   {
@@ -59,13 +58,20 @@ export default function QuoteCarousel() {
 
       {/* Dots */}
       <div className="flex justify-center gap-2 pt-5 pb-1 relative z-10">
-        {quotes.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-            className={`transition-all duration-300 ${i === current ? 'bg-gradient-to-r from-blue-400 to-blue-500 w-2 h-2.5 rounded-full' : 'bg-slate-600/60 w-1.5 h-1.5 rounded-full hover:bg-slate-500'}`}
-          />
-        ))}
+        <LayoutGroup>
+          {quotes.map((_, i) => (
+            <motion.button
+              key={i}
+              layoutId={i === current ? 'active-dot' : undefined}
+              onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+              animate={{
+                width: i === current ? '24px' : '8px',
+              }}
+              transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
+              className={`h-2 rounded-full transition-colors duration-300 ${i === current ? 'bg-gradient-to-r from-blue-400 to-blue-500' : 'bg-slate-600/60 hover:bg-slate-500'}`}
+            />
+          ))}
+        </LayoutGroup>
       </div>
 
       {/* Swipeable Quote */}
