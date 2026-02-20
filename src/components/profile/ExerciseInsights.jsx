@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
+import VolumeByDayPaywall from './VolumeByDayPaywall';
 
 export default function ExerciseInsights({ workoutLogs = [], workoutSplit, trainingDays = [] }) {
   // Extract workout days from split using trainingDays and customWorkoutTypes
