@@ -801,25 +801,25 @@ export default function Gyms() {
                               e.preventDefault();
                               setGalleryGym(gym);
                             }}
-                            className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            className="w-7.5 h-7.5 rounded-lg bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
                           >
-                            <Images className="w-4 h-4 text-slate-300" />
+                            <Images className="w-3.5 h-3.5 text-slate-300" />
                           </button>
                           <button
                             onClick={(e) => {
                               e.preventDefault();
                               setEquipmentGym(gym);
                             }}
-                            className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                            className="w-7.5 h-7.5 rounded-lg bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
                           >
-                            <Dumbbell className="w-4 h-4 text-slate-300" />
+                            <Dumbbell className="w-3.5 h-3.5 text-slate-300" />
                           </button>
                           {currentUser && currentUser.email === gym.owner_email && (
                             <button
                               onClick={() => setEditingGym(gym)}
-                              className="w-9 h-9 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              className="w-7.5 h-7.5 rounded-lg bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
                             >
-                              <Edit className="w-4 h-4 text-slate-300" />
+                              <Edit className="w-3.5 h-3.5 text-slate-300" />
                             </button>
                           )}
                         </div>
