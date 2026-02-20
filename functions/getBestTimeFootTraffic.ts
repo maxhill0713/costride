@@ -83,18 +83,24 @@ Deno.serve(async (req) => {
     // analysis[i].hour_analysis: array of 24 hours with intensity_nr (0-100)
     const analysis = data.analysis;
 
-    // Build a structured week of hourly intensities
-    // BestTime day_int: 0=Mon ... 6=Sun
-    // intensity_nr: 0-100 = real busyness, -1 = no data (closed), 999 = outside opening hours per BestTime model
-    // We pass closed (-1) as -1 so frontend can show "Closed", and 999 as null so 24hr gyms aren't falsely marked closed
-    const weekData = analysis.map(day => ({
-      day_int: day.day_info.day_int,
-      day_text: day.day_info.day_text,
-      hours: day.hour_analysis.map(h => ({
-        hour: h.hour,
-        intensity: h.intensity_nr === -1 ? -1 : h.intensity_nr === 999 ? null : h.intensity_nr
-      }))
-    }));
+    // Build a structured week of hourly data using day_raw (0-100 real percentages)
+    // intensity_nr: -1 = closed/no data, 999 = outside opening hours (not truly closed for 24hr gyms)
+    // day_raw: actual 0-100 busyness percentage per hour
+    const weekData = analysis.map(day => {
+      const rawValues = day.day_raw || []; // array of 24 values indexed by hour (0=midnight)
+      return {
+        day_int: day.day_info.day_int,
+        day_text: day.day_info.day_text,
+        hours: day.hour_analysis.map((h, i) => {
+          const rawPct = rawValues[i] !== undefined ? rawValues[i] : null;
+          const isClosed = h.intensity_nr === -1;
+          return {
+            hour: h.hour,
+            percentage: isClosed ? -1 : (rawPct !== null ? rawPct : null)
+          };
+        })
+      };
+    });
 
     return Response.json({
       venue_id: data.venue_info?.venue_id,
