@@ -407,11 +407,7 @@ export default function Profile() {
             </div>
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
             
-            {/* Streak Freezes Badge */}
-            <div className="absolute bottom-14 right-4 z-10 bg-gradient-to-br from-slate-900/80 to-slate-800/80 backdrop-blur-xl border border-cyan-500/40 rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg">
-              <Snowflake className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-bold text-cyan-300">{currentUser?.streak_freezes || 2}</span>
-            </div>
+
           </>
         )}
         
