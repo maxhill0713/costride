@@ -399,7 +399,7 @@ export default function Gyms() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Hero Section */}
-      <div className="relative pt-3.2 pb-2.4 px-3 md:px-4 border-b border-blue-700/40">
+      <div className="relative pt-4 pb-3 px-3 md:px-4 border-b border-blue-700/40">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -1018,7 +1018,7 @@ export default function Gyms() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div style={{display: 'none'}} className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                           isPrimary ? 'bg-purple-500' : 'bg-slate-700'
                         }`}>
