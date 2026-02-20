@@ -16,7 +16,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
       onClick={handleBackdropClick}
       style={{ background: 'rgba(0, 0, 0, 0.3)' }}
     >
-      <div className="bg-slate-800/90 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/50 shadow-2xl backdrop-blur-sm">
+      <div className="bg-slate-800/50 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl">
         <div className="grid grid-cols-4 gap-8">
           {/* Default Flame */}
            <button
