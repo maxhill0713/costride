@@ -10,8 +10,9 @@ function jsDayToBestTime(jsDay) {
   return jsDay === 0 ? 6 : jsDay - 1;
 }
 
-function getBusynessLabel(pct, avg) {
-  if (pct === 0) return { label: 'Closed', color: 'bg-slate-700/40', textColor: 'text-slate-500' };
+function getBusynessLabel(pct, avg, isClosed) {
+  if (isClosed) return { label: 'Closed', color: 'bg-slate-700/40', textColor: 'text-slate-500' };
+  if (pct === 0 || pct === null) return { label: 'No data', color: 'bg-slate-700/30', textColor: 'text-slate-500' };
   if (pct < avg * 0.5) return { label: 'Quiet', color: 'bg-green-500/70', textColor: 'text-green-300' };
   if (pct > avg * 1.5) return { label: 'Very Busy', color: 'bg-red-500/80', textColor: 'text-red-300' };
   if (pct > avg * 1.1) return { label: 'Busy', color: 'bg-orange-500/70', textColor: 'text-orange-300' };
