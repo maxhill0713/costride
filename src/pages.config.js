@@ -81,7 +81,6 @@ import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
-import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -120,7 +119,6 @@ export const PAGES = {
     "Search": Search,
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
-    "UserProfile": UserProfile,
 }
 
 export const pagesConfig = {
