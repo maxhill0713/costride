@@ -84,6 +84,11 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
         membership_type: selectedPlan
       });
 
+      // Increment members count
+      await base44.entities.Gym.update(gym.id, {
+        members_count: (gym.members_count || 0) + 1
+      });
+
       return payment;
     },
     onSuccess: () => {
