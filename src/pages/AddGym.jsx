@@ -56,7 +56,6 @@ export default function AddGym() {
   const handleCreateGym = () => {
     if (!selectedGym) return;
 
-    // Extract city from address
     const addressParts = selectedGym.address.split(',');
     const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedGym.address;
 
@@ -72,7 +71,6 @@ export default function AddGym() {
       admin_id: isOwner ? currentUser?.id : null,
       owner_email: isOwner ? currentUser?.email : null,
       verified: isOwner,
-      status: 'approved',
       members_count: 0
     };
 
