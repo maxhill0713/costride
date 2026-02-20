@@ -406,9 +406,7 @@ export default function Gyms() {
               <div className="w-10 h-10 bg-blue-600/30 rounded-xl flex items-center justify-center border border-blue-500/50">
                 <Dumbbell className="w-5 h-5 text-blue-400" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
-                {userGyms.length > 0 ? 'My Gyms' : 'Find Gyms'}
-              </h1>
+
             </div>
             <div className="flex gap-2">
               {gymMemberships.length > 0 && (
