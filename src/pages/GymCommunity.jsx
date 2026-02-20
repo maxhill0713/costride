@@ -191,7 +191,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]),
     enabled: !!currentUser && !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const createEventMutation = useMutation({
