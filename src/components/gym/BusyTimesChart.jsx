@@ -50,8 +50,8 @@ export default function BusyTimesChart({ checkIns, gymId }) {
       const dayData = bestTimeData.weekData.find(d => d.day_int === selectedDay);
       if (dayData) {
         dayData.hours.forEach(h => {
-          all24[h.hour].isClosed = h.intensity === -1;
-          all24[h.hour].percentage = (h.intensity === -1 || h.intensity === null) ? 0 : h.intensity;
+          all24[h.hour].isClosed = h.percentage === -1;
+          all24[h.hour].percentage = (h.percentage === -1 || h.percentage === null) ? 0 : h.percentage;
         });
       }
     } else {
