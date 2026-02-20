@@ -778,8 +778,8 @@ export default function Gyms() {
 
                         {/* Quick Action Button */}
                         <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform">
-                            <Dumbbell className="w-4 h-4 mr-2" />
+                          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform text-xs h-8 px-3">
+                            <Dumbbell className="w-3 h-3 mr-1.5" />
                             Enter Gym
                           </Button>
                         </Link>
