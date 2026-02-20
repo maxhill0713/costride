@@ -719,7 +719,7 @@ export default function Gyms() {
               )}
 
               {/* Filters */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger className="w-auto h-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 text-sm">
                     <SelectValue placeholder="Type" />
