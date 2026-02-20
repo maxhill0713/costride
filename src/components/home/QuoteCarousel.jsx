@@ -108,8 +108,6 @@ export default function QuoteCarousel() {
           <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
       </div>
-
-
     </motion.div>
   );
 }
