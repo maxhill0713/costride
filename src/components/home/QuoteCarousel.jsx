@@ -110,13 +110,12 @@ export default function QuoteCarousel() {
           </motion.div>
         </AnimatePresence>
 
-        {/* More button */}
+        {/* Expand button */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="absolute bottom-4 right-8 flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-xs font-medium transition-all duration-200 uppercase tracking-wider"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-all duration-200"
         >
-          {expanded ? 'less' : 'more'}
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
         </button>
       </div>
     </motion.div>
