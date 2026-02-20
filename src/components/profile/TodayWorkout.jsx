@@ -320,10 +320,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   }
 
   return (
-    <Card 
+    <div 
       onClick={() => !isExpanded && setIsExpanded(true)}
-      className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer'}`}
+      className={`bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-950/80 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-950/50 relative overflow-hidden ${isExpanded ? 'p-6' : 'p-5 cursor-pointer'}`}
+      style={{
+        background: isExpanded ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)' : 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
+      }}
     >
+      {/* Decorative gradient accent */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      <div className="relative z-10">
       <div className="space-y-2 mb-4">
          <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 whitespace-nowrap">
