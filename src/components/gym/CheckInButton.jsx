@@ -127,6 +127,11 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   };
 
   if (!gym) return null;
+  if (checkInsLoading) return (
+    <Button disabled className="w-full h-14 rounded-2xl font-bold text-base bg-slate-700 cursor-not-allowed animate-pulse">
+      Loading...
+    </Button>
+  );
 
   return (
     <div className="space-y-3">
