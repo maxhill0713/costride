@@ -548,7 +548,7 @@ export default function Profile() {
             <TabsTrigger value="goals" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-950/80 data-[state=active]:to-indigo-950/80 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/30 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
               Goals
             </TabsTrigger>
-            <TabsTrigger value="posts" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-950/80 data-[state=active]:to-indigo-950/80 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/30 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
+            <TabsTrigger value="posts" className="flex-1 rounded-none flex items-center justify-center font-semibold bg-slate-900/50 text-slate-400 data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-900/50 data-[state=active]:to-indigo-900/50 data-[state=active]:backdrop-blur-xl data-[state=active]:border data-[state=active]:border-blue-400/30 data-[state=active]:text-white data-[state=active]:rounded-md transition-all text-sm py-2 outline-none hover:bg-slate-800/50">
               Posts
             </TabsTrigger>
           </TabsList>
