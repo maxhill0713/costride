@@ -146,29 +146,18 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           <MapPin className="w-5 h-5 mr-2" />
           Membership Required
         </Button>
-      ) : (
+      ) : !hasCheckedInToday() && (
         <motion.div
-          whileTap={!hasCheckedInToday() && !isChecking ? { scale: 0.95 } : {}}
+          whileTap={!isChecking ? { scale: 0.95 } : {}}
           animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}
         >
           <Button
             onClick={handleCheckIn}
-            disabled={hasCheckedInToday() || isChecking}
-            className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
-              hasCheckedInToday()
-                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed opacity-60'
-                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
-            }`}
+            disabled={isChecking}
+            className="w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           >
-            {isChecking ? (
-              'Checking in...'
-            ) : hasCheckedInToday() ? (
-              <>
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Checked In Today ✓
-              </>
-            ) : (
+            {isChecking ? 'Checking in...' : (
               <>
                 <MapPin className="w-5 h-5 mr-2" />
                 Check In Now
