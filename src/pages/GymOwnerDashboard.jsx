@@ -270,7 +270,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Lift.filter({ gym_id: selectedGym.id }, '-lift_date', 200),
     enabled: !!selectedGym,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: rewards = [] } = useQuery({
@@ -278,7 +279,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }),
     enabled: !!selectedGym,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: classes = [] } = useQuery({
@@ -286,7 +288,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }),
     enabled: !!selectedGym,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000
+    gcTime: 20 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: coaches = [] } = useQuery({
@@ -294,7 +297,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }),
     enabled: !!selectedGym,
     staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000
+    gcTime: 20 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: events = [] } = useQuery({
@@ -302,7 +306,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }, '-event_date'),
     enabled: !!selectedGym,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: posts = [] } = useQuery({
@@ -310,7 +315,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20),
     enabled: !!selectedGym,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: challenges = [] } = useQuery({
@@ -318,7 +324,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date'),
     enabled: !!selectedGym,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: polls = [] } = useQuery({
@@ -326,7 +333,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'),
     enabled: !!selectedGym,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const createRewardMutation = useMutation({
