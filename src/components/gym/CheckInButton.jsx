@@ -63,7 +63,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
       gym_id: gym.id 
     }, '-check_in_date', 200),
     enabled: !!currentUser && !!gym,
-    staleTime: 1 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const checkInMutation = useMutation({
