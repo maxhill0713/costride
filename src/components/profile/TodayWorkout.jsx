@@ -722,6 +722,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending}
       />
-      </Card>
+      </div>
+      </div>
       );
       }
