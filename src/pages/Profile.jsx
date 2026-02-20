@@ -580,6 +580,7 @@ export default function Profile() {
                       weeklyGoal={currentUser?.weekly_goal}
                       trainingDays={currentUser?.training_days}
                       customWorkoutTypes={currentUser?.custom_workout_types || {}}
+                      isPremium={currentUser?.subscription_status === 'active' || currentUser?.subscription_status === 'trial'}
                     />
                   </Card>
                 </>
