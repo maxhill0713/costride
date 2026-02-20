@@ -839,7 +839,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
         <>
               {/* Personal Records */}
               {personalRecords.length > 0 ? (
-                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20 relative overflow-hidden">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Trophy className="w-5 h-5 text-yellow-400" />
