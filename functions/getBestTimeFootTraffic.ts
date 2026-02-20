@@ -67,12 +67,13 @@ Deno.serve(async (req) => {
 
     // Build a structured week of hourly intensities
     // BestTime day_int: 0=Mon ... 6=Sun
+    // intensity_nr: 0-100 = real busyness, -1 = no data, 999 = outside opening hours
     const weekData = analysis.map(day => ({
       day_int: day.day_info.day_int,
       day_text: day.day_info.day_text,
       hours: day.hour_analysis.map(h => ({
         hour: h.hour,
-        intensity: h.intensity_nr  // 0-100
+        intensity: (h.intensity_nr === 999 || h.intensity_nr === -1) ? 0 : h.intensity_nr  // normalize to 0-100
       }))
     }));
 
