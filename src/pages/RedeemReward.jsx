@@ -162,15 +162,8 @@ export default function RedeemReward() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
-      <div className="relative pt-4 pb-3 px-3 md:px-4 border-b border-blue-700/40">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-100 mb-1">Rewards & Challenges</h1>
-          <p className="text-xs text-slate-400">Earn rewards, conquer challenges, claim prizes</p>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-3 md:px-4 py-3">
-        <div className="mb-4 grid grid-cols-3 gap-3">
+      <div className="max-w-6xl mx-auto px-3 md:px-4 py-4">
+        <div className="mb-6 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('weekly')}
             className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
