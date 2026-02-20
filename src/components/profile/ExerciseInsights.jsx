@@ -626,11 +626,12 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                 <div className="text-center">
                   <Sparkles className="w-8 h-8 text-amber-400 mx-auto mb-3" />
                   <p className="text-sm font-bold text-white mb-3">Unlock split-specific volume progress</p>
-                  <Link to={createPageUrl('Premium')}>
-                    <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-2 h-auto rounded-lg">
-                      Learn More
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={() => navigate(createPageUrl('Premium'))}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-2 h-auto rounded-lg"
+                  >
+                    Learn More
+                  </Button>
                 </div>
               </div>
             </div>
