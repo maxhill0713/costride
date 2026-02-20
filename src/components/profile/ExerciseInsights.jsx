@@ -618,6 +618,18 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                   />
                 </BarChart>
               </ResponsiveContainer>
+              
+              {/* Paywall Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/40 to-black/70 backdrop-blur-sm rounded-lg flex items-center justify-center pointer-events-auto">
+                <div className="text-center">
+                  <Sparkles className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+                  <p className="text-sm font-bold text-white mb-3">Unlock split-specific volume progress</p>
+                  <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-2 h-auto rounded-lg">
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+              </div>
             </Card>
           )}
           </>
