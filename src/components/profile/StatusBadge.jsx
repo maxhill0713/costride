@@ -50,6 +50,12 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
   };
 
   const tier = getTier();
+  
+  // Don't show the "Newcomer" badge
+  if (tier.level === 1) {
+    return null;
+  }
+  
   const Icon = tier.icon;
 
   const sizeClasses = {
