@@ -60,6 +60,7 @@ import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymRequests from './pages/GymRequests';
 import GymRewards from './pages/GymRewards';
 import GymSignup from './pages/GymSignup';
+import Gyms from './pages/Gyms';
 import HelpSupport from './pages/HelpSupport';
 import Home from './pages/Home';
 import InviteOwner from './pages/InviteOwner';
@@ -81,7 +82,6 @@ import Search from './pages/Search';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import UserProfile from './pages/UserProfile';
-import Gyms from './pages/Gyms';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +99,7 @@ export const PAGES = {
     "GymRequests": GymRequests,
     "GymRewards": GymRewards,
     "GymSignup": GymSignup,
+    "Gyms": Gyms,
     "HelpSupport": HelpSupport,
     "Home": Home,
     "InviteOwner": InviteOwner,
@@ -120,7 +121,6 @@ export const PAGES = {
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
     "UserProfile": UserProfile,
-    "Gyms": Gyms,
 }
 
 export const pagesConfig = {
