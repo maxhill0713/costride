@@ -28,36 +28,32 @@ Deno.serve(async (req) => {
 
     const gym = gyms[0];
     const venueName = gym.name;
-
-    // Use the full address field directly (it already includes city/postcode from Google Places).
-    // Avoid appending city/postcode separately as they may duplicate what's already in address.
-    // For gyms with a google_place_id, also resolve a clean address via Google Places API so that
-    // chain gyms (same name, different branches) get the correct precise address for BestTime.
     let venueAddress = gym.address;
 
-    if (!venueAddress) {
-      return Response.json({ error: 'Gym has no address to look up foot traffic' }, { status: 400 });
-    }
-
-    // If we have a google_place_id, fetch the verified formatted_address from Google Places
-    // to guarantee we're sending the exact branch address (important for chains like Everlast)
+    // If we have a google_place_id, resolve the canonical formatted_address via Google Places API.
+    // This is critical for chain gyms (e.g. Everlast) with the same name but different branches —
+    // Google's formatted_address includes the full street address that BestTime can uniquely match.
     if (gym.google_place_id) {
       const googleApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
       if (googleApiKey) {
         const placeRes = await fetch(
-          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${gym.google_place_id}&fields=formatted_address&key=${googleApiKey}`
+          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${gym.google_place_id}&fields=formatted_address,name&key=${googleApiKey}`
         );
         if (placeRes.ok) {
           const placeData = await placeRes.json();
           if (placeData.status === 'OK' && placeData.result?.formatted_address) {
             venueAddress = placeData.result.formatted_address;
-            console.log(`Resolved precise address via Place ID: ${venueAddress}`);
+            console.log(`Resolved address via Google Places: ${venueAddress}`);
           }
         }
       }
     }
 
-    console.log(`Fetching BestTime foot traffic for: "${venueName}", "${venueAddress}"`);
+    if (!venueAddress) {
+      return Response.json({ error: 'Gym has no address to look up foot traffic' }, { status: 400 });
+    }
+
+    console.log(`Fetching BestTime for: "${venueName}" at "${venueAddress}"`);
 
     const params = new URLSearchParams({
       api_key_private: apiKey,
