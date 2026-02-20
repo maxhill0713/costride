@@ -67,7 +67,7 @@ export default function Gyms() {
     placeholderData: (prev) => prev
   });
 
-  const { data: gyms = [], isLoading: gymsLoading } = useQuery({
+  const { data: gyms = [] } = useQuery({
     queryKey: ['gyms'],
     queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 100),
     staleTime: 10 * 60 * 1000,
