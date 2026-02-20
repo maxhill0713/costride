@@ -15,6 +15,7 @@ import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import PostCard from '../components/feed/PostCard';
+import QuoteCarousel from '../components/home/QuoteCarousel';
 import { useState } from 'react';
 import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
