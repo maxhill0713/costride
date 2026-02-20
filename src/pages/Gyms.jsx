@@ -407,34 +407,34 @@ export default function Gyms() {
               {gymMemberships.length > 0 && (
                 <Button 
                   onClick={() => setShowPrimaryGymModal(true)}
-                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-xl text-sm"
+                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-xl text-base h-10 px-4"
                 >
-                  <Star className="w-4 h-4" />
+                  <Star className="w-5 h-5" />
                 </Button>
               )}
-              <TabsList className="flex justify-start bg-transparent p-0 h-12 gap-8 border-0">
+              <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-12 border-0">
                 {userGyms.length > 0 && (
                   <TabsTrigger 
                     value="my-gyms" 
-                    className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
+                    className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base"
                   >
-                    <Users className="w-4 h-4 mr-2" />
+                    <Users className="w-5 h-5 mr-2" />
                     My Gyms
                   </TabsTrigger>
                 )}
                 <TabsTrigger 
                   value="explore" 
-                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
+                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base"
                 >
-                  <MapPin className="w-4 h-4 mr-2" />
+                  <MapPin className="w-5 h-5 mr-2" />
                   Explore
                 </TabsTrigger>
               </TabsList>
               <Button 
                 onClick={() => setShowJoinWithCode(true)}
-                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-sm ml-auto"
+                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-xl text-base h-10 px-4 ml-auto"
               >
-                <Key className="w-4 h-4" />
+                <Key className="w-5 h-5" />
                 <span className="hidden md:inline">Join with Code</span>
               </Button>
             </div>
