@@ -1012,7 +1012,7 @@ export default function GymCommunity() {
           )}
 
           {/* Busy Times Chart */}
-          <BusyTimesChart checkIns={checkIns} />
+          <BusyTimesChart checkIns={checkIns} gymId={gymId} />
 
           {/* Community Leaderboard Section */}
           <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-3 md:p-5 shadow-2xl shadow-black/30 transition-all duration-300">
