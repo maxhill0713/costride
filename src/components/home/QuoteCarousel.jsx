@@ -62,7 +62,7 @@ export default function QuoteCarousel() {
       </div>
 
       {/* Swipeable Quote */}
-      <div className="flex-1 relative overflow-hidden px-6">
+      <div className="flex-1 relative overflow-hidden px-6 py-6">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -76,7 +76,7 @@ export default function QuoteCarousel() {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="absolute inset-0 flex flex-col items-center justify-center px-6 cursor-grab active:cursor-grabbing"
+            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
           >
             <p className="text-white/90 text-base font-medium text-center leading-relaxed italic">
               {quotes[current].text}
@@ -84,8 +84,29 @@ export default function QuoteCarousel() {
             <p className="mt-4 text-slate-400 text-sm font-semibold tracking-wide">
               — {quotes[current].author}
             </p>
+            {expanded && (
+              <motion.p 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4 text-slate-300 text-xs text-center leading-relaxed"
+              >
+                {quotes[current].context}
+              </motion.p>
+            )}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* More button */}
+      <div className="flex justify-end px-6 pb-3">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1 text-slate-400 hover:text-white text-xs font-medium transition-colors"
+        >
+          more
+          <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </button>
       </div>
 
 
