@@ -575,8 +575,7 @@ export default function Profile() {
 
       {/* Main Content Section */}
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
-
-
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="progress" className="space-y-4 mt-0">
 
 
