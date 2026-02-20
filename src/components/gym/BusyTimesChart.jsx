@@ -153,8 +153,8 @@ export default function BusyTimesChart({ checkIns, gymId }) {
 
                   {/* Bar */}
                   <div
-                    className={`w-full rounded-t-sm transition-all ${pct > 0 ? color : 'bg-slate-700/20'} ${isNow ? 'ring-1 ring-white/60' : ''}`}
-                    style={{ height: pct > 0 ? `${heightPct}%` : '4px' }}
+                    className={`w-full rounded-t-sm transition-all ${isClosed ? 'bg-slate-700/30' : pct > 0 ? color : 'bg-slate-700/20'} ${isNow ? 'ring-1 ring-white/60' : ''}`}
+                    style={{ height: isClosed ? '4px' : pct > 0 ? `${heightPct}%` : '4px' }}
                   />
 
                   {/* "Now" indicator */}
