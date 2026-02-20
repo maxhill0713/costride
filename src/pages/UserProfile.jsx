@@ -206,6 +206,18 @@ export default function UserProfile() {
 
         <div className="max-w-4xl mx-auto relative z-10 pt-8">
           <div className="flex items-start gap-5">
+            <button 
+              onClick={() => setShowProfilePicture(true)}
+              className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95"
+            >
+              {viewingUser.avatar_url ? (
+                <img src={viewingUser.avatar_url} alt={viewingUser.full_name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-3xl font-semibold text-white tracking-tight">
+                  {viewingUser.full_name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              )}
+            </button>
             <div className="flex-1">
                <div className="flex flex-col gap-2 mb-2">
                   <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{viewingUser.full_name}</h1>
