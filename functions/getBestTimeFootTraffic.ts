@@ -28,25 +28,42 @@ Deno.serve(async (req) => {
 
     const gym = gyms[0];
     const venueName = gym.name;
-    const venueAddress = [gym.address, gym.city, gym.postcode].filter(Boolean).join(', ');
 
-    if (!venueAddress && !gym.google_place_id) {
-      return Response.json({ error: 'Gym has no address or place ID to look up foot traffic' }, { status: 400 });
+    // Use the full address field directly (it already includes city/postcode from Google Places).
+    // Avoid appending city/postcode separately as they may duplicate what's already in address.
+    // For gyms with a google_place_id, also resolve a clean address via Google Places API so that
+    // chain gyms (same name, different branches) get the correct precise address for BestTime.
+    let venueAddress = gym.address;
+
+    if (!venueAddress) {
+      return Response.json({ error: 'Gym has no address to look up foot traffic' }, { status: 400 });
     }
 
-    // Prefer Google Place ID for precise branch lookup (solves chains like Everlast with same name)
-    const params = new URLSearchParams({ api_key_private: apiKey });
-
+    // If we have a google_place_id, fetch the verified formatted_address from Google Places
+    // to guarantee we're sending the exact branch address (important for chains like Everlast)
     if (gym.google_place_id) {
-      // BestTime accepts venue_address as a Google Place ID directly when prefixed with "place_id:"
-      params.set('venue_name', venueName);
-      params.set('venue_address', `place_id:${gym.google_place_id}`);
-      console.log(`Fetching BestTime foot traffic via Place ID: ${gym.google_place_id} (${venueName})`);
-    } else {
-      params.set('venue_name', venueName);
-      params.set('venue_address', venueAddress);
-      console.log(`Fetching BestTime foot traffic via address: ${venueName}, ${venueAddress}`);
+      const googleApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+      if (googleApiKey) {
+        const placeRes = await fetch(
+          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${gym.google_place_id}&fields=formatted_address&key=${googleApiKey}`
+        );
+        if (placeRes.ok) {
+          const placeData = await placeRes.json();
+          if (placeData.status === 'OK' && placeData.result?.formatted_address) {
+            venueAddress = placeData.result.formatted_address;
+            console.log(`Resolved precise address via Place ID: ${venueAddress}`);
+          }
+        }
+      }
     }
+
+    console.log(`Fetching BestTime foot traffic for: "${venueName}", "${venueAddress}"`);
+
+    const params = new URLSearchParams({
+      api_key_private: apiKey,
+      venue_name: venueName,
+      venue_address: venueAddress
+    });
 
     const response = await fetch(`https://besttime.app/api/v1/forecasts?${params}`, {
       method: 'POST'
