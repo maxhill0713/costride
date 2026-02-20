@@ -558,33 +558,31 @@ export default function Profile() {
         <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
             <TabsContent value="progress" className="space-y-4 mt-0">
 
-
-
-
-                {/* Workout Split Heatmap */}
               {currentUser?.workout_split ? (
-                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Dumbbell className="w-4 h-4 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-                  </div>
-
+                <>
                   <button
                     onClick={() => setShowSplitModal(true)}
-                    className="w-full mb-3 bg-gradient-to-br from-purple-900/70 to-purple-950/70 backdrop-blur-xl border border-purple-500/30 hover:border-purple-400/50 hover:bg-gradient-to-br hover:from-purple-800/80 hover:to-purple-900/80 text-purple-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all text-xs p-2 flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-br from-purple-900/70 to-purple-950/70 backdrop-blur-xl border border-purple-500/30 hover:border-purple-400/50 hover:bg-gradient-to-br hover:from-purple-800/80 hover:to-purple-900/80 text-purple-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all text-xs p-2 flex items-center justify-center gap-2"
                   >
                     <Calendar className="w-3 h-3" />
                     Edit Your Split
                   </button>
 
-                  <WorkoutSplitHeatmap 
-                    checkIns={userCheckIns}
-                    workoutSplit={currentUser?.workout_split}
-                    weeklyGoal={currentUser?.weekly_goal}
-                    trainingDays={currentUser?.training_days}
-                    customWorkoutTypes={currentUser?.custom_workout_types || {}}
-                  />
-                </Card>
+                  <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Dumbbell className="w-4 h-4 text-indigo-400" />
+                      <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+                    </div>
+
+                    <WorkoutSplitHeatmap 
+                      checkIns={userCheckIns}
+                      workoutSplit={currentUser?.workout_split}
+                      weeklyGoal={currentUser?.weekly_goal}
+                      trainingDays={currentUser?.training_days}
+                      customWorkoutTypes={currentUser?.custom_workout_types || {}}
+                    />
+                  </Card>
+                </>
               ) : null}
 
               {/* Workout Progress Tracker */}
