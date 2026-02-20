@@ -60,7 +60,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
 
   const isClaimedGym = gym?.claim_status === 'claimed';
 
-  const { data: checkIns = [], isLoading: checkInsLoading } = useQuery({
+  const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id, gym?.id],
     queryFn: () => base44.entities.CheckIn.filter({ 
       user_id: currentUser.id,
