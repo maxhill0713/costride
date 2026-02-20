@@ -43,31 +43,37 @@ export default function BusyTimesChart({ checkIns, gymId }) {
   const useBestTime = !!bestTimeData?.weekData;
 
   const getHourlyData = () => {
-    const all24 = Array.from({ length: 24 }, (_, i) => ({ hour: i, percentage: 0 }));
+    // intensity: null = no BestTime data (not closed, just unknown), -1 = explicitly closed, 0-100 = busyness
+    const all24 = Array.from({ length: 24 }, (_, i) => ({ hour: i, percentage: null, isClosed: false }));
 
     if (useBestTime) {
       const dayData = bestTimeData.weekData.find(d => d.day_int === selectedDay);
       if (dayData) {
-        dayData.hours.forEach(h => { all24[h.hour].percentage = h.intensity; });
+        dayData.hours.forEach(h => {
+          all24[h.hour].isClosed = h.intensity === -1;
+          all24[h.hour].percentage = (h.intensity === -1 || h.intensity === null) ? 0 : h.intensity;
+        });
       }
     } else {
       // fallback: count check-ins per hour today
       checkIns?.forEach(checkIn => {
         const date = new Date(checkIn.check_in_date);
-        if (date.getDay() === currentDay) all24[date.getHours()].percentage++;
+        if (date.getDay() === currentDay) all24[date.getHours()].percentage = (all24[date.getHours()].percentage || 0) + 1;
       });
-      const max = Math.max(...all24.map(d => d.percentage), 1);
-      all24.forEach(d => { d.percentage = (d.percentage / max) * 100; });
+      const max = Math.max(...all24.map(d => d.percentage || 0), 1);
+      all24.forEach(d => { d.percentage = ((d.percentage || 0) / max) * 100; });
     }
     return all24;
   };
 
   const hourlyData = getHourlyData();
   const visibleData = VISIBLE_HOURS.map(h => hourlyData[h]);
-  const avg = visibleData.reduce((s, d) => s + d.percentage, 0) / visibleData.length;
+  // avg only over hours that have real data
+  const openHours = visibleData.filter(d => !d.isClosed && d.percentage > 0);
+  const avg = openHours.length > 0 ? openHours.reduce((s, d) => s + d.percentage, 0) / openHours.length : 50;
 
   const nowData = hourlyData[currentHour];
-  const nowStatus = getBusynessLabel(nowData?.percentage ?? 0, avg);
+  const nowStatus = getBusynessLabel(nowData?.percentage ?? 0, avg, nowData?.isClosed);
 
   const formatHour = (h) => {
     if (h === 0) return '12am';
