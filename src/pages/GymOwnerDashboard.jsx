@@ -237,7 +237,8 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.GymMembership.filter({ gym_id: selectedGym.id, status: 'active' }),
     enabled: !!currentUser && !!selectedGym,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   // allUsers only needed for ManageMembersModal — fetched lazily inside that component
