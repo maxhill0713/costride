@@ -799,7 +799,7 @@ export default function Profile() {
             <TabsContent value="goals" className="space-y-4">
             <Button
               onClick={() => setShowAddGoal(true)}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg font-semibold"
+              className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white rounded-xl shadow-lg font-semibold"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Goal
