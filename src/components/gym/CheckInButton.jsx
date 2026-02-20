@@ -157,17 +157,17 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
             disabled={hasCheckedInToday() || isChecking}
             className={`w-full h-14 rounded-2xl font-bold text-base shadow-lg transition-all ${
               hasCheckedInToday()
-                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed'
+                ? 'bg-green-500 hover:bg-green-500 cursor-not-allowed opacity-60'
                 : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
             }`}
           >
-            {hasCheckedInToday() ? (
+            {isChecking ? (
+              'Checking in...'
+            ) : hasCheckedInToday() ? (
               <>
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Checked In Today ✓
               </>
-            ) : isChecking ? (
-              'Checking in...'
             ) : (
               <>
                 <MapPin className="w-5 h-5 mr-2" />
