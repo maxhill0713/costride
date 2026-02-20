@@ -30,7 +30,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ bio: '', gym_location: '', avatar_url: '' });
+  const [editData, setEditData] = useState({ gym_location: '', avatar_url: '' });
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showEditHero, setShowEditHero] = useState(false);
   const [showEditAvatar, setShowEditAvatar] = useState(false);
