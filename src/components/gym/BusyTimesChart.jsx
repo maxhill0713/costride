@@ -13,10 +13,10 @@ function jsDayToBestTime(jsDay) {
 function getBusynessLabel(pct, avg, isClosed) {
   if (isClosed) return { label: 'Closed', color: 'bg-slate-700/40', textColor: 'text-slate-500' };
   if (pct === 0 || pct === null) return { label: 'No data', color: 'bg-slate-700/30', textColor: 'text-slate-500' };
-  if (pct < avg * 0.5) return { label: 'Quiet', color: 'bg-green-500/70', textColor: 'text-green-300' };
-  if (pct > avg * 1.5) return { label: 'Very Busy', color: 'bg-red-500/80', textColor: 'text-red-300' };
-  if (pct > avg * 1.1) return { label: 'Busy', color: 'bg-orange-500/70', textColor: 'text-orange-300' };
-  return { label: 'Moderate', color: 'bg-yellow-500/60', textColor: 'text-yellow-300' };
+  if (pct < avg * 0.5) return { label: 'Plenty of Space', color: 'bg-pink-400/30', textColor: 'text-pink-300' };
+  if (pct > avg * 1.5) return { label: 'Peak Hours', color: 'bg-gradient-to-t from-pink-500 to-purple-500 shadow-lg shadow-pink-500/40', textColor: 'text-pink-200' };
+  if (pct > avg * 1.1) return { label: 'High Energy', color: 'bg-pink-500/70', textColor: 'text-pink-300' };
+  return { label: 'Active', color: 'bg-purple-500/60', textColor: 'text-purple-300' };
 }
 
 // Show only hours between 5am and 11pm
