@@ -73,6 +73,11 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
         membership_type: 'monthly'
       });
 
+      // Increment members count
+      await base44.entities.Gym.update(gym.id, {
+        members_count: (gym.members_count || 0) + 1
+      });
+
       return gym;
     },
     onMutate: async () => {
