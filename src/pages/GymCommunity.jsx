@@ -103,7 +103,7 @@ export default function GymCommunity() {
     placeholderData: (prev) => prev
   });
 
-  const { data: posts = [], isLoading: postsLoading } = useQuery({
+  const { data: posts = [] } = useQuery({
     queryKey: ['posts', gymId],
     queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20),
     enabled: !!gymId,
