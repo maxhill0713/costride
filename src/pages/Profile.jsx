@@ -586,7 +586,7 @@ export default function Profile() {
 
                   <button
                     onClick={() => setShowSplitModal(true)}
-                    className="w-full mb-3 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
+                    className="w-full mb-3 p-2 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-all text-xs font-medium flex items-center justify-center gap-2"
                   >
                     <Calendar className="w-3 h-3" />
                     Edit Your Split
