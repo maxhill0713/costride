@@ -47,7 +47,7 @@ export default function QuoteCarousel() {
   return (
     <motion.div 
       className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden select-none"
-      animate={{ minHeight: expanded ? 'auto' : '224px' }}
+      animate={{ minHeight: expanded ? '360px' : '224px' }}
       transition={{ duration: 0.3 }}
     >
       {/* Dots */}
