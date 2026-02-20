@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 
 export default function ExerciseInsights({ workoutLogs = [], workoutSplit, trainingDays = [] }) {
+  const navigate = useNavigate();
+  
   // Extract workout days from split using trainingDays and customWorkoutTypes
   const workoutDays = useMemo(() => {
     if (!workoutSplit || typeof workoutSplit !== 'object') return [];
