@@ -433,7 +433,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }),
     enabled: !!currentUser && !!gymId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const { data: challengeParticipants = [] } = useQuery({
@@ -441,7 +442,8 @@ export default function GymCommunity() {
     queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const claimBonusMutation = useMutation({
