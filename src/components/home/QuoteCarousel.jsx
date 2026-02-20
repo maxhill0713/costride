@@ -62,7 +62,7 @@ export default function QuoteCarousel() {
       </div>
 
       {/* Swipeable Quote */}
-      <div className="flex-1 relative overflow-hidden px-6 flex items-center justify-center">
+      <div className="flex-1 relative overflow-hidden px-6 flex items-center justify-center pt-8">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -76,7 +76,7 @@ export default function QuoteCarousel() {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
+            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-6"
           >
             <p className="text-white/90 text-base font-medium text-center leading-relaxed italic">
               {quotes[current].text}
