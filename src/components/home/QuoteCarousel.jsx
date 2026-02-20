@@ -40,7 +40,7 @@ export default function QuoteCarousel() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 h-[320px] flex flex-col overflow-hidden select-none">
+    <div className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 h-[224px] flex flex-col overflow-hidden select-none">
       {/* Dots */}
       <div className="flex justify-center gap-2 pt-4 pb-2">
         {quotes.map((_, i) => (
