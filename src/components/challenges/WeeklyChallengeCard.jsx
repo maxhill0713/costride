@@ -65,8 +65,8 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
                 {challenge.target_value} check-ins
               </Badge>
             </div>
-            <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-cyan-500/40">
-              <Trophy className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg overflow-hidden">
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg" alt="Challenge" className="w-full h-full object-cover" />
             </div>
           </div>
 
