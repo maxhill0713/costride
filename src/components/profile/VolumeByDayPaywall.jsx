@@ -75,34 +75,24 @@ export default function VolumeByDayPaywall({ volumeByDay = [] }) {
         </div>
 
         {/* Blur Overlay Paywall */}
-        <motion.div 
+        <div 
           className="absolute inset-0 pointer-events-none top-[140px]"
           style={{
-            background: 'linear-gradient(to bottom, transparent 0%, rgba(15, 23, 42, 0.4) 40%, rgba(15, 23, 42, 0.8) 100%)',
+            background: 'linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0.8) 100%)',
             backdropFilter: 'blur(8px)',
           }}
         />
 
-        {/* Learn More Button - Shows on fade */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: showLearnMore ? 1 : 0, scale: showLearnMore ? 1 : 0.95 }}
-          transition={{ duration: 0.3 }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
-          <Link to={createPageUrl('Premium')} className="pointer-events-auto">
+        {/* Learn More Button */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+          <Link to={createPageUrl('Premium')}>
             <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg shadow-purple-500/50 gap-2">
               <Zap className="w-4 h-4" />
-              Unlock with Premium
+              Learn More
             </Button>
           </Link>
-        </motion.div>
+        </div>
       </div>
-
-      {/* Teaser Text */}
-      <p className="text-xs text-slate-400 mt-3 text-center">
-        Scroll to see more • Unlock with Premium
-      </p>
     </Card>
   );
 }
