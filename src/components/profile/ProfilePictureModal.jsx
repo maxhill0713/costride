@@ -1,17 +1,17 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userName }) {
+export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userName, children }) {
   if (!isOpen) return null;
 
   return (
     <div 
-      className="fixed inset-0 z-[100] bg-black/40 flex items-start justify-center pt-12 p-4"
+      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       {/* Profile Picture */}
       <div 
-        className="relative w-80 h-80 md:w-96 md:h-96"
+        className="relative w-80 h-80 md:w-96 md:h-96 mt-8"
         onClick={(e) => e.stopPropagation()}
       >
         {imageUrl ? (
@@ -28,6 +28,16 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
           </div>
         )}
       </div>
+
+      {/* Cards Behind Profile Pic */}
+      {children && (
+        <div 
+          className="mt-12 mb-8 w-full max-w-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }
