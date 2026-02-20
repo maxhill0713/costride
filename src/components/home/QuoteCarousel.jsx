@@ -69,8 +69,6 @@ export default function QuoteCarousel() {
             onDragEnd={handleDragEnd}
             className="absolute inset-0 flex flex-col items-center justify-center px-6 cursor-grab active:cursor-grabbing"
           >
-            {/* Quote mark */}
-            <span className="text-5xl text-blue-400/40 font-serif leading-none mb-2">"</span>
             <p className="text-white/90 text-base font-medium text-center leading-relaxed italic">
               {quotes[current].text}
             </p>
