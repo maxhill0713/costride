@@ -257,8 +257,6 @@ export default function UserProfile() {
             </div>
           </div>
 
-
-
           {/* Home Gym */}
            {primaryGym && !isOwnProfile && (
              <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
