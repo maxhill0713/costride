@@ -110,6 +110,6 @@ export default function QuoteCarousel() {
       </div>
 
 
-    </div>
+    </motion.div>
   );
 }
