@@ -257,10 +257,7 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Bio */}
-          {viewingUser.bio && (
-            <p className="text-slate-300 text-sm leading-relaxed mt-4 max-w-xl">{viewingUser.bio}</p>
-          )}
+
 
           {/* Home Gym */}
            {primaryGym && !isOwnProfile && (
