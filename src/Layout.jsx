@@ -72,7 +72,7 @@ export default function Layout({ children, currentPageName }) {
       ] : [
         { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
         { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
-        { name: 'Rewards', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
+        { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
         { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
       ];
 
