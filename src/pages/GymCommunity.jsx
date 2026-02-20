@@ -807,10 +807,6 @@ export default function GymCommunity() {
   .sort((a, b) => b.increase - a.increase)
   .slice(0, 10);
 
-  if (gymLoading) {
-    return <GymCommunitySkeleton />;
-  }
-
   if (!gym) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
