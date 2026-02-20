@@ -81,8 +81,7 @@ export default function QuoteCarousel() {
         </AnimatePresence>
       </div>
 
-      {/* Swipe hint */}
-      <p className="text-center text-slate-600 text-[10px] pb-3 tracking-wide">swipe to explore</p>
+
     </div>
   );
 }
