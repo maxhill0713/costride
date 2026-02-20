@@ -407,9 +407,9 @@ export default function Gyms() {
               {gymMemberships.length > 0 && (
                 <Button 
                   onClick={() => setShowPrimaryGymModal(true)}
-                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-xl text-base h-10 px-4"
+                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-lg text-xs h-8.5 px-3"
                 >
-                  <Star className="w-5 h-5" />
+                  <Star className="w-4 h-4" />
                 </Button>
               )}
               <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-12 border-0">
