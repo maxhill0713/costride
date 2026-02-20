@@ -166,35 +166,35 @@ export default function RedeemReward() {
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('weekly')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-sm md:text-base transition-all flex flex-col items-center gap-2 ${
               activeSection === 'weekly'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
                 : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'
             }`}
           >
-            <Zap className="w-4 h-4 inline mr-1" />
+            <Zap className="w-5 h-5" />
             Weekly
           </button>
           <button
             onClick={() => setActiveSection('community')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-sm md:text-base transition-all flex flex-col items-center gap-2 ${
               activeSection === 'community'
                 ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
                 : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'
             }`}
           >
-            <Trophy className="w-4 h-4 inline mr-1" />
+            <Trophy className="w-5 h-5" />
             Community
           </button>
           <button
             onClick={() => setActiveSection('rewards')}
-            className={`px-3 md:px-6 py-3.5 rounded-2xl font-bold text-xs md:text-sm transition-all ${
+            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-sm md:text-base transition-all flex flex-col items-center gap-2 ${
               activeSection === 'rewards'
                 ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
                 : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'
             }`}
           >
-            <Gift className="w-4 h-4 inline mr-1" />
+            <Gift className="w-5 h-5" />
             Rewards
           </button>
         </div>
