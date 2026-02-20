@@ -584,8 +584,9 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                 </TooltipProvider>
               </div>
 
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={volumeByDay} layout="vertical">
+              <div className="relative">
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={volumeByDay} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis 
                     type="number" 
