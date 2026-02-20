@@ -419,15 +419,12 @@ export default function Gyms() {
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center h-12 gap-4">
               {gymMemberships.length > 0 && (
-                <button 
+                <Button 
                   onClick={() => setShowPrimaryGymModal(true)}
-                  className="flex items-center gap-2 pr-4 border-r border-slate-700/50 hover:opacity-80 transition-opacity"
+                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-xl text-sm"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 hover:bg-purple-600 transition-colors">
-                    <Star className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-xs text-slate-400">Home Gym</span>
-                </button>
+                  <Star className="w-4 h-4" />
+                </Button>
               )}
               <TabsList className="flex justify-start bg-transparent p-0 h-12 gap-8 border-0">
                 {userGyms.length > 0 && (
