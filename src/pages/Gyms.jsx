@@ -435,24 +435,34 @@ export default function Gyms() {
         {/* Tab List */}
         <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4">
           <div className="max-w-6xl mx-auto">
-            <TabsList className="w-screen md:w-full flex justify-center bg-transparent p-0 h-12 gap-8 border-0 overflow-x-auto md:overflow-x-visible">
-              {userGyms.length > 0 && (
+            <div className="flex items-center h-12 gap-4">
+              {currentUser?.primary_gym_id && (
+                <div className="flex items-center gap-2 pr-4 border-r border-slate-700/50">
+                  <div className="w-8 h-8 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
+                    <Star className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-xs text-slate-400">Home Gym</span>
+                </div>
+              )}
+              <TabsList className="w-screen md:w-full flex justify-start bg-transparent p-0 h-12 gap-8 border-0 overflow-x-auto md:overflow-x-visible">
+                {userGyms.length > 0 && (
+                  <TabsTrigger 
+                    value="my-gyms" 
+                    className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    My Gyms
+                  </TabsTrigger>
+                )}
                 <TabsTrigger 
-                  value="my-gyms" 
+                  value="explore" 
                   className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
                 >
-                  <Users className="w-4 h-4 mr-2" />
-                  My Gyms
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Explore
                 </TabsTrigger>
-              )}
-              <TabsTrigger 
-                value="explore" 
-                className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2.5 transition-colors bg-transparent text-sm"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Explore
-              </TabsTrigger>
-            </TabsList>
+              </TabsList>
+            </div>
           </div>
         </div>
 
