@@ -62,7 +62,7 @@ export default function QuoteCarousel() {
       </div>
 
       {/* Swipeable Quote */}
-      <div className="flex-1 relative overflow-hidden px-6 py-6">
+      <div className="flex-1 relative overflow-hidden px-6 flex items-center justify-center">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -96,13 +96,11 @@ export default function QuoteCarousel() {
             )}
           </motion.div>
         </AnimatePresence>
-      </div>
 
-      {/* More button */}
-      <div className="flex justify-end px-6 pb-3">
+        {/* More button */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-slate-400 hover:text-white text-xs font-medium transition-colors"
+          className="absolute bottom-3 right-6 flex items-center gap-1 text-slate-400 hover:text-white text-xs font-medium transition-colors"
         >
           more
           <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
