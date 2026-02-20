@@ -46,23 +46,29 @@ export default function QuoteCarousel() {
 
   return (
     <motion.div 
-      className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden select-none"
+      className="bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-950/80 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-950/50 flex flex-col overflow-hidden select-none relative"
+      style={{
+        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
+      }}
       animate={{ minHeight: expanded ? '324px' : '224px' }}
       transition={{ duration: 0.3 }}
     >
+      {/* Decorative gradient accent */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+
       {/* Dots */}
-      <div className="flex justify-center gap-2 pt-4 pb-2">
+      <div className="flex justify-center gap-2 pt-5 pb-1 relative z-10">
         {quotes.map((_, i) => (
           <button
             key={i}
             onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${i === current ? 'bg-blue-400 w-4' : 'bg-slate-600'}`}
+            className={`transition-all duration-300 ${i === current ? 'bg-gradient-to-r from-blue-400 to-blue-500 w-2 h-2.5 rounded-full' : 'bg-slate-600/60 w-1.5 h-1.5 rounded-full hover:bg-slate-500'}`}
           />
         ))}
       </div>
 
       {/* Swipeable Quote */}
-      <div className="flex-1 relative overflow-hidden px-6 flex items-center justify-center pt-8">
+      <div className="flex-1 relative overflow-hidden px-8 flex items-center justify-center pt-6 z-10">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -76,12 +82,12 @@ export default function QuoteCarousel() {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-6"
+            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-4"
           >
-            <p className="text-white/90 text-base font-medium text-center leading-relaxed italic">
-              {quotes[current].text}
+            <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
+              "{quotes[current].text}"
             </p>
-            <p className="mt-4 text-slate-400 text-sm font-semibold tracking-wide">
+            <p className="mt-5 text-slate-300 text-sm font-medium tracking-widest opacity-90">
               — {quotes[current].author}
             </p>
             {expanded && (
@@ -89,7 +95,7 @@ export default function QuoteCarousel() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-4 text-slate-300 text-xs text-center leading-relaxed"
+                className="mt-5 text-slate-400 text-sm text-center leading-relaxed font-light"
               >
                 {quotes[current].context}
               </motion.p>
@@ -100,10 +106,10 @@ export default function QuoteCarousel() {
         {/* More button */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="absolute bottom-3 right-6 flex items-center gap-1 text-slate-400 hover:text-white text-xs font-medium transition-colors"
+          className="absolute bottom-4 right-8 flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-xs font-medium transition-all duration-200 uppercase tracking-wider"
         >
-          more
-          <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          {expanded ? 'less' : 'more'}
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
         </button>
       </div>
     </motion.div>
