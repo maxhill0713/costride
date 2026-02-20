@@ -402,12 +402,6 @@ export default function Gyms() {
       <div className="relative pt-4 pb-3 px-3 md:px-4 border-b border-blue-700/40">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600/30 rounded-xl flex items-center justify-center border border-blue-500/50">
-                <Dumbbell className="w-5 h-5 text-blue-400" />
-              </div>
-
-            </div>
           </div>
         </div>
       </div>
