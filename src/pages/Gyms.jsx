@@ -1018,7 +1018,7 @@ export default function Gyms() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div style={{display: 'none'}} className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                           isPrimary ? 'bg-purple-500' : 'bg-slate-700'
                         }`}>
