@@ -61,21 +61,48 @@ Deno.serve(async (req) => {
       venue_address: venueAddress
     });
 
-    const response = await fetch(`https://besttime.app/api/v1/forecasts?${params}`, {
-      method: 'POST'
+    // First try the fast "venue week" endpoint (cached data, returns instantly if venue is known)
+    let data = null;
+    const searchParams = new URLSearchParams({
+      api_key_private: apiKey,
+      venue_name: venueName,
+      venue_address: venueAddress
     });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('BestTime API error:', response.status, errText);
-      return Response.json({ error: `BestTime API error: ${response.status}` }, { status: 502 });
+    const searchRes = await fetch(`https://besttime.app/api/v1/venues/search?${searchParams}`);
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      if (searchData.status === 'OK' && searchData.venues?.length > 0) {
+        const venueId = searchData.venues[0].venue_id;
+        console.log(`Found cached venue: ${venueId}, fetching week data...`);
+        const weekRes = await fetch(`https://besttime.app/api/v1/forecasts/week/raw?api_key_private=${apiKey}&venue_id=${venueId}`);
+        if (weekRes.ok) {
+          const weekData = await weekRes.json();
+          if (weekData.status === 'OK') {
+            data = weekData;
+          }
+        }
+      }
     }
 
-    const data = await response.json();
+    // Fall back to full forecast (slower, generates new forecast)
+    if (!data) {
+      console.log(`No cached data found, running full forecast...`);
+      const response = await fetch(`https://besttime.app/api/v1/forecasts?${params}`, {
+        method: 'POST'
+      });
 
-    if (data.status !== 'OK') {
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error('BestTime API error:', response.status, errText);
+        return Response.json({ error: `BestTime API error: ${response.status}` }, { status: 502 });
+      }
+
+      data = await response.json();
+    }
+
+    if (!data || data.status !== 'OK') {
       console.error('BestTime returned non-OK status:', data);
-      return Response.json({ error: data.message || 'BestTime could not find foot traffic data for this venue' }, { status: 422 });
+      return Response.json({ error: data?.message || 'BestTime could not find foot traffic data for this venue' }, { status: 422 });
     }
 
     // Extract the analysis array - each item is a day with hourly data
