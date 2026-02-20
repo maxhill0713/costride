@@ -9,35 +9,42 @@ export default function ProfilePictureModal({ isOpen, onClose, imageUrl, userNam
       className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
-      {/* Profile Picture */}
+      {/* Container with Profile Picture and Cards */}
       <div 
-        className="relative w-80 h-80 md:w-96 md:h-96 mt-8"
+        className="relative flex flex-col items-center mt-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {imageUrl ? (
-          <img 
-            src={imageUrl} 
-            alt={userName}
-            className="w-full h-full object-cover rounded-full shadow-2xl ring-4 ring-white/20"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/20">
-            <span className="text-[160px] font-bold text-white">
-              {userName?.charAt(0)?.toUpperCase()}
-            </span>
+        {/* Cards Container - Behind Profile Picture */}
+        {children && (
+          <div 
+            className="w-80 md:w-96 mb-8"
+          >
+            {children}
           </div>
         )}
-      </div>
 
-      {/* Cards Behind Profile Pic */}
-      {children && (
+        {/* Profile Picture - On Top */}
         <div 
-          className="mt-12 mb-8 w-full max-w-2xl"
-          onClick={(e) => e.stopPropagation()}
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 md:w-96 md:h-96 -mt-32"
         >
-          {children}
+          {imageUrl ? (
+            <img 
+              src={imageUrl} 
+              alt={userName}
+              className="w-full h-full object-cover rounded-full shadow-2xl ring-4 ring-white/20"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/20">
+              <span className="text-[160px] font-bold text-white">
+                {userName?.charAt(0)?.toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Spacing for the overlapped profile picture */}
+        <div className="h-80 md:h-96" />
+      </div>
     </div>
   );
 }
