@@ -717,7 +717,7 @@ export default function Profile() {
                 <div className="flex gap-2">
                   <Button
                     onClick={() => setShowCreatePost(true)}
-                    className="flex-1 bg-gradient-to-br from-blue-900/70 to-blue-950/70 backdrop-blur-xl border border-blue-500/30 hover:border-blue-400/50 hover:bg-gradient-to-br hover:from-blue-800/80 hover:to-blue-900/80 text-blue-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all"
+                    className="flex-1 bg-gradient-to-br from-purple-900/70 to-purple-950/70 backdrop-blur-xl border border-purple-500/30 hover:border-purple-400/50 hover:bg-gradient-to-br hover:from-purple-800/80 hover:to-purple-900/80 text-purple-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create Post
