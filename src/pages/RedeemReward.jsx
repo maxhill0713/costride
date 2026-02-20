@@ -28,7 +28,8 @@ export default function RedeemReward() {
     }),
     enabled: !!currentUser,
     staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const isPremium = subscription && subscription.length > 0;
@@ -38,7 +39,8 @@ export default function RedeemReward() {
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
   });
 
   const gymIds = gymMemberships.map(m => m.gym_id);
