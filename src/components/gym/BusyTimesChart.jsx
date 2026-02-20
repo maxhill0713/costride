@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Clock, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -10,17 +9,15 @@ function jsDayToBestTime(jsDay) {
   return jsDay === 0 ? 6 : jsDay - 1;
 }
 
-function getBusynessLabel(pct, avg, isClosed) {
-  if (isClosed) return { label: 'Closed', color: 'bg-slate-700/40', textColor: 'text-slate-500' };
-  if (pct === 0 || pct === null) return { label: 'No data', color: 'bg-slate-700/30', textColor: 'text-slate-500' };
-  if (pct < avg * 0.5) return { label: 'Quiet', color: 'bg-green-500/70', textColor: 'text-green-300' };
-  if (pct > avg * 1.5) return { label: 'Very Busy', color: 'bg-red-500/80', textColor: 'text-red-300' };
-  if (pct > avg * 1.1) return { label: 'Busy', color: 'bg-orange-500/70', textColor: 'text-orange-300' };
-  return { label: 'Moderate', color: 'bg-yellow-500/60', textColor: 'text-yellow-300' };
-}
+// Show hours 6am–11pm like Google
+const VISIBLE_HOURS = Array.from({ length: 18 }, (_, i) => i + 6); // 6..23
 
-// Show only hours between 5am and 11pm
-const VISIBLE_HOURS = Array.from({ length: 19 }, (_, i) => i + 5); // 5..23
+const formatHour = (h) => {
+  if (h === 0) return '12am';
+  if (h < 12) return `${h}am`;
+  if (h === 12) return '12pm';
+  return `${h - 12}pm`;
+};
 
 export default function BusyTimesChart({ checkIns, gymId }) {
   const currentHour = new Date().getHours();
@@ -43,8 +40,7 @@ export default function BusyTimesChart({ checkIns, gymId }) {
   const useBestTime = !!bestTimeData?.weekData;
 
   const getHourlyData = () => {
-    // intensity: null = no BestTime data (not closed, just unknown), -1 = explicitly closed, 0-100 = busyness
-    const all24 = Array.from({ length: 24 }, (_, i) => ({ hour: i, percentage: null, isClosed: false }));
+    const all24 = Array.from({ length: 24 }, (_, i) => ({ hour: i, percentage: 0, isClosed: false }));
 
     if (useBestTime) {
       const dayData = bestTimeData.weekData.find(d => d.day_int === selectedDay);
@@ -55,56 +51,44 @@ export default function BusyTimesChart({ checkIns, gymId }) {
         });
       }
     } else {
-      // fallback: count check-ins per hour today
       checkIns?.forEach(checkIn => {
         const date = new Date(checkIn.check_in_date);
-        if (date.getDay() === currentDay) all24[date.getHours()].percentage = (all24[date.getHours()].percentage || 0) + 1;
+        if (date.getDay() === currentDay) all24[date.getHours()].percentage++;
       });
-      const max = Math.max(...all24.map(d => d.percentage || 0), 1);
-      all24.forEach(d => { d.percentage = ((d.percentage || 0) / max) * 100; });
+      const max = Math.max(...all24.map(d => d.percentage), 1);
+      all24.forEach(d => { d.percentage = (d.percentage / max) * 100; });
     }
     return all24;
   };
 
   const hourlyData = getHourlyData();
   const visibleData = VISIBLE_HOURS.map(h => hourlyData[h]);
-  // avg only over hours that have real data
-  const openHours = visibleData.filter(d => !d.isClosed && d.percentage > 0);
-  const avg = openHours.length > 0 ? openHours.reduce((s, d) => s + d.percentage, 0) / openHours.length : 50;
-
-  const nowData = hourlyData[currentHour];
-  const nowStatus = getBusynessLabel(nowData?.percentage ?? 0, avg, nowData?.isClosed);
-
-  const formatHour = (h) => {
-    if (h === 0) return '12am';
-    if (h < 12) return `${h}am`;
-    if (h === 12) return '12pm';
-    return `${h - 12}pm`;
-  };
 
   const isToday = selectedDay === bestTimeDayInt;
 
+  // Current hour status text (like Google's "Usually not too busy")
+  const nowPct = isToday ? (hourlyData[currentHour]?.percentage ?? 0) : null;
+  const getNowText = (pct) => {
+    if (pct === null) return null;
+    if (pct === 0) return 'Not busy right now';
+    if (pct < 25) return 'Not too busy right now';
+    if (pct < 50) return 'A little busy right now';
+    if (pct < 75) return 'As busy as it gets';
+    return 'Usually as busy as it gets';
+  };
+
   return (
-    <Card className="bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-slate-950/80 backdrop-blur-xl border border-blue-500/30 p-4 shadow-2xl shadow-blue-900/20">
+    <div className="bg-slate-800/60 rounded-2xl p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-blue-400" />
-          <h3 className="text-sm font-bold text-white">Busy Times</h3>
+          <h3 className="text-sm font-semibold text-white">Popular times</h3>
           {useBestTime && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-medium">
-              Live
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium">
+              Live data
             </span>
           )}
         </div>
-
-        {/* Now badge */}
-        {isToday && (
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${nowStatus.color} ${nowStatus.textColor}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-            {nowStatus.label} now
-          </div>
-        )}
       </div>
 
       {/* Day Selector */}
@@ -113,54 +97,72 @@ export default function BusyTimesChart({ checkIns, gymId }) {
           <button
             key={idx}
             onClick={() => setSelectedDay(idx)}
-            className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
+            className={`flex-1 py-1 rounded text-[11px] font-medium transition-all min-h-0 ${
               selectedDay === idx
-                ? 'bg-blue-500 text-white'
-                : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/60 hover:text-white'
-            } ${idx === bestTimeDayInt ? 'ring-1 ring-cyan-400/40' : ''}`}
+                ? 'bg-blue-500/30 text-blue-200 border border-blue-400/50'
+                : 'text-slate-400 hover:text-slate-200'
+            } ${idx === bestTimeDayInt ? 'underline underline-offset-2' : ''}`}
           >
             {day}
           </button>
         ))}
       </div>
 
+      {/* Now text (like Google's summary line) */}
+      {isToday && nowPct !== null && (
+        <p className="text-xs text-slate-300 mb-3">
+          {getNowText(nowPct)}
+          {nowPct > 0 && (
+            <span className="text-slate-500 ml-1">· {Math.round(nowPct)}% capacity</span>
+          )}
+        </p>
+      )}
+
       {/* Chart */}
       {isLoading ? (
-        <div className="h-24 flex items-center justify-center">
+        <div className="h-20 flex items-center justify-center">
           <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
         </div>
       ) : (
         <div>
-          {/* Bar rows */}
-          <div className="flex items-end gap-[3px] h-20">
+          <div className="flex items-end gap-[2px] h-16">
             {visibleData.map((d, i) => {
               const hour = VISIBLE_HOURS[i];
               const isNow = isToday && hour === currentHour;
-              const pct = Math.max(d.percentage || 0, 0);
+              const pct = d.percentage || 0;
               const isClosed = d.isClosed;
-              const heightPct = pct > 0 ? Math.max((pct / 100) * 100, 8) : 0;
-              const { color } = getBusynessLabel(pct, avg, isClosed);
+              // height as % of container, minimum stub for zero
+              const heightPct = isClosed ? 0 : pct > 0 ? Math.max((pct / 100) * 100, 10) : 0;
 
               return (
                 <div key={hour} className="flex-1 flex flex-col items-center justify-end h-full group relative">
                   {/* Tooltip */}
-                  <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
-                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap border border-slate-600 shadow-lg">
-                      {formatHour(hour)} — {isClosed ? 'Closed' : pct > 0 ? `${Math.round(pct)}% busy` : 'No data'}
+                  <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                    <div className="bg-slate-900 text-white text-[11px] px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl border border-slate-700">
+                      <div className="font-medium">{formatHour(hour)}</div>
+                      <div className="text-slate-400 text-[10px]">
+                        {isClosed ? 'Closed' : pct > 0 ? `${Math.round(pct)}% busy` : 'Not busy'}
+                      </div>
                     </div>
-                    <div className="w-1.5 h-1.5 bg-slate-800 rotate-45 -mt-1 border-b border-r border-slate-600" />
+                    <div className="w-1.5 h-1.5 bg-slate-900 rotate-45 -mt-[3px] border-b border-r border-slate-700" />
                   </div>
 
-                  {/* Bar */}
-                  <div
-                    className={`w-full rounded-t-sm transition-all ${isClosed ? 'bg-slate-700/30' : pct > 0 ? color : 'bg-slate-700/20'} ${isNow ? 'ring-1 ring-white/60' : ''}`}
-                    style={{ height: isClosed ? '4px' : pct > 0 ? `${heightPct}%` : '4px' }}
-                  />
+                  {/* Bar — Google uses a single solid colour, darker for "now" */}
+                  {heightPct > 0 && (
+                    <div
+                      className={`w-full rounded-sm transition-all duration-200 ${
+                        isNow
+                          ? 'bg-orange-400'
+                          : 'bg-blue-400/70 group-hover:bg-blue-300/80'
+                      }`}
+                      style={{ height: `${heightPct}%` }}
+                    />
+                  )}
 
-                  {/* "Now" indicator */}
+                  {/* "Now" tick line */}
                   {isNow && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <div className="w-1 h-1 rounded-full bg-white animate-ping" />
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                      <div className="w-[1px] h-2 bg-orange-400" />
                     </div>
                   )}
                 </div>
@@ -168,33 +170,20 @@ export default function BusyTimesChart({ checkIns, gymId }) {
             })}
           </div>
 
-          {/* X-axis labels — show every 3 hours */}
-          <div className="flex items-end gap-[3px] mt-1">
+          {/* X-axis labels */}
+          <div className="flex items-center gap-[2px] mt-4">
             {VISIBLE_HOURS.map((h, i) => (
               <div key={h} className="flex-1 text-center">
-                {i % 3 === 0 ? (
-                  <span className="text-[9px] text-slate-500">{formatHour(h)}</span>
+                {(h === 6 || h === 9 || h === 12 || h === 15 || h === 18 || h === 21) ? (
+                  <span className={`text-[9px] ${isToday && h === currentHour ? 'text-orange-400 font-semibold' : 'text-slate-500'}`}>
+                    {formatHour(h)}
+                  </span>
                 ) : null}
               </div>
             ))}
           </div>
         </div>
       )}
-
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-slate-700/50">
-        {[
-          { color: 'bg-green-500/70', label: 'Quiet' },
-          { color: 'bg-yellow-500/60', label: 'Moderate' },
-          { color: 'bg-orange-500/70', label: 'Busy' },
-          { color: 'bg-red-500/80', label: 'Very Busy' },
-        ].map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-1">
-            <div className={`w-2 h-2 rounded-sm ${color}`} />
-            <span className="text-[10px] text-slate-400">{label}</span>
-          </div>
-        ))}
-      </div>
-    </Card>
+    </div>
   );
 }
