@@ -628,7 +628,7 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
                   <p className="text-sm font-bold text-white mb-3">Unlock split-specific volume progress</p>
                   <Button 
                     onClick={() => navigate(createPageUrl('Premium'))}
-                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-6 py-2 h-auto rounded-lg"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-2 h-auto rounded-lg"
                   >
                     Learn More
                   </Button>
