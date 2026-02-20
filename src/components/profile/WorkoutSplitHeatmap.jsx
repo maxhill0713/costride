@@ -3,8 +3,9 @@ import { format, subDays, subWeeks, eachDayOfInterval, isSameDay, startOfWeek, e
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { Edit2 } from 'lucide-react';
+import PremiumPaywall from './PremiumPaywall';
 
-export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {} }) {
+export default function WorkoutSplitHeatmap({ checkIns = [], workoutSplit, weeklyGoal = 3, trainingDays = [], customWorkoutTypes = {}, isPremium = false }) {
   const [timeRange, setTimeRange] = useState('weekly'); // 'weekly' or 'monthly'
   // Define split schedules
   const splitSchedules = {
