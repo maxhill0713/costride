@@ -501,7 +501,7 @@ return (
               onClick={() => setShowSummary(true)}
               disabled={logWorkoutMutation.isPending}
               size="sm"
-              className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg"
+              className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 shadow-lg shadow-blue-900/40 rounded-lg"
             >
               Log Workout
             </Button>
