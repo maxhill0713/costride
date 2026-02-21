@@ -482,6 +482,12 @@ export default function Home({ restTimer, setRestTimer, isTimerActive, setIsTime
                   workoutStartTime={workoutStartTime}
                   onWorkoutStart={() => setWorkoutStartTime(Date.now())}
                   onWorkoutLogged={handleWorkoutLogged}
+                  restTimer={restTimer}
+                  setRestTimer={setRestTimer}
+                  isTimerActive={isTimerActive}
+                  setIsTimerActive={setIsTimerActive}
+                  initialRestTime={initialRestTime}
+                  setInitialRestTime={setInitialRestTime}
                 />
               ) : (
                 <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
