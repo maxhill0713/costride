@@ -502,7 +502,15 @@ export default function GymOwnerDashboard() {
   //   );
   // }
 
-  // Show pending approval message if gym is pending
+  // Show pending approval message if gym is pending (only if truly no approved gyms)
+  // Auto-refresh data periodically to catch approvals
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['ownerGyms'] });
+    }, 10000); // Refresh every 10 seconds
+    return () => clearInterval(interval);
+  }, [queryClient]);
+
   if (approvedGyms.length === 0 && pendingGyms.length > 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
