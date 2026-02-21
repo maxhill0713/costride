@@ -55,11 +55,6 @@ export default function ChallengeProgressCard({ challenge, userProgress = 0 }) {
 
       {/* Progress Bar with Animation */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-semibold text-gray-700">Your Progress</span>
-          <span className="font-bold text-purple-600">{progressPercentage}%</span>
-        </div>
-        
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}

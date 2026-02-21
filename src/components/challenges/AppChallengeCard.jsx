@@ -85,19 +85,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Time Progress</p>
-            <p className="text-xs text-slate-400 font-medium">{Math.round(progressPercentage)}%</p>
-          </div>
-          <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
-            <div 
-              className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
-        </div>
+
 
         {/* Join Button */}
         <Button
