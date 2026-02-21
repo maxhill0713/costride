@@ -944,13 +944,7 @@ export default function Gyms() {
       </Dialog>
 
       <Dialog open={!!galleryGym} onOpenChange={() => setGalleryGym(null)}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Images className="w-5 h-5 text-blue-400" />
-              {galleryGym?.name} - Gallery
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[85vh] overflow-y-auto [&>button]:hidden">
           <div>
             {galleryGym?.gallery && galleryGym.gallery.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
