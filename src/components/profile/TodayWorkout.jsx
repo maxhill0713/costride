@@ -64,14 +64,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     // Workout duration timer effect
     React.useEffect(() => {
     let interval;
-    if (workoutStartTime) {
+    if (workoutStartTime && !showSummary) {
       interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
         setWorkoutDuration(elapsed);
       }, 1000);
     }
     return () => clearInterval(interval);
-    }, [workoutStartTime]);
+    }, [workoutStartTime, showSummary]);
 
     const startRestTimer = () => {
     const time = parseInt(restTimer) || 90;
