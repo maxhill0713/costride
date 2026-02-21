@@ -60,6 +60,26 @@ export default function Layout({ children, currentPageName }) {
 
   const isGymOwner = currentUser?.account_type === 'gym_owner';
 
+  // Rest timer effect
+  React.useEffect(() => {
+    let interval;
+    if (isTimerActive && restTimer > 0) {
+      interval = setInterval(() => {
+        setRestTimer(t => t - 1);
+      }, 1000);
+    } else if (restTimer === 0 && isTimerActive) {
+      setIsTimerActive(false);
+      // Vibrate and play sound when timer completes
+      if ('vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200]);
+      }
+      // Play beep sound
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURU=');
+      audio.play().catch(() => {});
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive, restTimer]);
+
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
