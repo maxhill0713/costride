@@ -40,6 +40,7 @@ export default function GymSignup() {
   const [ghostGym, setGhostGym] = useState(null);
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
   const [emailVerificationStatus, setEmailVerificationStatus] = useState(null);
+  const [submittedGym, setSubmittedGym] = useState(null);
 
   const queryClient = useQueryClient();
 
