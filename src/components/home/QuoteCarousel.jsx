@@ -6,17 +6,17 @@ const quotes = [
   {
     text: "I am no longer accepting the things I cannot change. We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
     author: "Aristotle",
-    context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline."
+    context: "Aristotle was an ancient Greek philosopher and student of Plato, known for his work in logic, metaphysics, and ethics. True excellence comes from consistent action and habit formation—we must take control of what we can change and build excellence through repeated practice and discipline."
   },
   {
     text: "I am changing the things I cannot accept.",
     author: "Angela Davis",
-    context: "Take action against injustice and inequity. We have the power to shape our world and challenge systems that need transformation."
+    context: "Angela Davis is an American political activist, author, and scholar who has dedicated her life to fighting systemic oppression and inequality. Take action against injustice and inequity—we have the power to shape our world and challenge systems that need transformation."
   },
   {
     text: "The only thing we have to fear is fear itself.",
     author: "Franklin D. Roosevelt",
-    context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere."
+    context: "Franklin D. Roosevelt was the 32nd President of the United States, leading the nation through the Great Depression and World War II with resilience and determination. Fear is often the only real obstacle between us and our goals—when we overcome fear, we unlock our potential and find the strength to persevere."
   }
 ];
 
@@ -49,7 +49,7 @@ export default function QuoteCarousel() {
       style={{
         background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
       }}
-      animate={{ minHeight: expanded ? '324px' : '224px' }}
+      animate={{ minHeight: expanded ? '400px' : '224px' }}
       transition={{ duration: 0.3 }}
     >
       {/* Decorative gradient accent */}
