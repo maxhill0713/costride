@@ -20,11 +20,11 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   if (!isActive && restTimer === '') return null;
 
   return (
-    <div className={`fixed z-40 bg-gradient-to-r from-blue-700/95 to-blue-900/95 backdrop-blur-2xl border border-blue-600/50 p-4 shadow-2xl shadow-blue-900/20 ${
-      isActive 
-        ? 'inset-0 bottom-auto top-auto h-auto left-0 right-0 mx-0 rounded-none' 
-        : 'bottom-20 left-4 right-4 md:left-24 md:right-4 rounded-2xl'
-    }`}
+    <div className={`fixed z-40 bg-gradient-to-r from-blue-700/95 to-blue-900/95 backdrop-blur-2xl border border-blue-600/50 ${isActive ? 'p-3.5' : 'p-4'} shadow-2xl shadow-blue-900/20 ${
+          isActive 
+            ? 'inset-0 bottom-auto top-auto h-auto left-0 right-0 mx-0 rounded-none' 
+            : 'bottom-20 left-4 right-4 md:left-24 md:right-4 rounded-2xl'
+        }`}
     style={isActive ? { 
       top: 'auto', 
       bottom: 'calc(4rem + env(safe-area-inset-bottom))',
