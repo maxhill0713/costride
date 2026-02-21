@@ -16,7 +16,13 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
       onClick={handleBackdropClick}
       style={{ background: 'rgba(0, 0, 0, 0.3)' }}
     >
-      <div className="bg-slate-800/50 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl">
+      <div className="bg-slate-800/50 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative">
+        {/* Streak Freezes - top right */}
+        <div className="absolute top-4 right-5 flex items-center gap-1.5">
+          <Snowflake className="w-4 h-4 text-cyan-400" />
+          <span className="text-white font-bold text-sm">{streakFreezes}</span>
+        </div>
+
         <div className="grid grid-cols-4 gap-8">
           {/* Default Flame */}
            <button
