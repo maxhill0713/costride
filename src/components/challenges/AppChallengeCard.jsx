@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { differenceInDays } from 'date-fns';
 
 export default function AppChallengeCard({ challenge, onJoin, isJoined = false, currentUser }) {
+  const [showStats, setShowStats] = React.useState(false);
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const totalDays = differenceInDays(new Date(challenge.end_date), new Date(challenge.start_date));
   const daysElapsed = totalDays - daysLeft;
@@ -59,12 +60,27 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
 
         {/* Progress Bar */}
         <div className="mb-3">
-          <div className="h-4 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
-           <div 
-             className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
-             style={{ width: `${progressPercentage}%` }}
-           />
-         </div>
+          <button
+            onClick={() => setShowStats(!showStats)}
+            className="w-full hover:opacity-80 transition-opacity cursor-pointer active:scale-95"
+          >
+            <div className="h-4 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
+             <div 
+               className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
+               style={{ width: `${progressPercentage}%` }}
+             />
+           </div>
+          </button>
+          {showStats && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-2 bg-slate-700/60 rounded-lg p-2 text-center border border-orange-500/30"
+            >
+              <p className="text-sm font-bold text-orange-300">{daysElapsed}/{totalDays} days</p>
+              <p className="text-xs text-slate-400">{Math.max(0, totalDays - daysElapsed)} days left</p>
+            </motion.div>
+          )}
         </div>
 
         {/* Goal Card */}
