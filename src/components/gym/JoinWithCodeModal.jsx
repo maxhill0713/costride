@@ -115,14 +115,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
           <h2 className="text-lg md:text-2xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">
             Join with Code
           </h2>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onClose}
-            className="text-slate-400 hover:text-white h-8 w-8 md:h-10 md:w-10"
-          >
-            <X className="w-4 md:w-5 h-4 md:h-5" />
-          </Button>
+
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
