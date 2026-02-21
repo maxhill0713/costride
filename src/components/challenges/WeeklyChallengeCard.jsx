@@ -61,9 +61,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-white mb-1 text-base">{challenge.title}</h4>
               <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
-              <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] inline-block">
-                {challenge.target_value} check-ins
-              </Badge>
+
             </div>
             <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg overflow-hidden">
               <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg" alt="Challenge" className="w-full h-full object-cover" />
