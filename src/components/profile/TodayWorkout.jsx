@@ -304,14 +304,17 @@ const logWorkoutMutation = useMutation({
       currentStreak: newStreak,
       challenges: challengesData
     });
-    setShowCelebration(true);
     },
   onSuccess: () => {
+     setShowSummary(false);
+     setShowCelebration(true);
      queryClient.invalidateQueries(['workoutLog']);
      queryClient.invalidateQueries(['posts']);
      queryClient.invalidateQueries(['currentUser']);
-     setShowSummary(false);
-   }
+   },
+  onError: (error) => {
+    console.error('Error logging workout:', error);
+  }
   });
 
 const getProgressIndicator = (exercise, index) => {
