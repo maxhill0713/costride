@@ -514,7 +514,7 @@ export default function Gyms() {
                               }}
                               className="flex items-center justify-center hover:scale-110 transition-all"
                             >
-                              <Images className="w-7 h-7 text-white drop-shadow-lg" />
+                              <Images className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                             </button>
                             <button
                               onClick={(e) => {
@@ -523,7 +523,7 @@ export default function Gyms() {
                               }}
                               className="flex items-center justify-center hover:scale-110 transition-all"
                             >
-                              <Dumbbell className="w-7 h-7 text-white drop-shadow-lg" />
+                              <Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                             </button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -531,7 +531,7 @@ export default function Gyms() {
                                   onClick={(e) => e.preventDefault()}
                                   className="flex items-center justify-center hover:scale-110 transition-all"
                                 >
-                                  <MoreVertical className="w-7 h-7 text-white drop-shadow-lg" />
+                                  <MoreVertical className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
