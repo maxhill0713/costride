@@ -26,9 +26,8 @@ export default function Layout({ children, currentPageName }) {
       email: 'guest@example.com',
       account_type: 'user'
     })),
-    staleTime: 0,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: true
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   // Preserve tab navigation history
