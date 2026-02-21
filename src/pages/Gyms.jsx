@@ -506,32 +506,32 @@ export default function Gyms() {
                           )}
 
                           {/* Icons: Gallery, Info & More Options */}
-                          <div className="absolute top-3 right-3 flex gap-2">
+                          <div className="absolute top-3 right-3 flex gap-3">
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 setGalleryGym(gym);
                               }}
-                              className="w-7.5 h-7.5 rounded-lg bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              className="flex items-center justify-center hover:scale-110 transition-all"
                             >
-                              <Images className="w-3.5 h-3.5 text-slate-300" />
+                              <Images className="w-7 h-7 text-white drop-shadow-lg" />
                             </button>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 setEquipmentGym(gym);
                               }}
-                              className="w-7.5 h-7.5 rounded-lg bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                              className="flex items-center justify-center hover:scale-110 transition-all"
                             >
-                              <Dumbbell className="w-3.5 h-3.5 text-slate-300" />
+                              <Dumbbell className="w-7 h-7 text-white drop-shadow-lg" />
                             </button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <button
                                   onClick={(e) => e.preventDefault()}
-                                  className="w-7.5 h-7.5 rounded-lg bg-slate-900/80 backdrop-blur-md flex items-center justify-center hover:bg-slate-800 transition-all hover:scale-110"
+                                  className="flex items-center justify-center hover:scale-110 transition-all"
                                 >
-                                  <MoreVertical className="w-3.5 h-3.5 text-slate-300" />
+                                  <MoreVertical className="w-7 h-7 text-white drop-shadow-lg" />
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
