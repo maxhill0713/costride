@@ -266,9 +266,8 @@ export default function Gyms() {
       image_url: selectedPlaceGym.photo_url || null
     };
 
-    // If user already has a gym and is not claiming ownership, show confirmation
-    const isGhostCommunity = !isOwner;
-    if (gymMemberships.length > 0 || isGhostCommunity) {
+    // Only show confirmation when adding an official gym (claiming ownership)
+    if (isOwner && gymMemberships.length > 0) {
       setPendingGymData(gymData);
       setShowConfirmJoin(true);
     } else {
