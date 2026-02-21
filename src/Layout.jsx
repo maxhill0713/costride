@@ -13,6 +13,9 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [tabHistory, setTabHistory] = useState({});
   const [lastTabPage, setLastTabPage] = useState({});
+  const [restTimer, setRestTimer] = useState('');
+  const [initialRestTime, setInitialRestTime] = useState(90);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
