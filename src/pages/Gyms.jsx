@@ -219,6 +219,7 @@ export default function Gyms() {
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
+      navigate(createPageUrl('GymCommunity') + '?id=' + result.gym.id);
     }
   });
 
