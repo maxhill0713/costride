@@ -683,6 +683,17 @@ export default function GymOwnerDashboard() {
               </Link>
 
               <Button 
+                onClick={async () => {
+                  await base44.auth.updateMe({ account_type: 'user' });
+                  window.location.href = createPageUrl('Home');
+                }} 
+                variant="outline" 
+                className="border-2 h-12 px-4 md:px-6 w-full sm:w-auto"
+              >
+                Switch to Member
+              </Button>
+
+              <Button 
                 onClick={() => base44.auth.logout()} 
                 variant="outline" 
                 className="border-2 h-12 px-4 md:px-6 w-full sm:w-auto text-red-500 hover:bg-red-50 border-red-300"
