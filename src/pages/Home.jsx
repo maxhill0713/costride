@@ -649,6 +649,35 @@ export default function Home() {
                 {animatedNum}
               </motion.div>
 
+              {/* Challenge Progress */}
+              {celebrationChallenges.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2, duration: 0.6 }}
+                  className="w-80 space-y-3 mt-8"
+                >
+                  <p className="text-sm text-slate-300 font-semibold text-center">Challenge Progress</p>
+                  {celebrationChallenges.map((challenge, idx) => (
+                    <div key={challenge.id} className="space-y-1.5">
+                      <p className="text-xs text-slate-400 font-medium truncate">{challenge.title}</p>
+                      <motion.div
+                        className="h-2 bg-slate-700/50 rounded-full overflow-hidden"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.5 + idx * 0.2 }}
+                      >
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
+                          initial={{ width: '0%' }}
+                          animate={{ width: '100%' }}
+                          transition={{ delay: 1.7 + idx * 0.2, duration: 1.2, ease: 'easeOut' }}
+                        />
+                      </motion.div>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
 
             </motion.div>
           </motion.div>
