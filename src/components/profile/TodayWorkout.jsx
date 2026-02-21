@@ -11,15 +11,12 @@ import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import WorkoutSummaryModal from './WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [editSets, setEditSets] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [restTimer, setRestTimer] = useState('');
-  const [initialRestTime, setInitialRestTime] = useState(90);
-  const [isTimerActive, setIsTimerActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showTimerOptions, setShowTimerOptions] = useState(false);
