@@ -55,40 +55,42 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+      <DialogContent className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-orange-500" />
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-white" />
+            </div>
             Create Challenge
           </DialogTitle>
-          <DialogDescription>Set up a new challenge for your gym members</DialogDescription>
+          <p className="text-slate-400 text-sm mt-1">Set up a new challenge for your gym members</p>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-6">
           <div className="space-y-2">
-            <Label>Challenge Title *</Label>
+            <Label className="text-white font-semibold text-sm">Challenge Title *</Label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Summer Squat Challenge"
               required
-              className="rounded-2xl"
+              className="bg-slate-700/50 border-2 border-slate-600 text-white placeholder-slate-400 rounded-xl h-11"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label className="text-white font-semibold text-sm">Description</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Who can squat the most total weight this month?"
-              className="rounded-2xl"
+              className="bg-slate-700/50 border-2 border-slate-600 text-white placeholder-slate-400 rounded-xl resize-none focus:border-orange-500"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Challenge Category *</Label>
+            <Label className="text-white font-semibold text-sm">Challenge Category *</Label>
             <MobileSelect 
               value={formData.category} 
               onValueChange={(value) => {
@@ -103,7 +105,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
                 setFormData({ ...formData, ...updates });
               }}
               placeholder="Select category"
-              triggerClassName="rounded-2xl"
+              triggerClassName="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
               options={[
                 { value: 'lifting', label: '💪 Lifting (Weight/Reps)' },
                 { value: 'attendance', label: '📍 Attendance (Check-ins)' },
@@ -114,12 +116,12 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Challenge Type *</Label>
+              <Label className="text-white font-semibold text-sm">Challenge Type *</Label>
               <MobileSelect 
                 value={formData.type} 
                 onValueChange={(value) => setFormData({ ...formData, type: value })}
                 placeholder="Select type"
-                triggerClassName="rounded-2xl"
+                triggerClassName="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
                 options={[
                   { value: 'individual', label: 'Individual' },
                   { value: 'team', label: 'Team' },
@@ -131,12 +133,12 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
             {formData.category === 'lifting' && (
               <div className="space-y-2">
-                <Label>Exercise *</Label>
+                <Label className="text-white font-semibold text-sm">Exercise *</Label>
                 <MobileSelect 
                   value={formData.exercise} 
                   onValueChange={(value) => setFormData({ ...formData, exercise: value })}
                   placeholder="Select exercise"
-                  triggerClassName="rounded-2xl"
+                  triggerClassName="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
                   options={[
                     { value: 'bench_press', label: 'Bench Press' },
                     { value: 'squat', label: 'Squat' },
@@ -153,7 +155,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
           {formData.type === 'gym_vs_gym' && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Home Gym *</Label>
+                <Label className="text-white font-semibold text-sm">Home Gym *</Label>
                 <MobileSelect
                   value={formData.gym_id}
                   onValueChange={(value) => {
@@ -161,13 +163,13 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
                     setFormData({ ...formData, gym_id: value, gym_name: gym?.name || '' });
                   }}
                   placeholder="Select gym"
-                  triggerClassName="rounded-2xl"
+                  triggerClassName="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
                   options={gyms.map(gym => ({ value: gym.id, label: gym.name }))}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Competing Gym *</Label>
+                <Label className="text-white font-semibold text-sm">Competing Gym *</Label>
                 <MobileSelect
                   value={formData.competing_gym_id}
                   onValueChange={(value) => {
@@ -175,7 +177,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
                     setFormData({ ...formData, competing_gym_id: value, competing_gym_name: gym?.name || '' });
                   }}
                   placeholder="Select gym"
-                  triggerClassName="rounded-2xl"
+                  triggerClassName="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
                   options={gyms.map(gym => ({ value: gym.id, label: gym.name }))}
                 />
               </div>
@@ -183,12 +185,12 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
           )}
 
           <div className="space-y-2">
-            <Label>Goal Type *</Label>
+            <Label className="text-white font-semibold text-sm">Goal Type *</Label>
             <MobileSelect 
               value={formData.goal_type} 
               onValueChange={(value) => setFormData({ ...formData, goal_type: value })}
               placeholder="Select goal type"
-              triggerClassName="rounded-2xl"
+              triggerClassName="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
               options={[
                 ...(formData.category === 'lifting' ? [
                   { value: 'total_weight', label: 'Total Weight Lifted' },
@@ -208,65 +210,74 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
 
           {(formData.category === 'attendance' || formData.category === 'streak') && (
             <div className="space-y-2">
-              <Label>Target {formData.category === 'attendance' ? 'Check-ins' : 'Streak (days)'}</Label>
+              <Label className="text-white font-semibold text-sm">Target {formData.category === 'attendance' ? 'Check-ins' : 'Streak (days)'}</Label>
               <Input
                 type="number"
                 value={formData.target_value}
                 onChange={(e) => setFormData({ ...formData, target_value: parseInt(e.target.value) || 0 })}
                 placeholder={formData.category === 'attendance' ? '20' : '30'}
-                className="rounded-2xl"
+                className="bg-slate-700/50 border-2 border-slate-600 text-white placeholder-slate-400 rounded-xl h-11"
               />
-              <p className="text-xs text-gray-500">Optional milestone goal for participants</p>
+              <p className="text-xs text-slate-400">Optional milestone goal for participants</p>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Start Date *</Label>
+              <Label className="text-white font-semibold text-sm">Start Date *</Label>
               <Input
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                className="rounded-2xl"
+                className="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>End Date *</Label>
+              <Label className="text-white font-semibold text-sm">End Date *</Label>
               <Input
                 type="date"
                 value={formData.end_date}
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                className="rounded-2xl"
+                className="bg-slate-700/50 border-2 border-slate-600 text-white rounded-xl h-11"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Gift className="w-4 h-4 text-orange-500" />
+            <Label className="text-white font-semibold text-sm flex items-center gap-2">
+              <Gift className="w-4 h-4 text-orange-400" />
               Reward (Optional)
             </Label>
             <Input
               value={formData.reward}
               onChange={(e) => setFormData({ ...formData, reward: e.target.value })}
               placeholder="e.g., Free protein shake, £10 gift card, Free personal training session"
-              className="rounded-2xl"
+              className="bg-slate-700/50 border-2 border-slate-600 text-white placeholder-slate-400 rounded-xl h-11"
             />
-            <p className="text-xs text-gray-500">Offer a reward for completing this challenge</p>
+            <p className="text-xs text-slate-400">Offer a reward for completing this challenge</p>
           </div>
 
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold h-12 rounded-2xl"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              'Create Challenge'
-            )}
-          </Button>
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-slate-700/50 hover:bg-slate-700 text-white border border-slate-600 rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold rounded-xl disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                'Create Challenge'
+              )}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
