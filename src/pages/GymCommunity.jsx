@@ -1576,6 +1576,13 @@ export default function GymCommunity() {
           isLoading={createEventMutation.isPending}
         />
 
+        <ManageAmenitiesModal
+          open={showManageAmenities}
+          onClose={() => setShowManageAmenities(false)}
+          gym={gym}
+          isLoading={false}
+        />
+
         <ManageEquipmentModal
           open={showManageEquipment}
           onClose={() => setShowManageEquipment(false)}
