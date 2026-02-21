@@ -1105,6 +1105,35 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
+      {/* Confirm Leave Gym Modal */}
+      <Dialog open={!!confirmLeaveGym} onOpenChange={() => setConfirmLeaveGym(null)}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Leave {confirmLeaveGym?.name}?</DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-300 text-sm">Are you sure you want to leave this gym? You'll lose access to its community.</p>
+          <div className="flex gap-3 pt-2">
+            <Button
+              onClick={() => setConfirmLeaveGym(null)}
+              variant="outline"
+              className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                leaveGymMutation.mutate(confirmLeaveGym.id);
+                setConfirmLeaveGym(null);
+              }}
+              disabled={leaveGymMutation.isPending}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+            >
+              {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Leave Gym'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Add Gym Modal */}
       <Dialog open={showAddGymModal} onOpenChange={() => {
         setShowAddGymModal(false);
