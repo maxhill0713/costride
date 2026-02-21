@@ -203,12 +203,26 @@ export default function Gyms() {
     mutationFn: async (gymData) => {
       const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
       
+      let gym;
       if (existingGyms.length > 0) {
-        return { exists: true, gym: existingGyms[0] };
+        gym = existingGyms[0];
+      } else {
+        gym = await base44.entities.Gym.create(gymData);
       }
 
-      const newGym = await base44.entities.Gym.create(gymData);
-      return { exists: false, gym: newGym };
+      // Create gym membership for the user
+      await base44.entities.GymMembership.create({
+        user_id: currentUser.id,
+        user_name: currentUser.full_name || currentUser.username,
+        user_email: currentUser.email,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        status: 'active',
+        join_date: new Date().toISOString().split('T')[0],
+        membership_type: 'monthly'
+      });
+
+      return { gym };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
