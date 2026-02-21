@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 
 import PageTransition from './components/PageTransition';
 import ErrorBoundary from './components/ErrorBoundary';
+import PersistentRestTimer from './components/PersistentRestTimer';
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
