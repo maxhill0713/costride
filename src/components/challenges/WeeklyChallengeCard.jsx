@@ -91,8 +91,17 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2 bg-slate-800/60 rounded-lg p-2 text-center border border-cyan-500/30"
               >
-                <p className="text-sm font-bold text-cyan-300">{participantCount}/{targetValue}</p>
-                <p className="text-xs text-slate-400">{remaining} more needed</p>
+                {challenge.goal_type === 'longest_streak' ? (
+                  <>
+                    <p className="text-sm font-bold text-cyan-300">{currentUser?.streak || 0}/{targetValue}</p>
+                    <p className="text-xs text-slate-400">days in streak</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold text-cyan-300">{participantCount}/{targetValue}</p>
+                    <p className="text-xs text-slate-400">{remaining} more needed</p>
+                  </>
+                )}
               </motion.div>
             )}
           </div>
