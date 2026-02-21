@@ -321,9 +321,9 @@ const logWorkoutMutation = useMutation({
   onSuccess: () => {
      setShowSummary(false);
      setShowCelebration(true);
-     queryClient.invalidateQueries(['workoutLog']);
-     queryClient.invalidateQueries(['posts']);
-     queryClient.invalidateQueries(['currentUser']);
+     queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, adjustedDay] });
+     queryClient.invalidateQueries({ queryKey: ['posts'] });
+     queryClient.invalidateQueries({ queryKey: ['currentUser'] });
    },
   onError: (error) => {
     console.error('Error logging workout:', error);
