@@ -74,6 +74,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return () => clearInterval(interval);
     }, [workoutStartTime, showSummary]);
 
+    // Freeze duration when summary modal opens
+    React.useEffect(() => {
+      if (showSummary && !frozenDuration) {
+        setFrozenDuration(workoutDuration);
+      }
+      if (!showSummary) {
+        setFrozenDuration(0);
+      }
+    }, [showSummary, workoutDuration, frozenDuration]);
+
     const startRestTimer = () => {
     const time = parseInt(restTimer) || 90;
     setRestTimer(time);
