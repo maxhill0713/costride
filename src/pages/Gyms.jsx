@@ -135,7 +135,8 @@ export default function Gyms() {
       queryClient.setQueryData(['gymMemberships', currentUser?.id], context.previous);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
   });
