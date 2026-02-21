@@ -65,24 +65,7 @@ Deno.serve(async (req) => {
       first_visit: false
     });
 
-    // Calculate streak
-    const allCheckIns = await base44.entities.CheckIn.filter({ user_id: user.id }, '-check_in_date');
-    let streak = 1;
-    for (let i = 0; i < allCheckIns.length - 1; i++) {
-      const current = new Date(allCheckIns[i].check_in_date);
-      const next = new Date(allCheckIns[i + 1].check_in_date);
-      current.setHours(0, 0, 0, 0);
-      next.setHours(0, 0, 0, 0);
-      
-      const daysDiff = Math.floor((current - next) / (1000 * 60 * 60 * 24));
-      if (daysDiff === 1 || daysDiff === 2) streak++;
-      else break;
-    }
-
-    // Update user's current streak
-    await base44.auth.updateMe({ current_streak: streak });
-
-    return Response.json({ checkIn, streak });
+    return Response.json({ checkIn });
   } catch (error) {
     console.error('Error performing check-in:', error);
     return Response.json({ error: error.message }, { status: 500 });
