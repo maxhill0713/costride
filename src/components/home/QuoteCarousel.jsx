@@ -4,19 +4,19 @@ import { ChevronDown } from 'lucide-react';
 
 const quotes = [
   {
-    text: "We can't become what we need to be by remaining what we are.",
-    author: "Oprah Winfrey",
-    context: "Growth requires change. We must evolve, challenge ourselves, and adopt new perspectives to reach our full potential and transform into our best selves."
+    text: "I am no longer accepting the things I cannot change. We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+    author: "Aristotle",
+    context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline."
   },
   {
-    text: "Be not afraid of growing slowly; be afraid only of standing still.",
-    author: "Chinese Proverb",
-    context: "Progress matters more than pace. Stagnation is the real danger. Continuous, steady improvement—no matter how gradual—creates meaningful growth and prevents regression."
+    text: "I am changing the things I cannot accept.",
+    author: "Angela Davis",
+    context: "Take action against injustice and inequity. We have the power to shape our world and challenge systems that need transformation."
   },
   {
-    text: "Do the best you can until you know better. Then when you know better, do better.",
-    author: "Maya Angelou",
-    context: "Self-improvement is a journey, not judgment. We act with our current knowledge, but once we gain new insight, we evolve and improve accordingly."
+    text: "The only thing we have to fear is fear itself.",
+    author: "Franklin D. Roosevelt",
+    context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere."
   }
 ];
 
