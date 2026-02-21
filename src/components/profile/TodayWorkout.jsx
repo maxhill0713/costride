@@ -541,21 +541,25 @@ return (
               {showTimerOptions && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                  <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/20 p-2 z-50">
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {timerPresets.map((preset) => (
-                        <button
-                          key={preset.value}
-                          onClick={() => {
-                            setRestTimer(preset.value);
-                            setShowTimerOptions(false);
-                          }}
-                          className="px-3 py-2 rounded-lg bg-white/5 hover:bg-orange-500/10 text-slate-300 hover:text-orange-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-orange-500/30"
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-4 px-4 py-2">
+                    <button
+                      onClick={() => {
+                        const newValue = Math.max(10, parseInt(restTimer) - 10);
+                        setRestTimer(newValue);
+                      }}
+                      className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-lg font-bold transition-all active:scale-95"
+                    >
+                      −
+                    </button>
+                    <button
+                      onClick={() => {
+                        const newValue = parseInt(restTimer) + 10;
+                        setRestTimer(newValue);
+                      }}
+                      className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-lg font-bold transition-all active:scale-95"
+                    >
+                      +
+                    </button>
                   </div>
                 </>
               )}
