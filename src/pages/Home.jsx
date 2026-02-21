@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dumbbell, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle, Edit2, Info } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import StreakIcon from '../components/StreakIcon';
 import FriendsIcon from '../components/FriendsIcon';
 import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
@@ -28,6 +30,9 @@ export default function Home() {
   const [showStreakVariants, setShowStreakVariants] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
+  const [animatedNum, setAnimatedNum] = useState(0);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
