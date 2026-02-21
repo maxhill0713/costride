@@ -310,6 +310,24 @@ export default function Home() {
     }
   };
 
+  const testLogWorkout = async () => {
+    try {
+      setIsLoggingTestWorkout(true);
+      const response = await base44.functions.invoke('createWorkoutLog', {
+        workout_type: 'strength_training',
+        duration_minutes: 45,
+        notes: 'Test workout',
+        gym_id: memberGym?.id
+      });
+      handleWorkoutLogged();
+    } catch (error) {
+      console.error('Error logging test workout:', error);
+      alert(error.response?.data?.error || 'Failed to log workout');
+    } finally {
+      setIsLoggingTestWorkout(false);
+    }
+  };
+
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
   const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
