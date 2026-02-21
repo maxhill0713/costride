@@ -219,6 +219,8 @@ const logWorkoutMutation = useMutation({
     const workout_notes = user?.workout_notes || {};
     const workoutNotes = workout_notes[todayWorkout.name] || '';
     
+    const previousStreak = currentUser.current_streak || 0;
+    
     await base44.entities.WorkoutLog.create({
       user_id: currentUser.id,
       workout_name: todayWorkout.name,
@@ -275,15 +277,40 @@ const logWorkoutMutation = useMutation({
     });
 
     // Increment user's streak
-    const newStreak = (currentUser.current_streak || 0) + 1;
+    const newStreak = previousStreak + 1;
     await base44.auth.updateMe({ current_streak: newStreak });
+    
+    // Fetch user's active challenges and their progress
+    const participants = await base44.entities.ChallengeParticipant.filter({
+      user_id: currentUser.id,
+      status: 'active'
+    });
+    
+    const challengesData = await Promise.all(
+      participants.map(async (p) => {
+        const challenge = await base44.entities.Challenge.filter({ id: p.challenge_id });
+        return {
+          id: p.id,
+          title: challenge[0]?.title || 'Challenge',
+          target_value: p.target_value,
+          current_progress: p.current_progress,
+          previous_progress: Math.max(0, p.current_progress - 1)
+        };
+      })
+    );
+    
+    setCelebrationData({
+      previousStreak,
+      currentStreak: newStreak,
+      challenges: challengesData
+    });
+    setShowCelebration(true);
     },
   onSuccess: () => {
      queryClient.invalidateQueries(['workoutLog']);
      queryClient.invalidateQueries(['posts']);
      queryClient.invalidateQueries(['currentUser']);
      setShowSummary(false);
-     if (onWorkoutLogged) onWorkoutLogged();
    }
   });
 
