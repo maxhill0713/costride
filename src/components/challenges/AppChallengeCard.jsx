@@ -57,6 +57,16 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           )}
         </div>
 
+        {/* Progress Bar */}
+        <div className="mb-4">
+         <div className="h-4 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
+           <div 
+             className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
+             style={{ width: `${progressPercentage}%` }}
+           />
+         </div>
+        </div>
+
         {/* Goal Card */}
         <div className="bg-gradient-to-r from-indigo-500/12 to-purple-500/12 rounded-lg p-4 mb-4 border border-indigo-400/25">
           <div className="flex items-center justify-between">
@@ -82,18 +92,6 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
                 <p className="text-[9px] text-slate-400">Left</p>
               </div>
             </div>
-          </div>
-        </div>
-
-
-
-        {/* Progress Bar */}
-        <div className="mb-5">
-          <div className="h-4 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
-            <div 
-              className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
-              style={{ width: `${progressPercentage}%` }}
-            />
           </div>
         </div>
 

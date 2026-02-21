@@ -68,19 +68,6 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
             </div>
           </div>
 
-          {/* Reward Section */}
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl px-3 py-2.5 mt-2 flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <UniqueBadge reward={challenge.reward} size="sm" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Challenge Reward</p>
-              <p className="text-sm font-bold text-cyan-300">{challenge.reward || 'Weekly Challenge Badge'}</p>
-            </div>
-          </div>
-
-
-
           {/* Progress Bar */}
           <div className="mt-4 pt-4 border-t border-slate-700/50">
             <div className="relative h-4 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
@@ -90,6 +77,17 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
                 transition={{ duration: 1, ease: "easeOut" }}
                 className="h-full bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/50"
               />
+            </div>
+          </div>
+
+          {/* Reward Section */}
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl px-3 py-2.5 mt-4 flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <UniqueBadge reward={challenge.reward} size="sm" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Challenge Reward</p>
+              <p className="text-sm font-bold text-cyan-300">{challenge.reward || 'Weekly Challenge Badge'}</p>
             </div>
           </div>
 
