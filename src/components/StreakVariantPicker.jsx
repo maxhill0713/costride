@@ -1,7 +1,7 @@
 import React from 'react';
-import { Flame, Check } from 'lucide-react';
+import { Flame, Check, Snowflake } from 'lucide-react';
 
-export default function StreakVariantPicker({ isOpen, onClose, onSelect, selectedVariant }) {
+export default function StreakVariantPicker({ isOpen, onClose, onSelect, selectedVariant, streakFreezes = 0 }) {
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
