@@ -20,16 +20,29 @@ Deno.serve(async (req) => {
 
     const currentStreak = user.current_streak || 0;
 
-    // Find all active streak challenges for this user
+    // Find all active challenges for this user
     const participants = await base44.entities.ChallengeParticipant.filter({
       user_id: userId,
-      goal_type: 'longest_streak',
       status: 'active'
     });
 
     // Update progress for each active challenge
     for (const participant of participants) {
-      const newProgress = currentStreak - participant.starting_streak;
+      let newProgress;
+      
+      if (participant.goal_type === 'longest_streak') {
+        newProgress = currentStreak - participant.starting_streak;
+      } else if (participant.goal_type === 'most_check_ins') {
+        // Count check-ins since joining challenge
+        const checkIns = await base44.entities.CheckIn.filter({
+          user_id: userId,
+          created_date: { $gte: participant.joined_date }
+        });
+        newProgress = checkIns.length;
+      } else {
+        continue; // Skip other goal types for now
+      }
+
       const isCompleted = newProgress >= participant.target_value;
 
       await base44.entities.ChallengeParticipant.update(participant.id, {
