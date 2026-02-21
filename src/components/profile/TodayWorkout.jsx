@@ -552,7 +552,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-blue-400" />
                     <span className="text-blue-300 font-black text-2xl tabular-nums">{restTimer || '90'}</span>
-                    <span className="text-orange-300 text-sm font-bold">s</span>
+                    <span className="text-blue-300 text-sm font-bold">s</span>
                   </div>
                   {isTimerActive && (
                     <div className="absolute inset-0 rounded-2xl border-2 border-transparent border-t-orange-400 border-r-orange-400 animate-spin" style={{ width: 'calc(100% + 4px)', height: 'calc(100% + 4px)', left: '-2px', top: '-2px' }} />
