@@ -9,11 +9,13 @@ import { differenceInDays } from 'date-fns';
 import confetti from 'canvas-confetti';
 
 export default function GymChallengeCard({ challenge, onJoin, isJoined = false, currentUser, onDelete = null, isOwner = false }) {
+  const [showStats, setShowStats] = React.useState(false);
   const daysLeft = differenceInDays(new Date(challenge.end_date), new Date());
   const isExpired = daysLeft <= 0;
   const participantCount = challenge.participants?.length || 0;
   const targetValue = challenge.target_value || 50;
   const progress = Math.min(100, Math.floor((participantCount / targetValue) * 100));
+  const remaining = Math.max(0, targetValue - participantCount);
   
   // Check if user has joined
   const userHasJoined = currentUser ? (challenge.participants || []).includes(currentUser.id) : false;
@@ -58,14 +60,29 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
 
           {/* Progress Bar */}
           <div className="mt-3">
-            <div className="relative h-4 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 shadow-lg shadow-amber-500/50"
-              />
-            </div>
+            <button
+              onClick={() => setShowStats(!showStats)}
+              className="w-full hover:opacity-80 transition-opacity cursor-pointer active:scale-95"
+            >
+              <div className="relative h-4 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 shadow-lg shadow-amber-500/50"
+                />
+              </div>
+            </button>
+            {showStats && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 bg-slate-800/60 rounded-lg p-2 text-center border border-amber-500/30"
+              >
+                <p className="text-sm font-bold text-amber-300">{participantCount}/{targetValue}</p>
+                <p className="text-xs text-slate-400">{remaining} more needed</p>
+              </motion.div>
+            )}
           </div>
 
           {/* Reward Section */}
