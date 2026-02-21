@@ -399,7 +399,7 @@ export default function Gyms() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Tabs */}
-      <Tabs defaultValue={userGyms.length > 0 ? "my-gyms" : "explore"} className="w-full">
+      <Tabs defaultValue={gymMemberships.length > 0 ? "my-gyms" : "explore"} className="w-full">
         {/* Tab List */}
         <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
           <div className="max-w-6xl mx-auto">
