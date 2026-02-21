@@ -195,9 +195,11 @@ export default function Layout({ children, currentPageName }) {
             {/* Main Content */}
             <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
               <ErrorBoundary>
-                <PageTransition key={currentPageName}>
-                  {children}
-                </PageTransition>
+                <TimerProvider value={{ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }}>
+                  <PageTransition key={currentPageName}>
+                    {children}
+                  </PageTransition>
+                </TimerProvider>
               </ErrorBoundary>
             </main>
 
