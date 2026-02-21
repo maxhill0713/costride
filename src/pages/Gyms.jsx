@@ -889,7 +889,7 @@ export default function Gyms() {
       />
 
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl max-h-[85vh] overflow-y-auto [&>button]:hidden">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-[65rem] max-h-[85vh] overflow-y-auto [&>button]:hidden">
           <div className="space-y-3">
             {(() => {
               // Check if this is a bodystreak gym (mock equipment)
