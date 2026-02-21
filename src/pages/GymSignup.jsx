@@ -444,25 +444,50 @@ export default function GymSignup() {
 
             {/* STEP 2: Details */}
             {step === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">Gym Details</h2>
-                  <p className="text-slate-400 text-sm">Tell us about your gym</p>
+              <div className="space-y-8">
+                {/* Header */}
+                <div className="pb-4 border-b border-slate-700/50">
+                  <h2 className="text-3xl font-black text-white mb-1">{formData.name}</h2>
+                  <p className="text-slate-400 text-sm">Complete your gym profile</p>
                 </div>
 
-                {/* Specializations */}
-                <div>
-                  <Label className="text-white font-semibold">What does your gym specialize in?</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                {/* Gym Overview Card */}
+                <div className="grid grid-cols-3 gap-3 bg-gradient-to-r from-slate-800/50 to-slate-700/30 border border-slate-700/50 rounded-2xl p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-black text-blue-400 mb-1">
+                      {gymTypes.find(t => t.value === formData.type)?.label.split(' ')[0]}
+                    </div>
+                    <p className="text-xs text-slate-400">Type</p>
+                  </div>
+                  <div className="text-center border-l border-r border-slate-700/50">
+                    <div className="text-2xl font-black text-purple-400 mb-1">{formData.specializes_in.length}</div>
+                    <p className="text-xs text-slate-400">Specialties</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-black text-green-400 mb-1">{formData.amenities.length}</div>
+                    <p className="text-xs text-slate-400">Amenities</p>
+                  </div>
+                </div>
+
+                {/* Specializations Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-purple-400" />
+                      Specializations
+                    </h3>
+                    <p className="text-xs text-slate-400 mb-3">What does your gym specialize in? (Choose at least 1)</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     {specializationOptions.map((spec) => (
                       <button
                         key={spec}
                         type="button"
                         onClick={() => toggleArrayItem('specializes_in', spec)}
-                        className={`p-2.5 rounded-lg text-xs font-medium transition-all border-2 ${
+                        className={`p-3 rounded-xl text-sm font-medium transition-all border-2 ${
                           formData.specializes_in.includes(spec)
-                            ? 'bg-purple-500 border-purple-400 text-white'
-                            : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-purple-500/50'
+                            ? 'bg-gradient-to-br from-purple-500 to-purple-600 border-purple-400 text-white shadow-lg shadow-purple-500/20'
+                            : 'bg-slate-700/40 border-slate-600 text-slate-300 hover:border-purple-500/50 hover:bg-slate-700/60'
                         }`}
                       >
                         {spec}
@@ -471,19 +496,25 @@ export default function GymSignup() {
                   </div>
                 </div>
 
-                {/* Amenities */}
-                <div>
-                  <Label className="text-white font-semibold">Amenities</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                {/* Amenities Section */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                      <Building2 className="w-5 h-5 text-green-400" />
+                      Amenities & Features
+                    </h3>
+                    <p className="text-xs text-slate-400 mb-3">What amenities does your gym offer?</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     {amenitiesOptions.map((amenity) => (
                       <button
                         key={amenity}
                         type="button"
                         onClick={() => toggleArrayItem('amenities', amenity)}
-                        className={`p-2.5 rounded-lg text-xs font-medium transition-all border-2 ${
+                        className={`p-3 rounded-xl text-sm font-medium transition-all border-2 ${
                           formData.amenities.includes(amenity)
-                            ? 'bg-green-500 border-green-400 text-white'
-                            : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-green-500/50'
+                            ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-400 text-white shadow-lg shadow-green-500/20'
+                            : 'bg-slate-700/40 border-slate-600 text-slate-300 hover:border-green-500/50 hover:bg-slate-700/60'
                         }`}
                       >
                         {amenity}
@@ -492,46 +523,53 @@ export default function GymSignup() {
                   </div>
                 </div>
 
-                {/* Summary */}
-                <div className="bg-slate-700/50 border-2 border-slate-600 rounded-xl p-4">
-                  <h3 className="font-bold text-white mb-3">Summary</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Gym:</span>
-                      <span className="text-white font-medium">{formData.name}</span>
+                {/* Summary Card */}
+                <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/40 border-2 border-slate-700/50 rounded-2xl p-6 space-y-4">
+                  <h3 className="font-bold text-white text-lg">Registration Summary</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between py-2 border-b border-slate-700/30">
+                      <span className="text-slate-400">Gym Name</span>
+                      <span className="text-white font-semibold">{formData.name}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Type:</span>
-                      <span className="text-white font-medium capitalize">{formData.type}</span>
+                    <div className="flex items-center justify-between py-2 border-b border-slate-700/30">
+                      <span className="text-slate-400">Location</span>
+                      <span className="text-white font-semibold text-right text-sm">{formData.city}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Specializations:</span>
-                      <span className="text-white font-medium">{formData.specializes_in.length}</span>
+                    <div className="flex items-center justify-between py-2 border-b border-slate-700/30">
+                      <span className="text-slate-400">Type</span>
+                      <span className="text-white font-semibold">{gymTypes.find(t => t.value === formData.type)?.label}</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-slate-400">Total Selections</span>
+                      <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        {formData.specializes_in.length + formData.amenities.length} items
+                      </Badge>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
                   <Button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 rounded-xl h-11 font-semibold bg-slate-700 hover:bg-slate-600 text-white border-0"
+                    className="flex-1 rounded-xl h-12 font-semibold bg-slate-700/50 hover:bg-slate-700 text-white border border-slate-600 transition-all"
                   >
                     Back
                   </Button>
                   <Button
                     type="submit"
-                    disabled={createGymMutation.isPending}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    disabled={createGymMutation.isPending || formData.specializes_in.length === 0}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
                   >
                     {createGymMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Registering...
+                        Creating Gym...
                       </>
                     ) : (
                       <>
-                        Register Gym
+                        Complete Registration
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
