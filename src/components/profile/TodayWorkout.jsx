@@ -340,7 +340,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <div className="space-y-2 mb-4">
          <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400/90 to-orange-500/90 flex items-center justify-center shadow-md shadow-orange-500/10">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-700/90 to-blue-900/90 flex items-center justify-center shadow-md shadow-blue-900/20">
               <Dumbbell className="w-3.5 h-3.5 text-white" />
             </div>
             <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
