@@ -246,10 +246,13 @@ export default function GymSignup() {
       toast.success('Your gym has been registered!');
       
       // Navigate based on verification status
-      if (gym?.verified) {
+      if (gym?.status === 'approved') {
         navigate(createPageUrl('GymOwnerDashboard'));
       } else if (gym?.status === 'pending') {
         navigate(createPageUrl('GymUnderReview'));
+      } else {
+        // Fallback to dashboard if status is unclear
+        navigate(createPageUrl('GymOwnerDashboard'));
       }
     },
     onError: (error) => {
