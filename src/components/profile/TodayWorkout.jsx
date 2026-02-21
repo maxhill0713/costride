@@ -11,7 +11,7 @@ import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import WorkoutSummaryModal from './WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
@@ -283,6 +283,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
        queryClient.invalidateQueries(['workoutLog']);
        queryClient.invalidateQueries(['posts']);
        setShowSummary(false);
+       if (onWorkoutLogged) onWorkoutLogged();
      }
     });
 
