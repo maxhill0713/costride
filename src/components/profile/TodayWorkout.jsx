@@ -146,13 +146,14 @@ const handleEdit = (index, exercise) => {
   setEditReps(exercise.setsReps || '');
   
   // Parse sets x reps (e.g., "3x10" -> 3 sets)
-  const match = exercise.setsReps?.match(/(\d+)x/);
+  const match = exercise.setsReps?.match(/(\d+)x(\d+)/);
   const numSets = match ? parseInt(match[1]) : 1;
+  const repsPerSet = match ? match[2] : '';
   
-  // Create array for each set's weight
+  // Create array for each set with same weight and reps
   const sets = Array(numSets).fill(null).map(() => ({
     weight: exercise.weight || '',
-    reps: exercise.setsReps?.split('x')[1] || ''
+    reps: repsPerSet
   }));
   setEditSets(sets);
 };
