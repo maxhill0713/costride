@@ -44,12 +44,6 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
       if (userMemberships.length >= 3) {
         throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
       }
-      
-      // Check if already a member of this specific gym before checking limit
-      const existingForThisGym = userMemberships.filter(m => m.gym_id === gym.id);
-      if (existingForThisGym.length > 0) {
-        throw new Error('Already a member of this gym');
-      }
 
       // Check if banned
       if (gym.banned_members?.includes(currentUser.id)) {
