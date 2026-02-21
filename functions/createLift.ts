@@ -15,6 +15,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Exercise and weight are required' }, { status: 400 });
     }
 
+    // Check if user has checked in today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayCheckIn = await base44.entities.CheckIn.filter({
+      user_id: user.id,
+      check_in_date: { $gte: today.toISOString() }
+    });
+
+    if (todayCheckIn.length === 0) {
+      return Response.json({ error: 'You must check in to the gym before logging a workout' }, { status: 400 });
+    }
+
     // Check if this is a PR (personal record)
     const previousLifts = await base44.entities.Lift.filter({
       member_id: user.id,
