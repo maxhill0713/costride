@@ -101,87 +101,91 @@ export default function AddGym() {
          {!selectedGym && (
            <Card className="bg-slate-900/70 backdrop-blur-sm border border-slate-700/50 p-6 mb-6">
              <div className="space-y-4">
-               <div className="flex-1 relative">
+               <div className="relative">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                  <Input
                    value={searchInput}
-                   onChange={handleInputChange}
-                   onFocus={() => searchInput && setShowDropdown(true)}
-                   placeholder="Search for a gym..."
-                   className="pl-10 pr-10 bg-slate-800/60 border-slate-600/40 text-white placeholder:text-slate-500 rounded-xl"
+                   onChange={(e) => setSearchInput(e.target.value)}
+                   placeholder="Search gyms or add new from Google Places..."
+                   className="h-11 pl-10 pr-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder:text-slate-500"
                  />
-                 {searchInput && (
-                   <button
-                     onClick={() => {
-                       setSearchInput('');
-                       setSearchResults([]);
-                       setShowDropdown(false);
-                     }}
-                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
-                   >
-                     <X className="w-4 h-4" />
-                   </button>
+                 {searching && (
+                   <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />
                  )}
+               </div>
 
-                 {/* Dropdown Results */}
-                 {showDropdown && searchResults.length > 0 && (
-                   <>
-                     <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-                     <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto">
-                       <div className="p-2 space-y-1">
-                         {searchResults.map((gym) => (
+               {/* Google Places Skeleton */}
+               {searching && searchInput.length >= 2 && (
+                 <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
+                   <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
+                   <div className="space-y-2">
+                     {[...Array(3)].map((_, i) => (
+                       <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch gap-0">
+                         <div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" />
+                         <div className="flex-1 p-3 flex flex-col justify-center gap-2">
+                           <div className="h-4 bg-slate-600/60 rounded w-3/4" />
+                           <div className="h-3 bg-slate-600/40 rounded w-1/2" />
+                           <div className="h-3 bg-slate-600/30 rounded w-16" />
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
+               {/* Google Places Results */}
+               {!searching && searchInput.length >= 2 && searchResults.length > 0 && (
+                 <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-green-500/50">
+                   {(
+                     <>
+                       <p className="text-xs font-semibold flex items-center gap-2">
+                         <Plus className="w-3 h-3 text-green-400" />
+                         <span className="text-green-400">Found {searchResults.length} gyms on Google Places</span>
+                       </p>
+                       <div className="space-y-2">
+                         {searchResults.slice(0, 5).map((place) => (
                            <button
-                             key={gym.place_id}
-                             onClick={() => {
-                               handleSelectGym(gym);
-                               setShowDropdown(false);
-                             }}
-                             className="w-full text-left p-3 rounded-lg hover:bg-slate-800/60 transition-all hover:border-blue-500/30 border border-transparent"
+                             key={place.place_id}
+                             onClick={() => handleSelectGym(place)}
+                             className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden"
                            >
-                             <div className="flex items-start gap-2">
-                               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                                 <Building2 className="w-4 h-4 text-white" />
-                               </div>
-                               <div className="flex-1 min-w-0">
-                                 <h3 className="font-semibold text-white text-sm">{gym.name}</h3>
-                                 <div className="flex items-center gap-1 text-slate-400 text-xs">
-                                   <MapPin className="w-3 h-3 flex-shrink-0" />
-                                   <span className="truncate">{gym.address}</span>
-                                 </div>
-                                 {gym.rating && (
-                                   <div className="flex items-center gap-1 mt-0.5">
-                                     <span className="text-yellow-400 text-xs">★</span>
-                                     <span className="text-slate-400 text-xs">{gym.rating}</span>
+                             <div className="flex items-stretch gap-0">
+                               {/* Gym photo */}
+                               <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
+                                 {place.photo_url ? (
+                                   <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" />
+                                 ) : (
+                                   <div className="w-full h-full flex items-center justify-center">
+                                     <Building2 className="w-6 h-6 text-slate-500" />
                                    </div>
                                  )}
+                               </div>
+                               <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
+                                 <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
+                                 <div className="flex items-center gap-1 text-slate-400 text-xs">
+                                   <MapPin className="w-3 h-3 flex-shrink-0" />
+                                   <span className="truncate">{place.address}</span>
+                                 </div>
+                                 {place.rating && (
+                                   <div className="flex items-center gap-1 mt-1">
+                                     <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                     <span className="text-slate-300 text-xs">{place.rating}</span>
+                                   </div>
+                                 )}
+                               </div>
+                               <div className="flex items-center pr-3">
+                                 <Badge className="bg-green-600/30 text-green-200 border border-green-500/40 text-xs">
+                                   Add
+                                 </Badge>
                                </div>
                              </div>
                            </button>
                          ))}
                        </div>
-                     </div>
-                   </>
-                 )}
-
-                 {showDropdown && searchResults.length === 0 && searchInput && !searching && (
-                   <>
-                     <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-                     <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700/50 rounded-xl shadow-lg z-50 p-6 text-center">
-                       <AlertCircle className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-                       <p className="text-slate-400 text-sm">No gyms found. Try a different search.</p>
-                     </div>
-                   </>
-                 )}
-
-                 {showDropdown && searching && (
-                   <>
-                     <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-                     <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700/50 rounded-xl shadow-lg z-50 p-6 text-center">
-                       <Loader2 className="w-6 h-6 text-blue-500 mx-auto animate-spin" />
-                     </div>
-                   </>
-                 )}
-               </div>
+                     </>
+                   )}
+                 </div>
+               )}
              </div>
            </Card>
          )}
