@@ -5,20 +5,19 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { event } = await req.json();
 
-    if (event.type !== 'create' || event.entity_name !== 'CheckIn') {
+    if (event.type !== 'create' || event.entity_name !== 'WorkoutLog') {
       return Response.json({ success: true });
     }
 
-    const checkInData = event.data;
-    const userId = checkInData.user_id;
+    const { user_id: userId } = event.data;
 
-    // Get user's current streak
-    const user = await base44.auth.me();
-    if (!user || user.id !== userId) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Fetch the user to get their current streak
+    const users = await base44.asServiceRole.entities.User.filter({ id: userId });
+    if (users.length === 0) {
+      return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const currentStreak = user.current_streak || 0;
+    const currentStreak = users[0].current_streak || 0;
 
     // Find all active challenges for this user
     const participants = await base44.entities.ChallengeParticipant.filter({
