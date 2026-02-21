@@ -628,13 +628,7 @@ export default function Home() {
                 {animatedNum}
               </motion.div>
 
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-orange-300 text-xl font-bold tracking-wide"
-              >
-                Day Streak! 🔥
-              </motion.p>
+
             </motion.div>
           </motion.div>
         )}
