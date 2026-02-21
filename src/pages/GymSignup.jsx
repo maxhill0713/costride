@@ -268,25 +268,17 @@ export default function GymSignup() {
   };
 
   if (submitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50">
-          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in">
-            <CheckCircle2 className="w-12 h-12 text-green-400" />
-          </div>
-          <h2 className="text-2xl font-black text-white mb-2">Registration Successful!</h2>
-          <p className="text-slate-300 mb-6">
-            Your gym has been registered. You can now manage your gym community and settings.
-          </p>
-          <Button 
-            onClick={() => navigate(createPageUrl('GymOwnerDashboard'))}
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-12"
-          >
-            Go to Dashboard
-          </Button>
-        </Card>
-      </div>
-    );
+    // If email verified (domain matches), go to dashboard
+    if (submittedGym?.verified) {
+      navigate(createPageUrl('GymOwnerDashboard'));
+      return null;
+    }
+    
+    // If under review (manual verification needed), go to review page
+    if (submittedGym?.status === 'pending') {
+      navigate(createPageUrl('GymUnderReview'));
+      return null;
+    }
   }
 
   return (
