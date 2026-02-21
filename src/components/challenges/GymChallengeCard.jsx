@@ -69,6 +69,18 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
 
 
 
+          {/* Progress Bar */}
+          <div className="mt-4 pt-4 border-t border-slate-700/50">
+            <div className="relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 shadow-lg shadow-amber-500/50"
+              />
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="mt-5 flex gap-2">
             <motion.div 

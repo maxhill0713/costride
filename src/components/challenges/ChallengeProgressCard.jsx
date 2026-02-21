@@ -54,7 +54,7 @@ export default function ChallengeProgressCard({ challenge, userProgress = 0 }) {
       </div>
 
       {/* Progress Bar with Animation */}
-      <div className="space-y-2">
+      <div className="space-y-2 mb-3">
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -66,7 +66,9 @@ export default function ChallengeProgressCard({ challenge, userProgress = 0 }) {
             className="h-3 bg-gray-200"
           />
         </motion.div>
+      </div>
 
+      <div className="space-y-2">
         {/* Milestone Message */}
         {milestone && (
           <motion.div
