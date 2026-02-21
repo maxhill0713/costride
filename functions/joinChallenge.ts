@@ -36,7 +36,12 @@ Deno.serve(async (req) => {
       challenge_id: challengeId,
       user_id: user.id,
       user_name: user.full_name,
-      status: 'active'
+      starting_streak: user.current_streak || 0,
+      current_progress: 0,
+      target_value: challenge.target_value,
+      goal_type: challenge.goal_type,
+      status: 'active',
+      joined_date: new Date().toISOString()
     });
 
     return Response.json({ challenge: updated });
