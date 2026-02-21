@@ -360,7 +360,7 @@ return (
             setShowSummary(true);
           }}
           size="sm"
-          className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white"
+          className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white mt-3"
         >
           View Summary
         </Button>
