@@ -211,10 +211,7 @@ const handleCancel = () => {
 };
 
 const logWorkoutMutation = useMutation({
-  mutationFn: async () => {
-    if (alreadyLoggedToday) {
-      throw new Error('You have already logged this workout today');
-    }
+   mutationFn: async () => {
     const user = await base44.auth.me();
     const workout_notes = user?.workout_notes || {};
     const workoutNotes = workout_notes[todayWorkout.name] || '';
