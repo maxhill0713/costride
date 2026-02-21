@@ -134,7 +134,7 @@ export default function AddGym() {
                  {showDropdown && searchResults.length > 0 && (
                    <>
                      <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-                     <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700/50 rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
+                     <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto">
                        <div className="p-2 space-y-1">
                          {searchResults.map((gym) => (
                            <button
