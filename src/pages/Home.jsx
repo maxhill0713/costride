@@ -34,7 +34,6 @@ export default function Home() {
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [animatedNum, setAnimatedNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
-  const [isLoggingTestWorkout, setIsLoggingTestWorkout] = useState(false);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -310,24 +309,6 @@ export default function Home() {
     }
   };
 
-  const testLogWorkout = async () => {
-    try {
-      setIsLoggingTestWorkout(true);
-      const response = await base44.functions.invoke('createWorkoutLog', {
-        workout_type: 'strength_training',
-        duration_minutes: 45,
-        notes: 'Test workout',
-        gym_id: memberGym?.id
-      });
-      handleWorkoutLogged();
-    } catch (error) {
-      console.error('Error logging test workout:', error);
-      alert(error.response?.data?.error || 'Failed to log workout');
-    } finally {
-      setIsLoggingTestWorkout(false);
-    }
-  };
-
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
   const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
@@ -528,13 +509,6 @@ export default function Home() {
                           Log Workout
                         </button>
                       </div>
-                      <button
-                        onClick={testLogWorkout}
-                        disabled={isLoggingTestWorkout}
-                        className="w-full p-2 rounded-lg bg-gradient-to-r from-purple-500/80 to-purple-600/80 hover:from-purple-500 hover:to-purple-600 disabled:opacity-50 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-purple-500/20"
-                      >
-                        {isLoggingTestWorkout ? '...' : 'Test Log Workout'}
-                      </button>
                     </div>
                   </Card>
               )}
