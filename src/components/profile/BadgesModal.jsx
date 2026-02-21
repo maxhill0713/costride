@@ -243,6 +243,8 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {lockedBadges.map((badge, index) => {
                     const Icon = badge.icon;
+                    const progress = badge.getProgress(userStats);
+                    const pct = Math.min((progress.current / progress.target) * 100, 100);
                     return (
                       <motion.div
                         key={badge.id}
@@ -261,7 +263,18 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
                           </div>
                           
                           <h4 className="font-bold text-slate-500 text-[10px] mb-0.5 relative z-10 line-clamp-1">{badge.title}</h4>
-                          <p className="text-[8px] text-slate-600 font-medium relative z-10 line-clamp-1">{badge.description}</p>
+                          <p className="text-[8px] text-slate-600 font-medium relative z-10 mb-1.5 line-clamp-1">{badge.description}</p>
+
+                          {/* Progress bar */}
+                          <div className="relative z-10">
+                            <div className="h-1 bg-slate-700 rounded-full overflow-hidden mb-0.5">
+                              <div
+                                className="h-full bg-gradient-to-r from-slate-500 to-slate-400 rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <p className="text-[8px] text-slate-500 font-semibold">{progress.current}/{progress.target}</p>
+                          </div>
                         </Card>
                       </motion.div>
                     );
