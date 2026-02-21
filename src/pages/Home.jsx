@@ -586,7 +586,7 @@ export default function Home() {
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.1, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 25, duration: 0.9 }}
               className="flex flex-col items-center gap-4"
             >
               {/* Big flame */}
