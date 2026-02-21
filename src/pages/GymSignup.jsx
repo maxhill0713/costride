@@ -243,9 +243,14 @@ export default function GymSignup() {
     onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      setSubmittedGym(gym);
-      setSubmitted(true);
       toast.success('Your gym has been registered!');
+      
+      // Navigate based on verification status
+      if (gym?.verified) {
+        navigate(createPageUrl('GymOwnerDashboard'));
+      } else if (gym?.status === 'pending') {
+        navigate(createPageUrl('GymUnderReview'));
+      }
     },
     onError: (error) => {
       console.error('Gym registration error:', error);
