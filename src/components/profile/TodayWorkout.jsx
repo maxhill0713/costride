@@ -580,7 +580,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                    }
                    setIsTimerActive(!isTimerActive);
                  }}
-                 className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500/90 to-orange-600/90 hover:from-orange-600/90 hover:to-orange-700/90 text-white transition-all active:scale-95 shadow-md shadow-orange-500/10"
+                 className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white transition-all active:scale-95 shadow-md shadow-blue-900/20"
                >
                 {isTimerActive ? 'Stop' : 'Go'}
               </button>
