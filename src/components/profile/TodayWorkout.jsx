@@ -328,7 +328,7 @@ const logWorkoutMutation = useMutation({
      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
    },
   onError: (error) => {
-    console.error('Error logging workout:', error);
+    console.error('Error logging workout:', error?.response?.data || error?.message || error);
     setShowSummary(false);
   }
   });
