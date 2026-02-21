@@ -561,6 +561,7 @@ export default function Home() {
         onClose={() => setShowStreakVariants(false)}
         onSelect={handleStreakVariantSelect}
         selectedVariant={streakVariant}
+        streakFreezes={currentUser?.streak_freezes || 0}
       />
 
       {/* Check-in Modal */}
