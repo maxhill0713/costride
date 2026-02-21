@@ -496,7 +496,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       onClick={() => handleEdit(index, exercise)}
                       size="icon"
                       variant="ghost"
-                      className="w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0"
+                      className="w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0 ml-auto"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
