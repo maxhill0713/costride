@@ -199,6 +199,15 @@ export default function Layout({ children, currentPageName }) {
                 </PageTransition>
               </ErrorBoundary>
             </main>
+
+            {/* Persistent Rest Timer */}
+            <PersistentRestTimer 
+              isActive={isTimerActive}
+              restTimer={restTimer}
+              initialRestTime={initialRestTime}
+              onTimerStateChange={setIsTimerActive}
+              onTimerValueChange={setRestTimer}
+            />
             </div>
             );
             }
