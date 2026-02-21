@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MobileSelect } from '@/components/ui/mobile-select';
-import { Search, MapPin, Building2, CheckCircle, Loader2, AlertCircle, Crown, X } from 'lucide-react';
+import { Search, MapPin, Building2, CheckCircle, Loader2, AlertCircle, Crown, Star, Plus } from 'lucide-react';
 
 export default function AddGym() {
   const navigate = useNavigate();
