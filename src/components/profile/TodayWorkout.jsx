@@ -544,7 +544,8 @@ return (
                   <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-4 px-4 py-2">
                     <button
                       onClick={() => {
-                        const newValue = Math.max(10, parseInt(restTimer) - 10);
+                        const currentValue = parseInt(restTimer) || 90;
+                        const newValue = Math.max(10, currentValue - 10);
                         setRestTimer(newValue);
                       }}
                       className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-lg font-bold transition-all active:scale-95"
@@ -553,7 +554,8 @@ return (
                     </button>
                     <button
                       onClick={() => {
-                        const newValue = parseInt(restTimer) + 10;
+                        const currentValue = parseInt(restTimer) || 90;
+                        const newValue = currentValue + 10;
                         setRestTimer(newValue);
                       }}
                       className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-lg font-bold transition-all active:scale-95"
