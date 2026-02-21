@@ -33,6 +33,7 @@ export default function Home() {
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [animatedNum, setAnimatedNum] = useState(0);
+  const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -271,7 +272,6 @@ export default function Home() {
 
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
-  const [celebrationChallenges, setCelebrationChallenges] = useState([]);
 
   const handleWorkoutLogged = async () => {
     // Stop the workout timer
