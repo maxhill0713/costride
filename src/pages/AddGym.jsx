@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MobileSelect } from '@/components/ui/mobile-select';
-import { Search, MapPin, Building2, CheckCircle, Loader2, AlertCircle, Crown } from 'lucide-react';
+import { Search, MapPin, Building2, CheckCircle, Loader2, AlertCircle, Crown, X } from 'lucide-react';
 
 export default function AddGym() {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ export default function AddGym() {
   const [selectedGym, setSelectedGym] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [gymType, setGymType] = useState('general');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const debounceTimer = useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -34,19 +36,35 @@ export default function AddGym() {
     }
   });
 
-  const handleSearch = async () => {
-    if (!searchInput.trim()) return;
+  const handleSearch = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
 
     setSearching(true);
     try {
-      const response = await base44.functions.invoke('searchGymsPlaces', { input: searchInput });
+      const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
       setSearchResults(response.data.results || []);
+      setShowDropdown(true);
     } catch (error) {
       console.error('Search failed:', error);
-      alert('Failed to search. Please try again.');
+      setSearchResults([]);
     } finally {
       setSearching(false);
     }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+
+    // Debounce search
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      handleSearch(value);
+    }, 300);
   };
 
   const handleSelectGym = (gym) => {
