@@ -497,7 +497,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           {/* Log Workout Button - Only when Expanded */}
           {isExpanded && !alreadyLoggedToday && (
             <div className="mb-3 space-y-2">
-              {(workoutStartTime || workoutDuration > 0) && (
+              {workoutStartTime && (
                 <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
                   <Clock className="w-4 h-4 text-amber-400" />
                   <span className="text-[11px] text-amber-300 font-semibold">
