@@ -548,7 +548,7 @@ return (
                         const newValue = Math.max(10, currentValue - 10);
                         setRestTimer(newValue);
                       }}
-                      className="flex items-center justify-center w-13 h-10 rounded-md bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white text-xl font-bold transition-all active:scale-95 shadow-md shadow-blue-900/20"
+                      className="flex items-center justify-center w-10 h-10 rounded-md bg-white/10 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-xl font-bold transition-all active:scale-95"
                     >
                       −
                     </button>
@@ -558,7 +558,7 @@ return (
                         const newValue = currentValue + 10;
                         setRestTimer(newValue);
                       }}
-                      className="flex items-center justify-center w-13 h-10 rounded-md bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white text-xl font-bold transition-all active:scale-95 shadow-md shadow-blue-900/20"
+                      className="flex items-center justify-center w-10 h-10 rounded-md bg-white/10 hover:bg-orange-500/20 text-slate-300 hover:text-orange-400 text-xl font-bold transition-all active:scale-95"
                     >
                       +
                     </button>
