@@ -31,7 +31,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       borderRadius: '0'
     } : {}}>
       <div className={`flex items-center ${isActive ? 'justify-between' : 'justify-between'} gap-4`}>
-        {isActive && <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>}
+        {isActive && <span className="text-[15px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>}
         <div className={`flex items-center gap-3 ${isActive ? '' : 'flex-1'}`}>
           {isActive && <Clock className="w-6 h-6 text-blue-400 flex-shrink-0" />}
           {!isActive && <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />}
