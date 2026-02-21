@@ -34,6 +34,30 @@ Deno.serve(async (req) => {
       isNew = true;
       console.log(`Created new gym: ${gym.id}`);
 
+      // Fetch gym image from Google Places if available
+      if (gymData.google_place_id) {
+        try {
+          const placesApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+          if (placesApiKey) {
+            const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${gymData.google_place_id}&fields=photos&key=${placesApiKey}`;
+            const response = await fetch(detailsUrl);
+            const data = await response.json();
+            
+            if (data.result?.photos && data.result.photos.length > 0) {
+              const photoReference = data.result.photos[0].photo_reference;
+              const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${placesApiKey}`;
+              console.log(`Fetched gym image from Google Places: ${photoUrl}`);
+              
+              // Update gym with the image
+              await base44.asServiceRole.entities.Gym.update(gym.id, { image_url: photoUrl });
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching Google Places image:', err);
+          // Continue without image - not a critical error
+        }
+      }
+
       // Generate join code for the new gym
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let joinCode = '';
