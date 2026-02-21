@@ -69,7 +69,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           </div>
 
           {/* Reward Section */}
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl px-3 py-2.5 mt-3 flex items-center gap-3">
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl px-3 py-2.5 mt-2 flex items-center gap-3">
             <div className="flex-shrink-0">
               <UniqueBadge reward={challenge.reward} size="sm" />
             </div>
