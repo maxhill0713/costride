@@ -596,7 +596,7 @@ export default function Home() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.1, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-              className="flex flex-col items-center gap-4"
+              className="flex items-center gap-4"
             >
               {/* Big flame */}
               <motion.div
@@ -626,7 +626,7 @@ export default function Home() {
                 )}
               </motion.div>
 
-              {/* Animated streak number */}
+              {/* Animated streak number - beside the flame */}
               <motion.div
                 key={animatedNum}
                 initial={{ scale: 0.6, opacity: 0 }}
