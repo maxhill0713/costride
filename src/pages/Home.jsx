@@ -272,15 +272,27 @@ export default function Home() {
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  const handleWorkoutLogged = () => {
+  const [celebrationChallenges, setCelebrationChallenges] = useState([]);
+
+  const handleWorkoutLogged = async () => {
     const newStreak = userStreak + 1;
     setCelebrationStreakNum(userStreak);
     setAnimatedNum(userStreak);
+    
+    // Fetch challenges to show in celebration
+    if (currentUser?.id) {
+      const userChallenges = await base44.entities.Challenge.filter({
+        participants: { $in: [currentUser.id] },
+        status: 'active'
+      });
+      setCelebrationChallenges(userChallenges.slice(0, 3)); // Show top 3
+    }
+    
     setShowStreakCelebration(true);
     // Animate number up after a short delay
     setTimeout(() => setAnimatedNum(newStreak), 900);
-    // Fade out after animation
-    setTimeout(() => setShowStreakCelebration(false), 3570);
+    // Keep celebration open longer for challenge display
+    setTimeout(() => setShowStreakCelebration(false), 5500);
   };
 
   const handleStreakVariantSelect = (variant) => {
