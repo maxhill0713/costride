@@ -518,6 +518,13 @@ export default function Profile() {
             </div>
           ) : (
             <div className="space-y-3 mt-4">
+              {currentUser.gym_location && (
+                <div className="flex items-center gap-2 text-slate-400">
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
+                </div>
+              )}
+
               {/* Home Gym */}
               {primaryGym && (
                 <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
