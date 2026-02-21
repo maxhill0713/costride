@@ -1317,143 +1317,177 @@ export default function GymOwnerDashboard() {
           </TabsContent>
 
           <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
-            {/* Challenges & Events */}
-            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">{t('dashboard.challengesEvents')}</h3>
-                <div className="flex gap-2">
-                  <Button onClick={() => setShowCreateEvent(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {t('dashboard.createEvent')}
-                  </Button>
-                  <Button onClick={() => setShowCreateChallenge(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
-                    <Trophy className="w-4 h-4 mr-2" />
-                    {t('dashboard.createChallengeBtn')}
-                  </Button>
+            {/* Create Buttons Bar */}
+            <div className="grid grid-cols-3 gap-4">
+              <Button 
+                onClick={() => setShowCreateEvent(true)} 
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-auto py-8 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all"
+              >
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-6 h-6" />
                 </div>
-              </div>
-              
-              <div className="mb-6">
-                <h4 className="text-lg font-bold text-white mb-3">{t('dashboard.activeChallenges')}</h4>
-                {challenges.filter(c => c.status === 'active').length > 0 ? (
-                  <div className="space-y-3">
-                    {challenges.filter(c => c.status === 'active').map(challenge => (
-                     <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-2xl border-2 border-orange-400/50 shadow-lg shadow-orange-500/20">
-                       <div className="flex items-start justify-between mb-2">
-                         <div>
-                           <h5 className="font-bold text-white flex items-center gap-2">
-                             <Trophy className="w-5 h-5 text-cyan-400" />
-                             {challenge.title}
-                           </h5>
-                           <p className="text-sm text-slate-200">{challenge.description}</p>
-                         </div>
-                         <Badge className="bg-gradient-to-r from-orange-400 to-red-500 text-white border-0">{challenge.type.replace('_', ' ')}</Badge>
-                       </div>
-                       <div className="flex items-center gap-4 text-sm text-slate-200 mt-2">
-                         <span>👥 {challenge.participants?.length || 0} {t('dashboard.participants')}</span>
-                         <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
-                         {challenge.reward && <span>🎁 {challenge.reward}</span>}
-                       </div>
-                     </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-slate-400 text-center py-6">{t('dashboard.noActiveChallenges')}</p>
-                )}
+                <span className="font-bold text-base">Create Event</span>
+                <span className="text-xs text-blue-100">{events.length} events</span>
+              </Button>
+
+              <Button 
+                onClick={() => setShowCreateChallenge(true)} 
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white h-auto py-8 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all"
+              >
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <span className="font-bold text-base">Create Challenge</span>
+                <span className="text-xs text-orange-100">{challenges.length} challenges</span>
+              </Button>
+
+              <Button 
+                onClick={() => setShowCreatePoll(true)} 
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-auto py-8 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all"
+              >
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <span className="font-bold text-base">Create Poll</span>
+                <span className="text-xs text-purple-100">{polls.length} polls</span>
+              </Button>
+            </div>
+
+            {/* Events Section */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Upcoming Events</h3>
+                <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 ml-auto">{events.filter(e => new Date(e.event_date) >= new Date()).length}</Badge>
               </div>
 
-              <div>
-                <h4 className="text-lg font-bold text-white mb-3">All Gym Challenges</h4>
-                {challenges.filter(c => c.gym_id === selectedGym?.id).length > 0 ? (
-                  <div className="space-y-3">
-                    {challenges.filter(c => c.gym_id === selectedGym?.id).map(challenge => (
-                      <div key={challenge.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex-1">
-                            <h5 className="font-bold text-white">{challenge.title}</h5>
-                            <p className="text-sm text-slate-300 mt-1">{challenge.description}</p>
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <Badge className={
-                              challenge.status === 'active' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                              challenge.status === 'upcoming' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                              'bg-slate-600 text-slate-200 border-slate-500'
-                            }>
-                              {challenge.status}
-                            </Badge>
-                            <Badge className="bg-slate-600 text-slate-200 border-slate-500">{challenge.type.replace('_', ' ')}</Badge>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-400 mt-2">
-                          <span>👥 {challenge.participants?.length || 0} participants</span>
-                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
-                          {challenge.reward && <span>🎁 {challenge.reward}</span>}
-                        </div>
+              {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 6).map(event => (
+                    <div key={event.id} className="p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border-2 border-blue-400/50 hover:border-blue-300/80 transition-all">
+                      {event.image_url && (
+                        <img src={event.image_url} alt={event.title} className="w-full h-40 object-cover rounded-xl mb-4" />
+                      )}
+                      <h5 className="font-bold text-white text-lg mb-1">{event.title}</h5>
+                      <p className="text-sm text-slate-200 mb-3 line-clamp-2">{event.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-blue-200">
+                        <span className="flex items-center gap-1">📅 {format(new Date(event.event_date), 'MMM d, h:mm a')}</span>
+                        <span className="flex items-center gap-1">👥 {event.attendees || 0} attending</span>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-slate-400 text-center py-6">No challenges created yet</p>
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-lg font-bold text-white mb-3">{t('dashboard.upcomingEvents')}</h4>
-                {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
-                  <div className="space-y-3">
-                    {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5).map(event => (
-                      <div key={event.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h5 className="font-bold text-white">{event.title}</h5>
-                            <p className="text-sm text-slate-300 mt-1">{event.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-sm text-slate-400">
-                              <span>📅 {format(new Date(event.event_date), 'PPP')}</span>
-                              <span>👥 {event.attendees || 0} {t('dashboard.attending')}</span>
-                            </div>
-                          </div>
-                          {event.image_url && (
-                            <img src={event.image_url} alt={event.title} className="w-20 h-20 rounded-xl object-cover ml-3" />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-slate-400 text-center py-6">{t('dashboard.noUpcomingEvents')}</p>
-                )}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400">No upcoming events</p>
+                </div>
+              )}
             </Card>
 
-            {/* Gym Feed Management */}
-            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">{t('dashboard.gymFeedManagement')}</h3>
-                <Button onClick={() => setShowCreatePost(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
+            {/* Challenges Section */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Active Challenges</h3>
+                <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30 ml-auto">{challenges.filter(c => c.status === 'active').length}</Badge>
+              </div>
+
+              {challenges.filter(c => c.status === 'active').length > 0 ? (
+                <div className="space-y-3">
+                  {challenges.filter(c => c.status === 'active').map(challenge => (
+                    <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-2xl border-2 border-orange-400/50 hover:border-orange-300/80 transition-all">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h5 className="font-bold text-white text-lg flex items-center gap-2">
+                            🏆 {challenge.title}
+                          </h5>
+                          <p className="text-sm text-slate-200 mt-1">{challenge.description}</p>
+                        </div>
+                        <Badge className="bg-gradient-to-r from-orange-400 to-red-500 text-white border-0">{challenge.type.replace('_', ' ')}</Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200 mt-3">
+                        <span>👥 {challenge.participants?.length || 0} participants</span>
+                        <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                        {challenge.reward && <span className="flex items-center gap-1">🎁 {challenge.reward}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Trophy className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400">No active challenges</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Polls Section */}
+            {polls.length > 0 && (
+              <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">📊</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">Active Polls</h3>
+                  <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 ml-auto">{polls.length}</Badge>
+                </div>
+
+                <div className="space-y-3">
+                  {polls.slice(0, 4).map(poll => (
+                    <div key={poll.id} className="p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300/80 transition-all">
+                      <h5 className="font-bold text-white text-lg mb-2">{poll.title}</h5>
+                      <p className="text-sm text-slate-200 mb-3">{poll.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-purple-200">
+                        <span>📊 {poll.voters?.length || 0} votes</span>
+                        <span className="text-slate-400">{poll.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Posts/Feed Section */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <span className="text-xl">📸</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Gym Feed</h3>
+                <Button 
+                  onClick={() => setShowCreatePost(true)} 
+                  className="ml-auto bg-slate-700 hover:bg-slate-600 text-white"
+                >
                   <Plus className="w-4 h-4 mr-2" />
-                  {t('dashboard.createPost')}
+                  New Post
                 </Button>
               </div>
+
               {posts.length > 0 ? (
                 <div className="space-y-4">
-                  {posts.slice(0, 10).map(post => (
-                    <div key={post.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  {posts.slice(0, 8).map(post => (
+                    <div key={post.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30 hover:border-slate-500/50 transition-all">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
-                          {post.member_name?.charAt(0)}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
+                          {post.member_name?.charAt(0).toUpperCase()}
                         </div>
-                        <div className="flex-1">
-                          <p className="font-bold text-white">{post.member_name}</p>
-                          <p className="text-sm text-slate-400">{format(new Date(post.created_date), 'PPp')}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-white">{post.member_name}</p>
+                          <p className="text-xs text-slate-400">{format(new Date(post.created_date), 'MMM d, h:mm a')}</p>
                         </div>
                       </div>
-                      <p className="text-slate-200 mb-3">{post.content}</p>
+                      <p className="text-slate-200 mb-3 line-clamp-2">{post.content}</p>
                       {post.image_url && (
-                        <img src={post.image_url} alt="Post" className="w-full rounded-xl mb-3" />
+                        <img src={post.image_url} alt="Post" className="w-full rounded-lg mb-3 h-40 object-cover" />
                       )}
                       <div className="flex items-center gap-4 text-sm text-slate-400">
-                        <span>❤️ {post.likes || 0} {t('dashboard.likes')}</span>
-                        <span>💬 {post.comments?.length || 0} {t('dashboard.comments')}</span>
+                        <span className="flex items-center gap-1">❤️ {post.likes || 0}</span>
+                        <span className="flex items-center gap-1">💬 {post.comments?.length || 0}</span>
                       </div>
                     </div>
                   ))}
@@ -1461,42 +1495,50 @@ export default function GymOwnerDashboard() {
               ) : (
                 <div className="text-center py-12">
                   <Activity className="w-16 h-16 mx-auto text-slate-600 mb-3" />
-                  <p className="text-slate-400 mb-2">{t('dashboard.noActivityYet')}</p>
-                  <p className="text-sm text-slate-500">{t('dashboard.postsFromGym')}</p>
+                  <p className="text-slate-400 mb-2">No posts yet</p>
+                  <p className="text-sm text-slate-500">Share gym updates to engage your community</p>
                 </div>
               )}
             </Card>
 
             {/* Rewards Management */}
             <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">{t('dashboard.rewardsManagement')}</h3>
-                <Button onClick={() => setShowManageRewards(true)} className="bg-slate-700 hover:bg-slate-600 text-white">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                  <span className="text-xl">🎁</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Rewards Program</h3>
+                <Button 
+                  onClick={() => setShowManageRewards(true)} 
+                  className="ml-auto bg-slate-700 hover:bg-slate-600 text-white"
+                >
                   <Plus className="w-4 h-4 mr-2" />
-                  {t('dashboard.addReward')}
+                  Manage
                 </Button>
               </div>
 
               {rewards.length > 0 ? (
-               <div className="grid grid-cols-3 gap-6">
-                 {rewards.slice(0, 6).map(reward => (
-                   <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border-2 border-purple-400/50 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all">
-                     <div className="flex items-start justify-between mb-3">
-                       <div className="text-4xl">{reward.icon || '🎁'}</div>
-                       <Badge className={reward.active ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0' : 'bg-slate-600 text-slate-200 border border-slate-500'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
-                     </div>
-                     <h4 className="font-bold text-white mb-1">{reward.title}</h4>
-                     <p className="text-sm text-slate-200 mb-3">{reward.description}</p>
-                     <div className="flex items-center justify-between text-sm">
-                       <span className="text-pink-300 font-bold">{reward.value}</span>
-                       <span className="text-slate-300">{reward.claimed_by?.length || 0} claimed</span>
-                     </div>
-                   </div>
-                 ))}
-               </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {rewards.slice(0, 6).map(reward => (
+                    <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300/80 transition-all">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">{reward.icon || '🎁'}</div>
+                        <Badge className={reward.active ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-600 text-slate-200 border-slate-500'}>
+                          {reward.active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      <h4 className="font-bold text-white mb-1 line-clamp-1">{reward.title}</h4>
+                      <p className="text-sm text-slate-200 mb-3 line-clamp-2">{reward.description}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-pink-300 font-bold">{reward.value}</span>
+                        <span className="text-slate-300 text-xs">{reward.claimed_by?.length || 0} claimed</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-12">
-                  <Award className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <Gift className="w-16 h-16 mx-auto text-slate-600 mb-3" />
                   <p className="text-slate-400 mb-2">No rewards yet</p>
                   <p className="text-sm text-slate-500">Create rewards to incentivize member engagement</p>
                 </div>
