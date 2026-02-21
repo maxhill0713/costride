@@ -546,12 +546,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               <div className="relative flex-1">
                 <button
                    onClick={() => setShowTimerOptions(!showTimerOptions)}
-                   className="relative w-full flex flex-col items-center gap-1 px-5 py-2 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-orange-400/20 shadow-lg shadow-black/10 hover:border-orange-400/30 transition-all"
+                   className="relative w-full flex flex-col items-center gap-1 px-5 py-2 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all"
                  >
-                  <span className="text-[10px] font-bold text-orange-400/70 uppercase tracking-wider">Rest Timer</span>
+                  <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-orange-400" />
-                    <span className="text-orange-300 font-black text-2xl tabular-nums">{restTimer || '90'}</span>
+                    <Clock className="w-5 h-5 text-blue-400" />
+                    <span className="text-blue-300 font-black text-2xl tabular-nums">{restTimer || '90'}</span>
                     <span className="text-orange-300 text-sm font-bold">s</span>
                   </div>
                   {isTimerActive && (
