@@ -17,7 +17,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     { label: '10m', value: 600 }
   ];
 
-  if (!isActive && restTimer === '') return null;
+  if (!isActive) return null;
 
   return (
     <div className={`fixed z-40 bg-gradient-to-r from-blue-700/95 to-blue-900/95 backdrop-blur-2xl border border-blue-600/50 ${isActive ? 'p-3.5' : 'p-4'} shadow-2xl shadow-blue-900/20 ${
