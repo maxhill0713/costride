@@ -12,7 +12,8 @@ const BADGE_LIBRARY = [
     description: '10 gym check-ins',
     icon: Target,
     color: 'from-blue-400 to-blue-600',
-    requirement: (user) => (user.total_check_ins || 0) >= 10
+    requirement: (user) => (user.total_check_ins || 0) >= 10,
+    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 10), target: 10, label: 'check-ins' })
   },
   {
     id: '50_visits',
@@ -20,7 +21,8 @@ const BADGE_LIBRARY = [
     description: '50 gym check-ins',
     icon: Flame,
     color: 'from-orange-400 to-red-500',
-    requirement: (user) => (user.total_check_ins || 0) >= 50
+    requirement: (user) => (user.total_check_ins || 0) >= 50,
+    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 50), target: 50, label: 'check-ins' })
   },
   {
     id: '100_visits',
@@ -28,7 +30,8 @@ const BADGE_LIBRARY = [
     description: '100 gym check-ins',
     icon: Trophy,
     color: 'from-yellow-400 to-orange-500',
-    requirement: (user) => (user.total_check_ins || 0) >= 100
+    requirement: (user) => (user.total_check_ins || 0) >= 100,
+    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 100), target: 100, label: 'check-ins' })
   },
   {
     id: '7_day_streak',
@@ -36,7 +39,8 @@ const BADGE_LIBRARY = [
     description: '7-day streak',
     icon: Zap,
     color: 'from-green-400 to-emerald-500',
-    requirement: (user) => (user.longest_streak || 0) >= 7
+    requirement: (user) => (user.longest_streak || 0) >= 7,
+    getProgress: (user) => ({ current: Math.min(user.longest_streak || 0, 7), target: 7, label: 'day streak' })
   },
   {
     id: '30_day_streak',
@@ -44,7 +48,8 @@ const BADGE_LIBRARY = [
     description: '30-day streak',
     icon: Flame,
     color: 'from-red-400 to-pink-500',
-    requirement: (user) => (user.longest_streak || 0) >= 30
+    requirement: (user) => (user.longest_streak || 0) >= 30,
+    getProgress: (user) => ({ current: Math.min(user.longest_streak || 0, 30), target: 30, label: 'day streak' })
   },
   {
     id: '90_day_streak',
@@ -52,7 +57,8 @@ const BADGE_LIBRARY = [
     description: '90-day streak',
     icon: Crown,
     color: 'from-purple-400 to-pink-500',
-    requirement: (user) => (user.longest_streak || 0) >= 90
+    requirement: (user) => (user.longest_streak || 0) >= 90,
+    getProgress: (user) => ({ current: Math.min(user.longest_streak || 0, 90), target: 90, label: 'day streak' })
   },
   {
     id: '1_year',
@@ -64,6 +70,10 @@ const BADGE_LIBRARY = [
       if (!user.gym_join_date) return false;
       const daysSinceJoin = Math.floor((new Date() - new Date(user.gym_join_date)) / (1000 * 60 * 60 * 24));
       return daysSinceJoin >= 365;
+    },
+    getProgress: (user) => {
+      const days = user.gym_join_date ? Math.floor((new Date() - new Date(user.gym_join_date)) / (1000 * 60 * 60 * 24)) : 0;
+      return { current: Math.min(days, 365), target: 365, label: 'days' };
     }
   },
   {
@@ -72,7 +82,8 @@ const BADGE_LIBRARY = [
     description: 'Active community member',
     icon: Users,
     color: 'from-cyan-400 to-blue-500',
-    requirement: (user) => (user.total_check_ins || 0) >= 20
+    requirement: (user) => (user.total_check_ins || 0) >= 20,
+    getProgress: (user) => ({ current: Math.min(user.total_check_ins || 0, 20), target: 20, label: 'check-ins' })
   }
 ];
 
