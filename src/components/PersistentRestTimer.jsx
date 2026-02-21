@@ -60,6 +60,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 onTimerStateChange(true);
               } else {
                 onTimerStateChange(false);
+                onTimerValueChange('');
               }
             }}
             className="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white transition-all active:scale-95 shadow-md shadow-blue-900/20"
