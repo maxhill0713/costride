@@ -139,7 +139,11 @@ export default function Gyms() {
     }
   });
 
-  const userGyms = userGymsData;
+  const userGyms = [...userGymsData].sort((a, b) => {
+    if (a.id === currentUser?.primary_gym_id) return -1;
+    if (b.id === currentUser?.primary_gym_id) return 1;
+    return 0;
+  });
 
   const filteredGyms = gyms.filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
