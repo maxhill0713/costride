@@ -83,7 +83,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
 
           {/* Progress Bar */}
           <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <div className="relative h-2.5 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+            <div className="relative h-4 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}

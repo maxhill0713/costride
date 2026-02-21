@@ -63,7 +63,7 @@ export default function ChallengeProgressCard({ challenge, userProgress = 0 }) {
         >
           <Progress 
             value={progressPercentage} 
-            className="h-3 bg-gray-200"
+            className="h-5 bg-gray-200"
           />
         </motion.div>
       </div>
