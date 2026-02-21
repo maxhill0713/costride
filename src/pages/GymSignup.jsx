@@ -240,9 +240,10 @@ export default function GymSignup() {
 
       return gym;
     },
-    onSuccess: () => {
+    onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      setSubmittedGym(gym);
       setSubmitted(true);
       toast.success('Your gym has been registered!');
     },
