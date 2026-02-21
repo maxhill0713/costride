@@ -695,6 +695,18 @@ return (
       onCancel={() => setShowSummary(false)}
       isLoading={logWorkoutMutation.isPending}
     />
+
+    {showCelebration && celebrationData && (
+      <WorkoutCelebration
+        previousStreak={celebrationData.previousStreak}
+        currentStreak={celebrationData.currentStreak}
+        challenges={celebrationData.challenges}
+        onComplete={() => {
+          setShowCelebration(false);
+          if (onWorkoutLogged) onWorkoutLogged();
+        }}
+      />
+    )}
     </Card>
   );
 }
