@@ -118,9 +118,9 @@ export default function Gyms() {
 
   const leaveGymMutation = useMutation({
     mutationFn: async (gymId) => {
-      const membership = gymMemberships.find(m => m.gym_id === gymId);
-      if (membership) {
-        await base44.entities.GymMembership.delete(membership.id);
+      const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: currentUser?.id });
+      if (memberships.length > 0) {
+        await base44.entities.GymMembership.delete(memberships[0].id);
       }
     },
     onMutate: async (gymId) => {
