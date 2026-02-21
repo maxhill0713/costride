@@ -572,6 +572,74 @@ export default function Home() {
 
       </div>
 
+      {/* Streak Celebration Overlay */}
+      <AnimatePresence>
+        {showStreakCelebration && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.1, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="flex flex-col items-center gap-4"
+            >
+              {/* Big flame */}
+              <motion.div
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.6, repeat: Infinity, repeatType: 'reverse' }}
+              >
+                {streakVariant === 'sunglasses' ? (
+                  <div className="relative w-32 h-32">
+                    <Flame className="w-32 h-32 text-orange-500 fill-current drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
+                    </svg>
+                  </div>
+                ) : streakVariant === 'cowboy' ? (
+                  <div className="relative w-32 h-32">
+                    <Flame className="w-32 h-32 text-orange-500 fill-current drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <path d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" fill="currentColor" className="text-amber-800" />
+                      <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
+                      <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+                    </svg>
+                  </div>
+                ) : (
+                  <Flame className="w-32 h-32 text-orange-500 fill-current drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" />
+                )}
+              </motion.div>
+
+              {/* Animated streak number */}
+              <motion.div
+                key={animatedNum}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className="text-8xl font-black text-white drop-shadow-[0_0_20px_rgba(249,115,22,0.9)] tabular-nums"
+              >
+                {animatedNum}
+              </motion.div>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-orange-300 text-xl font-bold tracking-wide"
+              >
+                Day Streak! 🔥
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Streak Variant Picker */}
       <StreakVariantPicker 
         isOpen={showStreakVariants}
