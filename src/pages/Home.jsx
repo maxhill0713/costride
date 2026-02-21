@@ -278,9 +278,9 @@ export default function Home() {
     setAnimatedNum(userStreak);
     setShowStreakCelebration(true);
     // Animate number up after a short delay
-    setTimeout(() => setAnimatedNum(newStreak), 900);
+    setTimeout(() => setAnimatedNum(newStreak), 600);
     // Fade out after animation
-    setTimeout(() => setShowStreakCelebration(false), 4200);
+    setTimeout(() => setShowStreakCelebration(false), 2800);
   };
 
   const handleStreakVariantSelect = (variant) => {
@@ -579,20 +579,20 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4 }}
             className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center"
           >
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.1, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 25, duration: 0.9 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               className="flex flex-col items-center gap-4"
             >
               {/* Big flame */}
               <motion.div
                 animate={{ scale: [1, 1.15, 1] }}
-                transition={{ duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}
+                transition={{ duration: 0.6, repeat: Infinity, repeatType: 'reverse' }}
               >
                 {streakVariant === 'sunglasses' ? (
                   <div className="relative w-32 h-32">
@@ -622,13 +622,19 @@ export default function Home() {
                 key={animatedNum}
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                 className="text-8xl font-black text-white drop-shadow-[0_0_20px_rgba(249,115,22,0.9)] tabular-nums"
               >
                 {animatedNum}
               </motion.div>
 
-
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-orange-300 text-xl font-bold tracking-wide"
+              >
+                Day Streak! 🔥
+              </motion.p>
             </motion.div>
           </motion.div>
         )}
