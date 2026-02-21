@@ -211,7 +211,10 @@ const handleCancel = () => {
 };
 
 const logWorkoutMutation = useMutation({
-   mutationFn: async () => {
+  mutationFn: async () => {
+    if (alreadyLoggedToday) {
+      throw new Error('You have already logged this workout today');
+    }
     const user = await base44.auth.me();
     const workout_notes = user?.workout_notes || {};
     const workoutNotes = workout_notes[todayWorkout.name] || '';
@@ -408,13 +411,12 @@ return (
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, adjustedDay] });
-            setIsExpanded(true);
+            setShowSummary(true);
           }}
           size="sm"
-          className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg text-white mt-3"
+          className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white mt-3"
         >
-          Log Workout
+          View Summary
         </Button>
       )}
 
