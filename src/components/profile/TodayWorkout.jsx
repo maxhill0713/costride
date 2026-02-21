@@ -552,12 +552,15 @@ return (
               </div>
             )}
             <Button
-              onClick={() => setShowSummary(true)}
+              onClick={() => {
+                setShowSummary(true);
+                setFrozenDuration(workoutDuration);
+              }}
               disabled={logWorkoutMutation.isPending}
               size="sm"
               className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-800/95 to-blue-950/95 hover:from-blue-900/95 hover:to-slate-950 shadow-lg shadow-blue-900/40 rounded-lg"
             >
-              Log Workout
+              {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
             </Button>
           </div>
         )}
