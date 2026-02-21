@@ -34,6 +34,7 @@ export default function Home() {
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [animatedNum, setAnimatedNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
+  const [isLoggingTestWorkout, setIsLoggingTestWorkout] = useState(false);
   
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
