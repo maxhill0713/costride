@@ -18,8 +18,6 @@ export default function AddGym() {
   const [selectedGym, setSelectedGym] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [gymType, setGymType] = useState('general');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const debounceTimer = useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -36,10 +34,9 @@ export default function AddGym() {
     }
   });
 
-  const handleSearch = async (query) => {
-    if (!query.trim()) {
+  const searchPlaces = async (query) => {
+    if (!query.trim() || query.length < 2) {
       setSearchResults([]);
-      setShowDropdown(false);
       return;
     }
 
@@ -47,7 +44,6 @@ export default function AddGym() {
     try {
       const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
       setSearchResults(response.data.results || []);
-      setShowDropdown(true);
     } catch (error) {
       console.error('Search failed:', error);
       setSearchResults([]);
@@ -56,16 +52,13 @@ export default function AddGym() {
     }
   };
 
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchInput(value);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchPlaces(searchInput);
+    }, 500);
 
-    // Debounce search
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      handleSearch(value);
-    }, 300);
-  };
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleSelectGym = (gym) => {
     setSelectedGym(gym);
