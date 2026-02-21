@@ -96,7 +96,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-5 flex gap-2">
+          <div className="mt-3 flex gap-2">
             <motion.div 
               whileHover={!isParticipant && !isExpired ? { scale: 1.02 } : {}}
               whileTap={!isParticipant && !isExpired ? { scale: 0.98 } : {}}
