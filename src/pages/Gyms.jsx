@@ -552,12 +552,11 @@ export default function Gyms() {
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem 
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (window.confirm(`Are you sure you want to leave ${gym.name}?`)) {
-                                      leaveGymMutation.mutate(gym.id);
-                                    }
-                                  }}
+                                 onClick={(e) => {
+                                   e.preventDefault();
+                                   e.stopPropagation();
+                                   setConfirmLeaveGym(gym);
+                                 }}
                                   disabled={leaveGymMutation.isPending}
                                   className="text-red-400 hover:text-red-300 hover:bg-slate-700 cursor-pointer"
                                 >
