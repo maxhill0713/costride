@@ -88,7 +88,7 @@ export default function QuoteCarousel() {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-4"
+            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-6"
           >
             <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
               "{quotes[current].text}"
@@ -112,7 +112,7 @@ export default function QuoteCarousel() {
         {/* Expand button */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-all duration-200"
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-all duration-200"
         >
           <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
         </button>
