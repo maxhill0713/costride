@@ -281,29 +281,42 @@ const logWorkoutMutation = useMutation({
     await base44.auth.updateMe({ current_streak: newStreak });
     
     // Fetch user's active challenges and their progress
-    const participants = await base44.entities.ChallengeParticipant.filter({
-      user_id: currentUser.id,
-      status: 'active'
-    });
-    
-    const challengesData = await Promise.all(
-      participants.map(async (p) => {
-        const challenge = await base44.entities.Challenge.filter({ id: p.challenge_id });
-        return {
-          id: p.id,
-          title: challenge[0]?.title || 'Challenge',
-          target_value: p.target_value,
-          current_progress: p.current_progress,
-          previous_progress: Math.max(0, p.current_progress - 1)
-        };
-      })
-    );
+    let challengesData = [];
+    try {
+      const participants = await base44.entities.ChallengeParticipant.filter({
+        user_id: currentUser.id,
+        status: 'active'
+      });
+      
+      challengesData = await Promise.all(
+        participants.map(async (p) => {
+          try {
+            const challenge = await base44.entities.Challenge.filter({ id: p.challenge_id });
+            return {
+              id: p.id,
+              title: challenge[0]?.title || 'Challenge',
+              target_value: p.target_value,
+              current_progress: p.current_progress,
+              previous_progress: Math.max(0, p.current_progress - 1)
+            };
+          } catch (err) {
+            console.error('Error fetching challenge:', err);
+            return null;
+          }
+        })
+      );
+      challengesData = challengesData.filter(Boolean);
+    } catch (err) {
+      console.error('Error fetching challenges:', err);
+    }
     
     setCelebrationData({
       previousStreak,
       currentStreak: newStreak,
       challenges: challengesData
     });
+    
+    return { previousStreak, newStreak, challengesData };
     },
   onSuccess: () => {
      setShowSummary(false);
@@ -314,6 +327,7 @@ const logWorkoutMutation = useMutation({
    },
   onError: (error) => {
     console.error('Error logging workout:', error);
+    setShowSummary(false);
   }
   });
 
