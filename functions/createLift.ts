@@ -36,6 +36,10 @@ Deno.serve(async (req) => {
       gym_id: gym_id || null
     });
 
+    // Increment user streak
+    const newStreak = (user.streak || 0) + 1;
+    await base44.auth.updateMe({ streak: newStreak });
+
     // Create system post if PR
     if (isPR) {
       await base44.entities.Post.create({
@@ -50,7 +54,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ lift, isPR });
+    return Response.json({ lift, isPR, newStreak });
   } catch (error) {
     console.error('Error creating lift:', error);
     return Response.json({ error: error.message }, { status: 500 });

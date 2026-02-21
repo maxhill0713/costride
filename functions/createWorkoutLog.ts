@@ -27,7 +27,11 @@ Deno.serve(async (req) => {
       calories_burned: 0
     });
 
-    return Response.json({ workoutLog });
+    // Increment user streak
+    const newStreak = (user.streak || 0) + 1;
+    await base44.auth.updateMe({ streak: newStreak });
+
+    return Response.json({ workoutLog, newStreak });
   } catch (error) {
     console.error('Error creating workout log:', error);
     return Response.json({ error: error.message }, { status: 500 });
