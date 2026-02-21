@@ -62,6 +62,7 @@ import GymRewards from './pages/GymRewards';
 import GymSignup from './pages/GymSignup';
 import Gyms from './pages/Gyms';
 import HelpSupport from './pages/HelpSupport';
+import Home from './pages/Home';
 import InviteOwner from './pages/InviteOwner';
 import Leaderboard from './pages/Leaderboard';
 import MemberSignup from './pages/MemberSignup';
@@ -73,14 +74,13 @@ import Onboarding from './pages/Onboarding';
 import Plus from './pages/Plus';
 import Premium from './pages/Premium';
 import PrivacySettings from './pages/PrivacySettings';
+import Profile from './pages/Profile';
 import ProfileSettings from './pages/ProfileSettings';
 import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
-import Profile from './pages/Profile';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -100,6 +100,7 @@ export const PAGES = {
     "GymSignup": GymSignup,
     "Gyms": Gyms,
     "HelpSupport": HelpSupport,
+    "Home": Home,
     "InviteOwner": InviteOwner,
     "Leaderboard": Leaderboard,
     "MemberSignup": MemberSignup,
@@ -111,14 +112,13 @@ export const PAGES = {
     "Plus": Plus,
     "Premium": Premium,
     "PrivacySettings": PrivacySettings,
+    "Profile": Profile,
     "ProfileSettings": ProfileSettings,
     "RedeemReward": RedeemReward,
     "Routines": Routines,
     "Search": Search,
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
-    "Profile": Profile,
-    "Home": Home,
 }
 
 export const pagesConfig = {

@@ -271,7 +271,6 @@ export default function Home() {
 
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
-
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
 
   const handleWorkoutLogged = async () => {
