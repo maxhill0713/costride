@@ -2546,6 +2546,8 @@ export default function GymOwnerDashboard() {
           open={showCreateChallenge}
           onClose={() => setShowCreateChallenge(false)}
           gyms={gyms}
+          onSave={(data) => createChallengeMutation.mutate(data)}
+          isLoading={createChallengeMutation.isPending}
         />
 
         <QRScanner
