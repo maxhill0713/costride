@@ -87,7 +87,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">Challenge Reward</p>
-              <p className="text-sm font-bold text-cyan-300">{challenge.reward || 'Weekly Challenge Badge'}</p>
+              <p className="text-base font-black text-cyan-200">{challenge.reward || 'Weekly Challenge Badge'}</p>
             </div>
           </div>
 

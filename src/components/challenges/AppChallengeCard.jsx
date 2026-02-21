@@ -52,7 +52,7 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
           ) : challenge.reward && (
             <div className="bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-400/30 rounded-lg px-3 py-2 text-center shadow-sm">
               <p className="text-[9px] font-bold text-emerald-300 uppercase">Reward</p>
-              <p className="text-xs font-bold text-white mt-1">{challenge.reward}</p>
+              <p className="text-sm font-black text-emerald-100 mt-1">{challenge.reward}</p>
             </div>
           )}
         </div>

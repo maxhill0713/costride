@@ -75,7 +75,7 @@ export default function GymChallengeCard({ challenge, onJoin, isJoined = false, 
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">Challenge Reward</p>
-              <p className="text-sm font-bold text-amber-300">{challenge.reward || 'Challenge Badge'}</p>
+              <p className="text-base font-black text-amber-200">{challenge.reward || 'Challenge Badge'}</p>
             </div>
           </div>
 
