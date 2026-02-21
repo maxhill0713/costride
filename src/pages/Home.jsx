@@ -106,6 +106,14 @@ export default function Home() {
     placeholderData: (prev) => prev
   });
 
+  const { data: userSplit = null } = useQuery({
+    queryKey: ['userSplit', currentUser?.id],
+    queryFn: () => base44.entities.WorkoutSplit?.filter({ user_id: currentUser?.id }).then(results => results?.[0] || null),
+    enabled: !!currentUser,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
+  });
+
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
