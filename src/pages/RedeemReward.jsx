@@ -233,9 +233,7 @@ export default function RedeemReward() {
                   <Card key={challenge.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                     <h4 className="font-bold text-white mb-2">{challenge.title}</h4>
                     <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
-                    <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] mb-3">
-                      {challenge.targetValue} {challenge.goal_type === 'participation' ? 'participants' : 'check-ins'}
-                    </Badge>
+
                     <div className="mt-3 pt-3 border-t border-slate-700/50">
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-[10px] font-bold text-slate-400">Progress</p>
