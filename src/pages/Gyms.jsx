@@ -979,7 +979,7 @@ export default function Gyms() {
 
       {/* Primary Gym Selection Modal */}
       <Dialog open={showPrimaryGymModal} onOpenChange={setShowPrimaryGymModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg [&>button]:hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Star className="w-5 h-5 text-purple-400" />
