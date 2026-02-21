@@ -803,7 +803,7 @@ export default function Gyms() {
                             }}
                             className="flex items-center justify-center hover:scale-110 transition-all"
                           >
-                            <Images className="w-7 h-7 text-white drop-shadow-lg" />
+                            <Images className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                           </button>
                           <button
                             onClick={(e) => {
@@ -812,14 +812,14 @@ export default function Gyms() {
                             }}
                             className="flex items-center justify-center hover:scale-110 transition-all"
                           >
-                            <Dumbbell className="w-7 h-7 text-white drop-shadow-lg" />
+                            <Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                           </button>
                           {currentUser && currentUser.email === gym.owner_email && (
                             <button
                               onClick={() => setEditingGym(gym)}
                               className="flex items-center justify-center hover:scale-110 transition-all"
                             >
-                              <Edit className="w-7 h-7 text-white drop-shadow-lg" />
+                              <Edit className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                             </button>
                           )}
                         </div>
