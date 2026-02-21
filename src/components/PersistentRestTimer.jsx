@@ -35,12 +35,16 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={() => setShowTimerOptions(!showTimerOptions)}
-            className="relative px-3 py-2 rounded-lg bg-white/5 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-blue-500/30"
-          >
-            ⚙️
-          </button>
+          {!isActive && (
+            <>
+              <button
+                onClick={() => setShowTimerOptions(!showTimerOptions)}
+                className="relative px-3 py-2 rounded-lg bg-white/5 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-blue-500/30"
+              >
+                ⚙️
+              </button>
+            </>
+          )}
           <Button
             onClick={() => {
               if (!isActive) {
@@ -53,17 +57,19 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
           >
             {isActive ? 'Stop' : 'Go'}
           </Button>
-          <Button
-            onClick={() => {
-              onTimerValueChange('');
-              onTimerStateChange(false);
-            }}
-            size="icon"
-            variant="ghost"
-            className="w-6 h-6 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-          >
-            <X className="w-4 h-4" />
-          </Button>
+          {!isActive && (
+            <Button
+              onClick={() => {
+                onTimerValueChange('');
+                onTimerStateChange(false);
+              }}
+              size="icon"
+              variant="ghost"
+              className="w-6 h-6 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
         {/* Timer Options Dropdown */}
