@@ -210,13 +210,13 @@ export default function Gyms() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       setShowAddGymModal(false);
       setShowConfirmJoin(false);
       setSelectedPlaceGym(null);
       setPendingGymData(null);
       setPlacesResults([]);
       setSearchQuery('');
-      navigate(createPageUrl('GymCommunity') + `?id=${result.gym.id}`);
     }
   });
 
