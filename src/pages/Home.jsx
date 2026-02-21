@@ -701,10 +701,29 @@ export default function Home() {
 
       {/* Create Split Modal */}
       <CreateSplitModal
-        isOpen={showSplitModal}
-        onClose={() => setShowSplitModal(false)}
-        currentUser={currentUser}
+       isOpen={showSplitModal}
+       onClose={() => setShowSplitModal(false)}
+       currentUser={currentUser}
       />
-    </PullToRefresh>
-  );
-}
+
+      {/* TEST: Log Workout Button - Remove when done testing */}
+      <div className="fixed bottom-32 md:bottom-8 right-4 md:right-8 z-40">
+       <Button
+         onClick={async () => {
+           const res = await base44.functions.invoke('createWorkoutLog', {
+             workout_type: 'test',
+             duration_minutes: 30
+           });
+           if (res.data) {
+             await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+             handleWorkoutLogged();
+           }
+         }}
+         className="bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow-lg"
+       >
+         TEST Log Workout
+       </Button>
+      </div>
+      </PullToRefresh>
+      );
+      }
