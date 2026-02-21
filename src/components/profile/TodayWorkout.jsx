@@ -573,15 +573,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
               <button
                 onClick={() => {
-                  if (!isTimerActive) {
-                    const time = parseInt(restTimer) || 90;
-                    setRestTimer(time);
-                    setInitialRestTime(time);
-                  }
-                  setIsTimerActive(!isTimerActive);
-                }}
-                className="text-sm font-bold px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-500/90 to-orange-600/90 hover:from-orange-600/90 hover:to-orange-700/90 text-white transition-all active:scale-95 shadow-md shadow-orange-500/10"
-              >
+                   if (!isTimerActive) {
+                     const time = parseInt(restTimer) || 90;
+                     setRestTimer(time);
+                     setInitialRestTime(time);
+                   }
+                   setIsTimerActive(!isTimerActive);
+                 }}
+                 className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500/90 to-orange-600/90 hover:from-orange-600/90 hover:to-orange-700/90 text-white transition-all active:scale-95 shadow-md shadow-orange-500/10"
+               >
                 {isTimerActive ? 'Stop' : 'Go'}
               </button>
             </div>
