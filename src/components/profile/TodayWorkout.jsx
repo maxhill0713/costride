@@ -541,29 +541,37 @@ return (
         ))}
 
         {/* Log Workout Button - Only when Expanded */}
-        {isExpanded && !alreadyLoggedToday && (
-          <div className="mb-3 space-y-2">
-            {workoutStartTime && (
-              <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span className="text-[11px] text-amber-300 font-semibold">
-                  {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
-                </span>
-              </div>
-            )}
-            <Button
-              onClick={() => {
-                setShowSummary(true);
-                setFrozenDuration(workoutDuration);
-              }}
-              disabled={logWorkoutMutation.isPending}
-              size="sm"
-              className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-800/95 to-blue-950/95 hover:from-blue-900/95 hover:to-slate-950 shadow-lg shadow-blue-900/40 rounded-lg"
-            >
-              {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
-            </Button>
-          </div>
-        )}
+         {isExpanded && !alreadyLoggedToday && (
+           <div className="mb-3 space-y-2">
+             {workoutStartTime && (
+               <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
+                 <Clock className="w-4 h-4 text-amber-400" />
+                 <span className="text-[11px] text-amber-300 font-semibold">
+                   {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
+                 </span>
+               </div>
+             )}
+             <Button
+               onClick={() => {
+                 setShowSummary(true);
+                 setFrozenDuration(workoutDuration);
+               }}
+               disabled={logWorkoutMutation.isPending}
+               size="sm"
+               className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-800/95 to-blue-950/95 hover:from-blue-900/95 hover:to-slate-950 shadow-lg shadow-blue-900/40 rounded-lg"
+             >
+               {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
+             </Button>
+             <Button
+               onClick={() => logWorkoutMutation.mutate()}
+               disabled={logWorkoutMutation.isPending}
+               size="sm"
+               className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-green-700/95 to-green-900/95 hover:from-green-800/95 hover:to-green-950 shadow-lg shadow-green-900/40 rounded-lg"
+             >
+               Test Log Workout
+             </Button>
+           </div>
+         )}
 
         {/* Summary Button - Show after logged */}
         {isExpanded && alreadyLoggedToday && (
