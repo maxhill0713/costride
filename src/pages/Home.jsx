@@ -527,14 +527,14 @@ export default function Home() {
                           <TrendingUp className="w-3 h-3" />
                           Log Workout
                         </button>
-                        <button
-                          onClick={testLogWorkout}
-                          disabled={isLoggingTestWorkout}
-                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-purple-500/80 to-purple-600/80 hover:from-purple-500 hover:to-purple-600 disabled:opacity-50 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-purple-500/20"
-                        >
-                          {isLoggingTestWorkout ? '...' : 'Test'}
-                        </button>
                       </div>
+                      <button
+                        onClick={testLogWorkout}
+                        disabled={isLoggingTestWorkout}
+                        className="w-full p-2 rounded-lg bg-gradient-to-r from-purple-500/80 to-purple-600/80 hover:from-purple-500 hover:to-purple-600 disabled:opacity-50 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-purple-500/20"
+                      >
+                        {isLoggingTestWorkout ? '...' : 'Test Log Workout'}
+                      </button>
                     </div>
                   </Card>
               )}
