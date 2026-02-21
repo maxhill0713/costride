@@ -486,7 +486,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2">
-                        <div className="text-sm font-black text-white bg-gradient-to-r from-orange-500/80 to-orange-600/80 px-2.5 py-1 rounded-lg shadow-md shadow-orange-500/10 min-w-[65px] text-center">
+                        <div className="text-sm font-black text-white bg-gradient-to-r from-blue-700/90 to-blue-900/90 px-2.5 py-1 rounded-lg shadow-md shadow-blue-900/20 min-w-[65px] text-center">
                           {exercise.weight || '-'}
                           <span className="text-[10px] font-bold ml-1">kg</span>
                         </div>
