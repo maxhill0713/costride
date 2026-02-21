@@ -68,7 +68,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     if (workoutStartTime && !showSummary) {
       interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
-        setWorkoutDuration(elapsed);
+        const capped = Math.min(elapsed, 960); // Cap at 16 minutes (960 seconds)
+        setWorkoutDuration(capped);
       }, 1000);
     }
     return () => clearInterval(interval);
