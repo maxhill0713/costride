@@ -106,14 +106,6 @@ export default function Home() {
     placeholderData: (prev) => prev
   });
 
-  const { data: userSplit = null } = useQuery({
-    queryKey: ['userSplit', currentUser?.id],
-    queryFn: () => base44.entities.WorkoutSplit?.filter({ user_id: currentUser?.id }).then(results => results?.[0] || null),
-    enabled: !!currentUser,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000
-  });
-
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
@@ -317,34 +309,10 @@ export default function Home() {
     }
   };
 
-  // Calculate weekly progress with Monday 3am reset
-  const getWeekStart = () => {
-    const now = new Date();
-    const monday = startOfWeek(now, { weekStartsOn: 1 });
-    const mondayAt3am = new Date(monday);
-    mondayAt3am.setHours(3, 0, 0, 0);
-    
-    // If we haven't reached Monday 3am yet, use last week's Monday 3am
-    if (now < mondayAt3am) {
-      mondayAt3am.setDate(mondayAt3am.getDate() - 7);
-    }
-    
-    return mondayAt3am;
-  };
-  
-  const startOfThisWeek = getWeekStart();
+  // Calculate weekly progress
+  const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
   const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
-  
-  // Calculate weekly target from split (number of workout days, excluding rest days)
-  const calculateWeeklyTarget = () => {
-    if (userSplit?.routine_days && Array.isArray(userSplit.routine_days)) {
-      const workoutDays = userSplit.routine_days.filter((day) => day?.type !== 'rest');
-      return workoutDays.length;
-    }
-    return 3; // Default fallback
-  };
-  
-  const weeklyTarget = calculateWeeklyTarget();
+  const weeklyTarget = currentUser?.weekly_goal || 3; // Use user's routine goal or default to 3
   
   // Calculate goal progress
   const goalsOnTrack = goals.filter(g => {
