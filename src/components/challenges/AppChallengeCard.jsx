@@ -77,8 +77,17 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
               animate={{ opacity: 1, y: 0 }}
               className="mt-2 bg-slate-700/60 rounded-lg p-2 text-center border border-orange-500/30"
             >
-              <p className="text-sm font-bold text-orange-300">{daysElapsed}/{totalDays} days</p>
-              <p className="text-xs text-slate-400">{Math.max(0, totalDays - daysElapsed)} days left</p>
+              {challenge.goal_type === 'longest_streak' ? (
+                <>
+                  <p className="text-sm font-bold text-orange-300">{currentUser?.streak || 0}/{challenge.target_value}</p>
+                  <p className="text-xs text-slate-400">days in streak</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-bold text-orange-300">{daysElapsed}/{totalDays} days</p>
+                  <p className="text-xs text-slate-400">{Math.max(0, totalDays - daysElapsed)} days left</p>
+                </>
+              )}
             </motion.div>
           )}
         </div>
