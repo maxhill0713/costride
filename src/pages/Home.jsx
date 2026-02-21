@@ -278,9 +278,9 @@ export default function Home() {
     setAnimatedNum(userStreak);
     setShowStreakCelebration(true);
     // Animate number up after a short delay
-    setTimeout(() => setAnimatedNum(newStreak), 600);
+    setTimeout(() => setAnimatedNum(newStreak), 900);
     // Fade out after animation
-    setTimeout(() => setShowStreakCelebration(false), 2800);
+    setTimeout(() => setShowStreakCelebration(false), 4200);
   };
 
   const handleStreakVariantSelect = (variant) => {
