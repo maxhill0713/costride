@@ -223,7 +223,9 @@ const logWorkoutMutation = useMutation({
     
     await base44.entities.WorkoutLog.create({
       user_id: currentUser.id,
+      user_name: currentUser.full_name || currentUser.username || 'User',
       workout_name: todayWorkout.name,
+      workout_type: todayWorkout.name,
       day_of_week: adjustedDay,
       exercises: todayWorkout.exercises,
       notes: workoutNotes,
