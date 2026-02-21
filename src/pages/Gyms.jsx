@@ -34,6 +34,7 @@ export default function Gyms() {
   const [gymType, setGymType] = useState('general');
   const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
   const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
+  const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
