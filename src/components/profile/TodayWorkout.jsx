@@ -719,7 +719,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       
       <WorkoutSummaryModal 
         isOpen={showSummary} 
-        duration={workoutDuration * 1000}
+        duration={frozenDuration * 1000}
         workoutName={todayWorkout?.name}
         exercises={todayWorkout?.exercises}
         lastWorkout={lastWorkout}
