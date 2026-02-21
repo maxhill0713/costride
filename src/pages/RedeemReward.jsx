@@ -246,7 +246,7 @@ export default function RedeemReward() {
                         />
                       </div>
                     </div>
-                    <Button disabled className="w-full mt-3 font-bold text-xs h-8 bg-green-600 text-white">
+                    <Button disabled className="w-full mt-2 font-bold text-xs h-8 bg-green-600 text-white">
                       ✓ Joined
                     </Button>
                   </Card>
