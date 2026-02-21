@@ -70,6 +70,7 @@ export default function GymCommunity() {
   const [copiedCoachId, setCopiedCoachId] = useState(null);
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
+  const [showManageAmenities, setShowManageAmenities] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
