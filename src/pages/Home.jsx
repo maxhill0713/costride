@@ -622,7 +622,7 @@ export default function Home() {
                 key={animatedNum}
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                transition={{ type: 'spring', stiffness: 250, damping: 20 }}
                 className="text-8xl font-black text-white drop-shadow-[0_0_20px_rgba(249,115,22,0.9)] tabular-nums"
               >
                 {animatedNum}
