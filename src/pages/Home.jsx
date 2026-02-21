@@ -475,21 +475,12 @@ export default function Home() {
             <div className="space-y-3">
               {/* Today's Workout */}
               {currentUser?.custom_workout_types ? (
-                <>
-                  <TodayWorkout 
-                    currentUser={currentUser}
-                    workoutStartTime={workoutStartTime}
-                    onWorkoutStart={() => setWorkoutStartTime(Date.now())}
-                    onWorkoutLogged={handleWorkoutLogged}
-                  />
-                  {/* TEMP TEST BUTTON - remove before launch */}
-                  <button
-                    onClick={handleWorkoutLogged}
-                    className="w-full p-2 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-all"
-                  >
-                    🧪 [TEST] Trigger Workout Logged
-                  </button>
-                </>
+                <TodayWorkout 
+                  currentUser={currentUser}
+                  workoutStartTime={workoutStartTime}
+                  onWorkoutStart={() => setWorkoutStartTime(Date.now())}
+                  onWorkoutLogged={handleWorkoutLogged}
+                />
               ) : (
                 <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
                     <div className="relative space-y-2">
