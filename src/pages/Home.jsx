@@ -272,6 +272,17 @@ export default function Home() {
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
 
+  const handleWorkoutLogged = () => {
+    const newStreak = userStreak + 1;
+    setCelebrationStreakNum(userStreak);
+    setAnimatedNum(userStreak);
+    setShowStreakCelebration(true);
+    // Animate number up after a short delay
+    setTimeout(() => setAnimatedNum(newStreak), 600);
+    // Fade out after animation
+    setTimeout(() => setShowStreakCelebration(false), 2800);
+  };
+
   const handleStreakVariantSelect = (variant) => {
     if (currentUser) {
       setShowStreakVariants(false);
