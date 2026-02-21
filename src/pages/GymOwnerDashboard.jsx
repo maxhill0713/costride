@@ -192,10 +192,7 @@ export default function GymOwnerDashboard() {
 
   const navigate = useNavigate();
 
-  // Temporarily redirect to Home (member account)
-  React.useEffect(() => {
-    navigate(createPageUrl('Home'));
-  }, [navigate]);
+
 
   // Redirect to onboarding if not completed
   React.useEffect(() => {
