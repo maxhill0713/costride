@@ -275,6 +275,9 @@ export default function Home() {
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
 
   const handleWorkoutLogged = async () => {
+    // Stop the workout timer
+    setWorkoutStartTime(null);
+    
     // Refetch check-ins to update streak in header
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     
