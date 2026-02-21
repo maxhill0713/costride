@@ -411,12 +411,13 @@ return (
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            setShowSummary(true);
+            queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, adjustedDay] });
+            setIsExpanded(true);
           }}
           size="sm"
-          className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white mt-3"
+          className="w-full h-6 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 rounded-lg text-white mt-3"
         >
-          View Summary
+          Log Workout
         </Button>
       )}
 
