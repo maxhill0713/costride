@@ -970,14 +970,22 @@ export default function GymCommunity() {
 
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden" asChild>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-            className="space-y-2 md:space-y-3"
-          >
-          {/* Ghost Gym Join Prompt */}
+         <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           exit={{ opacity: 0, y: -10 }}
+           transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+           className="space-y-2 md:space-y-3"
+         >
+         {/* Gym Details Card */}
+         <GymDetailsCard 
+           gym={gym}
+           isOwner={showOwnerControls}
+           onEditAmenities={() => setShowManageAmenities(true)}
+           onEditSpecializations={() => setShowManageAmenities(true)}
+         />
+
+         {/* Ghost Gym Join Prompt */}
           {isGhostGym && !isMember && !showOwnerControls && (
             <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-xl border border-purple-400/50 p-4 shadow-lg">
               <div className="flex items-center justify-between gap-3">
