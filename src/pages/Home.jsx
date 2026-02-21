@@ -280,7 +280,7 @@ export default function Home() {
     // Animate number up after a short delay
     setTimeout(() => setAnimatedNum(newStreak), 900);
     // Fade out after animation
-    setTimeout(() => setShowStreakCelebration(false), 4200);
+    setTimeout(() => setShowStreakCelebration(false), 3570);
   };
 
   const handleStreakVariantSelect = (variant) => {
