@@ -411,7 +411,7 @@ export default function Home() {
               </div>
           </div>
 
-        <div className={`max-w-4xl mx-auto px-4 py-2 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
+        <div className={`max-w-4xl mx-auto px-4 py-2 pb-96 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {/* Check-In Button - Full Width */}
           {memberGym && (
             <>
