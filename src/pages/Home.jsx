@@ -23,7 +23,7 @@ import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDista
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
-export default function Home({ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }) {
+export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showJoinModal, setShowJoinModal] = useState(false);
