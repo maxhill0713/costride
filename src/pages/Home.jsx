@@ -613,7 +613,7 @@ export default function Home() {
               {/* Big flame */}
               <motion.div
                 animate={{ scale: [1, 1.15, 1] }}
-                transition={{ duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}
+                transition={{ delay: 0.9, duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}
               >
                 {streakVariant === 'sunglasses' ? (
                   <div className="relative w-32 h-32">
