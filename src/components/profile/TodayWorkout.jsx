@@ -270,10 +270,15 @@ const logWorkoutMutation = useMutation({
       reactions: {},
       exercise: 'workout_completion_nudge' // Special flag for nudge posts
     });
-  },
+
+    // Increment user's streak
+    const newStreak = (currentUser.current_streak || 0) + 1;
+    await base44.auth.updateMe({ current_streak: newStreak });
+    },
   onSuccess: () => {
      queryClient.invalidateQueries(['workoutLog']);
      queryClient.invalidateQueries(['posts']);
+     queryClient.invalidateQueries(['currentUser']);
      setShowSummary(false);
      if (onWorkoutLogged) onWorkoutLogged();
    }
