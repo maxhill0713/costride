@@ -272,19 +272,7 @@ export default function GymSignup() {
     }));
   };
 
-  if (submitted) {
-    // If email verified (domain matches), go to dashboard
-    if (submittedGym?.verified) {
-      navigate(createPageUrl('GymOwnerDashboard'));
-      return null;
-    }
-    
-    // If under review (manual verification needed), go to review page
-    if (submittedGym?.status === 'pending') {
-      navigate(createPageUrl('GymUnderReview'));
-      return null;
-    }
-  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 py-8 px-4">
