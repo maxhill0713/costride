@@ -58,8 +58,8 @@ export default function AppChallengeCard({ challenge, onJoin, isJoined = false, 
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-4">
-         <div className="h-4 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
+        <div className="mb-3">
+          <div className="h-4 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/50">
            <div 
              className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 transition-all duration-500 shadow-lg shadow-orange-500/40"
              style={{ width: `${progressPercentage}%` }}
