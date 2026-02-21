@@ -55,10 +55,11 @@ import AppearanceSettings from './pages/AppearanceSettings';
 import BrandDiscounts from './pages/BrandDiscounts';
 import ClaimGym from './pages/ClaimGym';
 import Friends from './pages/Friends';
-import GymOwnerDashboard from './pages/GymOwnerDashboard';
+import GymCommunity from './pages/GymCommunity';
 import GymRequests from './pages/GymRequests';
 import GymRewards from './pages/GymRewards';
 import GymSignup from './pages/GymSignup';
+import GymUnderReview from './pages/GymUnderReview';
 import Gyms from './pages/Gyms';
 import HelpSupport from './pages/HelpSupport';
 import Home from './pages/Home';
@@ -80,8 +81,7 @@ import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
-import GymUnderReview from './pages/GymUnderReview';
-import GymCommunity from './pages/GymCommunity';
+import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -94,10 +94,11 @@ export const PAGES = {
     "BrandDiscounts": BrandDiscounts,
     "ClaimGym": ClaimGym,
     "Friends": Friends,
-    "GymOwnerDashboard": GymOwnerDashboard,
+    "GymCommunity": GymCommunity,
     "GymRequests": GymRequests,
     "GymRewards": GymRewards,
     "GymSignup": GymSignup,
+    "GymUnderReview": GymUnderReview,
     "Gyms": Gyms,
     "HelpSupport": HelpSupport,
     "Home": Home,
@@ -119,8 +120,7 @@ export const PAGES = {
     "Search": Search,
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
-    "GymUnderReview": GymUnderReview,
-    "GymCommunity": GymCommunity,
+    "GymOwnerDashboard": GymOwnerDashboard,
 }
 
 export const pagesConfig = {

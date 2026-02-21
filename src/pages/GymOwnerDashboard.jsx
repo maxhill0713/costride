@@ -486,21 +486,23 @@ export default function GymOwnerDashboard() {
     }
   });
 
-  // Access check temporarily disabled for testing
-  // if (currentUser?.account_type !== 'gym_owner') {
-  //   return (
-  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-  //       <Card className="p-8 text-center max-w-md">
-  //         <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-  //         <h2 className="text-2xl font-bold text-gray-900 mb-2">Gym Owner Access Only</h2>
-  //         <p className="text-gray-600 mb-4">This dashboard is only accessible to gym owners</p>
-  //         <Link to={createPageUrl('Home')}>
-  //           <Button>Back to Home</Button>
-  //         </Link>
-  //       </Card>
-  //     </div>
-  //   );
-  // }
+  // Redirect non-gym-owners back to home
+  if (currentUser?.account_type !== 'gym_owner') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-slate-600/40">
+          <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">Gym Owner Access Only</h2>
+          <p className="text-slate-300 mb-4">This dashboard is only accessible to gym owners</p>
+          <Link to={createPageUrl('Home')}>
+            <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
+              Back to Home
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
   // Show pending approval message if gym is pending (only if truly no approved gyms)
   // Auto-refresh data periodically to catch approvals
