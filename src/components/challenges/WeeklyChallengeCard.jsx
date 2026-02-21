@@ -60,7 +60,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-white mb-1 text-base">{challenge.title}</h4>
-              <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
+              <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
 
             </div>
             <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg overflow-hidden">
