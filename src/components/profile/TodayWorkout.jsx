@@ -628,60 +628,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </Button>
           </div>
 
-          {/* Full Screen Timer Overlay */}
-          {isTimerActive && (
-            <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-lg flex flex-col items-center justify-center">
-              <div className="text-center space-y-8">
-                {/* Progress Ring */}
-                <div className="relative w-64 h-64 mx-auto">
-                  <svg className="w-full h-full transform -rotate-90">
-                    <circle
-                      cx="128"
-                      cy="128"
-                      r="120"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="none"
-                      className="text-slate-700"
-                    />
-                    <circle
-                      cx="128"
-                      cy="128"
-                      r="120"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 120}`}
-                      strokeDashoffset={`${2 * Math.PI * 120 * (1 - restTimer / initialRestTime)}`}
-                      className="text-orange-400 transition-all duration-1000"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-7xl font-black text-orange-400 tabular-nums">
-                      {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, '0')}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xl text-slate-300 font-semibold">Rest Time</p>
-                <div className="flex gap-4">
-                  <Button
-                    onClick={() => setIsTimerActive(false)}
-                    className="px-8 py-6 text-lg font-bold bg-orange-500 hover:bg-orange-600"
-                  >
-                    Stop Timer
-                  </Button>
-                  <Button
-                    onClick={() => setRestTimer(t => t + 30)}
-                    variant="outline"
-                    className="px-8 py-6 text-lg font-bold border-orange-500 text-orange-400"
-                  >
-                    +30s
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+
           </div>
       ) : isExpanded && todayWorkout.exercises.length === 0 ? (
         <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center">
