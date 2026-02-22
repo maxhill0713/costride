@@ -322,7 +322,7 @@ export default function GymSignup() {
                         searchGooglePlaces(e.target.value);
                       }}
                       placeholder="Search gym name or location..."
-                      className="rounded-xl border-2 border-slate-600 bg-slate-700/50 text-white pl-9 h-11"
+                      className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 pl-9 h-11"
                     />
                     {searching && (
                       <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 animate-spin" />
@@ -331,7 +331,7 @@ export default function GymSignup() {
 
                   {/* Search Results */}
                   {searchResults.length > 0 && (
-                    <div className="absolute z-20 w-full mt-2 bg-slate-900 border-2 border-slate-700 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                    <div className="absolute z-20 w-full mt-2 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
                       {searchResults.slice(0, 8).map((place, idx) => (
                         <button
                           key={idx}
@@ -366,10 +366,10 @@ export default function GymSignup() {
                         key={type.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, type: type.value })}
-                        className={`p-3 rounded-xl text-sm font-medium transition-all border-2 ${
+                        className={`p-3 rounded-xl text-sm font-medium transition-all border ${
                           formData.type === type.value
-                            ? 'bg-blue-500 border-blue-400 text-white'
-                            : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-blue-500/50'
+                            ? 'bg-blue-500/30 border-blue-400/60 text-white'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20'
                         }`}
                       >
                         {type.label}
@@ -411,20 +411,20 @@ export default function GymSignup() {
             {step === 2 && (
               <div className="space-y-8">
                 {/* Header */}
-                <div className="pb-4 border-b border-slate-700/50">
+                <div className="pb-4 border-b border-white/10">
                   <h2 className="text-3xl font-black text-white mb-1">{formData.name}</h2>
                   <p className="text-slate-400 text-sm">Complete your gym profile</p>
                 </div>
 
                 {/* Gym Overview Card */}
-                <div className="grid grid-cols-3 gap-3 bg-gradient-to-r from-slate-800/50 to-slate-700/30 border border-slate-700/50 rounded-2xl p-4">
+                <div className="grid grid-cols-3 gap-3 bg-white/5 border border-white/10 rounded-2xl p-4">
                   <div className="text-center">
                     <div className="text-2xl font-black text-blue-400 mb-1">
                       {gymTypes.find(t => t.value === formData.type)?.label.split(' ')[0]}
                     </div>
                     <p className="text-xs text-slate-400">Type</p>
                   </div>
-                  <div className="text-center border-l border-r border-slate-700/50">
+                  <div className="text-center border-l border-r border-white/10">
                     <div className="text-2xl font-black text-purple-400 mb-1">{formData.specializes_in.length}</div>
                     <p className="text-xs text-slate-400">Specialties</p>
                   </div>
@@ -449,10 +449,10 @@ export default function GymSignup() {
                         key={spec}
                         type="button"
                         onClick={() => toggleArrayItem('specializes_in', spec)}
-                        className={`p-3 rounded-xl text-sm font-medium transition-all border-2 ${
+                        className={`p-3 rounded-xl text-sm font-medium transition-all border ${
                           formData.specializes_in.includes(spec)
-                            ? 'bg-gradient-to-br from-purple-500 to-purple-600 border-purple-400 text-white shadow-lg shadow-purple-500/20'
-                            : 'bg-slate-700/40 border-slate-600 text-slate-300 hover:border-purple-500/50 hover:bg-slate-700/60'
+                            ? 'bg-purple-500/30 border-purple-400/60 text-white shadow-lg shadow-purple-500/20'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-purple-400/30'
                         }`}
                       >
                         {spec}
@@ -476,10 +476,10 @@ export default function GymSignup() {
                         key={amenity}
                         type="button"
                         onClick={() => toggleArrayItem('amenities', amenity)}
-                        className={`p-3 rounded-xl text-sm font-medium transition-all border-2 ${
+                        className={`p-3 rounded-xl text-sm font-medium transition-all border ${
                           formData.amenities.includes(amenity)
-                            ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-400 text-white shadow-lg shadow-green-500/20'
-                            : 'bg-slate-700/40 border-slate-600 text-slate-300 hover:border-green-500/50 hover:bg-slate-700/60'
+                            ? 'bg-green-500/30 border-green-400/60 text-white shadow-lg shadow-green-500/20'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-green-400/30'
                         }`}
                       >
                         {amenity}
@@ -489,18 +489,18 @@ export default function GymSignup() {
                 </div>
 
                 {/* Summary Card */}
-                <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/40 border-2 border-slate-700/50 rounded-2xl p-6 space-y-4">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
                   <h3 className="font-bold text-white text-lg">Registration Summary</h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between py-2 border-b border-slate-700/30">
+                    <div className="flex items-center justify-between py-2 border-b border-white/10">
                       <span className="text-slate-400">Gym Name</span>
                       <span className="text-white font-semibold">{formData.name}</span>
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-slate-700/30">
+                    <div className="flex items-center justify-between py-2 border-b border-white/10">
                       <span className="text-slate-400">Location</span>
                       <span className="text-white font-semibold text-right text-sm">{formData.city}</span>
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-slate-700/30">
+                    <div className="flex items-center justify-between py-2 border-b border-white/10">
                       <span className="text-slate-400">Type</span>
                       <span className="text-white font-semibold">{gymTypes.find(t => t.value === formData.type)?.label}</span>
                     </div>
@@ -518,7 +518,7 @@ export default function GymSignup() {
                   <Button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 rounded-xl h-12 font-semibold bg-slate-700/50 hover:bg-slate-700 text-white border border-slate-600 transition-all"
+                    className="flex-1 rounded-xl h-12 font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all"
                   >
                     Back
                   </Button>
@@ -548,7 +548,7 @@ export default function GymSignup() {
         {/* Ghost Gym Modal */}
         {showGhostGymModal && ghostGym && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="max-w-md w-full p-6 bg-slate-900/95 backdrop-blur-xl border-2 border-amber-500/50">
+            <Card className="max-w-md w-full p-6 bg-white/10 backdrop-blur-2xl border border-amber-400/40 shadow-2xl">
               <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="w-6 h-6 text-amber-400" />
               </div>
@@ -557,7 +557,7 @@ export default function GymSignup() {
                 Members have already created a community for {ghostGym.name} with <span className="font-semibold text-white">{ghostGym.members_count || 0} members</span>. Claim it to take control.
               </p>
 
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 mb-6">
+              <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
                 <h4 className="font-bold text-white mb-2">{ghostGym.name}</h4>
                 <div className="space-y-1 text-sm text-slate-400">
                   <div className="flex items-center gap-2">
@@ -572,7 +572,7 @@ export default function GymSignup() {
                   type="button"
                   onClick={() => setShowGhostGymModal(false)}
                   variant="outline"
-                  className="flex-1 rounded-lg border-slate-600 text-slate-300 hover:bg-slate-800"
+                  className="flex-1 rounded-lg border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
                 >
                   Cancel
                 </Button>
