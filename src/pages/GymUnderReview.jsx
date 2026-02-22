@@ -10,9 +10,11 @@ export default function GymUnderReview() {
       <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
       <Card className="max-w-md w-full p-8 text-center bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40 relative z-10">
-        <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Clock className="w-12 h-12 text-amber-400" />
-        </div>
+        <img
+          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
+          alt="CoStride Logo"
+          className="w-20 h-20 rounded-3xl mx-auto mb-4 object-cover shadow-2xl shadow-blue-500/30"
+        />
         
         <h2 className="text-2xl font-black text-white mb-2">Under Review</h2>
         

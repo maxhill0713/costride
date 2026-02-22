@@ -79,9 +79,11 @@ export default function MemberSignup() {
       <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
       <div className="max-w-2xl w-full relative z-10 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl shadow-black/40 mb-8">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
-            <User className="w-10 h-10 text-white" />
-          </div>
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
+            alt="CoStride Logo"
+            className="w-20 h-20 rounded-3xl mx-auto mb-4 object-cover shadow-2xl shadow-blue-500/30"
+          />
           <h1 className="text-4xl font-black text-white mb-3">
             Complete Your Profile
           </h1>

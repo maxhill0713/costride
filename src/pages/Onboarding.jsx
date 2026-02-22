@@ -54,9 +54,11 @@ export default function Onboarding() {
       <div className="max-w-2xl w-full relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl shadow-blue-500/30">
-            <span className="text-3xl">🏋️</span>
-          </div>
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
+            alt="CoStride Logo"
+            className="w-20 h-20 rounded-3xl mx-auto mb-5 object-cover shadow-2xl shadow-blue-500/30"
+          />
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
             Welcome to CoStride
           </h1>
