@@ -6,8 +6,10 @@ import { Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function GymUnderReview() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full p-8 text-center bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+      <Card className="max-w-md w-full p-8 text-center bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40 relative z-10">
         <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
           <Clock className="w-12 h-12 text-amber-400" />
         </div>
