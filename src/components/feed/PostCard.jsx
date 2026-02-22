@@ -114,14 +114,46 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       }
       await base44.entities.Post.update(post.id, { reactions: updatedReactions });
     },
+    onMutate: async (isReacting) => {
+      // Optimistically update all post caches immediately
+      const updatePost = (old = []) => old.map(p => {
+        if (p.id !== post.id) return p;
+        const updatedReactions = { ...p.reactions };
+        if (isReacting) {
+          updatedReactions[currentUser.id] = userStreakVariant;
+        } else {
+          delete updatedReactions[currentUser.id];
+        }
+        return { ...p, reactions: updatedReactions };
+      });
+
+      const queries = [
+        ['posts'],
+        ['friendPosts', currentUser?.id],
+        ['userPosts', currentUser?.id],
+      ];
+      if (post.gym_id) queries.push(['posts', post.gym_id]);
+
+      const snapshots = queries.map(key => ({
+        key,
+        data: queryClient.getQueryData(key)
+      }));
+
+      queries.forEach(key => queryClient.setQueryData(key, updatePost));
+
+      return { snapshots };
+    },
+    onError: (err, isReacting, context) => {
+      context?.snapshots?.forEach(({ key, data }) => {
+        queryClient.setQueryData(key, data);
+      });
+      toast.error('Failed to react to post');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       if (post.gym_id) {
         queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
       }
-    },
-    onError: () => {
-      toast.error('Failed to react to post');
     }
   });
 
