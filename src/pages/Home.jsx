@@ -179,10 +179,10 @@ export default function Home() {
 
   // Redirect to onboarding if not completed
   useEffect(() => {
-    if (currentUser && currentUser.onboarding_completed === false) {
+    if (currentUser && currentUser.onboarding_completed === false && !currentUser.account_type) {
       navigate(createPageUrl('Onboarding'));
     }
-  }, [currentUser?.onboarding_completed, navigate]);
+  }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
 
   // Calculate these values before early return
   const memberGym = memberGymData || null;
