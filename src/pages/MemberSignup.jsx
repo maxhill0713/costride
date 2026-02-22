@@ -12,8 +12,6 @@ import { createPageUrl } from '../utils';
 
 export default function MemberSignup() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
     name: '',
     bio: '',
     avatar_url: ''

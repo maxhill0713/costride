@@ -17,8 +17,6 @@ export default function GymSignup() {
   const [submitted, setSubmitted] = useState(false);
   
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
     name: '',
     google_place_id: '',
     latitude: null,
