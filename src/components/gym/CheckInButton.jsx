@@ -135,9 +135,9 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
   return (
     <div className="space-y-3">
       {isClaimedGym && !gymMembership && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center mb-3">
-          <p className="text-purple-900 font-semibold mb-2">Membership required</p>
-          <p className="text-sm text-purple-700">Ask the gym for a join code to start checking in</p>
+        <div className="bg-purple-500/10 border border-purple-400/30 rounded-2xl p-4 text-center mb-3">
+          <p className="text-purple-200 font-semibold mb-2">Membership required</p>
+          <p className="text-sm text-purple-300">Ask the gym for a join code to start checking in</p>
         </div>
       )}
 
