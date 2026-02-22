@@ -302,7 +302,7 @@ export default function GymSignup() {
           </div>
         </div>
 
-        <Card className="p-8 bg-slate-900/80 backdrop-blur-2xl border border-white/8 shadow-2xl shadow-black/60">
+        <Card className="p-8 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* STEP 1: Basic Info */}
             {step === 1 && (
