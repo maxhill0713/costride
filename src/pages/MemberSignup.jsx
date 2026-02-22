@@ -118,47 +118,6 @@ export default function MemberSignup() {
             {uploading && <p className="text-sm text-slate-400">Uploading...</p>}
           </div>
 
-          {/* Email */}
-          <div>
-            <Label htmlFor="email" className="text-white font-semibold mb-2 block">
-              Email *
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="your@email.com"
-              required
-              className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="password" className="text-white font-semibold">
-                Password *
-              </Label>
-              <a
-                href="/auth/login"
-                className="text-xs text-blue-400 hover:text-blue-300 font-medium"
-              >
-                Forgot Password?
-              </a>
-            </div>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="••••••••"
-              required
-              minLength={6}
-              className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"
-            />
-          </div>
-
           {/* Name Input */}
           <div>
             <Label htmlFor="name" className="text-white font-semibold mb-2 block">
@@ -201,7 +160,7 @@ export default function MemberSignup() {
             </Button>
             <Button
               type="submit"
-              disabled={createMemberMutation.isPending || !formData.email || !formData.password || !formData.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
+              disabled={createMemberMutation.isPending || !formData.name}
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold disabled:opacity-50"
             >
               {createMemberMutation.isPending ? (
