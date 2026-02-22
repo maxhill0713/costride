@@ -87,12 +87,12 @@ export default function MemberSignup() {
           <h1 className="text-4xl font-black text-white mb-3">
             Complete Your Profile
           </h1>
-          <p className="text-blue-200/70 text-lg">
+          <p className="text-slate-300 text-lg">
             Let's personalize your fitness journey
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-7">
           {/* Avatar Upload */}
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
@@ -118,7 +118,7 @@ export default function MemberSignup() {
                 />
               </label>
             </div>
-            {uploading && <p className="text-sm text-slate-400">Uploading...</p>}
+            {uploading && <p className="text-sm text-slate-300">Uploading...</p>}
           </div>
 
           {/* Name Input */}

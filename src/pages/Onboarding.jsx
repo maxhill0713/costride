@@ -61,14 +61,14 @@ export default function Onboarding() {
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
             Welcome to CoStride
           </h1>
-          <p className="text-blue-200/70 text-lg">
+          <p className="text-slate-300 text-lg">
             Choose how you want to use the app
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/40">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
             {ACCOUNT_TYPES.map((type) => {
               const Icon = type.icon;
               const isSelected = selectedType === type.id;
@@ -87,7 +87,7 @@ export default function Onboarding() {
                     <Icon className="w-7 h-7 text-white" strokeWidth={2.5} />
                   </div>
                   <h3 className="font-bold text-white mb-2 text-lg">{type.title}</h3>
-                  <p className="text-sm text-blue-200/60">{type.description}</p>
+                  <p className="text-sm text-slate-300">{type.description}</p>
                 </button>
               );
             })}

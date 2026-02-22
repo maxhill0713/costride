@@ -288,7 +288,7 @@ export default function GymSignup() {
             className="w-16 h-16 rounded-3xl mx-auto mb-4 object-cover shadow-2xl shadow-blue-500/30"
           />
           <h1 className="text-3xl font-black text-white mb-2">Register Your Gym</h1>
-          <p className="text-slate-400">Grow your gym community with our platform</p>
+          <p className="text-slate-300">Grow your gym community with our platform</p>
         </div>
 
         {/* Progress Indicator */}
@@ -302,14 +302,14 @@ export default function GymSignup() {
           </div>
         </div>
 
-        <Card className="p-8 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
+        <Card className="p-8 md:p-10 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* STEP 1: Basic Info */}
             {step === 1 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-1">Account Setup</h2>
-                  <p className="text-slate-400 text-sm">Create your gym owner account</p>
+                  <p className="text-slate-300 text-sm">Create your gym owner account</p>
                 </div>
 
                 {/* Gym Search */}
@@ -415,7 +415,7 @@ export default function GymSignup() {
                 {/* Header */}
                 <div className="pb-4 border-b border-white/10">
                   <h2 className="text-3xl font-black text-white mb-1">{formData.name}</h2>
-                  <p className="text-slate-400 text-sm">Complete your gym profile</p>
+                  <p className="text-slate-300 text-sm">Complete your gym profile</p>
                 </div>
 
                 {/* Gym Overview Card */}
@@ -424,15 +424,15 @@ export default function GymSignup() {
                     <div className="text-2xl font-black text-blue-400 mb-1">
                       {gymTypes.find(t => t.value === formData.type)?.label.split(' ')[0]}
                     </div>
-                    <p className="text-xs text-slate-400">Type</p>
+                    <p className="text-xs text-slate-300">Type</p>
                   </div>
                   <div className="text-center border-l border-r border-white/10">
                     <div className="text-2xl font-black text-purple-400 mb-1">{formData.specializes_in.length}</div>
-                    <p className="text-xs text-slate-400">Specialties</p>
+                    <p className="text-xs text-slate-300">Specialties</p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-black text-green-400 mb-1">{formData.amenities.length}</div>
-                    <p className="text-xs text-slate-400">Amenities</p>
+                    <p className="text-xs text-slate-300">Amenities</p>
                   </div>
                 </div>
 
@@ -443,7 +443,7 @@ export default function GymSignup() {
                       <Star className="w-5 h-5 text-purple-400" />
                       Specializations
                     </h3>
-                    <p className="text-xs text-slate-400 mb-3">What does your gym specialize in? (Choose at least 1)</p>
+                    <p className="text-xs text-slate-300 mb-3">What does your gym specialize in? (Choose at least 1)</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {specializationOptions.map((spec) => (
@@ -470,7 +470,7 @@ export default function GymSignup() {
                       <Building2 className="w-5 h-5 text-green-400" />
                       Amenities & Features
                     </h3>
-                    <p className="text-xs text-slate-400 mb-3">What amenities does your gym offer?</p>
+                    <p className="text-xs text-slate-300 mb-3">What amenities does your gym offer?</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {amenitiesOptions.map((amenity) => (
@@ -495,19 +495,19 @@ export default function GymSignup() {
                   <h3 className="font-bold text-white text-lg">Registration Summary</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-slate-400">Gym Name</span>
+                      <span className="text-slate-300">Gym Name</span>
                       <span className="text-white font-semibold">{formData.name}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-slate-400">Location</span>
+                      <span className="text-slate-300">Location</span>
                       <span className="text-white font-semibold text-right text-sm">{formData.city}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-slate-400">Type</span>
+                      <span className="text-slate-300">Type</span>
                       <span className="text-white font-semibold">{gymTypes.find(t => t.value === formData.type)?.label}</span>
                     </div>
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-slate-400">Total Selections</span>
+                      <span className="text-slate-300">Total Selections</span>
                       <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30">
                         {formData.specializes_in.length + formData.amenities.length} items
                       </Badge>
