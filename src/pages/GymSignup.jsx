@@ -276,39 +276,39 @@ export default function GymSignup() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 py-8 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center py-4 px-4 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-800/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-blue-900/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="max-w-2xl mx-auto relative z-10">
+      <div className="max-w-md w-full mx-auto relative z-10">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
             alt="CoStride Logo"
-            className="w-16 h-16 rounded-3xl mx-auto mb-4 object-cover shadow-2xl shadow-blue-500/30"
+            className="w-12 h-12 rounded-2xl mx-auto mb-2 object-cover shadow-2xl shadow-blue-500/30"
           />
-          <h1 className="text-3xl font-black text-white mb-2">Register Your Gym</h1>
-          <p className="text-slate-300">Grow your gym community with our platform</p>
+          <h1 className="text-2xl font-black text-white mb-1">Register Your Gym</h1>
+          <p className="text-slate-300 text-sm">Grow your gym community with our platform</p>
         </div>
 
         {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 1 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
             1
           </div>
-          <div className={`w-12 h-1 ${step >= 2 ? 'bg-blue-500' : 'bg-slate-700'}`} />
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+          <div className={`w-10 h-1 ${step >= 2 ? 'bg-blue-500' : 'bg-slate-700'}`} />
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 2 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
             2
           </div>
         </div>
 
-        <Card className="p-8 md:p-10 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <Card className="p-5 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* STEP 1: Basic Info */}
             {step === 1 && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">Account Setup</h2>
+                  <h2 className="text-xl font-bold text-white mb-0.5">Account Setup</h2>
                   <p className="text-slate-300 text-sm">Create your gym owner account</p>
                 </div>
 
@@ -368,7 +368,7 @@ export default function GymSignup() {
                         key={type.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, type: type.value })}
-                        className={`p-3 rounded-xl text-sm font-medium transition-all border ${
+                        className={`p-2.5 rounded-xl text-sm font-medium transition-all border ${
                           formData.type === type.value
                             ? 'bg-blue-500/30 border-blue-400/60 text-white'
                             : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20'
@@ -411,50 +411,47 @@ export default function GymSignup() {
 
             {/* STEP 2: Details */}
             {step === 2 && (
-              <div className="space-y-8">
+              <div className="space-y-4">
                 {/* Header */}
-                <div className="pb-4 border-b border-white/10">
-                  <h2 className="text-3xl font-black text-white mb-1">{formData.name}</h2>
+                <div className="pb-3 border-b border-white/10">
+                  <h2 className="text-xl font-black text-white mb-0.5 truncate">{formData.name}</h2>
                   <p className="text-slate-300 text-sm">Complete your gym profile</p>
                 </div>
 
                 {/* Gym Overview Card */}
-                <div className="grid grid-cols-3 gap-3 bg-white/5 border border-white/10 rounded-2xl p-4">
+                <div className="grid grid-cols-3 gap-2 bg-white/5 border border-white/10 rounded-xl p-3">
                   <div className="text-center">
-                    <div className="text-2xl font-black text-blue-400 mb-1">
+                    <div className="text-lg font-black text-blue-400 mb-0.5">
                       {gymTypes.find(t => t.value === formData.type)?.label.split(' ')[0]}
                     </div>
                     <p className="text-xs text-slate-300">Type</p>
                   </div>
                   <div className="text-center border-l border-r border-white/10">
-                    <div className="text-2xl font-black text-purple-400 mb-1">{formData.specializes_in.length}</div>
+                    <div className="text-lg font-black text-purple-400 mb-0.5">{formData.specializes_in.length}</div>
                     <p className="text-xs text-slate-300">Specialties</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-black text-green-400 mb-1">{formData.amenities.length}</div>
+                    <div className="text-lg font-black text-green-400 mb-0.5">{formData.amenities.length}</div>
                     <p className="text-xs text-slate-300">Amenities</p>
                   </div>
                 </div>
 
                 {/* Specializations Section */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                      <Star className="w-5 h-5 text-purple-400" />
-                      Specializations
-                    </h3>
-                    <p className="text-xs text-slate-300 mb-3">What does your gym specialize in? (Choose at least 1)</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Star className="w-4 h-4 text-purple-400" />
+                    Specializations <span className="text-xs font-normal text-slate-400">(pick at least 1)</span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
                     {specializationOptions.map((spec) => (
                       <button
                         key={spec}
                         type="button"
                         onClick={() => toggleArrayItem('specializes_in', spec)}
-                        className={`p-3 rounded-xl text-sm font-medium transition-all border ${
+                        className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${
                           formData.specializes_in.includes(spec)
-                            ? 'bg-purple-500/30 border-purple-400/60 text-white shadow-lg shadow-purple-500/20'
-                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-purple-400/30'
+                            ? 'bg-purple-500/30 border-purple-400/60 text-white'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                         }`}
                       >
                         {spec}
@@ -464,24 +461,21 @@ export default function GymSignup() {
                 </div>
 
                 {/* Amenities Section */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                      <Building2 className="w-5 h-5 text-green-400" />
-                      Amenities & Features
-                    </h3>
-                    <p className="text-xs text-slate-300 mb-3">What amenities does your gym offer?</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-green-400" />
+                    Amenities
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
                     {amenitiesOptions.map((amenity) => (
                       <button
                         key={amenity}
                         type="button"
                         onClick={() => toggleArrayItem('amenities', amenity)}
-                        className={`p-3 rounded-xl text-sm font-medium transition-all border ${
+                        className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${
                           formData.amenities.includes(amenity)
-                            ? 'bg-green-500/30 border-green-400/60 text-white shadow-lg shadow-green-500/20'
-                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-green-400/30'
+                            ? 'bg-green-500/30 border-green-400/60 text-white'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                         }`}
                       >
                         {amenity}
@@ -490,33 +484,8 @@ export default function GymSignup() {
                   </div>
                 </div>
 
-                {/* Summary Card */}
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-                  <h3 className="font-bold text-white text-lg">Registration Summary</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-slate-300">Gym Name</span>
-                      <span className="text-white font-semibold">{formData.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-slate-300">Location</span>
-                      <span className="text-white font-semibold text-right text-sm">{formData.city}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-slate-300">Type</span>
-                      <span className="text-white font-semibold">{gymTypes.find(t => t.value === formData.type)?.label}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-slate-300">Total Selections</span>
-                      <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                        {formData.specializes_in.length + formData.amenities.length} items
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-1">
                   <Button
                     type="button"
                     onClick={() => setStep(1)}
