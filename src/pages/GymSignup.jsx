@@ -126,8 +126,11 @@ export default function GymSignup() {
         }));
       }
 
-      if (currentUser?.email && place.website) {
-        setEmailVerificationStatus(verifyEmailDomain(currentUser.email, place.website));
+      // Re-check business email against new place if already entered
+      if (businessEmail && place.website) {
+        setEmailVerificationStatus(verifyEmailDomain(businessEmail, place.website));
+      } else {
+        setEmailVerificationStatus(null);
       }
     } catch (error) {
       console.error('Error checking gym:', error);
