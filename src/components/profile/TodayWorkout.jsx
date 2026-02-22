@@ -562,14 +562,7 @@ return (
              >
                {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
              </Button>
-             <Button
-               onClick={() => logWorkoutMutation.mutate()}
-               disabled={logWorkoutMutation.isPending}
-               size="sm"
-               className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-green-700/95 to-green-900/95 hover:from-green-800/95 hover:to-green-950 shadow-lg shadow-green-900/40 rounded-lg"
-             >
-               Test Log Workout
-             </Button>
+
            </div>
          )}
 
