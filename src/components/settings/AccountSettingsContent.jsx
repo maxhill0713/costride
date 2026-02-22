@@ -120,6 +120,49 @@ export default function AccountSettingsContent() {
           </form>
         </div>
       </Card>
+      {/* Delete Account */}
+      <Card className="bg-gradient-to-br from-red-950/40 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-red-900/30 p-4 shadow-2xl shadow-black/20">
+        <div className="p-4 bg-red-900/10 border border-red-800/20 rounded-2xl">
+          <Label className="text-xs font-bold text-red-400 uppercase mb-2 block">Danger Zone</Label>
+          <p className="text-xs text-slate-400 mb-4">Permanently delete your account and all associated data. This cannot be undone. If you sign up again with the same email, it will be treated as a brand new account.</p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="w-full rounded-xl font-medium flex items-center gap-2">
+                <Trash2 className="w-4 h-4" />
+                Delete My Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-slate-900 border border-red-900/40 text-white">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-red-400">Delete Account?</AlertDialogTitle>
+                <AlertDialogDescription className="text-slate-300">
+                  This will permanently delete your account, all gym memberships, check-ins, lifts, goals, and any gyms you own. You will be logged out immediately.
+                  <br /><br />
+                  Type <span className="font-bold text-red-400">DELETE</span> to confirm.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <Input
+                value={deleteConfirmText}
+                onChange={e => setDeleteConfirmText(e.target.value)}
+                placeholder='Type DELETE to confirm'
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl mt-2"
+              />
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-slate-800 text-white border-slate-700 hover:bg-slate-700" onClick={() => setDeleteConfirmText('')}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                  onClick={handleDeleteAccount}
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete Forever'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </Card>
     </div>
   );
 }
