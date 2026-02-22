@@ -265,7 +265,7 @@ export default function GymSignup() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createGymMutation.mutate(formData);
+    createGymMutation.mutate({ ...formData, emailVerificationStatus });
   };
 
   const toggleArrayItem = (field, item) => {
