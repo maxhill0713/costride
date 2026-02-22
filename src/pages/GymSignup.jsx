@@ -277,8 +277,8 @@ export default function GymSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 py-8 px-4 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-800/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-blue-900/15 rounded-full blur-3xl pointer-events-none" />
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
@@ -302,7 +302,7 @@ export default function GymSignup() {
           </div>
         </div>
 
-        <Card className="p-8 bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
+        <Card className="p-8 bg-slate-900/80 backdrop-blur-2xl border border-white/8 shadow-2xl shadow-black/60">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* STEP 1: Basic Info */}
             {step === 1 && (

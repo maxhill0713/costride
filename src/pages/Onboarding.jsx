@@ -47,9 +47,8 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-800/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-blue-900/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-2xl w-full relative z-10">
         {/* Logo */}
@@ -68,7 +67,7 @@ export default function Onboarding() {
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/40">
+        <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/8 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/60">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {ACCOUNT_TYPES.map((type) => {
               const Icon = type.icon;
@@ -81,7 +80,7 @@ export default function Onboarding() {
                   className={`p-8 rounded-2xl cursor-pointer transition-all duration-300 text-left border ${
                     isSelected
                       ? 'bg-blue-500/20 border-blue-400/60 shadow-lg shadow-blue-500/20 scale-[1.02]'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                      : 'bg-slate-800/60 border-white/8 hover:bg-slate-700/60 hover:border-white/15'
                   }`}
                 >
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-4 shadow-lg`}>
