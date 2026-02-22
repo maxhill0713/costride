@@ -206,7 +206,7 @@ export default function GymSignup() {
             for (let i = 0; i < 6; i++) {
               code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            const existing = await base44.entities.Gym.filter({ join_code: code });
+            const existing = await base44.asServiceRole.entities.Gym.filter({ join_code: code });
             isUnique = existing.length === 0;
             attempts++;
           }
