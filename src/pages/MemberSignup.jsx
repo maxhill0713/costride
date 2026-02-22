@@ -86,7 +86,7 @@ export default function MemberSignup() {
           <h1 className="text-4xl font-black text-white mb-3">
             Complete Your Profile
           </h1>
-          <p className="text-slate-300 text-lg">
+          <p className="text-blue-200/70 text-lg">
             Let's personalize your fitness journey
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function MemberSignup() {
               maxLength="15"
               placeholder="Enter your full name"
               required
-              className="h-12 text-base bg-slate-700/50 border-slate-600 text-white"
+              className="h-12 text-base bg-white/5 border-white/10 text-white placeholder:text-slate-500"
             />
           </div>
 
@@ -147,7 +147,7 @@ export default function MemberSignup() {
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               placeholder="Tell us about your fitness journey..."
-              className="min-h-32 text-base bg-slate-700/50 border-slate-600 text-white"
+              className="min-h-32 text-base bg-white/5 border-white/10 text-white placeholder:text-slate-500"
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function MemberSignup() {
             <Button
               type="button"
               onClick={() => navigate(createPageUrl('Onboarding'))}
-              className="flex-1 bg-slate-700 hover:bg-slate-600 text-white h-14 text-base rounded-xl font-semibold"
+              className="flex-1 bg-white/10 hover:bg-white/15 text-white h-14 text-base rounded-xl font-semibold border border-white/10"
             >
               Back
             </Button>
@@ -176,7 +176,7 @@ export default function MemberSignup() {
             </Button>
           </div>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }
