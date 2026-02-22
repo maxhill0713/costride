@@ -87,7 +87,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-slate-700/50 shadow-2xl">
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-slate-700/50 shadow-2xl">
         <DialogHeader>
           <div className="text-center space-y-1.5 pb-3 border-b border-slate-700/50">
             <div className="w-12 h-12 mx-auto bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
