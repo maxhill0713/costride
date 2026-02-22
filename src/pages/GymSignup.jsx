@@ -550,7 +550,7 @@ export default function GymSignup() {
         {/* Ghost Gym Modal */}
         {showGhostGymModal && ghostGym && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="max-w-md w-full p-6 bg-white/10 backdrop-blur-2xl border border-amber-400/40 shadow-2xl">
+            <Card className="max-w-md w-full p-6 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl">
               <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="w-6 h-6 text-amber-400" />
               </div>
@@ -581,7 +581,7 @@ export default function GymSignup() {
                 <Button
                   type="button"
                   onClick={handleClaimGhostGym}
-                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-lg"
+                  className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg"
                 >
                   Claim
                 </Button>
