@@ -406,43 +406,42 @@ export default function Gyms() {
       {/* Tabs */}
       <Tabs defaultValue={gymMemberships.length > 0 ? "my-gyms" : "explore"} className="w-full">
         {/* Tab List */}
-        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-4 pb-0">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center gap-3">
-              <TabsList className="flex justify-start bg-transparent p-0 h-11 gap-6 border-0 flex-1 min-w-0">
+            <div className="flex items-center h-18 gap-6">
+              {gymMemberships.length > 0 && (
+                <Button 
+                  onClick={() => setShowPrimaryGymModal(true)}
+                  className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 gap-2 rounded-lg text-xs h-8.5 px-3"
+                >
+                  <Star className="w-4 h-4" />
+                </Button>
+              )}
+              <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-12 border-0">
                 {userGyms.length > 0 && (
                   <TabsTrigger 
                     value="my-gyms" 
-                    className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base whitespace-nowrap"
+                    className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base"
                   >
+                    <Users className="w-5 h-5 mr-2" />
                     My Gyms
                   </TabsTrigger>
                 )}
                 <TabsTrigger 
                   value="explore" 
-                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base whitespace-nowrap"
+                  className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base"
                 >
+                  <MapPin className="w-5 h-5 mr-2" />
                   Explore
                 </TabsTrigger>
               </TabsList>
-              <div className="flex items-center gap-2 flex-shrink-0 pb-2">
-                {gymMemberships.length > 0 && (
-                  <Button 
-                    onClick={() => setShowPrimaryGymModal(true)}
-                    size="sm"
-                    className="bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/50 rounded-lg px-2.5 h-8"
-                  >
-                    <Star className="w-4 h-4" />
-                  </Button>
-                )}
-                <Button 
-                  onClick={() => setShowJoinWithCode(true)}
-                  size="sm"
-                  className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 rounded-lg px-2.5 h-8"
-                >
-                  <Key className="w-4 h-4" />
-                </Button>
-              </div>
+              <Button 
+                onClick={() => setShowJoinWithCode(true)}
+                className="bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50 gap-2 rounded-lg text-xs h-8.5 px-3"
+              >
+                <Key className="w-4 h-4" />
+                <span className="hidden md:inline">Join with Code</span>
+              </Button>
             </div>
           </div>
         </div>

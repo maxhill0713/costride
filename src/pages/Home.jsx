@@ -568,8 +568,8 @@ export default function Home() {
           {/* Quote Carousel */}
           {memberGym?.id && <QuoteCarousel />}
 
-        {/* Join a Gym Prompt — only show for members with no gym, never for gym owners, and only after data has loaded */}
-         {gymMemberships.length === 0 && !memberGym && currentUser?.account_type !== 'gym_owner' && currentUser?.onboarding_completed !== false && (
+        {/* Join a Gym Prompt — only show for regular members, not gym owners */}
+         {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && (
            <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
              <div className="flex items-center justify-between gap-4">
                <div>
