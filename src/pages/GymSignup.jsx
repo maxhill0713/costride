@@ -384,6 +384,33 @@ export default function GymSignup() {
                   </div>
                 </div>
 
+                {/* Business Email */}
+                {selectedPlace && (
+                  <div>
+                    <Label className="text-white font-semibold text-sm">
+                      Optional: Verify your business email
+                    </Label>
+                    <p className="text-xs text-slate-400 mt-0.5 mb-2">
+                      Enter your business email (e.g., owner@ironforgegym.com) to claim verified ownership instantly.
+                    </p>
+                    <Input
+                      type="email"
+                      value={businessEmail}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBusinessEmail(val);
+                        if (selectedPlace?.website && val) {
+                          setEmailVerificationStatus(verifyEmailDomain(val, selectedPlace.website));
+                        } else {
+                          setEmailVerificationStatus(null);
+                        }
+                      }}
+                      placeholder="owner@yourgym.com"
+                      className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-10 text-sm"
+                    />
+                  </div>
+                )}
+
                 {/* Email Verification Status */}
                 {emailVerificationStatus === 'verified' && (
                   <div className="p-3 bg-green-500/20 border border-green-500/40 rounded-lg flex items-center gap-2">
