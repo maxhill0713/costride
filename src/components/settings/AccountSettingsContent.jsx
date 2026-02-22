@@ -38,6 +38,18 @@ export default function AccountSettingsContent() {
     return <p className="text-slate-400">Loading...</p>;
   }
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await base44.functions.invoke('deleteUserAccount', {});
+      // Log out and redirect to login — if they sign up again with same email it's a fresh account
+      base44.auth.logout('/');
+    } catch (error) {
+      alert('Failed to delete account: ' + error.message);
+      setIsDeleting(false);
+    }
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
