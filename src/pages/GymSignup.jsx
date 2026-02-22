@@ -179,7 +179,7 @@ export default function GymSignup() {
       });
 
       const gymLanguage = data.language || detectLanguageFromCity(data.city);
-      const isVerified = emailVerificationStatus === 'verified';
+      const isVerified = data.emailVerificationStatus === 'verified';
 
       let gym;
       if (data.claimingGymId) {
