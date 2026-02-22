@@ -423,7 +423,7 @@ export default function Home() {
                 }
               </p>
 
-              {daysSinceCheckIn !== 0 && (
+              {!userCheckIns.some(c => isToday(new Date(c.check_in_date))) && (
                 <CheckInButton 
                   gym={memberGym}
                   onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
