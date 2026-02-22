@@ -46,54 +46,61 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full p-8 md:p-12 bg-slate-800/80 backdrop-blur-sm border-2 border-slate-700/50 rounded-3xl">
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-3xl mx-auto mb-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-2xl w-full relative z-10">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl shadow-blue-500/30">
             <span className="text-3xl">🏋️</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3">
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
             Welcome to CoStride
           </h1>
-          <p className="text-slate-300 text-lg">
+          <p className="text-blue-200/70 text-lg">
             Choose how you want to use the app
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {ACCOUNT_TYPES.map((type) => {
-            const Icon = type.icon;
-            const isSelected = selectedType === type.id;
-            return (
-              <Card
-                key={type.id}
-                onClick={() => setSelectedType(type.id)}
-                className={`p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 bg-slate-700/50 backdrop-blur-sm ${
-                  isSelected
-                    ? 'border-4 border-blue-500 shadow-lg shadow-blue-500/30 scale-105'
-                    : 'border-2 border-slate-600/40 hover:border-blue-400/50'
-                }`}
-              >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-4 mx-auto`}>
-                  <Icon className="w-8 h-8 text-white" strokeWidth={2.5} />
-                </div>
-                <h3 className="font-bold text-white text-center mb-2 text-lg">{type.title}</h3>
-                <p className="text-sm text-slate-300 text-center">{type.description}</p>
-              </Card>
-            );
-          })}
-        </div>
+        {/* Card */}
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/40">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {ACCOUNT_TYPES.map((type) => {
+              const Icon = type.icon;
+              const isSelected = selectedType === type.id;
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setSelectedType(type.id)}
+                  className={`p-8 rounded-2xl cursor-pointer transition-all duration-300 text-left border ${
+                    isSelected
+                      ? 'bg-blue-500/20 border-blue-400/60 shadow-lg shadow-blue-500/20 scale-[1.02]'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-4 shadow-lg`}>
+                    <Icon className="w-7 h-7 text-white" strokeWidth={2.5} />
+                  </div>
+                  <h3 className="font-bold text-white mb-2 text-lg">{type.title}</h3>
+                  <p className="text-sm text-blue-200/60">{type.description}</p>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="flex justify-center">
           <Button
             onClick={() => selectedType && handleSelectType(selectedType)}
             disabled={!selectedType || selectAccountTypeMutation.isPending}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold px-8 py-6 text-lg rounded-2xl disabled:opacity-50 w-full md:w-auto"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold h-13 text-base rounded-2xl disabled:opacity-40 shadow-lg shadow-blue-500/25 transition-all"
           >
-            {selectAccountTypeMutation.isPending ? 'Continue...' : 'Continue'}
+            {selectAccountTypeMutation.isPending ? 'Continue...' : 'Continue →'}
           </Button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
