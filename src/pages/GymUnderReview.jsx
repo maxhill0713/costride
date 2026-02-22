@@ -9,7 +9,7 @@ export default function GymUnderReview() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-800/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-blue-900/15 rounded-full blur-3xl pointer-events-none" />
-      <Card className="max-w-md w-full p-8 text-center bg-slate-900/80 backdrop-blur-2xl border border-white/8 shadow-2xl shadow-black/60 relative z-10">
+      <Card className="max-w-md w-full p-8 text-center bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40 relative z-10">
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
           alt="CoStride Logo"

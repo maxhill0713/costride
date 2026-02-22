@@ -67,7 +67,7 @@ export default function Onboarding() {
         </div>
 
         {/* Card */}
-        <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/8 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/60">
+        <div className="bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/40">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {ACCOUNT_TYPES.map((type) => {
               const Icon = type.icon;
