@@ -52,23 +52,23 @@ export default function Onboarding() {
 
       <div className="max-w-2xl w-full relative z-10">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-5">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
             alt="CoStride Logo"
-            className="w-20 h-20 rounded-3xl mx-auto mb-5 object-cover shadow-2xl shadow-blue-500/30"
+            className="w-14 h-14 rounded-2xl mx-auto mb-3 object-cover shadow-2xl shadow-blue-500/30"
           />
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
+          <h1 className="text-3xl font-black text-white mb-1 tracking-tight">
             Welcome to CoStride
           </h1>
-          <p className="text-slate-300 text-lg">
+          <p className="text-slate-300 text-base">
             Choose how you want to use the app
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl shadow-black/40">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+        <div className="bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 shadow-2xl shadow-black/40">
+          <div className="grid grid-cols-2 gap-3 mb-5">
             {ACCOUNT_TYPES.map((type) => {
               const Icon = type.icon;
               const isSelected = selectedType === type.id;
@@ -77,17 +77,17 @@ export default function Onboarding() {
                   key={type.id}
                   type="button"
                   onClick={() => setSelectedType(type.id)}
-                  className={`p-8 rounded-2xl cursor-pointer transition-all duration-300 text-left border ${
+                  className={`p-5 rounded-2xl cursor-pointer transition-all duration-300 text-left border ${
                     isSelected
                       ? 'bg-blue-500/20 border-blue-400/60 shadow-lg shadow-blue-500/20 scale-[1.02]'
                       : 'bg-slate-800/60 border-white/8 hover:bg-slate-700/60 hover:border-white/15'
                   }`}
                 >
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-4 shadow-lg`}>
-                    <Icon className="w-7 h-7 text-white" strokeWidth={2.5} />
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-3 shadow-lg`}>
+                    <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
                   </div>
-                  <h3 className="font-bold text-white mb-2 text-lg">{type.title}</h3>
-                  <p className="text-sm text-slate-300">{type.description}</p>
+                  <h3 className="font-bold text-white mb-1 text-base">{type.title}</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">{type.description}</p>
                 </button>
               );
             })}
@@ -96,7 +96,7 @@ export default function Onboarding() {
           <Button
             onClick={() => selectedType && handleSelectType(selectedType)}
             disabled={!selectedType || selectAccountTypeMutation.isPending}
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold h-13 text-base rounded-2xl disabled:opacity-40 shadow-lg transition-all"
+            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold h-12 text-base rounded-2xl disabled:opacity-40 shadow-lg transition-all"
           >
             {selectAccountTypeMutation.isPending ? 'Continue...' : 'Continue →'}
           </Button>
