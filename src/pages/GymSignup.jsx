@@ -337,7 +337,7 @@ export default function GymSignup() {
                           key={idx}
                           type="button"
                           onClick={() => handleSelectPlace(place)}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors border-b border-slate-700 last:border-0 flex items-start gap-3"
+                          className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 flex items-start gap-3"
                         >
                           <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0 mt-1" />
                           <div className="min-w-0">
