@@ -164,7 +164,7 @@ export default function MemberSignup() {
             <Button
               type="submit"
               disabled={createMemberMutation.isPending || !formData.name}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-14 text-base rounded-xl shadow-lg font-semibold disabled:opacity-50"
+              className="flex-1 bg-blue-700 hover:bg-blue-800 text-white h-14 text-base rounded-xl shadow-lg font-semibold disabled:opacity-50"
             >
               {createMemberMutation.isPending ? (
                 'Creating Profile...'

@@ -96,7 +96,7 @@ export default function Onboarding() {
           <Button
             onClick={() => selectedType && handleSelectType(selectedType)}
             disabled={!selectedType || selectAccountTypeMutation.isPending}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold h-13 text-base rounded-2xl disabled:opacity-40 shadow-lg shadow-blue-500/25 transition-all"
+            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold h-13 text-base rounded-2xl disabled:opacity-40 shadow-lg transition-all"
           >
             {selectAccountTypeMutation.isPending ? 'Continue...' : 'Continue →'}
           </Button>

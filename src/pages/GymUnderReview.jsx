@@ -59,7 +59,7 @@ export default function GymUnderReview() {
 
         <Button 
           onClick={() => window.location.href = createPageUrl('GymOwnerDashboard')}
-          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-12"
+          className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-12"
         >
           Go to Dashboard
         </Button>

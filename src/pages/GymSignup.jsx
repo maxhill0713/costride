@@ -402,7 +402,7 @@ export default function GymSignup() {
                   type="button"
                   onClick={() => setStep(2)}
                   disabled={!selectedPlace}
-                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -527,7 +527,7 @@ export default function GymSignup() {
                   <Button
                     type="submit"
                     disabled={createGymMutation.isPending || formData.specializes_in.length === 0}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
+                    className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg transition-all"
                   >
                     {createGymMutation.isPending ? (
                       <>
