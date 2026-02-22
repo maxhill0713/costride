@@ -501,13 +501,6 @@ export default function Home() {
                           <Calendar className="w-3 h-3" />
                           Start Building
                         </button>
-                        <button
-                          onClick={() => navigate(createPageUrl('Activity'))}
-                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-blue-500/20"
-                        >
-                          <TrendingUp className="w-3 h-3" />
-                          Log Workout
-                        </button>
                       </div>
                     </div>
                   </Card>
