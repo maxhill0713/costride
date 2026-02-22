@@ -125,8 +125,8 @@ export default function GymSignup() {
         }));
       }
 
-      if (formData.email && place.website) {
-        setEmailVerificationStatus(verifyEmailDomain(formData.email, place.website));
+      if (currentUser?.email && place.website) {
+        setEmailVerificationStatus(verifyEmailDomain(currentUser.email, place.website));
       }
     } catch (error) {
       console.error('Error checking gym:', error);
@@ -308,37 +308,6 @@ export default function GymSignup() {
                   <p className="text-slate-400 text-sm">Create your gym owner account</p>
                 </div>
 
-                <div>
-                  <Label className="text-white font-semibold">Work Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value });
-                      if (selectedPlace?.website) {
-                        setEmailVerificationStatus(verifyEmailDomain(e.target.value, selectedPlace.website));
-                      }
-                    }}
-                    placeholder="manager@yourgym.com"
-                    required
-                    className="mt-2 rounded-xl border-2 border-slate-600 bg-slate-700/50 text-white h-11"
-                  />
-                  <p className="text-xs text-slate-400 mt-1">Use your gym's domain email for instant verification</p>
-                </div>
-
-                <div>
-                  <Label className="text-white font-semibold">Password</Label>
-                  <Input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                    className="mt-2 rounded-xl border-2 border-slate-600 bg-slate-700/50 text-white h-11"
-                  />
-                </div>
-
                 {/* Gym Search */}
                 <div>
                   <Label className="text-white font-semibold">Find Your Gym</Label>
@@ -428,7 +397,7 @@ export default function GymSignup() {
                 <Button
                   type="button"
                   onClick={() => setStep(2)}
-                  disabled={!formData.email || !formData.password || !selectedPlace || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)}
+                  disabled={!selectedPlace}
                   className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
