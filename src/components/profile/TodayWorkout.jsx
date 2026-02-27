@@ -563,28 +563,6 @@ return (
                {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
              </Button>
 
-             {/* Test Log Workout Button */}
-             <Button
-               onClick={() => {
-                 const prev = currentUser?.current_streak || 0;
-                 setCelebrationData({
-                   previousStreak: prev,
-                   currentStreak: prev + 1,
-                   challenges: [
-                     { id: 'test-1', title: 'January Grind', target_value: 20, current_progress: 8, previous_progress: 7 },
-                     { id: 'test-2', title: 'Bench Press 100kg', target_value: 10, current_progress: 4, previous_progress: 3 },
-                   ]
-                 });
-                 setShowCelebration(true);
-               }}
-               disabled={!workoutStartTime}
-               size="sm"
-               className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-purple-700/80 to-purple-900/80 hover:from-purple-800/80 hover:to-purple-950 shadow-lg shadow-purple-900/30 rounded-lg disabled:opacity-40"
-               title={!workoutStartTime ? 'Check in to the gym first' : 'Test the celebration flow'}
-             >
-               {!workoutStartTime ? '🔒 Test (Check in first)' : '🧪 Test Log Workout'}
-             </Button>
-
            </div>
          )}
 
