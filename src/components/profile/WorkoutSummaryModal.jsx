@@ -57,7 +57,7 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
       <DialogContent hideClose className="bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-950 border border-blue-500/30 max-w-md shadow-2xl shadow-black/40 gap-0 rounded-3xl">
         <div className="flex flex-col items-center gap-3 mb-4">
           <h2 className="text-2xl font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent text-center">
-            View Summary
+            Workout Summary
           </h2>
         </div>
         <div className="text-center space-y-3">
@@ -113,25 +113,6 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
               </motion.div>
             )}
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 mt-5">
-              <Button
-                onClick={onCancel}
-                variant="ghost"
-                className="flex-1 text-slate-400 hover:text-white border border-slate-700/50"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={onConfirm}
-                disabled={isLoading}
-                className="flex-1 font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30"
-              >
-                {isLoading ? 'Logging...' : '✅ Log Workout'}
-              </Button>
-            </div>
-
             </DialogContent>
             </Dialog>
             );
