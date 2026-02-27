@@ -113,6 +113,25 @@ export default function WorkoutSummaryModal({ isOpen, duration, workoutName, exe
               </motion.div>
             )}
             </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-5">
+              <Button
+                onClick={onCancel}
+                variant="ghost"
+                className="flex-1 text-slate-400 hover:text-white border border-slate-700/50"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={onConfirm}
+                disabled={isLoading}
+                className="flex-1 font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30"
+              >
+                {isLoading ? 'Logging...' : '✅ Log Workout'}
+              </Button>
+            </div>
+
             </DialogContent>
             </Dialog>
             );
