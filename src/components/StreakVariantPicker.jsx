@@ -26,7 +26,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
         </div>
 
         <div className="grid grid-cols-4 gap-8">
-          {/* Default Flame */}
+          {/* Default Icon */}
            <button
              onClick={() => onSelect('default')}
              className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
@@ -36,7 +36,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
              }`}
            >
              <div className="relative w-10 h-10 flex items-center justify-center">
-                 <Flame className="w-10 h-10 text-orange-500 fill-current" />
+                 <img src={STREAK_ICON_URL} alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
                </div>
             {selectedVariant === 'default' && (
               <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
