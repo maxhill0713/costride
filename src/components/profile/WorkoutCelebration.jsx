@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
+
+const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 import confetti from 'canvas-confetti';
 
 export default function WorkoutCelebration({ 
