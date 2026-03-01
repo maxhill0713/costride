@@ -45,7 +45,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
             )}
           </button>
 
-          {/* Sunglasses Flame */}
+          {/* Sunglasses Icon */}
           <button
             onClick={() => onSelect('sunglasses')}
             className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
@@ -55,18 +55,14 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
             }`}
           >
             <div className="relative w-10 h-10 flex items-center justify-center">
-              <Flame className="w-10 h-10 text-orange-500 fill-current" />
-              {/* Sunglasses positioned on flame */}
+              <img src={STREAK_ICON_URL} alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
               <svg 
                 className="absolute w-8 h-4 pointer-events-none"
                 viewBox="0 0 64 32"
                 style={{ top: '2px' }}
               >
-                {/* Left lens */}
                 <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
-                {/* Right lens */}
                 <circle cx="48" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
-                {/* Bridge */}
                 <line x1="23" y1="16" x2="41" y2="16" stroke="currentColor" strokeWidth="2" className="text-black" />
               </svg>
             </div>
@@ -77,7 +73,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
             )}
           </button>
 
-          {/* Cowboy Hat Flame */}
+          {/* Cowboy Hat Icon */}
           <button
             onClick={() => onSelect('cowboy')}
             className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
@@ -87,22 +83,14 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
             }`}
           >
             <div className="relative w-10 h-10 flex items-center justify-center">
-              <Flame className="w-10 h-10 text-orange-500 fill-current" />
-              {/* Cowboy hat positioned on top of flame */}
+              <img src={STREAK_ICON_URL} alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
               <svg 
                 className="absolute w-10 h-6 pointer-events-none"
                 viewBox="0 0 64 48"
                 style={{ top: '-8px' }}
               >
-                {/* Hat crown */}
-                <path 
-                  d="M 16 36 L 12 20 Q 12 8 32 4 Q 52 8 52 20 L 48 36" 
-                  fill="currentColor" 
-                  className="text-amber-800"
-                />
-                {/* Hat brim */}
+                <path d="M 16 36 L 12 20 Q 12 8 32 4 Q 52 8 52 20 L 48 36" fill="currentColor" className="text-amber-800" />
                 <ellipse cx="32" cy="36" rx="28" ry="8" fill="currentColor" className="text-amber-700" />
-                {/* Hat band detail */}
                 <rect x="14" y="33" width="36" height="2" fill="currentColor" className="text-amber-900" />
               </svg>
             </div>
