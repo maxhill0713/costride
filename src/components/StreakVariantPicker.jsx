@@ -1,5 +1,7 @@
 import React from 'react';
-import { Flame, Check, Snowflake } from 'lucide-react';
+import { Check, Snowflake } from 'lucide-react';
+
+const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 
 export default function StreakVariantPicker({ isOpen, onClose, onSelect, selectedVariant, streakFreezes = 0 }) {
   const handleBackdropClick = (e) => {
