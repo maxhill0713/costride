@@ -520,7 +520,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2">
-                      <div className="bg-gradient-to-r text-white mx-auto pr-2 pb-1 pl-3 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[65px]">
+                      <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-3 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[65px]">
                         {exercise.weight || '-'}
                         <span className="text-[10px] font-bold">kg</span>
                       </div>
