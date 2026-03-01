@@ -70,7 +70,7 @@ export default function WorkoutCelebration({
                 transition={{ duration: 0.8, repeat: 2 }}
                 className="mb-6"
               >
-                <Flame className="w-24 h-24 text-orange-500 mx-auto" fill="currentColor" />
+                <img src={STREAK_ICON_URL} alt="streak" className="w-24 h-24 mx-auto" style={{ objectFit: 'contain' }} />
               </motion.div>
 
               <h2 className="text-4xl font-bold text-white mb-4">Streak Increased!</h2>
