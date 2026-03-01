@@ -427,7 +427,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
       }
     {isExpanded && todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
-      <div className="space-y-2">
+      <div className="px-2 space-y-2">
         {/* Headers */}
         <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
           <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
@@ -515,14 +515,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </div>
               }
                 </div>
-                <div className="text-xs font-semibold text-slate-300 bg-white/10 px-2 py-1 rounded-lg text-center min-w-[62px]">
+                <div className="bg-white/10 text-slate-300 pt-1 pr-5 pb-1 text-xs font-semibold text-center rounded-lg min-w-[62px]">
                   {exercise.setsReps || '-'}
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2">
-                      <div className="text-sm font-black text-white bg-gradient-to-r from-blue-700/90 to-blue-900/90 px-2.5 py-1 rounded-lg shadow-md shadow-blue-900/20 min-w-[65px] text-center">
+                      <div className="bg-gradient-to-r text-white mx-auto pr-2 pb-1 pl-3 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[65px]">
                         {exercise.weight || '-'}
-                        <span className="text-[10px] font-bold ml-1">kg</span>
+                        <span className="text-[10px] font-bold">kg</span>
                       </div>
                       {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                     </div>
