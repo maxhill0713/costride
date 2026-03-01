@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dumbbell, Trophy, TrendingUp, Flame, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle, Edit2, Info, Star } from 'lucide-react';
+import { Dumbbell, Trophy, TrendingUp, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle, Edit2, Info, Star } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import StreakIcon from '../components/StreakIcon';
 import FriendsIcon from '../components/FriendsIcon';
