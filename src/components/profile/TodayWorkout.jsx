@@ -553,8 +553,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           }
              <Button
             onClick={() => {
-              setShowSummary(true);
               setFrozenDuration(workoutDuration);
+              logWorkoutMutation.mutate();
             }}
             disabled={logWorkoutMutation.isPending}
             size="sm"
