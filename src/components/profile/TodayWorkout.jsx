@@ -726,6 +726,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         challenges={celebrationData.challenges}
         onComplete={() => {
           setShowCelebration(false);
+          setShowSummary(true);
           if (onWorkoutLogged) onWorkoutLogged();
         }} />
 
