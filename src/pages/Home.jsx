@@ -581,27 +581,7 @@ export default function Home() {
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ delay: 0.9, duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}
               >
-                {streakVariant === 'sunglasses' ? (
-                  <div className="relative w-32 h-32">
-                    <Flame className="w-32 h-32 text-orange-500 fill-current drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" />
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                      <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                      <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                      <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                    </svg>
-                  </div>
-                ) : streakVariant === 'cowboy' ? (
-                  <div className="relative w-32 h-32">
-                    <Flame className="w-32 h-32 text-orange-500 fill-current drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" />
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                      <path d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" fill="currentColor" className="text-amber-800" />
-                      <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-                      <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
-                    </svg>
-                  </div>
-                ) : (
-                  <Flame className="w-32 h-32 text-orange-500 fill-current drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" />
-                )}
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-32 h-32 drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" style={{ objectFit: 'contain' }} />
               </motion.div>
 
               {/* Animated streak number - beside the flame */}
