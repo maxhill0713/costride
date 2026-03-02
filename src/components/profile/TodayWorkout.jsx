@@ -492,9 +492,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-xs font-semibold text-center rounded-lg min-w-[60px] mr-auto">
                   {exercise.setsReps || '-'}
                 </div>
-                <div className="flex items-center gap-">
+                <div className="flex items-center gap- ml-4">
                   <div className="flex items-center gap-2">
-                      <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
+                      <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px] ">
                         {exercise.weight || '-'}
                         <span className="text-[10px] font-bold">kg</span>
                       </div>
@@ -503,8 +503,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <Button
                 onClick={() => handleEdit(index, exercise)}
                 size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0 ml-auto -mr-[12%]">
+                variant="ghost" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0 ml-1 -mr-[12%]">
+
 
                     <Edit2 className="w-3.5 h-3.5" />
                   </Button>
