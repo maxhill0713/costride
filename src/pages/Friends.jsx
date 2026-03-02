@@ -516,8 +516,8 @@ export default function Friends() {
             Friend Activity
           </h1>
           <button
-            onClick={() => setShowFriendsModal(true)}
-            className="absolute right-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all text-white shadow-lg shadow-blue-500/10">
+            onClick={() => setShowFriendsModal(true)} className="absolute right-0 inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-xl text-white font-bold border border-transparent shadow-[0_3px_0_0_rgba(0,0,0,0.3),0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n">
+
 
             <span className="text-[11px] font-semibold">{friends.length}</span>
             <span className="text-[11px] font-medium">Friends</span>
