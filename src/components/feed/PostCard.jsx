@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Flame, Star, Flame as FlameIcon, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus } from 'lucide-react';
+
+const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 import { format } from 'date-fns';
 import CommentModal from './CommentModal';
 import ShareModal from './ShareModal';
