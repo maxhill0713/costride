@@ -44,19 +44,19 @@ export default function QuoteCarousel() {
   };
 
   return (
-    <motion.div
-      className="bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-950/80 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-950/50 flex flex-col overflow-hidden select-none relative"
-      style={{
-        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
-      }}
-      animate={{ minHeight: expanded ? '400px' : '224px' }}
-      transition={{ duration: 0.3 }}>
+    <motion.div className="bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-950/80 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-950/50 flex flex-col overflow-hidden select-none relative py-2"
+
+    style={{
+      background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
+    }}
+    animate={{ minHeight: expanded ? '400px' : '224px' }}
+    transition={{ duration: 0.3 }}>
 
       {/* Decorative gradient accent */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
 
       {/* Dots */}
-      <div className="flex justify-center gap-2 pt-5 pb-1 relative z-10">
+      <div className="flex justify-center gap-2 pt-2 pb-1 relative z-10">
         <LayoutGroup>
           {quotes.map((_, i) =>
           <motion.button
@@ -74,7 +74,7 @@ export default function QuoteCarousel() {
       </div>
 
       {/* Swipeable Quote */}
-      <div className="flex-1 relative overflow-hidden px-6 flex items-center justify-center pt-6 z-10">
+      <div className="flex-1 relative overflow-hidden px-6 flex items-center justify-center pt-5 z-10">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -93,7 +93,7 @@ export default function QuoteCarousel() {
             <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight -mt-7">
               "{quotes[current].text}"
             </p>
-            <p className="mt-1 text-slate-300 text-sm font-medium tracking-widest opacity-90">
+            <p className="mt-4 text-slate-300 text-sm font-medium tracking-widest opacity-90">
               — {quotes[current].author}
             </p>
             {expanded &&
