@@ -665,7 +665,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           </div>
       </div> :
 
-      <div className="flex justify-center pt-1">
+      <div className="flex justify-center pt-0">
       <Button
           onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
           variant="ghost"
