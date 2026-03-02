@@ -363,7 +363,7 @@ export default function Home() {
               className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
 
                   <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-11 h-11 -ml-2" style={{ objectFit: 'contain' }} />
-                   <span className="text-white font-semibold text-2xl tracking-tight mt-2 text-left -ml-2\n">{userStreak}</span>
+                   <span className="text-white font-semibold text-2xl tracking-tight mt-3 text-left -ml-2.5">{userStreak}</span>
                 </button>
                 <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   CoStride
