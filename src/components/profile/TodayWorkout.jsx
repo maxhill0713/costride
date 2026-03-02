@@ -489,7 +489,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </div>
               }
                 </div>
-                <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-xs font-semibold text-center rounded-lg min-w-[60px] mr-auto">
+                <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[60px] mr-auto">
                   {exercise.setsReps || '-'}
                 </div>
                 <div className="flex items-center gap- ml-4">
