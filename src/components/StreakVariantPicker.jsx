@@ -13,92 +13,92 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-40 flex items-start justify-center pt-12 px-4"
       onClick={handleBackdropClick}
-      style={{ background: 'rgba(0, 0, 0, 0.3)' }}
-    >
-      <div className="bg-slate-800/50 rounded-3xl p-8 max-w-4xl w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative">
+      style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
+
+      <div className="bg-slate-800/50 rounded-3xl p- max-w-4xl w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative">
         {/* Streak Freezes - top right */}
         <div className="absolute top-4 right-5 flex items-center gap-1.5">
           <Snowflake className="w-4 h-4 text-cyan-400" />
           <span className="text-white font-bold text-sm">{streakFreezes}</span>
         </div>
 
-        <div className="grid grid-cols-4 gap-8">
+        <div className="grid grid-cols-3 gap-0.5">
           {/* Default Icon */}
            <button
-             onClick={() => onSelect('default')}
-             className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
-               selectedVariant === 'default'
-                 ? 'ring-2 ring-green-500'
-                 : 'hover:opacity-80'
-             }`}
-           >
+            onClick={() => onSelect('default')} className="flex flex-col items-center gap-4 p-4 rounded-2xl transition-all hover:opacity-80">
+
+
+
+
+
+
              <div className="relative w-10 h-10 flex items-center justify-center">
-                 <img src={STREAK_ICON_URL} alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
+                 <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
                </div>
-            {selectedVariant === 'default' && (
-              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+            {selectedVariant === 'default' &&
+            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
               </div>
-            )}
+            }
           </button>
 
           {/* Sunglasses Icon */}
           <button
-            onClick={() => onSelect('sunglasses')}
-            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
-              selectedVariant === 'sunglasses'
-                ? 'ring-2 ring-green-500'
-                : 'hover:opacity-80'
-            }`}
-          >
+            onClick={() => onSelect('sunglasses')} className="flex flex-col items-center gap-2 p-1 rounded-2xl transition-all ring-2 ring-green-500">
+
+
+
+
+
+
             <div className="relative w-10 h-10 flex items-center justify-center">
-              <img src={STREAK_ICON_URL} alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
-              <svg 
+              <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
+              <svg
                 className="absolute w-8 h-4 pointer-events-none"
                 viewBox="0 0 64 32"
-                style={{ top: '2px' }}
-              >
+                style={{ top: '2px' }}>
+
                 <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
                 <circle cx="48" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
                 <line x1="23" y1="16" x2="41" y2="16" stroke="currentColor" strokeWidth="2" className="text-black" />
               </svg>
             </div>
-            {selectedVariant === 'sunglasses' && (
-              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+            {selectedVariant === 'sunglasses' &&
+            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
               </div>
-            )}
+            }
           </button>
 
           {/* Cowboy Hat Icon */}
           <button
             onClick={() => onSelect('cowboy')}
             className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${
-              selectedVariant === 'cowboy'
-                ? 'ring-2 ring-green-500'
-                : 'hover:opacity-80'
-            }`}
-          >
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <img src={STREAK_ICON_URL} alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
-              <svg 
-                className="absolute w-10 h-6 pointer-events-none"
-                viewBox="0 0 64 48"
-                style={{ top: '-8px' }}
-              >
-                <path d="M 16 36 L 12 20 Q 12 8 32 4 Q 52 8 52 20 L 48 36" fill="currentColor" className="text-amber-800" />
-                <ellipse cx="32" cy="36" rx="28" ry="8" fill="currentColor" className="text-amber-700" />
-                <rect x="14" y="33" width="36" height="2" fill="currentColor" className="text-amber-900" />
-              </svg>
-            </div>
-            {selectedVariant === 'cowboy' && (
-              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+            selectedVariant === 'cowboy' ?
+            'ring-2 ring-green-500' :
+            'hover:opacity-80'}`
+            }>
+
+            
+
+
+
+
+
+
+
+
+
+
+
+            {selectedVariant === 'cowboy' &&
+            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
               </div>
-            )}
+            }
           </button>
 
           {/* Empty spaces for future icons */}
@@ -109,6 +109,6 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <div className="flex flex-col items-center gap-3 p-4" />
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
