@@ -25,10 +25,10 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <span className="text-white font-bold text-sm">{streakFreezes}</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-0.5">
+        <div className="grid grid-cols-4 py-10\n">
           {/* Default Icon */}
            <button
-            onClick={() => onSelect('default')} className="flex flex-col items-center gap-4 p-4 rounded-2xl transition-all hover:opacity-80">
+            onClick={() => onSelect('default')} className="flex flex-col items-center gap-4 p-4 rounded-2xl transition-all hover:opacity-80 w-full">
 
 
 
@@ -36,7 +36,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
 
              <div className="relative w-10 h-10 flex items-center justify-center">
-                 <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
+                 <img src={STREAK_ICON_URL} alt="streak" className="w-0 h-20" style={{ objectFit: 'contain' }} />
                </div>
             {selectedVariant === 'default' &&
             <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
@@ -47,7 +47,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
           {/* Sunglasses Icon */}
           <button
-            onClick={() => onSelect('sunglasses')} className="flex flex-col items-center gap-2 p-1 rounded-2xl transition-all ring-2 ring-green-500">
+            onClick={() => onSelect('sunglasses')} className="flex flex-col items-center gap-4 p-4 rounded-2xl transition-all ring-2 ring-green-500">
 
 
 
@@ -66,11 +66,11 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
                 <line x1="23" y1="16" x2="41" y2="16" stroke="currentColor" strokeWidth="2" className="text-black" />
               </svg>
             </div>
-            {selectedVariant === 'sunglasses' &&
-            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
-                <Check className="w-4 h-4 text-white" />
-              </div>
-            }
+            
+
+
+
+
           </button>
 
           {/* Cowboy Hat Icon */}
@@ -104,7 +104,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           {/* Empty spaces for future icons */}
            <div className="flex flex-col items-center gap-3 p-4" />
           <div className="flex flex-col items-center gap-3 p-4" />
-          <div className="flex flex-col items-center gap-3 p-4" />
+          <div className="flex flex-col items-center gap-4 p-4" />
           <div className="flex flex-col items-center gap-3 p-4" />
           <div className="flex flex-col items-center gap-3 p-4" />
         </div>
