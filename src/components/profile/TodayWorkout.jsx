@@ -147,25 +147,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const handleEdit = (index, exercise) => {
     setEditingIndex(index);
     setEditReps(exercise.setsReps || '');
-
-    // Parse sets x reps (e.g., "3x10" -> 3 sets)
-    const match = exercise.setsReps?.match(/(\d+)x/);
-    const numSets = match ? parseInt(match[1]) : 1;
-
-    // Create array for each set's weight
-    const sets = Array(numSets).fill(null).map(() => ({
-      weight: exercise.weight || '',
-      reps: exercise.setsReps?.split('x')[1] || ''
-    }));
-    setEditSets(sets);
+    setEditWeight(exercise.weight || '');
+    setEditSets([]);
   };
 
   const handleSave = (index) => {
-    // Use first set's weight, and reconstructed reps count
-    const weight = editSets[0]?.weight || '';
-    const repsCount = editSets.length;
-    const reps = editSets[0]?.reps || '';
-    const setsReps = `${repsCount}x${reps}`;
+    const weight = editWeight;
+    const setsReps = editReps; // user types e.g. "3x10"
 
     const updatedExercises = [...todayWorkout.exercises];
     updatedExercises[index] = {
