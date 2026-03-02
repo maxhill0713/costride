@@ -19,15 +19,15 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
-    const [showShare, setShowShare] = useState(false);
-    const [showMenu, setShowMenu] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
-    const [showReactionsModal, setShowReactionsModal] = useState(false);
-    const [showFullContent, setShowFullContent] = useState(false);
-    const [contentHeight, setContentHeight] = useState(0);
-    const queryClient = useQueryClient();
-    const contentRef = React.useRef(null);
+  const [showShare, setShowShare] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
+  const [showReactionsModal, setShowReactionsModal] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
+  const queryClient = useQueryClient();
+  const contentRef = React.useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -51,7 +51,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     queryKey: ['reactedUsers', reactedUserIds.join(',')],
     queryFn: async () => {
       if (reactedUserIds.length === 0) return [];
-      return Promise.all(reactedUserIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]))).then(r => r.filter(Boolean));
+      return Promise.all(reactedUserIds.map((id) => base44.entities.User.filter({ id }).then((r) => r[0]))).then((r) => r.filter(Boolean));
     },
     enabled: showReactionsModal && reactedUserIds.length > 0,
     staleTime: 10 * 60 * 1000,
@@ -73,7 +73,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const updatePostMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       if (data.is_favourite && !post.is_favourite) {
-        const favouriteCount = userPosts.filter(p => p.is_favourite).length;
+        const favouriteCount = userPosts.filter((p) => p.is_favourite).length;
         if (favouriteCount >= 3) {
           throw new Error('You can only have 3 favourite posts');
         }
@@ -118,7 +118,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     },
     onMutate: async (isReacting) => {
       // Optimistically update all post caches immediately
-      const updatePost = (old = []) => old.map(p => {
+      const updatePost = (old = []) => old.map((p) => {
         if (p.id !== post.id) return p;
         const updatedReactions = { ...p.reactions };
         if (isReacting) {
@@ -130,18 +130,18 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       });
 
       const queries = [
-        ['posts'],
-        ['friendPosts', currentUser?.id],
-        ['userPosts', currentUser?.id],
-      ];
+      ['posts'],
+      ['friendPosts', currentUser?.id],
+      ['userPosts', currentUser?.id]];
+
       if (post.gym_id) queries.push(['posts', post.gym_id]);
 
-      const snapshots = queries.map(key => ({
+      const snapshots = queries.map((key) => ({
         key,
         data: queryClient.getQueryData(key)
       }));
 
-      queries.forEach(key => queryClient.setQueryData(key, updatePost));
+      queries.forEach((key) => queryClient.setQueryData(key, updatePost));
 
       return { snapshots };
     },
@@ -242,17 +242,17 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-blue-500/15 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-2.5 hover:border-blue-400/50 transition-all cursor-pointer h-16 flex items-center gap-2.5 shadow-lg shadow-black/20 mb-2"
-        >
+          className="bg-gradient-to-br from-blue-500/15 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-2.5 hover:border-blue-400/50 transition-all cursor-pointer h-16 flex items-center gap-2.5 shadow-lg shadow-black/20 mb-2">
+
           {/* Avatar */}
           <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
-            {post.member_avatar ? (
-              <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xs font-bold text-white">
+            {post.member_avatar ?
+            <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
+
+            <span className="text-xs font-bold text-white">
                 {post.member_name?.charAt(0)?.toUpperCase()}
               </span>
-            )}
+            }
           </div>
           
           {/* Content */}
@@ -261,8 +261,8 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             <p className="text-[11px] text-blue-300 truncate">{post.content}</p>
           </div>
         </motion.div>
-      </Link>
-    );
+      </Link>);
+
   }
 
   return (
@@ -270,206 +270,206 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden relative shadow-2xl shadow-black/20 ${
-        fullWidth ? 'w-screen ml-[-50vw] left-[50%] mb-0 rounded-none' : 'rounded-xl mb-4'
-      }`}
-    >
+      fullWidth ? 'w-screen ml-[-50vw] left-[50%] mb-0 rounded-none' : 'rounded-xl mb-4'}`
+      }>
+
       {/* Header - Profile Picture and Name */}
       <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="absolute top-3 left-3 z-50 cursor-pointer flex items-center gap-2">
         <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all">
-          {post.member_avatar ? (
-            <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-sm font-bold text-white">
+          {post.member_avatar ?
+          <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
+
+          <span className="text-sm font-bold text-white">
               {post.member_name?.charAt(0)?.toUpperCase()}
             </span>
-          )}
+          }
         </div>
         <span className="text-sm font-semibold text-white">{post.member_name}</span>
       </Link>
 
       {/* Delete Menu */}
-      {isOwner && (
-        <div className="absolute top-3 right-3 z-20">
+      {isOwner &&
+      <div className="absolute top-3 right-3 z-20">
           <div className="relative flex items-center gap-2">
-            {post.is_favourite && (
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-            )}
-            <button 
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-slate-300 hover:text-white"
-            >
+            {post.is_favourite &&
+          <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+          }
+            <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="text-slate-300 hover:text-white">
+
               <MoreHorizontal className="w-6 h-6" />
             </button>
-            {showMenu && (
-              <>
+            {showMenu &&
+          <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                 <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
                   <button
-                    onClick={() => {
-                      setShowFavouriteConfirm(true);
-                      setShowMenu(false);
-                    }}
-                    disabled={updatePostMutation.isPending}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50"
-                  >
+                onClick={() => {
+                  setShowFavouriteConfirm(true);
+                  setShowMenu(false);
+                }}
+                disabled={updatePostMutation.isPending}
+                className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
+
                     <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
                     {post.is_favourite ? 'Unfavourite' : 'Favourite'}
                   </button>
                   <button
-                    onClick={() => {
-                      setShowDeleteConfirm(true);
-                      setShowMenu(false);
-                    }}
-                    disabled={deleteMutation.isPending}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50"
-                  >
+                onClick={() => {
+                  setShowDeleteConfirm(true);
+                  setShowMenu(false);
+                }}
+                disabled={deleteMutation.isPending}
+                className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
+
                     <Trash2 className="w-4 h-4" />
                     Delete
                   </button>
                 </div>
               </>
-            )}
+          }
           </div>
         </div>
-      )}
+      }
 
       {/* Video or Image - Full Size */}
-      {(post.video_url || post.image_url) && (
-        <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%]" onClick={() => showFullContent && setShowFullContent(false)}>
-          {post.video_url ? (
-            <video 
-              src={post.video_url} 
-              className="w-full h-full object-cover"
-              controls
-              playsInline
-              preload="metadata"
-            />
-          ) : (
-            <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />
-          )}
+      {(post.video_url || post.image_url) &&
+      <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%]" onClick={() => showFullContent && setShowFullContent(false)}>
+          {post.video_url ?
+        <video
+          src={post.video_url}
+          className="w-full h-full object-cover"
+          controls
+          playsInline
+          preload="metadata" /> :
+
+
+        <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />
+        }
         </div>
-      )}
+      }
 
       {/* Caption Section */}
       <div className={`absolute left-0 right-0 px-4 z-10 transition-all duration-300 ${
-        showFullContent 
-          ? 'bottom-0 py-4' 
-          : 'bottom-0 py-2.5'
-      }`}>
+      showFullContent ?
+      'bottom-0 py-4' :
+      'bottom-0 py-2.5'}`
+      }>
         <div ref={contentRef} className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
           <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
-            {post.content && post.content.length > 30 && !showFullContent ? (
-              <>
+            {post.content && post.content.length > 30 && !showFullContent ?
+            <>
                 {post.content.substring(0, 30)}...{' '}
                 <button
-                  onClick={() => setShowFullContent(true)}
-                  className="text-blue-400 hover:text-blue-300 font-semibold"
-                >
+                onClick={() => setShowFullContent(true)}
+                className="text-blue-400 hover:text-blue-300 font-semibold">
+
                   more
                 </button>
-              </>
-            ) : (
-              post.content
-            )}
+              </> :
+
+            post.content
+            }
           </p>
-          {post.weight && (
-            <span className="block mt-1 text-blue-400 font-semibold">
+          {post.weight &&
+          <span className="block mt-1 text-blue-400 font-semibold">
               💪 {post.weight} lbs
             </span>
-          )}
+          }
         </div>
 
               {/* Reactions in Bottom Right */}
               {Object.keys(post.reactions || {}).length > 0 && (() => {
-                const reactionEntries = Object.entries(post.reactions || {});
-                const visibleReactions = reactionEntries.slice(0, 3);
-                const overflow = reactionEntries.length - visibleReactions.length;
-                return (
-                  <button
-                    onClick={() => setShowReactionsModal(true)}
-                    className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0"
-                  >
+          const reactionEntries = Object.entries(post.reactions || {});
+          const visibleReactions = reactionEntries.slice(0, 3);
+          const overflow = reactionEntries.length - visibleReactions.length;
+          return (
+            <button
+              onClick={() => setShowReactionsModal(true)}
+              className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
+
                     <div className="flex items-center" style={{ gap: 0 }}>
-                      {visibleReactions.map(([userId, variant], i) => (
-                       <div
-                         key={userId}
-                         className="relative w-6 h-6"
-                         style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}
-                       >
-                         {variant === 'sunglasses' ? (
-                           <div className="relative w-full h-full flex items-center justify-center">
+                      {visibleReactions.map(([userId, variant], i) =>
+                <div
+                  key={userId}
+                  className="relative w-6 h-6"
+                  style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
+
+                         {variant === 'sunglasses' ?
+                  <div className="relative w-full h-full flex items-center justify-center">
                              <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
                              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
                                <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
                                <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
                                <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
                              </svg>
-                           </div>
-                         ) : (
-                           <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                         )}
+                           </div> :
+
+                  <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />
+                  }
                        </div>
-                      ))}
-                      {overflow > 0 && (
-                        <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}>
+                )}
+                      {overflow > 0 &&
+                <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}>
                           <Plus className="w-3 h-3 text-slate-300" />
                           <span className="text-xs font-bold text-slate-300">{overflow}</span>
                         </div>
-                      )}
+                }
                     </div>
-                  </button>
-                );
-              })()}
+                  </button>);
 
-              {isNudgePost && isOwner && (
-                <button
-                  onClick={() => nudgeMutation.mutate()}
-                  disabled={nudgeMutation.isPending}
-                  className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
-                >
+        })()}
+
+              {isNudgePost && isOwner &&
+        <button
+          onClick={() => nudgeMutation.mutate()}
+          disabled={nudgeMutation.isPending}
+          className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+
                   {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
                 </button>
-              )}
+        }
 
               {/* Reaction Button - Streak Icon */}
-              {!isOwnProfile && (
-              <motion.button
-                onClick={() => reactMutation.mutate(!hasReacted)}
-                disabled={reactMutation.isPending}
-                style={showFullContent ? { bottom: `${contentHeight + 16}px` } : { bottom: '2.1rem' }}
-                className="absolute left-4 transition-all flex items-center gap-1"
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                {userStreakVariant === 'sunglasses' ? (
-                  <div className="relative w-12 h-12 flex items-center justify-center">
+              {!isOwnProfile &&
+        <motion.button
+          onClick={() => reactMutation.mutate(!hasReacted)}
+          disabled={reactMutation.isPending}
+          style={showFullContent ? { bottom: `${contentHeight + 16}px` } : { bottom: '2.1rem' }}
+          className="absolute left-4 transition-all flex items-center gap-1"
+          whileHover={{ scale: 1.15 }}
+          whileTap={{ scale: 0.9 }}>
+
+                {userStreakVariant === 'sunglasses' ?
+          <div className="relative w-12 h-12 flex items-center justify-center">
                     <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
                       <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
                       <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
                       <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
                     </svg>
-                  </div>
-                ) : (
-                  <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                )}
+                  </div> :
+
+          <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+          }
               </motion.button>
-              )}
+        }
 
               </div>
 
       {/* Modals */}
-      <CommentModal 
-       open={showComments}
-       onClose={() => setShowComments(false)}
-       post={post}
-       onAddComment={handleAddComment}
-      />
+      <CommentModal
+        open={showComments}
+        onClose={() => setShowComments(false)}
+        post={post}
+        onAddComment={handleAddComment} />
+
       <ShareModal
-       open={showShare}
-       onClose={() => setShowShare(false)}
-       post={post}
-      />
+        open={showShare}
+        onClose={() => setShowShare(false)}
+        post={post} />
+
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
@@ -483,13 +483,13 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
          <div className="flex gap-3 justify-center">
            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
            <AlertDialogAction
-             onClick={() => {
-               deleteMutation.mutate();
-               setShowDeleteConfirm(false);
-             }}
-             disabled={deleteMutation.isPending}
-             className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50"
-           >
+              onClick={() => {
+                deleteMutation.mutate();
+                setShowDeleteConfirm(false);
+              }}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
+
              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
            </AlertDialogAction>
          </div>
@@ -502,21 +502,21 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
          <AlertDialogHeader>
            <AlertDialogTitle className="text-white">{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
            <AlertDialogDescription className="text-slate-300">
-             {post.is_favourite 
-               ? 'This post will no longer appear as your favourite on your profile.'
-               : 'This post will appear as your favourite on your profile for others to see.'}
+             {post.is_favourite ?
+              'This post will no longer appear as your favourite on your profile.' :
+              'This post will appear as your favourite on your profile for others to see.'}
            </AlertDialogDescription>
          </AlertDialogHeader>
          <div className="flex gap-3 justify-center">
            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
            <AlertDialogAction
-             onClick={() => {
-               updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } });
-               setShowFavouriteConfirm(false);
-             }}
-             disabled={updatePostMutation.isPending}
-             className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50"
-           >
+              onClick={() => {
+                updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } });
+                setShowFavouriteConfirm(false);
+              }}
+              disabled={updatePostMutation.isPending}
+              className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
+
              {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
            </AlertDialogAction>
             </div>
@@ -530,33 +530,33 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                <DialogTitle className="text-white">Reactions</DialogTitle>
              </DialogHeader>
              <div className="space-y-2 overflow-y-auto max-h-80">
-               {reactedUsers.map(user => {
-                 const variant = post.reactions[user.id];
-                 return (
-                   <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
+               {reactedUsers.map((user) => {
+              const variant = post.reactions[user.id];
+              return (
+                <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
                      <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                       {variant === 'sunglasses' ? (
-                         <div className="relative w-full h-full flex items-center justify-center">
+                       {variant === 'sunglasses' ?
+                    <div className="relative w-full h-full flex items-center justify-center">
                            <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
                            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
                              <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
                              <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
                              <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
                            </svg>
-                         </div>
-                       ) : (
-                         <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                       )}
+                         </div> :
+
+                    <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                    }
                      </div>
                      <span className="text-sm text-slate-200 font-medium">{user.full_name || user.username || 'Unknown'}</span>
-                   </div>
-                 );
-               })}
+                   </div>);
+
+            })}
              </div>
            </DialogContent>
            </Dialog>
 
 
-           </motion.div>
-           );
-           }
+           </motion.div>);
+
+}
