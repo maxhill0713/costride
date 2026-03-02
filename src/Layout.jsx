@@ -32,13 +32,13 @@ export default function Layout({ children, currentPageName }) {
 
   // Preserve tab navigation history
   useEffect(() => {
-    const currentTab = navItems.find((item) => item.page === currentPageName);
+    const currentTab = navItems.find(item => item.page === currentPageName);
     if (currentTab) {
-      setTabHistory((prev) => ({
+      setTabHistory(prev => ({
         ...prev,
         [currentTab.page]: location.pathname + location.search
       }));
-      setLastTabPage((prev) => ({
+      setLastTabPage(prev => ({
         ...prev,
         [currentTab.page]: currentPageName
       }));
@@ -66,7 +66,7 @@ export default function Layout({ children, currentPageName }) {
     let interval;
     if (isTimerActive && restTimer > 0) {
       interval = setInterval(() => {
-        setRestTimer((t) => t - 1);
+        setRestTimer(t => t - 1);
       }, 1000);
     } else if (restTimer === 0 && isTimerActive) {
       setIsTimerActive(false);
@@ -92,18 +92,18 @@ export default function Layout({ children, currentPageName }) {
   const primaryGymId = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0].gym_id : null);
 
   const navItems = isGymOwner ? [
-  { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
-  { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' }] :
-  [
-  { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
-  { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
-  { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
-  { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' }];
-
+        { name: 'Dashboard', icon: Building2, page: 'GymOwnerDashboard', color: 'text-orange-500' },
+        { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-cyan-500' },
+      ] : [
+        { name: 'Home', icon: Home, page: 'Home', color: 'text-indigo-500' },
+        { name: 'Gyms', icon: Dumbbell, page: 'Gyms', color: 'text-blue-500' },
+        { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
+        { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' },
+      ];
 
   // Get preserved link for tab
   const getTabLink = (item) => {
-    return tabHistory[item.page] || createPageUrl(item.page) + (item.params || '');
+    return tabHistory[item.page] || (createPageUrl(item.page) + (item.params || ''));
   };
 
   // Handle tab click - do nothing if already on that tab
@@ -116,8 +116,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
-      {!hideNavigation &&
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+      {!hideNavigation && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
           <div className="flex justify-around items-start pt-0.5 h-18 px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
@@ -131,27 +131,27 @@ export default function Layout({ children, currentPageName }) {
                 className={`
                   relative flex flex-col items-center justify-center gap-1 px-3 py-3 transition-all duration-300 min-w-0 flex-1 active:scale-95 active:animate-ios-haptic
                   ${isActive ? 'text-white' : 'text-slate-400'} hover:text-slate-100
-                `}>
-
+                `}
+              >
                 <div className="relative">
-                  <item.icon className="text-slate-50 lucide lucide-house w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
-                  {item.badge > 0 &&
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                  {item.badge > 0 && (
+                     <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
                      </div>
-                  }
+                   )}
                 </div>
-                <span className="text-slate-50 font-semibold leading-none">{item.name}</span>
-              </Link>);
-
-          })}
+                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
+              </Link>
+              );
+              })}
               </div>
               </nav>
-      }
+              )}
 
               {/* Side Navigation for Desktop */}
-            {!hideNavigation &&
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
+            {!hideNavigation && (
+            <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8 hover:animate-ios-spring-in">
           <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
             <span className="text-2xl font-black text-white">G</span>
@@ -169,28 +169,28 @@ export default function Layout({ children, currentPageName }) {
                 onClick={(e) => handleTabClick(item, e)}
                 className={`
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
-                  ${isActive ?
-                `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-600 ${item.color.replace('text-', 'to-')}-700 text-white shadow-md scale-110` :
-                'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105 active:animate-ios-haptic'}
-                `}>
-
+                  ${isActive 
+                    ? `bg-gradient-to-br ${item.color.replace('text-', 'from-')}-600 ${item.color.replace('text-', 'to-')}-700 text-white shadow-md scale-110` 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105 active:animate-ios-haptic'}
+                `}
+              >
                 <div className="relative">
                   <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
-                  {item.badge > 0 &&
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                  {item.badge > 0 && (
+                    <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                       {item.badge > 9 ? '9+' : item.badge}
                     </div>
-                  }
+                  )}
                 </div>
-                {isActive &&
-                <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 ${item.color.replace('text-', 'bg-')} rounded-r-full shadow-lg`} />
-                }
-              </Link>);
-
-          })}
+                {isActive && (
+                  <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 ${item.color.replace('text-', 'bg-')} rounded-r-full shadow-lg`} />
+                )}
+              </Link>
+            );
+            })}
             </div>
             </nav>
-      }
+            )}
 
             {/* Main Content */}
             <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
@@ -204,13 +204,13 @@ export default function Layout({ children, currentPageName }) {
             </main>
 
             {/* Persistent Rest Timer */}
-            <PersistentRestTimer
-        isActive={isTimerActive}
-        restTimer={restTimer}
-        initialRestTime={initialRestTime}
-        onTimerStateChange={setIsTimerActive}
-        onTimerValueChange={setRestTimer} />
-
-            </div>);
-
-}
+            <PersistentRestTimer 
+              isActive={isTimerActive}
+              restTimer={restTimer}
+              initialRestTime={initialRestTime}
+              onTimerStateChange={setIsTimerActive}
+              onTimerValueChange={setRestTimer}
+            />
+            </div>
+            );
+            }
