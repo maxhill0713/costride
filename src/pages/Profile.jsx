@@ -701,8 +701,8 @@ export default function Profile() {
 
             <TabsContent value="goals" className="space-y-4">
             <Button
-              onClick={() => setShowAddGoal(true)}
-              className="w-full bg-gradient-to-br from-purple-900/70 to-purple-950/70 backdrop-blur-xl border border-purple-500/30 hover:border-purple-400/50 hover:bg-gradient-to-br hover:from-purple-800/80 hover:to-purple-900/80 text-purple-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all">
+              onClick={() => setShowAddGoal(true)} className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+
 
               <Plus className="w-4 h-4 mr-2" />
               New Goal
