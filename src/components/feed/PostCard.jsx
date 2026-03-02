@@ -441,73 +441,17 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
               >
-                {hasReacted ? (
-                  userStreakVariant === 'sunglasses' ? (
-                    <div className="relative w-12 h-12">
-                      <Flame className="w-12 h-12 text-orange-500 fill-current" />
-                      <svg 
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="0 0 64 64"
-                      >
-                        <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                        <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                        <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                      </svg>
-                    </div>
-                  ) : userStreakVariant === 'cowboy' ? (
-                    <div className="relative w-12 h-12">
-                      <Flame className="w-12 h-12 text-orange-500 fill-current" />
-                      <svg 
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        viewBox="0 0 64 64"
-                      >
-                        <path 
-                          d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
-                          fill="currentColor" 
-                          className="text-amber-800"
-                        />
-                        <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-                        <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
-                      </svg>
-                    </div>
-                  ) : (
-                    <Flame className="w-12 h-12 text-orange-500 fill-current" />
-                  )
-                ) : userStreakVariant === 'sunglasses' ? (
-                  <div className="relative w-12 h-12">
-                    <Flame className="w-12 h-12 text-transparent" stroke="black" strokeWidth="0.75" />
-                    <svg 
-                      className="absolute inset-0 w-full h-full pointer-events-none"
-                      viewBox="0 0 64 64"
-                      fill="none"
-                      stroke="black"
-                      strokeWidth="0.75"
-                    >
-                      <circle cx="20" cy="24" r="6" fill="none" />
-                      <circle cx="44" cy="24" r="6" fill="none" />
-                      <line x1="26" y1="24" x2="38" y2="24" />
-                    </svg>
-                  </div>
-                ) : userStreakVariant === 'cowboy' ? (
-                  <div className="relative w-12 h-12">
-                    <Flame className="w-12 h-12 text-transparent" stroke="black" strokeWidth="0.75" />
-                    <svg 
-                      className="absolute inset-0 w-full h-full pointer-events-none"
-                      viewBox="0 0 64 64"
-                      fill="none"
-                      stroke="black"
-                      strokeWidth="0.75"
-                    >
-                      <path 
-                        d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
-                        fill="none"
-                      />
-                      <ellipse cx="32" cy="28" rx="24" ry="6" fill="none" />
-                      <line x1="14" y1="26" x2="50" y2="26" />
+                {userStreakVariant === 'sunglasses' ? (
+                  <div className="relative w-12 h-12 flex items-center justify-center">
+                    <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
                     </svg>
                   </div>
                 ) : (
-                  <Flame className="w-12 h-12 text-transparent" stroke="black" strokeWidth="0.75" />
+                  <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
                 )}
               </motion.button>
               )}
