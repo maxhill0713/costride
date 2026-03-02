@@ -23,9 +23,9 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <span className="text-white font-bold text-sm">{streakFreezes}</span>
         </div>
 
-        <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-6 text-center">Choose Streak Icon</p>
+        
 
-        <div className="flex justify-center gap-8">
+        <div className="flex justify-center gap-">
           {/* Default Icon */}
           <button
             onClick={() => onSelect('default')}
@@ -34,7 +34,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
             </div>
             {selectedVariant === 'default' &&
-              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
               </div>
             }
@@ -56,13 +56,13 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               </svg>
             </div>
             {selectedVariant === 'sunglasses' &&
-              <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                 <Check className="w-4 h-4 text-white" />
               </div>
             }
           </button>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
