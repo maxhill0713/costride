@@ -437,40 +437,26 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </div>
               }
                  </div>
-                {/* Individual Sets */}
-                <div className="space-y-2">
-                  {editSets.map((set, setIndex) =>
-              <div key={setIndex} className="flex gap-2 items-end">
-                      <div className="flex-1">
-                        <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Reps - Set {setIndex + 1}</label>
-                        <Input
-                    type="text"
-                    placeholder="Reps"
-                    value={set.reps}
-                    onChange={(e) => {
-                      const newSets = [...editSets];
-                      newSets[setIndex].reps = e.target.value;
-                      setEditSets(newSets);
-                    }}
-                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
-
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Weight</label>
-                        <Input
-                    type="text"
-                    placeholder="Weight"
-                    value={set.weight}
-                    onChange={(e) => {
-                      const newSets = [...editSets];
-                      newSets[setIndex].weight = e.target.value;
-                      setEditSets(newSets);
-                    }}
-                    className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
-
-                      </div>
-                    </div>
-              )}
+                {/* Sets x Reps and Weight inputs */}
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Sets x Reps</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. 3x10"
+                      value={editReps}
+                      onChange={(e) => setEditReps(e.target.value)}
+                      className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Weight</label>
+                    <Input
+                      type="text"
+                      placeholder="kg"
+                      value={editWeight}
+                      onChange={(e) => setEditWeight(e.target.value)}
+                      className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
+                  </div>
                 </div>
                 <div className="flex gap-1">
                   <Button
