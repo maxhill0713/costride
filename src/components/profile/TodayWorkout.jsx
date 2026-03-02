@@ -480,7 +480,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
           <>
                 <div className="flex flex-col gap-1 ml-2">
-                  <div className="text-sm font-bold text-white leading-tight">
+                  <div className="text-sm font-bold text-white leading-tight -ml-1">
                     {exercise.exercise || '-'}
                   </div>
                   {lastWorkout?.exercises?.[index] &&
