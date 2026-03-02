@@ -544,8 +544,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         {isExpanded && alreadyLoggedToday &&
         <Button
           onClick={() => setShowSummary(true)}
-          size="sm"
-          className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30 rounded-lg text-white">
+          size="sm" className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-6 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3\n">
+
 
             View Summary
           </Button>
@@ -607,8 +607,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   setInitialRestTime(time);
                 }
                 setIsTimerActive(!isTimerActive);
-              }}
-              className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white transition-all active:scale-95 shadow-md shadow-blue-900/20">
+              }} className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n">
+
 
               {isTimerActive ? 'Stop' : 'Go'}
             </button>
