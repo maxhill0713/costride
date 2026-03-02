@@ -165,7 +165,7 @@ export default function RedeemReward() {
       <div className="max-w-6xl mx-auto px-3 md:px-4 py-4">
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
-            onClick={() => setActiveSection('weekly')} className="px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#b45309,0_8px_20px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
+            onClick={() => setActiveSection('weekly')} className="px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
 
 
 
@@ -176,7 +176,7 @@ export default function RedeemReward() {
             Weekly
           </button>
           <button
-            onClick={() => setActiveSection('community')} className="px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#b45309,0_8px_20px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
+            onClick={() => setActiveSection('community')} className="px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
 
 
 
