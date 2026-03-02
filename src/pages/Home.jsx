@@ -34,7 +34,7 @@ export default function Home() {
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [animatedNum, setAnimatedNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
-  
+
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -62,7 +62,7 @@ export default function Home() {
 
   const { data: memberGymData } = useQuery({
     queryKey: ['gym', primaryGymIdForQuery],
-    queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then(r => r[0] || null),
+    queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then((r) => r[0] || null),
     enabled: !!primaryGymIdForQuery,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -125,7 +125,7 @@ export default function Home() {
     placeholderData: (prev) => prev
   });
 
-  const friendIdList = friends.map(f => f.friend_id);
+  const friendIdList = friends.map((f) => f.friend_id);
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
@@ -150,8 +150,8 @@ export default function Home() {
   });
 
   // Pre-calculate for check-in users query
-  const todayCheckInsForQuery = allCheckIns.filter(c => isToday(new Date(c.check_in_date)));
-  const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map(c => c.user_id))];
+  const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
+  const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
 
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
@@ -159,7 +159,7 @@ export default function Home() {
       if (checkInUserIdsForQuery.length === 0) return [];
       try {
         const users = await Promise.all(
-          checkInUserIdsForQuery.map(id => base44.entities.User.filter({ id }).then(results => results[0]))
+          checkInUserIdsForQuery.map((id) => base44.entities.User.filter({ id }).then((results) => results[0]))
         );
         return users.filter(Boolean);
       } catch (error) {
@@ -187,7 +187,7 @@ export default function Home() {
   // Calculate these values before early return
   const memberGym = memberGymData || null;
 
-  const userCheckIns = allCheckIns.filter(c => c.user_id === currentUser?.id);
+  const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
@@ -202,14 +202,14 @@ export default function Home() {
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-300">Loading...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
-  const friendPosts = allPosts.filter(post => 
-    friendIds.includes(post.member_id) && 
-    !post.is_system_generated &&
-    !post.content?.includes('well done') &&
-    !post.content?.includes('workout finished')
+  const friendPosts = allPosts.filter((post) =>
+  friendIds.includes(post.member_id) &&
+  !post.is_system_generated &&
+  !post.content?.includes('well done') &&
+  !post.content?.includes('workout finished')
   );
 
   // Today's check-ins (all users)
@@ -218,16 +218,16 @@ export default function Home() {
 
   // Get the challenge closest to completing (or random if all equal)
   const selectFeaturedChallenge = () => {
-    const activeChallenges = challenges.filter(c => c.status === 'active');
+    const activeChallenges = challenges.filter((c) => c.status === 'active');
     if (activeChallenges.length === 0) return null;
-    
+
     // Calculate progress for each challenge
-    const withProgress = activeChallenges.map(c => {
-      const participants = lifts.filter(l => c.participants?.includes(l.member_id) || false);
-      const progress = c.target_value ? Math.min((participants.length / c.target_value) * 100, 100) : 0;
+    const withProgress = activeChallenges.map((c) => {
+      const participants = lifts.filter((l) => c.participants?.includes(l.member_id) || false);
+      const progress = c.target_value ? Math.min(participants.length / c.target_value * 100, 100) : 0;
       return { ...c, progress };
     });
-    
+
     // Return the one with highest progress
     return withProgress.sort((a, b) => b.progress - a.progress)[0];
   };
@@ -235,38 +235,38 @@ export default function Home() {
   const featuredChallenge = selectFeaturedChallenge();
 
   // Active challenges
-  const activeChallenges = challenges.filter(c => c.status === 'active').slice(0, 3);
+  const activeChallenges = challenges.filter((c) => c.status === 'active').slice(0, 3);
 
   // Recent lifts today
-  const todayLifts = lifts.filter(l => isToday(new Date(l.created_date))).slice(0, 5);
+  const todayLifts = lifts.filter((l) => isToday(new Date(l.created_date))).slice(0, 5);
 
   // Calculate user streak from check-ins
   const calculateStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
-    
+
     const today = startOfDay(new Date());
     const lastCheckInDate = startOfDay(new Date(checkIns[0].check_in_date));
     const daysSinceLastCheckIn = differenceInDays(today, lastCheckInDate);
-    
+
     // If last check-in was more than 1 day ago, streak is broken (reset to 0)
     if (daysSinceLastCheckIn > 1) {
       return 0;
     }
-    
+
     let streak = 1;
-    
+
     for (let i = 0; i < checkIns.length - 1; i++) {
       const current = startOfDay(new Date(checkIns[i].check_in_date));
       const next = startOfDay(new Date(checkIns[i + 1].check_in_date));
       const daysDiff = differenceInDays(current, next);
-      
+
       if (daysDiff === 1 || daysDiff === 2) {
         streak++;
       } else {
         break;
       }
     }
-    
+
     return streak;
   };
 
@@ -276,14 +276,14 @@ export default function Home() {
   const handleWorkoutLogged = async () => {
     // Stop the workout timer
     setWorkoutStartTime(null);
-    
+
     // Refetch check-ins to update streak in header
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
-    
+
     const newStreak = userStreak + 1;
     setCelebrationStreakNum(userStreak);
     setAnimatedNum(userStreak);
-    
+
     // Fetch challenges to show in celebration
     if (currentUser?.id) {
       const userChallenges = await base44.entities.Challenge.filter({
@@ -292,7 +292,7 @@ export default function Home() {
       });
       setCelebrationChallenges(userChallenges.slice(0, 3)); // Show top 3
     }
-    
+
     setShowStreakCelebration(true);
     // Animate number up after a short delay
     setTimeout(() => setAnimatedNum(newStreak), 900);
@@ -311,23 +311,23 @@ export default function Home() {
 
   // Calculate weekly progress
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
-  const weeklyCheckIns = userCheckIns.filter(c => new Date(c.check_in_date) >= startOfThisWeek);
+  const weeklyCheckIns = userCheckIns.filter((c) => new Date(c.check_in_date) >= startOfThisWeek);
   const weeklyTarget = currentUser?.weekly_goal || 3; // Use user's routine goal or default to 3
-  
+
   // Calculate goal progress
-  const goalsOnTrack = goals.filter(g => {
-    const progress = (g.current_value / g.target_value) * 100;
+  const goalsOnTrack = goals.filter((g) => {
+    const progress = g.current_value / g.target_value * 100;
     const daysUntilDeadline = g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null;
-    
+
     if (!daysUntilDeadline || daysUntilDeadline < 0) return progress >= 80;
-    
+
     const totalDuration = g.deadline ? differenceInDays(new Date(g.deadline), new Date(g.created_date || new Date())) : 30;
     const daysPassed = totalDuration - daysUntilDeadline;
-    const expectedProgress = (daysPassed / totalDuration) * 100;
-    
+    const expectedProgress = daysPassed / totalDuration * 100;
+
     return progress >= expectedProgress * 0.8; // 80% of expected progress
   }).length;
-  
+
   const weeklyComplete = weeklyCheckIns.length >= weeklyTarget;
   const goalsComplete = goals.length === 0 || goalsOnTrack >= goals.length * 0.5;
   const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
@@ -335,18 +335,18 @@ export default function Home() {
 
   const isOnTrack = completedCount === totalCount;
   const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
-  const progressPercentage = goals.length > 0 ? Math.round((goalsOnTrack / goals.length) * 100) : (weeklyCheckIns.length / weeklyTarget) * 100;
+  const progressPercentage = goals.length > 0 ? Math.round(goalsOnTrack / goals.length * 100) : weeklyCheckIns.length / weeklyTarget * 100;
 
   // Dynamic community card text that changes daily
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const messages = [
-      `Join ${todayCheckIns.length} other${todayCheckIns.length === 1 ? '' : 's'} training today`,
-      `${todayCheckIns.length} members crushing it right now`,
-      `See who's at the gym today—${todayCheckIns.length} members active`,
-      `${todayCheckIns.length} gym warriors training today`,
-      `Join ${todayCheckIns.length} member${todayCheckIns.length === 1 ? '' : 's'} on the floor`
-    ];
+    `Join ${todayCheckIns.length} other${todayCheckIns.length === 1 ? '' : 's'} training today`,
+    `${todayCheckIns.length} members crushing it right now`,
+    `See who's at the gym today—${todayCheckIns.length} members active`,
+    `${todayCheckIns.length} gym warriors training today`,
+    `Join ${todayCheckIns.length} member${todayCheckIns.length === 1 ? '' : 's'} on the floor`];
+
     return todayCheckIns.length > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
   };
 
@@ -358,24 +358,24 @@ export default function Home() {
         {/* Header with Streak */}
          <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
            <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
-                 <button 
-                   onClick={() => setShowStreakVariants(true)}
-                   className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2"
-                 >
-                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-8 h-8" style={{ objectFit: 'contain' }} />
+                 <button
+              onClick={() => setShowStreakVariants(true)}
+              className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
+
+                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-10 h-10" style={{ objectFit: 'contain' }} />
                    <span className="text-white font-semibold text-xl tracking-tight">{userStreak}</span>
                 </button>
                 <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   CoStride
                 </h1>
                 <Link to={createPageUrl('Friends')} onClick={() => {
-                   if (currentUser) {
-                     base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-                   }
-                 }} className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
+              if (currentUser) {
+                base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+              }
+            }} className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
                    <div className="relative">
                     <FriendsIcon className="w-7 h-7 text-cyan-400" />
-                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) || (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view) || notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
                   </div>
                 </Link>
               </div>
@@ -383,59 +383,59 @@ export default function Home() {
 
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {/* Check-In Button - Full Width */}
-          {memberGym && (
-            <>
+          {memberGym &&
+          <>
               {/* Motivational Text */}
               <p className="text-center text-xs text-slate-400 font-medium">
-                {weeklyComplete 
-                  ? `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done`
-                  : `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
-                }
+                {weeklyComplete ?
+              `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done` :
+              `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
+              }
               </p>
 
-              {!userCheckIns.some(c => isToday(new Date(c.check_in_date))) && (
-                <CheckInButton 
-                  gym={memberGym}
-                  onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
-                />
-              )}
+              {!userCheckIns.some((c) => isToday(new Date(c.check_in_date))) &&
+            <CheckInButton
+              gym={memberGym}
+              onCheckInSuccess={() => setWorkoutStartTime(Date.now())} />
+
+            }
 
               {/* Friends Avatars */}
                <div className="flex flex-col items-center justify-center gap-2">
                  <div className="flex items-center -space-x-2">
                    {(() => {
-                     const friendCheckInUsers = checkInUsers.filter(u => friendIds.includes(u.id));
-                     const displayedUsers = friendCheckInUsers.slice(0, 5);
-                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
+                  const friendCheckInUsers = checkInUsers.filter((u) => friendIds.includes(u.id));
+                  const displayedUsers = friendCheckInUsers.slice(0, 5);
+                  const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
 
-                     return (
-                       <>
-                         {displayedUsers.map((user) => (
-                           <div key={user.id} className="relative group">
-                             {user.avatar_url ? (
-                               <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
-                             ) : (
-                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
+                  return (
+                    <>
+                         {displayedUsers.map((user) =>
+                      <div key={user.id} className="relative group">
+                             {user.avatar_url ?
+                        <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" /> :
+
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
                                  {user.full_name?.[0] || 'U'}
                                </div>
-                             )}
+                        }
                              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                {user.full_name}
                              </span>
                            </div>
-                         ))}
-                         {remainingCount > 0 && (
-                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-500">
+                      )}
+                         {remainingCount > 0 &&
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-500">
                              +{remainingCount}
                            </div>
-                         )}
-                       </>
-                     );
-                   })()}
+                      }
+                       </>);
+
+                })()}
                  </div>
                  </div>
             </>
-          )}
+          }
 
 
 
@@ -443,18 +443,18 @@ export default function Home() {
 
 
           {/* Gym Section with Workout */}
-          {memberGym && (
-            <div className="space-y-3">
+          {memberGym &&
+          <div className="space-y-3">
               {/* Today's Workout */}
-              {currentUser?.custom_workout_types ? (
-                <TodayWorkout 
-                  currentUser={currentUser}
-                  workoutStartTime={workoutStartTime}
-                  onWorkoutStart={() => setWorkoutStartTime(Date.now())}
-                  onWorkoutLogged={handleWorkoutLogged}
-                />
-              ) : (
-                <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
+              {currentUser?.custom_workout_types ?
+            <TodayWorkout
+              currentUser={currentUser}
+              workoutStartTime={workoutStartTime}
+              onWorkoutStart={() => setWorkoutStartTime(Date.now())}
+              onWorkoutLogged={handleWorkoutLogged} /> :
+
+
+            <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
                     <div className="relative space-y-2">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
@@ -465,36 +465,36 @@ export default function Home() {
 
                       <div className="flex gap-2">
                         <button
-                          onClick={() => setShowSplitModal(true)}
-                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-orange-500/20"
-                        >
+                    onClick={() => setShowSplitModal(true)}
+                    className="flex-1 p-2 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-orange-500/20">
+
                           <Calendar className="w-3 h-3" />
                           Start Building
                         </button>
                         <button
-                          onClick={() => navigate(createPageUrl('Activity'))}
-                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-blue-500/20"
-                        >
+                    onClick={() => navigate(createPageUrl('Activity'))}
+                    className="flex-1 p-2 rounded-lg bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-blue-500/20">
+
                           <TrendingUp className="w-3 h-3" />
                           Log Workout
                         </button>
                       </div>
                     </div>
                   </Card>
-              )}
+            }
             </div>
-          )}
+          }
 
           {/* Community Section */}
-          {memberGym?.id && (
-            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
+          {memberGym?.id &&
+          <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
                 {/* Gym Image Background */}
-                {memberGym?.image_url ? (
-                   <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
-                 ) : (
-                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-60 group-hover:opacity-70 transition-opacity" />
-                 )}
+                {memberGym?.image_url ?
+              <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" /> :
+
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-60 group-hover:opacity-70 transition-opacity" />
+              }
                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
 
                 <div className="relative p-6 h-full flex flex-col justify-between">
@@ -509,19 +509,19 @@ export default function Home() {
                     <div className="flex items-center gap-2">
                       <div className="flex items-center -space-x-2">
                         {(checkInUsers.length > 0 ? checkInUsers : [
-                          { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
-                          { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }
-                        ]).slice(0, 2).map((user) => (
-                          <div key={user.id} className="relative group">
-                            {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
+                      { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
+                      { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }]).
+                      slice(0, 2).map((user) =>
+                      <div key={user.id} className="relative group">
+                            {user.avatar_url ?
+                        <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" /> :
+
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
                                 {user.full_name?.[0] || 'U'}
                               </div>
-                            )}
+                        }
                           </div>
-                        ))}
+                      )}
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
                     </div>
@@ -529,7 +529,7 @@ export default function Home() {
                 </div>
               </Card>
             </Link>
-          )}
+          }
 
 
 
@@ -539,8 +539,8 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
         {/* Join a Gym Prompt — only show for regular members, not gym owners */}
-         {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' && (
-           <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
+         {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' &&
+          <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
              <div className="flex items-center justify-between gap-4">
                <div>
                  <h3 className="font-semibold text-white text-base mb-1 tracking-tight">Ready to Transform?</h3>
@@ -553,7 +553,7 @@ export default function Home() {
                </Link>
              </div>
            </Card>
-         )}
+          }
          </div>
 
 
@@ -561,100 +561,100 @@ export default function Home() {
 
       {/* Streak Celebration Overlay */}
       <AnimatePresence>
-        {showStreakCelebration && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center"
-          >
+        {showStreakCelebration &&
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6 }}
+          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+
             <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 1.1, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-              className="flex items-center gap-4"
-            >
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.1, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            className="flex items-center gap-4">
+
               {/* Big flame */}
               <motion.div
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ delay: 0.9, duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}
-              >
+              animate={{ scale: [1, 1.15, 1] }}
+              transition={{ delay: 0.9, duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}>
+
                 <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-32 h-32 drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]" style={{ objectFit: 'contain' }} />
               </motion.div>
 
               {/* Animated streak number - beside the flame */}
               <motion.div
-                key={animatedNum}
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 250, damping: 20 }}
-                className="text-8xl font-black text-white drop-shadow-[0_0_20px_rgba(249,115,22,0.9)] tabular-nums"
-              >
+              key={animatedNum}
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+              className="text-8xl font-black text-white drop-shadow-[0_0_20px_rgba(249,115,22,0.9)] tabular-nums">
+
                 {animatedNum}
               </motion.div>
 
               {/* Challenge Progress */}
-              {celebrationChallenges.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2, duration: 0.6 }}
-                  className="w-80 space-y-3 mt-8"
-                >
+              {celebrationChallenges.length > 0 &&
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 0.6 }}
+              className="w-80 space-y-3 mt-8">
+
                   <p className="text-sm text-slate-300 font-semibold text-center">Challenge Progress</p>
-                  {celebrationChallenges.map((challenge, idx) => (
-                    <div key={challenge.id} className="space-y-1.5">
+                  {celebrationChallenges.map((challenge, idx) =>
+              <div key={challenge.id} className="space-y-1.5">
                       <p className="text-xs text-slate-400 font-medium truncate">{challenge.title}</p>
                       <motion.div
-                        className="h-2 bg-slate-700/50 rounded-full overflow-hidden"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.5 + idx * 0.2 }}
-                      >
+                  className="h-2 bg-slate-700/50 rounded-full overflow-hidden"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5 + idx * 0.2 }}>
+
                         <motion.div
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
-                          initial={{ width: '0%' }}
-                          animate={{ width: '100%' }}
-                          transition={{ delay: 1.7 + idx * 0.2, duration: 1.2, ease: 'easeOut' }}
-                        />
+                    className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
+                    initial={{ width: '0%' }}
+                    animate={{ width: '100%' }}
+                    transition={{ delay: 1.7 + idx * 0.2, duration: 1.2, ease: 'easeOut' }} />
+
                       </motion.div>
                     </div>
-                  ))}
-                </motion.div>
               )}
+                </motion.div>
+            }
 
             </motion.div>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
 
       {/* Streak Variant Picker */}
-      <StreakVariantPicker 
+      <StreakVariantPicker
         isOpen={showStreakVariants}
         onClose={() => setShowStreakVariants(false)}
         onSelect={handleStreakVariantSelect}
         selectedVariant={streakVariant}
-        streakFreezes={currentUser?.streak_freezes || 0}
-      />
+        streakFreezes={currentUser?.streak_freezes || 0} />
+
 
       {/* Check-in Modal */}
 
 
       {/* Join with Code Modal */}
-      <JoinWithCodeModal 
-        open={showJoinModal} 
-        onClose={() => setShowJoinModal(false)} 
-        currentUser={currentUser}
-      />
+      <JoinWithCodeModal
+        open={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+        currentUser={currentUser} />
+
 
       {/* Create Split Modal */}
       <CreateSplitModal
         isOpen={showSplitModal}
         onClose={() => setShowSplitModal(false)}
-        currentUser={currentUser}
-      />
-    </PullToRefresh>
-  );
+        currentUser={currentUser} />
+
+    </PullToRefresh>);
+
 }
