@@ -426,7 +426,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
         {/* Exercise Rows */}
         {todayWorkout.exercises.map((exercise, index) =>
-        <div key={index} className="bg-white/5 pt-2 pb-5 pl-3 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[5%] -mr-[5%]">
+        <div key={index} className="bg-white/5 pt-2 py-2 pl-3 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[5%] -mr-[5%]">
             {editingIndex === index ?
           <div className="space-y-2.5">
                  <div className="flex items-center justify-between mb-2">
@@ -442,20 +442,20 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="flex-1">
                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Sets x Reps</label>
                     <Input
-                      type="text"
-                      placeholder="e.g. 3x10"
-                      value={editReps}
-                      onChange={(e) => setEditReps(e.target.value)}
-                      className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
+                  type="text"
+                  placeholder="e.g. 3x10"
+                  value={editReps}
+                  onChange={(e) => setEditReps(e.target.value)}
+                  className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Weight</label>
                     <Input
-                      type="text"
-                      placeholder="kg"
-                      value={editWeight}
-                      onChange={(e) => setEditWeight(e.target.value)}
-                      className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
+                  type="text"
+                  placeholder="kg"
+                  value={editWeight}
+                  onChange={(e) => setEditWeight(e.target.value)}
+                  className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
                   </div>
                 </div>
                 <div className="flex gap-1">
