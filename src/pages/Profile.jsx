@@ -547,7 +547,7 @@ export default function Profile() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Tabs Section - Full Width Below Header */}
         <div className="w-full bg-gradient-to-b from-slate-900/60 to-slate-950/40 border-b border-slate-700/50 sticky top-0 z-40 backdrop-blur-md">
-          <TabsList className="h-9 items-center justify-center text-muted-foreground grid grid-cols-4 w-full border-0 p-0 rounded-none gap-0">
+          <TabsList className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm h-9 items-center justify-center text-muted-foreground grid grid-cols-4 w-full border-0 border-b border-slate-700/50 p-0 rounded-none gap-0">
             <TabsTrigger value="stats" className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
               Insights
             </TabsTrigger>
