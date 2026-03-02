@@ -22,7 +22,7 @@ export default function RedeemReward() {
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription', currentUser?.id],
-    queryFn: () => base44.entities.Subscription.filter({ 
+    queryFn: () => base44.entities.Subscription.filter({
       user_id: currentUser.id,
       status: 'active'
     }),
@@ -43,7 +43,7 @@ export default function RedeemReward() {
     placeholderData: (prev) => prev
   });
 
-  const gymIds = gymMemberships.map(m => m.gym_id);
+  const gymIds = gymMemberships.map((m) => m.gym_id);
 
   const getWeekNumber = (date = new Date()) => {
     const firstDay = new Date(date.getFullYear(), 0, 1);
@@ -52,7 +52,7 @@ export default function RedeemReward() {
   };
 
   const weekNumber = getWeekNumber();
-  
+
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 20),
@@ -63,7 +63,7 @@ export default function RedeemReward() {
 
   const weeklyChallenges = allChallenges.slice(0, 3);
 
-  const challenges = allChallenges.filter(challenge => {
+  const challenges = allChallenges.filter((challenge) => {
     const isParticipant = challenge.participants?.includes(currentUser?.id);
     return isParticipant;
   });
@@ -78,9 +78,9 @@ export default function RedeemReward() {
 
   const { data: rewards = [] } = useQuery({
     queryKey: ['gymRewards', gymIds.join(',')],
-    queryFn: () => gymIds.length > 0
-      ? base44.entities.Reward.filter({ gym_id: gymIds[0], active: true })
-      : [],
+    queryFn: () => gymIds.length > 0 ?
+    base44.entities.Reward.filter({ gym_id: gymIds[0], active: true }) :
+    [],
     enabled: gymIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
@@ -112,9 +112,9 @@ export default function RedeemReward() {
       await queryClient.cancelQueries({ queryKey: ['claimedBonuses', currentUser?.id] });
       const previous = queryClient.getQueryData(['claimedBonuses', currentUser?.id]);
       queryClient.setQueryData(['claimedBonuses', currentUser?.id], (old = []) => [
-        ...old,
-        { id: `temp-${rewardData.id}`, user_id: currentUser.id, reward_id: rewardData.id }
-      ]);
+      ...old,
+      { id: `temp-${rewardData.id}`, user_id: currentUser.id, reward_id: rewardData.id }]
+      );
       return { previous };
     },
     onError: (err, vars, context) => {
@@ -127,38 +127,38 @@ export default function RedeemReward() {
     }
   });
 
-  const userChallengeProgress = challenges.map(challenge => {
+  const userChallengeProgress = challenges.map((challenge) => {
     const participants = challenge.participants || [];
     const targetValue = challenge.target_value || 10;
-    const progress = Math.floor((participants.length / targetValue) * 100);
+    const progress = Math.floor(participants.length / targetValue * 100);
     return { ...challenge, progress, participantCount: participants.length, targetValue };
   }).sort((a, b) => b.progress - a.progress);
 
-  const unclaimedRewards = rewards.filter(r => {
+  const unclaimedRewards = rewards.filter((r) => {
     if (!r.active) return false;
-    if (claimedBonuses.find(cb => cb.reward_id === r.id)) return false;
+    if (claimedBonuses.find((cb) => cb.reward_id === r.id)) return false;
     if (r.premium_only && !isPremium) return false;
     return true;
   });
 
-  const completedChallengeRewards = completedChallenges
-    .filter(challenge => {
-      const isWinner = challenge.winner_id === currentUser?.id;
-      const isParticipant = challenge.participants?.includes(currentUser?.id);
-      const notClaimed = !claimedBonuses.find(cb => cb.challenge_id === challenge.id);
-      return (isWinner || isParticipant) && notClaimed;
-    })
-    .map(challenge => ({
-      id: challenge.id,
-      title: challenge.title,
-      description: challenge.description,
-      type: 'challenge',
-      icon: '🏆',
-      reward: challenge.reward,
-      earnedText: `Completed: ${challenge.title}`,
-      isChallenge: true,
-      challengeId: challenge.id
-    }));
+  const completedChallengeRewards = completedChallenges.
+  filter((challenge) => {
+    const isWinner = challenge.winner_id === currentUser?.id;
+    const isParticipant = challenge.participants?.includes(currentUser?.id);
+    const notClaimed = !claimedBonuses.find((cb) => cb.challenge_id === challenge.id);
+    return (isWinner || isParticipant) && notClaimed;
+  }).
+  map((challenge) => ({
+    id: challenge.id,
+    title: challenge.title,
+    description: challenge.description,
+    type: 'challenge',
+    icon: '🏆',
+    reward: challenge.reward,
+    earnedText: `Completed: ${challenge.title}`,
+    isChallenge: true,
+    challengeId: challenge.id
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
@@ -167,70 +167,70 @@ export default function RedeemReward() {
           <button
             onClick={() => setActiveSection('weekly')}
             className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all flex flex-col items-center gap-2 ${
-              activeSection === 'weekly'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
-                : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'
-            }`}
-          >
+            activeSection === 'weekly' ?
+            'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg' :
+            'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'}`
+            }>
+
             <Zap className="w-5 h-5" />
             Weekly
           </button>
           <button
-            onClick={() => setActiveSection('community')}
-            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all flex flex-col items-center gap-2 ${
-              activeSection === 'community'
-                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
-                : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'
-            }`}
-          >
+            onClick={() => setActiveSection('community')} className="className=\"px-5 py-2 rounded-full text-sm font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition-all duration-200 ease-out hover:bg-slate-700 hover:-translate-y-0.5 active:translate-y-0.5 active:scale-95 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 shadow-md active:shadow-sm\"">
+
+
+
+
+
+
             <Trophy className="w-5 h-5" />
             Community
           </button>
           <button
             onClick={() => setActiveSection('rewards')}
             className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all flex flex-col items-center gap-2 ${
-              activeSection === 'rewards'
-                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
-                : 'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'
-            }`}
-          >
+            activeSection === 'rewards' ?
+            'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg' :
+            'bg-slate-900/70 backdrop-blur-xl border border-slate-700/30 text-slate-400 hover:bg-slate-900/80'}`
+            }>
+
             <Gift className="w-5 h-5" />
             Rewards
           </button>
         </div>
 
-        {activeSection === 'weekly' && (
-          <div>
+        {activeSection === 'weekly' &&
+        <div>
             <h2 className="text-xl font-black text-white mb-3">Weekly Challenges</h2>
-            {weeklyChallenges.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {weeklyChallenges.map((challenge) => (
-                  <WeeklyChallengeCard 
-                    key={challenge.id}
-                    challenge={challenge}
-                    currentUser={currentUser}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
+            {weeklyChallenges.length > 0 ?
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {weeklyChallenges.map((challenge) =>
+            <WeeklyChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              currentUser={currentUser} />
+
+            )}
+              </div> :
+
+          <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
                 <p className="text-slate-400">No weekly challenges available</p>
               </Card>
-            )}
+          }
           </div>
-        )}
+        }
 
-        {activeSection === 'community' && (
-          <div>
+        {activeSection === 'community' &&
+        <div>
             <h2 className="text-xl font-black text-white mb-3">Community Challenges</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {userChallengeProgress.length === 0 ? (
-                <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 col-span-2 text-center">
+              {userChallengeProgress.length === 0 ?
+            <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 col-span-2 text-center">
                   <p className="text-slate-400">Join gym challenges to get started</p>
-                </Card>
-              ) : (
-                userChallengeProgress.map((challenge) => (
-                  <Card key={challenge.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                </Card> :
+
+            userChallengeProgress.map((challenge) =>
+            <Card key={challenge.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                     <h4 className="font-bold text-white mb-2">{challenge.title}</h4>
                     <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
 
@@ -240,85 +240,85 @@ export default function RedeemReward() {
                         <p className="text-[10px] font-bold text-amber-400">{Math.round(challenge.progress)}%</p>
                       </div>
                       <div className="relative h-2 bg-slate-800/80 rounded-full overflow-hidden">
-                        <div 
-                          style={{ width: `${challenge.progress}%` }}
-                          className="h-full bg-gradient-to-r from-amber-400 to-amber-600"
-                        />
+                        <div
+                    style={{ width: `${challenge.progress}%` }}
+                    className="h-full bg-gradient-to-r from-amber-400 to-amber-600" />
+
                       </div>
                     </div>
                     <Button disabled className="w-full mt-2 font-bold text-xs h-8 bg-green-600 text-white">
                       ✓ Joined
                     </Button>
                   </Card>
-                ))
-              )}
+            )
+            }
             </div>
           </div>
-        )}
+        }
 
-        {activeSection === 'rewards' && (
-          <div>
+        {activeSection === 'rewards' &&
+        <div>
             <h2 className="text-xl font-black text-white mb-3">Available Rewards</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
+              {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ?
+            <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl col-span-2 text-center">
                   <p className="text-slate-400">No rewards available to claim</p>
-                </Card>
-              ) : (
-                <>
-                  {completedChallengeRewards.map((reward) => (
-                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                </Card> :
+
+            <>
+                  {completedChallengeRewards.map((reward) =>
+              <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                       <h3 className="font-bold text-white mb-1">{reward.title}</h3>
                       <p className="text-xs text-amber-400 mb-2">{reward.earnedText}</p>
                       <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] mb-3">
                         Challenge Reward
                       </Badge>
-                      {reward.reward && (
-                        <div className="mb-3 text-xs text-slate-300">💝 {reward.reward}</div>
-                      )}
+                      {reward.reward &&
+                <div className="mb-3 text-xs text-slate-300">💝 {reward.reward}</div>
+                }
                       <Button
-                        onClick={() => claimMutation.mutate(reward)}
-                        disabled={claimMutation.isPending}
-                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm rounded-lg h-9"
-                      >
+                  onClick={() => claimMutation.mutate(reward)}
+                  disabled={claimMutation.isPending}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm rounded-lg h-9">
+
                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
                       </Button>
                     </Card>
-                  ))}
-                  {unclaimedRewards.map((reward) => (
-                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+              )}
+                  {unclaimedRewards.map((reward) =>
+              <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h3 className="font-bold text-white">{reward.title}</h3>
-                          {reward.premium_only && (
-                            <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] inline-block mt-1">
+                          {reward.premium_only &&
+                    <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] inline-block mt-1">
                               Pro
                             </Badge>
-                          )}
+                    }
                         </div>
                       </div>
                       <p className="text-xs text-cyan-400 mb-2">{reward.description}</p>
                       <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] mb-3">
                         Available
                       </Badge>
-                      {reward.value && (
-                        <div className="mb-3 text-xs text-slate-300">💝 {reward.value}</div>
-                      )}
+                      {reward.value &&
+                <div className="mb-3 text-xs text-slate-300">💝 {reward.value}</div>
+                }
                       <Button
-                        onClick={() => claimMutation.mutate(reward)}
-                        disabled={claimMutation.isPending || (reward.premium_only && !isPremium)}
-                        className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm rounded-lg h-9 disabled:opacity-50"
-                      >
+                  onClick={() => claimMutation.mutate(reward)}
+                  disabled={claimMutation.isPending || reward.premium_only && !isPremium}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold text-sm rounded-lg h-9 disabled:opacity-50">
+
                         {claimMutation.isPending ? 'Claiming...' : reward.premium_only && !isPremium ? 'Pro Only' : 'Claim'}
                       </Button>
                     </Card>
-                  ))}
-                </>
               )}
+                </>
+            }
             </div>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
