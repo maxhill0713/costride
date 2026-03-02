@@ -6,27 +6,27 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const [showTimerOptions, setShowTimerOptions] = useState(false);
 
   const timerPresets = [
-    { label: '10s', value: 10 },
-    { label: '30s', value: 30 },
-    { label: '45s', value: 45 },
-    { label: '60s', value: 60 },
-    { label: '90s', value: 90 },
-    { label: '2m', value: 120 },
-    { label: '3m', value: 180 },
-    { label: '5m', value: 300 },
-    { label: '10m', value: 600 }
-  ];
+  { label: '10s', value: 10 },
+  { label: '30s', value: 30 },
+  { label: '45s', value: 45 },
+  { label: '60s', value: 60 },
+  { label: '90s', value: 90 },
+  { label: '2m', value: 120 },
+  { label: '3m', value: 180 },
+  { label: '5m', value: 300 },
+  { label: '10m', value: 600 }];
+
 
   if (!isActive) return null;
 
   return (
     <div className={`fixed z-40 bg-gradient-to-r from-blue-700/95 to-blue-900/95 backdrop-blur-2xl border border-blue-600/50 ${isActive ? 'p-3.5' : 'p-4'} shadow-2xl shadow-blue-900/20 ${
-          isActive 
-            ? 'inset-0 bottom-auto top-auto h-auto left-0 right-0 mx-0 rounded-none' 
-            : 'bottom-20 left-4 right-4 md:left-24 md:right-4 rounded-2xl'
-        }`}
-    style={isActive ? { 
-      top: 'auto', 
+    isActive ?
+    'inset-0 bottom-auto top-auto h-auto left-0 right-0 mx-0 rounded-none' :
+    'bottom-20 left-4 right-4 md:left-24 md:right-4 rounded-2xl'}`
+    }
+    style={isActive ? {
+      top: 'auto',
       bottom: 'calc(4rem + env(safe-area-inset-bottom))',
       borderRadius: '0'
     } : {}}>
@@ -45,16 +45,16 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {!isActive && (
-            <>
+          {!isActive &&
+          <>
               <button
-                onClick={() => setShowTimerOptions(!showTimerOptions)}
-                className="relative px-3 py-2 rounded-lg bg-white/5 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-blue-500/30"
-              >
+              onClick={() => setShowTimerOptions(!showTimerOptions)}
+              className="relative px-3 py-2 rounded-lg bg-white/5 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-blue-500/30">
+
                 ⚙️
               </button>
             </>
-          )}
+          }
           <Button
             onClick={() => {
               if (!isActive) {
@@ -63,49 +63,49 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 onTimerStateChange(false);
                 onTimerValueChange('');
               }
-            }}
-            className="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white transition-all active:scale-95 shadow-md shadow-blue-900/20"
-          >
+            }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-b from-blue-500/90 via-blue-600/90 to-blue-700/90 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n\n">
+
+
             {isActive ? 'Stop' : 'Go'}
           </Button>
-          {!isActive && (
-            <Button
-              onClick={() => {
-                onTimerValueChange('');
-                onTimerStateChange(false);
-              }}
-              size="icon"
-              variant="ghost"
-              className="w-6 h-6 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-            >
+          {!isActive &&
+          <Button
+            onClick={() => {
+              onTimerValueChange('');
+              onTimerStateChange(false);
+            }}
+            size="icon"
+            variant="ghost"
+            className="w-6 h-6 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
+
               <X className="w-4 h-4" />
             </Button>
-          )}
+          }
         </div>
 
         {/* Timer Options Dropdown */}
-        {showTimerOptions && (
-          <>
+        {showTimerOptions &&
+        <>
             <div className="fixed inset-0 z-30" onClick={() => setShowTimerOptions(false)} />
             <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/20 p-2 z-40">
               <div className="grid grid-cols-3 gap-1.5">
-                {timerPresets.map((preset) => (
-                  <button
-                    key={preset.value}
-                    onClick={() => {
-                      onTimerValueChange(preset.value);
-                      setShowTimerOptions(false);
-                    }}
-                    className="px-3 py-2 rounded-lg bg-white/5 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-blue-500/30"
-                  >
+                {timerPresets.map((preset) =>
+              <button
+                key={preset.value}
+                onClick={() => {
+                  onTimerValueChange(preset.value);
+                  setShowTimerOptions(false);
+                }}
+                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-white/10 hover:border-blue-500/30">
+
                     {preset.label}
                   </button>
-                ))}
+              )}
               </div>
             </div>
           </>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
