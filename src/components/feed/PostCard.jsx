@@ -534,37 +534,18 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                  const variant = post.reactions[user.id];
                  return (
                    <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
-                     <div className="relative w-6 h-6 flex-shrink-0">
+                     <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
                        {variant === 'sunglasses' ? (
                          <div className="relative w-full h-full flex items-center justify-center">
-                           <Flame className="w-6 h-6 text-orange-500 fill-current" />
-                           <svg 
-                             className="absolute inset-0 w-full h-full pointer-events-none"
-                             viewBox="0 0 64 64"
-                           >
-                             <circle cx="20" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                             <circle cx="44" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                             <line x1="26" y1="24" x2="38" y2="24" stroke="currentColor" strokeWidth="1.5" className="text-black" />
-                           </svg>
-                         </div>
-                       ) : variant === 'cowboy' ? (
-                         <div className="relative w-full h-full flex items-center justify-center">
-                           <Flame className="w-6 h-6 text-orange-500 fill-current" />
-                           <svg 
-                             className="absolute inset-0 w-full h-full pointer-events-none"
-                             viewBox="0 0 64 64"
-                           >
-                             <path 
-                               d="M 12 28 L 10 18 Q 10 8 32 5 Q 54 8 54 18 L 52 28" 
-                               fill="currentColor" 
-                               className="text-amber-800"
-                             />
-                             <ellipse cx="32" cy="28" rx="24" ry="6" fill="currentColor" className="text-amber-700" />
-                             <rect x="14" y="26" width="36" height="1.5" fill="currentColor" className="text-amber-900" />
+                           <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                             <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                             <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                             <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
                            </svg>
                          </div>
                        ) : (
-                         <Flame className="w-6 h-6 text-orange-500 fill-current" />
+                         <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
                        )}
                      </div>
                      <span className="text-sm text-slate-200 font-medium">{user.full_name || user.username || 'Unknown'}</span>
