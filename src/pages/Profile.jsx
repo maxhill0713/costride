@@ -619,15 +619,15 @@ export default function Profile() {
                 {/* Create Post Button & Grid Toggle */}
                 <div className="flex gap-2">
                   <Button
-                onClick={() => setShowCreatePost(true)}
-                className="flex-1 bg-gradient-to-br from-purple-900/70 to-purple-950/70 backdrop-blur-xl border border-purple-500/30 hover:border-purple-400/50 hover:bg-gradient-to-br hover:from-purple-800/80 hover:to-purple-900/80 text-purple-100 rounded-xl shadow-xl shadow-blue-950/40 font-semibold transition-all">
+                onClick={() => setShowCreatePost(true)} className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white font-bold rounded-full px-5 py-2 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+
 
                     <Plus className="w-4 h-4 mr-2" />
                     Create Post
                   </Button>
                   <Button
-                onClick={() => setGridView(!gridView)}
-                className="bg-black hover:bg-slate-900 text-white rounded-xl border border-slate-700/50"
+                onClick={() => setGridView(!gridView)} className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu"
+
                 title={gridView ? "List view" : "Grid view"}>
 
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
