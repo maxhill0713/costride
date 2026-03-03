@@ -719,8 +719,8 @@ export default function Profile() {
                     Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.
                   </p>
                   <Button
-                  onClick={() => setShowAddGoal(true)}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold">
+                  onClick={() => setShowAddGoal(true)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-400 text-white rounded-xl font-semibold border-b-[2px] border-x-[1px] border-t-[1px] border-cyan-600 shadow-[0_2px_0_0_#0891b2,0_4px_8px_rgba(6,182,212,0.3)] active:shadow-[0_0px_0_0_#0891b2] active:translate-y-[2px] active:border-b-[1px] transform-gpu">
+
 
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your First Goal
