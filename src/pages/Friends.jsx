@@ -809,14 +809,14 @@ export default function Friends() {
                            </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                            {activity.daysSinceCheckIn === 0 &&
-                        <Badge className="bg-green-500/20 text-green-300 border-green-500/40 text-[10px] mt-1">
-                                Checked in
-                              </Badge>
-                        }
+                            
+
+
+
+
                             {activity.streak >= 7 &&
                         <div className="flex items-center gap-0.5 mt-0.5">
-                                <Flame className="w-2 h-2 text-orange-400" />
+                                
                                 
                               </div>
                         }
