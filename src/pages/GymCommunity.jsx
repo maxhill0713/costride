@@ -78,7 +78,7 @@ export default function GymCommunity() {
 
   const { data: gym, isLoading: gymLoading } = useQuery({
     queryKey: ['gym', gymId],
-    queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]),
+    queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]),
     enabled: !!gymId,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
@@ -176,7 +176,7 @@ export default function GymCommunity() {
   });
 
   // Only gym challenges now
-  const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
+  const gymChallenges = challenges.filter((c) => c.status === 'active' || c.status === 'upcoming');
 
   const { data: allGyms = [] } = useQuery({
     queryKey: ['gyms'],
@@ -188,7 +188,7 @@ export default function GymCommunity() {
 
   const { data: gymMembership } = useQuery({
     queryKey: ['gymMembership', currentUser?.id, gymId],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]),
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then((r) => r[0]),
     enabled: !!currentUser && !!gymId,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
@@ -219,15 +219,15 @@ export default function GymCommunity() {
   });
 
   const rsvpMutation = useMutation({
-    mutationFn: ({ eventId, currentAttendees }) => 
-      base44.entities.Event.update(eventId, {
-        attendees: currentAttendees + 1
-      }),
+    mutationFn: ({ eventId, currentAttendees }) =>
+    base44.entities.Event.update(eventId, {
+      attendees: currentAttendees + 1
+    }),
     onMutate: async ({ eventId, currentAttendees }) => {
       await queryClient.cancelQueries({ queryKey: ['events', gymId] });
       const previous = queryClient.getQueryData(['events', gymId]);
       queryClient.setQueryData(['events', gymId], (old = []) =>
-        old.map(e => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)
+      old.map((e) => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)
       );
       return { previous };
     },
@@ -262,15 +262,15 @@ export default function GymCommunity() {
   });
 
   const claimRewardMutation = useMutation({
-    mutationFn: ({ rewardId, userId, currentClaimed }) => 
-      base44.entities.Reward.update(rewardId, {
-        claimed_by: [...currentClaimed, userId]
-      }),
+    mutationFn: ({ rewardId, userId, currentClaimed }) =>
+    base44.entities.Reward.update(rewardId, {
+      claimed_by: [...currentClaimed, userId]
+    }),
     onMutate: async ({ rewardId, userId, currentClaimed }) => {
       await queryClient.cancelQueries({ queryKey: ['rewards', gymId] });
       const previous = queryClient.getQueryData(['rewards', gymId]);
       queryClient.setQueryData(['rewards', gymId], (old = []) =>
-        old.map(r => r.id === rewardId ? { ...r, claimed_by: [...currentClaimed, userId] } : r)
+      old.map((r) => r.id === rewardId ? { ...r, claimed_by: [...currentClaimed, userId] } : r)
       );
       return { previous };
     },
@@ -315,7 +315,7 @@ export default function GymCommunity() {
     onMutate: async (challengeId) => {
       await queryClient.cancelQueries({ queryKey: ['challenges', gymId] });
       const previous = queryClient.getQueryData(['challenges', gymId]);
-      queryClient.setQueryData(['challenges', gymId], (old = []) => old.filter(c => c.id !== challengeId));
+      queryClient.setQueryData(['challenges', gymId], (old = []) => old.filter((c) => c.id !== challengeId));
       return { previous };
     },
     onError: (err, vars, context) => {
@@ -331,7 +331,7 @@ export default function GymCommunity() {
     onMutate: async (eventId) => {
       await queryClient.cancelQueries({ queryKey: ['events', gymId] });
       const previous = queryClient.getQueryData(['events', gymId]);
-      queryClient.setQueryData(['events', gymId], (old = []) => old.filter(e => e.id !== eventId));
+      queryClient.setQueryData(['events', gymId], (old = []) => old.filter((e) => e.id !== eventId));
       return { previous };
     },
     onError: (err, vars, context) => {
@@ -344,11 +344,11 @@ export default function GymCommunity() {
 
   const votePollMutation = useMutation({
     mutationFn: async ({ pollId, optionId }) => {
-      const poll = polls.find(p => p.id === pollId);
-      const updatedOptions = poll.options.map(opt => 
-        opt.id === optionId 
-          ? { ...opt, votes: opt.votes + 1 }
-          : opt
+      const poll = polls.find((p) => p.id === pollId);
+      const updatedOptions = poll.options.map((opt) =>
+      opt.id === optionId ?
+      { ...opt, votes: opt.votes + 1 } :
+      opt
       );
       const updatedVoters = [...(poll.voters || []), currentUser.id];
       await base44.entities.Poll.update(pollId, { options: updatedOptions, voters: updatedVoters });
@@ -357,11 +357,11 @@ export default function GymCommunity() {
       await queryClient.cancelQueries({ queryKey: ['polls', gymId] });
       const previous = queryClient.getQueryData(['polls', gymId]);
       queryClient.setQueryData(['polls', gymId], (old = []) =>
-        old.map(p => p.id === pollId ? {
-          ...p,
-          voters: [...(p.voters || []), currentUser.id],
-          options: p.options.map(opt => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt)
-        } : p)
+      old.map((p) => p.id === pollId ? {
+        ...p,
+        voters: [...(p.voters || []), currentUser.id],
+        options: p.options.map((opt) => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt)
+      } : p)
       );
       return { previous };
     },
@@ -448,12 +448,12 @@ export default function GymCommunity() {
 
   const claimBonusMutation = useMutation({
     mutationFn: ({ bonusType, offerDetails }) =>
-      base44.entities.ClaimedBonus.create({
-        user_id: currentUser.id,
-        gym_id: gymId,
-        bonus_type: bonusType,
-        offer_details: offerDetails
-      }),
+    base44.entities.ClaimedBonus.create({
+      user_id: currentUser.id,
+      gym_id: gymId,
+      bonus_type: bonusType,
+      offer_details: offerDetails
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] });
       // Create notification
@@ -506,9 +506,9 @@ export default function GymCommunity() {
       await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] });
       const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]);
       queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [
-        ...old,
-        { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }
-      ]);
+      ...old,
+      { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }]
+      );
       return { previous };
     },
     onError: (err, challenge, context) => {
@@ -530,18 +530,18 @@ export default function GymCommunity() {
   });
 
   const hasClaimedBonus = (bonusType) => {
-    return claimedBonuses.some(b => b.bonus_type === bonusType);
+    return claimedBonuses.some((b) => b.bonus_type === bonusType);
   };
 
   const hasjoinedChallenge = (challengeId) => {
-    return challengeParticipants.some(p => p.challenge_id === challengeId);
+    return challengeParticipants.some((p) => p.challenge_id === challengeId);
   };
 
   const meetsRequirement = (requirement) => {
     if (!currentUser) return false;
 
-    const userCheckIns = checkIns.filter(c => c.user_id === currentUser.id);
-    
+    const userCheckIns = checkIns.filter((c) => c.user_id === currentUser.id);
+
     switch (requirement) {
       case 'first_visit':
         return userCheckIns.length >= 1;
@@ -584,12 +584,12 @@ export default function GymCommunity() {
     if (!currentUser) return { current: 0, target: 1, percentage: 0 };
 
     // Only count check-ins after the reward was created
-    const userCheckIns = checkIns.filter(c => 
-      c.user_id === currentUser.id && 
-      new Date(c.check_in_date) >= new Date(rewardCreatedDate)
+    const userCheckIns = checkIns.filter((c) =>
+    c.user_id === currentUser.id &&
+    new Date(c.check_in_date) >= new Date(rewardCreatedDate)
     );
     const currentStreak = calculateCurrentStreak(userCheckIns);
-    
+
     switch (requirement) {
       case 'first_visit':
         return { current: Math.min(userCheckIns.length, 1), target: 1, percentage: Math.min(userCheckIns.length / 1 * 100, 100) };
@@ -631,8 +631,8 @@ export default function GymCommunity() {
   const calculateCurrentStreak = (userCheckIns) => {
     if (userCheckIns.length === 0) return 0;
 
-    const sortedCheckIns = [...userCheckIns].sort((a, b) => 
-      new Date(b.check_in_date) - new Date(a.check_in_date)
+    const sortedCheckIns = [...userCheckIns].sort((a, b) =>
+    new Date(b.check_in_date) - new Date(a.check_in_date)
     );
 
     let streak = 1;
@@ -659,8 +659,8 @@ export default function GymCommunity() {
   const banMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
-      return base44.entities.Gym.update(gymId, { 
-        banned_members: [...currentBanned, userId] 
+      return base44.entities.Gym.update(gymId, {
+        banned_members: [...currentBanned, userId]
       });
     },
     onSuccess: () => {
@@ -671,8 +671,8 @@ export default function GymCommunity() {
   const unbanMemberMutation = useMutation({
     mutationFn: (userId) => {
       const currentBanned = gym?.banned_members || [];
-      return base44.entities.Gym.update(gymId, { 
-        banned_members: currentBanned.filter(id => id !== userId) 
+      return base44.entities.Gym.update(gymId, {
+        banned_members: currentBanned.filter((id) => id !== userId)
       });
     },
     onSuccess: () => {
@@ -682,7 +682,7 @@ export default function GymCommunity() {
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
   const isGhostGym = gym && !gym.admin_id && !gym.owner_email;
-  const currentCoach = currentUser && coaches.find(c => c.user_email === currentUser.email);
+  const currentCoach = currentUser && coaches.find((c) => c.user_email === currentUser.email);
   const isCoach = !!currentCoach;
   const showOwnerControls = isGymOwner && !viewAsMember;
   const canManageEvents = isGymOwner || (currentCoach?.can_manage_events ?? false);
@@ -692,34 +692,34 @@ export default function GymCommunity() {
 
   // System-generated challenges with participant counts
   const systemChallenges = [
-    {
-      id: 'weekend-warrior',
-      title: '🔥 Weekend Warrior',
-      description: 'Check in 3 times this weekend (Sat-Sun)',
-      type: 'weekend',
-      timeframe: 'This Weekend',
-      reward: 'Free protein shake',
-      participants: 23
-    },
-    {
-      id: 'weekly-grind',
-      title: '💪 Weekly Grind',
-      description: 'Complete 5 workouts this week',
-      type: 'weekly',
-      timeframe: 'This Week',
-      reward: '£5 off next month',
-      participants: 47
-    },
-    {
-      id: 'streak-starter',
-      title: '⚡ Streak Starter',
-      description: 'Build a 3-day streak',
-      type: 'streak',
-      timeframe: '3 Days',
-      reward: 'Free gym merchandise',
-      participants: 31
-    }
-  ];
+  {
+    id: 'weekend-warrior',
+    title: '🔥 Weekend Warrior',
+    description: 'Check in 3 times this weekend (Sat-Sun)',
+    type: 'weekend',
+    timeframe: 'This Weekend',
+    reward: 'Free protein shake',
+    participants: 23
+  },
+  {
+    id: 'weekly-grind',
+    title: '💪 Weekly Grind',
+    description: 'Complete 5 workouts this week',
+    type: 'weekly',
+    timeframe: 'This Week',
+    reward: '£5 off next month',
+    participants: 47
+  },
+  {
+    id: 'streak-starter',
+    title: '⚡ Streak Starter',
+    description: 'Build a 3-day streak',
+    type: 'streak',
+    timeframe: '3 Days',
+    reward: 'Free gym merchandise',
+    participants: 31
+  }];
+
 
   // Mock leaderboard data
   const weeklyLeaders = members.slice(0, 3).map((member, idx) => ({
@@ -730,7 +730,7 @@ export default function GymCommunity() {
   }));
 
   // Get upcoming events (next 7 days)
-  const upcomingEvents = events.filter(e => {
+  const upcomingEvents = events.filter((e) => {
     const eventDate = new Date(e.event_date);
     const today = new Date();
     const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -740,7 +740,7 @@ export default function GymCommunity() {
   // Calculate weekly check-ins per user
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
+  const weeklyCheckIns = checkIns.filter((c) => new Date(c.check_in_date) >= weekAgo);
 
   const checkInLeaderboard = Object.values(
     weeklyCheckIns.reduce((acc, checkIn) => {
@@ -758,7 +758,7 @@ export default function GymCommunity() {
     userId: member.id,
     userName: member.name || member.nickname || 'Member',
     count: Math.max(0, 15 - idx * 2)
-  })).filter(m => m.count > 0);
+  })).filter((m) => m.count > 0);
 
   // Calculate streaks (mock data based on check-ins)
   const streakLeaderboard = Object.values(
@@ -779,7 +779,7 @@ export default function GymCommunity() {
       if (liftDate >= weekAgoDate) {
         const userId = lift.member_id;
         const key = `${userId}-${lift.exercise}`;
-        
+
         if (!acc[key]) {
           acc[key] = {
             userId,
@@ -797,15 +797,15 @@ export default function GymCommunity() {
       }
       return acc;
     }, {})
-  ).map(item => ({
+  ).map((item) => ({
     userId: item.userId,
     userName: item.userName,
     exercise: item.exercise,
     increase: item.maxWeight - item.previousMax
-  }))
-  .filter(item => item.increase > 0)
-  .sort((a, b) => b.increase - a.increase)
-  .slice(0, 10);
+  })).
+  filter((item) => item.increase > 0).
+  sort((a, b) => b.increase - a.increase).
+  slice(0, 10);
 
   if (gymLoading && !gym) {
     return <GymCommunitySkeleton />;
@@ -820,8 +820,8 @@ export default function GymCommunity() {
             <Button>Back to Gyms</Button>
           </Link>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -831,58 +831,58 @@ export default function GymCommunity() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
         {/* Header Background with Gym Hero Image */}
         <div className="relative h-48 bg-black overflow-hidden">
-          {gym.image_url ? (
-            <img 
-              src={gym.image_url} 
-              alt={gym.name} 
-              className="w-full h-full object-cover opacity-70"
-              loading="eager"
-              fetchpriority="high"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
-          )}
+          {gym.image_url ?
+          <img
+            src={gym.image_url}
+            alt={gym.name}
+            className="w-full h-full object-cover opacity-70"
+            loading="eager"
+            fetchpriority="high" /> :
+
+
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
+          }
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
 
           {/* Header Controls */}
           <div className="absolute top-4 right-4 flex gap-2 z-10">
-            {isGhostGym && !isGymOwner && (
-              <Button
-                onClick={() => setShowInviteOwnerModal(true)}
-                variant="ghost"
-                size="sm"
-                className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white"
-              >
+            {isGhostGym && !isGymOwner &&
+            <Button
+              onClick={() => setShowInviteOwnerModal(true)}
+              variant="ghost"
+              size="sm"
+              className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white">
+
                 <Crown className="w-4 h-4 mr-1" />
                 Make Official
               </Button>
-            )}
-            {showOwnerControls && (
-              <Button
-                onClick={() => setShowEditHeroImage(true)}
-                variant="ghost"
-                size="sm"
-                className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs"
-              >
+            }
+            {showOwnerControls &&
+            <Button
+              onClick={() => setShowEditHeroImage(true)}
+              variant="ghost"
+              size="sm"
+              className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs">
+
                 <Edit className="w-4 h-4 mr-1" />
                 Edit Hero
               </Button>
-            )}
-            {isGymOwner && (
-              <Button
-                onClick={() => setViewAsMember(!viewAsMember)}
-                variant="ghost"
-                size="sm"
-                className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs"
-              >
+            }
+            {isGymOwner &&
+            <Button
+              onClick={() => setViewAsMember(!viewAsMember)}
+              variant="ghost"
+              size="sm"
+              className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs">
+
                 {viewAsMember ? '👤 Member' : '👑 Owner'}
               </Button>
-            )}
-            {isCoach && !isGymOwner && (
-              <div className="bg-blue-500/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-semibold">
+            }
+            {isCoach && !isGymOwner &&
+            <div className="bg-blue-500/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-semibold">
                 🎓 Coach
               </div>
-            )}
+            }
           </div>
 
           {/* Gym Info Overlay - Top Left */}
@@ -907,8 +907,8 @@ export default function GymCommunity() {
           </div>
 
           {/* Member Count - Bottom Left */}
-          <div className="absolute bottom-3 left-4">
-            <div className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 rounded-full px-3 py-1.5 shadow-2xl shadow-black/30">
+          <div className="absolute bottom-24 left-3">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60\n">
               <div className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                 <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
@@ -922,37 +922,37 @@ export default function GymCommunity() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
         <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl overflow-x-hidden">
             <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible border-0">
-            <TabsTrigger 
-              value="home" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-emerald-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
-            >
+            <TabsTrigger
+                value="home"
+                className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-emerald-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none">
+
               <div className="flex items-center gap-1.5">
                 <Home className="w-4 h-4" />
                 <span className="text-sm font-bold">Home</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger 
-              value="feed" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
-            >
+            <TabsTrigger
+                value="feed"
+                className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-blue-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none">
+
               <div className="flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4" />
                 <span className="text-sm font-bold">Feed</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger 
-              value="challenges" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-yellow-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
-            >
+            <TabsTrigger
+                value="challenges"
+                className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-yellow-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none">
+
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" />
                 <span className="text-sm font-bold">Challenges</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger 
-              value="events" 
-              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none"
-            >
+            <TabsTrigger
+                value="events"
+                className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-purple-400 rounded-none h-full text-slate-400 hover:text-slate-300 transition-colors border-0 shadow-none">
+
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
                 <span className="text-sm font-bold">Events</span>
@@ -968,48 +968,48 @@ export default function GymCommunity() {
         {/* Home Tab */}
         <TabsContent value="home" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden" asChild>
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-            className="space-y-2 md:space-y-3"
-          >
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                className="space-y-2 md:space-y-3">
+
           {/* Ghost Gym Join Prompt */}
-          {isGhostGym && !isMember && !showOwnerControls && (
-            <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-xl border border-purple-400/50 p-4 shadow-lg">
+          {isGhostGym && !isMember && !showOwnerControls &&
+                <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-xl border border-purple-400/50 p-4 shadow-lg">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-white mb-1">Unlock rewards and challenges</p>
                   <p className="text-xs text-slate-300">Join this gym community</p>
                 </div>
                 <Button
-                  onClick={() => joinGhostGymMutation.mutate()}
-                  disabled={joinGhostGymMutation.isPending}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl whitespace-nowrap"
-                >
+                      onClick={() => joinGhostGymMutation.mutate()}
+                      disabled={joinGhostGymMutation.isPending}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl whitespace-nowrap">
+
                   {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
                 </Button>
               </div>
             </Card>
-          )}
+                }
 
           {/* Check-in Section */}
           {!showOwnerControls && isMember && <CheckInButton gym={gym} />}
 
           {/* Polls Section */}
-          {polls.length > 0 && (
-            <div className="space-y-3">
-              {polls.map((poll) => (
-                <PollCard
-                  key={poll.id}
-                  poll={poll}
-                  onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
-                  userVoted={poll.voters?.includes(currentUser?.id)}
-                  isLoading={votePollMutation.isPending}
-                />
-              ))}
+          {polls.length > 0 &&
+                <div className="space-y-3">
+              {polls.map((poll) =>
+                  <PollCard
+                    key={poll.id}
+                    poll={poll}
+                    onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
+                    userVoted={poll.voters?.includes(currentUser?.id)}
+                    isLoading={votePollMutation.isPending} />
+
+                  )}
             </div>
-          )}
+                }
 
           {/* Busy Times Chart */}
           <BusyTimesChart checkIns={checkIns} gymId={gymId} />
@@ -1025,61 +1025,61 @@ export default function GymCommunity() {
 
             <div className="flex gap-1 md:gap-2 mb-2 md:mb-4 overflow-x-auto pb-2">
               <Button
-                variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
-                  onClick={() => setLeaderboardView('checkins')}
-                  size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'
-                  }`}
-                >
+                      variant={leaderboardView === 'checkins' ? 'default' : 'outline'}
+                      onClick={() => setLeaderboardView('checkins')}
+                      size="sm"
+                      className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
+                      leaderboardView === 'checkins' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'}`
+                      }>
+
                   <CheckCircle className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   <span className="hidden sm:inline">Weekly </span>Check-ins
                 </Button>
                 <Button
-                  variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
-                  onClick={() => setLeaderboardView('streaks')}
-                  size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'
-                  }`}
-                >
+                      variant={leaderboardView === 'streaks' ? 'default' : 'outline'}
+                      onClick={() => setLeaderboardView('streaks')}
+                      size="sm"
+                      className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
+                      leaderboardView === 'streaks' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'}`
+                      }>
+
                   <Flame className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   Streaks
                 </Button>
                 <Button
-                  variant={leaderboardView === 'progress' ? 'default' : 'outline'}
-                  onClick={() => setLeaderboardView('progress')}
-                  size="sm"
-                  className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
-                    leaderboardView === 'progress' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'
-                  }`}
-                >
+                      variant={leaderboardView === 'progress' ? 'default' : 'outline'}
+                      onClick={() => setLeaderboardView('progress')}
+                      size="sm"
+                      className={`rounded-2xl whitespace-nowrap text-xs md:text-sm px-2 md:px-3 h-7 md:h-9 font-semibold ${
+                      leaderboardView === 'progress' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0' : 'bg-black border-slate-600 text-slate-300'}`
+                      }>
+
                   <TrendingUp className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
                   Progress
                 </Button>
             </div>
 
             {leaderboardView === 'checkins' && (
-              checkInLeaderboard.length === 0 ? (
-                <div className="p-8 text-center">
+                  checkInLeaderboard.length === 0 ?
+                  <div className="p-8 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto mb-2 text-slate-600" />
                   <p className="text-slate-400 text-sm">No check-ins this week yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 md:space-y-2">
-                  {checkInLeaderboard.slice(0, 3).map((member, idx) => (
+                </div> :
+
+                  <div className="space-y-1.5 md:space-y-2">
+                  {checkInLeaderboard.slice(0, 3).map((member, idx) =>
                     <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all backdrop-blur-xl ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
-                      'bg-slate-700/40 border-slate-600/30'
-                    }`}>
+                    idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
+                    idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
+                    idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
+                    'bg-slate-700/40 border-slate-600/30'}`
+                    }>
                       <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
-                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
-                        'bg-slate-600'
-                      }`}>
+                      idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                      idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                      idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' :
+                      'bg-slate-600'}`
+                      }>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
@@ -1088,32 +1088,32 @@ export default function GymCommunity() {
                       </div>
                       <CheckCircle className="w-4 md:w-5 h-4 md:h-5 text-green-400 flex-shrink-0" />
                     </div>
-                  ))}
-                </div>
-              )
-            )}
+                    )}
+                </div>)
+
+                  }
 
             {leaderboardView === 'streaks' && (
-              streakLeaderboard.length === 0 ? (
-                <div className="p-8 text-center">
+                  streakLeaderboard.length === 0 ?
+                  <div className="p-8 text-center">
                   <Flame className="w-12 h-12 mx-auto mb-2 text-slate-600" />
                   <p className="text-slate-400 text-sm">No streaks yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 md:space-y-2">
-                  {streakLeaderboard.slice(0, 3).map((member, idx) => (
+                </div> :
+
+                  <div className="space-y-1.5 md:space-y-2">
+                  {streakLeaderboard.slice(0, 3).map((member, idx) =>
                     <div key={member.userId} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all backdrop-blur-xl ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
-                      'bg-slate-700/40 border-slate-600/30'
-                    }`}>
+                    idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
+                    idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
+                    idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
+                    'bg-slate-700/40 border-slate-600/30'}`
+                    }>
                       <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
-                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
-                        'bg-slate-600'
-                      }`}>
+                      idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                      idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                      idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' :
+                      'bg-slate-600'}`
+                      }>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
@@ -1122,32 +1122,32 @@ export default function GymCommunity() {
                       </div>
                       <Flame className="w-4 md:w-5 h-4 md:h-5 text-orange-400 flex-shrink-0" />
                     </div>
-                  ))}
-                </div>
-              )
-            )}
+                    )}
+                </div>)
+
+                  }
 
             {leaderboardView === 'progress' && (
-              progressLeaderboard.length === 0 ? (
-                <div className="p-8 text-center">
+                  progressLeaderboard.length === 0 ?
+                  <div className="p-8 text-center">
                   <TrendingUp className="w-12 h-12 mx-auto mb-2 text-slate-600" />
                   <p className="text-slate-400 text-sm">No progress this week yet</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 md:space-y-2">
-                  {progressLeaderboard.slice(0, 3).map((member, idx) => (
+                </div> :
+
+                  <div className="space-y-1.5 md:space-y-2">
+                  {progressLeaderboard.slice(0, 3).map((member, idx) =>
                     <div key={`${member.userId}-${member.exercise}`} className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border-2 transition-all backdrop-blur-xl ${
-                      idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
-                      idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
-                      idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
-                      'bg-slate-700/40 border-slate-600/30'
-                    }`}>
+                    idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-yellow-400/50 shadow-lg shadow-yellow-500/20' :
+                    idx === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50 shadow-lg shadow-gray-400/20' :
+                    idx === 2 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-400/50 shadow-lg shadow-orange-500/20' :
+                    'bg-slate-700/40 border-slate-600/30'}`
+                    }>
                       <div className={`w-6 md:w-8 h-6 md:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg ${
-                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' : 
-                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 
-                        idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' : 
-                        'bg-slate-600'
-                      }`}>
+                      idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                      idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                      idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' :
+                      'bg-slate-600'}`
+                      }>
                         {idx + 1}
                       </div>
                       <div className="flex-1">
@@ -1156,58 +1156,58 @@ export default function GymCommunity() {
                       </div>
                       <TrendingUp className="w-4 md:w-5 h-4 md:h-5 text-cyan-400 flex-shrink-0" />
                     </div>
-                  ))}
-                </div>
-              )
-            )}
+                    )}
+                </div>)
+
+                  }
           </Card>
 
           {/* Upcoming Events */}
-          {upcomingEvents.length > 0 && (
-           <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
+          {upcomingEvents.length > 0 &&
+                <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-5 h-5 text-orange-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">This Week</h3>
               </div>
               <div className="space-y-2">
-                {upcomingEvents.slice(0, 2).map((event) => (
-                  <WeeklyEventCard
-                    key={event.id}
-                    event={event}
-                    onRSVP={!showOwnerControls ? (eventId) => {
-                      const event = events.find(e => e.id === eventId);
-                      rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
-                    } : null}
-                    disabled={showOwnerControls}
-                  />
-                ))}
+                {upcomingEvents.slice(0, 2).map((event) =>
+                    <WeeklyEventCard
+                      key={event.id}
+                      event={event}
+                      onRSVP={!showOwnerControls ? (eventId) => {
+                        const event = events.find((e) => e.id === eventId);
+                        rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                      } : null}
+                      disabled={showOwnerControls} />
+
+                    )}
               </div>
             </Card>
-          )}
+                }
 
           {/* New Challenges */}
-          {gymChallenges.length > 0 && (
-            <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
+          {gymChallenges.length > 0 &&
+                <Card className="bg-slate-900/60 backdrop-blur-3xl border border-white/30 p-3 md:p-4 shadow-2xl shadow-black/30">
               <div className="flex items-center gap-2 mb-3">
                 <Trophy className="w-5 h-5 text-purple-400" />
                 <h3 className="text-sm md:text-base font-bold text-slate-100">New Challenges</h3>
               </div>
               <div className="space-y-2">
-                {gymChallenges.slice(0, 1).map((challenge) => (
-                  <GymChallengeCard
-                    key={challenge.id}
-                    challenge={challenge}
-                    isJoined={hasjoinedChallenge(challenge.id)}
-                    onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                    currentUser={currentUser}
-                    disabled={showOwnerControls}
-                    isOwner={showOwnerControls}
-                    onDelete={null}
-                  />
-                ))}
+                {gymChallenges.slice(0, 1).map((challenge) =>
+                    <GymChallengeCard
+                      key={challenge.id}
+                      challenge={challenge}
+                      isJoined={hasjoinedChallenge(challenge.id)}
+                      onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
+                      currentUser={currentUser}
+                      disabled={showOwnerControls}
+                      isOwner={showOwnerControls}
+                      onDelete={null} />
+
+                    )}
               </div>
             </Card>
-          )}
+                }
 
 
 
@@ -1217,118 +1217,118 @@ export default function GymCommunity() {
         {/* Feed Tab */}
         <TabsContent value="feed" className="space-y-3 mt-0 w-full overflow-hidden" asChild>
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-          className="space-y-3"
-        >
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                className="space-y-3">
+
           {/* Upcoming Events This Week */}
-          {upcomingEvents.length > 0 && (
-            <div className="space-y-3">
+          {upcomingEvents.length > 0 &&
+                <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <h2 className="text-base md:text-lg font-bold text-white">📅 This Week</h2>
               </div>
-              {upcomingEvents.map((event) => (
-                <WeeklyEventCard
-                  key={event.id}
-                  event={event}
-                  onRSVP={!showOwnerControls ? (eventId) => {
-                    const event = events.find(e => e.id === eventId);
-                    rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
-                  } : null}
-                  disabled={showOwnerControls}
-                />
-              ))}
+              {upcomingEvents.map((event) =>
+                  <WeeklyEventCard
+                    key={event.id}
+                    event={event}
+                    onRSVP={!showOwnerControls ? (eventId) => {
+                      const event = events.find((e) => e.id === eventId);
+                      rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                    } : null}
+                    disabled={showOwnerControls} />
+
+                  )}
             </div>
-          )}
+                }
 
           {/* Posts Feed - Scrollable */}
-          {showOwnerControls && (
-            <CreateGymPostButton
-              gym={gym}
-              currentUser={currentUser}
-              onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-            />
-          )}
+          {showOwnerControls &&
+                <CreateGymPostButton
+                  gym={gym}
+                  currentUser={currentUser}
+                  onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+
+                }
           
-          {posts.length === 0 ? (
-            <Card className="p-8 text-center bg-gradient-to-br from-blue-950/40 via-slate-900/40 to-blue-900/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+          {posts.length === 0 ?
+                <Card className="p-8 text-center bg-gradient-to-br from-blue-950/40 via-slate-900/40 to-blue-900/40 backdrop-blur-xl border border-white/10 shadow-2xl">
               <MessageCircle className="w-12 h-12 mx-auto mb-3 text-blue-400/50" />
               <p className="text-white font-semibold mb-1">No community posts yet</p>
               <p className="text-sm text-slate-300">Be the first to share your workout! 💪</p>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {posts.slice(0, 10).map((post) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post}
-                  fullWidth={true}
-                  currentUser={currentUser}
-                  onLike={() => {}}
-                  onComment={() => {}}
-                  onSave={() => {}}
-                  onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
-                />
-              ))}
+            </Card> :
+
+                <div className="space-y-3">
+              {posts.slice(0, 10).map((post) =>
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    fullWidth={true}
+                    currentUser={currentUser}
+                    onLike={() => {}}
+                    onComment={() => {}}
+                    onSave={() => {}}
+                    onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
+
+                  )}
             </div>
-          )}
+                }
           </motion.div>
         </TabsContent>
 
         {/* Challenges Tab */}
         <TabsContent value="challenges" className="space-y-2 md:space-y-4 mt-0 w-full overflow-hidden" asChild>
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-            className="space-y-2 md:space-y-4"
-          >
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                className="space-y-2 md:space-y-4">
+
           {/* Create Challenge Button for Owners */}
-          {showOwnerControls && (
-            <Button
-              onClick={() => setShowCreateChallenge(true)}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl h-auto py-3 flex-col gap-2 shadow-lg"
-            >
+          {showOwnerControls &&
+                <Button
+                  onClick={() => setShowCreateChallenge(true)}
+                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl h-auto py-3 flex-col gap-2 shadow-lg">
+
               <Plus className="w-5 h-5" />
               <span className="font-bold">Create Gym Challenge</span>
             </Button>
-          )}
+                }
 
 
 
           {/* Gym Challenges - Gym-specific challenges */}
-          {gymChallenges.length > 0 && (
-            <div className="space-y-3">
-              {gymChallenges.map((challenge) => (
-                <GymChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  isJoined={hasjoinedChallenge(challenge.id)}
-                  onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                  currentUser={currentUser}
-                  disabled={showOwnerControls}
-                  isOwner={showOwnerControls}
-                  onDelete={showOwnerControls ? (challengeId) => {
-                    if (window.confirm('Delete this challenge?')) {
-                      deleteChallengeMutation.mutate(challengeId);
-                    }
-                  } : null}
-                />
-              ))}
+          {gymChallenges.length > 0 &&
+                <div className="space-y-3">
+              {gymChallenges.map((challenge) =>
+                  <GymChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    isJoined={hasjoinedChallenge(challenge.id)}
+                    onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
+                    currentUser={currentUser}
+                    disabled={showOwnerControls}
+                    isOwner={showOwnerControls}
+                    onDelete={showOwnerControls ? (challengeId) => {
+                      if (window.confirm('Delete this challenge?')) {
+                        deleteChallengeMutation.mutate(challengeId);
+                      }
+                    } : null} />
+
+                  )}
               </div>
-              )}
+                }
 
               {/* Empty State */}
-              {gymChallenges.length === 0 && (
+              {gymChallenges.length === 0 &&
                 <Card className="bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 p-8 text-center">
                   <Trophy className="w-16 h-16 mx-auto mb-3 text-slate-600" />
                   <p className="text-slate-300 font-semibold mb-2">No Active Challenges</p>
                   <p className="text-sm text-slate-400">Check back soon for new challenges!</p>
                 </Card>
-              )}
+                }
 
           </motion.div>
         </TabsContent>
@@ -1336,38 +1336,38 @@ export default function GymCommunity() {
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-2 md:space-y-3 mt-0 w-full overflow-hidden" asChild>
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-            className="space-y-2 md:space-y-3"
-          >
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                className="space-y-2 md:space-y-3">
+
           {/* Classes Section */}
           <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Classes</h3>
-              {showOwnerControls && (
-                <Button
-                  onClick={() => setShowManageClasses(true)}
-                  size="sm"
-                  variant="outline"
-                  className="rounded-2xl"
-                >
+              {showOwnerControls &&
+                    <Button
+                      onClick={() => setShowManageClasses(true)}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-2xl">
+
                   <Edit className="w-3 h-3 mr-1" />
                   Manage
                 </Button>
-              )}
+                    }
             </div>
             
-            {classes.length === 0 ? (
-              <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+            {classes.length === 0 ?
+                  <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
                 <Calendar className="w-8 h-8 mx-auto mb-1 text-slate-500" />
                 <p className="text-slate-400 text-xs">No classes scheduled</p>
-              </div>
-            ) : (
-              <div className="space-y-2 md:space-y-3">
-                {classes.map((gymClass) => (
-                  <div key={gymClass.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all flex items-start justify-between gap-3">
+              </div> :
+
+                  <div className="space-y-2 md:space-y-3">
+                {classes.map((gymClass) =>
+                    <div key={gymClass.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                         <Target className="w-5 md:w-6 h-5 md:h-6 text-white" />
@@ -1379,25 +1379,25 @@ export default function GymCommunity() {
                           <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
                             {gymClass.instructor}
                           </Badge>
-                          {gymClass.duration_minutes && (
+                          {gymClass.duration_minutes &&
                             <Badge variant="outline" className="text-xs bg-slate-600/50 text-slate-200 border-slate-500">
                               {gymClass.duration_minutes} min
                             </Badge>
-                          )}
+                            }
                         </div>
-                        {gymClass.schedule && gymClass.schedule.length > 0 && (
+                        {gymClass.schedule && gymClass.schedule.length > 0 &&
                           <div className="space-y-1">
-                            {gymClass.schedule.map((slot, idx) => (
-                              <div key={idx} className="text-xs text-slate-300 flex items-center gap-1">
+                            {gymClass.schedule.map((slot, idx) =>
+                            <div key={idx} className="text-xs text-slate-300 flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 <span className="font-medium">{slot.day}</span> • <span>{slot.time}</span>
                               </div>
-                            ))}
+                            )}
                           </div>
-                        )}
+                          }
                       </div>
                     </div>
-                    {showOwnerControls && (
+                    {showOwnerControls &&
                       <Button
                         onClick={() => {
                           if (window.confirm('Delete this class?')) {
@@ -1406,58 +1406,58 @@ export default function GymCommunity() {
                         }}
                         variant="outline"
                         size="icon"
-                        className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500 flex-shrink-0 min-h-[44px] min-w-[44px]"
-                      >
+                        className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500 flex-shrink-0 min-h-[44px] min-w-[44px]">
+
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
-                    )}
+                      }
                   </div>
-                ))}
+                    )}
               </div>
-            )}
+                  }
           </Card>
 
           {/* Events Section */}
           <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Upcoming Events</h3>
-              {showOwnerControls && (
-                <Button
-                  onClick={() => setShowCreateEvent(true)}
-                  size="sm"
-                  className="bg-blue-500 text-white rounded-2xl"
-                >
+              {showOwnerControls &&
+                    <Button
+                      onClick={() => setShowCreateEvent(true)}
+                      size="sm"
+                      className="bg-blue-500 text-white rounded-2xl">
+
                   <Plus className="w-4 h-4 mr-1" />
                   Create
                 </Button>
-              )}
+                    }
             </div>
             
-            {events.filter(e => new Date(e.event_date) >= new Date()).length === 0 ? (
-              <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+            {events.filter((e) => new Date(e.event_date) >= new Date()).length === 0 ?
+                  <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
                 <Calendar className="w-8 h-8 mx-auto mb-1 text-slate-500" />
                 <p className="text-slate-400 text-xs">No upcoming events</p>
+              </div> :
+
+                  <div className="space-y-2 md:space-y-3">
+                {events.filter((e) => new Date(e.event_date) >= new Date()).slice(0, 5).map((event) =>
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onRSVP={(eventId) => {
+                        const event = events.find((e) => e.id === eventId);
+                        rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
+                      }}
+                      isOwner={showOwnerControls}
+                      onDelete={showOwnerControls ? (eventId) => {
+                        if (window.confirm('Delete this event?')) {
+                          deleteEventMutation.mutate(eventId);
+                        }
+                      } : null} />
+
+                    )}
               </div>
-            ) : (
-              <div className="space-y-2 md:space-y-3">
-                {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5).map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onRSVP={(eventId) => {
-                      const event = events.find(e => e.id === eventId);
-                      rsvpMutation.mutate({ eventId, currentAttendees: event.attendees || 0 });
-                    }}
-                    isOwner={showOwnerControls}
-                    onDelete={showOwnerControls ? (eventId) => {
-                      if (window.confirm('Delete this event?')) {
-                        deleteEventMutation.mutate(eventId);
-                      }
-                    } : null}
-                  />
-                ))}
-              </div>
-            )}
+                  }
           </Card>
 
 
@@ -1466,61 +1466,61 @@ export default function GymCommunity() {
           <Card className="bg-gradient-to-br from-slate-900/65 via-slate-900/55 to-slate-950/65 backdrop-blur-3xl border border-white/30 p-2 md:p-5 shadow-2xl shadow-black/30">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-base md:text-lg font-bold text-slate-100">Coaches</h3>
-              {showOwnerControls && (
-                <Button
-                  onClick={() => setShowManageCoaches(true)}
-                  size="sm"
-                  variant="outline"
-                  className="rounded-2xl"
-                >
+              {showOwnerControls &&
+                    <Button
+                      onClick={() => setShowManageCoaches(true)}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-2xl">
+
                   <Edit className="w-3 h-3 mr-1" />
                   Manage
                 </Button>
-              )}
+                    }
             </div>
             
-            {coaches.length === 0 ? (
-              <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
+            {coaches.length === 0 ?
+                  <div className="p-4 text-center border-2 border-dashed border-slate-600/50 rounded-2xl">
                 <GraduationCap className="w-8 h-8 mx-auto mb-1 text-slate-500" />
                 <p className="text-slate-400 text-xs">No coaches listed</p>
-              </div>
-            ) : (
-              <div className="space-y-2 md:space-y-3">
-                {coaches.slice(0, 5).map((coach) => {
-                  const handleCopyEmail = () => {
-                    navigator.clipboard.writeText(coach.user_email);
-                    setCopiedCoachId(coach.id);
-                    setTimeout(() => setCopiedCoachId(null), 2000);
-                  };
+              </div> :
 
-                  return (
-                    <div key={coach.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
+                  <div className="space-y-2 md:space-y-3">
+                {coaches.slice(0, 5).map((coach) => {
+                      const handleCopyEmail = () => {
+                        navigator.clipboard.writeText(coach.user_email);
+                        setCopiedCoachId(coach.id);
+                        setTimeout(() => setCopiedCoachId(null), 2000);
+                      };
+
+                      return (
+                        <div key={coach.id} className="bg-slate-700/50 border border-slate-600/40 p-2 md:p-4 rounded-2xl hover:bg-slate-700/70 transition-all">
                       <div className="flex items-start gap-2 md:gap-3">
                         <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          {coach.avatar_url ? (
-                            <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-lg font-bold text-white">{coach.name.charAt(0)}</span>
-                          )}
+                          {coach.avatar_url ?
+                              <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" /> :
+
+                              <span className="text-lg font-bold text-white">{coach.name.charAt(0)}</span>
+                              }
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
                             <h4 className="font-semibold text-white text-sm md:text-base line-clamp-1">{coach.name}</h4>
-                            {coach.rating && (
-                              <div className="flex items-center gap-0.5">
+                            {coach.rating &&
+                                <div className="flex items-center gap-0.5">
                                 <Star className="w-2.5 md:w-3 h-2.5 md:h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
                                 <span className="text-[10px] md:text-xs font-bold text-slate-200">{coach.rating}</span>
                               </div>
-                            )}
+                                }
                           </div>
                           {coach.bio && <p className="text-xs text-slate-300 mb-1 md:mb-2 line-clamp-1">{coach.bio}</p>}
-                          {coach.specialties && coach.specialties.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {coach.specialties.map((specialty, idx) => (
+                          {coach.specialties && coach.specialties.length > 0 &&
+                              <div className="flex flex-wrap gap-1">
+                              {coach.specialties.map((specialty, idx) =>
                                 <Badge key={idx} className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">{specialty}</Badge>
-                              ))}
+                                )}
                             </div>
-                          )}
+                              }
                         </div>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -1534,21 +1534,21 @@ export default function GymCommunity() {
                                 {coach.user_email}
                               </a>
                               <button
-                                onClick={handleCopyEmail}
-                                className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-700 rounded transition-colors flex-shrink-0"
-                                title="Copy email"
-                              >
+                                    onClick={handleCopyEmail}
+                                    className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-700 rounded transition-colors flex-shrink-0"
+                                    title="Copy email">
+
                                 <Copy className={`w-4 h-4 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} />
                               </button>
                             </div>
                           </PopoverContent>
                         </Popover>
                       </div>
-                    </div>
-                  );
-                })}
+                    </div>);
+
+                    })}
               </div>
-            )}
+                  }
           </Card>
           </motion.div>
         </TabsContent>
@@ -1562,16 +1562,16 @@ export default function GymCommunity() {
           onClose={() => setShowCreateEvent(false)}
           onSave={(data) => createEventMutation.mutate(data)}
           gym={gym}
-          isLoading={createEventMutation.isPending}
-        />
+          isLoading={createEventMutation.isPending} />
+
 
         <ManageEquipmentModal
           open={showManageEquipment}
           onClose={() => setShowManageEquipment(false)}
           equipment={gym?.equipment || []}
           onSave={(equipment) => updateEquipmentMutation.mutate(equipment)}
-          isLoading={updateEquipmentMutation.isPending}
-        />
+          isLoading={updateEquipmentMutation.isPending} />
+
 
         <ManageRewardsModal
           open={showManageRewards}
@@ -1580,8 +1580,8 @@ export default function GymCommunity() {
           onCreateReward={(data) => createRewardMutation.mutate(data)}
           onDeleteReward={(id) => deleteRewardMutation.mutate(id)}
           gym={gym}
-          isLoading={createRewardMutation.isPending}
-        />
+          isLoading={createRewardMutation.isPending} />
+
 
         <ManageClassesModal
           open={showManageClasses}
@@ -1590,8 +1590,8 @@ export default function GymCommunity() {
           onCreateClass={(data) => createClassMutation.mutate(data)}
           onDeleteClass={(id) => deleteClassMutation.mutate(id)}
           gym={gym}
-          isLoading={createClassMutation.isPending}
-        />
+          isLoading={createClassMutation.isPending} />
+
 
         <ManageCoachesModal
           open={showManageCoaches}
@@ -1601,67 +1601,67 @@ export default function GymCommunity() {
           onDeleteCoach={(id) => deleteCoachMutation.mutate(id)}
           onUpdateCoach={(coachId, data) => updateCoachMutation.mutate({ coachId, data })}
           gym={gym}
-          isLoading={createCoachMutation.isPending}
-        />
+          isLoading={createCoachMutation.isPending} />
+
 
         <ManageGymPhotosModal
           open={showManagePhotos}
           onClose={() => setShowManagePhotos(false)}
           gallery={gym?.gallery || []}
           onSave={(gallery) => updateGalleryMutation.mutate(gallery)}
-          isLoading={updateGalleryMutation.isPending}
-        />
+          isLoading={updateGalleryMutation.isPending} />
+
 
         <EditHeroImageModal
           open={showEditHeroImage}
           onClose={() => setShowEditHeroImage(false)}
           currentImageUrl={gym?.image_url}
           onSave={(image_url) => updateHeroImageMutation.mutate(image_url)}
-          isLoading={updateHeroImageMutation.isPending}
-        />
+          isLoading={updateHeroImageMutation.isPending} />
+
 
         <EditGymLogoModal
           open={showEditGymLogo}
           onClose={() => setShowEditGymLogo(false)}
           currentLogoUrl={gym?.logo_url}
           onSave={(logo_url) => updateGymLogoMutation.mutate(logo_url)}
-          isLoading={updateGymLogoMutation.isPending}
-        />
+          isLoading={updateGymLogoMutation.isPending} />
+
 
         <ManageMembersModal
           open={showManageMembers}
           onClose={() => setShowManageMembers(false)}
           gym={gym}
           onBanMember={(userId) => banMemberMutation.mutate(userId)}
-          onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)}
-        />
+          onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)} />
+
 
         <UpgradeMembershipModal
           open={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
-          currentUser={currentUser}
-        />
+          currentUser={currentUser} />
+
 
 
 
         <CreateChallengeModal
-                  open={showCreateChallenge}
-                  onClose={() => setShowCreateChallenge(false)}
-                  gyms={allGyms}
-                  onSave={(data) => {
-                    console.log('Challenge modal onSave called with:', data);
-                    createChallengeMutation.mutate(data);
-                  }}
-                  isLoading={createChallengeMutation.isPending}
-                />
+          open={showCreateChallenge}
+          onClose={() => setShowCreateChallenge(false)}
+          gyms={allGyms}
+          onSave={(data) => {
+            console.log('Challenge modal onSave called with:', data);
+            createChallengeMutation.mutate(data);
+          }}
+          isLoading={createChallengeMutation.isPending} />
+
 
         <InviteOwnerModal
           isOpen={showInviteOwnerModal}
           onClose={() => setShowInviteOwnerModal(false)}
           gym={gym}
-          currentUser={currentUser}
-        />
+          currentUser={currentUser} />
+
       </div>
-    </PullToRefresh>
-  );
+    </PullToRefresh>);
+
 }
