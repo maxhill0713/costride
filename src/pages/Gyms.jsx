@@ -1111,7 +1111,7 @@ export default function Gyms() {
         <div className="fixed bottom-20 left-0 right-0 z-50 bg-slate-800/30 backdrop-blur-md border-t border-slate-700/20 rounded-t-3xl p-5 space-y-2 shadow-2xl shadow-black/20\n"
         style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Filters</h3>
+            <h3 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2\n">Filters</h3>
             <div className="flex items-center gap-3">
               {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
               <button onClick={() => {setSelectedType('all');setMaxDistance('all');setSelectedEquipment('all');}} className="text-xs text-blue-400 font-semibold">
