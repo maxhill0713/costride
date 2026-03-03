@@ -187,12 +187,12 @@ export default function UserProfile() {
 
           {/* Location & Gym */}
           <div className="mt-3 space-y-1.5">
-            {profileUser.gym_location &&
-            <div className="flex items-center gap-2 text-slate-400">
-                <MapPin className="w-3.5 h-3.5" />
-                
-              </div>
-            }
+            
+
+
+
+
+
             {primaryMembership &&
             <div className="flex items-center gap-2">
                 <Building2 className="w-3.5 h-3.5 text-blue-400" />
