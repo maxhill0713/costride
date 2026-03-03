@@ -23,6 +23,7 @@ export default function Gyms() {
   const [selectedEquipment, setSelectedEquipment] = useState('all');
   const [editingGym, setEditingGym] = useState(null);
   const [showJoinWithCode, setShowJoinWithCode] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [savedGyms, setSavedGyms] = useState([]);
   const [equipmentGym, setEquipmentGym] = useState(null);
   const [galleryGym, setGalleryGym] = useState(null);
