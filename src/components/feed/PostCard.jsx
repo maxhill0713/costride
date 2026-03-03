@@ -525,15 +525,15 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
            {/* Reactions Modal */}
            <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
-           <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
+           <DialogContent className="max-w-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
              <DialogHeader>
-               <DialogTitle className="text-white">Reactions</DialogTitle>
+               <DialogTitle className="text-lg font-semibold leading-none tracking-tight text-white -mt-16\n">Reactions</DialogTitle>
              </DialogHeader>
              <div className="space-y-2 overflow-y-auto max-h-80">
                {reactedUsers.map((user) => {
               const variant = post.reactions[user.id];
               return (
-                <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
+                <div key={user.id} className="flex items-center gap-10 p-4 rounded-lg hover:bg-slate-800/50 transition-colors -mt-3">
                      <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
                        {variant === 'sunglasses' ?
                     <div className="relative w-full h-full flex items-center justify-center">
@@ -545,10 +545,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                            </svg>
                          </div> :
 
-                    <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                    <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
                     }
                      </div>
-                     <span className="text-sm text-slate-200 font-medium">{user.full_name || user.username || 'Unknown'}</span>
+                     <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
                    </div>);
 
             })}
