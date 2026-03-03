@@ -505,10 +505,10 @@ export default function Friends() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col">
       {/* Header - Sticky */}
-      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-2.5">
+      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-6xl mx-auto relative flex items-center justify-center">
           <Link to={createPageUrl('Home')} className="absolute left-0">
-            <button className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors">
+            <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
           </Link>
@@ -516,7 +516,7 @@ export default function Friends() {
             Friend Activity
           </h1>
           <button
-            onClick={() => setShowFriendsModal(true)} className="absolute right-0 inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-xl text-white font-bold border border-transparent shadow-[0_3px_0_0_rgba(0,0,0,0.3),0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n">
+            onClick={() => setShowFriendsModal(true)} className="absolute right-0 inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n">
 
 
             <span className="text-[11px] font-semibold">{friends.length}</span>
