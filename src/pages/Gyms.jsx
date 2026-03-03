@@ -1024,8 +1024,8 @@ export default function Gyms() {
                   setShowPrimaryGymModal(false);
                   setSelectedPrimaryGym(null);
                 }}
-                variant="outline"
-                className="flex-1 bg-black border-slate-700 text-white hover:bg-slate-900">
+                variant="outline" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-black backdrop-blur-md text-white border border-slate-700 h-9 px-4 flex-1 shadow-[0_3px_0_0_rgba(0,0,0,0.5),0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
+
 
                 Cancel
               </Button>
@@ -1038,8 +1038,8 @@ export default function Gyms() {
                     setSelectedPrimaryGym(null);
                   }
                 }}
-                disabled={updatePrimaryGymMutation.isPending}
-                className="flex-1 bg-purple-600 hover:bg-purple-700">
+                disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
+
 
                 {updatePrimaryGymMutation.isPending ?
                 <>
