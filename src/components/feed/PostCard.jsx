@@ -525,7 +525,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
            {/* Reactions Modal */}
            <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
-           <DialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40 max-w-sm">
+           <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
              <DialogHeader>
                <DialogTitle className="text-white">Reactions</DialogTitle>
              </DialogHeader>
