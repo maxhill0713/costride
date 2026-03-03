@@ -435,7 +435,7 @@ export default function Profile() {
                    </span>
                 }
               </button>
-              <div className="pt-1 flex-1">
+              <div className="flex-1">
                 <div className="flex items-center flex-wrap gap-2 mb-2">
                    <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{displayName}</h1>
                    <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
