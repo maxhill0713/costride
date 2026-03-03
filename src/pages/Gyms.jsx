@@ -624,8 +624,8 @@ export default function Gyms() {
                 <Input
                   placeholder="Search gyms or add new from Google Places..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-11 pl-10 pr-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder:text-slate-500" />
+                  onChange={(e) => setSearchQuery(e.target.value)} className="flex w-full px-3 py-1 text-base file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-11 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200\n" />
+
 
                 {searchingPlaces &&
                 <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />
