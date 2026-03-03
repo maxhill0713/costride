@@ -704,8 +704,8 @@ export default function Friends() {
                   <Input
                   placeholder="Search friends..."
                   value={friendsSearchQuery}
-                  onChange={(e) => setFriendsSearchQuery(e.target.value)}
-                  className="pl-8 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-lg text-sm h-8" />
+                  onChange={(e) => setFriendsSearchQuery(e.target.value)} className="flex w-full px-3 py-1 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200\n" />
+
 
                 </div>
                 <Button
