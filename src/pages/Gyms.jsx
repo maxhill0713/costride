@@ -1108,7 +1108,7 @@ export default function Gyms() {
       {showFilterModal &&
       <>
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-slate-800/98 to-slate-900/98 backdrop-blur-xl border-t border-slate-700/50 rounded-t-3xl p-5 space-y-2 shadow-2xl"
+        <div className="fixed bottom-20 left-0 right-0 z-50 bg-gradient-to-b from-slate-800/98 to-slate-900/98 backdrop-blur-xl border-t border-slate-700/50 rounded-t-3xl p-5 space-y-2 shadow-2xl"
         style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-white">Filters</h3>
