@@ -718,7 +718,7 @@ export default function Friends() {
                   <UserPlus className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide bg-white/5 backdrop-blur-2xl border border-white/15 rounded-3xl shadow-2xl shadow-black/20\n">
                 {/* Friend Requests */}
                 {friendRequests.filter((req) => {
                 const requesterUser = allUsers.find((u) => u.id === req.user_id);
