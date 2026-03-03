@@ -4,7 +4,7 @@ export default function FriendsIcon({ className = "w-7 h-7" }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="currentColor" className="w-9 h-9 text-cyan-400">
+      fill="currentColor" className="text-cyan-400 w-9 h-9 active:scale-75 active:translate-y-[2px] transition-all duration-100 cursor-pointer">
 
 
       {/* Left person */}
