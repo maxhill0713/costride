@@ -620,17 +620,30 @@ export default function Gyms() {
           <div className="max-w-6xl mx-auto">
             {/* Search & Filters */}
             <div className="space-y-2 mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  placeholder="Search gyms or add new from Google Places..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)} className="flex w-full px-3 py-1 text-base file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-11 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200\n" />
-
-
-                {searchingPlaces &&
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />
-                }
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    placeholder="Search gyms or add new..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-11 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200" />
+                  {searchingPlaces &&
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />
+                  }
+                </div>
+                <button
+                  onClick={() => setShowFilterModal(true)}
+                  className={`relative flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${
+                    selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all'
+                      ? 'bg-blue-600/30 border-blue-500/60 text-blue-300'
+                      : 'bg-white/10 border-white/20 hover:border-white/40 text-slate-400'
+                  }`}>
+                  <Filter className="w-5 h-5" />
+                  {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />
+                  }
+                </button>
               </div>
 
               {/* Google Places Skeleton */}
