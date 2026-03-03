@@ -701,7 +701,7 @@ export default function Profile() {
 
             <TabsContent value="goals" className="space-y-4">
             <Button
-              onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-full px-32 py-1.5 flex items-center gap-2 justify-center border-b-[4px] border-x-[1px] border-t-[1px] border-cyan-800 shadow-[0_4px_0_0_#0369a1,0_6px_0_0_#0e4a5c,0_8px_20px_rgba(6,100,200,0.4)] active:shadow-[0_0px_0_0_#0369a1] active:translate-y-[4px] active:border-b-[1px] transition-all duration-100 text-xs transform-gpu">
+              onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-cyan-400 to-cyan-400 text-white font-bold rounded-full px-32 py-1.5 flex items-center gap-2 justify-center border-b-[2px] border-x-[1px] border-t-[1px] border-cyan-600 shadow-[0_2px_0_0_#0891b2,0_4px_8px_rgba(6,182,212,0.3)] active:shadow-[0_0px_0_0_#0891b2] active:translate-y-[2px] active:border-b-[1px] transition-all duration-100 text-xs transform-gpu">
 
 
               <Plus className="w-4 h-4 mr-2" />
