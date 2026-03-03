@@ -127,21 +127,21 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name} className="relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 \ntransition-all duration-150 text-[#afafaf] data-[active=true]:text-[#58CC02] \nactive:scale-90 hover:bg-white/5 rounded-xl \ndata-[bouncing=true]:[animation:tabBounce_0.35s_cubic-bezier(0.34,1.8,0.64,1)_forwards]">
+                aria-label={item.name} className="relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 rounded-xl transition-all duration-150 active:scale-90 hover:bg-slate-100">
 
 
 
 
 
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon className="nline-flex transition-transform duration-200" strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
                      </div>
                   }
                 </div>
-                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
+                <span className="text-[10px] font-extrabold tracking-wide transition-colors duration-200 text-slate-400 data-[active=true]:text-[#58CC02]">{item.name}</span>
               </Link>);
 
           })}
