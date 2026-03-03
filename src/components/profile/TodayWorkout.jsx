@@ -564,7 +564,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-400" />
                   <span className="text-blue-300 font-black text-2xl tabular-nums">
-                    {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t/60)}:${(t%60).toString().padStart(2,'0')}`; })()}
+                    {(() => {const t = parseInt(restTimer) || 90;return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`;})()}
                   </span>
                 </div>
 
@@ -574,14 +574,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               {showTimerOptions &&
               <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                  <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/50 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-4 px-4 py-2">
+                  <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/50 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
                     <button
                     onClick={() => {
                       const currentValue = parseInt(restTimer) || 90;
                       const newValue = Math.max(10, currentValue - 10);
                       setRestTimer(newValue);
-                    }}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white text-xl font-bold transition-all active:scale-95 shadow-md shadow-blue-900/20">
+                    }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold\n">
+
 
                       −
                     </button>
@@ -590,8 +590,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       const currentValue = parseInt(restTimer) || 90;
                       const newValue = currentValue + 10;
                       setRestTimer(newValue);
-                    }}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-blue-700/90 to-blue-900/90 hover:from-blue-800/90 hover:to-slate-950/90 text-white text-xl font-bold transition-all active:scale-95 shadow-md shadow-blue-900/20">
+                    }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold\n">
+
 
                       +
                     </button>
