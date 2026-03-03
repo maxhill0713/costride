@@ -488,7 +488,7 @@ export default function Home() {
           {/* Community Section */}
           {memberGym?.id &&
           <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
+              <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-100 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group active:scale-95 active:translate-y-[3px] animate-[breathe_3s_ease-in-out_infinite]">
                 {/* Gym Image Background */}
                 {memberGym?.image_url ?
               <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" /> :
