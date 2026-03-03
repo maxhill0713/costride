@@ -127,7 +127,7 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name} className="\n              relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 transition-all duration-150 text-slate-400 hover:text-slate-100 data-[active=true]:text-slate-100 rounded-xl active:scale-90 hover:bg-white/5">
+                aria-label={item.name} className="relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 transition-all duration-150 text-slate-400 hover:text-slate-100 data-[active=true]:text-slate-100 rounded-xl active:scale-90 hover:bg-white/5 overflow-hidden bg-transparent border-none shadow-none">
 
 
 
