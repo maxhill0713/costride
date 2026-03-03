@@ -28,7 +28,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
     mutationFn: async (joinCode) => {
       // Find gym by join code
       const gyms = await base44.entities.Gym.filter({ join_code: joinCode.toUpperCase() });
-      
+
       if (gyms.length === 0) {
         throw new Error('Invalid gym code');
       }
@@ -97,7 +97,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (code.length !== 6) {
       setError('Code must be 6 characters');
       return;
@@ -132,36 +132,36 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
               placeholder="FIT123"
               maxLength={6}
               className="text-center text-lg md:text-2xl font-bold tracking-widest bg-slate-700/50 border-slate-600 text-white rounded-xl h-10 md:h-14"
-              autoFocus
-            />
+              autoFocus />
+
             <p className="text-[10px] md:text-xs text-slate-400 mt-2">
               Ask your gym for their unique join code
             </p>
           </div>
 
-          {error && (
-            <div className="flex items-center gap-2 p-2 md:p-3 bg-red-900/30 border border-red-600/50 rounded-xl">
+          {error &&
+          <div className="flex items-center gap-2 p-2 md:p-3 bg-red-900/30 border border-red-600/50 rounded-xl">
               <AlertCircle className="w-4 md:w-5 h-4 md:h-5 text-red-400 flex-shrink-0" />
               <p className="text-xs md:text-sm text-red-300">{error}</p>
             </div>
-          )}
+          }
 
           <Button
             type="submit"
-            disabled={code.length !== 6 || joinMutation.isPending}
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold h-10 md:h-12 rounded-xl text-sm md:text-base"
-          >
-            {joinMutation.isPending ? (
-              <>
+            disabled={code.length !== 6 || joinMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 px-4 py-2 w-full bg-gradient-to-r from-cyan-500 to-blue-500 backdrop-blur-md text-white font-bold h-10 md:h-12 rounded-xl text-sm md:text-base border border-transparent shadow-[0_3px_0_0_rgba(6,100,180,0.8),0_8px_20px_rgba(6,182,212,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
+
+
+            {joinMutation.isPending ?
+            <>
                 <Loader2 className="w-4 md:w-5 h-4 md:h-5 mr-2 animate-spin" />
                 Joining...
-              </>
-            ) : (
-              <>
+              </> :
+
+            <>
                 <CheckCircle className="w-4 md:w-5 h-4 md:h-5 mr-2" />
                 Join Gym
               </>
-            )}
+            }
           </Button>
         </form>
 
@@ -174,6 +174,6 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
           </ul>
         </div>
       </Card>
-    </div>
-  );
+    </div>);
+
 }
