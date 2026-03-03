@@ -706,51 +706,7 @@ export default function Gyms() {
                 </div>
               }
 
-              {/* Filters */}
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger className="w-auto h-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 text-sm">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="powerlifting">Powerlifting</SelectItem>
-                    <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
-                    <SelectItem value="crossfit">CrossFit</SelectItem>
-                    <SelectItem value="boxing">Boxing</SelectItem>
-                    <SelectItem value="mma">MMA</SelectItem>
-                    <SelectItem value="general">General</SelectItem>
-                  </SelectContent>
-                </Select>
 
-                <Select value={maxDistance} onValueChange={setMaxDistance}>
-                  <SelectTrigger className="w-auto h-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 text-sm">
-                    <SelectValue placeholder="Distance" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any Distance</SelectItem>
-                    <SelectItem value="5">Within 5 km</SelectItem>
-                    <SelectItem value="10">Within 10 km</SelectItem>
-                    <SelectItem value="20">Within 20 km</SelectItem>
-                    <SelectItem value="50">Within 50 km</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
-                  <SelectTrigger className="w-auto h-10 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-100 text-sm">
-                    <SelectValue placeholder="Equipment" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Equipment</SelectItem>
-                    <SelectItem value="Power Racks">Power Racks</SelectItem>
-                    <SelectItem value="Barbells">Barbells</SelectItem>
-                    <SelectItem value="Dumbbells">Dumbbells</SelectItem>
-                    <SelectItem value="Cable Machines">Cable Machines</SelectItem>
-                    <SelectItem value="Cardio Equipment">Cardio Equipment</SelectItem>
-                    <SelectItem value="Olympic Platforms">Olympic Platforms</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Gyms Grid */}
