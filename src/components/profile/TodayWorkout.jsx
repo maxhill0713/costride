@@ -563,8 +563,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-400" />
-                  <span className="text-blue-300 font-black text-2xl tabular-nums">{restTimer || '90'}</span>
-                  <span className="text-blue-300 text-sm font-bold">s</span>
+                  <span className="text-blue-300 font-black text-2xl tabular-nums">
+                    {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t/60)}:${(t%60).toString().padStart(2,'0')}`; })()}
+                  </span>
                 </div>
 
               </button>
