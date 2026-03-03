@@ -850,8 +850,8 @@ export default function GymCommunity() {
             <Button
               onClick={() => setShowInviteOwnerModal(true)}
               variant="ghost"
-              size="sm"
-              className="bg-purple-500/90 backdrop-blur hover:bg-purple-600 rounded-full text-xs text-white">
+              size="sm" className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-8 px-3 rounded-lg text-xs text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
+
 
                 <Crown className="w-4 h-4 mr-1" />
                 Make Official
@@ -908,7 +908,7 @@ export default function GymCommunity() {
 
           {/* Member Count - Bottom Left */}
           <div className="absolute bottom-24 left-3">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60\n">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60">
               <div className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                 <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
