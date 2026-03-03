@@ -488,7 +488,7 @@ export default function Home() {
           {/* Community Section */}
           {memberGym?.id &&
           <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-              <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-100 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group active:scale-95 active:translate-y-[3px] animate-[breathe_3s_ease-in-out_infinite]">
+              <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-100 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group active:scale-95 active:translate-y-[3px] animate-[breathe_7s_ease-in-out_infinite]">
                 {/* Gym Image Background */}
                 {memberGym?.image_url ?
               <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" /> :
@@ -497,7 +497,7 @@ export default function Home() {
               }
                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
 
-                <div className="relative p-6 h-full flex flex-col justify-between animate-[breathe_3s_ease-in-out_infinite] active:scale-95 active:translate-y-[3px] transition-all duration-100 cursor-pointer">
+                <div className="relative p-6 h-full flex flex-col justify-between animate-[breathe_7s_ease-in-out_infinite] active:scale-95 active:translate-y-[3px] transition-all duration-100 cursor-pointer">
                   <div>
                     <p className="text-white font-semibold text-base tracking-tight">Your Community</p>
                     <p className="text-slate-300 text-sm mt-1 font-medium">{memberGym.name}</p>
