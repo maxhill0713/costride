@@ -50,13 +50,13 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
             {/* Close arrow - top right */}
             <button
-            onClick={() => setExpanded(false)}
-            className="absolute top-12 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
+            onClick={() => setExpanded(false)} className="absolute top-12 right-6 w-10 h-10 flex items-center justify-center text-white transition-all\n">
+
 
               <ChevronDown className="w-6 h-6" />
             </button>
 
-            <p className="text-blue-300/70 text-sm font-bold uppercase tracking-widest mb-10">Rest Timer</p>
+            <p className="text-blue-300/70 text-2xl font-bold uppercase tracking-widest mb-10">REST TIMER</p>
 
             {/* Circular Progress */}
             <div className="relative flex items-center justify-center w-56 h-56">
