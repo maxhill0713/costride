@@ -497,7 +497,7 @@ export default function Home() {
               }
                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
 
-                <div className="relative p-6 h-full flex flex-col justify-between">
+                <div className="relative p-6 h-full flex flex-col justify-between animate-[breathe_3s_ease-in-out_infinite] active:scale-95 active:translate-y-[3px] transition-all duration-100 cursor-pointer">
                   <div>
                     <p className="text-white font-semibold text-base tracking-tight">Your Community</p>
                     <p className="text-slate-300 text-sm mt-1 font-medium">{memberGym.name}</p>
