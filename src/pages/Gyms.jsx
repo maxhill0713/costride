@@ -1104,6 +1104,72 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
+      {/* Filter Modal */}
+      {showFilterModal &&
+      <>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-slate-800/98 to-slate-900/98 backdrop-blur-xl border-t border-slate-700/50 rounded-t-3xl p-6 space-y-5 shadow-2xl"
+          style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white">Filters</h3>
+            <div className="flex items-center gap-3">
+              {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
+                <button onClick={() => { setSelectedType('all'); setMaxDistance('all'); setSelectedEquipment('all'); }} className="text-xs text-blue-400 font-semibold">
+                  Clear all
+                </button>
+              }
+              <button onClick={() => setShowFilterModal(false)} className="w-8 h-8 rounded-full bg-slate-700/70 flex items-center justify-center text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Gym Type</label>
+              <div className="flex flex-wrap gap-2">
+                {[['all','All Types'],['powerlifting','Powerlifting'],['bodybuilding','Bodybuilding'],['crossfit','CrossFit'],['boxing','Boxing'],['mma','MMA'],['general','General']].map(([val, label]) =>
+                  <button key={val} onClick={() => setSelectedType(val)}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>
+                    {label}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Distance</label>
+              <div className="flex flex-wrap gap-2">
+                {[['all','Any Distance'],['5','Within 5 km'],['10','Within 10 km'],['20','Within 20 km'],['50','Within 50 km']].map(([val, label]) =>
+                  <button key={val} onClick={() => setMaxDistance(val)}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>
+                    {label}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Equipment</label>
+              <div className="flex flex-wrap gap-2">
+                {[['all','All Equipment'],['Power Racks','Power Racks'],['Barbells','Barbells'],['Dumbbells','Dumbbells'],['Cable Machines','Cable Machines'],['Cardio Equipment','Cardio'],['Olympic Platforms','Olympic Platforms']].map(([val, label]) =>
+                  <button key={val} onClick={() => setSelectedEquipment(val)}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>
+                    {label}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button onClick={() => setShowFilterModal(false)}
+            className="w-full py-3 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-bold text-base shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] transition-all duration-100">
+            Show Results
+          </button>
+        </div>
+      </>
+      }
+
       {/* Add Gym Modal */}
       <Dialog open={showAddGymModal} onOpenChange={() => {
         setShowAddGymModal(false);
