@@ -929,12 +929,12 @@ export default function GymCommunity() {
         </div>
 
       {/* Horizontal Tab Menu */}
-<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
   <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b border-white/5">
     <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-2 h-14 gap-1">
       <TabsTrigger
-        value="home"
-        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+                value="home" className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] shadow-[0_3px_0_0_rgba(0,0,0,0.4)] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_3px_0_0_rgba(16,185,129,0.4),0_0_0_1px_rgba(52,211,153,0.3),0_3px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+
         <div className="flex items-center gap-1.5">
           <Home className="w-3.5 h-3.5" />
           <span>Home</span>
@@ -942,8 +942,8 @@ export default function GymCommunity() {
       </TabsTrigger>
 
       <TabsTrigger
-        value="feed"
-        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+                value="feed"
+                className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
         <div className="flex items-center gap-1.5">
           <MessageCircle className="w-3.5 h-3.5" />
           <span>Feed</span>
@@ -951,8 +951,8 @@ export default function GymCommunity() {
       </TabsTrigger>
 
       <TabsTrigger
-        value="challenges"
-        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+                value="challenges"
+                className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
         <div className="flex items-center gap-1.5">
           <Trophy className="w-3.5 h-3.5" />
           <span>Challenges</span>
@@ -960,8 +960,8 @@ export default function GymCommunity() {
       </TabsTrigger>
 
       <TabsTrigger
-        value="events"
-        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+                value="events"
+                className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
         <div className="flex items-center gap-1.5">
           <Calendar className="w-3.5 h-3.5" />
           <span>Events</span>
