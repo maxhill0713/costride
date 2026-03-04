@@ -364,7 +364,7 @@ export default function Home() {
 
                   <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-14 h-14 -ml-2 drop-shadow-[0_0_12px_rgba(99,102,241,0.9)] animate-[breathe_3s_ease-in-out_infinite] [&>svg]:stroke-[3] w-14 h-14 -ml-2 contrast-125 saturate-150"
 
-              style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,150,0,0.9)) drop-shadow(0 0 2px rgba(255,150,0,0.9)) drop-shadow(0 0 2px rgba(255,150,0,0.9))' }} />
+              style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,150,0,0.5)) drop-shadow(0 0 2px rgba(255,150,0,0.5)) drop-shadow(0 0 2px rgba(255,150,0,0.5))' }} />
 
                    <span className="text-white mt-2 text-sm font-black text-left normal-case tracking-tight -ml-2.5">{userStreak}</span>
                 </button>
