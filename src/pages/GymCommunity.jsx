@@ -905,7 +905,7 @@ export default function GymCommunity() {
   </div>
 </div>
 
-          {/* Member Count - Bottom Left */}
+          {/* Member Count image - Bottom Left */}
           <div className="absolute bottom-24 left-3">
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60">
               <div className="flex items-center gap-1.5">
