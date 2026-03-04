@@ -540,7 +540,7 @@ export default function Gyms() {
                                   <MoreVertical className="w-5 h-5 text-slate-400 drop-shadow-lg" />
                                 </button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                              <DropdownMenuContent align="end" className="z-50 min-w-[8rem] overflow-hidden p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-slate-800 border border-slate-700/50 rounded-lg transition-all duration-100 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu\n">
                                 {currentUser && currentUser.email === gym.owner_email &&
                           <DropdownMenuItem
                             onClick={(e) => {
