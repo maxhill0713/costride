@@ -491,7 +491,7 @@ export default function Gyms() {
                                Official
                              </Badge> :
 
-                      <Badge className="bg-slate-600/90 text-slate-200 text-xs shadow-lg font-semibold">
+                      <Badge className="inline-flex items-center rounded-md border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-slate-600 bg-slate-700/95 text-slate-200 text-xs shadow-lg font-semibold">
                                Unofficial
                              </Badge>
                       }
