@@ -362,9 +362,9 @@ export default function Home() {
               onClick={() => setShowStreakVariants(true)}
               className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
 
-                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-14 h-14 -ml-2 drop-shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-[breathe_3s_ease-in-out_infinite] [&>svg]:stroke-[3] w-14 h-14 -ml-2 contrast-125 saturate-150"
+                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-14 h-14 -ml-2 drop-shadow-[0_0_12px_rgba(99,102,241,0.5)] animate-[breathe_3s_ease-in-out_infinite] [&>svg]:stroke-[3] w-14 h-14 -ml-2 contrast-125 saturate-150"
 
-              style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,150,0,0.5)) drop-shadow(0 0 2px rgba(255,150,0,0.5)) drop-shadow(0 0 2px rgba(255,150,0,0.5))' }} />
+              style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,150,0,0.4)) drop-shadow(0 0 2px rgba(255,150,0,0.4)) drop-shadow(0 0 2px rgba(255,150,0,0.4))' }} />
 
                    <span className="text-white mt-2 text-sm font-black text-left normal-case tracking-tight -ml-2.5">{userStreak}</span>
                 </button>
