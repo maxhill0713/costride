@@ -916,18 +916,6 @@ export default function GymCommunity() {
 
 </div>
 
-          {/* Member Count - Bottom Left */}
-          <div className="absolute bottom-24 left-3">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
-                <span className="text-xs text-white/70">members</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
       {/* Horizontal Tab Menu - 10% of screen */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
         <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl overflow-x-hidden">
