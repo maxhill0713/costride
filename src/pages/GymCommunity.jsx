@@ -907,13 +907,14 @@ export default function GymCommunity() {
 
           {/* Member Count image - Bottom Left */}
           <div className="absolute bottom-24 left-3">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
-                <span className="text-xs text-white/70">members</span>
-              </div>
-            </div>
+<div className="absolute bottom-4 left-4">
+  <div className="bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-xl rounded-full px-3 py-1.5 shadow-[0_3px_0_0_#0369a1,0_4px_12px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
+    <div className="flex items-center gap-1.5">
+      <UsersRound className="w-3.5 h-3.5 text-white flex-shrink-0" />
+      <span className="text-sm font-extrabold text-white">{gym?.members_count || 0}</span>
+    </div>
+  </div>
+</div>
           </div>
         </div>
 
