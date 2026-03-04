@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
@@ -23,8 +23,26 @@ const quotes = [
 export default function QuoteCarousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [dragStart, setDragStart] = useState(null);
   const [expanded, setExpanded] = useState(false);
+  const [displayedText, setDisplayedText] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
+
+  useEffect(() => {
+    setDisplayedText('');
+    setIsTyping(true);
+    const fullText = `"${quotes[current].text}"`;
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < fullText.length) {
+        setDisplayedText(fullText.slice(0, i + 1));
+        i++;
+      } else {
+        setIsTyping(false);
+        clearInterval(interval);
+      }
+    }, 28);
+    return () => clearInterval(interval);
+  }, [current]);
 
   const paginate = (newDirection) => {
     const next = (current + newDirection + quotes.length) % quotes.length;
@@ -46,18 +64,11 @@ export default function QuoteCarousel() {
   return (
     <>
       <style>{`
-        @keyframes typeout {
-          from { width: 0; }
-          to   { width: 100%; }
-        }
         @keyframes blink {
-          0%, 100% { border-color: transparent; }
-          50%       { border-color: white; }
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0; }
         }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 0.9; }
-        }
+        .cursor { animation: blink 0.7s step-end infinite; }
       `}</style>
 
       <motion.div
@@ -96,15 +107,20 @@ export default function QuoteCarousel() {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
               onDragEnd={handleDragEnd}
-              className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-6">
+              className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-6 w-full">
 
-              <p key={`quote-${current}`} className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight -mt-7 overflow-hidden whitespace-nowrap mx-auto border-r-2 border-white animate-[typeout_2.5s_steps(40)_forwards,blink_0.7s_step-end_5]">
-                "{quotes[current].text}"
+              <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight -mt-7 w-full">
+                {displayedText}
+                {isTyping && <span className="cursor text-white">|</span>}
               </p>
 
-              <p key={`author-${current}`} className="mt-4 text-slate-300 text-sm font-medium tracking-widest opacity-0 animate-[fadeIn_0.5s_2.5s_forwards]">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: isTyping ? 0 : 0.9 }}
+                transition={{ duration: 0.6 }}
+                className="mt-4 text-slate-300 text-sm font-medium tracking-widest">
                 — {quotes[current].author}
-              </p>
+              </motion.p>
 
               {expanded &&
                 <motion.p
