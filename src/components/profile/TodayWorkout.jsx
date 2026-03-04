@@ -667,11 +667,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       </div> :
 
       <div className="flex justify-center pt-0">
-      <Button
+     <Button
   onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
   variant="ghost"
   size="icon"
-  className="w-9 h-9 text-slate-400 hover:text-white active:scale-75 active:translate-y-[2px] transition-all duration-100">
+  className="w-9 h-9 text-slate-400 hover:text-white active:scale-75 active:translate-y-[2px] transition-all duration-100 animate-[dropIn_0.35s_cubic-bezier(0.34,1.56,0.64,1)_forwards]">
 
         <ChevronDown className="w-6 h-6" />
         </Button>
