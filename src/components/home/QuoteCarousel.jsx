@@ -40,7 +40,7 @@ export default function QuoteCarousel() {
         setIsTyping(false);
         clearInterval(interval);
       }
-    }, 65);
+    }, 35);
     return () => clearInterval(interval);
   }, [current]);
 
