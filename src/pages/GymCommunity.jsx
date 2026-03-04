@@ -928,50 +928,47 @@ export default function GymCommunity() {
           </div>
         </div>
 
-      {/* Horizontal Tab Menu - 10% of screen */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-        <div className="sticky top-0 z-20 bg-slate-900/98 backdrop-blur-xl overflow-x-hidden">
-            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-0 h-14 overflow-x-auto md:overflow-x-visible border-0">
-            <TabsTrigger
-                value="home" className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-400 data-[state=active]:via-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-[0_3px_0_0_#065f46,0_4px_12px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] data-[state=active]:border-transparent">
-
-
-              <div className="flex items-center gap-1.5">
-                <Home className="w-4 h-4" />
-                <span className="text-sm font-bold">Home</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-                value="feed" className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-400 data-[state=active]:via-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-[0_3px_0_0_#065f46,0_4px_12px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] data-[state=active]:border-transparent">
-
-
-              <div className="flex items-center gap-1.5">
-                <MessageCircle className="w-4 h-4" />
-                <span className="text-sm font-bold">Feed</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-                value="challenges" className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-400 data-[state=active]:via-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-[0_3px_0_0_#065f46,0_4px_12px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] data-[state=active]:border-transparent">
-
-
-              <div className="flex items-center gap-1.5">
-                <Trophy className="w-4 h-4" />
-                <span className="text-sm font-bold">Challenges</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-                value="events" className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-400 hover:text-slate-200 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-gradient-to-b data-[state=active]:from-emerald-400 data-[state=active]:via-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-[0_3px_0_0_#065f46,0_4px_12px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] data-[state=active]:border-transparent">
-
-
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm font-bold">Events</span>
-              </div>
-            </TabsTrigger>
-
-          </TabsList>
+      {/* Horizontal Tab Menu */}
+<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
+  <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b border-white/5">
+    <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-2 h-14 gap-1">
+      <TabsTrigger
+        value="home"
+        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+        <div className="flex items-center gap-1.5">
+          <Home className="w-3.5 h-3.5" />
+          <span>Home</span>
         </div>
+      </TabsTrigger>
 
+      <TabsTrigger
+        value="feed"
+        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+        <div className="flex items-center gap-1.5">
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>Feed</span>
+        </div>
+      </TabsTrigger>
+
+      <TabsTrigger
+        value="challenges"
+        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+        <div className="flex items-center gap-1.5">
+          <Trophy className="w-3.5 h-3.5" />
+          <span>Challenges</span>
+        </div>
+      </TabsTrigger>
+
+      <TabsTrigger
+        value="events"
+        className="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-extrabold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 rounded-xl transition-all duration-150 text-slate-500 hover:text-slate-300 hover:bg-white/5 active:scale-95 active:translate-y-[2px] data-[state=active]:bg-slate-800/80 data-[state=active]:text-emerald-400 data-[state=active]:shadow-[0_0_0_1px_rgba(52,211,153,0.3),0_2px_8px_rgba(16,185,129,0.15)] data-[state=active]:border data-[state=active]:border-emerald-500/20">
+        <div className="flex items-center gap-1.5">
+          <Calendar className="w-3.5 h-3.5" />
+          <span>Events</span>
+        </div>
+      </TabsTrigger>
+    </TabsList>
+  </div>
       {/* Main Content Area - Vertical Scroll */}
       <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
 
