@@ -698,13 +698,13 @@ export default function Friends() {
         <>
             <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowFriendsModal(false)} />
             <div className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-              <div className="px-3 py-1 flex items-center gap-1">
+              <div className="px-3 py-1 flex items-center gap-1 ">
                 <div className="relative flex-1 w-70">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                   <Input
                   placeholder="Search friends..."
                   value={friendsSearchQuery}
-                  onChange={(e) => setFriendsSearchQuery(e.target.value)} className="relative top-1 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200" />
+                  onChange={(e) => setFriendsSearchQuery(e.target.value)} className="relative top-0.5 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200" />
 
 
                 </div>
