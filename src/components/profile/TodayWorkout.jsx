@@ -531,8 +531,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               logWorkoutMutation.mutate();
             }}
             disabled={logWorkoutMutation.isPending}
-            size="sm"
-            className="w-full h-7 text-[10px] font-bold bg-gradient-to-r from-blue-800/95 to-blue-950/95 hover:from-blue-900/95 hover:to-slate-950 shadow-lg shadow-blue-900/40 rounded-lg">
+            size="sm" className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-white px-3 w-full h-7 text-[10px] font-bold bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 backdrop-blur-md rounded-lg border border-slate-500/50 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:sha">
+
 
                {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
              </Button>
