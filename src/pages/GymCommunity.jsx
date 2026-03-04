@@ -908,13 +908,11 @@ export default function GymCommunity() {
 
           {/* Member Count - Bottom Left */}
           <div className="absolute bottom-24 left-3">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
-                <span className="text-xs text-white/70">members</span>
-              </div>
-            </div>
+<div className="flex items-center gap-2 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 rounded-2xl px-4 py-2 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] ml-60">
+  <Users className="w-4 h-4 text-white drop-shadow-sm" />
+  <span className="text-white font-extrabold text-sm tracking-wide">{memberCount}</span>
+  <span className="text-cyan-100 font-semibold text-xs">members</span>
+</div>
           </div>
         </div>
 
