@@ -667,7 +667,7 @@ export default function Gyms() {
 
               {/* Google Places Results */}
               {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
-              <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-green-500/50">
+              <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
                   {
                 <>
                       <p className="text-xs font-semibold flex items-center gap-2">
