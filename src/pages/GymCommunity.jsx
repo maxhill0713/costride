@@ -886,25 +886,35 @@ export default function GymCommunity() {
           </div>
 
           {/* Gym Info Overlay - Top Left */}
-          <div className="absolute top-0 left-0 right-0 px-6 py-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex flex-col gap-3 mb-4 pr-32">
-                {/* Gym Name & Info */}
-                <div className="flex-1 text-left min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-lg md:text-xl' : gym.name.length > 20 ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
-                    {gym.name}
-                  </h1>
-                  {gym.verified && <BadgeCheck className="w-5 md:w-6 h-5 md:h-6 text-white drop-shadow-lg flex-shrink-0" />}
-                </div>
-                <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1 drop-shadow-md">
-                  <MapPin className="w-3 h-3" />
-                  {gym.city}
-                </p>
-                </div>
-              </div>
-            </div>
-          </div>
+<div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-between px-4 py-3">
+
+  {/* Top - Gym Name */}
+  <div className="max-w-4xl mx-auto w-full">
+    <div className="flex flex-col gap-1 mb-2 pr-28">
+      <div className="flex-1 text-left min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+          <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-sm' : gym.name.length > 20 ? 'text-base' : 'text-lg'}`}>
+            {gym.name}
+          </h1>
+          {gym.verified && <BadgeCheck className="w-3.5 h-3.5 text-white drop-shadow-lg flex-shrink-0" />}
+        </div>
+        <p className="text-white/70 text-[10px] mt-0 flex items-center gap-1 drop-shadow-md">
+          <MapPin className="w-2.5 h-2.5" />
+          {gym.city}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Bottom Left - Members */}
+  <div className="pb-1">
+    <div className="bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 rounded-full px-3 py-1.5 shadow-[0_3px_0_0_#0369a1,0_4px_12px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] inline-flex items-center gap-1.5">
+      <UsersRound className="w-3.5 h-3.5 text-white flex-shrink-0" />
+      <span className="text-sm font-extrabold text-white">{gym?.members_count || 0}</span>
+    </div>
+  </div>
+
+</div>
 
           {/* Member Count - Bottom Left */}
           <div className="absolute bottom-24 left-3">
