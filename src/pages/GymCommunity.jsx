@@ -909,14 +909,7 @@ export default function GymCommunity() {
           <div className="absolute bottom-24 left-3">
 <div className="bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-xl rounded-full px-3 py-1.5 shadow-[0_3px_0_0_#0369a1,0_4px_12px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.15)] ml-60">
   <div className="flex items-center gap-1.5">
-    <div className="flex items-center -space-x-1">
-      <div className="w-4 h-4 rounded-full bg-white/40 border border-white/60 flex items-center justify-center">
-        <span className="text-[7px] font-black text-white">💪</span>
-      </div>
-      <div className="w-4 h-4 rounded-full bg-white/25 border border-white/40 flex items-center justify-center">
-        <span className="text-[7px] font-black text-white">🏋️</span>
-      </div>
-    </div>
+    <Contact className="w-3.5 h-3.5 text-white flex-shrink-0" />
     <span className="text-sm font-extrabold text-white">{gym?.members_count || 0}</span>
   </div>
 </div>
