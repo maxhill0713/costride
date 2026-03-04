@@ -886,7 +886,7 @@ export default function GymCommunity() {
           </div>
 
           {/* Gym Info Overlay - Top Left */}
-<div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-between px-4 py-3">
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-between px-4 py-3">
 
   {/* Top - Gym Name */}
   <div className="max-w-4xl mx-auto w-full">
@@ -914,17 +914,17 @@ export default function GymCommunity() {
     </div>
   </div>
 
-</div>
+          </div>
 
           {/* Member Count - Bottom Left */}
           <div className="absolute bottom-24 left-3">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5 shadow-lg shadow-black/10 ml-60">
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                <span className="text-sm font-semibold text-white">{gym?.members_count || 0}</span>
-                <span className="text-xs text-white/70">members</span>
-              </div>
-            </div>
+            
+
+
+
+
+
+
           </div>
         </div>
 
