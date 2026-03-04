@@ -134,7 +134,7 @@ export default function Layout({ children, currentPageName }) {
 
 
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon className="lucide lucide-house w-6 h-6 text-indigo-500 transition-all duration-200 active:scale-75 active:translate-y-[2px] animate-[tabBounce_0.4s_cubic-bezier(0.34,1.8,0.64,1)]" strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
