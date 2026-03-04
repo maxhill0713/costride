@@ -706,7 +706,7 @@ export default function Gyms() {
                           }
                               </div>
                               <div className="flex items-center pr-3">
-                                <Badge className="bg-green-600/30 text-green-200 border border-green-500/40 text-xs">
+                                <Badge className="inline-flex items-center justify-center rounded-lg px-2.5 py-0.5 text-xs font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring gap-2 bg-gradient-to-b from-green-400 via-green-500 to-green-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#065f46,0_2px_5px_rgba(16,185,129,0.3),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
                                   Add
                                 </Badge>
                               </div>
