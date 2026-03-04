@@ -161,38 +161,38 @@ export default function RedeemReward() {
   }));
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pb-24">
     <div className="max-w-6xl mx-auto px-3 md:px-4 py-4">
       <div className="mb-6 grid grid-cols-3 gap-3">
         <button
-          onClick={() => setActiveSection('weekly')}
-          className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu ${
-            activeSection === 'weekly'
-              ? 'bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]'
-              : 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'
-          }`}>
+            onClick={() => setActiveSection('weekly')} className="px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_5px_0_0_#5b21b6,0_12px_28px_rgba(120,40,220,0.5),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]">
+
+
+
+
+
           <Zap className="w-5 h-5" />
           Weekly
         </button>
 
         <button
-          onClick={() => setActiveSection('community')}
-          className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu ${
-            activeSection === 'community'
-              ? 'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]'
-              : 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'
-          }`}>
+            onClick={() => setActiveSection('community')}
+            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu ${
+            activeSection === 'community' ?
+            'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]' :
+            'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'}`
+            }>
           <Trophy className="w-5 h-5" />
           Community
         </button>
 
         <button
-          onClick={() => setActiveSection('rewards')}
-          className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu ${
-            activeSection === 'rewards'
-              ? 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-white border-transparent shadow-[0_3px_0_0_#b45309,0_8px_20px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]'
-              : 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'
-          }`}>
+            onClick={() => setActiveSection('rewards')}
+            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu ${
+            activeSection === 'rewards' ?
+            'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-white border-transparent shadow-[0_3px_0_0_#b45309,0_8px_20px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]' :
+            'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'}`
+            }>
           <Gift className="w-5 h-5" />
           Rewards
         </button>
@@ -202,13 +202,13 @@ export default function RedeemReward() {
         <div>
           <h2 className="text-xl font-black text-white mb-3">Weekly Challenges</h2>
           {weeklyChallenges.length > 0 ?
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {weeklyChallenges.map((challenge) =>
-                <WeeklyChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  currentUser={currentUser} />
-              )}
+            <WeeklyChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              currentUser={currentUser} />
+            )}
             </div> :
 
           <Card className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center">
