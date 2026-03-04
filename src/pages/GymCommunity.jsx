@@ -886,7 +886,7 @@ export default function GymCommunity() {
           </div>
 
           {/* Gym Info Overlay - Top Left */}
-          <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-between px-4 py-">
+          <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-between px-4 py-3">
 
   {/* Top - Gym Name */}
   <div className="max-w-4xl mx-auto w-full">
