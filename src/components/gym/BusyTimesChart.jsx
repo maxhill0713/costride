@@ -112,7 +112,7 @@ export default function BusyTimesChart({ checkIns, gymId }) {
         {DAYS.map((day, idx) =>
         <button
           key={idx}
-          onClick={() => setSelectedDay(idx)} className="flex-1 py-1 rounded-md text-[11px] font-bold transition-all duration-100 bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 text-white shadow-[0_2px_0_0_#1e3a8a,0_4px_10px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_10px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
+          onClick={() => setSelectedDay(idx)} className="flex-1 py-1 rounded-md text-[11px] font-semibold transition-all bg-slate-700/50 text-slate-400 hover:bg-slate-600/60 hover:text-white">
 
 
 
