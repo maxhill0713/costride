@@ -366,7 +366,7 @@ export default function Home() {
 
               style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,150,0,0.9)) drop-shadow(0 0 2px rgba(255,150,0,0.9)) drop-shadow(0 0 2px rgba(255,150,0,0.9))' }} />
 
-                   <span className="text-white mt-2 text-sm font-black text-left normal-case tracking-tight -ml-2.5">{userStreak}</span>
+                   <span className="text-white mt-5 text-m font-black text-left normal-case tracking-tight -ml-3">{userStreak}</span>
                 </button>
                 <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   CoStride
