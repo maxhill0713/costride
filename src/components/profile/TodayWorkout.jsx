@@ -356,8 +356,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   return (
     <Card
-      onClick={() => !isExpanded && setIsExpanded(true)}
-      className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer'}`}>
+  onClick={() => !isExpanded && setIsExpanded(true)}
+  className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 transition-all duration-300 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer active:scale-95 active:translate-y-[3px]'}`}>
 
     <div className="space-y-2 mb-4">
        <div className="flex items-center justify-between gap-2">
