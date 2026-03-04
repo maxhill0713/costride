@@ -346,42 +346,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   };
 
   if (!todayWorkout) {
-    return (
-      <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-4 text-center">
-      <Dumbbell className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-      <p className="text-slate-300 font-semibold text-xs">No workout split configured yet</p>
-    </Card>);
-
-  }
-
-  return (
-  <>
-    <style>{`
-      @keyframes dropIn {
-        0%   { transform: translateY(-8px) scale(0.97); opacity: 0; }
-        60%  { transform: translateY(2px) scale(1.01); opacity: 1; }
-        100% { transform: translateY(0) scale(1); opacity: 1; }
-      }
-    `}</style>
-    <Card
-      onClick={() => !isExpanded && setIsExpanded(true)}
-      className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 transition-all duration-300 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer active:scale-95 active:translate-y-[3px]'}`}>
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-700/90 to-blue-900/90 flex items-center justify-c
-      {alreadyLoggedToday && !isExpanded &&
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowSummary(true);
-          }}
-          size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3\\\\n">
-
-
-          View Summary
-        </Button>
-        }
+   <Button
+  onClick={(e) => {
+    e.stopPropagation();
+    setShowSummary(true);
+  }}
+  size="sm"
+  className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3">
 
       </div>
 
