@@ -668,10 +668,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       <div className="flex justify-center pt-0">
       <Button
-          onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
-          variant="ghost"
-          size="icon"
-          className="w-9 h-9 text-slate-400 hover:text-white">
+  onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
+  variant="ghost"
+  size="icon"
+  className="w-9 h-9 text-slate-400 hover:text-white active:scale-75 active:translate-y-[2px] transition-all duration-100">
 
         <ChevronDown className="w-6 h-6" />
         </Button>
