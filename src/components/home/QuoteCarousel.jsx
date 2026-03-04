@@ -26,8 +26,14 @@ export default function QuoteCarousel() {
   const [expanded, setExpanded] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
+    if (hasAnimated) {
+      setDisplayedText(`"${quotes[current].text}"`);
+      setIsTyping(false);
+      return;
+    }
     setDisplayedText('');
     setIsTyping(true);
     const fullText = `"${quotes[current].text}"`;
@@ -38,9 +44,10 @@ export default function QuoteCarousel() {
         i++;
       } else {
         setIsTyping(false);
+        setHasAnimated(true);
         clearInterval(interval);
       }
-    }, 35);
+    }, 18);
     return () => clearInterval(interval);
   }, [current]);
 
