@@ -696,7 +696,7 @@ export default function Friends() {
         {/* Friends Modal */}
         {showFriendsModal &&
         <>
-            <div className="fixed inset-0 z-[999]" onClick={() => setShowFriendsModal(false)} />
+            <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowFriendsModal(false)} />
             <div className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
               <div className="px-3 py-1 flex items-center gap-1">
                 <div className="relative flex-1 w-70">
