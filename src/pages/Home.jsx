@@ -364,7 +364,7 @@ export default function Home() {
 
                   style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.5)) drop-shadow(0 0 1px rgba(255,150,0,0.5))' }}
 
-              style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,150,0,0.9)) drop-shadow(0 0 2px rgba(255,150,0,0.9)) drop-shadow(0 0 2px rgba(255,150,0,0.9))' }} />
+              style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.5)) drop-shadow(0 0 1px rgba(255,150,0,0.5))' }}
 
                    <span className="text-white mt-2 text-sm font-black text-left normal-case tracking-tight -ml-2.5">{userStreak}</span>
                 </button>
