@@ -40,7 +40,7 @@ export default function QuoteCarousel() {
         setIsTyping(false);
         clearInterval(interval);
       }
-    }, 28);
+    }, 65);
     return () => clearInterval(interval);
   }, [current]);
 
@@ -117,7 +117,7 @@ export default function QuoteCarousel() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isTyping ? 0 : 0.9 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 1 }}
                 className="mt-4 text-slate-300 text-sm font-medium tracking-widest">
                 — {quotes[current].author}
               </motion.p>
