@@ -47,29 +47,29 @@ export default function BusyTimesChart({ checkIns, gymId }) {
     const all24 = Array.from({ length: 24 }, (_, i) => ({ hour: i, percentage: null, isClosed: false }));
 
     if (useBestTime) {
-      const dayData = bestTimeData.weekData.find(d => d.day_int === selectedDay);
+      const dayData = bestTimeData.weekData.find((d) => d.day_int === selectedDay);
       if (dayData) {
-        dayData.hours.forEach(h => {
+        dayData.hours.forEach((h) => {
           all24[h.hour].isClosed = h.percentage === -1;
-          all24[h.hour].percentage = (h.percentage === -1 || h.percentage === null) ? 0 : h.percentage;
+          all24[h.hour].percentage = h.percentage === -1 || h.percentage === null ? 0 : h.percentage;
         });
       }
     } else {
       // fallback: count check-ins per hour today
-      checkIns?.forEach(checkIn => {
+      checkIns?.forEach((checkIn) => {
         const date = new Date(checkIn.check_in_date);
         if (date.getDay() === currentDay) all24[date.getHours()].percentage = (all24[date.getHours()].percentage || 0) + 1;
       });
-      const max = Math.max(...all24.map(d => d.percentage || 0), 1);
-      all24.forEach(d => { d.percentage = ((d.percentage || 0) / max) * 100; });
+      const max = Math.max(...all24.map((d) => d.percentage || 0), 1);
+      all24.forEach((d) => {d.percentage = (d.percentage || 0) / max * 100;});
     }
     return all24;
   };
 
   const hourlyData = getHourlyData();
-  const visibleData = VISIBLE_HOURS.map(h => hourlyData[h]);
+  const visibleData = VISIBLE_HOURS.map((h) => hourlyData[h]);
   // avg only over hours that have real data
-  const openHours = visibleData.filter(d => !d.isClosed && d.percentage > 0);
+  const openHours = visibleData.filter((d) => !d.isClosed && d.percentage > 0);
   const avg = openHours.length > 0 ? openHours.reduce((s, d) => s + d.percentage, 0) / openHours.length : 50;
 
   const nowData = hourlyData[currentHour];
@@ -91,58 +91,58 @@ export default function BusyTimesChart({ checkIns, gymId }) {
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-blue-400" />
           <h3 className="text-sm font-bold text-white">Busy Times</h3>
-          {useBestTime && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-medium">
+          {useBestTime &&
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-medium">
               Live
             </span>
-          )}
+          }
         </div>
 
         {/* Now badge */}
-        {isToday && (
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${nowStatus.color} ${nowStatus.textColor}`}>
+        {isToday &&
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${nowStatus.color} ${nowStatus.textColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {nowStatus.label} now
           </div>
-        )}
+        }
       </div>
 
       {/* Day Selector */}
       <div className="flex gap-1 mb-4">
-        {DAYS.map((day, idx) => (
-          <button
-            key={idx}
-            onClick={() => setSelectedDay(idx)}
-            className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
-              selectedDay === idx
-                ? 'bg-blue-500 text-white'
-                : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/60 hover:text-white'
-            } ${idx === bestTimeDayInt ? 'ring-1 ring-cyan-400/40' : ''}`}
-          >
+        {DAYS.map((day, idx) =>
+        <button
+          key={idx}
+          onClick={() => setSelectedDay(idx)} className="flex-1 py-1 rounded-md text-[11px] font-bold transition-all duration-100 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 text-slate-200 hover:text-white shadow-[0_2px_0_0_#1e293b,0_4px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_10px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
+
+
+
+
+
+
             {day}
           </button>
-        ))}
+        )}
       </div>
 
       {/* Chart */}
-      {isLoading ? (
-        <div className="h-24 flex items-center justify-center">
+      {isLoading ?
+      <div className="h-24 flex items-center justify-center">
           <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
-        </div>
-      ) : (
-        <div>
+        </div> :
+
+      <div>
           {/* Bar rows */}
           <div className="flex items-end gap-[3px] h-20">
             {visibleData.map((d, i) => {
-              const hour = VISIBLE_HOURS[i];
-              const isNow = isToday && hour === currentHour;
-              const pct = Math.max(d.percentage || 0, 0);
-              const isClosed = d.isClosed;
-              const heightPct = pct > 0 ? Math.max((pct / 100) * 100, 8) : 0;
-              const { color } = getBusynessLabel(pct, avg, isClosed);
+            const hour = VISIBLE_HOURS[i];
+            const isNow = isToday && hour === currentHour;
+            const pct = Math.max(d.percentage || 0, 0);
+            const isClosed = d.isClosed;
+            const heightPct = pct > 0 ? Math.max(pct / 100 * 100, 8) : 0;
+            const { color } = getBusynessLabel(pct, avg, isClosed);
 
-              return (
-                <div key={hour} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+            return (
+              <div key={hour} className="flex-1 flex flex-col items-center justify-end h-full group relative">
                   {/* Tooltip */}
                   <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
                     <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap border border-slate-600 shadow-lg">
@@ -153,48 +153,48 @@ export default function BusyTimesChart({ checkIns, gymId }) {
 
                   {/* Bar */}
                   <div
-                    className={`w-full rounded-t-sm transition-all ${isClosed ? 'bg-slate-700/30' : pct > 0 ? color : 'bg-slate-700/20'} ${isNow ? 'ring-1 ring-white/60' : ''}`}
-                    style={{ height: isClosed ? '4px' : pct > 0 ? `${heightPct}%` : '4px' }}
-                  />
+                  className={`w-full rounded-t-sm transition-all ${isClosed ? 'bg-slate-700/30' : pct > 0 ? color : 'bg-slate-700/20'} ${isNow ? 'ring-1 ring-white/60' : ''}`}
+                  style={{ height: isClosed ? '4px' : pct > 0 ? `${heightPct}%` : '4px' }} />
+
 
                   {/* "Now" indicator */}
-                  {isNow && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  {isNow &&
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <div className="w-1 h-1 rounded-full bg-white animate-ping" />
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                }
+                </div>);
+
+          })}
           </div>
 
           {/* X-axis labels — show every 3 hours */}
           <div className="flex items-end gap-[3px] mt-1">
-            {VISIBLE_HOURS.map((h, i) => (
-              <div key={h} className="flex-1 text-center">
-                {i % 3 === 0 ? (
-                  <span className="text-[9px] text-slate-500">{formatHour(h)}</span>
-                ) : null}
+            {VISIBLE_HOURS.map((h, i) =>
+          <div key={h} className="flex-1 text-center">
+                {i % 3 === 0 ?
+            <span className="text-[9px] text-slate-500">{formatHour(h)}</span> :
+            null}
               </div>
-            ))}
+          )}
           </div>
         </div>
-      )}
+      }
 
       {/* Legend */}
       <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-slate-700/50">
         {[
-          { color: 'bg-pink-400/30', label: 'Plenty of Space' },
-          { color: 'bg-purple-500/60', label: 'Active' },
-          { color: 'bg-pink-500/70', label: 'High Energy' },
-          { color: 'bg-gradient-to-t from-pink-500 to-purple-500', label: 'Peak Hours' },
-        ].map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-1">
+        { color: 'bg-pink-400/30', label: 'Plenty of Space' },
+        { color: 'bg-purple-500/60', label: 'Active' },
+        { color: 'bg-pink-500/70', label: 'High Energy' },
+        { color: 'bg-gradient-to-t from-pink-500 to-purple-500', label: 'Peak Hours' }].
+        map(({ color, label }) =>
+        <div key={label} className="flex items-center gap-1">
             <div className={`w-2 h-2 rounded-sm ${color}`} />
             <span className="text-[10px] text-slate-400">{label}</span>
           </div>
-        ))}
+        )}
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
