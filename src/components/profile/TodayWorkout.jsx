@@ -355,46 +355,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   }
 
   return (
+  <>
+    <style>{`
+      @keyframes dropIn {
+        0%   { transform: translateY(-8px) scale(0.97); opacity: 0; }
+        60%  { transform: translateY(2px) scale(1.01); opacity: 1; }
+        100% { transform: translateY(0) scale(1); opacity: 1; }
+      }
+    `}</style>
     <Card
-  onClick={() => !isExpanded && setIsExpanded(true)}
-  className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 transition-all duration-300 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer active:scale-95 active:translate-y-[3px]'}`}>
-
-    <div className="space-y-2 mb-4">
-       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 whitespace-nowrap">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-700/90 to-blue-900/90 flex items-center justify-center shadow-md shadow-blue-900/20">
-            <Dumbbell className="w-3.5 h-3.5 text-white" />
-          </div>
-          <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-          <button
-              onClick={(e) => {e.stopPropagation();setShowInfo(!showInfo);}}
-              className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0">
-
-            <Info className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${todayWorkout.name.length > 12 ? 'text-sm leading-6 break-words' : 'text-xl'}`}>
-        {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
-        </h2>
-       </div>
-      {showInfo &&
-        <>
-          <div className="relative z-50 bg-blue-500/10 border border-blue-400/30 rounded-lg p-3" onClick={(e) => e.stopPropagation()}>
-            <p className="text-xs text-blue-200 leading-relaxed mb-2 font-medium">
-              <strong className="text-blue-100">How to use:</strong>
-            </p>
-            <ul className="text-[11px] text-blue-200/90 space-y-1.5 leading-relaxed">
-              <li>• <strong>Expand:</strong> Tap the down arrow to view all exercises</li>
-              <li>• <strong>Update weight/reps:</strong> Click the pencil icon next to any exercise, enter new values, then save</li>
-              <li>• <strong>Track progress:</strong> Green/red badges show weight increases/decreases vs. last workout</li>
-              <li>• <strong>Rest timer:</strong> Click timer, choose duration, hit "Go" - full screen countdown between sets</li>
-              <li>• <strong>Plate calculator:</strong> Use calculator icon to see which plates to load on the bar</li>
-              <li>• <strong>Workout duration:</strong> Auto-starts timer when you check in. Duration displays when you log the workout</li>
-              <li>• <strong>Log completion:</strong> Hit "Log Workout" when finished - see your duration summary and save progress</li>
-            </ul>
-          </div>
-        </>
-        }
+      onClick={() => !isExpanded && setIsExpanded(true)}
+      className={`bg-gradient-to-br from-slate-900/60 via-slate-900/50 to-slate-950/60 backdrop-blur-[50px] border border-white/30 rounded-2xl shadow-2xl shadow-black/30 transition-all duration-300 ${isExpanded ? 'p-5' : 'p-3 cursor-pointer active:scale-95 active:translate-y-[3px]'}`}>
+      <div className="space-y-2 mb-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-700/90 to-blue-900/90 flex items-center justify-c
       {alreadyLoggedToday && !isExpanded &&
         <Button
           onClick={(e) => {
