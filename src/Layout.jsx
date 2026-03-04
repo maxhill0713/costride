@@ -127,14 +127,14 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name} className="relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 transition-all duration-150 text-slate-400 hover:text-slate-100 data-[active=true]:text-slate-100 relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 transition-all duration-150 text-slate-400 hover:text-slate-100 data-[active=true]:text-slate-100 active:scale-50 active:translate-y-[8px] [&:active]:animate-[tabBounce_0.5s_cubic-bezier(0.34,1.8,0.64,1)_forwards]">
+                aria-label={item.name} className="\n              relative flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-0 flex-1 transition-all duration-150 text-slate-400 hover:text-slate-100 data-[active=true]:text-slate-100 rounded-xl active:scale-90 hover:bg-white/5">
 
 
 
 
 
                 <div className="relative">
-                  <item.icon className="lucide lucide-crown lucide lucide-house w-6 h-6 text-indigo-500 transition-all duration-200 active:scale-75 active:translate-y-[2px] animate-[tabBounce_0.4s_cubic-bezier(0.34,1.8,0.64,1)] lucide lucide-house w-6 h-6 text-indigo-500 transition-all duration-200 active:scale-50 active:translate-y-[8px] active:rotate-12" strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
