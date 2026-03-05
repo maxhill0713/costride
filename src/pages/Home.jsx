@@ -351,37 +351,43 @@ export default function Home() {
   };
 
   return (
-    <PullToRefresh onRefresh={async () => {
-      await queryClient.invalidateQueries();
-    }}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        {/* Header with Streak */}
-         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
-           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
-                 <button
-              onClick={() => setShowStreakVariants(true)}
-              className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
+  <PullToRefresh onRefresh={async () => {
+    await queryClient.invalidateQueries();
+  }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Header with Streak */}
+      <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
+          <button
+            onClick={() => setShowStreakVariants(true)}
+            className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-14 h-14 -ml-2 animate-[breathe_3s_ease-in-out_infinite]" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
+            <span className="text-white mt-5 text-m font-black text-left normal-case tracking-tight -ml-3">{userStreak}</span>
+          </button>
 
-                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-14 h-14 -ml-2 animate-[breathe_3s_ease-in-out_infinite]" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
+          {/* SVG Logo replacing text */}
+          <svg viewBox="0 0 500 700" xmlns="http://www.w3.org/2000/svg" width="36" height="50">
+            <circle cx="285" cy="130" r="55" fill="#F05A28" />
+            <path d="M200 280 Q120 260 80 300 Q100 340 170 330 Q230 310 260 290 Z" fill="#C84B1A" />
+            <path d="M240 200 Q270 210 290 230 Q340 310 310 420 Q290 500 260 570 Q240 620 220 660 Q200 680 180 670 Q160 655 185 630 Q210 600 230 560 Q255 510 265 450 Q275 390 250 330 Q230 280 210 260 Q190 240 200 220 Q210 200 240 200 Z" fill="#F05A28" />
+            <path d="M290 230 Q330 180 370 120 Q400 70 430 50 Q450 100 420 130 Q400 150 380 170 L410 155 L390 195 L360 175 Q340 220 310 270 Q295 295 280 280 Z" fill="#F05A28" />
+            <path d="M400 50 L450 40 L430 90 Z" fill="#F05A28" />
+            <path d="M250 550 Q230 600 200 650 Q180 680 155 685 Q135 680 140 660 Q145 645 165 640 Q190 630 210 600 Q235 565 248 540 Z" fill="#C84B1A" />
+            <path d="M265 550 Q275 600 290 640 Q305 670 320 680 Q340 688 345 668 Q348 650 330 638 Q310 622 298 595 Q282 562 268 540 Z" fill="#F05A28" />
+          </svg>
 
-                   <span className="text-white mt-5 text-m font-black text-left normal-case tracking-tight -ml-3">{userStreak}</span>
-                </button>
-                <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
-                  CoStride
-                </h1>
-                <Link to={createPageUrl('Friends')} onClick={() => {
-              if (currentUser) {
-                base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
-              }
-            }} className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
-                   <div className="relative">
-                    <FriendsIcon className="w-7 h-7 text-cyan-400" />
-                    {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view) || notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
-                  </div>
-                </Link>
-              </div>
-          </div>
-
+          <Link to={createPageUrl('Friends')} onClick={() => {
+            if (currentUser) {
+              base44.auth.updateMe({ last_friends_view: new Date().toISOString() });
+            }
+          }} className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
+            <div className="relative">
+              <FriendsIcon className="w-7 h-7 text-cyan-400" />
+              {(friendPosts.length > 0 || notifications.length > 0) && (!currentUser?.last_friends_view || friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view) || notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view)) && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />}
+            </div>
+          </Link>
+        </div>
+      </div>
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {/* Check-In Button - Full Width */}
           {memberGym &&
