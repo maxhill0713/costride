@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -220,7 +220,6 @@ export default function GymSignup() {
               <h1 className="text-3xl font-black text-white tracking-tight mb-1">Welcome to CoStride</h1>
               <p className="text-slate-400 text-sm">Your gym community platform</p>
             </div>
-
             <div className="space-y-3">
               {[
                 {
@@ -257,7 +256,6 @@ export default function GymSignup() {
                 </div>
               ))}
             </div>
-
             <Button
               onClick={() => setStep(2)}
               className="w-full bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-13 text-base shadow-[0_4px_0_0_#1a3fa8] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2"
@@ -275,7 +273,6 @@ export default function GymSignup() {
               <h2 className="text-2xl font-black text-white tracking-tight">Select Your Gym</h2>
               <p className="text-slate-400 text-sm mt-0.5">Search and claim your gym's community</p>
             </div>
-
             <div className="relative">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -287,7 +284,6 @@ export default function GymSignup() {
                 />
                 {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 animate-spin" />}
               </div>
-
               {searchResults.length > 0 && (
                 <div className="absolute z-30 w-full mt-2 bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl max-h-72 overflow-y-auto">
                   {searchResults.slice(0, 8).map((place, idx) => (
@@ -315,14 +311,12 @@ export default function GymSignup() {
                 </div>
               )}
             </div>
-
             {selectedPlace && (
               <div className="space-y-3">
                 <div className="p-3 bg-green-500/15 border border-green-500/30 rounded-xl flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
                   <span className="text-sm text-green-300 font-medium">{selectedPlace.name} selected</span>
                 </div>
-
                 <div>
                   <Label className="text-white font-bold text-sm mb-2 block">Gym Type</Label>
                   <div className="grid grid-cols-3 gap-2">
@@ -343,7 +337,6 @@ export default function GymSignup() {
                     ))}
                   </div>
                 </div>
-
                 <Button
                   onClick={() => setStep(3)}
                   className="w-full bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2"
@@ -352,7 +345,6 @@ export default function GymSignup() {
                 </Button>
               </div>
             )}
-
             {!selectedPlace && (
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-slate-800/60 rounded-2xl flex items-center justify-center mx-auto mb-3">
@@ -374,7 +366,6 @@ export default function GymSignup() {
                 Prove you own <span className="text-white font-semibold">{formData.name}</span>
               </p>
             </div>
-
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -399,7 +390,6 @@ export default function GymSignup() {
                 <Instagram className="w-4 h-4" /> Instagram
               </button>
             </div>
-
             {verifyMethod === 'email' && (
               <div className="space-y-3">
                 <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -408,7 +398,6 @@ export default function GymSignup() {
                     <span className="font-mono">owner@yourgym.com</span>)
                   </p>
                 </div>
-
                 <div>
                   <Label className="text-white font-bold text-sm mb-1.5 block">Business Email</Label>
                   <Input
@@ -425,7 +414,6 @@ export default function GymSignup() {
                     className="rounded-xl border border-white/10 bg-slate-800/60 text-white placeholder:text-slate-500 h-11 text-sm"
                   />
                 </div>
-
                 {emailStatus === 'verified' && (
                   <div className="p-3 bg-green-500/15 border border-green-500/30 rounded-xl flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
@@ -435,7 +423,6 @@ export default function GymSignup() {
                     </div>
                   </div>
                 )}
-
                 {emailStatus === 'manual_review' && (
                   <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -445,7 +432,6 @@ export default function GymSignup() {
                     </div>
                   </div>
                 )}
-
                 {businessEmail && !codeSent && (
                   <Button
                     type="button"
@@ -458,7 +444,6 @@ export default function GymSignup() {
                       : <>Send Verification Code <Mail className="w-4 h-4" /></>}
                   </Button>
                 )}
-
                 {codeSent && (
                   <div className="space-y-2">
                     <Label className="text-white font-bold text-sm mb-1.5 block">Enter the code we sent</Label>
@@ -480,7 +465,6 @@ export default function GymSignup() {
                 )}
               </div>
             )}
-
             {verifyMethod === 'instagram' && (
               <div className="space-y-3">
                 <div className="p-3 bg-pink-500/10 border border-pink-500/20 rounded-xl">
@@ -508,7 +492,6 @@ export default function GymSignup() {
                 </div>
               </div>
             )}
-
             <div className="flex gap-3 pt-1">
               <Button
                 type="button"
@@ -526,7 +509,6 @@ export default function GymSignup() {
                 Continue <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
-
             <button
               type="button"
               onClick={() => setStep(4)}
@@ -544,7 +526,6 @@ export default function GymSignup() {
               <h2 className="text-2xl font-black text-white tracking-tight">Set Up Your Profile</h2>
               <p className="text-slate-400 text-sm mt-0.5">Help members know what your gym is about</p>
             </div>
-
             <div>
               <Label className="text-white font-bold text-sm mb-1.5 block">Cover Photo</Label>
               <button
@@ -579,7 +560,6 @@ export default function GymSignup() {
                 }}
               />
             </div>
-
             <div>
               <Label className="text-white font-bold text-sm mb-1.5 block">Description</Label>
               <textarea
@@ -590,7 +570,6 @@ export default function GymSignup() {
                 className="w-full rounded-xl border border-white/10 bg-slate-800/60 text-white placeholder:text-slate-500 text-sm p-3 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
               />
             </div>
-
             <div>
               <Label className="text-white font-bold text-sm mb-1.5 flex items-center gap-1.5 block">
                 <Star className="w-3.5 h-3.5 text-purple-400" />
@@ -613,7 +592,6 @@ export default function GymSignup() {
                 ))}
               </div>
             </div>
-
             <div>
               <Label className="text-white font-bold text-sm mb-1.5 flex items-center gap-1.5 block">
                 <Dumbbell className="w-3.5 h-3.5 text-blue-400" /> Equipment
@@ -635,7 +613,6 @@ export default function GymSignup() {
                 ))}
               </div>
             </div>
-
             <div>
               <Label className="text-white font-bold text-sm mb-1.5 flex items-center gap-1.5 block">
                 <Building2 className="w-3.5 h-3.5 text-green-400" /> Amenities
@@ -657,7 +634,6 @@ export default function GymSignup() {
                 ))}
               </div>
             </div>
-
             <div className="flex gap-3 pt-1">
               <Button
                 type="button"
@@ -677,7 +653,6 @@ export default function GymSignup() {
                   : <>Complete Registration <ArrowRight className="w-4 h-4" /></>}
               </Button>
             </div>
-
             <button
               type="button"
               onClick={handleSubmit}
@@ -699,24 +674,20 @@ export default function GymSignup() {
               <h2 className="text-2xl font-black text-white tracking-tight">You're Ready to Go!</h2>
               <p className="text-slate-400 text-sm mt-1">Activate your community and start growing</p>
             </div>
-
             <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-5 space-y-3">
               <div className="flex items-center gap-2 justify-center">
                 <QrCode className="w-5 h-5 text-blue-400" />
                 <span className="font-bold text-white">Your Gym QR Code</span>
               </div>
-
               <div className="w-40 h-40 mx-auto bg-white rounded-2xl flex items-center justify-center shadow-lg">
                 <div className="text-center">
                   <QrCode className="w-24 h-24 text-slate-900 mx-auto" />
                   <p className="text-slate-600 text-xs font-mono mt-1">{createdGym?.join_code || 'ABC123'}</p>
                 </div>
               </div>
-
               <p className="text-slate-400 text-xs leading-relaxed">
                 Display this at your gym so members can scan and join your community instantly.
               </p>
-
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -732,14 +703,12 @@ export default function GymSignup() {
                 </Button>
               </div>
             </div>
-
             <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-left">
               <p className="text-xs text-blue-300 font-bold mb-0.5">💡 Pro tip</p>
               <p className="text-xs text-slate-400">
                 We can email you a print-ready poster with your QR code — perfect for displaying at reception or on your gym floor.
               </p>
             </div>
-
             <Button
               type="button"
               onClick={() => setStep(6)}
@@ -758,7 +727,6 @@ export default function GymSignup() {
               <h2 className="text-2xl font-black text-white tracking-tight">Community Activated!</h2>
               <p className="text-slate-400 text-sm mt-1">Here's how to kick things off</p>
             </div>
-
             <div className="space-y-3">
               {[
                 {
@@ -802,7 +770,6 @@ export default function GymSignup() {
                 </div>
               ))}
             </div>
-
             <Button
               type="button"
               onClick={() => navigate(createPageUrl('GymOwnerDashboard'))}
