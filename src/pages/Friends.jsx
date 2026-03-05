@@ -841,10 +841,10 @@ export default function Friends() {
           </>
         }
 
-        {/* Add Friend Modal */}
+       {/* Add Friend Modal */}
 {showAddModal && (
   <>
-    {/* 1. Backdrop (The Curtain) - Clicking this closes the popup */}
+    {/* Backdrop: Clicking off closes everything */}
     <div 
       className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" 
       onClick={() => {
@@ -853,21 +853,22 @@ export default function Friends() {
       }} 
     />
 
-    {/* 2. Modal Content (The Box) - Styled exactly like your Friends modal */}
     <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 overflow-hidden">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-white">Add Friend</h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            setShowAddModal(false);
-            setSearchQuery('');
-          }}
-          className="text-slate-400 hover:text-white"
-        >
-          <X className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Back Arrow: Styled like your main header back button */}
+          <button
+            onClick={() => {
+              setShowAddModal(false);
+              setShowFriendsModal(true); // Takes you back to Friends list
+              setSearchQuery('');
+            }}
+            className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h3 className="text-lg font-bold text-white">Add Friend</h3>
+        </div>
       </div>
 
       <div className="mb-4">
