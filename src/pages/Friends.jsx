@@ -853,37 +853,38 @@ export default function Friends() {
       }} 
     />
 
-    <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 overflow-hidden">
+    <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
       
-      {/* Search Row - Matches Friends Modal Layout */}
-      <div className="flex items-center gap-1 mb-4">
-        {/* Back Arrow - Nudged left for balance */}
-        <button
-          onClick={() => {
-            setShowAddModal(false);
-            setShowFriendsModal(true);
-            setSearchQuery('');
-          }}
-          className="w-10 h-10 -ml-2 flex items-center justify-center text-white/80 hover:text-white transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
-        {/* Search Bar - Positioned exactly like the other modal */}
-        <div className="relative flex-1">
+      {/* Header Container - Matches Friends Modal exactly (px-3 py-1 gap-1) */}
+      <div className="px-3 py-1 flex items-center gap-1">
+        
+        {/* Search Bar - Exact style and position match */}
+        <div className="relative flex-1 w-70">
           <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2px)] w-3.5 h-3.5 text-slate-400" />
           <Input
             autoFocus
             placeholder="Add Friends"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="relative top-0.5 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200"
+            className="relative top-1 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200"
           />
         </div>
+
+        {/* Back Button - Positioned exactly where the Add button was */}
+        <Button
+          onClick={() => {
+            setShowAddModal(false);
+            setShowFriendsModal(true);
+            setSearchQuery('');
+          }}
+          className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Results Section */}
-      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
         {searchQuery.length < 2 ? (
           <p className="text-center text-slate-400 text-sm py-8">
             Type at least 2 characters to search
