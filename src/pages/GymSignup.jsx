@@ -106,7 +106,6 @@ export default function GymSignup() {
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
   const [createdGym, setCreatedGym] = useState(null);
 
-  // Equipment search state
   const [equipmentSearch, setEquipmentSearch] = useState('');
   const [equipmentSuggestions, setEquipmentSuggestions] = useState([]);
 
@@ -129,14 +128,12 @@ export default function GymSignup() {
     return () => clearInterval(timer);
   }, [step]);
 
-  // Equipment search — filter presets + allow custom
   useEffect(() => {
     if (!equipmentSearch.trim()) { setEquipmentSuggestions([]); return; }
     const query = equipmentSearch.toLowerCase();
     const filtered = PRESET_EQUIPMENT.filter(e =>
       e.toLowerCase().includes(query) && !formData.equipment.includes(e)
     );
-    // If typed text doesn't exactly match a preset, add "Add X" option
     const exactMatch = PRESET_EQUIPMENT.some(e => e.toLowerCase() === query);
     const alreadyAdded = formData.equipment.some(e => e.toLowerCase() === query);
     if (!exactMatch && !alreadyAdded && equipmentSearch.trim().length > 1) {
@@ -282,6 +279,7 @@ export default function GymSignup() {
 
       const gymLanguage = detectLanguageFromCity(data.city);
       const isVerified = emailVerified;
+      const gymStatus = isVerified ? 'approved' : 'pending';
 
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let joinCode = '';
@@ -301,7 +299,7 @@ export default function GymSignup() {
           specializes_in: data.specializes_in,
           description: data.description,
           claim_status: 'claimed',
-          status: isVerified ? 'approved' : 'pending',
+          status: gymStatus,
           verified: isVerified
         });
       } else {
@@ -324,7 +322,7 @@ export default function GymSignup() {
           verified: isVerified,
           admin_id: user.id,
           claim_status: 'claimed',
-          status: isVerified ? 'approved' : 'pending'
+          status: gymStatus
         });
       }
 
@@ -344,7 +342,11 @@ export default function GymSignup() {
     onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      toast.success('Gym registered successfully!');
+      if (gym.status === 'pending') {
+        toast.success("Gym submitted! We'll review it within 24 hours.");
+      } else {
+        toast.success('Gym registered and live!');
+      }
       setCreatedGym(gym);
       setStep(7);
     },
@@ -706,8 +708,6 @@ export default function GymSignup() {
               <Dumbbell className="w-4 h-4 text-blue-400" /> Equipment
               <span className="text-xs font-normal text-slate-400">(optional)</span>
             </Label>
-
-            {/* Search input */}
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <Input
@@ -722,8 +722,6 @@ export default function GymSignup() {
                 placeholder="Search or type custom equipment..."
                 className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 pl-9 h-10 text-sm"
               />
-
-              {/* Suggestions dropdown */}
               {equipmentSuggestions.length > 0 && (
                 <div className="absolute z-20 w-full mt-1 bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
                   {equipmentSuggestions.map((item, idx) => {
@@ -742,24 +740,19 @@ export default function GymSignup() {
                 </div>
               )}
             </div>
-
-            {/* Selected equipment tags */}
-            {formData.equipment.length > 0 && (
+            {formData.equipment.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {formData.equipment.map((item) => (
                   <div key={item}
                     className="inline-flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-medium px-3 py-1.5 rounded-xl">
                     {item}
-                    <button onClick={() => removeEquipment(item)}
-                      className="text-blue-300 hover:text-white transition-colors ml-0.5">
+                    <button onClick={() => removeEquipment(item)} className="text-blue-300 hover:text-white transition-colors ml-0.5">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
               </div>
-            )}
-
-            {formData.equipment.length === 0 && (
+            ) : (
               <p className="text-slate-500 text-xs">No equipment added yet — search above to add</p>
             )}
           </div>
@@ -813,17 +806,39 @@ export default function GymSignup() {
       <PageWrapper>
         <div className="text-center">
           <div className="flex flex-col items-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-green-500/20 rounded-3xl flex items-center justify-center border border-green-400/30">
-              <CheckCircle2 className="w-8 h-8 text-green-400" />
+            <div className={`w-16 h-16 rounded-3xl flex items-center justify-center border ${
+              createdGym?.status === 'pending'
+                ? 'bg-amber-500/20 border-amber-400/30'
+                : 'bg-green-500/20 border-green-400/30'
+            }`}>
+              {createdGym?.status === 'pending'
+                ? <AlertCircle className="w-8 h-8 text-amber-400" />
+                : <CheckCircle2 className="w-8 h-8 text-green-400" />
+              }
             </div>
-            <h1 className="text-3xl font-black text-white">You're Ready!</h1>
+            <h1 className="text-3xl font-black text-white">
+              {createdGym?.status === 'pending' ? 'Under Review!' : "You're Ready!"}
+            </h1>
             <p className="text-slate-400 text-sm">
-              <span className="text-white font-semibold">{createdGym?.name}</span> is live on CoStride
+              {createdGym?.status === 'pending'
+                ? <><span className="text-amber-400 font-semibold">Pending approval</span> — we'll review <span className="text-white font-semibold">{createdGym?.name}</span> within 24 hours</>
+                : <><span className="text-white font-semibold">{createdGym?.name}</span> is live on CoStride</>
+              }
             </p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl mb-4">
-            <p className="text-slate-300 text-sm mb-4">Display this QR code so members can join your community instantly</p>
+            {createdGym?.status === 'pending' && (
+              <div className="p-4 bg-amber-500/10 border border-amber-400/20 rounded-2xl mb-5 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="text-amber-300 font-semibold text-sm">What happens next?</p>
+                  <p className="text-amber-200/80 text-xs mt-1 leading-relaxed">Our team will verify your gym ownership within 24 hours. You'll receive an email once approved. Your QR code is ready to share in the meantime.</p>
+                </div>
+              </div>
+            )}
+
+            <p className="text-slate-300 text-sm mb-4">Share this QR code so members can join your community</p>
             <div className="flex justify-center mb-4">
               <div className="bg-blue-900 p-4 rounded-2xl border border-blue-400/20 shadow-xl">
                 <div id="qr-container" className="w-[180px] h-[180px]" />
