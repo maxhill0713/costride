@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +9,9 @@ import { Card } from '@/components/ui/card';
 import {
   Dumbbell, Loader2, CheckCircle2, Search, MapPin, AlertCircle,
   ArrowRight, Building2, Star, Users, Trophy, Zap, ChevronRight,
-  QrCode, Bell, Camera, Mail, Instagram, Shield, Sparkles
+  Bell, Mail, Instagram, Shield, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
-import QRCode from 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
 
 const PREVIEW_SLIDES = [
   {
@@ -33,7 +32,7 @@ const PREVIEW_SLIDES = [
     icon: Zap,
     color: 'from-orange-400 to-yellow-500',
     title: 'Instant Insights',
-    description: 'See who\'s training, peak hours, retention rates and more on your dashboard.',
+    description: "See who's training, peak hours, retention rates and more on your dashboard.",
     bg: 'from-orange-900/80 to-yellow-900/40'
   },
   {
@@ -94,32 +93,43 @@ export default function GymSignup() {
 
   // Auto-advance preview slides
   useEffect(() => {
-    if (step !== 2) return;
+    if (step !== 1) return;
     const timer = setInterval(() => {
       setSlideIndex(prev => (prev + 1) % PREVIEW_SLIDES.length);
     }, 3000);
     return () => clearInterval(timer);
   }, [step]);
 
-  // Generate QR code when on step 7
+  const generateQR = useCallback(() => {
+    setTimeout(() => {
+      const el = document.getElementById('qr-container');
+      if (el && createdGym?.join_code) {
+        el.innerHTML = '';
+        new window.QRCode(el, {
+          text: `https://costride.app/join/${createdGym.join_code}`,
+          width: 180,
+          height: 180,
+          colorDark: '#ffffff',
+          colorLight: '#1e3a5f',
+          correctLevel: window.QRCode.CorrectLevel.H
+        });
+      }
+    }, 300);
+  }, [createdGym]);
+
   useEffect(() => {
-    if (step === 7 && createdGym?.join_code) {
-      setTimeout(() => {
-        const el = document.getElementById('qr-container');
-        if (el && el.innerHTML === '') {
-          el.innerHTML = '';
-          new window.QRCode(el, {
-            text: `https://costride.app/join/${createdGym.join_code}`,
-            width: 180,
-            height: 180,
-            colorDark: '#ffffff',
-            colorLight: '#1e3a5f',
-            correctLevel: window.QRCode.CorrectLevel.H
-          });
-        }
-      }, 300);
+    if (step !== 7 || !createdGym?.join_code) return;
+    const existing = document.getElementById('qrcode-script');
+    if (existing) {
+      generateQR();
+      return;
     }
-  }, [step, createdGym]);
+    const script = document.createElement('script');
+    script.id = 'qrcode-script';
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    script.onload = () => generateQR();
+    document.head.appendChild(script);
+  }, [step, createdGym, generateQR]);
 
   const verifyEmailDomain = (email, website) => {
     if (!email || !website) return null;
@@ -282,30 +292,23 @@ export default function GymSignup() {
   // ─── STEP 1: App Preview ──────────────────────────────────────────────────
   if (step === 1) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${slide.bg} via-slate-900 to-blue-950 flex flex-col items-center justify-between p-6 relative overflow-hidden transition-all duration-700`}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex flex-col items-center justify-between p-6 relative overflow-hidden transition-all duration-700">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 opacity-80" />
 
-        {/* Skip */}
         <div className="w-full flex justify-end relative z-10 pt-2">
           <button onClick={() => setStep(2)} className="text-slate-400 text-sm font-semibold hover:text-white transition-colors">
             Skip →
           </button>
         </div>
 
-        {/* Slide content */}
         <div className="flex-1 flex flex-col items-center justify-center relative z-10 text-center max-w-sm">
           <div className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${slide.color} flex items-center justify-center mb-8 shadow-2xl transition-all duration-500`}>
             <SlideIcon className="w-12 h-12 text-white" strokeWidth={1.5} />
           </div>
-          <h2 className="text-3xl font-black text-white mb-4 leading-tight transition-all duration-500">
-            {slide.title}
-          </h2>
-          <p className="text-slate-300 text-base leading-relaxed transition-all duration-500">
-            {slide.description}
-          </p>
+          <h2 className="text-3xl font-black text-white mb-4 leading-tight">{slide.title}</h2>
+          <p className="text-slate-300 text-base leading-relaxed">{slide.description}</p>
         </div>
 
-        {/* Dots + Button */}
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
           <div className="flex gap-2">
             {PREVIEW_SLIDES.map((_, i) => (
@@ -316,8 +319,7 @@ export default function GymSignup() {
           </div>
           <button
             onClick={() => setStep(2)}
-            className="w-full h-14 rounded-2xl font-bold text-base text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2"
-          >
+            className="w-full h-14 rounded-2xl font-bold text-base text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2">
             Get Started <ArrowRight className="w-5 h-5" />
           </button>
         </div>
@@ -345,7 +347,6 @@ export default function GymSignup() {
           </div>
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
-            {/* Search */}
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <Input
@@ -363,11 +364,11 @@ export default function GymSignup() {
                   <button key={idx} type="button" onClick={() => handleSelectPlace(place)}
                     className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 flex items-start gap-3">
                     <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0 mt-1" />
-                    <div>
-                      <div className="font-semibold text-white text-sm">{place.name}</div>
-                      <div className="text-xs text-slate-400">{place.address}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-white text-sm truncate">{place.name}</div>
+                      <div className="text-xs text-slate-400 truncate">{place.address}</div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-500 ml-auto mt-1 flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-slate-500 mt-1 flex-shrink-0" />
                   </button>
                 ))}
               </div>
@@ -378,15 +379,14 @@ export default function GymSignup() {
                 <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Building2 className="w-5 h-5 text-blue-400" />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="font-bold text-white text-sm truncate">{selectedPlace.name}</div>
                   <div className="text-xs text-slate-400 truncate">{selectedPlace.address}</div>
                 </div>
-                <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0 ml-auto" />
+                <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
               </div>
             )}
 
-            {/* Gym Type */}
             <div className="mb-5">
               <Label className="text-white font-semibold text-sm mb-2 block">Gym Type</Label>
               <div className="grid grid-cols-3 gap-2">
@@ -417,7 +417,6 @@ export default function GymSignup() {
           </div>
         </div>
 
-        {/* Ghost Gym Modal */}
         {showGhostGymModal && ghostGym && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="max-w-sm w-full bg-slate-800/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
@@ -472,12 +471,10 @@ export default function GymSignup() {
               <span className="text-blue-300 text-xs font-semibold tracking-wider uppercase">Step 2 of 4</span>
             </div>
             <h1 className="text-3xl font-black text-white">Verify Ownership</h1>
-            <p className="text-slate-400 text-sm text-center">Prove you own <span className="text-white font-semibold">{formData.name}</span></p>
+            <p className="text-slate-400 text-sm">Prove you own <span className="text-white font-semibold">{formData.name}</span></p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
-
-            {/* Method toggle */}
             <div className="flex gap-2 p-1 bg-white/5 rounded-2xl mb-5">
               <button onClick={() => setVerificationMethod('email')}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
@@ -506,7 +503,6 @@ export default function GymSignup() {
                     </div>
                   </div>
                 </div>
-
                 <div>
                   <Label className="text-white font-semibold text-sm mb-2 block">Business Email</Label>
                   <Input
@@ -522,14 +518,12 @@ export default function GymSignup() {
                     className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-12"
                   />
                 </div>
-
                 {emailVerificationStatus === 'verified' && (
                   <div className="p-3 bg-green-500/15 border border-green-500/30 rounded-xl flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <p className="text-sm text-green-300 font-semibold">Domain verified! You'll get instant access.</p>
                   </div>
                 )}
-
                 {emailVerificationStatus === 'manual_review' && (
                   <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -581,8 +575,7 @@ export default function GymSignup() {
               </button>
               <button
                 onClick={() => setStep(4)}
-                disabled={verificationMethod === 'email' && !businessEmail && !instagramHandle}
-                className="flex-1 h-12 rounded-2xl font-bold text-sm text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="flex-1 h-12 rounded-2xl font-bold text-sm text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2">
                 Continue <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -616,8 +609,6 @@ export default function GymSignup() {
           </div>
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
-
-            {/* Description */}
             <div>
               <Label className="text-white font-semibold text-sm mb-2 block">Gym Description</Label>
               <textarea
@@ -629,7 +620,6 @@ export default function GymSignup() {
               />
             </div>
 
-            {/* Specializations */}
             <div>
               <Label className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
                 <Star className="w-4 h-4 text-purple-400" /> Specializations
@@ -649,7 +639,6 @@ export default function GymSignup() {
               </div>
             </div>
 
-            {/* Amenities */}
             <div>
               <Label className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-green-400" /> Amenities
@@ -685,7 +674,8 @@ export default function GymSignup() {
               </button>
             </div>
 
-            <button onClick={() => createGymMutation.mutate({ ...formData, emailVerificationStatus })}
+            <button
+              onClick={() => createGymMutation.mutate({ ...formData, emailVerificationStatus })}
               disabled={createGymMutation.isPending}
               className="w-full text-slate-500 text-xs hover:text-slate-300 transition-colors">
               Skip for now →
@@ -704,8 +694,6 @@ export default function GymSignup() {
         <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-green-900/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-md w-full relative z-10 text-center">
-
-          {/* Success header */}
           <div className="flex flex-col items-center gap-3 mb-6">
             <div className="w-16 h-16 bg-green-500/20 rounded-3xl flex items-center justify-center border border-green-400/30">
               <CheckCircle2 className="w-8 h-8 text-green-400" />
@@ -719,20 +707,17 @@ export default function GymSignup() {
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl mb-4">
             <p className="text-slate-300 text-sm mb-4">Display this QR code so members can join your community instantly</p>
 
-            {/* QR Code */}
             <div className="flex justify-center mb-4">
               <div className="bg-blue-900 p-4 rounded-2xl border border-blue-400/20 shadow-xl">
                 <div id="qr-container" className="w-[180px] h-[180px]" />
               </div>
             </div>
 
-            {/* Join code */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-3 mb-5">
               <p className="text-slate-400 text-xs mb-1">Join Code</p>
               <p className="text-2xl font-black text-white tracking-widest">{createdGym?.join_code}</p>
             </div>
 
-            {/* Quick actions */}
             <div className="grid grid-cols-2 gap-3 mb-5">
               <button className="p-3 bg-purple-500/15 border border-purple-400/30 rounded-2xl text-left hover:bg-purple-500/20 transition-all group">
                 <Trophy className="w-5 h-5 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
