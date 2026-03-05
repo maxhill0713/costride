@@ -852,11 +852,11 @@ export default function Friends() {
     <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
       <div className="px-3 py-1 flex items-center gap-1">
         <div className="relative flex-1 w-70">
-          {/* Icon nudged down slightly more for text alignment */}
+          {/* Nudged down slightly for perfect text alignment */}
           <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
           <Input
             autoFocus
-            placeholder="Add Friends"
+            placeholder="Add Friends..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="relative top-1 shadow-sm flex w-full px-3 py-1 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200"
@@ -867,7 +867,6 @@ export default function Friends() {
           onClick={() => { setShowAddModal(false); setShowFriendsModal(true); setSearchQuery(''); }}
           className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors flex-shrink-0"
         >
-          {/* Rotated to point Right */}
           <ChevronDown className="w-5 h-5 -rotate-90" />
         </button>
       </div>
@@ -879,16 +878,25 @@ export default function Friends() {
           ) : (
             filteredSearchResults.map((user) => (
               <div key={user.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors">
+                {/* Result Row Content (Avatar, Name, Email, Add Button) */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                    {user.avatar_url ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover rounded-lg" /> : <span className="text-sm font-semibold">{user.full_name?.charAt(0)}</span>}
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                    ) : (
+                      <span className="text-sm font-semibold">{user.full_name?.charAt(0)}</span>
+                    )}
                   </div>
                   <div>
                     <div className="font-semibold text-sm">{user.full_name}</div>
                     <div className="text-xs text-slate-400">{user.email}</div>
                   </div>
                 </div>
-                <Button size="sm" onClick={() => addFriendMutation.mutate(user)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                <Button 
+                  size="sm" 
+                  onClick={() => addFriendMutation.mutate(user)} 
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                >
                   <UserPlus className="w-4 h-4" />
                 </Button>
               </div>
