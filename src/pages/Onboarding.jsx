@@ -47,7 +47,7 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center p-4 relative overflow-hidden">
-      
+
       {/* Background orbs */}
       <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-900/15 rounded-full blur-3xl pointer-events-none" />
@@ -56,27 +56,25 @@ export default function Onboarding() {
       <div className="max-w-lg w-full relative z-10">
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="relative inline-block mb-4">
-            <div className="absolute inset-0 bg-blue-500/30 rounded-3xl blur-xl" />
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
-              alt="CoStride Logo"
-              className="relative w-16 h-16 rounded-3xl object-cover shadow-2xl shadow-blue-500/40 border border-white/20"
-            />
-          </div>
-          
-          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/20 rounded-full px-4 py-1.5 mb-4">
+        <div className="text-center mb-8 flex flex-col items-center gap-3">
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
+            alt="CoStride Logo"
+            className="w-16 h-16 rounded-3xl object-cover shadow-2xl shadow-blue-500/40 border border-white/20"
+          />
+
+          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/20 rounded-full px-4 py-1.5">
             <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
             <span className="text-blue-300 text-xs font-semibold tracking-wider uppercase">Get Started</span>
           </div>
 
-          <h1 className="text-4xl font-black text-white mb-2 tracking-tight leading-tight">
-            Welcome to<br />
+          <h1 className="text-4xl font-black text-white tracking-tight leading-tight">
+            Welcome to{' '}
             <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               CoStride
             </span>
           </h1>
+
           <p className="text-slate-400 text-base">
             Choose how you want to use the app
           </p>
@@ -84,7 +82,7 @@ export default function Onboarding() {
 
         {/* Main card */}
         <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl shadow-black/50">
-          
+
           <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-4 text-center">
             Select your account type
           </p>
@@ -104,7 +102,6 @@ export default function Onboarding() {
                       : 'bg-white/5 border-white/8 hover:bg-white/8 hover:border-white/20 hover:scale-[1.01]'
                   }`}
                 >
-                  {/* Selected checkmark */}
                   {isSelected && (
                     <div className="absolute top-3 right-3">
                       <CheckCircle2 className="w-4 h-4 text-blue-400" />
@@ -157,6 +154,7 @@ export default function Onboarding() {
         <p className="text-center text-slate-600 text-xs mt-6">
           By continuing you agree to CoStride's Terms & Privacy Policy
         </p>
+
       </div>
     </div>
   );
