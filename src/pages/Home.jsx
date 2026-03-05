@@ -361,10 +361,19 @@ export default function Home() {
                  <button
               onClick={() => setShowStreakVariants(true)}
               className="flex items-center gap-1 hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
-
-                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png" alt="streak" className="w-14 h-14 -ml-2 animate-[breathe_3s_ease-in-out_infinite]" style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
-
-                   <span className="text-white mt-5 text-m font-black text-left normal-case tracking-tight -ml-3">{userStreak}</span>
+<div className="relative flex items-center">
+  <img
+    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
+    alt="streak"
+    className="w-14 h-14 animate-[breathe_3s_ease-in-out_infinite]"
+    style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }}
+  />
+  {/* Bubble number */}
+  <div className="absolute -top-1 -right-2 min-w-[22px] h-[22px] bg-orange-500 border-2 border-slate-900 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/40"
+    style={{ boxShadow: '0 2px 0 #9a3412, 0 0 8px rgba(249,115,22,0.4)' }}>
+    <span className="text-white text-[11px] font-black leading-none px-1">{userStreak}</span>
+  </div>
+</div>
                 </button>
                 <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   CoStride
