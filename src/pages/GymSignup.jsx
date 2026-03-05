@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import {
-  Dumbbell, Loader2, CheckCircle2, Search, MapPin, AlertCircle,
-  ArrowRight, Building2, Star, Users, Trophy, Zap, ChevronRight,
-  Bell, Mail, Instagram, Shield, Sparkles
+  Loader2, CheckCircle2, Search, MapPin, AlertCircle,
+  ArrowRight, Building2, Star, Users, Trophy, Zap,
+  ChevronRight, Bell, Mail, Instagram, Shield, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,28 +18,24 @@ const PREVIEW_SLIDES = [
     color: 'from-blue-400 to-cyan-500',
     title: 'Build Your Community',
     description: 'Members check in, connect with each other, and stay motivated — all in one place.',
-    bg: 'from-blue-900/80 to-cyan-900/40'
   },
   {
     icon: Trophy,
     color: 'from-purple-400 to-pink-500',
     title: 'Run Challenges',
     description: 'Create leaderboards, weekly challenges and reward your most active members.',
-    bg: 'from-purple-900/80 to-pink-900/40'
   },
   {
     icon: Zap,
     color: 'from-orange-400 to-yellow-500',
     title: 'Instant Insights',
     description: "See who's training, peak hours, retention rates and more on your dashboard.",
-    bg: 'from-orange-900/80 to-yellow-900/40'
   },
   {
     icon: Bell,
     color: 'from-green-400 to-emerald-500',
     title: 'Keep Members Engaged',
     description: 'Send announcements, polls and challenges directly to your members.',
-    bg: 'from-green-900/80 to-emerald-900/40'
   }
 ];
 
@@ -50,20 +45,9 @@ export default function GymSignup() {
   const [slideIndex, setSlideIndex] = useState(0);
 
   const [formData, setFormData] = useState({
-    name: '',
-    google_place_id: '',
-    latitude: null,
-    longitude: null,
-    address: '',
-    city: '',
-    postcode: '',
-    type: 'general',
-    language: 'en',
-    amenities: [],
-    equipment: [],
-    specializes_in: [],
-    description: '',
-    cover_photo: ''
+    name: '', google_place_id: '', latitude: null, longitude: null,
+    address: '', city: '', postcode: '', type: 'general', language: 'en',
+    amenities: [], equipment: [], specializes_in: [], description: ''
   });
 
   const [searchInput, setSearchInput] = useState('');
@@ -72,11 +56,19 @@ export default function GymSignup() {
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [ghostGym, setGhostGym] = useState(null);
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
-  const [emailVerificationStatus, setEmailVerificationStatus] = useState(null);
-  const [businessEmail, setBusinessEmail] = useState('');
-  const [instagramHandle, setInstagramHandle] = useState('');
-  const [verificationMethod, setVerificationMethod] = useState('email');
   const [createdGym, setCreatedGym] = useState(null);
+
+  // Verification state
+  const [verificationMethod, setVerificationMethod] = useState('email');
+  const [businessEmail, setBusinessEmail] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [enteredCode, setEnteredCode] = useState('');
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [instagramHandle, setInstagramHandle] = useState('');
+  const [instagramCode] = useState(() => 'CSTR-' + Math.random().toString(36).substring(2, 7).toUpperCase());
 
   const amenitiesOptions = ['WiFi', 'Parking', '24/7', 'Personal Training', 'Showers', 'Lockers', 'Sauna', 'Smoothie Bar'];
   const specializationOptions = ['Weight Loss', 'Muscle Gain', 'Bulking Programs', 'Strength Training', 'Powerlifting', 'Bodybuilding', 'CrossFit', 'HIIT', 'Cardio', 'Rehabilitation'];
@@ -91,12 +83,9 @@ export default function GymSignup() {
 
   const queryClient = useQueryClient();
 
-  // Auto-advance preview slides
   useEffect(() => {
     if (step !== 1) return;
-    const timer = setInterval(() => {
-      setSlideIndex(prev => (prev + 1) % PREVIEW_SLIDES.length);
-    }, 3000);
+    const timer = setInterval(() => setSlideIndex(prev => (prev + 1) % PREVIEW_SLIDES.length), 3000);
     return () => clearInterval(timer);
   }, [step]);
 
@@ -107,10 +96,8 @@ export default function GymSignup() {
         el.innerHTML = '';
         new window.QRCode(el, {
           text: `https://costride.app/join/${createdGym.join_code}`,
-          width: 180,
-          height: 180,
-          colorDark: '#ffffff',
-          colorLight: '#1e3a5f',
+          width: 180, height: 180,
+          colorDark: '#ffffff', colorLight: '#1e3a5f',
           correctLevel: window.QRCode.CorrectLevel.H
         });
       }
@@ -120,26 +107,13 @@ export default function GymSignup() {
   useEffect(() => {
     if (step !== 7 || !createdGym?.join_code) return;
     const existing = document.getElementById('qrcode-script');
-    if (existing) {
-      generateQR();
-      return;
-    }
+    if (existing) { generateQR(); return; }
     const script = document.createElement('script');
     script.id = 'qrcode-script';
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
     script.onload = () => generateQR();
     document.head.appendChild(script);
   }, [step, createdGym, generateQR]);
-
-  const verifyEmailDomain = (email, website) => {
-    if (!email || !website) return null;
-    const emailDomain = email.split('@')[1]?.toLowerCase();
-    const genericProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com'];
-    if (genericProviders.includes(emailDomain)) return 'manual_review';
-    let websiteDomain = website.toLowerCase()
-      .replace('http://', '').replace('https://', '').replace('www.', '').split('/')[0];
-    return (emailDomain === websiteDomain || websiteDomain.includes(emailDomain)) ? 'verified' : 'manual_review';
-  };
 
   const detectLanguageFromCity = (city) => {
     const spanishCities = ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza'];
@@ -152,11 +126,8 @@ export default function GymSignup() {
     try {
       const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
       setSearchResults(response.data.results || []);
-    } catch (error) {
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
+    } catch { setSearchResults([]); }
+    finally { setSearching(false); }
   };
 
   const handleSelectPlace = async (place) => {
@@ -172,52 +143,68 @@ export default function GymSignup() {
       } else {
         setFormData(prev => ({
           ...prev,
-          name: place.name,
-          google_place_id: place.place_id,
-          latitude: place.latitude,
-          longitude: place.longitude,
-          address: place.address || '',
-          city: place.city || '',
-          postcode: place.postcode || ''
+          name: place.name, google_place_id: place.place_id,
+          latitude: place.latitude, longitude: place.longitude,
+          address: place.address || '', city: place.city || '', postcode: place.postcode || ''
         }));
       }
-      if (businessEmail && place.website) {
-        setEmailVerificationStatus(verifyEmailDomain(businessEmail, place.website));
-      }
-    } catch (error) {
+    } catch {
       setFormData(prev => ({
         ...prev,
-        name: place.name,
-        google_place_id: place.place_id,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        address: place.address || '',
-        city: place.city || '',
-        postcode: place.postcode || ''
+        name: place.name, google_place_id: place.place_id,
+        latitude: place.latitude, longitude: place.longitude,
+        address: place.address || '', city: place.city || '', postcode: place.postcode || ''
       }));
     }
   };
 
   const handleClaimGhostGym = () => {
-    if (ghostGym) {
-      setFormData(prev => ({
-        ...prev,
-        name: ghostGym.name,
-        google_place_id: ghostGym.google_place_id,
-        latitude: ghostGym.latitude,
-        longitude: ghostGym.longitude,
-        address: ghostGym.address || '',
-        city: ghostGym.city || '',
-        postcode: ghostGym.postcode || '',
-        type: ghostGym.type || 'general',
-        amenities: ghostGym.amenities || [],
-        equipment: ghostGym.equipment || [],
-        specializes_in: ghostGym.specializes_in || [],
-        claimingGymId: ghostGym.id
-      }));
-      setShowGhostGymModal(false);
-      toast.success('Gym found! Complete signup to claim it.');
+    if (!ghostGym) return;
+    setFormData(prev => ({
+      ...prev,
+      name: ghostGym.name, google_place_id: ghostGym.google_place_id,
+      latitude: ghostGym.latitude, longitude: ghostGym.longitude,
+      address: ghostGym.address || '', city: ghostGym.city || '',
+      postcode: ghostGym.postcode || '', type: ghostGym.type || 'general',
+      amenities: ghostGym.amenities || [], equipment: ghostGym.equipment || [],
+      specializes_in: ghostGym.specializes_in || [], claimingGymId: ghostGym.id
+    }));
+    setShowGhostGymModal(false);
+    toast.success('Gym found! Complete signup to claim it.');
+  };
+
+  // Send 6-digit code to business email
+  const handleSendCode = async () => {
+    if (!businessEmail) return;
+    setSendingCode(true);
+    try {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      await base44.functions.invoke('sendEmail', {
+        to: businessEmail,
+        subject: 'Your CoStride Verification Code',
+        body: `Hi,\n\nYour CoStride gym verification code is:\n\n${code}\n\nEnter this code to verify ownership of ${formData.name}.\n\nThis code expires in 10 minutes.\n\n— The CoStride Team`
+      });
+      setCodeSent(true);
+      toast.success(`Code sent to ${businessEmail}`);
+    } catch (err) {
+      toast.error('Failed to send code. Please check the email and try again.');
+    } finally {
+      setSendingCode(false);
     }
+  };
+
+  // Verify entered code against generated code
+  const handleVerifyCode = async () => {
+    setVerifyingCode(true);
+    await new Promise(r => setTimeout(r, 600));
+    if (enteredCode === generatedCode) {
+      setEmailVerified(true);
+      toast.success('Email verified! You\'ll get instant access.');
+    } else {
+      toast.error('Incorrect code. Please try again.');
+    }
+    setVerifyingCode(false);
   };
 
   const createGymMutation = useMutation({
@@ -225,7 +212,7 @@ export default function GymSignup() {
       const user = await base44.auth.me();
       await base44.auth.updateMe({ account_type: 'gym_owner', onboarding_completed: true });
       const gymLanguage = data.language || detectLanguageFromCity(data.city);
-      const isVerified = data.emailVerificationStatus === 'verified';
+      const isVerified = emailVerified;
 
       let gym;
       if (data.claimingGymId) {
@@ -233,37 +220,24 @@ export default function GymSignup() {
           name: data.name, type: data.type, language: gymLanguage,
           owner_email: user.email, admin_id: user.id,
           amenities: data.amenities, equipment: data.equipment,
-          specializes_in: data.specializes_in,
-          claim_status: 'claimed',
-          status: isVerified ? 'approved' : 'pending',
-          verified: isVerified
+          specializes_in: data.specializes_in, claim_status: 'claimed',
+          status: isVerified ? 'approved' : 'pending', verified: isVerified
         });
       } else {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let joinCode = '';
         for (let i = 0; i < 6; i++) joinCode += chars.charAt(Math.floor(Math.random() * chars.length));
-
         gym = await base44.entities.Gym.create({
-          ...data,
-          language: gymLanguage,
-          owner_email: user.email,
-          join_code: joinCode,
-          verified: isVerified,
-          admin_id: user.id,
-          claim_status: 'claimed',
-          status: isVerified ? 'approved' : 'pending'
+          ...data, language: gymLanguage, owner_email: user.email,
+          join_code: joinCode, verified: isVerified, admin_id: user.id,
+          claim_status: 'claimed', status: isVerified ? 'approved' : 'pending'
         });
       }
 
       await base44.entities.GymMembership.create({
-        user_id: user.id,
-        user_name: user.full_name,
-        user_email: user.email,
-        gym_id: gym.id,
-        gym_name: gym.name,
-        status: 'active',
-        join_date: new Date().toISOString().split('T')[0],
-        membership_type: 'lifetime'
+        user_id: user.id, user_name: user.full_name, user_email: user.email,
+        gym_id: gym.id, gym_name: gym.name, status: 'active',
+        join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime'
       });
 
       return gym;
@@ -274,9 +248,7 @@ export default function GymSignup() {
       setCreatedGym(gym);
       setStep(7);
     },
-    onError: (error) => {
-      toast.error(error?.message || 'Failed to register gym.');
-    }
+    onError: (error) => toast.error(error?.message || 'Failed to register gym.')
   });
 
   const toggleArrayItem = (field, item) => {
@@ -289,18 +261,16 @@ export default function GymSignup() {
   const slide = PREVIEW_SLIDES[slideIndex];
   const SlideIcon = slide.icon;
 
-  // ─── STEP 1: App Preview ──────────────────────────────────────────────────
+  // ─── STEP 1: Preview Slides ───────────────────────────────────────────────
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex flex-col items-center justify-between p-6 relative overflow-hidden transition-all duration-700">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex flex-col items-center justify-between p-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 opacity-80" />
-
         <div className="w-full flex justify-end relative z-10 pt-2">
           <button onClick={() => setStep(2)} className="text-slate-400 text-sm font-semibold hover:text-white transition-colors">
             Skip →
           </button>
         </div>
-
         <div className="flex-1 flex flex-col items-center justify-center relative z-10 text-center max-w-sm">
           <div className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${slide.color} flex items-center justify-center mb-8 shadow-2xl transition-all duration-500`}>
             <SlideIcon className="w-12 h-12 text-white" strokeWidth={1.5} />
@@ -308,17 +278,14 @@ export default function GymSignup() {
           <h2 className="text-3xl font-black text-white mb-4 leading-tight">{slide.title}</h2>
           <p className="text-slate-300 text-base leading-relaxed">{slide.description}</p>
         </div>
-
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
           <div className="flex gap-2">
             {PREVIEW_SLIDES.map((_, i) => (
               <button key={i} onClick={() => setSlideIndex(i)}
-                className={`rounded-full transition-all duration-300 ${i === slideIndex ? 'w-6 h-2 bg-white' : 'w-2 h-2 bg-white/30'}`}
-              />
+                className={`rounded-full transition-all duration-300 ${i === slideIndex ? 'w-6 h-2 bg-white' : 'w-2 h-2 bg-white/30'}`} />
             ))}
           </div>
-          <button
-            onClick={() => setStep(2)}
+          <button onClick={() => setStep(2)}
             className="w-full h-14 rounded-2xl font-bold text-base text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2">
             Get Started <ArrowRight className="w-5 h-5" />
           </button>
@@ -349,12 +316,10 @@ export default function GymSignup() {
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <Input
-                value={searchInput}
+              <Input value={searchInput}
                 onChange={(e) => { setSearchInput(e.target.value); searchGooglePlaces(e.target.value); }}
                 placeholder="Search gym name or location..."
-                className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 pl-9 h-12"
-              />
+                className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 pl-9 h-12" />
               {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 animate-spin" />}
             </div>
 
@@ -404,12 +369,10 @@ export default function GymSignup() {
               </div>
             </div>
 
-            <button
-              onClick={() => selectedPlace && setStep(3)}
-              disabled={!selectedPlace}
+            <button onClick={() => selectedPlace && setStep(3)} disabled={!selectedPlace}
               className={`w-full h-14 rounded-2xl font-bold text-base transition-all duration-100 flex items-center justify-center gap-2 border-b-[5px] ${
                 selectedPlace
-                  ? 'bg-blue-500 border-blue-700 text-white hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 cursor-pointer'
+                  ? 'bg-blue-500 border-blue-700 text-white hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2'
                   : 'bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed opacity-50'
               }`}>
               Continue <ArrowRight className="w-4 h-4" />
@@ -475,8 +438,10 @@ export default function GymSignup() {
           </div>
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
+
+            {/* Method toggle */}
             <div className="flex gap-2 p-1 bg-white/5 rounded-2xl mb-5">
-              <button onClick={() => setVerificationMethod('email')}
+              <button onClick={() => { setVerificationMethod('email'); setCodeSent(false); setEmailVerified(false); setEnteredCode(''); }}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                   verificationMethod === 'email' ? 'bg-blue-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
                 }`}>
@@ -490,80 +455,122 @@ export default function GymSignup() {
               </button>
             </div>
 
+            {/* ── Email verification ── */}
             {verificationMethod === 'email' && (
               <div className="space-y-4">
-                <div className="p-4 bg-blue-500/10 border border-blue-400/20 rounded-2xl">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-white mb-1">How it works</p>
-                      <p className="text-xs text-slate-300 leading-relaxed">
-                        Enter your business email (e.g. <span className="text-blue-300">owner@{formData.name?.toLowerCase().replace(/\s/g, '')}.com</span>). If it matches your gym's website domain, you get instant verified access.
-                      </p>
+                {!emailVerified ? (
+                  <>
+                    <div className="p-4 bg-blue-500/10 border border-blue-400/20 rounded-2xl flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-white mb-1">How it works</p>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          Enter your business email. We'll send a 6-digit code — if you can receive it, you own it.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-white font-semibold text-sm mb-2 block">Business Email</Label>
-                  <Input
-                    type="email"
-                    value={businessEmail}
-                    onChange={(e) => {
-                      setBusinessEmail(e.target.value);
-                      if (selectedPlace?.website && e.target.value) {
-                        setEmailVerificationStatus(verifyEmailDomain(e.target.value, selectedPlace.website));
-                      }
-                    }}
-                    placeholder="owner@yourgym.com"
-                    className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-12"
-                  />
-                </div>
-                {emailVerificationStatus === 'verified' && (
-                  <div className="p-3 bg-green-500/15 border border-green-500/30 rounded-xl flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
-                    <p className="text-sm text-green-300 font-semibold">Domain verified! You'll get instant access.</p>
-                  </div>
-                )}
-                {emailVerificationStatus === 'manual_review' && (
-                  <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+
                     <div>
-                      <p className="text-sm font-semibold text-amber-300">Manual review required</p>
-                      <p className="text-xs text-amber-200 mt-0.5">We'll verify your ownership within 24 hours.</p>
+                      <Label className="text-white font-semibold text-sm mb-2 block">Business Email</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="email"
+                          value={businessEmail}
+                          onChange={(e) => { setBusinessEmail(e.target.value); setCodeSent(false); setEnteredCode(''); }}
+                          placeholder="owner@yourgym.com"
+                          disabled={codeSent}
+                          className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-12 flex-1 disabled:opacity-60"
+                        />
+                        <button
+                          onClick={handleSendCode}
+                          disabled={!businessEmail || sendingCode || codeSent}
+                          className="h-12 px-4 rounded-xl bg-blue-500 border-b-[3px] border-blue-700 text-white font-bold text-sm hover:bg-blue-400 active:translate-y-0.5 active:border-b transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap">
+                          {sendingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : codeSent ? 'Sent ✓' : 'Send Code'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {codeSent && (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                          <p className="text-xs text-green-300">Code sent to <span className="font-semibold">{businessEmail}</span>. Check your inbox.</p>
+                        </div>
+
+                        <div>
+                          <Label className="text-white font-semibold text-sm mb-2 block">Enter 6-digit Code</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              value={enteredCode}
+                              onChange={(e) => setEnteredCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="000000"
+                              maxLength={6}
+                              className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-12 flex-1 text-center text-xl font-black tracking-widest"
+                            />
+                            <button
+                              onClick={handleVerifyCode}
+                              disabled={enteredCode.length !== 6 || verifyingCode}
+                              className="h-12 px-4 rounded-xl bg-blue-500 border-b-[3px] border-blue-700 text-white font-bold text-sm hover:bg-blue-400 active:translate-y-0.5 active:border-b transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                              {verifyingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
+                            </button>
+                          </div>
+                        </div>
+
+                        <button onClick={() => { setCodeSent(false); setEnteredCode(''); }}
+                          className="text-slate-500 text-xs hover:text-slate-300 transition-colors">
+                          Wrong email? Change it →
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-5 bg-green-500/10 border border-green-500/30 rounded-2xl flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-6 h-6 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">Email Verified!</p>
+                      <p className="text-green-300 text-xs mt-0.5">{businessEmail}</p>
+                      <p className="text-slate-400 text-xs mt-1">Your gym will go live instantly.</p>
                     </div>
                   </div>
                 )}
               </div>
             )}
 
+            {/* ── Instagram verification ── */}
             {verificationMethod === 'instagram' && (
               <div className="space-y-4">
-                <div className="p-4 bg-purple-500/10 border border-purple-400/20 rounded-2xl">
-                  <div className="flex items-start gap-3">
-                    <Instagram className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-white mb-1">Instagram Verification</p>
-                      <p className="text-xs text-slate-300 leading-relaxed">
-                        Enter your gym's Instagram handle. We'll check the account matches your gym name and location.
-                      </p>
-                    </div>
+                <div className="p-4 bg-purple-500/10 border border-purple-400/20 rounded-2xl flex items-start gap-3">
+                  <Instagram className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-white mb-1">Instagram DM Verification</p>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Send us a DM from your gym's Instagram account with your unique code below. We'll verify within 24 hours.
+                    </p>
                   </div>
                 </div>
+
+                {/* Unique code to DM */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                  <p className="text-slate-400 text-xs mb-2">Your unique verification code</p>
+                  <p className="text-2xl font-black text-white tracking-widest mb-2">{instagramCode}</p>
+                  <p className="text-slate-500 text-xs">DM this code to <span className="text-purple-400 font-semibold">@CoStrideApp</span> from your gym's account</p>
+                </div>
+
                 <div>
-                  <Label className="text-white font-semibold text-sm mb-2 block">Instagram Handle</Label>
+                  <Label className="text-white font-semibold text-sm mb-2 block">Your Gym's Instagram Handle</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">@</span>
-                    <Input
-                      value={instagramHandle}
-                      onChange={(e) => setInstagramHandle(e.target.value)}
+                    <Input value={instagramHandle} onChange={(e) => setInstagramHandle(e.target.value)}
                       placeholder="yourgymhandle"
-                      className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-12 pl-8"
-                    />
+                      className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-12 pl-8" />
                   </div>
                 </div>
+
                 <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-200">Our team will review your Instagram within 24 hours.</p>
+                  <p className="text-xs text-amber-200">Once we receive your DM we'll approve your gym within 24 hours.</p>
                 </div>
               </div>
             )}
@@ -573,16 +580,16 @@ export default function GymSignup() {
                 className="flex-1 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 font-semibold text-sm transition-all">
                 Back
               </button>
-              <button
-                onClick={() => setStep(4)}
+              <button onClick={() => setStep(4)}
+                disabled={verificationMethod === 'email' && !emailVerified && codeSent && enteredCode.length < 6}
                 className="flex-1 h-12 rounded-2xl font-bold text-sm text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2">
-                Continue <ArrowRight className="w-4 h-4" />
+                {emailVerified ? 'Continue ✓' : 'Continue'} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 
             <button onClick={() => setStep(4)}
               className="w-full mt-3 text-slate-500 text-xs hover:text-slate-300 transition-colors">
-              Skip verification for now →
+              Skip verification — gym goes live within 24hrs →
             </button>
           </div>
         </div>
@@ -611,13 +618,11 @@ export default function GymSignup() {
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
             <div>
               <Label className="text-white font-semibold text-sm mb-2 block">Gym Description</Label>
-              <textarea
-                value={formData.description}
+              <textarea value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Tell members what makes your gym unique..."
                 rows={3}
-                className="w-full rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm p-3 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400/50"
-              />
+                className="w-full rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm p-3 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400/50" />
             </div>
 
             <div>
@@ -663,19 +668,16 @@ export default function GymSignup() {
                 Back
               </button>
               <button
-                onClick={() => createGymMutation.mutate({ ...formData, emailVerificationStatus })}
+                onClick={() => createGymMutation.mutate({ ...formData, emailVerificationStatus: emailVerified ? 'verified' : 'manual_review' })}
                 disabled={createGymMutation.isPending || formData.specializes_in.length === 0}
                 className="flex-1 h-12 rounded-2xl font-bold text-sm text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {createGymMutation.isPending ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
-                ) : (
-                  <>Complete <ArrowRight className="w-4 h-4" /></>
-                )}
+                {createGymMutation.isPending
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
+                  : <>Complete <ArrowRight className="w-4 h-4" /></>}
               </button>
             </div>
 
-            <button
-              onClick={() => createGymMutation.mutate({ ...formData, emailVerificationStatus })}
+            <button onClick={() => createGymMutation.mutate({ ...formData, emailVerificationStatus: emailVerified ? 'verified' : 'manual_review' })}
               disabled={createGymMutation.isPending}
               className="w-full text-slate-500 text-xs hover:text-slate-300 transition-colors">
               Skip for now →
@@ -731,8 +733,7 @@ export default function GymSignup() {
               </button>
             </div>
 
-            <button
-              onClick={() => navigate(createPageUrl('GymOwnerDashboard'))}
+            <button onClick={() => navigate(createPageUrl('GymOwnerDashboard'))}
               className="w-full h-14 rounded-2xl font-bold text-base text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2">
               Go to Dashboard <ArrowRight className="w-5 h-5" />
             </button>
