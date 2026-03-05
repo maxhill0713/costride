@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import {
   Dumbbell, Loader2, CheckCircle2, Search, MapPin, AlertCircle,
   ArrowRight, Building2, Star, Users, Trophy, Zap, ChevronRight,
-  Bell, Mail, Instagram, Shield, Sparkles
+  Bell, Mail, Instagram, Shield, Sparkles, Plus, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,11 +35,12 @@ const PREVIEW_SLIDES = [
   }
 ];
 
-const EQUIPMENT_OPTIONS = [
+const PRESET_EQUIPMENT = [
   'Barbells', 'Dumbbells', 'Kettlebells', 'Cable Machines',
   'Smith Machine', 'Leg Press', 'Pull Up Bars', 'Bench Press',
   'Squat Rack', 'Treadmills', 'Rowing Machines', 'Battle Ropes',
-  'Resistance Bands', 'Foam Rollers', 'Boxing Bags', 'Assault Bike'
+  'Resistance Bands', 'Foam Rollers', 'Boxing Bags', 'Assault Bike',
+  'Hack Squat', 'Lat Pulldown', 'Chest Fly Machine', 'Stair Climber'
 ];
 
 const AMENITIES_OPTIONS = ['WiFi', 'Parking', '24/7', 'Personal Training', 'Showers', 'Lockers', 'Sauna', 'Smoothie Bar'];
@@ -58,7 +59,6 @@ const GYM_TYPES = [
   { value: 'mma', label: 'MMA' }
 ];
 
-// Shared header used on every step
 function StepHeader({ step, title, subtitle }) {
   return (
     <div className="text-center mb-6 flex flex-col items-center gap-3">
@@ -77,7 +77,6 @@ function StepHeader({ step, title, subtitle }) {
   );
 }
 
-// Shared page wrapper
 function PageWrapper({ children }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center py-6 px-4 relative overflow-hidden">
@@ -107,6 +106,10 @@ export default function GymSignup() {
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
   const [createdGym, setCreatedGym] = useState(null);
 
+  // Equipment search state
+  const [equipmentSearch, setEquipmentSearch] = useState('');
+  const [equipmentSuggestions, setEquipmentSuggestions] = useState([]);
+
   const [verificationMethod, setVerificationMethod] = useState('email');
   const [businessEmail, setBusinessEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -125,6 +128,35 @@ export default function GymSignup() {
     const timer = setInterval(() => setSlideIndex(prev => (prev + 1) % PREVIEW_SLIDES.length), 3000);
     return () => clearInterval(timer);
   }, [step]);
+
+  // Equipment search — filter presets + allow custom
+  useEffect(() => {
+    if (!equipmentSearch.trim()) { setEquipmentSuggestions([]); return; }
+    const query = equipmentSearch.toLowerCase();
+    const filtered = PRESET_EQUIPMENT.filter(e =>
+      e.toLowerCase().includes(query) && !formData.equipment.includes(e)
+    );
+    // If typed text doesn't exactly match a preset, add "Add X" option
+    const exactMatch = PRESET_EQUIPMENT.some(e => e.toLowerCase() === query);
+    const alreadyAdded = formData.equipment.some(e => e.toLowerCase() === query);
+    if (!exactMatch && !alreadyAdded && equipmentSearch.trim().length > 1) {
+      filtered.push(`__custom__${equipmentSearch.trim()}`);
+    }
+    setEquipmentSuggestions(filtered);
+  }, [equipmentSearch, formData.equipment]);
+
+  const addEquipment = (item) => {
+    const value = item.startsWith('__custom__') ? item.replace('__custom__', '') : item;
+    if (!formData.equipment.includes(value)) {
+      setFormData(prev => ({ ...prev, equipment: [...prev.equipment, value] }));
+    }
+    setEquipmentSearch('');
+    setEquipmentSuggestions([]);
+  };
+
+  const removeEquipment = (item) => {
+    setFormData(prev => ({ ...prev, equipment: prev.equipment.filter(e => e !== item) }));
+  };
 
   const generateQR = useCallback(() => {
     setTimeout(() => {
@@ -242,35 +274,69 @@ export default function GymSignup() {
   const createGymMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
-      await base44.auth.updateMe({ account_type: 'gym_owner', onboarding_completed: true });
-      const gymLanguage = data.language || detectLanguageFromCity(data.city);
+
+      await base44.auth.updateMe({
+        account_type: 'gym_owner',
+        onboarding_completed: true
+      });
+
+      const gymLanguage = detectLanguageFromCity(data.city);
       const isVerified = emailVerified;
 
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let joinCode = '';
+      for (let i = 0; i < 6; i++) joinCode += chars.charAt(Math.floor(Math.random() * chars.length));
+
       let gym;
+
       if (data.claimingGymId) {
         gym = await base44.asServiceRole.entities.Gym.update(data.claimingGymId, {
-          name: data.name, type: data.type, language: gymLanguage,
-          owner_email: user.email, admin_id: user.id,
-          amenities: data.amenities, equipment: data.equipment,
-          specializes_in: data.specializes_in, description: data.description,
-          claim_status: 'claimed', status: isVerified ? 'approved' : 'pending',
+          name: data.name,
+          type: data.type,
+          language: gymLanguage,
+          owner_email: user.email,
+          admin_id: user.id,
+          amenities: data.amenities,
+          equipment: data.equipment,
+          specializes_in: data.specializes_in,
+          description: data.description,
+          claim_status: 'claimed',
+          status: isVerified ? 'approved' : 'pending',
           verified: isVerified
         });
       } else {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let joinCode = '';
-        for (let i = 0; i < 6; i++) joinCode += chars.charAt(Math.floor(Math.random() * chars.length));
         gym = await base44.entities.Gym.create({
-          ...data, language: gymLanguage, owner_email: user.email,
-          join_code: joinCode, verified: isVerified, admin_id: user.id,
-          claim_status: 'claimed', status: isVerified ? 'approved' : 'pending'
+          name: data.name,
+          google_place_id: data.google_place_id || '',
+          latitude: data.latitude,
+          longitude: data.longitude,
+          address: data.address || '',
+          city: data.city || '',
+          postcode: data.postcode || '',
+          type: data.type || 'general',
+          language: gymLanguage,
+          description: data.description || '',
+          amenities: data.amenities || [],
+          equipment: data.equipment || [],
+          specializes_in: data.specializes_in || [],
+          owner_email: user.email,
+          join_code: joinCode,
+          verified: isVerified,
+          admin_id: user.id,
+          claim_status: 'claimed',
+          status: isVerified ? 'approved' : 'pending'
         });
       }
 
       await base44.entities.GymMembership.create({
-        user_id: user.id, user_name: user.full_name, user_email: user.email,
-        gym_id: gym.id, gym_name: gym.name, status: 'active',
-        join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime'
+        user_id: user.id,
+        user_name: user.full_name,
+        user_email: user.email,
+        gym_id: gym.id,
+        gym_name: gym.name,
+        status: 'active',
+        join_date: new Date().toISOString().split('T')[0],
+        membership_type: 'lifetime'
       });
 
       return gym;
@@ -278,10 +344,14 @@ export default function GymSignup() {
     onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      toast.success('Gym registered successfully!');
       setCreatedGym(gym);
       setStep(7);
     },
-    onError: (error) => toast.error(error?.message || 'Failed to register gym.')
+    onError: (error) => {
+      console.error('Gym creation error:', error);
+      toast.error(error?.message || 'Failed to register gym. Please try again.');
+    }
   });
 
   const toggleArrayItem = (field, item) => {
@@ -293,10 +363,14 @@ export default function GymSignup() {
     }));
   };
 
-  const submitGym = () => createGymMutation.mutate({
-    ...formData,
-    emailVerificationStatus: emailVerified ? 'verified' : 'manual_review'
-  });
+  const submitGym = () => {
+    if (!formData.name) {
+      toast.error('Please select a gym first.');
+      setStep(2);
+      return;
+    }
+    createGymMutation.mutate(formData);
+  };
 
   const slide = PREVIEW_SLIDES[slideIndex];
   const SlideIcon = slide.icon;
@@ -407,7 +481,6 @@ export default function GymSignup() {
           </button>
         </div>
 
-        {/* Ghost Gym Modal */}
         {showGhostGymModal && ghostGym && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="max-w-sm w-full bg-slate-800/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
@@ -452,7 +525,7 @@ export default function GymSignup() {
     return (
       <PageWrapper>
         <StepHeader step="Step 2 of 4" title="Verify Ownership"
-          subtitle={<>Prove you own <span className="text-white font-semibold">{formData.name}</span></>} />
+          subtitle={`Prove you own ${formData.name}`} />
 
         <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl">
           <div className="flex gap-2 p-1 bg-white/5 rounded-2xl mb-5">
@@ -483,7 +556,6 @@ export default function GymSignup() {
                       </p>
                     </div>
                   </div>
-
                   <div>
                     <Label className="text-white font-semibold text-sm mb-2 block">Business Email</Label>
                     <div className="flex gap-2">
@@ -497,7 +569,6 @@ export default function GymSignup() {
                       </button>
                     </div>
                   </div>
-
                   {codeSent && (
                     <div className="space-y-3">
                       <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-2">
@@ -581,7 +652,6 @@ export default function GymSignup() {
               {emailVerified ? 'Continue ✓' : 'Continue'} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-
           <button onClick={() => setStep(4)}
             className="w-full mt-3 text-slate-500 text-xs hover:text-slate-300 transition-colors">
             Skip verification — gym goes live within 24hrs →
@@ -630,24 +700,68 @@ export default function GymSignup() {
             </div>
           </div>
 
-          {/* Equipment */}
+          {/* Equipment with search */}
           <div>
             <Label className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <Dumbbell className="w-4 h-4 text-blue-400" /> Equipment
               <span className="text-xs font-normal text-slate-400">(optional)</span>
             </Label>
-            <div className="grid grid-cols-2 gap-2">
-              {EQUIPMENT_OPTIONS.map((item) => (
-                <button key={item} type="button" onClick={() => toggleArrayItem('equipment', item)}
-                  className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${
-                    formData.equipment.includes(item)
-                      ? 'bg-blue-500/30 border-blue-400/60 text-white'
-                      : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                  }`}>
-                  {item}
-                </button>
-              ))}
+
+            {/* Search input */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <Input
+                value={equipmentSearch}
+                onChange={(e) => setEquipmentSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && equipmentSearch.trim()) {
+                    e.preventDefault();
+                    addEquipment(equipmentSearch.trim());
+                  }
+                }}
+                placeholder="Search or type custom equipment..."
+                className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 pl-9 h-10 text-sm"
+              />
+
+              {/* Suggestions dropdown */}
+              {equipmentSuggestions.length > 0 && (
+                <div className="absolute z-20 w-full mt-1 bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                  {equipmentSuggestions.map((item, idx) => {
+                    const isCustom = item.startsWith('__custom__');
+                    const label = isCustom ? item.replace('__custom__', '') : item;
+                    return (
+                      <button key={idx} type="button" onClick={() => addEquipment(item)}
+                        className="w-full text-left px-4 py-2.5 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 flex items-center gap-2">
+                        {isCustom
+                          ? <><Plus className="w-3 h-3 text-blue-400 flex-shrink-0" /><span className="text-blue-300 text-sm">Add "<span className="font-semibold">{label}</span>"</span></>
+                          : <><Dumbbell className="w-3 h-3 text-slate-400 flex-shrink-0" /><span className="text-white text-sm">{label}</span></>
+                        }
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+
+            {/* Selected equipment tags */}
+            {formData.equipment.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.equipment.map((item) => (
+                  <div key={item}
+                    className="inline-flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-medium px-3 py-1.5 rounded-xl">
+                    {item}
+                    <button onClick={() => removeEquipment(item)}
+                      className="text-blue-300 hover:text-white transition-colors ml-0.5">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {formData.equipment.length === 0 && (
+              <p className="text-slate-500 text-xs">No equipment added yet — search above to add</p>
+            )}
           </div>
 
           {/* Amenities */}
@@ -710,18 +824,15 @@ export default function GymSignup() {
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl mb-4">
             <p className="text-slate-300 text-sm mb-4">Display this QR code so members can join your community instantly</p>
-
             <div className="flex justify-center mb-4">
               <div className="bg-blue-900 p-4 rounded-2xl border border-blue-400/20 shadow-xl">
                 <div id="qr-container" className="w-[180px] h-[180px]" />
               </div>
             </div>
-
             <div className="bg-white/5 border border-white/10 rounded-2xl p-3 mb-5">
               <p className="text-slate-400 text-xs mb-1">Join Code</p>
               <p className="text-2xl font-black text-white tracking-widest">{createdGym?.join_code}</p>
             </div>
-
             <div className="grid grid-cols-2 gap-3 mb-5">
               <button className="p-3 bg-purple-500/15 border border-purple-400/30 rounded-2xl text-left hover:bg-purple-500/20 transition-all group">
                 <Trophy className="w-5 h-5 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
@@ -734,16 +845,12 @@ export default function GymSignup() {
                 <p className="text-slate-400 text-xs">Get member feedback</p>
               </button>
             </div>
-
             <button onClick={() => navigate(createPageUrl('GymOwnerDashboard'))}
               className="w-full h-14 rounded-2xl font-bold text-base text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2">
               Go to Dashboard <ArrowRight className="w-5 h-5" />
             </button>
           </div>
-
-          <p className="text-slate-500 text-xs">
-            We'll email you a printable poster with your QR code shortly
-          </p>
+          <p className="text-slate-500 text-xs">We'll email you a printable poster with your QR code shortly</p>
         </div>
       </PageWrapper>
     );
