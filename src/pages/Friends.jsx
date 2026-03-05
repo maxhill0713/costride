@@ -875,8 +875,8 @@ export default function Friends() {
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {searchQuery.length < 2 ?
               <p className="text-center text-slate-400 text-sm py-8">
-                    Type at least 2 characters to search
-                  </p> :
+
+              </p> :
               filteredSearchResults.length === 0 ?
               <p className="text-center text-slate-400 text-sm py-8">
                     No users found
