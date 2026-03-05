@@ -314,20 +314,11 @@ export default function Home() {
                 className="w-14 h-14 animate-[breathe_3s_ease-in-out_infinite]"
                 style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }}
               />
-              {/* Bubble 3D number */}
               <span
                 className="font-black text-xl -ml-2 mt-3 select-none"
                 style={{
                   color: '#ffffff',
-                  WebkitTextStroke: '1.5px rgba(180,180,255,0.25)',
-                  textShadow: `
-                    0 1px 0 rgba(255,255,255,0.9),
-                    0 2px 0 rgba(200,200,220,0.6),
-                    0 3px 0 rgba(160,160,190,0.4),
-                    0 4px 0 rgba(120,120,160,0.2),
-                    0 5px 8px rgba(0,0,0,0.5),
-                    0 0 20px rgba(255,255,255,0.15)
-                  `,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
                   letterSpacing: '-0.02em',
                   lineHeight: 1
                 }}
@@ -533,16 +524,7 @@ export default function Home() {
                 className="text-8xl font-black tabular-nums select-none"
                 style={{
                   color: '#ffffff',
-                  WebkitTextStroke: '2px rgba(180,180,255,0.2)',
-                  textShadow: `
-                    0 1px 0 rgba(255,255,255,0.9),
-                    0 2px 0 rgba(200,200,220,0.7),
-                    0 3px 0 rgba(160,160,190,0.5),
-                    0 4px 0 rgba(120,120,160,0.3),
-                    0 6px 0 rgba(80,80,120,0.2),
-                    0 8px 16px rgba(0,0,0,0.6),
-                    0 0 30px rgba(255,255,255,0.2)
-                  `,
+                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
                   letterSpacing: '-0.02em'
                 }}>
                 {animatedNum}
