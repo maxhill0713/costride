@@ -693,153 +693,137 @@ export default function Friends() {
 
 
 
-        {/* Friends Modal */}
-        {showFriendsModal &&
-        <>
-            <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowFriendsModal(false)} />
-            <div className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-              <div className="px-3 py-1 flex items-center gap-1 ">
+{/* Friends Modal */}
+        {showFriendsModal && (
+          <>
+            {/* Backdrop: Clicking this closes the modal */}
+            <div 
+              className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" 
+              onClick={() => setShowFriendsModal(false)} 
+            />
+            
+            <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+              
+              {/* Header: Search Bar and Switch to Add Friends */}
+              <div className="px-3 py-1 flex items-center gap-1">
                 <div className="relative flex-1 w-70">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                  {/* Search Icon: Aligned to text baseline */}
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
                   <Input
-                  placeholder="Search friends..."
-                  value={friendsSearchQuery}
-                  onChange={(e) => setFriendsSearchQuery(e.target.value)} className="relative top-0.5 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200" />
-
-
+                    placeholder="Search friends..."
+                    value={friendsSearchQuery}
+                    onChange={(e) => setFriendsSearchQuery(e.target.value)}
+                    /* text-base prevents iOS zoom; md:text-sm for desktop aesthetic */
+                    className="relative top-1 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-base md:text-sm h-9 transition-all duration-200"
+                  />
                 </div>
+
+                {/* Add Friend Button: 3D Blue Style */}
                 <Button
-                onClick={() => {
-                  setShowAddModal(true);
-                  setShowFriendsModal(false);
-                }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-
-
+                  onClick={() => {
+                    setShowAddModal(true);
+                    setShowFriendsModal(false);
+                  }} 
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+                >
                   <UserPlus className="w-4 h-4" />
                 </Button>
               </div>
+
+              {/* Friends List Section */}
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
-                {/* Friend Requests */}
+                {/* Friend Requests Sub-Section */}
                 {friendRequests.filter((req) => {
-                const requesterUser = allUsers.find((u) => u.id === req.user_id);
-                const displayName = requesterUser?.full_name || req.user_name || req.friend_name || '';
-                return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
-              }).map((request) => {
-                const requesterUser = allUsers.find((u) => u.id === request.user_id);
-                const currentName = requesterUser?.full_name || request.user_name || request.friend_name;
-                return (
-                  <div
-                    key={request.id}
-                    className="p-2 rounded-lg bg-blue-700/40 hover:bg-blue-700/60 transition-colors flex items-start justify-between gap-2 border border-blue-500/30">
-
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                         {(() => {
-                          const requesterUser = allUsers.find((u) => u.id === request.user_id);
-                          return requesterUser?.avatar_url ?
-                          <img src={requesterUser.avatar_url} alt={currentName} className="w-full h-full object-cover" /> :
-
-                          <span className="text-xs font-semibold text-white">
-                               {currentName?.charAt(0)?.toUpperCase()}
-                             </span>;
-
-                        })()}
-                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
-                          Request pending
-                        </Badge>
+                  const requesterUser = allUsers.find((u) => u.id === req.user_id);
+                  const displayName = requesterUser?.full_name || req.user_name || req.friend_name || '';
+                  return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
+                }).map((request) => {
+                  const requesterUser = allUsers.find((u) => u.id === request.user_id);
+                  const currentName = requesterUser?.full_name || request.user_name || request.friend_name;
+                  return (
+                    <div
+                      key={request.id}
+                      className="p-2 rounded-lg bg-blue-700/40 hover:bg-blue-700/60 transition-colors flex items-start justify-between gap-2 border border-blue-500/30"
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {requesterUser?.avatar_url ? (
+                            <img src={requesterUser.avatar_url} alt={currentName} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xs font-semibold text-white">
+                              {currentName?.charAt(0)?.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-white text-xs truncate">{currentName}</p>
+                          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
+                            Request pending
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Button
+                          size="icon"
+                          onClick={() => acceptFriendMutation.mutate(request.user_id)}
+                          className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"
+                        >
+                          <CheckCircle className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          onClick={() => rejectFriendMutation.mutate(request.user_id)}
+                          className="bg-red-600/50 hover:bg-red-600 text-white h-7 w-7"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button
-                        size="icon"
-                        onClick={() => acceptFriendMutation.mutate(request.user_id)}
-                        className="bg-green-600 hover:bg-green-700 text-white h-7 w-7">
+                  );
+                })}
 
-                        <CheckCircle className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => rejectFriendMutation.mutate(request.user_id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7">
-
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>);
-
-              })}
-
-                {/* Friends List */}
-                {friends.length === 0 && friendRequests.length === 0 ?
-              <p className="text-center text-slate-400 text-sm py-8">No friends yet</p> :
-
-              friendsWithActivity.filter((friend) => {
-                const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                const displayName = friendUser?.full_name || friend.friend_name;
-                return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
-              }).map((friend) => {
-                const { activity } = friend;
-                const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                const currentName = friendUser?.full_name || friend.friend_name;
-                return (
+                {/* Accepted Friends List */}
+                {friendsWithActivity.filter((f) => 
+                  f.friend_name?.toLowerCase().includes(friendsSearchQuery.toLowerCase())
+                ).map((friend) => (
                   <div
                     key={friend.id}
-                    className="p-2 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2">
-
-                        <Link
-                      to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
-                      className="flex items-center gap-2 flex-1 min-w-0"
-                      onClick={() => setShowFriendsModal(false)}>
-
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                             {(() => {
-                          const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                          return friendUser?.avatar_url ?
-                          <img src={friendUser.avatar_url} alt={currentName} className="w-full h-full object-cover" /> :
-
-                          <span className="text-xs font-semibold text-white">
-                                   {currentName?.charAt(0)?.toUpperCase()}
-                                 </span>;
-
-                        })()}
-                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                            
-
-
-
-
-                            {activity.streak >= 7 &&
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                                
-                                
-                              </div>
-                        }
-                          </div>
-                        </Link>
-                        <Button
+                    className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center overflow-hidden">
+                        {friend.friend_avatar ? (
+                          <img src={friend.friend_avatar} alt={friend.friend_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-semibold text-white">
+                            {friend.friend_name?.charAt(0)?.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-white text-sm">{friend.friend_name}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400">
+                            {friend.activity.streak > 0 ? `${friend.activity.streak} day streak` : 'No recent activity'}
+                          </span>
+                          {friend.activity.streak >= 7 && <Flame className="w-3 h-3 text-orange-500" />}
+                        </div>
+                      </div>
+                    </div>
+                    <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => removeFriendMutation.mutate(friend.friend_id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0">
-
-                          <UserMinus className="w-3 h-3" />
-                        </Button>
-                      </div>);
-
-              })
-              }
+                      className="text-slate-500 hover:text-red-400 h-8 w-8"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-
-
-            </div>
+            </Card>
           </>
-        }
+        )}
 
 {/* Add Friend Modal */}
         {showAddModal && (
