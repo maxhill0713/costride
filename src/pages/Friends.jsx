@@ -842,81 +842,91 @@ export default function Friends() {
         }
 
         {/* Add Friend Modal */}
-        {showAddModal &&
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">Add Friend</h3>
-                <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setShowAddModal(false);
-                  setSearchQuery('');
-                }}
-                className="text-slate-400 hover:text-white">
+{showAddModal && (
+  <>
+    {/* 1. Backdrop (The Curtain) - Clicking this closes the popup */}
+    <div 
+      className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" 
+      onClick={() => {
+        setShowAddModal(false);
+        setSearchQuery('');
+      }} 
+    />
 
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
+    {/* 2. Modal Content (The Box) - Styled exactly like your Friends modal */}
+    <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-white">Add Friend</h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            setShowAddModal(false);
+            setSearchQuery('');
+          }}
+          className="text-slate-400 hover:text-white"
+        >
+          <X className="w-5 h-5" />
+        </Button>
+      </div>
 
-              <div className="mb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                  placeholder="Search by name or email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl" />
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
+          />
+        </div>
+      </div>
 
+      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
+        {searchQuery.length < 2 ? (
+          <p className="text-center text-slate-400 text-sm py-8">
+            Type at least 2 characters to search
+          </p>
+        ) : filteredSearchResults.length === 0 ? (
+          <p className="text-center text-slate-400 text-sm py-8">
+            No users found
+          </p>
+        ) : (
+          filteredSearchResults.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <span className="text-sm font-semibold text-white">
+                      {user.full_name?.charAt(0)?.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold text-white text-sm">{user.full_name}</div>
+                  <div className="text-xs text-slate-400">{user.email}</div>
                 </div>
               </div>
-
-              <div className="space-y-2 max-h-80 overflow-y-auto">
-                {searchQuery.length < 2 ?
-              <p className="text-center text-slate-400 text-sm py-8">
-
-              </p> :
-              filteredSearchResults.length === 0 ?
-              <p className="text-center text-slate-400 text-sm py-8">
-                    No users found
-                  </p> :
-
-              filteredSearchResults.map((user) =>
-              <div
-                key={user.id}
-                className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors">
-
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                          {user.avatar_url ?
-                    <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" /> :
-
-                    <span className="text-sm font-semibold text-white">
-                              {user.full_name?.charAt(0)?.toUpperCase()}
-                            </span>
-                    }
-                        </div>
-                        <div>
-                          <div className="font-semibold text-white text-sm">{user.full_name}</div>
-                          <div className="text-xs text-slate-400">{user.email}</div>
-                        </div>
-                      </div>
-                      <Button
-                  size="sm"
-                  onClick={() => addFriendMutation.mutate(user)}
-                  disabled={addFriendMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-
-                        <UserPlus className="w-4 h-4" />
-                      </Button>
-                    </div>
-              )
-              }
-              </div>
-            </Card>
-          </div>
-        }
+              <Button
+                size="sm"
+                onClick={() => addFriendMutation.mutate(user)}
+                disabled={addFriendMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              >
+                <UserPlus className="w-4 h-4" />
+              </Button>
+            </div>
+          ))
+        )}
+      </div>
+    </Card>
+  </>
+)}
       </div>
     </div>);
 
