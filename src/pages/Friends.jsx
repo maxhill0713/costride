@@ -844,7 +844,7 @@ export default function Friends() {
         {/* Add Friend Modal */}
         {showAddModal &&
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl shadow-black/20">
+            <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-white">Add Friend</h3>
                 <Button
