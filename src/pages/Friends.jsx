@@ -855,10 +855,10 @@ export default function Friends() {
 
     <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
       
-      {/* Header Container - Matches Friends Modal exactly (px-3 py-1 gap-1) */}
+      {/* Header Container */}
       <div className="px-3 py-1 flex items-center gap-1">
         
-        {/* Search Bar - Exact style and position match */}
+        {/* Search Bar - Exact Style Match */}
         <div className="relative flex-1 w-70">
           <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2px)] w-3.5 h-3.5 text-slate-400" />
           <Input
@@ -870,61 +870,60 @@ export default function Friends() {
           />
         </div>
 
-        {/* Back Button - Positioned exactly where the Add button was */}
-        <Button
+        {/* Arrow Button - Styled like the Friends Feed Nav Buttons */}
+        <button
           onClick={() => {
             setShowAddModal(false);
             setShowFriendsModal(true);
             setSearchQuery('');
           }}
-          className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+          className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors flex-shrink-0"
         >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
+          {/* ChevronDown rotated 180 degrees to point Up */}
+          <ChevronDown className="w-5 h-5 rotate-180" />
+        </button>
       </div>
 
       {/* Results Section */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
-        {searchQuery.length < 2 ? (
-          <p className="text-center text-slate-400 text-sm py-8">
-            Type at least 2 characters to search
-          </p>
-        ) : filteredSearchResults.length === 0 ? (
-          <p className="text-center text-slate-400 text-sm py-8">
-            No users found
-          </p>
-        ) : (
-          filteredSearchResults.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" />
-                  ) : (
-                    <span className="text-sm font-semibold text-white">
-                      {user.full_name?.charAt(0)?.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <div className="font-semibold text-white text-sm">{user.full_name}</div>
-                  <div className="text-xs text-slate-400">{user.email}</div>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => addFriendMutation.mutate(user)}
-                disabled={addFriendMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+        {searchQuery.length >= 2 ? (
+          filteredSearchResults.length === 0 ? (
+            <p className="text-center text-slate-400 text-sm py-8">
+              No users found
+            </p>
+          ) : (
+            filteredSearchResults.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors"
               >
-                <UserPlus className="w-4 h-4" />
-              </Button>
-            </div>
-          ))
-        )}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-lg" />
+                    ) : (
+                      <span className="text-sm font-semibold text-white">
+                        {user.full_name?.charAt(0)?.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white text-sm">{user.full_name}</div>
+                    <div className="text-xs text-slate-400">{user.email}</div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => addFriendMutation.mutate(user)}
+                  disabled={addFriendMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                >
+                  <UserPlus className="w-4 h-4" />
+                </Button>
+              </div>
+            ))
+          )
+        ) : null /* Removed the "Type 2 characters" message */}
       </div>
     </Card>
   </>
