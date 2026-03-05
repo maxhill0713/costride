@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Loader2, CheckCircle2, Search, MapPin, AlertCircle, ArrowRight, Building2, Star, Users } from 'lucide-react';
+import { Dumbbell, Loader2, CheckCircle2, Search, MapPin, AlertCircle, ArrowRight, Building2, Star, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GymSignup() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [submitted, setSubmitted] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     google_place_id: '',
@@ -37,7 +38,10 @@ export default function GymSignup() {
   const [ghostGym, setGhostGym] = useState(null);
   const [showGhostGymModal, setShowGhostGymModal] = useState(false);
   const [emailVerificationStatus, setEmailVerificationStatus] = useState(null);
+  const [submittedGym, setSubmittedGym] = useState(null);
   const [businessEmail, setBusinessEmail] = useState('');
+
+  const queryClient = useQueryClient();
 
   const amenitiesOptions = ['WiFi', 'Parking', '24/7', 'Personal Training', 'Showers', 'Lockers', 'Sauna', 'Smoothie Bar'];
   const specializationOptions = ['Weight Loss', 'Muscle Gain', 'Bulking Programs', 'Strength Training', 'Powerlifting', 'Bodybuilding', 'CrossFit', 'HIIT', 'Cardio', 'Rehabilitation'];
@@ -59,9 +63,15 @@ export default function GymSignup() {
     if (!email || !website) return null;
     const emailDomain = email.split('@')[1]?.toLowerCase();
     const genericProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com'];
+    
     if (genericProviders.includes(emailDomain)) return 'manual_review';
+    
     let websiteDomain = website.toLowerCase()
-      .replace('http://', '').replace('https://', '').replace('www.', '').split('/')[0];
+      .replace('http://', '')
+      .replace('https://', '')
+      .replace('www.', '')
+      .split('/')[0];
+    
     return (emailDomain === websiteDomain || websiteDomain.includes(emailDomain)) ? 'verified' : 'manual_review';
   };
 
@@ -71,12 +81,17 @@ export default function GymSignup() {
   };
 
   const searchGooglePlaces = async (query) => {
-    if (!query.trim() || query.length < 2) { setSearchResults([]); return; }
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
     setSearching(true);
     try {
       const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
       setSearchResults(response.data.results || []);
     } catch (error) {
+      console.error('Search failed:', error);
       setSearchResults([]);
     } finally {
       setSearching(false);
@@ -87,9 +102,14 @@ export default function GymSignup() {
     setSelectedPlace(place);
     setSearchInput(place.name);
     setSearchResults([]);
+
     try {
-      const existingGyms = await base44.entities.Gym.filter({ google_place_id: place.place_id });
+      const existingGyms = await base44.entities.Gym.filter({ 
+        google_place_id: place.place_id 
+      });
+
       const ghostGymMatch = existingGyms.find(gym => gym.claim_status === 'unclaimed');
+
       if (ghostGymMatch) {
         setGhostGym(ghostGymMatch);
         setShowGhostGymModal(true);
@@ -105,12 +125,15 @@ export default function GymSignup() {
           postcode: place.postcode || ''
         }));
       }
+
+      // Re-check business email against new place if already entered
       if (businessEmail && place.website) {
         setEmailVerificationStatus(verifyEmailDomain(businessEmail, place.website));
       } else {
         setEmailVerificationStatus(null);
       }
     } catch (error) {
+      console.error('Error checking gym:', error);
       setFormData(prev => ({
         ...prev,
         name: place.name,
@@ -146,53 +169,56 @@ export default function GymSignup() {
     }
   };
 
-  const toggleArrayItem = (field, item) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].includes(item)
-        ? prev[field].filter(i => i !== item)
-        : [...prev[field], item]
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (formData.specializes_in.length === 0) return;
-    setIsSubmitting(true);
-    try {
+  const createGymMutation = useMutation({
+    mutationFn: async (data) => {
       const user = await base44.auth.me();
-
-      await base44.auth.updateMe({
+      
+      await base44.auth.updateMe({ 
         account_type: 'gym_owner',
-        onboarding_completed: true
+        onboarding_completed: true 
       });
 
-      const gymLanguage = formData.language || detectLanguageFromCity(formData.city);
-      const isVerified = emailVerificationStatus === 'verified';
+      const gymLanguage = data.language || detectLanguageFromCity(data.city);
+      const isVerified = data.emailVerificationStatus === 'verified';
 
       let gym;
-      if (formData.claimingGymId) {
-        gym = await base44.asServiceRole.entities.Gym.update(formData.claimingGymId, {
-          name: formData.name,
-          type: formData.type,
+      if (data.claimingGymId) {
+        gym = await base44.asServiceRole.entities.Gym.update(data.claimingGymId, {
+          name: data.name,
+          type: data.type,
           language: gymLanguage,
           owner_email: user.email,
           admin_id: user.id,
-          amenities: formData.amenities,
-          equipment: formData.equipment,
-          specializes_in: formData.specializes_in,
+          amenities: data.amenities,
+          equipment: data.equipment,
+          specializes_in: data.specializes_in,
           claim_status: 'claimed',
           status: isVerified ? 'approved' : 'pending',
           verified: isVerified
         });
       } else {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let joinCode = '';
-        for (let i = 0; i < 6; i++) {
-          joinCode += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+        const generateCode = async () => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+          let code;
+          let isUnique = false;
+          let attempts = 0;
+
+          while (!isUnique && attempts < 10) {
+            code = '';
+            for (let i = 0; i < 6; i++) {
+              code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const existing = await base44.asServiceRole.entities.Gym.filter({ join_code: code });
+            isUnique = existing.length === 0;
+            attempts++;
+          }
+          return code;
+        };
+
+        const joinCode = await generateCode();
 
         gym = await base44.entities.Gym.create({
-          ...formData,
+          ...data,
           language: gymLanguage,
           owner_email: user.email,
           join_code: joinCode,
@@ -214,27 +240,51 @@ export default function GymSignup() {
         membership_type: 'lifetime'
       });
 
+      return gym;
+    },
+    onSuccess: (gym) => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       toast.success('Your gym has been registered!');
-
+      
+      // Navigate based on verification status
       if (gym?.status === 'approved') {
         navigate(createPageUrl('GymOwnerDashboard'));
-      } else {
+      } else if (gym?.status === 'pending') {
         navigate(createPageUrl('GymUnderReview'));
+      } else {
+        // Fallback to dashboard if status is unclear
+        navigate(createPageUrl('GymOwnerDashboard'));
       }
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Gym registration error:', error);
       toast.error(error?.message || 'Failed to register gym.');
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    createGymMutation.mutate({ ...formData, emailVerificationStatus });
   };
+
+  const toggleArrayItem = (field, item) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].includes(item)
+        ? prev[field].filter(i => i !== item)
+        : [...prev[field], item]
+    }));
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex items-center justify-center py-4 px-4 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-blue-800/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-blue-900/15 rounded-full blur-3xl pointer-events-none" />
       <div className="max-w-md w-full mx-auto relative z-10">
-
+        {/* Header */}
         <div className="text-center mb-4">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
@@ -245,16 +295,20 @@ export default function GymSignup() {
           <p className="text-slate-300 text-sm">Grow your gym community with our platform</p>
         </div>
 
+        {/* Progress Indicator */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 1 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>1</div>
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 1 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+            1
+          </div>
           <div className={`w-10 h-1 ${step >= 2 ? 'bg-blue-500' : 'bg-slate-700'}`} />
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 2 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>2</div>
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 2 ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+            2
+          </div>
         </div>
 
         <Card className="p-5 bg-slate-800/50 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
-          <div className="space-y-4">
-
-            {/* STEP 1 */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* STEP 1: Basic Info */}
             {step === 1 && (
               <div className="space-y-4">
                 <div>
@@ -262,24 +316,35 @@ export default function GymSignup() {
                   <p className="text-slate-300 text-sm">Create your gym owner account</p>
                 </div>
 
+                {/* Gym Search */}
                 <div>
                   <Label className="text-white font-semibold">Find Your Gym</Label>
                   <div className="relative mt-2">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <Input
                       value={searchInput}
-                      onChange={(e) => { setSearchInput(e.target.value); searchGooglePlaces(e.target.value); }}
+                      onChange={(e) => {
+                        setSearchInput(e.target.value);
+                        searchGooglePlaces(e.target.value);
+                      }}
                       placeholder="Search gym name or location..."
                       className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 pl-9 h-11"
                     />
-                    {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 animate-spin" />}
+                    {searching && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 animate-spin" />
+                    )}
                   </div>
 
+                  {/* Search Results */}
                   {searchResults.length > 0 && (
                     <div className="absolute z-20 w-full mt-2 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
                       {searchResults.slice(0, 8).map((place, idx) => (
-                        <button key={idx} type="button" onClick={() => handleSelectPlace(place)}
-                          className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 flex items-start gap-3">
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSelectPlace(place)}
+                          className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 flex items-start gap-3"
+                        >
                           <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0 mt-1" />
                           <div className="min-w-0">
                             <div className="font-medium text-white">{place.name}</div>
@@ -298,28 +363,47 @@ export default function GymSignup() {
                   )}
                 </div>
 
+                {/* Gym Type */}
                 <div>
                   <Label className="text-white font-semibold">Gym Type</Label>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {gymTypes.map((type) => (
-                      <button key={type.value} type="button" onClick={() => setFormData({ ...formData, type: type.value })}
-                        className={`p-2.5 rounded-xl text-sm font-medium transition-all border ${formData.type === type.value ? 'bg-blue-500/30 border-blue-400/60 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20'}`}>
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, type: type.value })}
+                        className={`p-2.5 rounded-xl text-sm font-medium transition-all border ${
+                          formData.type === type.value
+                            ? 'bg-blue-500/30 border-blue-400/60 text-white'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-white/20'
+                        }`}
+                      >
                         {type.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Business Email */}
                 {selectedPlace && (
                   <div>
-                    <Label className="text-white font-semibold text-sm">Optional: Verify your business email</Label>
-                    <p className="text-xs text-slate-400 mt-0.5 mb-2">Enter your business email to claim verified ownership instantly.</p>
-                    <Input type="email" value={businessEmail}
+                    <Label className="text-white font-semibold text-sm">
+                      Optional: Verify your business email
+                    </Label>
+                    <p className="text-xs text-slate-400 mt-0.5 mb-2">
+                      Enter your business email (e.g., owner@ironforgegym.com) to claim verified ownership instantly.
+                    </p>
+                    <Input
+                      type="email"
+                      value={businessEmail}
                       onChange={(e) => {
                         const val = e.target.value;
                         setBusinessEmail(val);
-                        if (selectedPlace?.website && val) setEmailVerificationStatus(verifyEmailDomain(val, selectedPlace.website));
-                        else setEmailVerificationStatus(null);
+                        if (selectedPlace?.website && val) {
+                          setEmailVerificationStatus(verifyEmailDomain(val, selectedPlace.website));
+                        } else {
+                          setEmailVerificationStatus(null);
+                        }
                       }}
                       placeholder="owner@yourgym.com"
                       className="rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 h-10 text-sm"
@@ -327,12 +411,14 @@ export default function GymSignup() {
                   </div>
                 )}
 
+                {/* Email Verification Status */}
                 {emailVerificationStatus === 'verified' && (
                   <div className="p-3 bg-green-500/20 border border-green-500/40 rounded-lg flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <p className="text-xs text-green-300">✓ Email verified! Domain matches.</p>
                   </div>
                 )}
+
                 {emailVerificationStatus === 'manual_review' && (
                   <div className="p-3 bg-amber-500/20 border border-amber-500/40 rounded-lg flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -343,24 +429,32 @@ export default function GymSignup() {
                   </div>
                 )}
 
-                <Button type="button" onClick={() => setStep(2)} disabled={!selectedPlace}
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  disabled={!selectedPlace}
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
                   Continue <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             )}
 
-            {/* STEP 2 */}
+            {/* STEP 2: Details */}
             {step === 2 && (
               <div className="space-y-4">
+                {/* Header */}
                 <div className="pb-3 border-b border-white/10">
                   <h2 className="text-xl font-black text-white mb-0.5 truncate">{formData.name}</h2>
                   <p className="text-slate-300 text-sm">Complete your gym profile</p>
                 </div>
 
+                {/* Gym Overview Card */}
                 <div className="grid grid-cols-3 gap-2 bg-white/5 border border-white/10 rounded-xl p-3">
                   <div className="text-center">
-                    <div className="text-lg font-black text-blue-400 mb-0.5">{gymTypes.find(t => t.value === formData.type)?.label.split(' ')[0]}</div>
+                    <div className="text-lg font-black text-blue-400 mb-0.5">
+                      {gymTypes.find(t => t.value === formData.type)?.label.split(' ')[0]}
+                    </div>
                     <p className="text-xs text-slate-300">Type</p>
                   </div>
                   <div className="text-center border-l border-r border-white/10">
@@ -373,6 +467,7 @@ export default function GymSignup() {
                   </div>
                 </div>
 
+                {/* Specializations Section */}
                 <div className="space-y-2">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Star className="w-4 h-4 text-purple-400" />
@@ -380,14 +475,23 @@ export default function GymSignup() {
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
                     {specializationOptions.map((spec) => (
-                      <button key={spec} type="button" onClick={() => toggleArrayItem('specializes_in', spec)}
-                        className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${formData.specializes_in.includes(spec) ? 'bg-purple-500/30 border-purple-400/60 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'}`}>
+                      <button
+                        key={spec}
+                        type="button"
+                        onClick={() => toggleArrayItem('specializes_in', spec)}
+                        className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${
+                          formData.specializes_in.includes(spec)
+                            ? 'bg-purple-500/30 border-purple-400/60 text-white'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
                         {spec}
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Amenities Section */}
                 <div className="space-y-2">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-green-400" />
@@ -395,32 +499,52 @@ export default function GymSignup() {
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
                     {amenitiesOptions.map((amenity) => (
-                      <button key={amenity} type="button" onClick={() => toggleArrayItem('amenities', amenity)}
-                        className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${formData.amenities.includes(amenity) ? 'bg-green-500/30 border-green-400/60 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'}`}>
+                      <button
+                        key={amenity}
+                        type="button"
+                        onClick={() => toggleArrayItem('amenities', amenity)}
+                        className={`p-2.5 rounded-xl text-xs font-medium transition-all border ${
+                          formData.amenities.includes(amenity)
+                            ? 'bg-green-500/30 border-green-400/60 text-white'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
                         {amenity}
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Action Buttons */}
                 <div className="flex gap-3 pt-1">
-                  <Button type="button" onClick={() => setStep(1)}
-                    className="flex-1 rounded-xl h-12 font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all">
+                  <Button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="flex-1 rounded-xl h-12 font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all"
+                  >
                     Back
                   </Button>
-                  <Button type="button" onClick={handleSubmit}
-                    disabled={isSubmitting || formData.specializes_in.length === 0}
-                    className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg transition-all">
-                    {isSubmitting ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Creating Gym...</>
+                  <Button
+                    type="submit"
+                    disabled={createGymMutation.isPending || formData.specializes_in.length === 0}
+                    className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl h-12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg transition-all"
+                  >
+                    {createGymMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Creating Gym...
+                      </>
                     ) : (
-                      <>Complete Registration <ArrowRight className="w-4 h-4" /></>
+                      <>
+                        Complete Registration
+                        <ArrowRight className="w-4 h-4" />
+                      </>
                     )}
                   </Button>
                 </div>
               </div>
             )}
-          </div>
+          </form>
         </Card>
 
         {/* Ghost Gym Modal */}
@@ -434,20 +558,31 @@ export default function GymSignup() {
               <p className="text-slate-300 text-sm mb-6 leading-relaxed">
                 Members have already created a community for {ghostGym.name} with <span className="font-semibold text-white">{ghostGym.members_count || 0} members</span>. Claim it to take control.
               </p>
+
               <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
                 <h4 className="font-bold text-white mb-2">{ghostGym.name}</h4>
-                <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <Users className="w-3 h-3" />
-                  <span>{ghostGym.members_count || 0} members</span>
+                <div className="space-y-1 text-sm text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-3 h-3" />
+                    <span>{ghostGym.members_count || 0} members</span>
+                  </div>
                 </div>
               </div>
+
               <div className="flex gap-3">
-                <Button type="button" onClick={() => setShowGhostGymModal(false)} variant="outline"
-                  className="flex-1 rounded-lg border-white/10 bg-white/5 text-slate-300 hover:bg-white/10">
+                <Button
+                  type="button"
+                  onClick={() => setShowGhostGymModal(false)}
+                  variant="outline"
+                  className="flex-1 rounded-lg border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                >
                   Cancel
                 </Button>
-                <Button type="button" onClick={handleClaimGhostGym}
-                  className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg">
+                <Button
+                  type="button"
+                  onClick={handleClaimGhostGym}
+                  className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg"
+                >
                   Claim
                 </Button>
               </div>
