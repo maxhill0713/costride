@@ -49,7 +49,7 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm md:max-w-md w-full mx-4 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 border-2 border-blue-500/30">
+      <DialogContent className="max-w-sm md:max-w-md w-full mx-4 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 border-2 border-blue-500/30">
         <DialogHeader className="mb-2">
           <DialogTitle className="text-lg md:text-2xl font-black flex items-center gap-3 text-white">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
