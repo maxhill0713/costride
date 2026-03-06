@@ -642,103 +642,105 @@ export default function GymCommunity() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
-        {/* ── BANNER: image fills entire header including members strip + tabs ── */}
-        <div className="relative overflow-hidden">
-
-          {/* Background image — absolute, fills entire banner block */}
-          <div className="absolute inset-0 z-0">
-            {gym.image_url ?
-              <img
-                src={gym.image_url}
-                alt={gym.name}
-                className="w-full h-full object-cover opacity-70"
-                loading="eager"
-                fetchPriority="high" /> :
-              <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
-            }
-          </div>
-
-          {/* Content in normal flow — determines banner height */}
-          <div className="relative z-10 h-[119px]">
-
-            {/* Header Controls — top right */}
-            <div className="absolute top-3 right-4 flex gap-2 z-10">
-              {isGhostGym && !isGymOwner &&
-                <Button
-                  onClick={() => setShowInviteOwnerModal(true)}
-                  variant="ghost"
-                  size="sm"
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all duration-100 h-8 px-2 rounded-lg text-xs text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                  <Crown className="w-4 h-4 mr-1" />
-                  Make Official
-                </Button>
-              }
-              {showOwnerControls &&
-                <Button onClick={() => setShowEditHeroImage(true)} variant="ghost" size="sm" className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs">
-                  <Edit className="w-4 h-4 mr-1" />Edit Hero
-                </Button>
-              }
-              {isGymOwner &&
-                <Button onClick={() => setViewAsMember(!viewAsMember)} variant="ghost" size="sm" className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs">
-                  {viewAsMember ? '👤 Member' : '👑 Owner'}
-                </Button>
-              }
-              {isCoach && !isGymOwner &&
-                <div className="bg-blue-500/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-semibold">🎓 Coach</div>
-              }
-            </div>
-
-            {/* Gym name + city — top left */}
-            <div className="absolute top-3 left-4 right-36 z-10">
-              <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-sm' : gym.name.length > 20 ? 'text-base' : 'text-lg'}`}>
-                  {gym.name}
-                </h1>
-                {gym.verified && <BadgeCheck className="w-3.5 h-3.5 text-white drop-shadow-lg flex-shrink-0" />}
-              </div>
-              <p className="text-white/70 text-[10px] flex items-center gap-1 drop-shadow-md">
-                <MapPin className="w-2.5 h-2.5" />
-                {gym.city}
-              </p>
-            </div>
-          </div>
-
-          {/* Members count — still on top of image */}
-          <div className="relative z-10 px-4 pt-2 pb-0">
-            <div className="bg-transparent rounded-full px-3 py-1 border border-white/20 inline-flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-white flex-shrink-0" />
-              <span className="text-sm font-extrabold text-white">{gym?.members_count || 0}</span>
-            </div>
-          </div>
-        </div>
-        {/* ── END BANNER ── */}
-
-        {/* Horizontal Tab Menu */}
+        {/* Tabs wraps everything so TabsList and TabsContent are in the same tree */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-          <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b border-white/5">
-            <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-2 h-14 gap-1">
-              <TabsTrigger value="home" className={tabTriggerClass}>
-                <div className="flex items-center gap-1.5">
-                  <Home className="w-3.5 h-3.5" /><span>Home</span>
+
+          {/* ── BANNER: image fills entire block including members + tab buttons ── */}
+          <div className="relative overflow-hidden">
+
+            {/* Background image — absolute behind everything */}
+            <div className="absolute inset-0 z-0">
+              {gym.image_url ?
+                <img
+                  src={gym.image_url}
+                  alt={gym.name}
+                  className="w-full h-full object-cover opacity-70"
+                  loading="eager"
+                  fetchPriority="high" /> :
+                <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
+              }
+            </div>
+
+            {/* Gym name area — sets top portion height */}
+            <div className="relative z-10 h-[119px]">
+
+              {/* Header Controls — top right */}
+              <div className="absolute top-3 right-4 flex gap-2 z-10">
+                {isGhostGym && !isGymOwner &&
+                  <Button
+                    onClick={() => setShowInviteOwnerModal(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all duration-100 h-8 px-2 rounded-lg text-xs text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md border border-transparent shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                    <Crown className="w-4 h-4 mr-1" />
+                    Make Official
+                  </Button>
+                }
+                {showOwnerControls &&
+                  <Button onClick={() => setShowEditHeroImage(true)} variant="ghost" size="sm" className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs">
+                    <Edit className="w-4 h-4 mr-1" />Edit Hero
+                  </Button>
+                }
+                {isGymOwner &&
+                  <Button onClick={() => setViewAsMember(!viewAsMember)} variant="ghost" size="sm" className="bg-white/90 backdrop-blur hover:bg-white rounded-full text-xs">
+                    {viewAsMember ? '👤 Member' : '👑 Owner'}
+                  </Button>
+                }
+                {isCoach && !isGymOwner &&
+                  <div className="bg-blue-500/90 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-semibold">🎓 Coach</div>
+                }
+              </div>
+
+              {/* Gym name + city — top left */}
+              <div className="absolute top-3 left-4 right-36 z-10">
+                <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                  <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-sm' : gym.name.length > 20 ? 'text-base' : 'text-lg'}`}>
+                    {gym.name}
+                  </h1>
+                  {gym.verified && <BadgeCheck className="w-3.5 h-3.5 text-white drop-shadow-lg flex-shrink-0" />}
                 </div>
-              </TabsTrigger>
-              <TabsTrigger value="feed" className={tabTriggerClass}>
-                <div className="flex items-center gap-1.5">
-                  <MessageCircle className="w-3.5 h-3.5" /><span>Feed</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger value="challenges" className={tabTriggerClass}>
-                <div className="flex items-center gap-1.5">
-                  <Trophy className="w-3.5 h-3.5" /><span>Challenges</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger value="events" className={tabTriggerClass}>
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" /><span>Events</span>
-                </div>
-              </TabsTrigger>
-            </TabsList>
+                <p className="text-white/70 text-[10px] flex items-center gap-1 drop-shadow-md">
+                  <MapPin className="w-2.5 h-2.5" />
+                  {gym.city}
+                </p>
+              </div>
+            </div>
+
+            {/* Members count — on top of image */}
+            <div className="relative z-10 px-4 pt-2 pb-0">
+              <div className="bg-transparent rounded-full px-3 py-1 border border-white/20 inline-flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-white flex-shrink-0" />
+                <span className="text-sm font-extrabold text-white">{gym?.members_count || 0}</span>
+              </div>
+            </div>
+
+            {/* Tab buttons — inside banner, image visible behind them */}
+            <div className="relative z-10 border-b border-white/10">
+              <TabsList className="w-screen md:w-full md:max-w-4xl mx-auto flex justify-around bg-transparent p-2 h-14 gap-1">
+                <TabsTrigger value="home" className={tabTriggerClass}>
+                  <div className="flex items-center gap-1.5">
+                    <Home className="w-3.5 h-3.5" /><span>Home</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="feed" className={tabTriggerClass}>
+                  <div className="flex items-center gap-1.5">
+                    <MessageCircle className="w-3.5 h-3.5" /><span>Feed</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="challenges" className={tabTriggerClass}>
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5" /><span>Challenges</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="events" className={tabTriggerClass}>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" /><span>Events</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
+          {/* ── END BANNER ── */}
 
           {/* Main Content Area */}
           <div className="max-w-4xl mx-auto px-2 md:px-4 py-2 md:py-4 pb-24 w-full overflow-hidden">
