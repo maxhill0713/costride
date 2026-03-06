@@ -380,161 +380,156 @@ export default function Profile() {
 
   if (!currentUser) return null;
 
-  // Shared tab trigger class (matches GymCommunity style)
-  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
+  const tabTriggerClass = "flex-1 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2 py-1.5 flex items-center justify-center border border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
-        {/* ── HEADER + TABS OVERLAID ON BANNER ── */}
-        <div className="relative overflow-hidden">
+        {/* ── BANNER: tall enough to contain avatar + info + tabs ── */}
+        <div className="relative w-full overflow-hidden border-b border-slate-700/50">
 
-          {/* Banner / hero background */}
-          <div className="h-56 bg-gradient-to-b from-slate-800/40 to-transparent">
+          {/* Background image / gradient — fills the whole header block */}
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 to-slate-900">
             {currentUser.hero_image_url && (
               <>
-                <div className="absolute inset-0 z-0">
-                  <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-50" />
-                </div>
-                <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
+                <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-50" />
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
               </>
             )}
           </div>
 
-          {/* Content sitting on top of banner */}
-          <div className="absolute inset-0 flex flex-col justify-between px-4 pb-0 pt-6 z-10">
+          {/* All header content stacked in normal flow on top of the background */}
+          <div className="relative z-10 pt-6 pb-0 px-4 max-w-4xl mx-auto">
 
-            {/* Settings icon top right */}
-            <div className="flex justify-end">
+            {/* Settings icon */}
+            <div className="absolute top-4 right-4">
               <Link to={createPageUrl('Settings')} className="p-2 -m-2">
                 <Settings className="w-6 h-6 text-slate-300 hover:text-white transition-colors" />
               </Link>
             </div>
 
             {/* Avatar + name row */}
-            <div className="max-w-4xl mx-auto w-full">
-              <div className="flex items-start gap-8 mb-3">
+            <div className="flex items-start gap-6 mb-3">
+              <button
+                onClick={() => setShowProfilePicture(true)}
+                className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95 flex-shrink-0">
+                {currentUser.avatar_url ?
+                  <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" /> :
+                  <span className="text-3xl font-semibold text-white tracking-tight">
+                    {displayName?.charAt(0)?.toUpperCase()}
+                  </span>
+                }
+              </button>
+
+              <div className="pt-1 flex-1">
+                <div className="flex items-center flex-wrap gap-2 mb-2">
+                  <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{displayName}</h1>
+                  <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
+                </div>
+
+                {/* Equipped Badges */}
                 <button
-                  onClick={() => setShowProfilePicture(true)}
-                  className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95 flex-shrink-0">
-                  {currentUser.avatar_url ?
-                    <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" /> :
-                    <span className="text-3xl font-semibold text-white tracking-tight">
-                      {displayName?.charAt(0)?.toUpperCase()}
-                    </span>
+                  onClick={() => setShowBadgesModal(true)}
+                  className="flex items-center gap-2 mt-1 hover:opacity-80 transition-opacity">
+                  {currentUser?.equipped_badges?.length > 0 ?
+                    currentUser.equipped_badges.map((badgeId) => {
+                      const badge = streakMilestones.find((m) => `${m.days}_day_streak` === badgeId) ||
+                      [
+                        { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+                        { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+                        { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+                        { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+                        { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+                        { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+                        { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+                        { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
+                      ].find((b) => b.id === badgeId);
+                      if (!badge) return null;
+                      return (
+                        <div
+                          key={badgeId}
+                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:scale-110 transition-transform`}
+                          title={badge.name || badgeId}>
+                          <span className="text-base">{badge.icon}</span>
+                        </div>
+                      );
+                    }) :
+                    [0, 1, 2].map((i) =>
+                      <div
+                        key={`empty-${i}`}
+                        className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:ring-blue-400/50 transition-all opacity-60 hover:opacity-80">
+                        <span className="text-base">✨</span>
+                      </div>
+                    )
                   }
                 </button>
+              </div>
+            </div>
 
-                <div className="pt-1 flex-1">
-                  <div className="flex items-center flex-wrap gap-2 mb-2">
-                    <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{displayName}</h1>
-                    <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
+            {/* Gym location / editing */}
+            {isEditing ? (
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
+                  <Input
+                    value={editData.gym_location}
+                    onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
+                    placeholder="e.g. Iron Paradise, Manchester"
+                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
+                </div>
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Profile Photo</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={editData.avatar_url}
+                      onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
+                      placeholder="https://..."
+                      className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
+                    <Button
+                      type="button"
+                      onClick={() => setShowEditAvatar(true)}
+                      className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl px-4">
+                      <Camera className="w-4 h-4" />
+                    </Button>
                   </div>
-
-                  {/* Badges */}
-                  <button
-                    onClick={() => setShowBadgesModal(true)}
-                    className="flex items-center gap-2 mt-3 hover:opacity-80 transition-opacity">
-                    {currentUser?.equipped_badges?.length > 0 ?
-                      currentUser.equipped_badges.map((badgeId) => {
-                        const badge = streakMilestones.find((m) => `${m.days}_day_streak` === badgeId) ||
-                        [
-                          { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-                          { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-                          { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-                          { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-                          { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-                          { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-                          { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
-                          { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
-                        ].find((b) => b.id === badgeId);
-                        if (!badge) return null;
-                        return (
-                          <div
-                            key={badgeId}
-                            className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:scale-110 transition-transform`}
-                            title={badge.name || badgeId}>
-                            <span className="text-base">{badge.icon}</span>
-                          </div>
-                        );
-                      }) :
-                      [0, 1, 2].map((i) =>
-                        <div
-                          key={`empty-${i}`}
-                          className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:ring-blue-400/50 transition-all opacity-60 hover:opacity-80">
-                          <span className="text-base">✨</span>
-                        </div>
-                      )
-                    }
-                  </button>
                 </div>
               </div>
-
-              {/* Gym location / editing */}
-              {isEditing ? (
-                <div className="space-y-3 mb-3">
-                  <div>
-                    <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
-                    <Input
-                      value={editData.gym_location}
-                      onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
-                      placeholder="e.g. Iron Paradise, Manchester"
-                      className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
+            ) : (
+              <div className="space-y-1 mb-4">
+                {currentUser.gym_location && (
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                   </div>
-                  <div>
-                    <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Profile Photo</label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={editData.avatar_url}
-                        onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
-                        placeholder="https://..."
-                        className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
-                      <Button
-                        type="button"
-                        onClick={() => setShowEditAvatar(true)}
-                        className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl px-4">
-                        <Camera className="w-4 h-4" />
-                      </Button>
+                )}
+                {primaryGym && (
+                  <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
+                    <div className="flex items-center gap-2 flex-wrap cursor-pointer hover:opacity-80 transition-opacity mt-1">
+                      <Building2 className="w-4 h-4 text-blue-400" />
+                      <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">
+                        {primaryGym.name}
+                      </Badge>
                     </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1 mb-3">
-                  {currentUser.gym_location && (
-                    <div className="flex items-center gap-2 text-slate-400">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
-                    </div>
-                  )}
-                  {primaryGym && (
-                    <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
-                      <div className="flex items-center gap-2 flex-wrap cursor-pointer hover:opacity-80 transition-opacity mt-1">
-                        <Building2 className="w-4 h-4 text-blue-400" />
-                        <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">
-                          {primaryGym.name}
-                        </Badge>
-                      </div>
-                    </Link>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* ── TABS pinned to the bottom of the banner ── */}
-            <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/5">
-              <TabsList className="w-full flex justify-around bg-transparent p-2 h-14 gap-1">
-                <TabsTrigger value="stats" className={tabTriggerClass}>Insights</TabsTrigger>
-                <TabsTrigger value="progress" className={tabTriggerClass}>Split</TabsTrigger>
-                <TabsTrigger value="goals" className={tabTriggerClass}>Goals</TabsTrigger>
-                <TabsTrigger value="posts" className={tabTriggerClass}>Posts</TabsTrigger>
-              </TabsList>
-            </div>
-
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* ── TABS: inside the banner, full width, no gap ── */}
+          <div className="relative z-20 sticky top-0 bg-slate-900/95 backdrop-blur-xl border-b border-white/5">
+            <TabsList className="w-full grid grid-cols-4 bg-transparent p-2 h-14 gap-1">
+              <TabsTrigger value="stats" className={tabTriggerClass}>Insights</TabsTrigger>
+              <TabsTrigger value="progress" className={tabTriggerClass}>Split</TabsTrigger>
+              <TabsTrigger value="goals" className={tabTriggerClass}>Goals</TabsTrigger>
+              <TabsTrigger value="posts" className={tabTriggerClass}>Posts</TabsTrigger>
+            </TabsList>
+          </div>
+
         </div>
-        {/* ── END HEADER ── */}
+        {/* ── END BANNER ── */}
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
