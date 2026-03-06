@@ -642,11 +642,11 @@ export default function GymCommunity() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
-        {/* ── BANNER: reduced 35% from original h-48 (192px → 125px) ── */}
-        <div className="relative bg-black overflow-hidden">
+        {/* ── BANNER: image fills entire header including members strip + tabs ── */}
+        <div className="relative overflow-hidden">
 
-          {/* Hero image — fixed height, 35% shorter */}
-          <div className="relative h-[119px]">
+          {/* Background image — absolute, fills entire banner block */}
+          <div className="absolute inset-0 z-0">
             {gym.image_url ?
               <img
                 src={gym.image_url}
@@ -656,6 +656,10 @@ export default function GymCommunity() {
                 fetchPriority="high" /> :
               <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
             }
+          </div>
+
+          {/* Content in normal flow — determines banner height */}
+          <div className="relative z-10 h-[119px]">
 
             {/* Header Controls — top right */}
             <div className="absolute top-3 right-4 flex gap-2 z-10">
@@ -684,7 +688,7 @@ export default function GymCommunity() {
               }
             </div>
 
-            {/* Gym name + city — top left of image */}
+            {/* Gym name + city — top left */}
             <div className="absolute top-3 left-4 right-36 z-10">
               <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                 <h1 className={`font-black text-white drop-shadow-lg break-words ${gym.name.length > 30 ? 'text-sm' : gym.name.length > 20 ? 'text-base' : 'text-lg'}`}>
@@ -699,8 +703,8 @@ export default function GymCommunity() {
             </div>
           </div>
 
-          {/* Members count — sits between image and tabs */}
-          <div className="bg-slate-900/95 backdrop-blur-xl px-4 pt-2 pb-0">
+          {/* Members count — still on top of image */}
+          <div className="relative z-10 px-4 pt-2 pb-0">
             <div className="bg-transparent rounded-full px-3 py-1 border border-white/20 inline-flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-white flex-shrink-0" />
               <span className="text-sm font-extrabold text-white">{gym?.members_count || 0}</span>
