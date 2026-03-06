@@ -646,7 +646,7 @@ export default function GymCommunity() {
         <div className="relative bg-black overflow-hidden">
 
           {/* Hero image — fixed height, 35% shorter */}
-          <div className="relative h-[125px]">
+          <div className="relative h-[119px]">
             {gym.image_url ?
               <img
                 src={gym.image_url}
@@ -656,7 +656,6 @@ export default function GymCommunity() {
                 fetchPriority="high" /> :
               <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
             }
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
 
             {/* Header Controls — top right */}
             <div className="absolute top-3 right-4 flex gap-2 z-10">
