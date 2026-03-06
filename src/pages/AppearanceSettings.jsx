@@ -33,14 +33,14 @@ export default function AppearanceSettings() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <p className="text-slate-400">Loading...</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
             <div className="flex items-center justify-center w-10 h-10">
@@ -56,11 +56,11 @@ export default function AppearanceSettings() {
         <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-2xl">
             <div className="flex items-center gap-3">
-              {currentUser.dark_mode ? (
-                <Moon className="w-5 h-5 text-indigo-400" />
-              ) : (
-                <Sun className="w-5 h-5 text-orange-400" />
-              )}
+              {currentUser.dark_mode ?
+              <Moon className="w-5 h-5 text-indigo-400" /> :
+
+              <Sun className="w-5 h-5 text-orange-400" />
+              }
               <div>
                 <Label className="text-sm font-bold text-slate-100">Dark Mode</Label>
                 <p className="text-xs text-slate-400">Switch between light and dark theme</p>
@@ -68,8 +68,8 @@ export default function AppearanceSettings() {
             </div>
             <Switch
               checked={currentUser.dark_mode ?? false}
-              onCheckedChange={(checked) => updateSettingsMutation.mutate({ dark_mode: checked })}
-            />
+              onCheckedChange={(checked) => updateSettingsMutation.mutate({ dark_mode: checked })} />
+
           </div>
         </Card>
 
@@ -83,16 +83,16 @@ export default function AppearanceSettings() {
                 <p className="text-xs text-slate-400">Choose your preferred measurement units</p>
               </div>
             </div>
-            <MobileSelect 
-              value={currentUser.units || 'imperial'} 
+            <MobileSelect
+              value={currentUser.units || 'imperial'}
               onValueChange={(value) => updateSettingsMutation.mutate({ units: value })}
               placeholder="Select units"
               triggerClassName="rounded-2xl border border-white/20 bg-white/5 text-slate-100"
               options={[
-                { value: 'imperial', label: 'Imperial (lbs, ft)' },
-                { value: 'metric', label: 'Metric (kg, m)' }
-              ]}
-            />
+              { value: 'imperial', label: 'Imperial (lbs, ft)' },
+              { value: 'metric', label: 'Metric (kg, m)' }]
+              } />
+
           </div>
         </Card>
 
@@ -106,22 +106,22 @@ export default function AppearanceSettings() {
                 <p className="text-xs text-slate-400">Choose your preferred language</p>
               </div>
             </div>
-            <MobileSelect 
-              value={currentUser.language || 'en'} 
+            <MobileSelect
+              value={currentUser.language || 'en'}
               onValueChange={(value) => updateSettingsMutation.mutate({ language: value })}
               placeholder="Select language"
               triggerClassName="rounded-2xl border border-white/20 bg-white/5 text-slate-100"
               options={[
-                { value: 'en', label: 'English' },
-                { value: 'es', label: 'Español' },
-                { value: 'fr', label: 'Français' },
-                { value: 'de', label: 'Deutsch' },
-                { value: 'pt', label: 'Português' }
-              ]}
-            />
+              { value: 'en', label: 'English' },
+              { value: 'es', label: 'Español' },
+              { value: 'fr', label: 'Français' },
+              { value: 'de', label: 'Deutsch' },
+              { value: 'pt', label: 'Português' }]
+              } />
+
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
