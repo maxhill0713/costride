@@ -32,14 +32,14 @@ export default function PrivacySettings() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <p className="text-slate-400">Loading...</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
             <div className="flex items-center justify-center w-10 h-10">
@@ -64,11 +64,11 @@ export default function PrivacySettings() {
 
           <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
             <div className="flex items-center gap-3">
-              {currentUser.public_profile ? (
-                <Globe className="w-5 h-5 text-slate-400" />
-              ) : (
-                <Lock className="w-5 h-5 text-slate-500" />
-              )}
+              {currentUser.public_profile ?
+              <Globe className="w-5 h-5 text-slate-400" /> :
+
+              <Lock className="w-5 h-5 text-slate-500" />
+              }
               <div>
                 <Label className="text-sm font-bold text-slate-100">Public Profile</Label>
                 <p className="text-xs text-slate-400">Allow others to view your profile and stats</p>
@@ -76,11 +76,11 @@ export default function PrivacySettings() {
             </div>
             <Switch
               checked={currentUser.public_profile ?? true}
-              onCheckedChange={(checked) => updateSettingsMutation.mutate({ public_profile: checked })}
-            />
+              onCheckedChange={(checked) => updateSettingsMutation.mutate({ public_profile: checked })} />
+
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
