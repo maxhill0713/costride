@@ -9,7 +9,6 @@ import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
 import WorkoutNotesModal from './WorkoutNotesModal.jsx';
 import WorkoutSummaryModal from './WorkoutSummaryModal.jsx';
-import WorkoutCelebration from './WorkoutCelebration.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
@@ -29,8 +28,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [showSummary, setShowSummary] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState(0);
   const [frozenDuration, setFrozenDuration] = useState(0);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationData, setCelebrationData] = useState(null);
   const queryClient = useQueryClient();
 
   const timerPresets = [
@@ -153,7 +150,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const handleSave = (index) => {
     const weight = editWeight;
-    const setsReps = editReps; // user types e.g. "3x10"
+    const setsReps = editReps;
 
     const updatedExercises = [...todayWorkout.exercises];
     updatedExercises[index] = {
@@ -162,14 +159,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       setsReps: setsReps
     };
 
-    // Find all other days with the same workout name and update them too
     const updatedWorkoutTypes = { ...currentUser.custom_workout_types };
     const currentWorkoutName = todayWorkout.name;
 
     Object.keys(updatedWorkoutTypes).forEach((dayKey) => {
       const workout = updatedWorkoutTypes[dayKey];
       if (workout.name === currentWorkoutName && parseInt(dayKey) !== adjustedDay) {
-        // Update the same exercise in this duplicate day
         if (workout.exercises?.[index]?.exercise === updatedExercises[index].exercise) {
           updatedWorkoutTypes[dayKey] = {
             ...workout,
@@ -181,13 +176,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       }
     });
 
-    // Update current day
     updatedWorkoutTypes[adjustedDay] = {
       ...currentUser.custom_workout_types[adjustedDay],
       exercises: updatedExercises
     };
 
-    // Save all changes
     base44.auth.updateMe({ custom_workout_types: updatedWorkoutTypes }).then(() => {
       queryClient.invalidateQueries(['currentUser']);
       setEditingIndex(null);
@@ -240,7 +233,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         }).
         filter(Boolean);
 
-        // Create a post for each improvement
         for (const improvement of improvements) {
           await base44.entities.Post.create({
             member_id: currentUser.id,
@@ -254,7 +246,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         }
       }
 
-      // Create workout completion post with nudge button
+      // Create workout completion post
       await base44.entities.Post.create({
         member_id: currentUser.id,
         member_name: currentUser.full_name || currentUser.username || 'User',
@@ -263,14 +255,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         likes: 0,
         comments: [],
         reactions: {},
-        exercise: 'workout_completion_nudge' // Special flag for nudge posts
+        exercise: 'workout_completion_nudge'
       });
 
       // Increment user's streak
       const newStreak = previousStreak + 1;
       await base44.auth.updateMe({ current_streak: newStreak });
 
-      // Fetch user's active challenges and their progress
+      // Fetch user's active challenges
       let challengesData = [];
       try {
         const participants = await base44.entities.ChallengeParticipant.filter({
@@ -300,20 +292,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         console.error('Error fetching challenges:', err);
       }
 
-      setCelebrationData({
-        previousStreak,
-        currentStreak: newStreak,
-        challenges: challengesData
-      });
-
       return { previousStreak, newStreak, challengesData };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setShowSummary(false);
-      setShowCelebration(true);
       queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, adjustedDay] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      // Pass challenges data up to Home so it can run the two-stage celebration
+      if (onWorkoutLogged) onWorkoutLogged(data?.challengesData || []);
     },
     onError: (error) => {
       console.error('Error logging workout:', error?.response?.data || error?.message || error);
@@ -401,9 +388,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             e.stopPropagation();
             setShowSummary(true);
           }}
-          size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3\\\\n">
-
-
+          size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3">
           View Summary
         </Button>
         }
@@ -437,7 +422,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     </div>
               }
                  </div>
-                {/* Sets x Reps and Weight inputs */}
                 <div className="flex gap-2 items-end">
                   <div className="flex-1">
                     <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Sets x Reps</label>
@@ -462,9 +446,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <Button
                 onClick={() => handleSave(index)}
                 size="sm"
-                disabled={updateWorkoutMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#c2410c,0_8px_20px_rgba(194,65,12,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu\n">
-
-
+                disabled={updateWorkoutMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#c2410c,0_8px_20px_rgba(194,65,12,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                     <Check className="w-3 h-3" />
                   </Button>
                   <Button
@@ -472,7 +454,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 size="sm"
                 variant="ghost"
                 className="flex-1 text-slate-400 hover:text-white h-7">
-
                     <X className="w-3 h-3" />
                   </Button>
                 </div>
@@ -504,8 +485,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 onClick={() => handleEdit(index, exercise)}
                 size="icon"
                 variant="ghost" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0 ml-1 -mr-[12%]">
-
-
                     <Edit2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -514,7 +493,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           </div>
         )}
 
-        {/* Log Workout Button - Only when Expanded */}
+        {/* Log Workout Button */}
          {isExpanded && !alreadyLoggedToday &&
         <div className="mb-3 space-y-2">
              {workoutStartTime &&
@@ -532,11 +511,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             }}
             disabled={logWorkoutMutation.isPending}
             size="sm" className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-white px-3 w-full h-8 text-[10px] font-bold bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 backdrop-blur-md rounded-lg border border-slate-500/50 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-
-
                {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
              </Button>
-
            </div>
         }
 
@@ -545,21 +521,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         <Button
           onClick={() => setShowSummary(true)}
           size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-[109%] h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3 -ml-3.5">
-
-
             View Summary
           </Button>
         }
 
         {/* Rest Timer & Tools */}
         <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
-          {/* Timer Section */}
           <div className="flex-1 flex items-center gap-3">
             <div className="relative flex-1">
               <button
                 onClick={() => setShowTimerOptions(!showTimerOptions)}
                 className="relative w-full flex flex-col items-center gap-1 px-5 py-2 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all">
-
                 <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-400" />
@@ -567,10 +539,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     {(() => {const t = parseInt(restTimer) || 90;return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`;})()}
                   </span>
                 </div>
-
               </button>
 
-              {/* Timer Options Dropdown */}
               {showTimerOptions &&
               <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
@@ -580,9 +550,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       const currentValue = parseInt(restTimer) || 90;
                       const newValue = Math.max(10, currentValue - 10);
                       setRestTimer(newValue);
-                    }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold\n">
-
-
+                    }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
                       −
                     </button>
                     <button
@@ -590,9 +558,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       const currentValue = parseInt(restTimer) || 90;
                       const newValue = currentValue + 10;
                       setRestTimer(newValue);
-                    }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold\n">
-
-
+                    }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
                       +
                     </button>
                   </div>
@@ -608,22 +574,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   setInitialRestTime(time);
                 }
                 setIsTimerActive(!isTimerActive);
-              }} className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n">
-
-
+              }} className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
               {isTimerActive ? 'Stop' : 'Go'}
             </button>
           </div>
 
-          {/* Quick Action Icons */}
-           <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
              <Button
               onClick={() => setShowCalculator(true)}
               size="icon"
               variant="ghost"
               className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
               title="Plate Calculator">
-
                <Calculator className="w-3.5 h-3.5" />
              </Button>
              <Button
@@ -632,22 +594,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               variant="ghost"
               className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
               title="Notes">
-
                <BookOpen className="w-3.5 h-3.5" />
              </Button>
            </div>
 
-          {/* Collapse Arrow */}
           <Button
             onClick={() => {setIsExpanded(false);window.scrollTo({ top: 0, behavior: 'smooth' });}}
             variant="ghost"
             size="icon"
             className="w-9 h-9 text-slate-400 hover:text-white ml-auto">
-
             <ChevronUp className="w-6 h-6" />
           </Button>
         </div>
-
 
         </div> :
       isExpanded && todayWorkout.exercises.length === 0 ?
@@ -660,7 +618,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             variant="ghost"
             size="icon"
             className="w-9 h-9 text-slate-400 hover:text-white">
-
             <ChevronUp className="w-6 h-6" />
           </Button>
           </div>
@@ -672,7 +629,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           variant="ghost"
           size="icon"
           className="w-9 h-9 text-slate-400 hover:text-white">
-
         <ChevronDown className="w-6 h-6" />
         </Button>
       </div>
@@ -693,19 +649,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending} />
 
-
-    {showCelebration && celebrationData &&
-      <WorkoutCelebration
-        previousStreak={celebrationData.previousStreak}
-        currentStreak={celebrationData.currentStreak}
-        challenges={celebrationData.challenges}
-        onComplete={() => {
-          setShowCelebration(false);
-          setShowSummary(true);
-          if (onWorkoutLogged) onWorkoutLogged();
-        }} />
-
-      }
     </Card>);
 
 }
