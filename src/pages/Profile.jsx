@@ -401,17 +401,17 @@ export default function Profile() {
           </div>
 
           {/* All header content stacked in normal flow on top of the background */}
-          <div className="relative z-10 pt-6 pb-0 px-4 max-w-4xl mx-auto">
+          <div className="relative z-10 pt-3 pb-0 px-4 max-w-4xl mx-auto">
 
             {/* Settings icon */}
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-1 right-4">
               <Link to={createPageUrl('Settings')} className="p-2 -m-2">
                 <Settings className="w-6 h-6 text-slate-300 hover:text-white transition-colors" />
               </Link>
             </div>
 
             {/* Avatar + name row */}
-            <div className="flex items-start gap-6 mb-3">
+            <div className="flex items-start gap-6 mb-1">
               <button
                 onClick={() => setShowProfilePicture(true)}
                 className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95 flex-shrink-0">
@@ -470,7 +470,7 @@ export default function Profile() {
 
             {/* Gym location / editing */}
             {isEditing ? (
-              <div className="space-y-3 mb-4">
+              <div className="space-y-3 mb-2">
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
                   <Input
@@ -497,7 +497,7 @@ export default function Profile() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-1 mb-4">
+              <div className="space-y-1 mb-2">
                 {currentUser.gym_location && (
                   <div className="flex items-center gap-2 text-slate-400">
                     <MapPin className="w-4 h-4" />
