@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import {
-  TrendingUp, TrendingDown, Users, Trophy, Calendar, Star, Target, Activity,
-  Plus, Image as ImageIcon, Dumbbell, CheckCircle, Download, Pencil,
-  X, Crown, Trash2, Clock, Gift, Zap, BarChart2, Shield,
-  Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
-  LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus, Flame
-} from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { TrendingUp, Users, DollarSign, Trophy, Calendar, Star, Target, Award, Activity, Bell, Settings, Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Share2, X, Crown, Trash2, Clock, Gift } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { format, subDays, startOfDay, isWithinInterval } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
 import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
@@ -27,1024 +24,2746 @@ import CreateEventModal from '../components/events/CreateEventModal';
 import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
 import QRScanner from '../components/gym/QRScanner';
 import CreatePollModal from '../components/polls/CreatePollModal';
+
 import QRCode from 'react-qr-code';
 
-const N = {
-  950: '#060d1f', 900: '#0a1628', 850: '#0d1e35', 800: '#112040',
-  750: '#152649', 700: '#1a2f57', 600: '#213a6b', 500: '#2a4a85',
-};
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-const A = {
-  blue:   { c:'#60a5fa', glow:'rgba(96,165,250,0.18)',   bg:'rgba(59,130,246,0.14)',  border:'rgba(59,130,246,0.32)'  },
-  green:  { c:'#34d399', glow:'rgba(52,211,153,0.18)',   bg:'rgba(16,185,129,0.14)',  border:'rgba(16,185,129,0.32)'  },
-  orange: { c:'#fb923c', glow:'rgba(251,146,60,0.18)',   bg:'rgba(249,115,22,0.14)',  border:'rgba(249,115,22,0.32)'  },
-  purple: { c:'#a78bfa', glow:'rgba(167,139,250,0.18)',  bg:'rgba(139,92,246,0.14)',  border:'rgba(139,92,246,0.32)'  },
-  yellow: { c:'#fbbf24', glow:'rgba(251,191,36,0.18)',   bg:'rgba(251,191,36,0.14)',  border:'rgba(251,191,36,0.32)'  },
-  red:    { c:'#f87171', glow:'rgba(248,113,113,0.18)',  bg:'rgba(239,68,68,0.14)',   border:'rgba(239,68,68,0.32)'   },
-  cyan:   { c:'#22d3ee', glow:'rgba(34,211,238,0.18)',   bg:'rgba(6,182,212,0.14)',   border:'rgba(6,182,212,0.32)'   },
-};
-
-const NAV = [
-  { id:'overview',  label:'Overview',  icon:LayoutDashboard },
-  { id:'members',   label:'Members',   icon:Users },
-  { id:'content',   label:'Content',   icon:FileText },
-  { id:'analytics', label:'Analytics', icon:BarChart3 },
-  { id:'gym',       label:'Settings',  icon:Settings },
-];
-
-// ── Stat card with glowing top bar + large icon watermark ──────────────────
-const StatCard = ({ icon:Icon, ak='blue', label, value, sub, trend }) => {
-  const a = A[ak];
-  return (
-    <div className="relative overflow-hidden rounded-2xl p-5 border group cursor-default transition-all duration-300 hover:-translate-y-1"
-      style={{ background:`linear-gradient(150deg,${N[800]} 0%,${N[850]} 100%)`, borderColor:a.border, boxShadow:`0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)` }}>
-      {/* Glowing top bar */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl" style={{ background:`linear-gradient(90deg,${a.c},${a.c}44,transparent)` }} />
-      {/* Faint glow blob */}
-      <div className="absolute -top-8 -left-4 w-28 h-28 rounded-full opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-30" style={{ background:a.c }} />
-      {/* Watermark icon */}
-      <div className="absolute -bottom-3 -right-3 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-        <Icon className="w-20 h-20 opacity-[0.06]" style={{ color:a.c }} />
-      </div>
-      <div className="relative flex items-start justify-between mb-4">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background:a.bg, border:`1px solid ${a.border}`, boxShadow:`0 0 16px ${a.glow}` }}>
-          <Icon className="w-5 h-5" style={{ color:a.c }} />
-        </div>
-        {trend !== undefined && (
-          <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg"
-            style={{ background:trend>=0?'rgba(52,211,153,0.12)':'rgba(248,113,113,0.12)', color:trend>=0?'#34d399':'#f87171', border:`1px solid ${trend>=0?'rgba(52,211,153,0.25)':'rgba(248,113,113,0.25)'}` }}>
-            {trend>=0?<TrendingUp className="w-3 h-3"/>:<TrendingDown className="w-3 h-3"/>}{Math.abs(trend)}%
-          </span>
-        )}
-      </div>
-      <div className="relative">
-        <div className="text-3xl font-black tracking-tight mb-1" style={{ color:a.c }}>{value}</div>
-        <div className="text-xs font-bold uppercase tracking-widest text-white/60 mb-0.5">{label}</div>
-        {sub && <div className="text-xs" style={{ color:'#3d5a8a' }}>{sub}</div>}
-      </div>
-    </div>
-  );
-};
-
-// ── Main panel ─────────────────────────────────────────────────────────────
-const Panel = ({ children, className='' }) => (
-  <div className={`rounded-2xl border ${className}`}
-    style={{ background:`linear-gradient(160deg,${N[800]} 0%,${N[850]} 100%)`, borderColor:'rgba(59,130,246,0.14)', boxShadow:'0 8px 32px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.03)' }}>
-    {children}
-  </div>
-);
-
-// ── Panel body ─────────────────────────────────────────────────────────────
-const PB = ({ children, className='' }) => (
-  <div className={`p-4 md:p-6 ${className}`}>{children}</div>
-);
-
-// ── Panel header ───────────────────────────────────────────────────────────
-const PH = ({ title, subtitle, action, actionLabel, badge, ak, icon:Icon }) => {
-  const accentColor = ak ? A[ak].c : '#60a5fa';
-  return (
-    <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor:'rgba(59,130,246,0.09)' }}>
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        {Icon && (
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background:`${accentColor}18`, border:`1px solid ${accentColor}30` }}>
-            <Icon className="w-4 h-4" style={{ color:accentColor }} />
-          </div>
-        )}
-        <div className="min-w-0">
-          <h3 className="text-sm font-bold text-white truncate">{title}</h3>
-          {subtitle && <p className="text-xs mt-0.5" style={{ color:'#4a6492' }}>{subtitle}</p>}
-        </div>
-      </div>
-      <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-        {badge !== undefined && (
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full" style={{ background:'rgba(59,130,246,0.15)', color:'#93b4e8', border:'1px solid rgba(59,130,246,0.28)' }}>{badge}</span>
-        )}
-        {action && (
-          <button onClick={action}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:brightness-125 active:scale-95"
-            style={{ background:'rgba(59,130,246,0.15)', color:'#93c5fd', border:'1px solid rgba(59,130,246,0.3)' }}>
-            <Plus className="w-3 h-3"/>{actionLabel||'Add'}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Chart tooltip
-const DT = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-xl px-3 py-2 shadow-2xl text-xs" style={{ background:N[900], border:`1px solid ${N[600]}` }}>
-      <p className="mb-1" style={{ color:'#6b87b8' }}>{label}</p>
-      {payload.map((p,i) => <p key={i} className="font-bold" style={{ color:p.color }}>{p.value} {p.name}</p>)}
-    </div>
-  );
-};
-
-const Tag = ({ children, color='blue' }) => {
-  const m = {
-    blue:  ['rgba(59,130,246,0.15)','#93c5fd','rgba(59,130,246,0.3)'],
-    green: ['rgba(16,185,129,0.15)','#6ee7b7','rgba(16,185,129,0.3)'],
-    orange:['rgba(249,115,22,0.15)','#fdba74','rgba(249,115,22,0.3)'],
-    red:   ['rgba(239,68,68,0.15)', '#fca5a5','rgba(239,68,68,0.3)'],
-    purple:['rgba(139,92,246,0.15)','#c4b5fd','rgba(139,92,246,0.3)'],
-  };
-  const [bg,text,border] = m[color]||m.blue;
-  return <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={{ background:bg, color:text, border:`1px solid ${border}` }}>{children}</span>;
-};
-
-const Empty = ({ icon:Icon, label, action, actionLabel }) => (
-  <div className="py-10 text-center">
-    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background:N[750], border:`1px solid ${N[700]}` }}>
-      <Icon className="w-5 h-5" style={{ color:'#3d5a8a' }} />
-    </div>
-    <p className="text-sm" style={{ color:'#4a6492' }}>{label}</p>
-    {action && <button onClick={action} className="mt-3 text-xs font-bold px-4 py-2 rounded-lg" style={{ background:'rgba(59,130,246,0.15)', color:'#93c5fd', border:'1px solid rgba(59,130,246,0.3)' }}>{actionLabel}</button>}
-  </div>
-);
-
-// ── ROOT ───────────────────────────────────────────────────────────────────
 export default function GymOwnerDashboard() {
-  const [tab, setTab]             = useState('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const t = (key, options = {}) => {
+    const translations = {
+      'dashboard.title': 'Dashboard',
+      'dashboard.subtitle': 'Manage your gym and track performance',
+      'dashboard.memberView': 'Member View',
+      'dashboard.viewMyGym': 'View My Gym',
+      'dashboard.managePost': 'Manage posts and events',
+      'dashboard.activeMembers': 'Active Members',
+      'dashboard.checkIns30d': 'Check-ins (30d)',
+      'dashboard.activeThisWeek': 'Active This Week',
+      'dashboard.weeklyChange': 'Weekly Change',
+      'dashboard.vsLastWeek': 'vs Last Week',
+      'dashboard.atRiskMembers': 'At-Risk Members',
+      'dashboard.noCheckIn7to10': 'No check-in 7-10 days',
+      'dashboard.membersAtRisk': 'Members At Risk',
+      'dashboard.membersHaventCheckedIn': `${options.count || 0} members haven't checked in recently`,
+      'dashboard.viewMembers': 'View Members',
+      'dashboard.checkInsToday': 'Check-ins Today',
+      'dashboard.membersCheckedIn': 'members checked in',
+      'dashboard.uniqueMembers': 'unique members',
+      'dashboard.whatToDoNext': 'What to Do Next',
+      'dashboard.reachOutAtRisk': 'Reach out to at-risk members',
+      'dashboard.shareGymUpdates': 'Share gym updates',
+      'dashboard.keepMembersEngaged': 'Keep members engaged with content',
+      'dashboard.createPost': 'Create Post',
+      'dashboard.createChallenge': 'Create a challenge',
+      'dashboard.boostEngagement': 'Boost engagement and retention',
+      'dashboard.createChallengeBtn': 'Create Challenge',
+      'dashboard.activityLog': 'Activity Log',
+      'dashboard.checkedIn': 'checked in',
+      'dashboard.noActivityLast7Days': 'No activity in the last 7 days',
+      'dashboard.snapshot': 'Snapshot',
+      'dashboard.engagement': 'Engagement',
+      'dashboard.content': 'Content',
+      'dashboard.admin': 'Admin',
+      'dashboard.insights': 'Insights',
+      'dashboard.engagementOverview': 'Engagement Overview',
+      'dashboard.totalMembers': 'Total Members',
+      'dashboard.active7days': 'Active (7 days)',
+      'dashboard.totalCheckIns': 'Total Check-ins',
+      'dashboard.prsLogged': 'PRs Logged',
+      'dashboard.memberEngagementLevels': 'Member Engagement Levels',
+      'dashboard.superActive': 'Super Active',
+      'dashboard.visitsPerMonth15': '15+ visits per month',
+      'dashboard.active': 'Active',
+      'dashboard.visitsPerMonth8to14': '8-14 visits per month',
+      'dashboard.casual': 'Casual',
+      'dashboard.visitsPerMonth1to7': '1-7 visits per month',
+      'dashboard.atRisk': 'At Risk',
+      'dashboard.daysInactive': '7-10 days inactive',
+      'dashboard.memberRetention': 'Member Retention',
+      'dashboard.activeThisMonth': 'Active This Month',
+      'dashboard.outOfTotal': `out of ${options.total || 0} total`,
+      'dashboard.inactive30Plus': 'Inactive 30+ Days',
+      'dashboard.considerReaching': 'Consider reaching out',
+      'dashboard.retentionRate': 'Retention Rate',
+      'dashboard.dayActiveRate': '30-day active rate',
+      'dashboard.dayOfWeekAnalysis': 'Day of Week Analysis',
+      'dashboard.newVsReturning': 'New vs Returning Members',
+      'dashboard.firstTimeVisitors': 'First-Time Visitors',
+      'dashboard.newMembersDiscovering': 'New members discovering your gym',
+      'dashboard.returningMembers': 'Returning Members',
+      'dashboard.loyalMembers': 'Loyal members',
+      'dashboard.returnRate': 'Return Rate',
+      'dashboard.returnRateDesc': 'Percentage of returning visits',
+      'dashboard.weeklyLeaderboard': 'Weekly Leaderboard',
+      'dashboard.topMembersThisWeek': 'Top members this week',
+      'dashboard.visits': 'visits',
+      'dashboard.rewardEffectiveness': 'Reward Effectiveness',
+      'dashboard.activeRewards': 'Active Rewards',
+      'dashboard.totalClaims': 'Total Claims',
+      'dashboard.mostPopular': 'Most Popular',
+      'dashboard.manageRewards': 'Manage Rewards',
+      'dashboard.challengesEvents': 'Challenges & Events',
+      'dashboard.createEvent': 'Create Event',
+      'dashboard.activeChallenges': 'Active Challenges',
+      'dashboard.noActiveChallenges': 'No active challenges',
+      'dashboard.participants': 'participants',
+      'dashboard.upcomingEvents': 'Upcoming Events',
+      'dashboard.noUpcomingEvents': 'No upcoming events',
+      'dashboard.gymFeedManagement': 'Gym Feed Management',
+      'dashboard.noActivityYet': 'No activity yet',
+      'dashboard.postsFromGym': 'Posts from your gym members will appear here',
+      'dashboard.rewardsManagement': 'Rewards Management',
+      'dashboard.addReward': 'Add Reward',
+      'dashboard.gymProfileSetup': 'Gym Profile Setup',
+      'dashboard.basicInformation': 'Basic Information',
+      'dashboard.gymName': 'Gym Name',
+      'dashboard.type': 'Type',
+      'dashboard.location': 'Location',
+      'dashboard.monthlyPrice': 'Monthly Price',
+      'dashboard.amenities': 'Amenities',
+      'dashboard.equipment': 'Equipment',
+      'dashboard.more': 'more',
+      'dashboard.photoGallery': 'Photo Gallery',
+      'dashboard.managePhotos': 'Manage Photos',
+      'dashboard.manageClasses': 'Manage Classes',
+      'dashboard.classes': 'classes',
+      'dashboard.manageCoaches': 'Manage Coaches',
+      'dashboard.coaches': 'coaches',
+      'dashboard.viewMembersBtn': 'View Members',
+      'dashboard.members': 'members',
+      'dashboard.adminAccess': 'Admin Access',
+      'dashboard.ownerEmail': 'Owner Email',
+      'dashboard.gymId': 'Gym ID',
+      'dashboard.verifiedStatus': 'Verified Status',
+      'dashboard.verified': 'Verified',
+      'dashboard.notVerified': 'Not Verified',
+      'dashboard.viewPublicGymPage': 'View Public Gym Page',
+      'dashboard.weeklyCheckInTrend': 'Weekly Check-in Trend',
+      'dashboard.attendanceOverWeeks': 'Attendance over the last 12 weeks',
+      'dashboard.challengeParticipation': 'Challenge Participation',
+      'dashboard.engagementTrend': 'Engagement trend over time',
+      'dashboard.activeMembersGrowth': 'Active Members Growth',
+      'dashboard.membersWhoCheckedIn': 'Members who checked in each month',
+      'dashboard.rewardsRedeemedChart': 'Rewards Redeemed',
+      'dashboard.trackIncentive': 'Track your most effective incentives',
+      'dashboard.peakHoursAnalysis': 'Peak Hours Analysis',
+      'dashboard.checkInTrends': 'Check-in Trends',
+      'dashboard.last7Days': 'Last 7 Days',
+      'dashboard.last30Days': 'Last 30 Days',
+      'dashboard.checkInsLabel': 'check-ins',
+      'dashboard.dailyAverage': 'Daily Average',
+      'dashboard.perDay': 'per day',
+      'dashboard.vsPreviousMonth': 'vs Previous Month',
+      'dashboard.change': 'change',
+      'dashboard.likes': 'likes',
+      'dashboard.comments': 'comments',
+      'dashboard.attending': 'attending',
+    };
+    return translations[key] || key;
+  };
+  const i18n = { language: 'en', changeLanguage: () => {} }; // Mock i18n
   const [selectedGym, setSelectedGym] = useState(null);
-  const [gymOpen, setGymOpen]     = useState(false);
-  const [modal, setModal]         = useState(null);
-
-  const openModal  = n => setModal(n);
-  const closeModal = () => setModal(null);
+  const [showManageRewards, setShowManageRewards] = useState(false);
+  const [showManageClasses, setShowManageClasses] = useState(false);
+  const [showManageCoaches, setShowManageCoaches] = useState(false);
+  const [showManagePhotos, setShowManagePhotos] = useState(false);
+  const [showManageMembers, setShowManageMembers] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [leaderboardFilter, setLeaderboardFilter] = useState('overall');
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
+  const [showManageEquipment, setShowManageEquipment] = useState(false);
+  const [showManageAmenities, setShowManageAmenities] = useState(false);
+  const [showEditBasicInfo, setShowEditBasicInfo] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
   const queryClient = useQueryClient();
-  const navigate    = useNavigate();
 
-  const { data:currentUser } = useQuery({ queryKey:['currentUser'], queryFn:()=>base44.auth.me(), staleTime:5*60*1000 });
-  React.useEffect(() => { if(currentUser && !currentUser.onboarding_completed) navigate(createPageUrl('Onboarding')); }, [currentUser,navigate]);
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
 
-  const { data:gyms=[], error:gymsError } = useQuery({ queryKey:['ownerGyms',currentUser?.email], queryFn:()=>base44.entities.Gym.filter({owner_email:currentUser.email}), enabled:!!currentUser?.email, retry:3, staleTime:5*60*1000 });
-  const myGyms       = gyms.filter(g=>g.owner_email===currentUser?.email);
-  const approvedGyms = myGyms.filter(g=>g.status==='approved');
-  const pendingGyms  = myGyms.filter(g=>g.status==='pending');
+  const navigate = useNavigate();
 
-  React.useEffect(() => { if(approvedGyms.length>0&&!selectedGym) setSelectedGym(approvedGyms[0]); }, [approvedGyms,selectedGym]);
-  React.useEffect(() => { const iv=setInterval(()=>queryClient.invalidateQueries({queryKey:['ownerGyms']}),10000); return ()=>clearInterval(iv); }, [queryClient]);
 
-  const qo={staleTime:3*60*1000,placeholderData:p=>p}, on=!!selectedGym;
-  const {data:allMemberships=[]} = useQuery({queryKey:['memberships',selectedGym?.id],queryFn:()=>base44.entities.GymMembership.filter({gym_id:selectedGym.id,status:'active'}),enabled:on&&!!currentUser,...qo});
-  const {data:checkIns=[]}       = useQuery({queryKey:['checkIns',selectedGym?.id],   queryFn:()=>base44.entities.CheckIn.filter({gym_id:selectedGym.id},'-check_in_date',500),enabled:on,...qo});
-  const {data:lifts=[]}          = useQuery({queryKey:['lifts',selectedGym?.id],       queryFn:()=>base44.entities.Lift.filter({gym_id:selectedGym.id},'-lift_date',200),enabled:on,...qo});
-  const {data:rewards=[]}        = useQuery({queryKey:['rewards',selectedGym?.id],     queryFn:()=>base44.entities.Reward.filter({gym_id:selectedGym.id}),enabled:on,...qo});
-  const {data:classes=[]}        = useQuery({queryKey:['classes',selectedGym?.id],     queryFn:()=>base44.entities.GymClass.filter({gym_id:selectedGym.id}),enabled:on,...qo});
-  const {data:coaches=[]}        = useQuery({queryKey:['coaches',selectedGym?.id],     queryFn:()=>base44.entities.Coach.filter({gym_id:selectedGym.id}),enabled:on,...qo});
-  const {data:events=[]}         = useQuery({queryKey:['events',selectedGym?.id],      queryFn:()=>base44.entities.Event.filter({gym_id:selectedGym.id},'-event_date'),enabled:on,...qo});
-  const {data:posts=[]}          = useQuery({queryKey:['posts',selectedGym?.id],       queryFn:()=>base44.entities.Post.filter({allow_gym_repost:true},'-created_date',20),enabled:on,...qo});
-  const {data:challenges=[]}     = useQuery({queryKey:['challenges',selectedGym?.id],  queryFn:()=>base44.entities.Challenge.filter({gym_id:selectedGym.id},'-created_date'),enabled:on,...qo});
-  const {data:polls=[]}          = useQuery({queryKey:['polls',selectedGym?.id],       queryFn:()=>base44.entities.Poll.filter({gym_id:selectedGym.id,status:'active'},'-created_date'),enabled:on,...qo});
 
-  const inv=(...keys)=>keys.forEach(k=>queryClient.invalidateQueries({queryKey:[k,selectedGym?.id]}));
-  const invGyms=()=>queryClient.invalidateQueries({queryKey:['gyms']});
+  // Redirect to onboarding if not completed
+  React.useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser, navigate]);
 
-  const createRewardM    = useMutation({mutationFn:d=>base44.entities.Reward.create(d),onSuccess:()=>inv('rewards')});
-  const deleteRewardM    = useMutation({mutationFn:id=>base44.entities.Reward.delete(id),onSuccess:()=>inv('rewards')});
-  const createClassM     = useMutation({mutationFn:d=>base44.entities.GymClass.create(d),onSuccess:()=>inv('classes')});
-  const deleteClassM     = useMutation({mutationFn:id=>base44.entities.GymClass.delete(id),onSuccess:()=>inv('classes')});
-  const updateClassM     = useMutation({mutationFn:({id,data})=>base44.entities.GymClass.update(id,data),onSuccess:()=>inv('classes')});
-  const createCoachM     = useMutation({mutationFn:d=>base44.entities.Coach.create(d),onSuccess:()=>inv('coaches')});
-  const deleteCoachM     = useMutation({mutationFn:id=>base44.entities.Coach.delete(id),onSuccess:()=>inv('coaches')});
-  const updateGalleryM   = useMutation({mutationFn:g=>base44.entities.Gym.update(selectedGym.id,{gallery:g}),onSuccess:()=>{invGyms();closeModal();}});
-  const updateGymM       = useMutation({mutationFn:d=>base44.entities.Gym.update(selectedGym.id,d),onSuccess:()=>{invGyms();closeModal();}});
-  const createEventM     = useMutation({mutationFn:d=>base44.entities.Event.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,attendees:0}),onSuccess:()=>{inv('events');closeModal();}});
-  const createChallengeM = useMutation({mutationFn:d=>base44.entities.Challenge.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,participants:[],status:'upcoming'}),onSuccess:()=>{inv('challenges');closeModal();}});
-  const banMemberM       = useMutation({mutationFn:uid=>base44.entities.Gym.update(selectedGym.id,{banned_members:[...(selectedGym?.banned_members||[]),uid]}),onSuccess:invGyms});
-  const unbanMemberM     = useMutation({mutationFn:uid=>base44.entities.Gym.update(selectedGym.id,{banned_members:(selectedGym?.banned_members||[]).filter(id=>id!==uid)}),onSuccess:invGyms});
-  const deleteGymM       = useMutation({mutationFn:()=>base44.entities.Gym.delete(selectedGym.id),onSuccess:()=>{invGyms();closeModal();window.location.href=createPageUrl('Gyms');}});
-  const deleteAccountM   = useMutation({mutationFn:()=>base44.functions.invoke('deleteUserAccount'),onSuccess:()=>{closeModal();base44.auth.logout();}});
-  const createPollM      = useMutation({mutationFn:d=>base44.entities.Poll.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,created_by:currentUser.id,voters:[]}),onSuccess:()=>{inv('polls');closeModal();}});
+  const { data: gyms = [], isLoading: gymsLoading, error: gymsError } = useQuery({
+    queryKey: ['ownerGyms', currentUser?.email],
+    queryFn: () => base44.entities.Gym.filter({ owner_email: currentUser.email }),
+    enabled: !!currentUser?.email,
+    retry: 3,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
+  });
 
-  // Splash
-  const Splash = ({children}) => <div className="min-h-screen flex items-center justify-center p-4" style={{background:N[950]}}><Panel className="max-w-md w-full"><PB className="text-center">{children}</PB></Panel></div>;
-  if(gymsError) return <Splash><div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center mx-auto mb-5"><X className="w-7 h-7 text-red-400"/></div><h2 className="text-xl font-black text-white mb-2">Error</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>{gymsError.message}</p><Button onClick={()=>window.location.reload()} className="bg-blue-600 text-white">Retry</Button></Splash>;
-  if(approvedGyms.length===0&&pendingGyms.length>0) return <Splash><div className="w-14 h-14 rounded-2xl bg-yellow-500/10 border border-yellow-500/25 flex items-center justify-center mx-auto mb-5"><Clock className="w-7 h-7 text-yellow-400"/></div><h2 className="text-xl font-black text-white mb-2">Pending Approval</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>Your gym <span className="text-yellow-400 font-bold">{pendingGyms[0].name}</span> is under review.</p><Link to={createPageUrl('Home')}><Button style={{background:N[700],color:'#93b4e8'}}>Back to Home</Button></Link></Splash>;
-  if(myGyms.length===0) return <Splash><div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center mx-auto mb-5"><Dumbbell className="w-7 h-7 text-blue-400"/></div><h2 className="text-xl font-black text-white mb-2">No Gyms Yet</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>Register your gym to get started.</p><Link to={createPageUrl('GymSignup')}><Button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">Register Your Gym</Button></Link></Splash>;
+  const myGyms = gyms.filter(g => g.owner_email === currentUser?.email);
+  const approvedGyms = myGyms.filter(g => g.status === 'approved');
+  const pendingGyms = myGyms.filter(g => g.status === 'pending');
 
-  // ── Computed stats ───────────────────────────────────────────────────────
-  const now=new Date();
-  const ci7    = checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,7),end:now}));
-  const ci30   = checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,30),end:now}));
-  const ciPrev = checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,60),end:subDays(now,30)}));
-  const todayCI=checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(now).getTime()).length;
-  const uniqueMembers=new Set(checkIns.map(c=>c.user_id)).size;
-  const activeThisWeek=new Set(ci7.map(c=>c.user_id)).size;
-  const activeLastWeek=new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,14),end:subDays(now,7)})).map(c=>c.user_id)).size;
-  const weeklyChangePct=activeLastWeek>0?Math.round(((activeThisWeek-activeLastWeek)/activeLastWeek)*100):0;
-  const activeThisMonth=new Set(ci30.map(c=>c.user_id)).size;
-  const retentionRate=uniqueMembers>0?Math.round((activeThisMonth/uniqueMembers)*100):0;
-  const monthCiPer=(() => { const acc={}; ci30.forEach(c=>{acc[c.user_id]=(acc[c.user_id]||0)+1;}); return Object.values(acc); })();
-  const atRisk=allMemberships.filter(m=>{const last=checkIns.filter(c=>c.user_id===m.user_id)[0];if(!last)return false;const d=Math.floor((now-new Date(last.check_in_date))/86400000);return d>=7&&d<=10;}).length;
-  const monthChangePct=ciPrev.length>0?Math.round(((ci30.length-ciPrev.length)/ciPrev.length)*100):0;
-  const ciByDay=Array.from({length:7},(_,i)=>{const d=subDays(now,6-i);return{day:format(d,'EEE'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
-  const weekTrend=Array.from({length:12},(_,i)=>{const s=subDays(now,(11-i)*7),e=subDays(now,(10-i)*7);return{label:format(s,'MMM d'),value:checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).length};});
-  const monthGrowth=Array.from({length:6},(_,i)=>{const e=subDays(now,i*30),s=subDays(e,30);return{label:format(e,'MMM'),value:new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size};}).reverse();
-
-  const dlQR=id=>{const svg=document.getElementById(id)?.querySelector('svg');if(!svg)return;const d=new XMLSerializer().serializeToString(svg);const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const img=new Image();img.onload=()=>{canvas.width=img.width;canvas.height=img.height;ctx.drawImage(img,0,0);const a=document.createElement('a');a.download=`${selectedGym?.name}-QR.png`;a.href=canvas.toDataURL('image/png');a.click();};img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(d)));};
-  const goTab=id=>{setTab(id);setSidebarOpen(false);};
-
-  // ══════════════════════════════════════════════════════════════════
-  // TAB: OVERVIEW
-  // ══════════════════════════════════════════════════════════════════
-  const TabOverview = () => (
-    <div className="space-y-5">
-      {/* KPI row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Dumbbell}  ak="blue"   label="Today's Check-ins" value={todayCI}        sub="members in today" />
-        <StatCard icon={Users}     ak="green"  label="Active This Week"  value={activeThisWeek} sub={`of ${uniqueMembers} members`} trend={weeklyChangePct} />
-        <StatCard icon={Activity}  ak="purple" label="Monthly Check-ins" value={ci30.length}    sub="last 30 days" trend={monthChangePct} />
-        <StatCard icon={Star}      ak="yellow" label="Avg Rating"        value={selectedGym?.rating?.toFixed(1)??'—'} sub="member rating" />
-      </div>
-
-      {/* Chart + Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <Panel className="lg:col-span-2">
-          <PH title="Check-ins — Last 7 Days" subtitle="Daily attendance" ak="blue" icon={Activity} />
-          <PB>
-            <ResponsiveContainer width="100%" height={210}>
-              <BarChart data={ciByDay} barSize={32}>
-                <defs>
-                  <linearGradient id="barBlue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.75}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.07)" vertical={false}/>
-                <XAxis dataKey="day" tick={{fill:'#6b87b8',fontSize:11,fontWeight:600}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:'#6b87b8',fontSize:11}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
-                <Tooltip content={<DT/>} cursor={{fill:'rgba(59,130,246,0.07)',radius:6}}/>
-                <Bar dataKey="value" fill="url(#barBlue)" radius={[7,7,0,0]} name="Check-ins"/>
-              </BarChart>
-            </ResponsiveContainer>
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Alerts & Actions" ak="orange" icon={AlertTriangle}/>
-          <PB className="space-y-3">
-            {atRisk>0 ? (
-              <div className="p-4 rounded-xl" style={{background:'rgba(251,146,60,0.08)',border:'1px solid rgba(249,115,22,0.24)'}}>
-                <div className="flex gap-3">
-                  <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5"/>
-                  <div>
-                    <p className="text-sm font-bold text-white">{atRisk} members at risk</p>
-                    <p className="text-xs mt-0.5" style={{color:'#6b87b8'}}>No check-in 7–10 days</p>
-                    <button onClick={()=>goTab('members')} className="mt-2 text-xs font-bold text-orange-400">View Members →</button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-xl flex items-center gap-3" style={{background:'rgba(52,211,153,0.08)',border:'1px solid rgba(16,185,129,0.24)'}}>
-                <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0"/>
-                <div>
-                  <p className="text-sm font-bold text-white">All members active</p>
-                  <p className="text-xs mt-0.5" style={{color:'#6b87b8'}}>No at-risk members</p>
-                </div>
-              </div>
-            )}
-            {!challenges.some(c=>c.status==='active') && (
-              <div className="p-4 rounded-xl" style={{background:'rgba(96,165,250,0.08)',border:'1px solid rgba(59,130,246,0.24)'}}>
-                <div className="flex gap-3">
-                  <Trophy className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"/>
-                  <div>
-                    <p className="text-sm font-bold text-white">No active challenge</p>
-                    <p className="text-xs mt-0.5" style={{color:'#6b87b8'}}>Challenges boost retention</p>
-                    <button onClick={()=>openModal('challenge')} className="mt-2 text-xs font-bold text-blue-400">Create one →</button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {polls.length===0 && (
-              <div className="p-4 rounded-xl" style={{background:'rgba(167,139,250,0.08)',border:'1px solid rgba(139,92,246,0.24)'}}>
-                <div className="flex gap-3">
-                  <BarChart2 className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5"/>
-                  <div>
-                    <p className="text-sm font-bold text-white">No active polls</p>
-                    <p className="text-xs mt-0.5" style={{color:'#6b87b8'}}>Engage members with a poll</p>
-                    <button onClick={()=>openModal('poll')} className="mt-2 text-xs font-bold text-purple-400">Create one →</button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </PB>
-        </Panel>
-      </div>
-
-      {/* Quick create */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-widest mb-3 px-1" style={{color:'#3d5a8a'}}>Quick Create</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            {label:'New Post',      sub:'Share update',   ak:'blue',   icon:MessageSquarePlus, action:()=>openModal('post')},
-            {label:'New Event',     sub:`${events.filter(e=>new Date(e.event_date)>=now).length} upcoming`, ak:'green',  icon:Calendar, action:()=>openModal('event')},
-            {label:'New Challenge', sub:`${challenges.filter(c=>c.status==='active').length} active`, ak:'orange', icon:Trophy, action:()=>openModal('challenge')},
-            {label:'New Poll',      sub:`${polls.length} active`, ak:'purple', icon:BarChart2, action:()=>openModal('poll')},
-          ].map((b,i)=>{
-            const a=A[b.ak];
-            return (
-              <button key={i} onClick={b.action}
-                className="relative overflow-hidden flex items-center gap-3 p-4 rounded-2xl text-left transition-all hover:-translate-y-0.5 active:scale-95"
-                style={{background:`linear-gradient(135deg,${a.bg},rgba(0,0,0,0.15))`,border:`1px solid ${a.border}`,boxShadow:`0 4px 20px ${a.glow}`}}>
-                <div className="absolute -right-4 -bottom-4 opacity-[0.08]"><b.icon className="w-16 h-16" style={{color:a.c}}/></div>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:`${a.c}20`,border:`1px solid ${a.c}38`}}>
-                  <b.icon className="w-5 h-5" style={{color:a.c}}/>
-                </div>
-                <div className="relative min-w-0">
-                  <p className="text-sm font-bold text-white">{b.label}</p>
-                  <p className="text-xs" style={{color:'rgba(255,255,255,0.38)'}}>{b.sub}</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Recent activity */}
-      <Panel>
-        <PH title="Recent Activity" subtitle="Latest check-ins" ak="purple" icon={Activity}/>
-        <PB>
-          <div className="divide-y" style={{borderColor:'rgba(59,130,246,0.08)'}}>
-            {ci7.length>0 ? ci7.slice(0,8).map((c,i)=>(
-              <div key={i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{c.user_name?.charAt(0)?.toUpperCase()}</div>
-                <p className="flex-1 text-sm font-semibold text-white truncate">{c.user_name}</p>
-                <p className="text-xs flex-shrink-0" style={{color:'#4a6492'}}>{format(new Date(c.check_in_date),'MMM d, h:mma')}</p>
-              </div>
-            )) : <Empty icon={Activity} label="No check-ins in the last 7 days"/>}
-          </div>
-        </PB>
-      </Panel>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════
-  // TAB: MEMBERS
-  // ══════════════════════════════════════════════════════════════════
-  const TabMembers = () => (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users}    ak="blue"   label="Total Members"    value={uniqueMembers}      sub="all-time unique"/>
-        <StatCard icon={Zap}      ak="green"  label="Active This Week" value={activeThisWeek}     trend={weeklyChangePct} sub="visited gym"/>
-        <StatCard icon={Activity} ak="purple" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d"/>
-        <StatCard icon={Trophy}   ak="yellow" label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records"/>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* Tiers */}
-        <Panel className="lg:col-span-2">
-          <PH title="Engagement Tiers" subtitle="Based on last 30 days" ak="orange" icon={Flame}/>
-          <PB>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                {label:'Super Active',sub:'15+ visits/mo',val:monthCiPer.filter(v=>v>=15).length,          ak:'green',  e:'🔥'},
-                {label:'Active',      sub:'8–14 visits/mo',val:monthCiPer.filter(v=>v>=8&&v<15).length,     ak:'blue',   e:'💪'},
-                {label:'Casual',      sub:'1–7 visits/mo', val:monthCiPer.filter(v=>v>=1&&v<8).length,      ak:'yellow', e:'🚶'},
-                {label:'At Risk',     sub:'7–10d inactive', val:atRisk,                                       ak:'red',    e:'⚠️'},
-              ].map((t,i)=>{
-                const a=A[t.ak];
-                return (
-                  <div key={i} className="relative overflow-hidden p-4 rounded-2xl"
-                    style={{background:`linear-gradient(145deg,${a.bg},rgba(0,0,0,0.18))`,border:`1px solid ${a.border}`}}>
-                    <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,${a.c}90,transparent)`}}/>
-                    <div className="text-2xl mb-2">{t.e}</div>
-                    <div className="text-4xl font-black mb-1" style={{color:a.c}}>{t.val}</div>
-                    <div className="text-xs font-bold text-white/80">{t.label}</div>
-                    <div className="text-xs mt-0.5" style={{color:'rgba(255,255,255,0.35)'}}>{t.sub}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </PB>
-        </Panel>
-
-        {/* Leaderboard */}
-        <Panel className="lg:col-span-3">
-          <PH title="Weekly Leaderboard" subtitle="Most check-ins this week" badge={ci7.length} action={()=>openModal('members')} actionLabel="All Members" ak="yellow" icon={Trophy}/>
-          <PB>
-            <div className="space-y-2">
-              {Object.entries(ci7.reduce((acc,c)=>{acc[c.user_name]=(acc[c.user_name]||0)+1;return acc;},{}))
-                .sort(([,a],[,b])=>b-a).slice(0,7)
-                .map(([name,count],idx)=>{
-                  const medals=['🥇','🥈','🥉'];
-                  const isTop=idx<3;
-                  return (
-                    <div key={name} className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                      style={{background:isTop?'linear-gradient(135deg,rgba(251,191,36,0.08),rgba(59,130,246,0.06))':N[750],border:`1px solid ${isTop?'rgba(251,191,36,0.2)':'rgba(59,130,246,0.08)'}`}}>
-                      <span className="text-base w-6 text-center flex-shrink-0">{medals[idx]||<span className="text-xs font-bold" style={{color:'#4a6492'}}>{idx+1}</span>}</span>
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{name?.charAt(0)?.toUpperCase()}</div>
-                      <span className="flex-1 text-sm font-semibold text-white truncate">{name}</span>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className="text-sm font-black" style={{color:isTop?'#fbbf24':'#6b87b8'}}>{count}</span>
-                        <span className="text-xs" style={{color:'#3d5a8a'}}>visits</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              {ci7.length===0 && <Empty icon={Users} label="No check-ins this week yet"/>}
-            </div>
-          </PB>
-        </Panel>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Busiest Days" subtitle="All-time check-in distribution" ak="green" icon={Calendar}/>
-          <PB>
-            <div className="space-y-3">
-              {(() => {
-                const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-                const acc={}; checkIns.forEach(c=>{const d=new Date(c.check_in_date).getDay();acc[d]=(acc[d]||0)+1;});
-                const max=Math.max(...Object.values(acc),1);
-                return days.map((name,idx)=>({name,count:acc[idx]||0})).sort((a,b)=>b.count-a.count).map(({name,count},rank)=>(
-                  <div key={name} className="flex items-center gap-3">
-                    <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{color:'#3d5a8a'}}>#{rank+1}</span>
-                    <span className="text-sm font-medium text-white w-24 flex-shrink-0">{name}</span>
-                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:N[700]}}>
-                      <div className="h-full rounded-full transition-all" style={{width:`${(count/max)*100}%`,background:'linear-gradient(90deg,#3b82f6,#06b6d4)'}}/>
-                    </div>
-                    <span className="text-sm font-bold text-white w-7 text-right flex-shrink-0">{count}</span>
-                  </div>
-                ));
-              })()}
-            </div>
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Rewards Program" badge={rewards.length} action={()=>openModal('rewards')} actionLabel="Manage" ak="purple" icon={Gift}/>
-          <PB>
-            {rewards.length>0 ? (
-              <div className="space-y-2">
-                {rewards.slice(0,6).map(r=>(
-                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg" style={{background:'rgba(167,139,250,0.12)',border:'1px solid rgba(139,92,246,0.25)'}}>{r.icon||'🎁'}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-white truncate">{r.title}</p>
-                      <p className="text-xs" style={{color:'#6b87b8'}}>{r.claimed_by?.length||0} claimed · {r.value}</p>
-                    </div>
-                    <Tag color={r.active?'green':'blue'}>{r.active?'Active':'Off'}</Tag>
-                  </div>
-                ))}
-              </div>
-            ) : <Empty icon={Gift} label="No rewards yet" action={()=>openModal('rewards')} actionLabel="Create Rewards"/>}
-          </PB>
-        </Panel>
-      </div>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════
-  // TAB: CONTENT
-  // ══════════════════════════════════════════════════════════════════
-  const TabContent = () => (
-    <div className="space-y-5">
-      {/* Hero create buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {label:'New Post',      sub:'Share with members',  ak:'blue',   icon:MessageSquarePlus, action:()=>openModal('post')},
-          {label:'New Event',     sub:'Schedule an event',   ak:'green',  icon:Calendar,          action:()=>openModal('event')},
-          {label:'New Challenge', sub:'Boost engagement',    ak:'orange', icon:Trophy,             action:()=>openModal('challenge')},
-          {label:'New Poll',      sub:'Member feedback',     ak:'purple', icon:BarChart2,          action:()=>openModal('poll')},
-        ].map((b,i)=>{
-          const a=A[b.ak];
-          return (
-            <button key={i} onClick={b.action}
-              className="relative overflow-hidden flex flex-col items-center justify-center gap-3 py-8 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
-              style={{background:`linear-gradient(150deg,${a.bg},rgba(0,0,0,0.25))`,border:`1px solid ${a.border}`,boxShadow:`0 8px 32px ${a.glow}`}}>
-              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,${a.c},${a.c}44,transparent)`}}/>
-              <div className="absolute -bottom-5 -right-5 opacity-[0.07]"><b.icon className="w-20 h-20" style={{color:a.c}}/></div>
-              <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center" style={{background:`${a.c}22`,border:`1px solid ${a.c}40`,boxShadow:`0 0 20px ${a.glow}`}}>
-                <b.icon className="w-6 h-6" style={{color:a.c}}/>
-              </div>
-              <div className="relative text-center">
-                <p className="text-sm font-bold text-white">{b.label}</p>
-                <p className="text-xs mt-0.5" style={{color:'rgba(255,255,255,0.4)'}}>{b.sub}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Recent Posts" badge={posts.length} action={()=>openModal('post')} actionLabel="New Post" ak="blue" icon={MessageSquarePlus}/>
-          <PB>
-            {posts.length>0 ? (
-              <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                {posts.slice(0,10).map(post=>(
-                  <div key={post.id} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{post.member_name?.charAt(0)?.toUpperCase()}</div>
-                      <p className="text-sm font-semibold text-white flex-1 truncate">{post.member_name}</p>
-                      <p className="text-xs flex-shrink-0" style={{color:'#3d5a8a'}}>{format(new Date(post.created_date),'MMM d')}</p>
-                    </div>
-                    <p className="text-xs line-clamp-2 mb-2" style={{color:'#6b87b8'}}>{post.content}</p>
-                    <div className="flex gap-4 text-xs" style={{color:'#3d5a8a'}}><span>❤️ {post.likes||0}</span><span>💬 {post.comments?.length||0}</span></div>
-                  </div>
-                ))}
-              </div>
-            ) : <Empty icon={FileText} label="No posts yet" action={()=>openModal('post')} actionLabel="Create First Post"/>}
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Upcoming Events" badge={events.filter(e=>new Date(e.event_date)>=now).length} action={()=>openModal('event')} actionLabel="New Event" ak="green" icon={Calendar}/>
-          <PB>
-            {events.filter(e=>new Date(e.event_date)>=now).length>0 ? (
-              <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                {events.filter(e=>new Date(e.event_date)>=now).map(ev=>(
-                  <div key={ev.id} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                    {ev.image_url && <img src={ev.image_url} alt={ev.title} className="w-full h-24 object-cover rounded-lg mb-3"/>}
-                    <p className="text-sm font-bold text-white mb-1 truncate">{ev.title}</p>
-                    <p className="text-xs line-clamp-2 mb-2" style={{color:'#6b87b8'}}>{ev.description}</p>
-                    <div className="flex gap-3 text-xs" style={{color:'#4a6492'}}><span>📅 {format(new Date(ev.event_date),'MMM d, h:mma')}</span><span>👥 {ev.attendees||0}</span></div>
-                  </div>
-                ))}
-              </div>
-            ) : <Empty icon={Calendar} label="No upcoming events" action={()=>openModal('event')} actionLabel="Create Event"/>}
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Active Challenges" badge={challenges.filter(c=>c.status==='active').length} action={()=>openModal('challenge')} actionLabel="New" ak="orange" icon={Trophy}/>
-          <PB>
-            {challenges.filter(c=>c.status==='active').length>0 ? (
-              <div className="space-y-3">
-                {challenges.filter(c=>c.status==='active').map(ch=>(
-                  <div key={ch.id} className="p-3.5 rounded-xl" style={{background:'rgba(249,115,22,0.07)',border:'1px solid rgba(249,115,22,0.22)'}}>
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <p className="text-sm font-bold text-white flex-1 truncate">🏆 {ch.title}</p>
-                      <Tag color="orange">{ch.type?.replace('_',' ')}</Tag>
-                    </div>
-                    <p className="text-xs mb-2 line-clamp-1" style={{color:'#6b87b8'}}>{ch.description}</p>
-                    <div className="flex gap-4 text-xs" style={{color:'#4a6492'}}><span>👥 {ch.participants?.length||0} joined</span><span>📅 {format(new Date(ch.start_date),'MMM d')} – {format(new Date(ch.end_date),'MMM d')}</span></div>
-                  </div>
-                ))}
-              </div>
-            ) : <Empty icon={Trophy} label="No active challenges" action={()=>openModal('challenge')} actionLabel="Create Challenge"/>}
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Active Polls" badge={polls.length} action={()=>openModal('poll')} actionLabel="New Poll" ak="purple" icon={BarChart2}/>
-          <PB>
-            {polls.length>0 ? (
-              <div className="space-y-3">
-                {polls.map(poll=>(
-                  <div key={poll.id} className="p-3.5 rounded-xl" style={{background:'rgba(139,92,246,0.07)',border:'1px solid rgba(139,92,246,0.22)'}}>
-                    <p className="text-sm font-bold text-white mb-1 truncate">{poll.title}</p>
-                    <p className="text-xs mb-2 line-clamp-1" style={{color:'#6b87b8'}}>{poll.description}</p>
-                    <div className="flex items-center gap-3 text-xs" style={{color:'#4a6492'}}><span>📊 {poll.voters?.length||0} votes</span><Tag color="purple">{poll.status}</Tag></div>
-                  </div>
-                ))}
-              </div>
-            ) : <Empty icon={BarChart2} label="No active polls" action={()=>openModal('poll')} actionLabel="Create Poll"/>}
-          </PB>
-        </Panel>
-      </div>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════
-  // TAB: ANALYTICS
-  // ══════════════════════════════════════════════════════════════════
-  const TabAnalytics = () => (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Activity}  ak="blue"   label="Daily Avg (30d)"  value={Math.round(ci30.length/30)} sub="check-ins/day"/>
-        <StatCard icon={TrendingUp} ak={monthChangePct>=0?'green':'red'} label="Monthly Change" value={`${monthChangePct>=0?'+':''}${monthChangePct}%`} sub="vs prev 30 days"/>
-        <StatCard icon={Users}     ak="purple" label="Visits/Member"    value={uniqueMembers>0?(ci30.length/uniqueMembers).toFixed(1):'—'} sub="per member (30d)"/>
-        <StatCard icon={Star}      ak="yellow" label="Return Rate"      value={`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`} sub="of all visits"/>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Weekly Check-in Trend" subtitle="Last 12 weeks" ak="blue" icon={Activity}/>
-          <PB>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={weekTrend}>
-                <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.07)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} interval={2}/>
-                <YAxis tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
-                <Tooltip content={<DT/>}/>
-                <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2.5} fill="url(#g1)" name="Check-ins"/>
-              </AreaChart>
-            </ResponsiveContainer>
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Active Members Growth" subtitle="Last 6 months" ak="green" icon={Users}/>
-          <PB>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={monthGrowth}>
-                <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient></defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.07)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:11}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:'#6b87b8',fontSize:11}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
-                <Tooltip content={<DT/>}/>
-                <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2.5} fill="url(#g2)" name="Members"/>
-              </AreaChart>
-            </ResponsiveContainer>
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Rewards Redeemed" subtitle="Top 5 most claimed" ak="purple" icon={Gift}/>
-          <PB>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart barSize={28} data={rewards.filter(r=>(r.claimed_by?.length||0)>0).sort((a,b)=>(b.claimed_by?.length||0)-(a.claimed_by?.length||0)).slice(0,5).map(r=>({label:r.title.length>12?r.title.slice(0,12)+'…':r.title,value:r.claimed_by?.length||0}))}>
-                <defs><linearGradient id="barPurp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8b5cf6" stopOpacity={1}/><stop offset="100%" stopColor="#6d28d9" stopOpacity={0.8}/></linearGradient></defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.07)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
-                <Tooltip content={<DT/>} cursor={{fill:'rgba(139,92,246,0.07)'}}/>
-                <Bar dataKey="value" fill="url(#barPurp)" radius={[6,6,0,0]} name="Claims"/>
-              </BarChart>
-            </ResponsiveContainer>
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Peak Hours" subtitle="Most popular visit times" ak="orange" icon={Clock}/>
-          <PB>
-            <div className="space-y-3">
-              {(() => {
-                const acc={}; checkIns.forEach(c=>{const h=new Date(c.check_in_date).getHours();acc[h]=(acc[h]||0)+1;});
-                const max=Math.max(...Object.values(acc),1);
-                return Object.entries(acc).sort(([,a],[,b])=>b-a).slice(0,8).map(([hour,count],i)=>{
-                  const h=parseInt(hour); const label=h===0?'12am':h<12?`${h}am`:h===12?'12pm':`${h-12}pm`;
-                  return (
-                    <div key={hour} className="flex items-center gap-3">
-                      <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{color:'#3d5a8a'}}>#{i+1}</span>
-                      <span className="text-sm text-white w-12 flex-shrink-0">{label}</span>
-                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:N[700]}}>
-                        <div className="h-full rounded-full" style={{width:`${(count/max)*100}%`,background:'linear-gradient(90deg,#8b5cf6,#ec4899)'}}/>
-                      </div>
-                      <span className="text-sm font-bold text-white w-7 text-right flex-shrink-0">{count}</span>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          </PB>
-        </Panel>
-      </div>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════
-  // TAB: GYM SETTINGS
-  // ══════════════════════════════════════════════════════════════════
-  const TabGym = () => (
-    <div className="space-y-5">
-      {/* Gym info banner */}
-      <Panel>
-        <div className="p-5 md:p-6 flex items-start gap-4 border-b" style={{borderColor:'rgba(59,130,246,0.1)'}}>
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-blue-500/25 flex-shrink-0">
-            <Dumbbell className="w-8 h-8 text-white"/>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-black text-white mb-1.5">{selectedGym?.name||'—'}</h2>
-            <div className="flex flex-wrap items-center gap-2">
-              {selectedGym?.type && <Tag color="blue">{selectedGym.type}</Tag>}
-              {selectedGym?.verified && <Tag color="green">✓ Verified</Tag>}
-              {selectedGym?.city && <span className="text-sm" style={{color:'#4a6492'}}>{selectedGym.city}</span>}
-            </div>
-          </div>
-          <button onClick={()=>openModal('editInfo')}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl transition-all hover:brightness-125 flex-shrink-0"
-            style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}>
-            <Pencil className="w-3.5 h-3.5"/>Edit
-          </button>
-        </div>
-        <PB>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              {icon:'💰',l:'Price',    v:`£${selectedGym?.price||'—'}/mo`},
-              {icon:'📍',l:'Address',  v:selectedGym?.address},
-              {icon:'🏷️',l:'Postcode', v:selectedGym?.postcode},
-            ].map((f,i)=>(
-              <div key={i} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs">{f.icon}</span>
-                  <p className="text-xs uppercase tracking-wide font-semibold" style={{color:'#4a6492'}}>{f.l}</p>
-                </div>
-                <p className="text-sm font-semibold text-white truncate">{f.v||'—'}</p>
-              </div>
-            ))}
-          </div>
-        </PB>
-      </Panel>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Classes" badge={classes.length} action={()=>openModal('classes')} actionLabel="Manage" ak="green" icon={Calendar}/>
-          <PB>
-            {classes.length>0 ? (
-              <div className="space-y-2">
-                {classes.slice(0,6).map(cls=>(
-                  <div key={cls.id} className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:'rgba(52,211,153,0.12)',border:'1px solid rgba(52,211,153,0.25)'}}>
-                      <Calendar className="w-4 h-4 text-emerald-400"/>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{cls.name}</p>
-                      <p className="text-xs" style={{color:'#4a6492'}}>{cls.schedule||cls.time||'—'}</p>
-                    </div>
-                  </div>
-                ))}
-                {classes.length>6 && <p className="text-xs text-center pt-1" style={{color:'#3d5a8a'}}>+{classes.length-6} more</p>}
-              </div>
-            ) : <Empty icon={Calendar} label="No classes yet" action={()=>openModal('classes')} actionLabel="Add Classes"/>}
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Coaches" badge={coaches.length} action={()=>openModal('coaches')} actionLabel="Manage" ak="orange" icon={Users}/>
-          <PB>
-            {coaches.length>0 ? (
-              <div className="space-y-2">
-                {coaches.slice(0,6).map(coach=>(
-                  <div key={coach.id} className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{coach.name?.charAt(0)?.toUpperCase()}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{coach.name}</p>
-                      <p className="text-xs truncate" style={{color:'#4a6492'}}>{coach.speciality||coach.bio||'Coach'}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : <Empty icon={Target} label="No coaches yet" action={()=>openModal('coaches')} actionLabel="Add Coach"/>}
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Amenities" badge={selectedGym?.amenities?.length||0} action={()=>openModal('amenities')} actionLabel="Edit" ak="cyan" icon={CheckCircle}/>
-          <PB>
-            {selectedGym?.amenities?.length>0 ? (
-              <div className="flex flex-wrap gap-2">{selectedGym.amenities.map((a,i)=><Tag key={i} color="blue">{a}</Tag>)}</div>
-            ) : <Empty icon={CheckCircle} label="No amenities listed" action={()=>openModal('amenities')} actionLabel="Add Amenities"/>}
-          </PB>
-        </Panel>
-
-        <Panel>
-          <PH title="Equipment" badge={selectedGym?.equipment?.length||0} action={()=>openModal('equipment')} actionLabel="Edit" ak="purple" icon={Dumbbell}/>
-          <PB>
-            {selectedGym?.equipment?.length>0 ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedGym.equipment.slice(0,16).map((e,i)=><Tag key={i} color="purple">{e}</Tag>)}
-                {(selectedGym.equipment.length||0)>16 && <Tag color="blue">+{selectedGym.equipment.length-16} more</Tag>}
-              </div>
-            ) : <Empty icon={Dumbbell} label="No equipment listed" action={()=>openModal('equipment')} actionLabel="Add Equipment"/>}
-          </PB>
-        </Panel>
-      </div>
-
-      <Panel>
-        <PH title="Photo Gallery" badge={selectedGym?.gallery?.length||0} action={()=>openModal('photos')} actionLabel="Manage Photos" ak="blue" icon={ImageIcon}/>
-        <PB>
-          {selectedGym?.gallery?.length>0 ? (
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-              {selectedGym.gallery.map((url,i)=>(
-                <img key={i} src={url} alt="" className="w-full h-16 object-cover rounded-xl hover:opacity-90 transition-opacity cursor-pointer" style={{border:`1px solid ${N[700]}`}}/>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center gap-4 p-4 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.12)'}}>
-              <ImageIcon className="w-5 h-5 flex-shrink-0" style={{color:'#4a6492'}}/>
-              <p className="text-sm flex-1" style={{color:'#6b87b8'}}>Add photos to showcase your gym and attract members.</p>
-              <button onClick={()=>openModal('photos')} className="text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0" style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}>Add Photos</button>
-            </div>
-          )}
-        </PB>
-      </Panel>
-
-      <Panel>
-        <PH title="Admin" ak="blue" icon={Shield}/>
-        <PB>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-            {[
-              {l:'Owner Email',v:selectedGym?.owner_email},
-              {l:'Gym ID',v:selectedGym?.id,mono:true},
-              {l:'Status',v:selectedGym?.verified?'✓ Verified':'Not Verified',c:selectedGym?.verified?'#34d399':'#f87171'},
-            ].map((f,i)=>(
-              <div key={i} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
-                <p className="text-xs uppercase tracking-wide mb-1.5 font-semibold" style={{color:'#4a6492'}}>{f.l}</p>
-                <p className={`text-sm font-semibold truncate ${f.mono?'font-mono text-xs break-all':''}`} style={{color:f.c||'white'}}>{f.v||'—'}</p>
-              </div>
-            ))}
-          </div>
-          <Link to={createPageUrl('GymCommunity')+'?id='+selectedGym?.id}>
-            <button className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-125 flex items-center justify-center gap-2" style={{background:N[700],color:'#93b4e8',border:`1px solid ${N[600]}`}}>
-              <Eye className="w-4 h-4"/>View Public Gym Page
-            </button>
-          </Link>
-        </PB>
-      </Panel>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          {title:'Delete Gym',desc:'Permanently delete this gym and all its data.',label:'Delete Gym',fn:()=>openModal('deleteGym')},
-          {title:'Delete Account',desc:'Permanently delete your account and all gyms.',label:'Delete Account',fn:()=>openModal('deleteAccount')},
-        ].map((d,i)=>(
-          <div key={i} className="p-5 rounded-2xl" style={{background:'rgba(239,68,68,0.06)',border:'1px solid rgba(239,68,68,0.2)'}}>
-            <div className="flex items-center gap-2 mb-2"><Trash2 className="w-4 h-4 text-red-400"/><h4 className="font-bold text-white text-sm">{d.title}</h4></div>
-            <p className="text-xs mb-4" style={{color:'#6b87b8'}}>{d.desc}</p>
-            <button onClick={d.fn} className="w-full py-2.5 rounded-xl text-sm font-bold hover:brightness-110 transition-all" style={{background:'rgba(239,68,68,0.12)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.3)'}}>{d.label}</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const TABS = { overview:<TabOverview/>, members:<TabMembers/>, content:<TabContent/>, analytics:<TabAnalytics/>, gym:<TabGym/> };
-
-  // ── Sidebar ────────────────────────────────────────────────────────────────
-  const SidebarContent = ({forceExpanded=false}) => {
-    const expanded = forceExpanded || !collapsed;
+  // Show error state if gyms failed to load
+  if (gymsError) {
     return (
-      <>
-        <div className="px-4 py-5 border-b flex-shrink-0" style={{borderColor:'rgba(59,130,246,0.1)'}}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/25 flex-shrink-0">
-              <Dumbbell className="w-4 h-4 text-white"/>
-            </div>
-            {expanded && <div className="min-w-0 flex-1"><p className="text-sm font-black text-white truncate leading-tight">{selectedGym?.name||'Dashboard'}</p><p className="text-xs" style={{color:'#3d5a8a'}}>Gym Owner</p></div>}
-          </div>
-          {expanded && approvedGyms.length>1 && (
-            <div className="mt-3 relative">
-              <button onClick={()=>setGymOpen(o=>!o)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold" style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>
-                <span className="truncate">{selectedGym?.name}</span>
-                <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${gymOpen?'rotate-180':''}`}/>
-              </button>
-              {gymOpen && (
-                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:N[800],border:`1px solid ${N[600]}`}}>
-                  {approvedGyms.map(g=>(
-                    <button key={g.id} onClick={()=>{setSelectedGym(g);setGymOpen(false);}} className="w-full text-left px-3 py-2.5 text-xs font-semibold hover:brightness-125 transition-all" style={{color:selectedGym?.id===g.id?'#60a5fa':'#93b4e8',background:selectedGym?.id===g.id?'rgba(59,130,246,0.1)':'transparent'}}>{g.name}</button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-red-500/40">
+          <X className="w-16 h-16 mx-auto mb-4 text-red-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">Error Loading Gyms</h2>
+          <p className="text-slate-300 mb-4">{gymsError.message || 'Failed to load gym data'}</p>
+          <Button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700">
+            Retry
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  // allCheckIns reuses checkIns — no separate fetch needed
+
+  const { data: allMemberships = [] } = useQuery({
+    queryKey: ['allMemberships', selectedGym?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ gym_id: selectedGym.id, status: 'active' }),
+    enabled: !!currentUser && !!selectedGym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  // allUsers only needed for ManageMembersModal — fetched lazily inside that component
+
+  React.useEffect(() => {
+    if (approvedGyms.length > 0 && !selectedGym) {
+      setSelectedGym(approvedGyms[0]);
+    }
+  }, [approvedGyms, selectedGym]);
+
+  // Auto-switch language based on gym's language setting
+  React.useEffect(() => {
+    if (selectedGym?.language && i18n.language !== selectedGym.language) {
+      i18n.changeLanguage(selectedGym.language);
+    }
+  }, [selectedGym, i18n]);
+
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['checkIns', selectedGym?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }, '-check_in_date', 500),
+    enabled: !!selectedGym,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: lifts = [] } = useQuery({
+    queryKey: ['lifts', selectedGym?.id],
+    queryFn: () => base44.entities.Lift.filter({ gym_id: selectedGym.id }, '-lift_date', 200),
+    enabled: !!selectedGym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: rewards = [] } = useQuery({
+    queryKey: ['rewards', selectedGym?.id],
+    queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }),
+    enabled: !!selectedGym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classes', selectedGym?.id],
+    queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }),
+    enabled: !!selectedGym,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: coaches = [] } = useQuery({
+    queryKey: ['coaches', selectedGym?.id],
+    queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }),
+    enabled: !!selectedGym,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events', selectedGym?.id],
+    queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }, '-event_date'),
+    enabled: !!selectedGym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: posts = [] } = useQuery({
+    queryKey: ['posts', selectedGym?.id],
+    queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20),
+    enabled: !!selectedGym,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: challenges = [] } = useQuery({
+    queryKey: ['challenges', selectedGym?.id],
+    queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date'),
+    enabled: !!selectedGym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const { data: polls = [] } = useQuery({
+    queryKey: ['polls', selectedGym?.id],
+    queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'),
+    enabled: !!selectedGym,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
+  const createRewardMutation = useMutation({
+    mutationFn: (rewardData) => base44.entities.Reward.create(rewardData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rewards', selectedGym?.id] });
+    }
+  });
+
+  const deleteRewardMutation = useMutation({
+    mutationFn: (rewardId) => base44.entities.Reward.delete(rewardId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rewards', selectedGym?.id] });
+    }
+  });
+
+  const createClassMutation = useMutation({
+    mutationFn: (classData) => base44.entities.GymClass.create(classData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes', selectedGym?.id] });
+    }
+  });
+
+  const deleteClassMutation = useMutation({
+    mutationFn: (classId) => base44.entities.GymClass.delete(classId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes', selectedGym?.id] });
+    }
+  });
+
+  const updateClassMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.GymClass.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes', selectedGym?.id] });
+    }
+  });
+
+  const createCoachMutation = useMutation({
+    mutationFn: (coachData) => base44.entities.Coach.create(coachData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coaches', selectedGym?.id] });
+    }
+  });
+
+  const deleteCoachMutation = useMutation({
+    mutationFn: (coachId) => base44.entities.Coach.delete(coachId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coaches', selectedGym?.id] });
+    }
+  });
+
+  const updateGalleryMutation = useMutation({
+    mutationFn: (gallery) => base44.entities.Gym.update(selectedGym.id, { gallery }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setShowManagePhotos(false);
+    }
+  });
+
+  const updateGymMutation = useMutation({
+    mutationFn: (data) => base44.entities.Gym.update(selectedGym.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setShowManageEquipment(false);
+      setShowManageAmenities(false);
+      setShowEditBasicInfo(false);
+    }
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: (eventData) => base44.entities.Event.create({
+      ...eventData,
+      gym_id: selectedGym.id,
+      gym_name: selectedGym.name,
+      attendees: 0
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', selectedGym.id] });
+      setShowCreateEvent(false);
+    }
+  });
+
+  const createChallengeMutation = useMutation({
+    mutationFn: (challengeData) => base44.entities.Challenge.create({
+      ...challengeData,
+      gym_id: selectedGym.id,
+      gym_name: selectedGym.name,
+      participants: [],
+      status: 'upcoming'
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenges', selectedGym.id] });
+      setShowCreateChallenge(false);
+    }
+  });
+
+  const banMemberMutation = useMutation({
+    mutationFn: (userId) => {
+      const currentBanned = selectedGym?.banned_members || [];
+      return base44.entities.Gym.update(selectedGym.id, { 
+        banned_members: [...currentBanned, userId] 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+    }
+  });
+
+  const unbanMemberMutation = useMutation({
+    mutationFn: (userId) => {
+      const currentBanned = selectedGym?.banned_members || [];
+      return base44.entities.Gym.update(selectedGym.id, { 
+        banned_members: currentBanned.filter(id => id !== userId) 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+    }
+  });
+
+  const deleteGymMutation = useMutation({
+    mutationFn: () => base44.entities.Gym.delete(selectedGym.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setShowDeleteConfirm(false);
+      window.location.href = createPageUrl('Gyms');
+    }
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('deleteUserAccount'),
+    onSuccess: () => {
+      setShowDeleteAccountConfirm(false);
+      base44.auth.logout();
+    }
+  });
+
+  const createPollMutation = useMutation({
+    mutationFn: (pollData) => base44.entities.Poll.create({
+      ...pollData,
+      gym_id: selectedGym.id,
+      gym_name: selectedGym.name,
+      created_by: currentUser.id,
+      voters: []
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['polls', selectedGym.id] });
+      setShowCreatePoll(false);
+    }
+  });
+
+  // Access check temporarily disabled for testing
+  // if (currentUser?.account_type !== 'gym_owner') {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+  //       <Card className="p-8 text-center max-w-md">
+  //         <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+  //         <h2 className="text-2xl font-bold text-gray-900 mb-2">Gym Owner Access Only</h2>
+  //         <p className="text-gray-600 mb-4">This dashboard is only accessible to gym owners</p>
+  //         <Link to={createPageUrl('Home')}>
+  //           <Button>Back to Home</Button>
+  //         </Link>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
+
+  // Show pending approval message if gym is pending (only if truly no approved gyms)
+  // Auto-refresh data periodically to catch approvals
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['ownerGyms'] });
+    }, 10000); // Refresh every 10 seconds
+    return () => clearInterval(interval);
+  }, [queryClient]);
+
+  if (approvedGyms.length === 0 && pendingGyms.length > 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-yellow-500/40">
+          <Clock className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">Gym Pending Approval</h2>
+          <p className="text-slate-300 mb-4">
+            Your gym <span className="font-bold text-yellow-400">{pendingGyms[0].name}</span> is currently under review. 
+            You'll be notified once it's approved and can access your dashboard.
+          </p>
+          <Link to={createPageUrl('Home')}>
+            <Button className="bg-slate-700 hover:bg-slate-600 text-white">
+              Back to Home
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  if (myGyms.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-slate-600/40">
+          <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+          <h2 className="text-2xl font-bold text-white mb-2">No Gyms Registered</h2>
+          <p className="text-slate-300 mb-4">Register your gym to start managing it</p>
+          <Link to={createPageUrl('GymSignup')}>
+            <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
+              Register Your Gym
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  const allCheckIns = checkIns; // alias for leaderboard computation
+
+  // Calculate stats
+  const uniqueMembers = new Set(checkIns.map(c => c.user_id)).size;
+  const last7Days = checkIns.filter(c => {
+    const checkInDate = new Date(c.check_in_date);
+    return isWithinInterval(checkInDate, { start: subDays(new Date(), 7), end: new Date() });
+  }).length;
+
+  const last30Days = checkIns.filter(c => {
+    const checkInDate = new Date(c.check_in_date);
+    return isWithinInterval(checkInDate, { start: subDays(new Date(), 30), end: new Date() });
+  }).length;
+
+  // Today's check-ins
+  const todayCheckIns = checkIns.filter(c => {
+    const checkInDate = startOfDay(new Date(c.check_in_date));
+    return checkInDate.getTime() === startOfDay(new Date()).getTime();
+  }).length;
+
+  // Active members this week (unique users)
+  const activeMembersThisWeek = new Set(checkIns.filter(c => {
+    const checkInDate = new Date(c.check_in_date);
+    return isWithinInterval(checkInDate, { start: subDays(new Date(), 7), end: new Date() });
+  }).map(c => c.user_id)).size;
+
+  // Last week's active members for comparison
+  const activeMembersLastWeek = new Set(checkIns.filter(c => {
+    const checkInDate = new Date(c.check_in_date);
+    return isWithinInterval(checkInDate, { start: subDays(new Date(), 14), end: subDays(new Date(), 7) });
+  }).map(c => c.user_id)).size;
+
+  // Weekly attendance change
+  const weeklyChange = activeMembersThisWeek - activeMembersLastWeek;
+  const weeklyChangePercent = activeMembersLastWeek > 0 
+    ? Math.round((weeklyChange / activeMembersLastWeek) * 100) 
+    : 0;
+
+  // Calculate at-risk members (no check-in for 7-10 days)
+  const gymMemberships = allMemberships;
+  const atRiskMembers = gymMemberships.filter(membership => {
+    const memberCheckIns = checkIns.filter(c => c.user_id === membership.user_id);
+    if (memberCheckIns.length === 0) return false;
+    
+    const lastCheckIn = new Date(memberCheckIns[0].check_in_date);
+    const daysSinceLastCheckIn = Math.floor((new Date() - lastCheckIn) / (1000 * 60 * 60 * 24));
+    
+    return daysSinceLastCheckIn >= 7 && daysSinceLastCheckIn <= 10;
+  }).length;
+
+  // Check-ins by day (last 7 days)
+  const checkInsByDay = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const dayCheckIns = checkIns.filter(c => {
+      const checkInDate = startOfDay(new Date(c.check_in_date));
+      return checkInDate.getTime() === startOfDay(date).getTime();
+    });
+    checkInsByDay.push({
+      day: format(date, 'EEE'),
+      checkIns: dayCheckIns.length
+    });
+  }
+
+  // Exercise breakdown
+  const exerciseBreakdown = lifts.reduce((acc, lift) => {
+    const exercise = lift.exercise?.replace(/_/g, ' ') || 'Other';
+    acc[exercise] = (acc[exercise] || 0) + 1;
+    return acc;
+  }, {});
+
+  const exerciseData = Object.entries(exerciseBreakdown).map(([name, value]) => ({
+    name,
+    value
+  }));
+
+  // Gym Leaderboard Data
+  const gymLeaderboardData = gyms.map(gym => {
+    const gymCheckIns = allCheckIns.filter(c => c.gym_id === gym.id);
+    const gymMembers = allMemberships.filter(m => m.gym_id === gym.id && m.status === 'active');
+    const uniqueUsers = new Set(gymCheckIns.map(c => c.user_id)).size;
+    
+    // Calculate engagement score
+    const avgCheckInsPerMember = uniqueUsers > 0 ? gymCheckIns.length / uniqueUsers : 0;
+    const engagementScore = Math.min(100, Math.round((avgCheckInsPerMember / 10) * 100));
+    
+    return {
+      id: gym.id,
+      name: gym.name,
+      members: gymMembers.length,
+      rating: gym.rating || 0,
+      checkIns: gymCheckIns.length,
+      engagementScore,
+      isOwner: gym.owner_email === currentUser?.email,
+      overallScore: (gymMembers.length * 0.4 + (gym.rating || 0) * 20 * 0.4 + engagementScore * 0.2)
+    };
+  });
+
+  // Sort based on filter
+  const sortedGyms = [...gymLeaderboardData].sort((a, b) => {
+    switch (leaderboardFilter) {
+      case 'members':
+        return b.members - a.members;
+      case 'rating':
+        return b.rating - a.rating;
+      case 'engagement':
+        return b.engagementScore - a.engagementScore;
+      case 'overall':
+      default:
+        return b.overallScore - a.overallScore;
+    }
+  });
+
+  return (
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-[1600px] mx-auto">
+        {/* Header */}
+         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-8 md:mb-12">
+           <div>
+             <h1 className="text-4xl md:text-6xl font-black text-white mb-2 md:mb-4 tracking-tight" style={{letterSpacing: '-0.5px'}}>
+               {selectedGym?.name || t('dashboard.title')}
+             </h1>
+             <p className="text-slate-400 text-sm md:text-base font-medium">{t('dashboard.subtitle')}</p>
+           </div>
+
+          <div className="flex flex-col gap-3 items-stretch sm:items-end">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+              <Link to={createPageUrl('Home')} className="w-full sm:w-auto">
+                <Button variant="outline" className="border-2 h-12 px-4 md:px-6 w-full">
+                  <Users className="w-5 h-5 mr-2" />
+                  {t('dashboard.memberView')}
+                </Button>
+              </Link>
+
+              <Button 
+                onClick={() => base44.auth.logout()} 
+                variant="outline" 
+                className="border-2 h-12 px-4 md:px-6 w-full sm:w-auto text-red-500 hover:bg-red-50 border-red-300"
+              >
+                Log out
+              </Button>
+
+              {approvedGyms.length > 1 && (
+                <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 sm:pb-0">
+                  {approvedGyms.map(gym => (
+                    <Button
+                      key={gym.id}
+                      variant={selectedGym?.id === gym.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedGym(gym)}
+                      className="whitespace-nowrap h-12 px-4 md:px-6"
+                    >
+                      {gym.name}
+                    </Button>
                   ))}
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        <nav className="flex-1 px-2.5 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(item=>{
-            const active=tab===item.id;
-            return (
-              <button key={item.id} onClick={()=>goTab(item.id)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
-                style={{background:active?'rgba(59,130,246,0.14)':'transparent',color:active?'#fff':'#6b87b8',border:active?'1px solid rgba(59,130,246,0.26)':'1px solid transparent'}}>
-                <item.icon className="w-4 h-4 flex-shrink-0" style={{color:active?'#60a5fa':'inherit'}}/>
-                {expanded && <span className="flex-1 text-left">{item.label}</span>}
-                {expanded && active && <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"/>}
-              </button>
-            );
-          })}
-        </nav>
-
-        {expanded && (
-          <div className="px-2.5 pb-2.5 flex-shrink-0">
-            <Link to={createPageUrl('Plus')}>
-              <div className="p-3 rounded-xl cursor-pointer hover:brightness-110 transition-all" style={{background:'linear-gradient(135deg,rgba(139,92,246,0.2),rgba(236,72,153,0.14))',border:'1px solid rgba(139,92,246,0.3)'}}>
-                <div className="flex items-center gap-2 mb-0.5"><Crown className="w-3.5 h-3.5 text-purple-400"/><span className="text-xs font-black text-white">Retention Pro</span></div>
-                <p className="text-xs" style={{color:'#9b7de0'}}>From £49.99/mo</p>
-              </div>
+            {/* Retention Pro Upgrade */}
+            <Link to={createPageUrl('Plus')} className="block">
+              <Card className="p-3 bg-slate-800/50 border border-purple-500/30 hover:border-purple-500/50 hover:bg-slate-800/70 transition-all cursor-pointer">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <div>
+                      <h3 className="text-xs font-bold text-white">Retention Pro</h3>
+                      <p className="text-[10px] text-slate-400">Advanced tools • From £49.99/mo</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-purple-400 font-medium whitespace-nowrap">Learn More →</span>
+                </div>
+              </Card>
             </Link>
           </div>
+        </div>
+
+        {/* Gym Join Code with QR Code - Compact Version */}
+         <Card className="p-4 mb-6 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white border-0 shadow-xl">
+           <div className="flex items-center gap-3">
+             <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+               <CheckCircle className="w-5 h-5" />
+             </div>
+             <div className="flex-1">
+               <h3 className="font-bold text-base mb-0.5">🎯 Gym Join Code</h3>
+               <p className="text-white/90 text-xs">Scan QR or enter code to join</p>
+             </div>
+
+             {selectedGym?.join_code ? (
+               <>
+                 <div className="bg-white/25 backdrop-blur px-3 py-2 rounded-xl border border-white/40">
+                   <p className="text-2xl font-black text-white tracking-wider">{selectedGym.join_code}</p>
+                 </div>
+
+                 <button
+                   onClick={() => setShowQRCodeModal(true)}
+                   className="bg-white p-2 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                 >
+                   <div id="qr-code-container">
+                     <QRCode 
+                       value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
+                       size={80}
+                       level="H"
+                     />
+                   </div>
+                 </button>
+
+                 <Button
+                   onClick={() => {
+                     const svg = document.getElementById('qr-code-container').querySelector('svg');
+                     const svgData = new XMLSerializer().serializeToString(svg);
+                     const canvas = document.createElement('canvas');
+                     const ctx = canvas.getContext('2d');
+                     const img = new Image();
+                     img.onload = () => {
+                       canvas.width = img.width;
+                       canvas.height = img.height;
+                       ctx.drawImage(img, 0, 0);
+                       const pngFile = canvas.toDataURL('image/png');
+                       const downloadLink = document.createElement('a');
+                       downloadLink.download = `${selectedGym.name}-QR-Code.png`;
+                       downloadLink.href = pngFile;
+                       downloadLink.click();
+                     };
+                     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                   }}
+                   size="sm"
+                   className="bg-white/90 hover:bg-white text-green-700 font-semibold px-3"
+                 >
+                   <Download className="w-3 h-3" />
+                 </Button>
+               </>
+             ) : (
+               <Button
+               onClick={async () => {
+                 try {
+                   // Call backend function to generate code
+                   const response = await base44.functions.invoke('generateGymJoinCode', {
+                     gym_id: selectedGym.id
+                   });
+
+                   if (response.data?.success) {
+                     queryClient.invalidateQueries({ queryKey: ['gyms'] });
+                   } else {
+                     alert(response.data?.error || 'Failed to generate join code. Please try again.');
+                   }
+                 } catch (error) {
+                   console.error('Error generating code:', error);
+                   alert('Failed to generate join code. Please try again.');
+                 }
+               }}
+               size="sm"
+               className="bg-white text-green-600 hover:bg-white/90 font-semibold"
+               >
+               Generate Code
+               </Button>
+             )}
+           </div>
+         </Card>
+
+
+
+         {/* View My Gym */}
+         <div className="mb-6">
+           <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id} className="block">
+             <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-auto py-6 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all duration-200 border-0">
+               <Dumbbell className="w-8 h-8" />
+               <span className="font-black text-lg">{t('dashboard.viewMyGym')}</span>
+               <span className="text-sm text-blue-100 font-medium">{t('dashboard.managePost')}</span>
+             </Button>
+           </Link>
+         </div>
+
+         {/* At-Risk Alert */}
+        {atRiskMembers > 0 && (
+          <Card className="p-6 mb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-xl">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
+                <Bell className="w-7 h-7" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-xl mb-2">⚠️ {t('dashboard.membersAtRisk')}</h3>
+                <p className="text-white/90">
+                  {t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowManageMembers(true)}
+                variant="outline"
+                className="bg-white/20 hover:bg-white/30 border-white/50 text-white font-semibold px-8 py-6 rounded-xl shadow-lg"
+              >
+                {t('dashboard.viewMembers')}
+              </Button>
+            </div>
+          </Card>
         )}
 
-        <div className="px-2.5 pb-4 pt-2 border-t space-y-0.5 flex-shrink-0" style={{borderColor:'rgba(59,130,246,0.1)'}}>
-          <Link to={createPageUrl('GymCommunity')+'?id='+selectedGym?.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:text-white transition-all" style={{color:'#6b87b8'}}>
-            <Eye className="w-4 h-4 flex-shrink-0"/>{expanded&&'View Gym Page'}
-          </Link>
-          <Link to={createPageUrl('Home')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:text-white transition-all" style={{color:'#6b87b8'}}>
-            <Users className="w-4 h-4 flex-shrink-0"/>{expanded&&'Member View'}
-          </Link>
-          <button onClick={()=>base44.auth.logout()} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold" style={{color:'#f87171'}}>
-            <LogOut className="w-4 h-4 flex-shrink-0"/>{expanded&&'Log Out'}
-          </button>
-        </div>
-      </>
-    );
-  };
-
-  // ══════════════════════════════════════════════════════════════════
-  // RENDER
-  // ══════════════════════════════════════════════════════════════════
-  return (
-    <div className="flex h-screen overflow-hidden" style={{background:N[950],fontFamily:"'DM Sans','Inter',sans-serif"}}>
-
-      {sidebarOpen && <div className="fixed inset-0 z-40 md:hidden" style={{background:'rgba(6,13,31,0.75)',backdropFilter:'blur(4px)'}} onClick={()=>setSidebarOpen(false)}/>}
-
-      <div className={`fixed top-0 left-0 h-full z-50 flex flex-col transition-transform duration-300 md:hidden ${sidebarOpen?'translate-x-0':'-translate-x-full'}`}
-        style={{width:260,background:N[900],borderRight:'1px solid rgba(59,130,246,0.12)'}}>
-        <SidebarContent forceExpanded={true}/>
-      </div>
-
-      <aside className="hidden md:flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
-        style={{width:collapsed?64:224,background:N[900],borderRight:'1px solid rgba(59,130,246,0.12)'}}>
-        <SidebarContent/>
-      </aside>
-
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex items-center justify-between px-4 md:px-6 py-3 flex-shrink-0 border-b"
-          style={{background:N[900],borderColor:'rgba(59,130,246,0.12)'}}>
-          <div className="flex items-center gap-3 min-w-0">
-            <button onClick={()=>setSidebarOpen(o=>!o)} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 md:hidden" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}><Menu className="w-4 h-4"/></button>
-            <button onClick={()=>setCollapsed(o=>!o)} className="w-8 h-8 rounded-lg items-center justify-center flex-shrink-0 hidden md:flex" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}><Menu className="w-4 h-4"/></button>
-            <div className="min-w-0">
-              <h1 className="text-sm md:text-base font-black text-white leading-tight truncate">{NAV.find(n=>n.id===tab)?.label}</h1>
-              <p className="text-xs hidden sm:block" style={{color:'#3d5a8a'}}>{format(now,'EEE, d MMM yyyy')}</p>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8 md:mb-10">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-blue-500/30">
+                <Users className="w-6 md:w-7 h-6 md:h-7 text-blue-400" />
+              </div>
+              <TrendingUp className="w-5 h-5 text-green-400" />
             </div>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{uniqueMembers}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.activeMembers')}</p>
+          </Card>
+
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Activity className="w-6 md:w-7 h-6 md:h-7 text-emerald-400" />
+              </div>
+              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 text-xs font-semibold">{last7Days} wk</Badge>
+            </div>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{last30Days}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.checkIns30d')}</p>
+          </Card>
+
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center border border-orange-500/30">
+                <Activity className="w-6 md:w-7 h-6 md:h-7 text-orange-400" />
+              </div>
+              <TrendingUp className="w-5 h-5 text-orange-400" />
+            </div>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{activeMembersThisWeek}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t('dashboard.activeThisWeek')}</p>
+          </Card>
+
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-500/20 flex items-center justify-center border border-amber-500/30">
+                <Star className="w-6 md:w-7 h-6 md:h-7 text-amber-400" />
+              </div>
+              <span className="text-lg md:text-xl font-bold text-amber-400">{selectedGym?.rating?.toFixed(1) || '0.0'}/5</span>
+            </div>
+            <div className="text-3xl md:text-4xl font-black mb-1 text-white">{selectedGym?.rating?.toFixed(1) || '0.0'}</div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Avg Rating</p>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+           <Button
+            onClick={() => setShowQRScanner(true)}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200 border-0"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 flex items-center justify-center mb-1">
+              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+            </div>
+            <span className="font-bold text-sm md:text-base text-white">Scan QR</span>
+          </Button>
+          <Button
+            onClick={() => setShowManageMembers(true)}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-1 border border-blue-500/30">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-blue-400" />
+            </div>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Miembros' : 'Members'}</span>
+          </Button>
+
+          <Button
+            onClick={() => setShowManageClasses(true)}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center mb-1 border border-green-500/30">
+              <Calendar className="w-6 h-6 md:w-7 md:h-7 text-green-400" />
+            </div>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Clases' : 'Classes'}</span>
+          </Button>
+          <Button
+            onClick={() => setShowManageCoaches(true)}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-1 border border-orange-500/30">
+              <Target className="w-6 h-6 md:w-7 md:h-7 text-orange-400" />
+            </div>
+            <span className="font-bold text-sm md:text-base">{i18n.language === 'es' ? 'Entrenadores' : 'Coaches'}</span>
+          </Button>
+          <Button
+            onClick={() => setShowCreatePoll(true)}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white border border-slate-700 h-auto py-8 md:py-10 flex-col gap-2 md:gap-3 shadow-xl hover:shadow-2xl transition-all duration-200"
+          >
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-1 border border-cyan-500/30">
+              <span className="text-xl">📊</span>
+            </div>
+            <span className="font-bold text-sm md:text-base">Polls</span>
+          </Button>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {atRisk>0 && <button onClick={()=>goTab('members')} className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg text-xs font-bold" style={{background:'rgba(251,146,60,0.12)',color:'#fb923c',border:'1px solid rgba(249,115,22,0.28)'}}><AlertTriangle className="w-3.5 h-3.5"/><span className="hidden sm:inline">{atRisk} at risk</span><span className="sm:hidden">{atRisk}</span></button>}
-            <button onClick={()=>openModal('post')} className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg text-xs font-bold hover:brightness-125 transition-all" style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}><Pencil className="w-3.5 h-3.5"/><span className="hidden sm:inline">New Post</span></button>
-            <button onClick={()=>openModal('qrScanner')} className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg text-xs font-bold hover:brightness-125 transition-all" style={{background:'rgba(16,185,129,0.12)',color:'#34d399',border:'1px solid rgba(16,185,129,0.28)'}}><QrCode className="w-3.5 h-3.5"/><span className="hidden sm:inline">Scan QR</span></button>
-            {selectedGym?.join_code ? (
-              <button onClick={()=>openModal('qrCode')} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold tracking-widest" style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>{selectedGym.join_code}</button>
-            ) : (
-              <button onClick={async()=>{try{const r=await base44.functions.invoke('generateGymJoinCode',{gym_id:selectedGym.id});if(r.data?.success)invGyms();}catch{}}} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold" style={{background:'rgba(16,185,129,0.12)',color:'#34d399',border:'1px solid rgba(16,185,129,0.28)'}}><Plus className="w-3.5 h-3.5"/>Generate Code</button>
+
+        <Tabs defaultValue="snapshot" className="w-full">
+           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8 md:mb-10 bg-slate-800/50 border border-slate-700 backdrop-blur-sm p-1 md:p-1.5 rounded-xl h-auto md:h-14 shadow-xl gap-1">
+             <TabsTrigger value="snapshot" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📊 {t('dashboard.snapshot')}
+             </TabsTrigger>
+             <TabsTrigger value="engagement" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               🔥 {t('dashboard.engagement')}
+             </TabsTrigger>
+             <TabsTrigger value="content" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📸 {t('dashboard.content')}
+             </TabsTrigger>
+             <TabsTrigger value="admin" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               ⚙️ {t('dashboard.admin')}
+             </TabsTrigger>
+             <TabsTrigger value="insights" className="rounded-lg font-semibold text-xs md:text-sm data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:border-slate-600 data-[state=active]:shadow-md transition-all duration-200 border border-transparent">
+               📈 {t('dashboard.insights')}
+             </TabsTrigger>
+           </TabsList>
+
+          <TabsContent value="snapshot" className="space-y-6 md:space-y-8 mt-4 md:mt-6">
+            {/* Today/This Week Snapshot */}
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-blue-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.checkInsToday')}</p>
+                 <p className="text-4xl md:text-5xl font-black mb-2">{todayCheckIns}</p>
+                 <p className="text-xs text-blue-200">{t('dashboard.membersCheckedIn')}</p>
+               </Card>
+
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-emerald-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.activeThisWeek')}</p>
+                 <p className="text-4xl md:text-5xl font-black mb-2">{activeMembersThisWeek}</p>
+                 <p className="text-xs text-emerald-200">{t('dashboard.uniqueMembers')}</p>
+               </Card>
+
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-violet-600 to-violet-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-violet-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.weeklyChange')}</p>
+                 <div className="flex items-baseline gap-1 mb-2">
+                   <p className="text-4xl md:text-5xl font-black">{weeklyChange > 0 ? '+' : ''}{weeklyChange}</p>
+                   <span className="text-base md:text-lg font-semibold opacity-90">({weeklyChangePercent > 0 ? '+' : ''}{weeklyChangePercent}%)</span>
+                 </div>
+                 <p className="text-xs text-violet-200">{t('dashboard.vsLastWeek')}</p>
+               </Card>
+
+               <Card className="p-5 md:p-6 bg-gradient-to-br from-red-600 to-red-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all">
+                 <p className="text-red-200 font-medium mb-3 text-xs md:text-sm uppercase tracking-wide">{t('dashboard.atRiskMembers')}</p>
+                 <p className="text-4xl md:text-5xl font-black mb-2">{atRiskMembers}</p>
+                 <p className="text-xs text-red-200">{t('dashboard.noCheckIn7to10')}</p>
+               </Card>
+             </div>
+
+            {/* What to Do Next */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-2xl">💡</span>
+                </div>
+                {t('dashboard.whatToDoNext')}
+              </h3>
+              <div className="space-y-3">
+                {atRiskMembers > 0 && (
+                  <div className="p-4 bg-slate-700/50 rounded-2xl border-2 border-orange-500/40">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">⚠️</span>
+                      <div>
+                        <p className="font-bold text-white">{t('dashboard.reachOutAtRisk')}</p>
+                        <p className="text-sm text-slate-300">{t('dashboard.membersHaventCheckedIn', { count: atRiskMembers })}</p>
+                        <Button onClick={() => setShowManageMembers(true)} size="sm" className="mt-2">
+                          {t('dashboard.viewMembers')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {posts.length < 3 && (
+                  <div className="p-4 bg-slate-700/50 rounded-2xl border-2 border-blue-500/40">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">📸</span>
+                      <div>
+                        <p className="font-bold text-white">{t('dashboard.shareGymUpdates')}</p>
+                        <p className="text-sm text-slate-300">{t('dashboard.keepMembersEngaged')}</p>
+                        <Button onClick={() => setShowCreatePost(true)} size="sm" className="mt-2">
+                          {t('dashboard.createPost')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {challenges.filter(c => c.status === 'active').length === 0 && (
+                  <div className="p-4 bg-slate-700/50 rounded-2xl border-2 border-green-500/40">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🏆</span>
+                      <div>
+                        <p className="font-bold text-white">{t('dashboard.createChallenge')}</p>
+                        <p className="text-sm text-slate-300">{t('dashboard.boostEngagement')}</p>
+                        <Button onClick={() => setShowCreateChallenge(true)} size="sm" className="mt-2">
+                          {t('dashboard.createChallengeBtn')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Activity Log (Last 7 Days) */}
+             <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+               <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.activityLog')}</h3>
+               <div className="space-y-3">
+                 {checkIns
+                   .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
+                   .slice(0, 15)
+                   .map((checkIn, idx) => (
+                     <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                       <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                           {checkIn.user_name?.charAt(0)}
+                         </div>
+                         <div>
+                           <p className="font-bold text-white">{checkIn.user_name}</p>
+                           <p className="text-sm text-slate-400">{t('dashboard.checkedIn')}</p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-slate-400">{format(new Date(checkIn.check_in_date), 'MMM d, h:mm a')}</span>
+                    </div>
+                  ))}
+                {checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() })).length === 0 && (
+                  <p className="text-slate-400 text-center py-8">{t('dashboard.noActivityLast7Days')}</p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="engagement" className="space-y-8 mt-4 md:mt-6">
+            {/* Engagement Overview */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.engagementOverview')}</h3>
+              <div className="grid grid-cols-4 gap-6">
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.totalMembers')}</p>
+                  <p className="text-3xl font-black text-blue-400">{uniqueMembers}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.active7days')}</p>
+                  <p className="text-3xl font-black text-green-400">{activeMembersThisWeek}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.totalCheckIns')}</p>
+                  <p className="text-3xl font-black text-purple-400">{last7Days}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600">
+                  <p className="text-sm text-slate-400 mb-1">{t('dashboard.prsLogged')}</p>
+                  <p className="text-3xl font-black text-orange-400">{lifts.filter(l => l.is_pr).length}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Member Engagement Breakdown */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.memberEngagementLevels')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl shadow-lg shadow-green-500/30 border border-green-400/30">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.superActive')}</p>
+                  <p className="text-4xl font-black">
+                    {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
+                      acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+                      return acc;
+                    }, {})).filter(count => count >= 15).length}
+                  </p>
+                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth15')}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl shadow-lg shadow-blue-500/30 border border-blue-400/30">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.active')}</p>
+                  <p className="text-4xl font-black">
+                    {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
+                      acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+                      return acc;
+                    }, {})).filter(count => count >= 8 && count < 15).length}
+                  </p>
+                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth8to14')}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-2xl shadow-lg shadow-yellow-500/30 border border-yellow-400/30">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.casual')}</p>
+                  <p className="text-4xl font-black">
+                    {Object.values(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).reduce((acc, c) => {
+                      acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+                      return acc;
+                    }, {})).filter(count => count >= 1 && count < 8).length}
+                  </p>
+                  <p className="text-xs opacity-75">{t('dashboard.visitsPerMonth1to7')}</p>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl shadow-lg shadow-red-500/30 border border-red-400/30">
+                  <p className="text-sm mb-1 opacity-90">{t('dashboard.atRisk')}</p>
+                  <p className="text-4xl font-black">{atRiskMembers}</p>
+                  <p className="text-xs opacity-75">{t('dashboard.daysInactive')}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Member Retention & Growth */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.memberRetention')}</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.activeThisMonth')}</p>
+                    <p className="text-3xl font-black text-green-400">
+                      {new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.outOfTotal', { total: uniqueMembers })}</p>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-2xl border border-orange-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.inactive30Plus')}</p>
+                    <p className="text-3xl font-black text-orange-400">
+                      {(() => {
+                        const activeIds = new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id));
+                        const allMemberIds = new Set(checkIns.map(c => c.user_id));
+                        return allMemberIds.size - activeIds.size;
+                      })()}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.considerReaching')}</p>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
+                    <p className="text-sm text-slate-300 mb-1">{t('dashboard.retentionRate')}</p>
+                    <p className="text-3xl font-black text-blue-400">
+                      {uniqueMembers > 0 ? Math.round((new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() })).map(c => c.user_id)).size / uniqueMembers) * 100) : 0}%
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t('dashboard.dayActiveRate')}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.dayOfWeekAnalysis')}</h3>
+                <div className="space-y-3">
+                  {(() => {
+                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dayData = {};
+                    checkIns.forEach(c => {
+                      const day = new Date(c.check_in_date).getDay();
+                      dayData[day] = (dayData[day] || 0) + 1;
+                    });
+                    const sortedDays = days.map((name, idx) => ({ name, count: dayData[idx] || 0, idx }))
+                      .sort((a, b) => b.count - a.count);
+
+                    return sortedDays.map(({ name, count, idx }, rank) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600/30">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-orange-400">#{rank + 1}</span>
+                          <span className="font-medium text-white">{name}</span>
+                        </div>
+                        <span className="text-xl font-black text-orange-400">{count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </Card>
+            </div>
+
+
+
+
+
+            {/* First Visit vs Returning Members */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.newVsReturning')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-5 bg-green-500/20 rounded-2xl border border-green-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">{t('dashboard.firstTimeVisitors')}</span>
+                    <span className="text-3xl font-black text-green-400">
+                      {checkIns.filter(c => c.first_visit).length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('dashboard.newMembersDiscovering')}</p>
+                </div>
+                <div className="p-5 bg-blue-500/20 rounded-2xl border border-blue-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">{t('dashboard.returningMembers')}</span>
+                    <span className="text-3xl font-black text-blue-400">
+                      {checkIns.filter(c => !c.first_visit).length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('dashboard.loyalMembers')}</p>
+                </div>
+                <div className="p-5 bg-purple-500/20 rounded-2xl border border-purple-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">{t('dashboard.returnRate')}</span>
+                    <span className="text-3xl font-black text-purple-400">
+                      {checkIns.length > 0 ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100) : 0}%
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('dashboard.returnRateDesc')}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Average Visit Duration & Frequency */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Avg Visits per Member</h4>
+                <p className="text-5xl font-black text-purple-400">
+                  {uniqueMembers > 0 ? (checkIns.length / uniqueMembers).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">All-time average</p>
+              </Card>
+              <Card className="p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Monthly Average</h4>
+                <p className="text-5xl font-black text-blue-400">
+                  {uniqueMembers > 0 ? (last30Days / uniqueMembers).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">Visits per member (30d)</p>
+              </Card>
+              <Card className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Weekly Average</h4>
+                <p className="text-5xl font-black text-green-400">
+                  {activeMembersThisWeek > 0 ? (last7Days / activeMembersThisWeek).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">Visits per active member (7d)</p>
+              </Card>
+            </div>
+
+            {/* Weekly Leaderboard */}
+            <Card className="p-6 bg-gradient-to-br from-purple-600/20 via-slate-800/80 to-pink-600/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/10">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-cyan-400" />
+                {t('dashboard.weeklyLeaderboard')}
+              </h3>
+              <p className="text-slate-300 mb-4">{t('dashboard.topMembersThisWeek')}</p>
+              <div className="space-y-3">
+                {Object.entries(
+                  checkIns
+                    .filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }))
+                    .reduce((acc, c) => {
+                      acc[c.user_name] = (acc[c.user_name] || 0) + 1;
+                      return acc;
+                    }, {})
+                )
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 10)
+                  .map(([name, count], idx) => {
+                    const medals = ['🥇', '🥈', '🥉'];
+                    return (
+                      <Link 
+                         key={name} 
+                         to={createPageUrl('Leaderboard')}
+                         className={`flex items-center justify-between p-4 rounded-2xl hover:scale-[1.02] transition-all cursor-pointer border-2 ${
+                           idx === 0 ? 'bg-gradient-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 shadow-md shadow-amber-500/20' :
+                           idx === 1 ? 'bg-gradient-to-r from-gray-400/30 to-gray-500/30 border-gray-400/50 shadow-md shadow-gray-400/20' :
+                           idx === 2 ? 'bg-gradient-to-r from-orange-500/30 to-red-500/30 border-orange-500/50 shadow-md shadow-orange-500/20' :
+                           'bg-slate-700/40 border-slate-600/30'
+                         }`}
+                       >
+                         <div className="flex items-center gap-3">
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
+                             idx === 0 ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
+                             idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                             idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600' :
+                             'bg-gradient-to-br from-blue-500 to-cyan-500'
+                           }`}>
+                             {idx < 3 ? medals[idx] : idx + 1}
+                           </div>
+                           <span className="font-bold text-white">{name}</span>
+                         </div>
+                         <Badge className="text-lg px-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">{count} {t('dashboard.visits')}</Badge>
+                       </Link>
+                    );
+                  })}
+              </div>
+            </Card>
+
+
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-8 mt-4 md:mt-6">
+            {/* Create Buttons Bar */}
+            <div className="grid grid-cols-3 gap-4">
+              <Button 
+                onClick={() => setShowCreateEvent(true)} 
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-auto py-8 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all"
+              >
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <span className="font-bold text-base">Create Event</span>
+                <span className="text-xs text-blue-100">{events.length} events</span>
+              </Button>
+
+              <Button 
+                onClick={() => setShowCreateChallenge(true)} 
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white h-auto py-8 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all"
+              >
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <span className="font-bold text-base">Create Challenge</span>
+                <span className="text-xs text-orange-100">{challenges.length} challenges</span>
+              </Button>
+
+              <Button 
+                onClick={() => setShowCreatePoll(true)} 
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-auto py-8 flex-col gap-2 shadow-xl hover:shadow-2xl transition-all"
+              >
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <span className="font-bold text-base">Create Poll</span>
+                <span className="text-xs text-purple-100">{polls.length} polls</span>
+              </Button>
+            </div>
+
+            {/* Events Section */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Upcoming Events</h3>
+                <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 ml-auto">{events.filter(e => new Date(e.event_date) >= new Date()).length}</Badge>
+              </div>
+
+              {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 6).map(event => (
+                    <div key={event.id} className="p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border-2 border-blue-400/50 hover:border-blue-300/80 transition-all">
+                      {event.image_url && (
+                        <img src={event.image_url} alt={event.title} className="w-full h-40 object-cover rounded-xl mb-4" />
+                      )}
+                      <h5 className="font-bold text-white text-lg mb-1">{event.title}</h5>
+                      <p className="text-sm text-slate-200 mb-3 line-clamp-2">{event.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-blue-200">
+                        <span className="flex items-center gap-1">📅 {format(new Date(event.event_date), 'MMM d, h:mm a')}</span>
+                        <span className="flex items-center gap-1">👥 {event.attendees || 0} attending</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400">No upcoming events</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Challenges Section */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Active Challenges</h3>
+                <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30 ml-auto">{challenges.filter(c => c.status === 'active').length}</Badge>
+              </div>
+
+              {challenges.filter(c => c.status === 'active').length > 0 ? (
+                <div className="space-y-3">
+                  {challenges.filter(c => c.status === 'active').map(challenge => (
+                    <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-2xl border-2 border-orange-400/50 hover:border-orange-300/80 transition-all">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h5 className="font-bold text-white text-lg flex items-center gap-2">
+                            🏆 {challenge.title}
+                          </h5>
+                          <p className="text-sm text-slate-200 mt-1">{challenge.description}</p>
+                        </div>
+                        <Badge className="bg-gradient-to-r from-orange-400 to-red-500 text-white border-0">{challenge.type.replace('_', ' ')}</Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200 mt-3">
+                        <span>👥 {challenge.participants?.length || 0} participants</span>
+                        <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                        {challenge.reward && <span className="flex items-center gap-1">🎁 {challenge.reward}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Trophy className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400">No active challenges</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Polls Section */}
+            {polls.length > 0 && (
+              <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">📊</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">Active Polls</h3>
+                  <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 ml-auto">{polls.length}</Badge>
+                </div>
+
+                <div className="space-y-3">
+                  {polls.slice(0, 4).map(poll => (
+                    <div key={poll.id} className="p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300/80 transition-all">
+                      <h5 className="font-bold text-white text-lg mb-2">{poll.title}</h5>
+                      <p className="text-sm text-slate-200 mb-3">{poll.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-purple-200">
+                        <span>📊 {poll.voters?.length || 0} votes</span>
+                        <span className="text-slate-400">{poll.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             )}
-            {selectedGym?.verified && <div className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold" style={{background:'rgba(59,130,246,0.12)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.28)'}}><Shield className="w-3.5 h-3.5"/>Verified</div>}
-          </div>
-        </header>
 
-        <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 pb-24 md:pb-6" style={{background:N[950]}}>
-          <div className="max-w-[1400px] mx-auto">{TABS[tab]||TABS.overview}</div>
-        </main>
+            {/* Posts/Feed Section */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <span className="text-xl">📸</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Gym Feed</h3>
+                <Button 
+                  onClick={() => setShowCreatePost(true)} 
+                  className="ml-auto bg-slate-700 hover:bg-slate-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Post
+                </Button>
+              </div>
+
+              {posts.length > 0 ? (
+                <div className="space-y-4">
+                  {posts.slice(0, 8).map(post => (
+                    <div key={post.id} className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30 hover:border-slate-500/50 transition-all">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
+                          {post.member_name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-white">{post.member_name}</p>
+                          <p className="text-xs text-slate-400">{format(new Date(post.created_date), 'MMM d, h:mm a')}</p>
+                        </div>
+                      </div>
+                      <p className="text-slate-200 mb-3 line-clamp-2">{post.content}</p>
+                      {post.image_url && (
+                        <img src={post.image_url} alt="Post" className="w-full rounded-lg mb-3 h-40 object-cover" />
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-slate-400">
+                        <span className="flex items-center gap-1">❤️ {post.likes || 0}</span>
+                        <span className="flex items-center gap-1">💬 {post.comments?.length || 0}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Activity className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400 mb-2">No posts yet</p>
+                  <p className="text-sm text-slate-500">Share gym updates to engage your community</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Rewards Management */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                  <span className="text-xl">🎁</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Rewards Program</h3>
+                <Button 
+                  onClick={() => setShowManageRewards(true)} 
+                  className="ml-auto bg-slate-700 hover:bg-slate-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Manage
+                </Button>
+              </div>
+
+              {rewards.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {rewards.slice(0, 6).map(reward => (
+                    <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border-2 border-purple-400/50 hover:border-purple-300/80 transition-all">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">{reward.icon || '🎁'}</div>
+                        <Badge className={reward.active ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-600 text-slate-200 border-slate-500'}>
+                          {reward.active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      <h4 className="font-bold text-white mb-1 line-clamp-1">{reward.title}</h4>
+                      <p className="text-sm text-slate-200 mb-3 line-clamp-2">{reward.description}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-pink-300 font-bold">{reward.value}</span>
+                        <span className="text-slate-300 text-xs">{reward.claimed_by?.length || 0} claimed</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Gift className="w-16 h-16 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400 mb-2">No rewards yet</p>
+                  <p className="text-sm text-slate-500">Create rewards to incentivize member engagement</p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="admin" className="space-y-8 mt-4 md:mt-6">
+            {/* Gym Profile Setup */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.gymProfileSetup')}</h3>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300 text-lg">{t('dashboard.basicInformation')}</h4>
+                    <Button onClick={() => setShowEditBasicInfo(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.gymName')}</label>
+                      <p className="text-white font-medium mt-1">{selectedGym?.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.type')}</label>
+                      <Badge className="capitalize mt-1 bg-slate-700 text-slate-200 border-slate-600">{selectedGym?.type}</Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.location')}</label>
+                      <p className="text-white mt-1">{selectedGym?.address}, {selectedGym?.city} {selectedGym?.postcode}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-slate-400 uppercase">{t('dashboard.monthlyPrice')}</label>
+                      <p className="text-white font-bold mt-1">£{selectedGym?.price}/month</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300">{t('dashboard.amenities')}</h4>
+                    <Button onClick={() => setShowManageAmenities(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.amenities?.map((amenity, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-slate-700/50 text-slate-200 border-slate-600">{amenity}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300">{t('dashboard.equipment')}</h4>
+                    <Button onClick={() => setShowManageEquipment(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.equipment?.slice(0, 15).map((item, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-500/30">{item}</Badge>
+                    ))}
+                    {selectedGym?.equipment?.length > 15 && (
+                      <Badge variant="outline" className="bg-slate-700/50 text-slate-200 border-slate-600">+{selectedGym.equipment.length - 15} {t('dashboard.more')}</Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-slate-300">{t('dashboard.photoGallery')}</h4>
+                    <Button onClick={() => setShowManagePhotos(true)} variant="outline" size="sm" className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      {t('dashboard.managePhotos')}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedGym?.gallery?.slice(0, 6).map((url, idx) => (
+                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-xl border border-slate-700" />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <Button onClick={() => setShowManageClasses(true)} className="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white h-auto py-6 flex-col gap-3">
+                    <Calendar className="w-8 h-8" />
+                    <span className="font-bold text-base">{t('dashboard.manageClasses')}</span>
+                    <span className="text-sm text-slate-400">{classes.length} {t('dashboard.classes')}</span>
+                  </Button>
+                  <Button onClick={() => setShowManageCoaches(true)} className="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white h-auto py-6 flex-col gap-3">
+                    <Target className="w-8 h-8" />
+                    <span className="font-bold text-base">{t('dashboard.manageCoaches')}</span>
+                    <span className="text-sm text-slate-400">{coaches.length} {t('dashboard.coaches')}</span>
+                  </Button>
+                  <Button onClick={() => setShowManageMembers(true)} className="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white h-auto py-6 flex-col gap-3">
+                    <Users className="w-8 h-8" />
+                    <span className="font-bold text-base">{t('dashboard.viewMembersBtn')}</span>
+                    <span className="text-sm text-slate-400">{uniqueMembers} {t('dashboard.members')}</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Admin Access */}
+            <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-xl font-bold text-white mb-4">{t('dashboard.adminAccess')}</h3>
+              <div className="space-y-3">
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">{t('dashboard.ownerEmail')}</p>
+                  <p className="text-white font-medium">{selectedGym?.owner_email}</p>
+                </div>
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">{t('dashboard.gymId')}</p>
+                  <p className="text-white font-mono text-sm">{selectedGym?.id}</p>
+                </div>
+                <div className="p-4 bg-slate-700/50 rounded-2xl border border-slate-600/30">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">{t('dashboard.verifiedStatus')}</p>
+                  <Badge className={selectedGym?.verified ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-slate-600 text-slate-200 border border-slate-500'}>
+                    {selectedGym?.verified ? t('dashboard.verified') : t('dashboard.notVerified')}
+                  </Badge>
+                </div>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button variant="outline" className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-white">
+                    {t('dashboard.viewPublicGymPage')}
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            {/* Delete Gym */}
+            <Card className="p-6 bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-700/50">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red-400" />
+                Delete Gym
+              </h3>
+              <p className="text-slate-300 text-sm mb-4">
+                Permanently delete this gym and all associated data. This action cannot be undone.
+              </p>
+              <Button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Gym
+              </Button>
+            </Card>
+
+            {/* Delete Account */}
+            <Card className="p-6 bg-gradient-to-br from-red-950/40 to-red-900/30 border border-red-600/50">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red-500" />
+                Delete Account
+              </h3>
+              <p className="text-slate-300 text-sm mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <Button
+                onClick={() => setShowDeleteAccountConfirm(true)}
+                className="w-full bg-red-700 hover:bg-red-800 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete My Account
+              </Button>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6 mt-4 md:mt-6">
+            {/* Retention Graphs Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Weekly Check-in Trend */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.weeklyCheckInTrend')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 11; i >= 0; i--) {
+                      const weekStart = subDays(new Date(), i * 7);
+                      const weekEnd = subDays(new Date(), (i - 1) * 7);
+                      const weekCheckIns = checkIns.filter(c => 
+                        isWithinInterval(new Date(c.check_in_date), { start: weekStart, end: weekEnd })
+                      );
+                      data.push({
+                        week: format(weekStart, 'MMM d'),
+                        checkIns: weekCheckIns.length
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="checkIns" stroke="#3b82f6" strokeWidth={2} name={t('dashboard.checkIns')} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.attendanceOverWeeks')}</p>
+              </Card>
+
+              {/* Challenge Participation Over Time */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.challengeParticipation')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthStart = subDays(new Date(), i * 30);
+                      const monthEnd = subDays(new Date(), (i - 1) * 30);
+                      const monthChallenges = challenges.filter(c => 
+                        isWithinInterval(new Date(c.start_date), { start: monthStart, end: monthEnd })
+                      );
+                      const totalParticipants = monthChallenges.reduce((sum, c) => sum + (c.participants?.length || 0), 0);
+                      data.push({
+                        month: format(monthStart, 'MMM'),
+                        participants: totalParticipants
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="participants" fill="#f59e0b" name={t('dashboard.participants')} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.engagementTrend')}</p>
+              </Card>
+
+              {/* Active Members Growth */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.activeMembersGrowth')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={(() => {
+                    const data = [];
+                    for (let i = 5; i >= 0; i--) {
+                      const monthEnd = subDays(new Date(), i * 30);
+                      const monthStart = subDays(monthEnd, 30);
+                      const activeMembers = new Set(
+                        checkIns.filter(c => 
+                          isWithinInterval(new Date(c.check_in_date), { start: monthStart, end: monthEnd })
+                        ).map(c => c.user_id)
+                      ).size;
+                      data.push({
+                        month: format(monthEnd, 'MMM'),
+                        members: activeMembers
+                      });
+                    }
+                    return data;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="members" stroke="#10b981" strokeWidth={2} name={t('dashboard.activeMembers')} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.membersWhoCheckedIn')}</p>
+              </Card>
+
+              {/* Rewards Redeemed */}
+              <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-6">{t('dashboard.rewardsRedeemedChart')}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={(() => {
+                    const rewardClaims = {};
+                    rewards.forEach(reward => {
+                      const claimCount = reward.claimed_by?.length || 0;
+                      if (claimCount > 0) {
+                        rewardClaims[reward.title] = claimCount;
+                      }
+                    });
+                    return Object.entries(rewardClaims)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([title, claims]) => ({
+                        reward: title.length > 15 ? title.substring(0, 15) + '...' : title,
+                        claims
+                      }));
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="reward" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="claims" fill="#8b5cf6" name={t('dashboard.claims')} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-sm text-slate-400 mt-3 text-center">{t('dashboard.trackIncentive')}</p>
+              </Card>
+            </div>
+
+            {/* Peak Hours Analysis */}
+            <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.peakHoursAnalysis')}</h3>
+              <div className="space-y-3">
+                {(() => {
+                  const hourlyData = {};
+                  checkIns.forEach(c => {
+                    const hour = new Date(c.check_in_date).getHours();
+                    hourlyData[hour] = (hourlyData[hour] || 0) + 1;
+                  });
+                  const sorted = Object.entries(hourlyData)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 10);
+                  
+                  return sorted.map(([hour, count], idx) => {
+                    const h = parseInt(hour);
+                    const timeLabel = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+                    const endH = (h + 1) % 24;
+                    const endLabel = endH === 0 ? '12am' : endH < 12 ? `${endH}am` : endH === 12 ? '12pm' : `${endH - 12}pm`;
+                    
+                    return (
+                      <div key={hour} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600/30">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-purple-400">#{idx + 1}</span>
+                          <span className="font-medium text-white">{timeLabel} - {endLabel}</span>
+                        </div>
+                        <span className="text-xl font-black text-purple-400">{count}</span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </Card>
+
+            {/* Member Check-in Trends */}
+            <Card className="p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-6">{t('dashboard.checkInTrends')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {(() => {
+                  const last7DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 7), end: new Date() }));
+                  const last30DaysCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 30), end: new Date() }));
+                  const previousMonthCheckIns = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(new Date(), 60), end: subDays(new Date(), 30) }));
+                  
+                  return (
+                    <>
+                      <div className="p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last7Days')}</p>
+                        <p className="text-3xl font-black text-blue-400">{last7DaysCheckIns.length}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.last30Days')}</p>
+                        <p className="text-3xl font-black text-green-400">{last30DaysCheckIns.length}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.checkInsLabel')}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.dailyAverage')}</p>
+                        <p className="text-3xl font-black text-purple-400">{Math.round(last30DaysCheckIns.length / 30)}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.perDay')}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl border border-orange-500/30">
+                        <p className="text-sm text-slate-300 mb-1">{t('dashboard.vsPreviousMonth')}</p>
+                        <p className="text-3xl font-black text-orange-400">
+                          {previousMonthCheckIns.length > 0 ? 
+                            (((last30DaysCheckIns.length - previousMonthCheckIns.length) / previousMonthCheckIns.length) * 100).toFixed(0) 
+                            : 0}%
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">{t('dashboard.change')}</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </Card>
+
+            {/* Average Visit Duration & Frequency */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Avg Visits per Member</h4>
+                <p className="text-5xl font-black text-purple-400">
+                  {uniqueMembers > 0 ? (checkIns.length / uniqueMembers).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">All-time average</p>
+              </Card>
+              <Card className="p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Monthly Average</h4>
+                <p className="text-5xl font-black text-blue-400">
+                  {uniqueMembers > 0 ? (last30Days / uniqueMembers).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">Visits per member (30d)</p>
+              </Card>
+              <Card className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                <h4 className="font-bold text-slate-300 mb-3">Weekly Average</h4>
+                <p className="text-5xl font-black text-green-400">
+                  {activeMembersThisWeek > 0 ? (last7Days / activeMembersThisWeek).toFixed(1) : 0}
+                </p>
+                <p className="text-sm text-slate-400 mt-2">Visits per active member (7d)</p>
+              </Card>
+            </div>
+
+
+          </TabsContent>
+
+          <TabsContent value="oldanalytics" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Gym Activity Feed</h3>
+                <Button onClick={() => setShowCreatePost(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Post
+                </Button>
+              </div>
+              {posts.length > 0 ? (
+                <div className="space-y-4">
+                  {posts.slice(0, 10).map(post => (
+                    <div key={post.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+                          {post.member_name?.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-900">{post.member_name}</p>
+                          <p className="text-sm text-gray-500">{format(new Date(post.created_date), 'PPp')}</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-900 mb-3">{post.content}</p>
+                      {post.image_url && (
+                        <img src={post.image_url} alt="Post" className="w-full rounded-xl mb-3" />
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span>❤️ {post.likes || 0} likes</span>
+                        <span>💬 {post.comments?.length || 0} comments</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Activity className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 mb-2">No activity yet</p>
+                  <p className="text-sm text-gray-400">Posts from your gym members will appear here</p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="olddata" className="space-y-6">
+            {/* Check-ins Chart */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Check-ins (Last 7 Days)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={checkInsByDay}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="checkIns" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+
+            {/* Exercise Breakdown */}
+            {exerciseData.length > 0 && (
+              <Card className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Popular Exercises</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={exerciseData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {exerciseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            )}
+
+            {/* Top Members */}
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Most Active Members</h3>
+              {checkIns.length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(
+                    checkIns.reduce((acc, c) => {
+                      acc[c.user_name] = (acc[c.user_name] || 0) + 1;
+                      return acc;
+                    }, {})
+                  )
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 5)
+                    .map(([name, count], idx) => (
+                      <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center font-bold text-white">
+                            {idx + 1}
+                          </div>
+                          <span className="font-bold text-gray-900">{name}</span>
+                        </div>
+                        <Badge>{count} check-ins</Badge>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No check-ins yet</p>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="oldleaderboard" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Leaderboard</h3>
+              <p className="text-gray-600 mb-4">See how your gym ranks against others in the community</p>
+              
+              {/* Filters */}
+              <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <Button
+                  variant={leaderboardFilter === 'overall' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('overall')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Trophy className="w-4 h-4 mr-1" />
+                  Overall Best
+                </Button>
+                <Button
+                  variant={leaderboardFilter === 'members' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('members')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Users className="w-4 h-4 mr-1" />
+                  Most Members
+                </Button>
+                <Button
+                  variant={leaderboardFilter === 'rating' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('rating')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Star className="w-4 h-4 mr-1" />
+                  Highest Rated
+                </Button>
+                <Button
+                  variant={leaderboardFilter === 'engagement' ? 'default' : 'outline'}
+                  onClick={() => setLeaderboardFilter('engagement')}
+                  className="rounded-2xl whitespace-nowrap"
+                  size="sm"
+                >
+                  <Activity className="w-4 h-4 mr-1" />
+                  Member Engagement
+                </Button>
+              </div>
+
+              {/* Leaderboard */}
+              <div className="space-y-3">
+                {sortedGyms.slice(0, 10).map((gym, idx) => {
+                  const rankColors = {
+                    0: 'from-yellow-400 to-yellow-500',
+                    1: 'from-gray-300 to-gray-400',
+                    2: 'from-orange-400 to-orange-500'
+                  };
+                  const rankIcons = {
+                    0: '🥇',
+                    1: '🥈',
+                    2: '🥉'
+                  };
+                  
+                  return (
+                    <div
+                      key={gym.id}
+                      className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                        gym.isOwner
+                          ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-300 shadow-md'
+                          : 'bg-white border-gray-200'
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-lg ${
+                        idx < 3 ? `bg-gradient-to-br ${rankColors[idx]} shadow-lg` : 'bg-gray-400'
+                      }`}>
+                        {idx < 3 ? rankIcons[idx] : idx + 1}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-bold text-gray-900">{gym.name}</h4>
+                          {gym.isOwner && (
+                            <Badge className="bg-blue-500 text-white">Your Gym</Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-3 text-sm">
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Users className="w-4 h-4" />
+                            {gym.members} members
+                          </span>
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            {gym.rating.toFixed(1)}/5
+                          </span>
+                          <span className="flex items-center gap-1 text-gray-600">
+                            <Activity className="w-4 h-4" />
+                            {gym.engagementScore}% engaged
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {leaderboardFilter === 'overall' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-blue-600">
+                            {Math.round(gym.overallScore)}
+                          </div>
+                          <div className="text-xs text-gray-500">Score</div>
+                        </div>
+                      )}
+                      {leaderboardFilter === 'members' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-green-600">
+                            {gym.members}
+                          </div>
+                          <div className="text-xs text-gray-500">Members</div>
+                        </div>
+                      )}
+                      {leaderboardFilter === 'rating' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-yellow-600">
+                            {gym.rating.toFixed(1)}
+                          </div>
+                          <div className="text-xs text-gray-500">Rating</div>
+                        </div>
+                      )}
+                      {leaderboardFilter === 'engagement' && (
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-purple-600">
+                            {gym.engagementScore}%
+                          </div>
+                          <div className="text-xs text-gray-500">Engagement</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="oldchallenges" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Challenges & Events</h3>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </Link>
+              </div>
+              
+              {/* Challenges */}
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-3">Active Challenges</h4>
+                {challenges.filter(c => c.status === 'active').length > 0 ? (
+                  <div className="space-y-3">
+                    {challenges.filter(c => c.status === 'active').map(challenge => (
+                      <div key={challenge.id} className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl border-2 border-orange-200">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h5 className="font-bold text-gray-900">{challenge.title}</h5>
+                            <p className="text-sm text-gray-600">{challenge.description}</p>
+                          </div>
+                          <Badge className="bg-orange-500 text-white">{challenge.type.replace('_', ' ')}</Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                          <span>👥 {challenge.participants?.length || 0} participants</span>
+                          <span>📅 {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-6">No active challenges</p>
+                )}
+              </div>
+
+              {/* Events */}
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-3">Upcoming Events</h4>
+                {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
+                  <div className="space-y-3">
+                    {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5).map(event => (
+                      <div key={event.id} className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-900">{event.title}</h5>
+                            <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
+                              <span>📅 {format(new Date(event.event_date), 'PPP')}</span>
+                              <span>👥 {event.attendees || 0} attending</span>
+                            </div>
+                          </div>
+                          {event.image_url && (
+                            <img src={event.image_url} alt={event.title} className="w-20 h-20 rounded-xl object-cover ml-3" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-6">No upcoming events</p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="oldrewards" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Rewards Program</h3>
+                <Button onClick={() => setShowManageRewards(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Reward
+                </Button>
+              </div>
+              
+              {rewards.length > 0 ? (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {rewards.map(reward => (
+                    <div key={reward.id} className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">{reward.icon || '🎁'}</div>
+                        <Badge className={reward.active ? 'bg-green-500' : 'bg-gray-400'}>{reward.active ? 'Active' : 'Inactive'}</Badge>
+                      </div>
+                      <h4 className="font-bold text-gray-900 mb-1">{reward.title}</h4>
+                      <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-purple-600 font-bold">{reward.value}</span>
+                        <span className="text-gray-500">{reward.claimed_by?.length || 0} claimed</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Award className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 mb-2">No rewards yet</p>
+                  <p className="text-sm text-gray-400">Create rewards to incentivize member engagement</p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="oldprofile" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Profile</h3>
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Basic Information</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Gym Name</label>
+                      <p className="text-gray-900 font-medium mt-1">{selectedGym?.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Type</label>
+                      <Badge className="capitalize mt-1">{selectedGym?.type}</Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Location</label>
+                      <p className="text-gray-900 mt-1">{selectedGym?.address}, {selectedGym?.city} {selectedGym?.postcode}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-bold text-gray-500 uppercase">Monthly Price</label>
+                      <p className="text-gray-900 font-bold mt-1">£{selectedGym?.price}/month</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Amenities & Equipment */}
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Amenities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.amenities?.map((amenity, idx) => (
+                      <Badge key={idx} variant="outline">{amenity}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3">Equipment</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGym?.equipment?.slice(0, 15).map((item, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-blue-50">{item}</Badge>
+                    ))}
+                    {selectedGym?.equipment?.length > 15 && (
+                      <Badge variant="outline">+{selectedGym.equipment.length - 15} more</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Gallery */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-gray-700">Photo Gallery</h4>
+                    <Button onClick={() => setShowManagePhotos(true)} variant="outline" size="sm">
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Manage Photos
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedGym?.gallery?.slice(0, 6).map((url, idx) => (
+                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid md:grid-cols-3 gap-3">
+                  <Button onClick={() => setShowManageClasses(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Calendar className="w-6 h-6" />
+                    <span className="font-bold">Manage Classes</span>
+                    <span className="text-xs text-gray-500">{classes.length} classes</span>
+                  </Button>
+                  <Button onClick={() => setShowManageCoaches(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Target className="w-6 h-6" />
+                    <span className="font-bold">Manage Coaches</span>
+                    <span className="text-xs text-gray-500">{coaches.length} coaches</span>
+                  </Button>
+                  <Button onClick={() => setShowManageMembers(true)} variant="outline" className="h-auto py-4 flex-col gap-2">
+                    <Users className="w-6 h-6" />
+                    <span className="font-bold">View Members</span>
+                    <span className="text-xs text-gray-500">{uniqueMembers} members</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="management" className="space-y-4">
+            {/* Gym Info */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Gym Information</h3>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button variant="outline">View Public Page</Button>
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Name</p>
+                  <p className="text-gray-900 font-medium">{selectedGym?.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Type</p>
+                  <Badge className="capitalize">{selectedGym?.type}</Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Location</p>
+                  <p className="text-gray-900">{selectedGym?.city}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase mb-1">Price</p>
+                  <p className="text-gray-900 font-bold">£{selectedGym?.price}/month</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowManagePhotos(true)}
+                variant="outline"
+                className="w-full mt-4"
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Manage Photos
+              </Button>
+            </Card>
+
+            {/* Stats Cards */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Award className="w-6 h-6 text-purple-500" />
+                  <p className="text-sm font-bold text-gray-500 uppercase">Rewards</p>
+                </div>
+                <p className="text-3xl font-black text-gray-900">{rewards.length}</p>
+                <Button
+                  onClick={() => setShowManageRewards(true)}
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-3"
+                >
+                  Manage
+                </Button>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Calendar className="w-6 h-6 text-blue-500" />
+                  <p className="text-sm font-bold text-gray-500 uppercase">Classes</p>
+                </div>
+                <p className="text-3xl font-black text-gray-900">{classes.length}</p>
+                <Button
+                  onClick={() => setShowManageClasses(true)}
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-3"
+                >
+                  Manage
+                </Button>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Target className="w-6 h-6 text-green-500" />
+                  <p className="text-sm font-bold text-gray-500 uppercase">Coaches</p>
+                </div>
+                <p className="text-3xl font-black text-gray-900">{coaches.length}</p>
+                <Button
+                  onClick={() => setShowManageCoaches(true)}
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-3"
+                >
+                  Manage
+                </Button>
+              </Card>
+            </div>
+
+            {/* Recent Events */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Upcoming Events</h3>
+                <Link to={createPageUrl('GymCommunity') + '?id=' + selectedGym?.id}>
+                  <Button size="sm" variant="outline">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Event
+                  </Button>
+                </Link>
+              </div>
+              {events.filter(e => new Date(e.event_date) >= new Date()).length > 0 ? (
+                <div className="space-y-3">
+                  {events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 3).map(event => (
+                    <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                      <div>
+                        <p className="font-bold text-gray-900">{event.title}</p>
+                        <p className="text-sm text-gray-600">{format(new Date(event.event_date), 'PPP')}</p>
+                      </div>
+                      <Badge>{event.attendees || 0} attending</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No upcoming events</p>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Gym Settings</h3>
+              <div className="space-y-4">
+                <Button variant="outline" className="w-full justify-start">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Gym Details
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Bell className="w-4 h-4 mr-2" />
+                  Notification Preferences
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Business Settings
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Modals */}
+        <ManageRewardsModal
+          open={showManageRewards}
+          onClose={() => setShowManageRewards(false)}
+          rewards={rewards}
+          onCreateReward={(data) => createRewardMutation.mutate(data)}
+          onDeleteReward={(id) => deleteRewardMutation.mutate(id)}
+          gym={selectedGym}
+          isLoading={createRewardMutation.isPending}
+        />
+
+        <ManageClassesModal
+          open={showManageClasses}
+          onClose={() => setShowManageClasses(false)}
+          classes={classes}
+          onCreateClass={(data) => createClassMutation.mutate(data)}
+          onUpdateClass={(id, data) => updateClassMutation.mutate({ id, data })}
+          onDeleteClass={(id) => deleteClassMutation.mutate(id)}
+          gym={selectedGym}
+          isLoading={createClassMutation.isPending || updateClassMutation.isPending}
+        />
+
+        <ManageCoachesModal
+          open={showManageCoaches}
+          onClose={() => setShowManageCoaches(false)}
+          coaches={coaches}
+          onCreateCoach={(data) => createCoachMutation.mutate(data)}
+          onDeleteCoach={(id) => deleteCoachMutation.mutate(id)}
+          gym={selectedGym}
+          isLoading={createCoachMutation.isPending}
+        />
+
+        <ManageGymPhotosModal
+          open={showManagePhotos}
+          onClose={() => setShowManagePhotos(false)}
+          gallery={selectedGym?.gallery || []}
+          onSave={(gallery) => updateGalleryMutation.mutate(gallery)}
+          isLoading={updateGalleryMutation.isPending}
+        />
+
+        <ManageMembersModal
+          open={showManageMembers}
+          onClose={() => setShowManageMembers(false)}
+          gym={selectedGym}
+          onBanMember={(userId) => banMemberMutation.mutate(userId)}
+          onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)}
+        />
+
+        <CreateGymOwnerPostModal
+          open={showCreatePost}
+          onClose={() => setShowCreatePost(false)}
+          gym={selectedGym}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['posts', selectedGym?.id] });
+          }}
+        />
+
+        <CreateEventModal
+          open={showCreateEvent}
+          onClose={() => setShowCreateEvent(false)}
+          onSave={(data) => createEventMutation.mutate(data)}
+          gym={selectedGym}
+          isLoading={createEventMutation.isPending}
+        />
+
+        <CreateChallengeModal
+          open={showCreateChallenge}
+          onClose={() => setShowCreateChallenge(false)}
+          gyms={gyms}
+          onSave={(data) => createChallengeMutation.mutate(data)}
+          isLoading={createChallengeMutation.isPending}
+        />
+
+        <QRScanner
+          open={showQRScanner}
+          onClose={() => setShowQRScanner(false)}
+        />
+
+        <ManageEquipmentModal
+          open={showManageEquipment}
+          onClose={() => setShowManageEquipment(false)}
+          equipment={selectedGym?.equipment || []}
+          onSave={(equipment) => updateGymMutation.mutate({ equipment })}
+          isLoading={updateGymMutation.isPending}
+        />
+
+        <ManageAmenitiesModal
+          open={showManageAmenities}
+          onClose={() => setShowManageAmenities(false)}
+          amenities={selectedGym?.amenities || []}
+          onSave={(amenities) => updateGymMutation.mutate({ amenities })}
+          isLoading={updateGymMutation.isPending}
+        />
+
+        <EditBasicInfoModal
+          open={showEditBasicInfo}
+          onClose={() => setShowEditBasicInfo(false)}
+          gym={selectedGym}
+          onSave={(data) => updateGymMutation.mutate(data)}
+          isLoading={updateGymMutation.isPending}
+        />
+
+        <CreatePollModal
+          open={showCreatePoll}
+          onClose={() => setShowCreatePoll(false)}
+          onSave={(data) => createPollMutation.mutate(data)}
+          isLoading={createPollMutation.isPending}
+        />
+
+        {/* Delete Account Confirmation Dialog */}
+         <AlertDialog open={showDeleteAccountConfirm} onOpenChange={setShowDeleteAccountConfirm}>
+           <AlertDialogContent className="bg-slate-900 border border-red-700/50">
+             <AlertDialogHeader>
+               <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
+                 <Trash2 className="w-6 h-6 text-red-400" />
+                 Delete Account Permanently?
+               </AlertDialogTitle>
+               <AlertDialogDescription className="text-slate-300">
+                 This will permanently delete your account and all your personal data:
+                 <ul className="list-disc list-inside mt-2 space-y-1">
+                   <li>Your profile and account information</li>
+                   <li>All check-ins and activity history</li>
+                   <li>Your gyms and their data</li>
+                   <li>All associated records</li>
+                 </ul>
+                 <p className="mt-3 font-bold text-red-400">This action cannot be undone.</p>
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+             <AlertDialogFooter>
+               <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
+                 Cancel
+               </AlertDialogCancel>
+               <AlertDialogAction
+                 onClick={() => deleteAccountMutation.mutate()}
+                 disabled={deleteAccountMutation.isPending}
+                 className="bg-red-700 hover:bg-red-800 text-white"
+               >
+                 {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
+               </AlertDialogAction>
+             </AlertDialogFooter>
+           </AlertDialogContent>
+         </AlertDialog>
+
+         {/* Delete Confirmation Dialog */}
+         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent className="bg-slate-900 border border-red-700/50">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
+                <Trash2 className="w-6 h-6 text-red-400" />
+                Delete Gym Permanently?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-300">
+                This will permanently delete <span className="font-bold text-white">{selectedGym?.name}</span> and all associated data including:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>All check-in history</li>
+                  <li>Rewards and classes</li>
+                  <li>Events and challenges</li>
+                  <li>Member relationships</li>
+                </ul>
+                <p className="mt-3 font-bold text-red-400">This action cannot be undone.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteGymMutation.mutate()}
+                disabled={deleteGymMutation.isPending}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleteGymMutation.isPending ? 'Deleting...' : 'Delete Permanently'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* QR Code Fullscreen Modal */}
+        {showQRCodeModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="bg-white max-w-md w-full p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Gym Join QR Code</h3>
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowQRCodeModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              
+              <div className="flex justify-center mb-6 p-6 bg-white rounded-2xl border-2 border-gray-200">
+                <div id="qr-code-fullscreen">
+                  <QRCode 
+                    value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym.join_code}`}
+                    size={300}
+                    level="H"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-center text-sm text-gray-600 mb-4">
+                  Code: <span className="font-bold text-gray-900">{selectedGym.join_code}</span>
+                </p>
+                
+                <Button
+                  onClick={() => {
+                    const svg = document.getElementById('qr-code-fullscreen').querySelector('svg');
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = () => {
+                      canvas.width = img.width;
+                      canvas.height = img.height;
+                      ctx.drawImage(img, 0, 0);
+                      const pngFile = canvas.toDataURL('image/png');
+                      const downloadLink = document.createElement('a');
+                      downloadLink.download = `${selectedGym.name}-QR-Code.png`;
+                      downloadLink.href = pngFile;
+                      downloadLink.click();
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  }}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download QR Code
+                </Button>
+
+                <Button
+                  onClick={() => setShowQRCodeModal(false)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
-
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex md:hidden border-t" style={{background:N[900],borderColor:'rgba(59,130,246,0.15)',paddingBottom:'env(safe-area-inset-bottom)'}}>
-        {NAV.map(item=>{
-          const active=tab===item.id;
-          return (
-            <button key={item.id} onClick={()=>goTab(item.id)} className="relative flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-all" style={{color:active?'#60a5fa':'#4a6492'}}>
-              <item.icon className="w-5 h-5"/>
-              <span className="text-[10px] font-semibold leading-tight">{item.label}</span>
-              {active && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-blue-400"/>}
-            </button>
-          );
-        })}
-      </nav>
-
-      <ManageRewardsModal    open={modal==='rewards'}    onClose={closeModal} rewards={rewards}    onCreateReward={d=>createRewardM.mutate(d)}    onDeleteReward={id=>deleteRewardM.mutate(id)}  gym={selectedGym} isLoading={createRewardM.isPending}/>
-      <ManageClassesModal    open={modal==='classes'}    onClose={closeModal} classes={classes}    onCreateClass={d=>createClassM.mutate(d)}      onUpdateClass={(id,data)=>updateClassM.mutate({id,data})} onDeleteClass={id=>deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending||updateClassM.isPending}/>
-      <ManageCoachesModal    open={modal==='coaches'}    onClose={closeModal} coaches={coaches}    onCreateCoach={d=>createCoachM.mutate(d)}      onDeleteCoach={id=>deleteCoachM.mutate(id)}    gym={selectedGym} isLoading={createCoachM.isPending}/>
-      <ManageGymPhotosModal  open={modal==='photos'}     onClose={closeModal} gallery={selectedGym?.gallery||[]} onSave={g=>updateGalleryM.mutate(g)} isLoading={updateGalleryM.isPending}/>
-      <ManageMembersModal    open={modal==='members'}    onClose={closeModal} gym={selectedGym}    onBanMember={id=>banMemberM.mutate(id)}        onUnbanMember={id=>unbanMemberM.mutate(id)}/>
-      <CreateGymOwnerPostModal open={modal==='post'}     onClose={closeModal} gym={selectedGym}    onSuccess={()=>inv('posts')}/>
-      <CreateEventModal      open={modal==='event'}      onClose={closeModal} onSave={d=>createEventM.mutate(d)}      gym={selectedGym} isLoading={createEventM.isPending}/>
-      <CreateChallengeModal  open={modal==='challenge'}  onClose={closeModal} gyms={gyms}          onSave={d=>createChallengeM.mutate(d)}          isLoading={createChallengeM.isPending}/>
-      <QRScanner             open={modal==='qrScanner'}  onClose={closeModal}/>
-      <ManageEquipmentModal  open={modal==='equipment'}  onClose={closeModal} equipment={selectedGym?.equipment||[]} onSave={e=>updateGymM.mutate({equipment:e})} isLoading={updateGymM.isPending}/>
-      <ManageAmenitiesModal  open={modal==='amenities'}  onClose={closeModal} amenities={selectedGym?.amenities||[]} onSave={a=>updateGymM.mutate({amenities:a})} isLoading={updateGymM.isPending}/>
-      <EditBasicInfoModal    open={modal==='editInfo'}   onClose={closeModal} gym={selectedGym}    onSave={d=>updateGymM.mutate(d)} isLoading={updateGymM.isPending}/>
-      <CreatePollModal       open={modal==='poll'}       onClose={closeModal} onSave={d=>createPollM.mutate(d)} isLoading={createPollM.isPending}/>
-
-      <AlertDialog open={modal==='deleteGym'} onOpenChange={v=>!v&&closeModal()}>
-        <AlertDialogContent style={{background:N[900],borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md mx-4">
-          <AlertDialogHeader><AlertDialogTitle className="text-white flex items-center gap-2"><Trash2 className="w-5 h-5 text-red-400"/>Delete Gym Permanently?</AlertDialogTitle><AlertDialogDescription className="text-sm" style={{color:'#6b87b8'}}>Deletes <span className="font-bold text-white">{selectedGym?.name}</span> and all data. <span className="text-red-400 font-semibold">Cannot be undone.</span></AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel style={{background:N[700],color:'#93b4e8',borderColor:N[600]}}>Cancel</AlertDialogCancel><AlertDialogAction onClick={()=>deleteGymM.mutate()} disabled={deleteGymM.isPending} className="bg-red-600 hover:bg-red-700 text-white">{deleteGymM.isPending?'Deleting…':'Delete Permanently'}</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={modal==='deleteAccount'} onOpenChange={v=>!v&&closeModal()}>
-        <AlertDialogContent style={{background:N[900],borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md mx-4">
-          <AlertDialogHeader><AlertDialogTitle className="text-white flex items-center gap-2"><Trash2 className="w-5 h-5 text-red-400"/>Delete Account?</AlertDialogTitle><AlertDialogDescription className="text-sm" style={{color:'#6b87b8'}}>Deletes your account and all gyms. <span className="text-red-400 font-semibold">Cannot be undone.</span></AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel style={{background:N[700],color:'#93b4e8',borderColor:N[600]}}>Cancel</AlertDialogCancel><AlertDialogAction onClick={()=>deleteAccountM.mutate()} disabled={deleteAccountM.isPending} className="bg-red-700 hover:bg-red-800 text-white">{deleteAccountM.isPending?'Deleting…':'Delete Account'}</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {modal==='qrCode' && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{background:'rgba(6,13,31,0.9)',backdropFilter:'blur(8px)'}}>
-          <div className="rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl" style={{background:N[900],border:`1px solid ${N[600]}`}}>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-black text-white">Gym Join QR</h3>
-              <button onClick={closeModal} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}><X className="w-4 h-4"/></button>
-            </div>
-            <div id="qr-fullscreen" className="flex justify-center p-5 rounded-2xl bg-white mb-4">
-              <QRCode value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym?.join_code}`} size={220} level="H"/>
-            </div>
-            <p className="text-center text-sm mb-4" style={{color:'#6b87b8'}}>Join code: <span className="font-black text-white tracking-widest">{selectedGym?.join_code}</span></p>
-            <div className="space-y-2.5">
-              <button onClick={()=>dlQR('qr-fullscreen')} className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-white" style={{background:'linear-gradient(135deg,#10b981,#0d9488)'}}><Download className="w-4 h-4"/>Download QR Code</button>
-              <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-sm" style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
