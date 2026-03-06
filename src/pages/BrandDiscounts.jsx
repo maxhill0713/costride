@@ -133,7 +133,7 @@ export default function BrandDiscounts() {
   const usedGiftCards = usedCodes.filter(c => c.type === 'gift_card');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 p-6">
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
