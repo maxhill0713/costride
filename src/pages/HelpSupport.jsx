@@ -10,7 +10,7 @@ export default function HelpSupport() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
             <div className="flex items-center justify-center w-10 h-10">
@@ -47,8 +47,8 @@ export default function HelpSupport() {
               </div>
               <a
                 href={`mailto:${supportEmail}`}
-                className="text-blue-400 hover:text-blue-300 font-semibold text-lg break-all transition-colors"
-              >
+                className="text-blue-400 hover:text-blue-300 font-semibold text-lg break-all transition-colors">
+
                 {supportEmail}
               </a>
               <p className="text-slate-400 text-sm mt-3">
@@ -77,6 +77,6 @@ export default function HelpSupport() {
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
