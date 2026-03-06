@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -7,67 +7,19 @@ import { Label } from '@/components/ui/label';
 import {
   User, Camera, ArrowRight, QrCode, Search, CheckCircle2,
   Trophy, BarChart2, Zap, Users, Dumbbell, TrendingUp,
-  Sparkles, Building2, Loader2, MessageCircle, Flame, Activity
+  Sparkles, Building2, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 
-const PREVIEW_SLIDES = [
-  {
-    icon: Zap,
-    color: 'from-amber-400 to-orange-500',
-    glow: 'rgba(251,146,60,0.25)',
-    tag: 'Daily Habit',
-    title: 'Check In Every Session',
-    description: 'Tap check-in the moment you walk through the door. Build streaks, stay consistent, and never miss a day.',
-    stat: { value: '21 days', label: 'avg streak' }
-  },
-  {
-    icon: Dumbbell,
-    color: 'from-blue-400 to-cyan-500',
-    glow: 'rgba(59,130,246,0.25)',
-    tag: 'Training Log',
-    title: 'Log Every Workout',
-    description: 'Track your sets, reps and weights each session. Watch your numbers go up and crush your personal bests.',
-    stat: { value: '4.2x', label: 'faster progress' }
-  },
-  {
-    icon: MessageCircle,
-    color: 'from-purple-400 to-pink-500',
-    glow: 'rgba(168,85,247,0.25)',
-    tag: 'Community',
-    title: 'Engage With Your Gym',
-    description: 'Post your workouts, react to your gym mates, and stay connected with everyone training alongside you.',
-    stat: { value: '89%', label: 'feel more motivated' }
-  },
-  {
-    icon: Activity,
-    color: 'from-emerald-400 to-green-500',
-    glow: 'rgba(52,211,153,0.25)',
-    tag: 'Progress',
-    title: 'Track Your Progress',
-    description: 'See your volume, frequency and streaks over time. Know exactly how far you\'ve come and where you\'re going.',
-    stat: { value: '3x', label: 'more consistent' }
-  },
-  {
-    icon: Trophy,
-    color: 'from-rose-400 to-red-500',
-    glow: 'rgba(251,113,133,0.25)',
-    tag: 'Compete',
-    title: 'Win Gym Challenges',
-    description: 'Compete in gym-wide challenges, climb the leaderboard and earn badges that show off your dedication.',
-    stat: { value: 'Top 10%', label: 'of members compete' }
-  },
-];
-
 export default function MemberSignup() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
-  const [slideIndex, setSlideIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Step 2
   const [joinMethod, setJoinMethod] = useState('code');
   const [gymCode, setGymCode] = useState('');
   const [joiningGym, setJoiningGym] = useState(false);
@@ -77,18 +29,16 @@ export default function MemberSignup() {
   const [gymSearchResults, setGymSearchResults] = useState([]);
   const [searchingGyms, setSearchingGyms] = useState(false);
 
+  // Step 4
   const [formData, setFormData] = useState({
-    name: '', bio: '', avatar_url: '', goal_days_per_week: 3
+    name: '',
+    bio: '',
+    avatar_url: '',
+    goal_days_per_week: 3
   });
   const [uploading, setUploading] = useState(false);
   const [coverPreview, setCoverPreview] = useState(null);
   const fileRef = useRef();
-
-  useEffect(() => {
-    if (step !== 2) return;
-    const timer = setInterval(() => setSlideIndex(prev => (prev + 1) % PREVIEW_SLIDES.length), 3500);
-    return () => clearInterval(timer);
-  }, [step]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -162,14 +112,17 @@ export default function MemberSignup() {
   const handleFinish = async () => {
     setIsSubmitting(true);
     try {
-      const updates = { account_type: 'personal', onboarding_completed: true };
+      const updates = {
+        account_type: 'personal',
+        onboarding_completed: true
+      };
       if (formData.name) updates.full_name = formData.name;
       if (formData.bio) updates.bio = formData.bio;
       if (formData.avatar_url) updates.avatar_url = formData.avatar_url;
       if (formData.goal_days_per_week) updates.goal_days_per_week = formData.goal_days_per_week;
       await base44.auth.updateMe(updates);
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      setStep(6);
+      setStep(5);
     } catch {
       toast.error('Failed to save profile.');
     } finally {
@@ -177,26 +130,41 @@ export default function MemberSignup() {
     }
   };
 
-  const slide = PREVIEW_SLIDES[slideIndex];
-  const SlideIcon = slide.icon;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-start py-8 px-4 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-700/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
-  // ── STEP 1: WELCOME ──
-  if (step === 1) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-start py-8 px-4 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-700/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="max-w-md w-full mx-auto relative z-10">
 
-        <div className="max-w-md w-full mx-auto relative z-10">
-          <div className="flex justify-center mb-6">
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
-              alt="CoStride"
-              className="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-blue-500/30"
-            />
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
+            alt="CoStride"
+            className="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-blue-500/30"
+          />
+        </div>
+
+        {/* Progress bar */}
+        {step >= 2 && step <= 4 && (
+          <div className="mb-6">
+            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+              <span>Step {step - 1} of 3</span>
+              <span>{Math.round(((step - 2) / 2) * 100)}%</span>
+            </div>
+            <div className="w-full h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500"
+                style={{ width: `${((step - 2) / 2) * 100}%` }}
+              />
+            </div>
           </div>
+        )}
 
+        {/* ── STEP 1: WELCOME ── */}
+        {step === 1 && (
           <div className="space-y-6">
             <div className="text-center space-y-3">
               <div className="inline-flex items-center gap-2 bg-blue-500/15 border border-blue-500/30 rounded-full px-3 py-1">
@@ -214,6 +182,7 @@ export default function MemberSignup() {
               </p>
             </div>
 
+            {/* Social proof */}
             <div className="flex items-center justify-center gap-2">
               <div className="flex -space-x-2">
                 {['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-amber-500'].map((c, i) => (
@@ -225,6 +194,7 @@ export default function MemberSignup() {
               <span className="text-slate-400 text-xs">2,400+ members already crushing it</span>
             </div>
 
+            {/* Feature pills */}
             <div className="grid grid-cols-2 gap-2">
               {[
                 { icon: <Zap className="w-4 h-4" />, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', label: 'Daily Check-ins' },
@@ -239,6 +209,7 @@ export default function MemberSignup() {
               ))}
             </div>
 
+            {/* CTAs */}
             <div className="space-y-2.5">
               <Button
                 onClick={() => setStep(2)}
@@ -256,138 +227,17 @@ export default function MemberSignup() {
             </div>
             <p className="text-center text-xs text-slate-600">Free to join • No subscription needed</p>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── STEP 2: PREVIEW SLIDES ──
-  if (step === 2) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 flex flex-col items-center justify-between p-6 relative overflow-hidden">
-        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 50% 40%, ${slide.glow} 0%, transparent 70%)`, transition: 'all 0.6s ease' }} />
-
-        {/* Header */}
-        <div className="w-full flex justify-between items-center relative z-10 pt-2">
-          <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
-            alt="CoStride"
-            className="w-9 h-9 rounded-xl object-cover shadow-lg shadow-blue-500/30"
-          />
-          <button
-            onClick={() => setStep(3)}
-            className="text-slate-400 text-sm font-semibold hover:text-white transition-colors px-3 py-1.5 rounded-xl hover:bg-white/5"
-          >
-            Skip →
-          </button>
-        </div>
-
-        {/* Main slide */}
-        <div className="flex-1 flex flex-col items-center justify-center relative z-10 text-center max-w-sm px-2 gap-7 w-full">
-
-          {/* Icon */}
-          <div
-            className={`w-28 h-28 rounded-3xl bg-gradient-to-br ${slide.color} flex items-center justify-center shadow-2xl transition-all duration-500`}
-            style={{ boxShadow: `0 24px 64px ${slide.glow}` }}
-          >
-            <SlideIcon className="w-14 h-14 text-white" strokeWidth={1.5} />
-          </div>
-
-          {/* Text */}
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 bg-white/8 border border-white/15 rounded-full px-3 py-1">
-              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-              <span className="text-blue-300 text-xs font-bold tracking-wider uppercase">{slide.tag}</span>
-            </div>
-            <h2 className="text-3xl font-black text-white leading-tight">{slide.title}</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">{slide.description}</p>
-          </div>
-
-          {/* Stat pill */}
-          <div className="bg-white/8 border border-white/15 rounded-2xl px-5 py-3 flex items-center gap-3">
-            <div className={`text-2xl font-black bg-gradient-to-r ${slide.color} bg-clip-text text-transparent`}>
-              {slide.stat.value}
-            </div>
-            <div className="w-px h-6 bg-white/15" />
-            <div className="text-slate-400 text-xs font-medium">{slide.stat.label}</div>
-          </div>
-
-          {/* Dot + icon nav */}
-          <div className="flex items-center gap-2">
-            {PREVIEW_SLIDES.map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <button
-                  key={i}
-                  onClick={() => setSlideIndex(i)}
-                  className={`transition-all duration-300 rounded-xl flex items-center justify-center ${
-                    i === slideIndex
-                      ? `w-10 h-8 bg-gradient-to-br ${s.color}`
-                      : 'w-8 h-8 bg-white/8 hover:bg-white/15'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${i === slideIndex ? 'text-white' : 'text-slate-500'}`} strokeWidth={2} />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* CTAs */}
-        <div className="relative z-10 w-full max-w-sm flex flex-col gap-3">
-          <button
-            onClick={() => setStep(3)}
-            className="w-full h-14 rounded-2xl font-bold text-base text-white bg-blue-500 border-b-[5px] border-blue-700 hover:bg-blue-400 hover:border-blue-600 active:translate-y-1 active:border-b-2 transition-all duration-100 flex items-center justify-center gap-2"
-          >
-            Let's Go <ArrowRight className="w-5 h-5" />
-          </button>
-          <p className="text-center text-xs text-slate-600">
-            {slideIndex + 1} of {PREVIEW_SLIDES.length} features
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ── STEPS 3–6: main flow ──
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-start py-8 px-4 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-700/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="max-w-md w-full mx-auto relative z-10">
-
-        <div className="flex justify-center mb-6">
-          <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/b128c437a_Untitleddesign-7.jpg"
-            alt="CoStride"
-            className="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-blue-500/30"
-          />
-        </div>
-
-        {step >= 3 && step <= 5 && (
-          <div className="mb-6">
-            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
-              <span>Step {step - 2} of 3</span>
-              <span>{Math.round(((step - 3) / 2) * 100)}%</span>
-            </div>
-            <div className="w-full h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500"
-                style={{ width: `${((step - 3) / 2) * 100}%` }}
-              />
-            </div>
-          </div>
         )}
 
-        {/* ── STEP 3: JOIN GYM ── */}
-        {step === 3 && (
+        {/* ── STEP 2: JOIN GYM ── */}
+        {step === 2 && (
           <div className="space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">Join Your Gym</h2>
               <p className="text-slate-400 text-sm mt-1">Enter your gym's code or search for your community</p>
             </div>
 
+            {/* Toggle */}
             <div className="grid grid-cols-2 gap-2 p-1 bg-slate-800/60 rounded-2xl border border-white/10">
               {['code', 'find'].map(m => (
                 <button
@@ -405,6 +255,7 @@ export default function MemberSignup() {
               ))}
             </div>
 
+            {/* Enter code */}
             {joinMethod === 'code' && (
               <div className="space-y-4">
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-center">
@@ -413,6 +264,7 @@ export default function MemberSignup() {
                     Ask your gym for their 6-digit code or scan the QR poster at reception
                   </p>
                 </div>
+
                 <div>
                   <Label className="text-white font-bold text-sm mb-1.5 block">Gym Code</Label>
                   <Input
@@ -424,6 +276,7 @@ export default function MemberSignup() {
                   />
                   <p className="text-xs text-slate-500 mt-1.5 text-center">{gymCode.length}/6 characters</p>
                 </div>
+
                 <Button
                   type="button"
                   onClick={handleJoinByCode}
@@ -437,6 +290,7 @@ export default function MemberSignup() {
               </div>
             )}
 
+            {/* Find gym */}
             {joinMethod === 'find' && (
               <div className="space-y-3">
                 <div className="relative">
@@ -477,7 +331,11 @@ export default function MemberSignup() {
                 {gymSearchInput && gymSearchResults.length === 0 && !searchingGyms && (
                   <div className="text-center py-6 space-y-2">
                     <p className="text-slate-500 text-sm">No gyms found. Try a different name.</p>
-                    <button type="button" onClick={() => navigate(createPageUrl('Explore'))} className="text-blue-400 text-xs font-bold hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => navigate(createPageUrl('Explore'))}
+                      className="text-blue-400 text-xs font-bold hover:underline"
+                    >
                       Browse all gyms →
                     </button>
                   </div>
@@ -494,28 +352,55 @@ export default function MemberSignup() {
               </div>
             )}
 
-            <button type="button" onClick={() => setStep(4)} className="w-full text-center text-xs text-slate-500 hover:text-slate-300 transition-colors py-1">
+            <button
+              type="button"
+              onClick={() => setStep(3)}
+              className="w-full text-center text-xs text-slate-500 hover:text-slate-300 transition-colors py-1"
+            >
               Skip for now — I'll join a gym later →
             </button>
           </div>
         )}
 
-        {/* ── STEP 4: HOW IT WORKS ── */}
-        {step === 4 && (
+        {/* ── STEP 3: HOW IT WORKS ── */}
+        {step === 3 && (
           <div className="space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">Here's How It Works</h2>
               <p className="text-slate-400 text-sm mt-1">Everything you need to crush your goals</p>
             </div>
+
             <div className="space-y-3">
               {[
-                { icon: <Zap className="w-6 h-6" />, color: 'text-amber-400', bg: 'bg-amber-500/15 border-amber-500/25', num: '01', title: 'Check In', tag: 'Core Feature', desc: 'Tap check-in when you arrive at the gym. Build your streak and stay consistent.' },
-                { icon: <Dumbbell className="w-6 h-6" />, color: 'text-blue-400', bg: 'bg-blue-500/15 border-blue-500/25', num: '02', title: "Today's Workout", tag: 'Log & Track', desc: 'Log your sets, reps and weights. Track what you lifted and beat it next time.' },
-                { icon: <Trophy className="w-6 h-6" />, color: 'text-purple-400', bg: 'bg-purple-500/15 border-purple-500/25', num: '03', title: 'Challenges', tag: 'Compete', desc: 'Compete in gym-wide challenges. Climb the leaderboard and earn badges.' },
-                { icon: <BarChart2 className="w-6 h-6" />, color: 'text-emerald-400', bg: 'bg-emerald-500/15 border-emerald-500/25', num: '04', title: 'Analytics', tag: 'Insights', desc: 'See your progress over time — volume, frequency, streaks and personal records.' },
+                {
+                  icon: <Zap className="w-6 h-6" />, color: 'text-amber-400',
+                  bg: 'bg-amber-500/15 border-amber-500/25', num: '01',
+                  title: 'Check In', tag: 'Core Feature',
+                  desc: 'Tap check-in when you arrive at the gym. Build your streak and stay consistent.'
+                },
+                {
+                  icon: <Dumbbell className="w-6 h-6" />, color: 'text-blue-400',
+                  bg: 'bg-blue-500/15 border-blue-500/25', num: '02',
+                  title: "Today's Workout", tag: 'Log & Track',
+                  desc: 'Log your sets, reps and weights. Track what you lifted and beat it next time.'
+                },
+                {
+                  icon: <Trophy className="w-6 h-6" />, color: 'text-purple-400',
+                  bg: 'bg-purple-500/15 border-purple-500/25', num: '03',
+                  title: 'Challenges', tag: 'Compete',
+                  desc: 'Compete in gym-wide challenges. Climb the leaderboard and earn badges.'
+                },
+                {
+                  icon: <BarChart2 className="w-6 h-6" />, color: 'text-emerald-400',
+                  bg: 'bg-emerald-500/15 border-emerald-500/25', num: '04',
+                  title: 'Analytics', tag: 'Insights',
+                  desc: 'See your progress over time — volume, frequency, streaks and personal records.'
+                },
               ].map((f, i) => (
                 <div key={i} className={`flex items-start gap-4 p-4 rounded-2xl border ${f.bg}`}>
-                  <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center flex-shrink-0 ${f.color}`}>{f.icon}</div>
+                  <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center flex-shrink-0 ${f.color}`}>
+                    {f.icon}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <p className="text-white font-black text-sm">{f.title}</p>
@@ -527,32 +412,48 @@ export default function MemberSignup() {
                 </div>
               ))}
             </div>
+
             <div className="flex gap-3">
-              <Button type="button" onClick={() => setStep(3)} className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/8 hover:bg-white/15 text-white border border-white/10 transition-all flex items-center justify-center">←</Button>
-              <Button type="button" onClick={() => setStep(5)} className="flex-1 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2">
+              <Button
+                type="button"
+                onClick={() => setStep(2)}
+                className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/8 hover:bg-white/15 text-white border border-white/10 transition-all flex items-center justify-center"
+              >←</Button>
+              <Button
+                type="button"
+                onClick={() => setStep(4)}
+                className="flex-1 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2"
+              >
                 Set Up My Profile <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* ── STEP 5: PROFILE SETUP ── */}
-        {step === 5 && (
+        {/* ── STEP 4: PROFILE SETUP ── */}
+        {step === 4 && (
           <div className="space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">Set Up Your Profile</h2>
               <p className="text-slate-400 text-sm mt-1">How will your gym community know you?</p>
             </div>
 
+            {/* Avatar */}
             <div className="flex flex-col items-center gap-2 py-2">
               <div className="relative">
                 <div
                   onClick={() => fileRef.current?.click()}
                   className="w-24 h-24 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 border-4 border-slate-600 flex items-center justify-center cursor-pointer overflow-hidden hover:border-blue-400/50 transition-colors"
                 >
-                  {coverPreview ? <img src={coverPreview} alt="Avatar" className="w-full h-full object-cover" /> : <User className="w-10 h-10 text-slate-400" />}
+                  {coverPreview
+                    ? <img src={coverPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    : <User className="w-10 h-10 text-slate-400" />}
                 </div>
-                <button type="button" onClick={() => fileRef.current?.click()} className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg transition-colors">
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg transition-colors"
+                >
                   <Camera className="w-4 h-4 text-white" />
                 </button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
@@ -560,24 +461,51 @@ export default function MemberSignup() {
               <p className="text-slate-500 text-xs">{uploading ? 'Uploading...' : 'Tap to add a photo'}</p>
             </div>
 
+            {/* Name */}
             <div>
               <Label className="text-white font-bold text-sm mb-1.5 block">
                 Your Name * <span className="text-slate-500 font-normal">({formData.name.length}/15)</span>
               </Label>
-              <Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value.slice(0, 15) }))} placeholder="Enter your name" maxLength={15} className="rounded-xl border border-white/10 bg-slate-800/60 text-white placeholder:text-slate-500 h-11 text-sm" />
+              <Input
+                value={formData.name}
+                onChange={e => setFormData(p => ({ ...p, name: e.target.value.slice(0, 15) }))}
+                placeholder="Enter your name"
+                maxLength={15}
+                className="rounded-xl border border-white/10 bg-slate-800/60 text-white placeholder:text-slate-500 h-11 text-sm"
+              />
             </div>
 
+            {/* Bio */}
             <div>
-              <Label className="text-white font-bold text-sm mb-1.5 block">Bio <span className="text-slate-500 font-normal">(Optional)</span></Label>
-              <textarea value={formData.bio} onChange={e => setFormData(p => ({ ...p, bio: e.target.value }))} placeholder="Tell your gym what you're training for..." rows={2} className="w-full rounded-xl border border-white/10 bg-slate-800/60 text-white placeholder:text-slate-500 text-sm p-3 resize-none focus:outline-none focus:border-blue-400/50 transition-colors" />
+              <Label className="text-white font-bold text-sm mb-1.5 block">
+                Bio <span className="text-slate-500 font-normal">(Optional)</span>
+              </Label>
+              <textarea
+                value={formData.bio}
+                onChange={e => setFormData(p => ({ ...p, bio: e.target.value }))}
+                placeholder="Tell your gym what you're training for..."
+                rows={2}
+                className="w-full rounded-xl border border-white/10 bg-slate-800/60 text-white placeholder:text-slate-500 text-sm p-3 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+              />
             </div>
 
+            {/* Goal days */}
             <div>
-              <Label className="text-white font-bold text-sm mb-1.5 block">How many days a week are you aiming for?</Label>
+              <Label className="text-white font-bold text-sm mb-1.5 block">
+                How many days a week are you aiming for?
+              </Label>
               <div className="grid grid-cols-7 gap-1.5">
                 {[1, 2, 3, 4, 5, 6, 7].map(d => (
-                  <button key={d} type="button" onClick={() => setFormData(p => ({ ...p, goal_days_per_week: d }))}
-                    className={`aspect-square rounded-xl text-sm font-black transition-all border ${formData.goal_days_per_week === d ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/60 text-white shadow-[0_2px_0_0_#1a3fa8]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}>
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setFormData(p => ({ ...p, goal_days_per_week: d }))}
+                    className={`aspect-square rounded-xl text-sm font-black transition-all border ${
+                      formData.goal_days_per_week === d
+                        ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/60 text-white shadow-[0_2px_0_0_#1a3fa8]'
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                    }`}
+                  >
                     {d}
                   </button>
                 ))}
@@ -589,25 +517,41 @@ export default function MemberSignup() {
             </div>
 
             <div className="flex gap-3 pt-1">
-              <Button type="button" onClick={() => setStep(4)} className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/8 hover:bg-white/15 text-white border border-white/10 transition-all flex items-center justify-center">←</Button>
-              <Button type="button" onClick={handleFinish} disabled={isSubmitting || !formData.name} className="flex-1 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] disabled:opacity-50 transition-all flex items-center justify-center gap-2">
-                {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</> : <>Complete Setup <ArrowRight className="w-4 h-4" /></>}
+              <Button
+                type="button"
+                onClick={() => setStep(3)}
+                className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/8 hover:bg-white/15 text-white border border-white/10 transition-all flex items-center justify-center"
+              >←</Button>
+              <Button
+                type="button"
+                onClick={handleFinish}
+                disabled={isSubmitting || !formData.name}
+                className="flex-1 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              >
+                {isSubmitting
+                  ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</>
+                  : <>Complete Setup <ArrowRight className="w-4 h-4" /></>}
               </Button>
             </div>
           </div>
         )}
 
-        {/* ── STEP 6: FIRST ACTION ── */}
-        {step === 6 && (
+        {/* ── STEP 5: FIRST ACTION ── */}
+        {step === 5 && (
           <div className="space-y-5">
             <div className="text-center">
               <div className="text-4xl mb-3">🎉</div>
-              <h2 className="text-2xl font-black text-white tracking-tight">Welcome, {formData.name || 'Athlete'}!</h2>
+              <h2 className="text-2xl font-black text-white tracking-tight">
+                Welcome, {formData.name || 'Athlete'}!
+              </h2>
               <p className="text-slate-400 text-sm mt-1">
-                {joinedGym ? `You're now part of the ${joinedGym.name} community` : 'Your profile is ready — time to get to work'}
+                {joinedGym
+                  ? `You're now part of the ${joinedGym.name} community`
+                  : 'Your profile is ready — time to get to work'}
               </p>
             </div>
 
+            {/* Primary action */}
             <div className="bg-gradient-to-br from-amber-500/20 to-orange-900/20 border border-amber-500/30 rounded-3xl p-5 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-amber-500/25 rounded-2xl flex items-center justify-center">
@@ -621,12 +565,16 @@ export default function MemberSignup() {
               <p className="text-slate-300 text-sm leading-relaxed">
                 At the gym right now? Check in to officially kick off your journey and let your gym community know you're here. 💪
               </p>
-              <Button type="button" onClick={() => navigate(createPageUrl('Home'))}
-                className="w-full bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-slate-900 font-black rounded-2xl h-13 text-base shadow-[0_3px_0_0_#92400e] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2">
+              <Button
+                type="button"
+                onClick={() => navigate(createPageUrl('Home'))}
+                className="w-full bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-slate-900 font-black rounded-2xl h-13 text-base shadow-[0_3px_0_0_#92400e] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2"
+              >
                 <Zap className="w-5 h-5" /> Check In & Start Workout
               </Button>
             </div>
 
+            {/* Secondary */}
             <div className="space-y-2">
               <p className="text-slate-500 text-xs text-center font-bold uppercase tracking-wider">Or explore first</p>
               <div className="grid grid-cols-2 gap-2">
@@ -636,8 +584,12 @@ export default function MemberSignup() {
                   { icon: <Users className="w-4 h-4" />, label: 'Community Feed', color: 'text-emerald-400' },
                   { icon: <BarChart2 className="w-4 h-4" />, label: 'My Progress', color: 'text-cyan-400' },
                 ].map((a, i) => (
-                  <button key={i} type="button" onClick={() => navigate(createPageUrl('Home'))}
-                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => navigate(createPageUrl('Home'))}
+                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                  >
                     <div className={a.color}>{a.icon}</div>
                     <span className="text-white text-xs font-bold">{a.label}</span>
                   </button>
@@ -645,8 +597,11 @@ export default function MemberSignup() {
               </div>
             </div>
 
-            <Button type="button" onClick={() => navigate(createPageUrl('Home'))}
-              className="w-full bg-white/8 hover:bg-white/15 text-slate-300 font-bold rounded-2xl h-11 border border-white/10 transition-all text-sm">
+            <Button
+              type="button"
+              onClick={() => navigate(createPageUrl('Home'))}
+              className="w-full bg-white/8 hover:bg-white/15 text-slate-300 font-bold rounded-2xl h-11 border border-white/10 transition-all text-sm"
+            >
               Go to Home →
             </Button>
           </div>
@@ -655,8 +610,14 @@ export default function MemberSignup() {
 
       {/* ── JOIN SUCCESS MODAL ── */}
       {showJoinSuccess && joinedGym && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end justify-center p-4" style={{ animation: 'fadeIn 0.2s ease-out' }}>
-          <div className="w-full max-w-md bg-slate-800/98 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl" style={{ animation: 'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)' }}>
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end justify-center p-4"
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+        >
+          <div
+            className="w-full max-w-md bg-slate-800/98 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
+            style={{ animation: 'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)' }}
+          >
             {joinedGym.cover_photo_url ? (
               <div className="relative h-40 overflow-hidden">
                 <img src={joinedGym.cover_photo_url} alt={joinedGym.name} className="w-full h-full object-cover" />
@@ -667,6 +628,7 @@ export default function MemberSignup() {
                 <Dumbbell className="w-12 h-12 text-blue-400/50" />
               </div>
             )}
+
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -677,6 +639,7 @@ export default function MemberSignup() {
                   <p className="text-slate-400 text-sm">Welcome to the community</p>
                 </div>
               </div>
+
               <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
                 <div className="w-11 h-11 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Building2 className="w-5 h-5 text-blue-400" />
@@ -688,8 +651,12 @@ export default function MemberSignup() {
                   </p>
                 </div>
               </div>
-              <Button type="button" onClick={() => { setShowJoinSuccess(false); setStep(4); }}
-                className="w-full bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2">
+
+              <Button
+                type="button"
+                onClick={() => { setShowJoinSuccess(false); setStep(3); }}
+                className="w-full bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-2xl h-12 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px] transition-all flex items-center justify-center gap-2"
+              >
                 Continue Setup <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
