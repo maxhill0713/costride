@@ -5,7 +5,7 @@ import { Shield, Crown, Star, Zap } from 'lucide-react';
 export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) {
   const getTier = () => {
     const totalVisits = checkIns.length;
-    
+
     if (totalVisits >= 100 || streak >= 90) {
       return {
         name: 'OG',
@@ -16,7 +16,7 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
         level: 4
       };
     }
-    
+
     if (totalVisits >= 50 || streak >= 50) {
       return {
         name: 'Veteran',
@@ -27,7 +27,7 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
         level: 3
       };
     }
-    
+
     if (totalVisits >= 20 || streak >= 20) {
       return {
         name: 'Regular',
@@ -38,7 +38,7 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
         level: 2
       };
     }
-    
+
     return {
       name: 'Newcomer',
       color: 'from-gray-400 to-gray-500',
@@ -50,12 +50,12 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
   };
 
   const tier = getTier();
-  
+
   // Don't show the "Newcomer" badge
   if (tier.level === 1) {
     return null;
   }
-  
+
   const Icon = tier.icon;
 
   const sizeClasses = {
@@ -70,17 +70,17 @@ export default function StatusBadge({ checkIns = [], streak = 0, size = 'md' }) 
     lg: 'w-5 h-5'
   };
 
-  return (
-    <Badge className={`${tier.bgColor} ${tier.textColor} border-2 border-current font-bold flex items-center gap-1.5 ${sizeClasses[size]}`}>
-      <Icon className={iconSizes[size]} />
-      {tier.name}
-    </Badge>
-  );
+  return null;
+
+
+
+
+
 }
 
 export function getLevel(checkIns = [], streak = 0) {
   const totalVisits = checkIns.length;
-  
+
   if (totalVisits >= 100 || streak >= 90) return 4;
   if (totalVisits >= 50 || streak >= 50) return 3;
   if (totalVisits >= 20 || streak >= 20) return 2;
