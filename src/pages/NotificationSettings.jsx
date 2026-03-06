@@ -32,14 +32,14 @@ export default function NotificationSettings() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <p className="text-slate-400">Loading...</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
             <div className="flex items-center justify-center w-10 h-10">
@@ -55,36 +55,36 @@ export default function NotificationSettings() {
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl">
               <div className="flex items-center gap-3">
-                {currentUser.notifications_enabled ? (
-                  <Bell className="w-4 h-4 text-slate-400" />
-                ) : (
-                  <BellOff className="w-4 h-4 text-slate-500" />
-                )}
+                {currentUser.notifications_enabled ?
+                <Bell className="w-4 h-4 text-slate-400" /> :
+
+                <BellOff className="w-4 h-4 text-slate-500" />
+                }
                 <Label className="text-sm font-semibold text-slate-100">Push Notifications</Label>
               </div>
               <Switch
                 checked={currentUser.notifications_enabled ?? true}
-                onCheckedChange={(checked) => updateSettingsMutation.mutate({ notifications_enabled: checked })}
-              />
+                onCheckedChange={(checked) => updateSettingsMutation.mutate({ notifications_enabled: checked })} />
+
             </div>
 
             <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl">
               <div className="flex items-center gap-3">
-                {currentUser.email_notifications ? (
-                  <Bell className="w-4 h-4 text-slate-400" />
-                ) : (
-                  <BellOff className="w-4 h-4 text-slate-500" />
-                )}
+                {currentUser.email_notifications ?
+                <Bell className="w-4 h-4 text-slate-400" /> :
+
+                <BellOff className="w-4 h-4 text-slate-500" />
+                }
                 <Label className="text-sm font-semibold text-slate-100">Email Notifications</Label>
               </div>
               <Switch
                 checked={currentUser.email_notifications ?? true}
-                onCheckedChange={(checked) => updateSettingsMutation.mutate({ email_notifications: checked })}
-              />
+                onCheckedChange={(checked) => updateSettingsMutation.mutate({ email_notifications: checked })} />
+
             </div>
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
