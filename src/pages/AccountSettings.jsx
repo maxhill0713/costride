@@ -70,14 +70,14 @@ export default function AccountSettings() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <p className="text-slate-400">Loading...</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
             <div className="flex items-center justify-center w-10 h-10">
@@ -107,8 +107,8 @@ export default function AccountSettings() {
               type="email"
               value={currentUser.email}
               disabled
-              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl cursor-not-allowed"
-            />
+              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl cursor-not-allowed" />
+
             <p className="text-xs text-slate-400 mt-2">To change your email, please contact our support team</p>
           </div>
         </Card>
@@ -133,8 +133,8 @@ export default function AccountSettings() {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter your current password"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl" />
+
             </div>
 
             <div>
@@ -144,8 +144,8 @@ export default function AccountSettings() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl" />
+
             </div>
 
             <div>
@@ -155,26 +155,26 @@ export default function AccountSettings() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-              />
+                className="bg-white/5 border border-white/10 text-slate-100 rounded-xl" />
+
             </div>
 
-            {passwordError && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+            {passwordError &&
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
                 <p className="text-sm text-red-400">{passwordError}</p>
               </div>
-            )}
+            }
 
             <Button
               type="submit"
               disabled={updatePasswordMutation.isPending}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold h-10"
-            >
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold h-10">
+
               {updatePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
             </Button>
           </form>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
