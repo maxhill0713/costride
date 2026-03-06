@@ -31,7 +31,7 @@ export default function Home() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
-  const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
+  const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [animatedNum, setAnimatedNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
 
@@ -236,22 +236,25 @@ export default function Home() {
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  const handleWorkoutLogged = async () => {
+  // Stage 1: streak overlay (3.5s), then stage 2: fullscreen challenges (4s)
+  const handleWorkoutLogged = async (challengesData = []) => {
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     const newStreak = userStreak + 1;
-    setCelebrationStreakNum(userStreak);
     setAnimatedNum(userStreak);
-    if (currentUser?.id) {
-      const userChallenges = await base44.entities.Challenge.filter({
-        participants: { $in: [currentUser.id] },
-        status: 'active'
-      });
-      setCelebrationChallenges(userChallenges.slice(0, 3));
-    }
+    setCelebrationChallenges(challengesData);
+
+    // Stage 1 — streak overlay for 3.5s
     setShowStreakCelebration(true);
     setTimeout(() => setAnimatedNum(newStreak), 900);
-    setTimeout(() => setShowStreakCelebration(false), 5500);
+    setTimeout(() => {
+      setShowStreakCelebration(false);
+      // Stage 2 — fullscreen challenges (only if user has challenges)
+      if (challengesData.length > 0) {
+        setShowChallengesCelebration(true);
+        setTimeout(() => setShowChallengesCelebration(false), 4000);
+      }
+    }, 3500);
   };
 
   const handleStreakVariantSelect = (variant) => {
@@ -281,7 +284,6 @@ export default function Home() {
   const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
   const totalCount = goals.length > 0 ? 2 : 1;
   const isOnTrack = completedCount === totalCount;
-  const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
   const progressPercentage = goals.length > 0 ? Math.round(goalsOnTrack / goals.length * 100) : weeklyCheckIns.length / weeklyTarget * 100;
 
   const getCommunityText = () => {
@@ -304,7 +306,6 @@ export default function Home() {
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
 
-            {/* Streak button */}
             <button
               onClick={() => setShowStreakVariants(true)}
               className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
@@ -492,7 +493,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Streak Celebration Overlay */}
+      {/* Stage 1 — Streak Overlay (3.5s) */}
       <AnimatePresence>
         {showStreakCelebration &&
           <motion.div
@@ -529,31 +530,52 @@ export default function Home() {
                 }}>
                 {animatedNum}
               </motion.div>
-              {celebrationChallenges.length > 0 &&
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2, duration: 0.6 }}
-                  className="w-80 space-y-3 mt-8">
-                  <p className="text-sm text-slate-300 font-semibold text-center">Challenge Progress</p>
-                  {celebrationChallenges.map((challenge, idx) =>
-                    <div key={challenge.id} className="space-y-1.5">
-                      <p className="text-xs text-slate-400 font-medium truncate">{challenge.title}</p>
+            </motion.div>
+          </motion.div>
+        }
+      </AnimatePresence>
+
+      {/* Stage 2 — Fullscreen Challenges Screen (4s) */}
+      <AnimatePresence>
+        {showChallengesCelebration && celebrationChallenges.length > 0 &&
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="w-full max-w-sm space-y-8">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl font-black text-white text-center tracking-tight">
+                Challenge Progress
+              </motion.p>
+              <div className="space-y-6">
+                {celebrationChallenges.map((challenge, idx) =>
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + idx * 0.15 }}
+                    className="space-y-3">
+                    <p className="text-base font-bold text-slate-200 truncate">{challenge.title}</p>
+                    <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-2 bg-slate-700/50 rounded-full overflow-hidden"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.5 + idx * 0.2 }}>
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
-                          initial={{ width: '0%' }}
-                          animate={{ width: '100%' }}
-                          transition={{ delay: 1.7 + idx * 0.2, duration: 1.2, ease: 'easeOut' }} />
-                      </motion.div>
+                        className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
+                        initial={{ width: '0%' }}
+                        animate={{ width: '100%' }}
+                        transition={{ delay: 0.5 + idx * 0.15, duration: 1.4, ease: 'easeOut' }} />
                     </div>
-                  )}
-                </motion.div>
-              }
+                  </motion.div>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         }
