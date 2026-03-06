@@ -390,12 +390,12 @@ export default function Profile() {
         {/* ── BANNER: tall enough to contain avatar + info + tabs ── */}
         <div className="relative w-full overflow-hidden border-b border-slate-700/50">
 
-          {/* Background image / gradient — fills the whole header block */}
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/40 to-slate-900">
+          {/* Background image / gradient — fills the whole header block including tabs */}
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/60 to-slate-950">
             {currentUser.hero_image_url && (
               <>
-                <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-50" />
-                <div className="absolute inset-0 bg-gradient-to-b from-slate-800/40 via-slate-900/60 to-slate-900" />
+                <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-slate-900/50 to-slate-950/80" />
               </>
             )}
           </div>
@@ -519,7 +519,7 @@ export default function Profile() {
           </div>
 
           {/* ── TABS: inside the banner, full width, no gap ── */}
-          <div className="relative z-20 sticky top-0 bg-slate-900/95 backdrop-blur-xl border-b border-white/5">
+          <div className="relative z-20 sticky top-0 border-b border-white/5">
             <TabsList className="w-full grid grid-cols-4 bg-transparent p-2 h-14 gap-1">
               <TabsTrigger value="stats" className={tabTriggerClass}>Insights</TabsTrigger>
               <TabsTrigger value="progress" className={tabTriggerClass}>Split</TabsTrigger>
