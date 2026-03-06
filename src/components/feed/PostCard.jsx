@@ -98,13 +98,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const isNudgePost = post.exercise === 'workout_completion_nudge';
   const isWeightIncreasePost = post.content?.includes('increased their weight');
   const isGymJoinPost = post.gym_join === true;
-  const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
   const hasReacted = useMemo(() => post.reactions && post.reactions[currentUser?.id], [post.reactions, currentUser?.id]);
 
   const getStreakIcon = (variant) => {
-    return variant;
+    return variant; // Return the variant itself to render the proper JSX
   };
 
   const reactMutation = useMutation({
@@ -118,6 +117,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       await base44.entities.Post.update(post.id, { reactions: updatedReactions });
     },
     onMutate: async (isReacting) => {
+      // Optimistically update all post caches immediately
       const updatePost = (old = []) => old.map((p) => {
         if (p.id !== post.id) return p;
         const updatedReactions = { ...p.reactions };
@@ -130,10 +130,9 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       });
 
       const queries = [
-        ['posts'],
-        ['friendPosts', currentUser?.id],
-        ['userPosts', currentUser?.id]
-      ];
+      ['posts'],
+      ['friendPosts', currentUser?.id],
+      ['userPosts', currentUser?.id]];
 
       if (post.gym_id) queries.push(['posts', post.gym_id]);
 
@@ -162,6 +161,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
   const nudgeMutation = useMutation({
     mutationFn: async () => {
+      // Get user's friends
       const friends = await base44.entities.Friend.filter({
         user_id: currentUser.id,
         status: 'accepted'
@@ -171,24 +171,29 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       const dayOfWeek = new Date().getDay();
       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
 
+      // Check each friend
       for (const friend of friends) {
+        // Get friend's user data
         const friendUser = await base44.entities.User.filter({ id: friend.friend_id });
         if (!friendUser.length) continue;
 
         const friendData = friendUser[0];
 
+        // Check if friend has a rest day (no exercises scheduled)
         const trainingDays = friendData.training_days || [];
         const isRestDay = !trainingDays.includes(adjustedDay);
         const hasNoExercises = !friendData.custom_workout_types?.[adjustedDay]?.exercises?.length;
 
-        if (isRestDay || hasNoExercises) continue;
+        if (isRestDay || hasNoExercises) continue; // Skip friends on rest days
 
+        // Check if friend already logged workout today
         const friendWorkouts = await base44.entities.WorkoutLog.filter({
           user_id: friend.friend_id,
           completed_date: todayDate
         });
 
         if (friendWorkouts.length === 0) {
+          // Friend hasn't logged workout - send nudge
           await base44.entities.Post.create({
             member_id: friend.friend_id,
             member_name: friendData.full_name || friendData.username || 'User',
@@ -242,43 +247,39 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
           {/* Avatar */}
           <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
             {post.member_avatar ?
-              <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
-              <span className="text-xs font-bold text-white">
+            <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
+
+            <span className="text-xs font-bold text-white">
                 {post.member_name?.charAt(0)?.toUpperCase()}
               </span>
             }
           </div>
-
+          
           {/* Content */}
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-white text-xs truncate">{post.member_name}</p>
             <p className="text-[11px] text-blue-300 truncate">{post.content}</p>
           </div>
         </motion.div>
-      </Link>
-    );
+      </Link>);
+
   }
 
   return (
-    // FIX 1: Added overflow-x-hidden to prevent horizontal bleed causing lines.
-    // FIX 2: Added min-h-[120px] for text-only posts so the card has real height
-    //        and doesn't collapse, which was causing borders to appear as lines.
-    // FIX 3: Removed conflicting mb-0 on fullWidth — use consistent mb-4 always.
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden overflow-x-hidden relative shadow-2xl shadow-black/20 mb-4 ${
-        hasMedia ? '' : 'min-h-[120px]'
-      } ${
-        fullWidth ? 'w-screen ml-[-50vw] left-[50%] rounded-none' : 'rounded-xl'
-      }`}>
+      className={`bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden relative shadow-2xl shadow-black/20 ${
+      fullWidth ? 'w-screen ml-[-50vw] left-[50%] mb-0 rounded-none' : 'rounded-xl mb-4'}`
+      }>
 
       {/* Header - Profile Picture and Name */}
       <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="absolute top-3 left-3 z-50 cursor-pointer flex items-center gap-2">
         <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all">
           {post.member_avatar ?
-            <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
-            <span className="text-sm font-bold text-white">
+          <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" /> :
+
+          <span className="text-sm font-bold text-white">
               {post.member_name?.charAt(0)?.toUpperCase()}
             </span>
           }
@@ -288,95 +289,98 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
       {/* Delete Menu */}
       {isOwner &&
-        <div className="absolute top-3 right-3 z-20">
+      <div className="absolute top-3 right-3 z-20">
           <div className="relative flex items-center gap-2">
             {post.is_favourite &&
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-            }
+          <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+          }
             <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-slate-300 hover:text-white">
+            onClick={() => setShowMenu(!showMenu)}
+            className="text-slate-300 hover:text-white">
+
               <MoreHorizontal className="w-6 h-6" />
             </button>
             {showMenu &&
-              <>
+          <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                 <div className="absolute right-0 top-full mt-2 bg-slate-800/80 border border-slate-700/40 rounded-lg shadow-lg z-20 backdrop-blur-sm">
                   <button
-                    onClick={() => {
-                      setShowFavouriteConfirm(true);
-                      setShowMenu(false);
-                    }}
-                    disabled={updatePostMutation.isPending}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
+                onClick={() => {
+                  setShowFavouriteConfirm(true);
+                  setShowMenu(false);
+                }}
+                disabled={updatePostMutation.isPending}
+                className="flex items-center gap-2 w-full px-4 py-2 text-amber-400 hover:bg-amber-500/20 text-sm font-medium disabled:opacity-50">
+
                     <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
                     {post.is_favourite ? 'Unfavourite' : 'Favourite'}
                   </button>
                   <button
-                    onClick={() => {
-                      setShowDeleteConfirm(true);
-                      setShowMenu(false);
-                    }}
-                    disabled={deleteMutation.isPending}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
+                onClick={() => {
+                  setShowDeleteConfirm(true);
+                  setShowMenu(false);
+                }}
+                disabled={deleteMutation.isPending}
+                className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-red-500/20 text-sm font-medium disabled:opacity-50">
+
                     <Trash2 className="w-4 h-4" />
                     Delete
                   </button>
                 </div>
               </>
-            }
+          }
           </div>
         </div>
       }
 
       {/* Video or Image - Full Size */}
-      {hasMedia &&
-        // FIX 4: Added isolate to create a new stacking context, preventing
-        //        the negative-margin bleed from punching through card boundaries.
-        <div
-          className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%] isolate"
-          onClick={() => showFullContent && setShowFullContent(false)}>
+      {(post.video_url || post.image_url) &&
+      <div className="relative w-screen aspect-square bg-slate-800 ml-[-50vw] left-[50%]" onClick={() => showFullContent && setShowFullContent(false)}>
           {post.video_url ?
-            <video
-              src={post.video_url}
-              className="w-full h-full object-cover"
-              controls
-              playsInline
-              preload="metadata" /> :
-            <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />
-          }
+        <video
+          src={post.video_url}
+          className="w-full h-full object-cover"
+          controls
+          playsInline
+          preload="metadata" /> :
+
+
+        <img src={post.image_url} alt="Post" className="w-full h-full object-cover cursor-pointer" />
+        }
         </div>
       }
 
       {/* Caption Section */}
-      {/* FIX 5: Changed absolute positioning to relative for text-only posts
-          so the card grows to fit its content instead of collapsing to zero height. */}
-      <div className={`${hasMedia ? 'absolute left-0 right-0 bottom-0' : 'relative mt-14'} px-4 z-10 transition-all duration-300 ${
-        showFullContent ? 'py-4' : 'py-2.5'
-      }`}>
+      <div className={`absolute left-0 right-0 px-4 z-10 transition-all duration-300 ${
+      showFullContent ?
+      'bottom-0 py-4' :
+      'bottom-0 py-2.5'}`
+      }>
         <div ref={contentRef} className="flex-1" style={showFullContent ? { maxWidth: '360px' } : {}}>
           <p className={`leading-relaxed text-slate-200 ${showFullContent ? 'text-sm whitespace-normal break-words' : 'text-sm leading-snug'}`}>
             {post.content && post.content.length > 30 && !showFullContent ?
-              <>
+            <>
                 {post.content.substring(0, 30)}...{' '}
                 <button
-                  onClick={() => setShowFullContent(true)}
-                  className="text-blue-400 hover:text-blue-300 font-semibold">
+                onClick={() => setShowFullContent(true)}
+                className="text-blue-400 hover:text-blue-300 font-semibold">
+
                   more
                 </button>
               </> :
-              post.content
+
+            post.content
             }
           </p>
           {post.weight &&
-            <span className="block mt-1 text-blue-400 font-semibold">
+          <span className="block mt-1 text-blue-400 font-semibold">
               💪 {post.weight} lbs
             </span>
           }
         </div>
 
-        {/* Reactions in Bottom Right */}
-        {Object.keys(post.reactions || {}).length > 0 && (() => {
+              {/* Reactions in Bottom Right */}
+              {Object.keys(post.reactions || {}).length > 0 && (() => {
           const reactionEntries = Object.entries(post.reactions || {});
           const visibleReactions = reactionEntries.slice(0, 3);
           const overflow = reactionEntries.length - visibleReactions.length;
@@ -384,68 +388,75 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             <button
               onClick={() => setShowReactionsModal(true)}
               className="absolute bottom-3 right-4 flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
-              <div className="flex items-center" style={{ gap: 0 }}>
-                {visibleReactions.map(([userId, variant], i) =>
-                  <div
-                    key={userId}
-                    className="relative w-6 h-6"
-                    style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
-                    {variant === 'sunglasses' ?
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div> :
-                      <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />
-                    }
-                  </div>
+
+                    <div className="flex items-center" style={{ gap: 0 }}>
+                      {visibleReactions.map(([userId, variant], i) =>
+                <div
+                  key={userId}
+                  className="relative w-6 h-6"
+                  style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: visibleReactions.length - i }}>
+
+                         {variant === 'sunglasses' ?
+                  <div className="relative w-full h-full flex items-center justify-center">
+                             <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                             <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                               <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                               <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                               <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                             </svg>
+                           </div> :
+
+                  <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />
+                  }
+                       </div>
                 )}
-                {overflow > 0 &&
-                  <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}>
-                    <Plus className="w-3 h-3 text-slate-300" />
-                    <span className="text-xs font-bold text-slate-300">{overflow}</span>
-                  </div>
+                      {overflow > 0 &&
+                <div className="flex items-center gap-0.5 ml-1" style={{ zIndex: 0 }}>
+                          <Plus className="w-3 h-3 text-slate-300" />
+                          <span className="text-xs font-bold text-slate-300">{overflow}</span>
+                        </div>
                 }
-              </div>
-            </button>
-          );
+                    </div>
+                  </button>);
+
         })()}
 
-        {isNudgePost && isOwner &&
-          <button
-            onClick={() => nudgeMutation.mutate()}
-            disabled={nudgeMutation.isPending}
-            className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
-            {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
-          </button>
+              {isNudgePost && isOwner &&
+        <button
+          onClick={() => nudgeMutation.mutate()}
+          disabled={nudgeMutation.isPending}
+          className="mt-2 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+
+                  {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
+                </button>
         }
 
-        {/* Reaction Button - Streak Icon */}
-        {!isOwnProfile &&
-          <motion.button
-            onClick={() => reactMutation.mutate(!hasReacted)}
-            disabled={reactMutation.isPending}
-            style={showFullContent ? { bottom: `${contentHeight + 16}px` } : { bottom: '2.1rem' }}
-            className="absolute left-4 transition-all flex items-center gap-1"
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.9 }}>
-            {userStreakVariant === 'sunglasses' ?
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                </svg>
-              </div> :
-              <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-            }
-          </motion.button>
+              {/* Reaction Button - Streak Icon */}
+              {!isOwnProfile &&
+        <motion.button
+          onClick={() => reactMutation.mutate(!hasReacted)}
+          disabled={reactMutation.isPending}
+          style={showFullContent ? { bottom: `${contentHeight + 16}px` } : { bottom: '2.1rem' }}
+          className="absolute left-4 transition-all flex items-center gap-1"
+          whileHover={{ scale: 1.15 }}
+          whileTap={{ scale: 0.9 }}>
+
+                {userStreakVariant === 'sunglasses' ?
+          <div className="relative w-12 h-12 flex items-center justify-center">
+                    <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                    </svg>
+                  </div> :
+
+          <img src={STREAK_ICON_URL} alt="streak" className={`w-12 h-12 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+          }
+              </motion.button>
         }
-      </div>
+
+              </div>
 
       {/* Modals */}
       <CommentModal
@@ -459,88 +470,93 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         onClose={() => setShowShare(false)}
         post={post} />
 
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
-              Are you sure you want to delete your post? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-center">
-            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction
+       <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
+         <AlertDialogHeader>
+           <AlertDialogTitle className="text-white">Delete Post?</AlertDialogTitle>
+           <AlertDialogDescription className="text-slate-300">
+             Are you sure you want to delete your post? This action cannot be undone.
+           </AlertDialogDescription>
+         </AlertDialogHeader>
+         <div className="flex gap-3 justify-center">
+           <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
+           <AlertDialogAction
               onClick={() => {
                 deleteMutation.mutate();
                 setShowDeleteConfirm(false);
               }}
               disabled={deleteMutation.isPending}
               className="bg-red-600/80 hover:bg-red-700/80 border border-red-500/30 text-white disabled:opacity-50">
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
+
+             {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+           </AlertDialogAction>
+         </div>
+       </AlertDialogContent>
       </AlertDialog>
 
       {/* Favourite Confirmation Dialog */}
       <AlertDialog open={showFavouriteConfirm} onOpenChange={setShowFavouriteConfirm}>
-        <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
-              {post.is_favourite ?
-                'This post will no longer appear as your favourite on your profile.' :
-                'This post will appear as your favourite on your profile for others to see.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-center">
-            <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
-            <AlertDialogAction
+       <AlertDialogContent className="bg-gradient-to-br from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40">
+         <AlertDialogHeader>
+           <AlertDialogTitle className="text-white">{post.is_favourite ? 'Remove from Favourites?' : 'Add to Favourites?'}</AlertDialogTitle>
+           <AlertDialogDescription className="text-slate-300">
+             {post.is_favourite ?
+              'This post will no longer appear as your favourite on your profile.' :
+              'This post will appear as your favourite on your profile for others to see.'}
+           </AlertDialogDescription>
+         </AlertDialogHeader>
+         <div className="flex gap-3 justify-center">
+           <AlertDialogCancel className="bg-slate-800/60 border border-slate-600/40 text-slate-200 hover:bg-slate-700/60">Cancel</AlertDialogCancel>
+           <AlertDialogAction
               onClick={() => {
                 updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } });
                 setShowFavouriteConfirm(false);
               }}
               disabled={updatePostMutation.isPending}
               className="bg-amber-600/80 hover:bg-amber-700/80 border border-amber-500/30 text-white disabled:opacity-50">
-              {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
 
-      {/* Reactions Modal */}
-      <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
-        <DialogContent className="max-w-lg fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold leading-none tracking-tight text-white -mt-16">Reactions</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2 overflow-y-auto max-h-80">
-            {reactedUsers.map((user) => {
+             {updatePostMutation.isPending ? 'Loading...' : post.is_favourite ? 'Remove' : 'Add to Favourites'}
+           </AlertDialogAction>
+            </div>
+           </AlertDialogContent>
+           </AlertDialog>
+
+           {/* Reactions Modal */}
+           <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
+           <DialogContent className="max-w-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
+             <DialogHeader>
+               <DialogTitle className="text-lg font-semibold leading-none tracking-tight text-white -mt-16\n">Reactions</DialogTitle>
+             </DialogHeader>
+             <div className="space-y-2 overflow-y-auto max-h-80">
+               {reactedUsers.map((user) => {
               const variant = post.reactions[user.id];
               return (
                 <div key={user.id} className="flex items-center gap-10 p-4 rounded-lg hover:bg-slate-800/50 transition-colors -mt-3">
-                  <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                    {variant === 'sunglasses' ?
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div> :
-                      <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
-                    }
-                  </div>
-                  <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
-                </div>
-              );
-            })}
-          </div>
-        </DialogContent>
-      </Dialog>
+                     <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                       {variant === 'sunglasses' ?
+                    <div className="relative w-full h-full flex items-center justify-center">
+                           <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                             <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                             <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                             <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                           </svg>
+                         </div> :
 
-    </motion.div>
-  );
+                    <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
+                    }
+                     </div>
+                     <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
+                   </div>);
+
+            })}
+             </div>
+           </DialogContent>
+           </Dialog>
+
+
+           </motion.div>);
+
 }
