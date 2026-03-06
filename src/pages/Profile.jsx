@@ -411,7 +411,7 @@ export default function Profile() {
             </div>
 
             {/* Avatar + name row */}
-            <div className="flex items-start gap-6 mb-1">
+            <div className="flex items-start gap-6 mb-5">
               <button
                 onClick={() => setShowProfilePicture(true)}
                 className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95 flex-shrink-0">
@@ -470,7 +470,7 @@ export default function Profile() {
 
             {/* Gym location / editing */}
             {isEditing ? (
-              <div className="space-y-3 mb-2">
+              <div className="space-y-3 mb-1">
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
                   <Input
@@ -497,7 +497,7 @@ export default function Profile() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-1 mb-2">
+              <div className="space-y-1 mb-1">
                 {currentUser.gym_location && (
                   <div className="flex items-center gap-2 text-slate-400">
                     <MapPin className="w-4 h-4" />
