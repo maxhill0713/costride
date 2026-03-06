@@ -20,8 +20,8 @@ export default function ProfileSettings() {
   const [localBio, setLocalBio] = useState('');
 
   const handleImageUpload = async (file, type) => {
-    if (type === 'avatar') setUploadingAvatar(true);
-    else setUploadingBanner(true);
+    if (type === 'avatar') setUploadingAvatar(true);else
+    setUploadingBanner(true);
 
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -33,8 +33,8 @@ export default function ProfileSettings() {
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
-      if (type === 'avatar') setUploadingAvatar(false);
-      else setUploadingBanner(false);
+      if (type === 'avatar') setUploadingAvatar(false);else
+      setUploadingBanner(false);
     }
   };
 
@@ -66,14 +66,14 @@ export default function ProfileSettings() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <p className="text-slate-400">Loading...</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <Link to={createPageUrl('Settings')}>
             <div className="flex items-center justify-center w-10 h-10">
@@ -91,27 +91,27 @@ export default function ProfileSettings() {
             <Label className="text-sm font-bold text-slate-100 block mb-3">Profile Picture</Label>
             <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden ring-2 ring-slate-600/50">
-                {currentUser.avatar_url ? (
-                  <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-semibold text-white">
+                {currentUser.avatar_url ?
+                <img src={currentUser.avatar_url} alt={currentUser.full_name} className="w-full h-full object-cover" /> :
+
+                <span className="text-2xl font-semibold text-white">
                     {currentUser.full_name?.charAt(0)?.toUpperCase()}
                   </span>
-                )}
+                }
               </div>
               <label className="cursor-pointer">
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'avatar')}
-                />
+                  onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'avatar')} />
+
                 <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2 cursor-pointer">
-                  {uploadingAvatar ? (
-                    <span>Uploading...</span>
-                  ) : (
-                    <Camera className="w-4 h-4" />
-                  )}
+                  {uploadingAvatar ?
+                  <span>Uploading...</span> :
+
+                  <Camera className="w-4 h-4" />
+                  }
                 </div>
               </label>
             </div>
@@ -123,24 +123,24 @@ export default function ProfileSettings() {
           <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
             <Label className="text-sm font-bold text-slate-100 block mb-3">Banner Image</Label>
             <div className="flex items-center gap-3">
-              {currentUser.hero_image_url && (
-                <div className="rounded-xl overflow-hidden h-16 w-24 flex-shrink-0">
+              {currentUser.hero_image_url &&
+              <div className="rounded-xl overflow-hidden h-16 w-24 flex-shrink-0">
                   <img src={currentUser.hero_image_url} alt="Banner" className="w-full h-full object-cover" />
                 </div>
-              )}
+              }
               <label className="cursor-pointer">
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'banner')}
-                />
+                  onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'banner')} />
+
                 <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2 cursor-pointer">
-                  {uploadingBanner ? (
-                    <span>Uploading...</span>
-                  ) : (
-                    <Camera className="w-4 h-4" />
-                  )}
+                  {uploadingBanner ?
+                  <span>Uploading...</span> :
+
+                  <Camera className="w-4 h-4" />
+                  }
                 </div>
               </label>
             </div>
@@ -163,8 +163,8 @@ export default function ProfileSettings() {
                 }, 800));
               }}
               placeholder="Your full name"
-              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl"
-            />
+              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl" />
+
           </div>
         </Card>
 
@@ -184,11 +184,11 @@ export default function ProfileSettings() {
               }}
               placeholder="Tell us about yourself..."
               rows={3}
-              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none"
-            />
+              className="bg-white/5 border border-white/10 text-slate-100 rounded-xl resize-none" />
+
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
