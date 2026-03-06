@@ -627,7 +627,7 @@ export default function GymCommunity() {
 
   if (!gymLoading && !gym) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <p className="text-gray-600 mb-4">Gym not found</p>
           <Link to={createPageUrl('Gyms')}><Button>Back to Gyms</Button></Link>
