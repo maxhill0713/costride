@@ -660,7 +660,7 @@ export default function GymCommunity() {
                 <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
               }
               {/* Soft blur fade at the bottom for contrast with buttons */}
-              <div className="absolute bottom-0 left-0 right-0 h-24 backdrop-blur-[2px] bg-slate-900/60 [mask-image:linear-gradient(to_top,black_50%,transparent)]" />
+              <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
             </div>
 
             {/* Gym name area — sets top portion height */}
