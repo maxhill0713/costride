@@ -533,7 +533,7 @@ export default function GymOwnerDashboard() {
 
   if (myGyms.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md bg-slate-800/60 border border-slate-600/40">
           <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-400" />
           <h2 className="text-2xl font-bold text-white mb-2">No Gyms Registered</h2>
