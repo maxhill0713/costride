@@ -184,7 +184,7 @@ export default function Home() {
 
   if (userLoading || !currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-940 via-blue-940 to-slate-940 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-930 via-blue-930 to-slate-930 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-300">Loading...</p>
