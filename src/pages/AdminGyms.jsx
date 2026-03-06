@@ -34,7 +34,7 @@ export default function AdminGyms() {
   // Only admins can access this page
   if (currentUser?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-6">
         <Card className="bg-slate-800/60 border border-red-500/40 p-8 text-center max-w-md">
           <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
