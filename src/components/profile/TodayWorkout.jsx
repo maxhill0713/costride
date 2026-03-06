@@ -254,6 +254,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         }
       }
 
+      // Create workout completion post with nudge button
+      await base44.entities.Post.create({
+        member_id: currentUser.id,
+        member_name: currentUser.full_name || currentUser.username || 'User',
+        member_avatar: currentUser.avatar_url || '',
+        content: 'Well done, workout finished! Now its time to get your friends involved!',
+        likes: 0,
+        comments: [],
+        reactions: {},
+        exercise: 'workout_completion_nudge' // Special flag for nudge posts
+      });
+
       // Increment user's streak
       const newStreak = previousStreak + 1;
       await base44.auth.updateMe({ current_streak: newStreak });
