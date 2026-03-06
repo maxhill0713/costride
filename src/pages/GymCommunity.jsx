@@ -659,6 +659,8 @@ export default function GymCommunity() {
                   fetchPriority="high" /> :
                 <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
               }
+              {/* Soft blur fade at the bottom for contrast with buttons */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black_40%,transparent)]" />
             </div>
 
             {/* Gym name area — sets top portion height */}
