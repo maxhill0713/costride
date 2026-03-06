@@ -662,7 +662,7 @@ export default function GymCommunity() {
             </div>
 
             {/* Gym name area — sets top portion height */}
-            <div className="relative z-10 h-[119px]">
+            <div className="relative z-10 h-[113px]">
 
               {/* Header Controls — top right */}
               <div className="absolute top-3 right-4 flex gap-2 z-10">
