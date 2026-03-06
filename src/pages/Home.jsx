@@ -298,7 +298,7 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-1000 via-blue-1000 to-slate-1000">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-975 to-slate-950">
 
         {/* Header */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
