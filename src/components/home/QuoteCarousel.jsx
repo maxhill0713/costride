@@ -42,8 +42,8 @@ export default function QuoteCarousel() {
     exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
-  // 5% shorter again: 213px → ~202px
-  const collapsedHeight = '202px';
+  // 202px → 10% smaller = ~182px
+  const collapsedHeight = '182px';
 
   return (
     <motion.div
@@ -56,7 +56,7 @@ export default function QuoteCarousel() {
         display: 'flex',
         flexDirection: 'column',
       }}
-      animate={{ minHeight: expanded ? '340px' : collapsedHeight }}
+      animate={{ minHeight: expanded ? '290px' : collapsedHeight }}
       transition={{ duration: 0.3 }}>
 
       {/* Decorative gradient accent */}
@@ -79,7 +79,7 @@ export default function QuoteCarousel() {
       </div>
 
       {/* Swipeable Quote — flex-1 so it fills remaining space */}
-      <div className="flex-1 relative overflow-hidden px-6 z-10 pb-8" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="flex-1 relative overflow-hidden px-6 z-10 pb-4" style={{ display: 'flex', flexDirection: 'column' }}>
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -100,13 +100,13 @@ export default function QuoteCarousel() {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'grab',
-              paddingTop: 14,
+              paddingTop: 8,
             }}>
 
             <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
               "{quotes[current].text}"
             </p>
-            <p className="mt-4 text-slate-300 text-sm font-medium tracking-widest opacity-90">
+            <p className="mt-2 text-slate-300 text-sm font-medium tracking-widest opacity-90">
               — {quotes[current].author}
             </p>
 
