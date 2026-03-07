@@ -266,6 +266,7 @@ export default function Home() {
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
+  const [activeCircleDay, setActiveCircleDay] = useState(null); // day whose popup is open
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -274,6 +275,16 @@ export default function Home() {
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
+
+  // Dismiss circle popup when tapping outside any circle button
+  useEffect(() => {
+    if (activeCircleDay === null) return;
+    const dismiss = (e) => {
+      if (!e.target.closest('[data-circle-btn]')) setActiveCircleDay(null);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [activeCircleDay]);
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -746,67 +757,81 @@ export default function Home() {
             if (trainingDays.length === 0) return null;
 
             const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-            const loggedDays = new Set(
-              weeklyWorkoutLogs.map((l) => {
-                const d = new Date(l.completed_date).getDay();
-                return d === 0 ? 7 : d;
-              })
-            );
+
+            // Build a map of day number (1-7) → workout log for popup titles
+            const logsByDay = {};
+            weeklyWorkoutLogs.forEach((l) => {
+              const d = new Date(l.completed_date).getDay();
+              const dayNum = d === 0 ? 7 : d;
+              if (!logsByDay[dayNum]) logsByDay[dayNum] = l;
+            });
+
+            const loggedDays = new Set(Object.keys(logsByDay).map(Number));
 
             const allDays = [1, 2, 3, 4, 5, 6, 7];
+            const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88 }}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88 }}>
                 {allDays.map((day, i) => {
-                  const done      = loggedDays.has(day);
-                  const bounce    = justLoggedDay === day;
+                  const done          = loggedDays.has(day);
+                  const bounce        = justLoggedDay === day;
                   const isTodayCircle = day === todayDay;
-                  const isRestDay = !trainingDays.includes(day);
-                  const size      = isTodayCircle ? 46 : 37;
+                  const isRestDay     = !trainingDays.includes(day);
+                  const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
+                  const workoutLog    = logsByDay[day];
 
-                  // Colour logic — rest days always stay green (done or not), just vary opacity/brightness
-                  // Gym days: blue when done, dark when not
+                  // ── Background ──
                   const getBg = () => {
                     if (isRestDay) {
                       return done
                         ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)'
-                        : 'linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)';
+                        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                     }
                     if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
                     if (isTodayCircle) return 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)';
-                    return 'linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)';
+                    return 'linear-gradient(to bottom, #2d3748 0%, #1e293b 60%, #0f172a 100%)';
                   };
 
+                  // ── Border ──
                   const getBorder = () => {
                     if (isRestDay) {
                       return done
                         ? '1px solid rgba(74,222,128,0.5)'
-                        : '1px solid rgba(51,65,85,0.8)';
+                        : '1px solid rgba(71,85,105,0.7)';
                     }
                     if (done) return '1px solid rgba(147,197,253,0.5)';
                     if (isTodayCircle) return '1px solid rgba(100,116,139,0.7)';
-                    return '1px solid rgba(51,65,85,0.8)';
+                    return '1px solid rgba(71,85,105,0.5)';
                   };
 
+                  // ── Box shadow — full 3D on ALL circles ──
                   const getBoxShadow = () => {
-                    if (isRestDay) {
-                      return done
-                        ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)'
-                        : '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
-                    }
-                    if (done) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
-                    if (isTodayCircle) return '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
-                    return '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                    if (isRestDay && done)
+                      return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
+                    if (done)
+                      return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
+                    if (isTodayCircle)
+                      return '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
+                    // All undone/future (gym or rest) — full 3D
+                    return '0 4px 0 0 #060d1a, 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
                   };
 
                   const getAnimation = () => {
                     if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards';
-                    if (isRestDay) return 'none';
-                    if (done) return 'none';
+                    if (isRestDay || done) return 'none';
                     return 'dayWiggle 2.4s ease-in-out infinite';
+                  };
+
+                  // ── Popup label ──
+                  const getPopupLabel = () => {
+                    if (isRestDay) return 'Rest Day';
+                    if (done && workoutLog) return workoutLog.workout_type || workoutLog.title || 'Workout';
+                    if (done) return 'Workout';
+                    return DAY_LABELS[i];
                   };
 
                   return (
@@ -822,7 +847,8 @@ export default function Home() {
                         flexShrink: 0,
                         marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0),
                       }}>
-                      {/* Pulsing grey ring behind today's circle */}
+
+                      {/* Pulsing ring behind today */}
                       {isTodayCircle && (
                         <div style={{
                           position: 'absolute',
@@ -835,7 +861,11 @@ export default function Home() {
                           pointerEvents: 'none',
                         }} />
                       )}
-                      <div
+
+                      {/* Circle — tappable button */}
+                      <button
+                        data-circle-btn="true"
+                        onClick={() => setActiveCircleDay(prev => prev === day ? null : day)}
                         style={{
                           width: size,
                           height: size,
@@ -846,18 +876,38 @@ export default function Home() {
                           background: getBg(),
                           border: getBorder(),
                           boxShadow: getBoxShadow(),
-                          transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease',
+                          transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.1s ease',
                           animation: getAnimation(),
                           animationDelay: bounce ? '0s' : `${i * 0.18}s`,
                           willChange: 'transform',
-                        }}>
+                          cursor: 'pointer',
+                          padding: 0,
+                          outline: 'none',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
+                        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'}
+                        onMouseUp={e => e.currentTarget.style.transform = ''}
+                        onMouseLeave={e => e.currentTarget.style.transform = ''}
+                        onTouchStart={e => e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'}
+                        onTouchEnd={e => e.currentTarget.style.transform = ''}
+                      >
                         {isRestDay
-                          ? <span style={{
-                              fontSize: 14,
-                              lineHeight: 1,
-                              filter: 'brightness(1.6)',
-                              opacity: done ? 0.85 : 0.5,
-                            }}>🌿</span>
+                          ? done
+                            // Completed rest day — full colour leaf emoji
+                            ? <span style={{ fontSize: isTodayCircle ? 18 : 14, lineHeight: 1, filter: 'brightness(1.5)' }}>🌿</span>
+                            // Future / today rest day — subtle grey SVG leaf outline
+                            : <svg
+                                width={isTodayCircle ? 20 : 16}
+                                height={isTodayCircle ? 20 : 16}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="rgba(148,163,184,0.55)"
+                                strokeWidth="1.6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round">
+                                <path d="M12 2C6 2 3 7 3 12c0 4 2.5 7 6 8.5V22h6v-1.5C19 19 21 16 21 12c0-5-3-10-9-10z" />
+                                <line x1="12" y1="12" x2="12" y2="22" />
+                              </svg>
                           : done
                             ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
                                 <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -871,7 +921,56 @@ export default function Home() {
                                 boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
                               }} />
                         }
-                      </div>
+                      </button>
+
+                      {/* Duolingo-style popup tooltip */}
+                      <AnimatePresence>
+                        {activeCircleDay === day && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 6, scale: 0.88 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 6, scale: 0.88 }}
+                            transition={{ duration: 0.18, ease: 'easeOut' }}
+                            style={{
+                              position: 'absolute',
+                              bottom: size + 14,
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              zIndex: 200,
+                              whiteSpace: 'nowrap',
+                              pointerEvents: 'none',
+                            }}>
+                            {/* Bubble */}
+                            <div style={{
+                              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+                              border: '1px solid rgba(148,163,184,0.2)',
+                              borderRadius: 10,
+                              padding: '6px 12px',
+                              boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+                            }}>
+                              <span style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: isRestDay ? '#86efac' : done ? '#93c5fd' : '#94a3b8',
+                                letterSpacing: '0.01em',
+                              }}>
+                                {getPopupLabel()}
+                              </span>
+                            </div>
+                            {/* Arrow pointing down */}
+                            <div style={{
+                              width: 0,
+                              height: 0,
+                              borderLeft: '6px solid transparent',
+                              borderRight: '6px solid transparent',
+                              borderTop: '6px solid #1e293b',
+                              margin: '0 auto',
+                              filter: 'drop-shadow(0 1px 0 rgba(148,163,184,0.15))',
+                            }} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
                     </div>
                   );
                 })}
