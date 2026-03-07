@@ -184,10 +184,7 @@ export default function Home() {
 
   if (userLoading || !currentUser) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: 'linear-gradient(135deg, #060b1e 0%, #080e24 15%, #0b1430 28%, #0f1c48 38%, #162d7a 44%, #1a3fa8 50%, #162d7a 56%, #0f1c48 62%, #0b1430 72%, #080e24 85%, #060b1e 100%)' }}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-300">Loading...</p>
@@ -301,10 +298,7 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      <div
-        className="min-h-screen"
-        style={{ background: 'linear-gradient(135deg, #060b1e 0%, #080e24 15%, #0b1430 28%, #0f1c48 38%, #162d7a 44%, #1a3fa8 50%, #162d7a 56%, #0f1c48 62%, #0b1430 72%, #080e24 85%, #060b1e 100%)' }}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
 
         {/* Header */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
