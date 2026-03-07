@@ -186,7 +186,7 @@ export default function Home() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: 'linear-gradient(135deg, #040608 0%, #040608 30%, #1a3fa8 50%, #040608 70%, #040608 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #080e24 0%, #0c1540 30%, #1a3fa8 50%, #0c1540 70%, #080e24 100%)' }}
       >
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -303,7 +303,7 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div
         className="min-h-screen"
-        style={{ background: 'linear-gradient(135deg, #040608 0%, #040608 30%, #1a3fa8 50%, #040608 70%, #040608 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #080e24 0%, #0c1540 30%, #1a3fa8 50%, #0c1540 70%, #080e24 100%)' }}
       >
 
         {/* Header */}
