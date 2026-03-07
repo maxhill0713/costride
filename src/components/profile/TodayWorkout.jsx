@@ -436,15 +436,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
               {/* Rest Timer & Tools */}
               <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
-                <div className="flex-1 flex items-center gap-3">
+                <div className="flex-1 flex items-center gap-2">
                   <div className="relative flex-1">
                     <button
                       onClick={() => setShowTimerOptions(!showTimerOptions)}
-                      className="relative w-full flex flex-col items-center gap-1 px-5 py-2 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all">
-                      <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-blue-400" />
-                        <span className="text-blue-300 font-black text-2xl tabular-nums">
+                      className="relative w-full flex items-center justify-between gap-2 px-3 rounded-2xl bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-indigo-500/20 shadow-[0_3px_0_0_rgba(30,27,75,0.6),0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.07)] hover:border-indigo-500/40 transition-all active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu"
+                      style={{ height: '52px' }}>
+                      <span className="text-[9px] font-bold text-indigo-300/60 uppercase tracking-widest">Rest</span>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                        <span className="text-white font-black text-lg tabular-nums">
                           {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
                         </span>
                       </div>
@@ -452,7 +453,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     {showTimerOptions && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                        <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/50 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
+                        <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
                           <button onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(Math.max(10, v - 10)); }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">−</button>
                           <button onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(v + 10); }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">+</button>
                         </div>
@@ -464,7 +465,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       if (!isTimerActive) { const time = parseInt(restTimer) || 90; setRestTimer(time); setInitialRestTime(time); }
                       setIsTimerActive(!isTimerActive);
                     }}
-                    className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                    className="text-sm font-bold px-5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu flex-shrink-0"
+                    style={{ height: '52px' }}>
                     {isTimerActive ? 'Stop' : 'Go'}
                   </button>
                 </div>
