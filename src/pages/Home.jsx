@@ -400,12 +400,6 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
 
-  const memberGym = memberGymData || null;
-  const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
-  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
-  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
-  const friendIds = friendIdList;
-
   // Run animation whenever streak celebration mounts
   useEffect(() => {
     if (!showStreakCelebration) return;
@@ -428,6 +422,12 @@ export default function Home() {
       </div>
     );
   }
+
+  const memberGym = memberGymData || null;
+  const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
+  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
+  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
+  const friendIds = friendIdList;
 
   const friendPosts = allPosts.filter((post) =>
     friendIds.includes(post.member_id) &&
@@ -471,7 +471,6 @@ export default function Home() {
 
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
-
 
   // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
   const handleWorkoutLogged = async (challengesData = []) => {
