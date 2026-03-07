@@ -251,6 +251,16 @@ export default function Progress() {
 
   const navCards = [
     {
+      id: 'split',
+      icon: Dumbbell,
+      label: 'Split',
+      sub: currentUser?.workout_split ? 'View your split progress' : 'No split set up yet',
+      iconBg: 'from-indigo-500 to-purple-500',
+      iconShadow: 'shadow-[0_3px_0_0_#3730a3,0_8px_20px_rgba(79,70,229,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
+      hoverBorder: 'hover:border-indigo-500/40',
+      hoverGlow: 'from-indigo-500/10 to-purple-500/10',
+    },
+    {
       id: 'goals',
       icon: Target,
       label: 'Goals',
