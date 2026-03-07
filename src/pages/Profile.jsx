@@ -3,17 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, Dumbbell, MapPin, X, Plus, Building2, Camera, BarChart3, Image as ImageIcon, Video, Star } from 'lucide-react';
+import { Settings, Dumbbell, MapPin, X, Plus, Building2, Camera, Image as ImageIcon, Video, Star } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BadgesModal from '../components/profile/BadgesModal';
 import StatusBadge from '../components/profile/StatusBadge';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 import PostCard from '../components/feed/PostCard';
-import ExerciseInsights from '../components/profile/ExerciseInsights';
 
 export default function Profile() {
   const [showSplitModal, setShowSplitModal] = useState(false);
@@ -21,7 +19,6 @@ export default function Profile() {
   const [showBadgesModal, setShowBadgesModal] = useState(false);
   const [showEditHero, setShowEditHero] = useState(false);
   const [showEditAvatar, setShowEditAvatar] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts');
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState('');
@@ -86,15 +83,6 @@ export default function Profile() {
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friendship.filter({ user_id: currentUser.id, status: 'accepted' }),
-    enabled: !!currentUser,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-    placeholderData: (prev) => prev
-  });
-
-  const { data: workoutLogs = [] } = useQuery({
-    queryKey: ['workoutLogs', currentUser?.id],
-    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
@@ -175,105 +163,97 @@ export default function Profile() {
     { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
   ];
 
-  // Both action buttons share identical styling
   const actionBtn = "bg-slate-800/70 border border-slate-600/50 text-slate-200 font-bold rounded-full px-4 py-2 flex items-center gap-1.5 justify-center shadow-[0_3px_0_0_#0f172a,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu flex-1";
-  const tabTriggerClass = "flex-1 py-3 text-slate-500 border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white transition-all duration-150 rounded-none bg-transparent";
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
 
-      {/* ── TOP BAR ── */}
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-5 flex items-center justify-between">
-        <h1 className="text-xl font-black text-white tracking-tight">{displayName}</h1>
+      {/* ── TOP BAR: username left, settings right — flush to top ── */}
+      <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
+        <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
         <Link
           to={createPageUrl('Settings')}
           className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95"
         >
-          <Settings className="w-5 h-5 text-slate-300" />
+          <Settings className="w-4.5 h-4.5 text-slate-300" />
         </Link>
       </div>
 
-      {/* ── HERO ── */}
-      <div className="max-w-4xl mx-auto px-4 space-y-4 pb-5">
+      {/* ── HERO — tight to top bar ── */}
+      <div className="max-w-4xl mx-auto px-4 space-y-3 pb-4">
 
-        {/* Avatar + stats */}
-        <div className="flex items-center gap-7">
+        {/* Avatar + compact stats */}
+        <div className="flex items-center gap-5">
           <button onClick={() => setShowProfilePicture(true)} className="flex-shrink-0 active:scale-95 transition-transform">
-            <div className="w-[86px] h-[86px] rounded-full p-[3px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.35)]">
+            <div className="w-[76px] h-[76px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
               <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
                 {currentUser.avatar_url
                   ? <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-                  : <span className="text-2xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
+                  : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
                 }
               </div>
             </div>
           </button>
 
-          <div className="flex flex-1 justify-around">
+          {/* Stats — compact, no dividers */}
+          <div className="flex flex-1 justify-around items-center">
             <div className="text-center">
-              <p className="text-[23px] font-black text-white leading-none">{filteredPosts.length}</p>
-              <p className="text-[11px] text-slate-400 font-medium mt-1.5 tracking-wide">Posts</p>
+              <p className="text-[18px] font-black text-white leading-none">{filteredPosts.length}</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
             </div>
-            <div className="w-px bg-slate-700/50 self-stretch mx-1" />
             <div className="text-center">
-              <p className="text-[23px] font-black text-white leading-none">{friendCount}</p>
-              <p className="text-[11px] text-slate-400 font-medium mt-1.5 tracking-wide">Friends</p>
+              <p className="text-[18px] font-black text-white leading-none">{friendCount}</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Friends</p>
             </div>
-            <div className="w-px bg-slate-700/50 self-stretch mx-1" />
             <div className="text-center">
-              <p className="text-[23px] font-black text-white leading-none">{currentStreak}</p>
-              <p className="text-[11px] text-slate-400 font-medium mt-1.5 tracking-wide">Streak 🔥</p>
+              <p className="text-[18px] font-black text-white leading-none">{currentStreak}</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak 🔥</p>
             </div>
           </div>
         </div>
 
-        {/* Name + status badge */}
-        <div className="flex items-center gap-2 flex-wrap -mb-1">
-          <span className="text-sm font-bold text-white">{displayName}</span>
-          <StatusBadge checkIns={checkIns} streak={currentStreak} size="sm" />
-        </div>
-
-        {/* Bio */}
-        {currentUser.bio && (
-          <p className="text-sm text-slate-300 leading-snug -mt-1">{currentUser.bio}</p>
-        )}
-
-        {/* Location + gym */}
-        <div className="flex flex-col gap-1">
+        {/* Status badge + bio + location + gym */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <StatusBadge checkIns={checkIns} streak={currentStreak} size="sm" />
+          </div>
+          {currentUser.bio && (
+            <p className="text-[13px] text-slate-300 leading-snug">{currentUser.bio}</p>
+          )}
           {currentUser.gym_location && (
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-              <span className="text-xs text-slate-400">{currentUser.gym_location}</span>
+              <MapPin className="w-3 h-3 text-slate-500 flex-shrink-0" />
+              <span className="text-[11px] text-slate-400">{currentUser.gym_location}</span>
             </div>
           )}
           {primaryGym && (
             <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
               <div className="flex items-center gap-1.5 w-fit">
-                <Building2 className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                <span className="text-xs text-blue-400 font-semibold">{primaryGym.name}</span>
+                <Building2 className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                <span className="text-[11px] text-blue-400 font-semibold">{primaryGym.name}</span>
               </div>
             </Link>
           )}
         </div>
 
-        {/* Badges — only if equipped */}
+        {/* Badges */}
         {currentUser?.equipped_badges?.length > 0 && (
-          <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-2 active:scale-95 transition-transform">
+          <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-1.5 active:scale-95 transition-transform">
             {currentUser.equipped_badges.map((badgeId) => {
               const badge = badgeDefs.find((b) => b.id === badgeId);
               if (!badge) return null;
               return (
-                <div key={badgeId} className={`w-8 h-8 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-md ring-1 ring-black/30`}>
-                  <span className="text-sm">{badge.icon}</span>
+                <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
+                  <span className="text-xs">{badge.icon}</span>
                 </div>
               );
             })}
-            <span className="text-[11px] text-slate-500 ml-0.5">tap to edit</span>
+            <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
           </button>
         )}
 
-        {/* Action buttons — identical style */}
-        <div className="flex gap-2 pt-1">
+        {/* Action buttons */}
+        <div className="flex gap-2">
           <button onClick={() => setShowCreatePost(true)} className={actionBtn}>
             <Plus className="w-3.5 h-3.5" />New Post
           </button>
@@ -284,81 +264,61 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ── TABS ── */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="max-w-4xl mx-auto border-b border-slate-700/50">
-          <TabsList className="w-full flex bg-transparent p-0 gap-0 h-auto rounded-none">
-            <TabsTrigger value="posts" className={tabTriggerClass}>
-              <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
-              </svg>
-            </TabsTrigger>
+      {/* ── GRID DIVIDER ── */}
+      <div className="border-t border-slate-700/40" />
 
-          </TabsList>
+      {/* ── POSTS (no tab bar — just the grid) ── */}
+      <div className="max-w-4xl mx-auto pb-32">
+        <div className="flex justify-end px-3 pt-2 pb-0.5">
+          <button onClick={() => setGridView(!gridView)} className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors">
+            {gridView
+              ? <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /></svg>
+              : <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" /></svg>
+            }
+          </button>
         </div>
 
-        <div className="max-w-4xl mx-auto pb-32">
-
-          {/* Posts */}
-          <TabsContent value="posts" className="mt-0">
-            <div className="flex justify-end px-3 pt-2 pb-0.5">
-              <button onClick={() => setGridView(!gridView)} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-                {gridView
-                  ? <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /></svg>
-                  : <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" /></svg>
-                }
-              </button>
+        {filteredPosts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <div className="w-14 h-14 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-3">
+              <Camera className="w-6 h-6 text-slate-600" />
             </div>
-
-            {filteredPosts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-                <div className="w-16 h-16 rounded-full border-2 border-slate-700 flex items-center justify-center mb-4">
-                  <Camera className="w-7 h-7 text-slate-500" />
-                </div>
-                <p className="text-base font-black text-white mb-1">Share Photos</p>
-                <p className="text-sm text-slate-400 mb-4">When you share photos, they'll appear here.</p>
-                <button onClick={() => setShowCreatePost(true)} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
-                  Share your first photo
-                </button>
-              </div>
-            ) : gridView ? (
-              <div className="grid grid-cols-3 gap-px bg-slate-800/20">
-                {filteredPosts
-                  .sort((a, b) => (a.is_favourite === b.is_favourite ? 0 : a.is_favourite ? -1 : 1))
-                  .map((post) => (
-                    <div
-                      key={post.id}
-                      className="relative aspect-square bg-slate-900 cursor-pointer overflow-hidden"
-                      onClick={() => setSelectedGridPost(post)}
-                    >
-                      {post.video_url
-                        ? <video src={post.video_url} className="w-full h-full object-cover" />
-                        : <img src={post.image_url} alt="" className="w-full h-full object-cover" />
-                      }
-                      {post.is_favourite && (
-                        <div className="absolute top-1.5 right-1.5">
-                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 drop-shadow" />
-                        </div>
-                      )}
+            <p className="text-sm font-black text-white mb-1">Share Photos</p>
+            <p className="text-xs text-slate-500 mb-4">When you share photos, they'll appear here.</p>
+            <button onClick={() => setShowCreatePost(true)} className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
+              Share your first photo
+            </button>
+          </div>
+        ) : gridView ? (
+          <div className="grid grid-cols-3 gap-px">
+            {filteredPosts
+              .sort((a, b) => (a.is_favourite === b.is_favourite ? 0 : a.is_favourite ? -1 : 1))
+              .map((post) => (
+                <div
+                  key={post.id}
+                  className="relative aspect-square bg-slate-900 cursor-pointer overflow-hidden"
+                  onClick={() => setSelectedGridPost(post)}
+                >
+                  {post.video_url
+                    ? <video src={post.video_url} className="w-full h-full object-cover" />
+                    : <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+                  }
+                  {post.is_favourite && (
+                    <div className="absolute top-1.5 right-1.5">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 drop-shadow" />
                     </div>
-                  ))}
-              </div>
-            ) : (
-              <div className="px-4 pt-3 space-y-4">
-                {filteredPosts.map((post) => (
-                  <PostCard key={post.id} post={post} fullWidth={true} isOwnProfile={true} currentUser={currentUser} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Insights */}
-          <TabsContent value="insights" className="px-4 pt-4 space-y-4">
-            <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
-          </TabsContent>
-
-        </div>
-      </Tabs>
+                  )}
+                </div>
+              ))}
+          </div>
+        ) : (
+          <div className="px-4 pt-3 space-y-4">
+            {filteredPosts.map((post) => (
+              <PostCard key={post.id} post={post} fullWidth={true} isOwnProfile={true} currentUser={currentUser} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* ── MODALS ── */}
       <EditHeroImageModal open={showEditHero} onClose={() => setShowEditHero(false)} currentImageUrl={currentUser?.hero_image_url} onSave={(url) => updateHeroMutation.mutate(url)} isLoading={updateHeroMutation.isPending} />
