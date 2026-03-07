@@ -456,40 +456,20 @@ export default function Profile() {
               </div>
             }
           </div>
-          <div className="relative z-20 sticky top-0 border-b border-white/5">
-            <TabsList className="w-full grid grid-cols-2 bg-transparent p-2 h-14 gap-1">
-              <TabsTrigger value="progress" className={tabTriggerClass}>Split</TabsTrigger>
-              <TabsTrigger value="posts" className={tabTriggerClass}>Posts</TabsTrigger>
-            </TabsList>
-          </div>
         </div>
         {/* ── END BANNER ── */}
 
         <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
-          <TabsContent value="progress" className="space-y-4 mt-0">
-            {currentUser?.workout_split ?
-              <>
-                <button onClick={() => setShowSplitModal(true)} className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-blue-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
-                  <Calendar className="w-3 h-3" />Edit Your Split
-                </button>
-                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Dumbbell className="w-4 h-4 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-                  </div>
-                  <WorkoutSplitHeatmap checkIns={userCheckIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
-                </Card>
-              </> :
-              null
-            }
-            <WorkoutProgressTracker currentUser={currentUser} />
-          </TabsContent>
-
           <TabsContent value="posts" className="space-y-4">
             <div className="flex gap-2">
-              <Button onClick={() => setShowCreatePost(true)} className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-24 py-2 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+              <Button onClick={() => setShowCreatePost(true)} className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-4 py-2 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu flex-1">
                 <Plus className="w-4 h-4 mr-2" />Create Post
               </Button>
+              {currentUser?.workout_split &&
+                <button onClick={() => setShowSplitModal(true)} className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-blue-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+                  <Calendar className="w-3 h-3" />Edit Split
+                </button>
+              }
               <Button onClick={() => setGridView(!gridView)} className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu" title={gridView ? "List view" : "Grid view"}>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   {gridView ? <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /> : <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />}
