@@ -858,6 +858,7 @@ export default function Home() {
                         justifyContent: 'center',
                         flexShrink: 0,
                         marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0),
+                        overflow: 'visible',
                       }}>
 
                       {/* Pulsing ring behind today */}
@@ -905,27 +906,33 @@ export default function Home() {
                       >
                         {isRestDay
                           ? done
-                            // Completed rest day — full colour leaf emoji
-                            ? <span style={{ fontSize: isTodayCircle ? 18 : 14, lineHeight: 1, filter: 'brightness(1.5)' }}>🌿</span>
-                            // Future / today rest day — grey outline matching the leaf shape
-                            : <svg
-                                width={isTodayCircle ? 20 : 16}
-                                height={isTodayCircle ? 20 : 16}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="rgba(148,163,184,0.55)"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                {/* Leaf blade */}
-                                <path d="M11 20C11 20 4 17 4 10C4 6 7.5 3 12 3C16.5 3 20 6 20 10C20 17 13 20 13 20" />
-                                {/* Centre stem */}
-                                <line x1="12" y1="3" x2="12" y2="20" />
-                                {/* Leaf veins */}
-                                <path d="M12 8 C10 9.5 8 9.5 6.5 9" />
-                                <path d="M12 12 C10 13.5 8 13.5 6.5 13" />
-                                <path d="M12 8 C14 9.5 16 9.5 17.5 9" />
-                                <path d="M12 12 C14 13.5 16 13.5 17.5 13" />
+                            // Completed rest day — filled green leaf
+                            ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 24 24" fill="none">
+                                <path
+                                  d="M12 3 C12 3 5 5 5 12 C5 16.5 8 19.5 12 21 C16 19.5 19 16.5 19 12 C19 5 12 3 12 3Z"
+                                  fill="#4ade80"
+                                  stroke="#22c55e"
+                                  strokeWidth="1"
+                                />
+                                <line x1="12" y1="5" x2="12" y2="21" stroke="#16a34a" strokeWidth="1.2" strokeLinecap="round"/>
+                                <path d="M12 9 Q9.5 10 8 9.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                                <path d="M12 13 Q9.5 14 8 13.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                                <path d="M12 9 Q14.5 10 16 9.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                                <path d="M12 13 Q14.5 14 16 13.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                              </svg>
+                            // Incomplete rest day — same leaf, just outlined grey
+                            : <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 24 24" fill="none">
+                                <path
+                                  d="M12 3 C12 3 5 5 5 12 C5 16.5 8 19.5 12 21 C16 19.5 19 16.5 19 12 C19 5 12 3 12 3Z"
+                                  fill="none"
+                                  stroke="rgba(148,163,184,0.55)"
+                                  strokeWidth="1.3"
+                                />
+                                <line x1="12" y1="5" x2="12" y2="21" stroke="rgba(148,163,184,0.4)" strokeWidth="1.1" strokeLinecap="round"/>
+                                <path d="M12 9 Q9.5 10 8 9.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
+                                <path d="M12 13 Q9.5 14 8 13.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
+                                <path d="M12 9 Q14.5 10 16 9.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
+                                <path d="M12 13 Q14.5 14 16 13.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
                               </svg>
                           : done
                             ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
@@ -953,9 +960,8 @@ export default function Home() {
                             style={{
                               position: 'absolute',
                               bottom: size + 12,
-                              left: '50%',
-                              marginLeft: '-50%',
-                              width: 'max-content',
+                              left: 0,
+                              right: 0,
                               zIndex: 200,
                               pointerEvents: 'none',
                               display: 'flex',
