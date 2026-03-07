@@ -41,9 +41,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
           {/* 3 empty placeholder slots */}
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-2xl">
-              <div className="w-14 h-14 rounded-xl bg-slate-700/30 border border-slate-600/20" />
-            </div>
+            <div key={i} className="w-14 h-14" />
           ))}
         </div>
       </div>
