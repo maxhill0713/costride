@@ -476,18 +476,6 @@ export default function Home() {
     celebTimers.current = [t1, t2, t3, t4, t5];
   }
 
-  // Run animation whenever streak celebration mounts
-  useEffect(() => {
-    if (!showStreakCelebration) return;
-    const init = setTimeout(() => {
-      runStreakAnimation(celebrationStreakNum);
-    }, 50);
-    return () => {
-      clearTimeout(init);
-      celebTimers.current.forEach(clearTimeout);
-    };
-  }, [showStreakCelebration]);
-
   // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
   const handleWorkoutLogged = async (challengesData = []) => {
     setWorkoutStartTime(null);
