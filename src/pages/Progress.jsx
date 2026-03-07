@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ChevronRight } from 'lucide-react';
+import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import ExerciseInsights from '../components/profile/ExerciseInsights';
+import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
+import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 
 // ─── Goals Sub-page ──────────────────────────────────────────────────────────
 function GoalsPage({ currentUser, onBack }) {
