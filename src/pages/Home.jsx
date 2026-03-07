@@ -153,6 +153,7 @@ export default function Home() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const audioCtxRef = useRef(null);
@@ -307,18 +308,6 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
 
-  // Run animation whenever celebration mounts — must be before any early returns
-  useEffect(() => {
-    if (!showStreakCelebration) return;
-    const init = setTimeout(() => {
-      runStreakAnimation(celebrationStreakNum);
-    }, 50);
-    return () => {
-      clearTimeout(init);
-      celebTimers.current.forEach(clearTimeout);
-    };
-  }, [showStreakCelebration]);
-
   const memberGym = memberGymData || null;
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
@@ -327,7 +316,7 @@ export default function Home() {
 
   if (userLoading || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(to_bottom_right,#02040a,#0c214d,#02040a)]">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-300">Loading...</p>
@@ -438,7 +427,7 @@ export default function Home() {
       trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
     }, 1600);
 
-    // T=1980 — pose swap + fanfare + particles
+    // T=1980 — pose swap + fanfare + particles + vibration
     const t3 = setTimeout(() => {
       if (actx) soundPoseSwap(actx);
       spawnParticles();
@@ -447,9 +436,9 @@ export default function Home() {
       // iconPop on p2 ONLY — not the wrapper — prevents layout stutter
       trigAnim(p2, 'streakIconPop', 600, 'cubic-bezier(0.34,1.2,0.64,1)');
       p2.style.opacity = '1';
-      stage.style.animation = 'none'; // clear wrapper animation immediately
+      stage.style.animation = 'none';
 
-      // number ticks up after a beat
+      // number ticks up + vibration after a beat
       setTimeout(() => {
         if (actx) soundNumPop(actx);
         // Duolingo-style double-tap vibration on number tick-up
@@ -467,15 +456,28 @@ export default function Home() {
       stage.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
     }, 2800);
 
-    // T=4600 — transition whoosh before dismiss
+    // T=3200 — transition whoosh before stage 2
     const t5 = setTimeout(() => {
       if (actx) soundTransition(actx);
-    }, 4600);
+    }, 3200);
 
     celebTimers.current = [t1, t2, t3, t4, t5];
   }
 
-  const handleWorkoutLogged = async () => {
+  // Run animation whenever streak celebration mounts
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const init = setTimeout(() => {
+      runStreakAnimation(celebrationStreakNum);
+    }, 50);
+    return () => {
+      clearTimeout(init);
+      celebTimers.current.forEach(clearTimeout);
+    };
+  }, [showStreakCelebration]);
+
+  // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
+  const handleWorkoutLogged = async (challengesData = []) => {
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
 
@@ -484,17 +486,18 @@ export default function Home() {
 
     const newStreak = userStreak + 1;
     setCelebrationStreakNum(newStreak);
+    setCelebrationChallenges(challengesData);
 
-    if (currentUser?.id) {
-      const userChallenges = await base44.entities.Challenge.filter({
-        participants: { $in: [currentUser.id] },
-        status: 'active'
-      });
-      setCelebrationChallenges(userChallenges.slice(0, 3));
-    }
-
+    // Stage 1 — new streak animation for 3.5s
     setShowStreakCelebration(true);
-    setTimeout(() => setShowStreakCelebration(false), 5500);
+    setTimeout(() => {
+      setShowStreakCelebration(false);
+      // Stage 2 — fullscreen challenges (only if user has challenges)
+      if (challengesData.length > 0) {
+        setShowChallengesCelebration(true);
+        setTimeout(() => setShowChallengesCelebration(false), 4000);
+      }
+    }, 3500);
   };
 
   const handleStreakVariantSelect = (variant) => {
@@ -524,7 +527,6 @@ export default function Home() {
   const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
   const totalCount = goals.length > 0 ? 2 : 1;
   const isOnTrack = completedCount === totalCount;
-  const isAlmostOnTrack = !isOnTrack && completedCount === totalCount - 1;
   const progressPercentage = goals.length > 0 ? Math.round(goalsOnTrack / goals.length * 100) : weeklyCheckIns.length / weeklyTarget * 100;
 
   const getCommunityText = () => {
@@ -541,14 +543,12 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      {/* Central gradient color changed to a slightly darker steel blue (#0d2360) */}
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
         {/* Header */}
-        <div className="bg-gradient-to-b from-slate-900/60 to-transparent backdrop-blur-sm border-b border-white/5 px-4 py-3">
+        <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
 
-            {/* Streak button */}
             <button
               onClick={() => setShowStreakVariants(true)}
               className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
@@ -565,8 +565,7 @@ export default function Home() {
                   textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
                   letterSpacing: '-0.02em',
                   lineHeight: 1
-                }}
-              >
+                }}>
                 {userStreak}
               </span>
             </button>
@@ -599,7 +598,7 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
 
           {memberGym && <>
-            <p className="text-center text-xs text-slate-300 font-medium">
+            <p className="text-center text-xs text-slate-400 font-medium">
               {weeklyComplete
                 ? `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done`
                 : `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
@@ -737,7 +736,7 @@ export default function Home() {
       </div>
 
       {/* ─────────────────────────────────────────────
-          STREAK CELEBRATION OVERLAY
+          STAGE 1 — New streak animation (3.5s)
           ───────────────────────────────────────────── */}
       <AnimatePresence>
         {showStreakCelebration &&
@@ -806,6 +805,54 @@ export default function Home() {
               </div>
 
             </div>
+          </motion.div>
+        }
+      </AnimatePresence>
+
+      {/* ─────────────────────────────────────────────
+          STAGE 2 — Fullscreen challenges (4s)
+          ───────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showChallengesCelebration && celebrationChallenges.length > 0 &&
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="w-full max-w-sm space-y-8">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl font-black text-white text-center tracking-tight">
+                Challenge Progress
+              </motion.p>
+              <div className="space-y-6">
+                {celebrationChallenges.map((challenge, idx) =>
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + idx * 0.15 }}
+                    className="space-y-3">
+                    <p className="text-base font-bold text-slate-200 truncate">{challenge.title}</p>
+                    <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
+                        initial={{ width: '0%' }}
+                        animate={{ width: '100%' }}
+                        transition={{ delay: 0.5 + idx * 0.15, duration: 1.4, ease: 'easeOut' }} />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         }
       </AnimatePresence>
