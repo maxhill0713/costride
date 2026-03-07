@@ -129,19 +129,6 @@ export default function Friends() {
       friendId: friendUser.id,
       action: 'add'
     }),
-    onMutate: async (friendUser) => {
-      await queryClient.cancelQueries(['friends', currentUser?.id]);
-      const previous = queryClient.getQueryData(['friends', currentUser?.id]);
-      // Optimistically add a pending friend entry
-      queryClient.setQueryData(['friends', currentUser?.id], (old = []) => [
-      ...old,
-      { id: `temp-${friendUser.id}`, friend_id: friendUser.id, friend_name: friendUser.full_name, friend_avatar: friendUser.avatar_url, status: 'pending' }]
-      );
-      return { previous };
-    },
-    onError: (err, friendUser, context) => {
-      queryClient.setQueryData(['friends', currentUser?.id], context.previous);
-    },
     onSuccess: () => {
       queryClient.invalidateQueries(['friends']);
       toast.success('Friend request sent!');
