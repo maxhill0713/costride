@@ -767,7 +767,7 @@ export default function Home() {
             const sorted = [...trainingDays].sort((a, b) => a - b);
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '4px 0' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '4px 0' }}>
                 {sorted.map((day) => {
                   const done   = loggedDays.has(day);
                   const bounce = justLoggedDay === day;
@@ -776,20 +776,20 @@ export default function Home() {
                     <div
                       key={day}
                       style={{
-                        width: 46,
-                        height: 46,
+                        width: 37,
+                        height: 37,
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         background: done
-                          ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                          ? 'linear-gradient(135deg, #2d6bc4 0%, #1a3a8a 100%)'
                           : 'rgba(30,41,59,0.8)',
                         border: done
-                          ? '2px solid rgba(96,165,250,0.5)'
+                          ? '2px solid rgba(70,130,200,0.35)'
                           : '2px solid rgba(71,85,105,0.5)',
                         boxShadow: done
-                          ? '0 0 14px rgba(59,130,246,0.45), 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
+                          ? '0 0 8px rgba(45,107,196,0.3), 0 3px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
                           : '0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
                         transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
                         animation: bounce
@@ -802,10 +802,10 @@ export default function Home() {
                         flexShrink: 0,
                       }}>
                       {done
-                        ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        ? <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                             <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
-                        : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.6)', background: 'transparent' }} />
+                        : <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.45)', background: 'transparent' }} />
                       }
                     </div>
                   );
