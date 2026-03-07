@@ -153,6 +153,35 @@ function GoalsPage({ currentUser, onBack }) {
   );
 }
 
+// ─── Split Sub-page ──────────────────────────────────────────────────────────
+function SplitPage({ currentUser, checkIns, onBack }) {
+  return (
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95"
+          >
+            <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
+          </button>
+          <h1 className="text-xl font-black text-white tracking-tight">Split</h1>
+        </div>
+        {currentUser?.workout_split && (
+          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
+            <div className="flex items-center gap-2 mb-3">
+              <Dumbbell className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
+            </div>
+            <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
+          </Card>
+        )}
+        <WorkoutProgressTracker currentUser={currentUser} />
+      </div>
+    </div>
+  );
+}
+
 // ─── Analytics Sub-page ──────────────────────────────────────────────────────
 function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   return (
