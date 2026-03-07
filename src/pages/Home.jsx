@@ -184,7 +184,7 @@ export default function Home() {
 
   if (userLoading || !currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(to_bottom_right,#04070f,#1a3a8a,#04070f)]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-300">Loading...</p>
@@ -298,7 +298,7 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#04070f,#1a3a8a,#04070f)]">
 
         {/* Header */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
