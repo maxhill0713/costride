@@ -308,18 +308,6 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
 
-  // Run animation whenever streak celebration mounts — MUST be before any early returns
-  useEffect(() => {
-    if (!showStreakCelebration) return;
-    const init = setTimeout(() => {
-      runStreakAnimation(celebrationStreakNum);
-    }, 50);
-    return () => {
-      clearTimeout(init);
-      celebTimers.current.forEach(clearTimeout);
-    };
-  }, [showStreakCelebration]);
-
   const memberGym = memberGymData || null;
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
@@ -475,6 +463,18 @@ export default function Home() {
 
     celebTimers.current = [t1, t2, t3, t4, t5];
   }
+
+  // Run animation whenever streak celebration mounts
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const init = setTimeout(() => {
+      runStreakAnimation(celebrationStreakNum);
+    }, 50);
+    return () => {
+      clearTimeout(init);
+      celebTimers.current.forEach(clearTimeout);
+    };
+  }, [showStreakCelebration]);
 
   // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
   const handleWorkoutLogged = async (challengesData = []) => {
