@@ -3,9 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ChevronLeft, MapPin, Building2, Flame, Calendar, Star } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, MapPin, Building2, Flame, Star } from 'lucide-react';
 import PostCard from '../components/feed/PostCard';
 import StatusBadge from '../components/profile/StatusBadge';
 
@@ -60,207 +58,179 @@ export default function UserProfile() {
   const streak = profileUser?.current_streak || 0;
   const longestStreak = profileUser?.longest_streak || 0;
 
-  // Badge definitions
   const badgeDefs = [
-  { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-  { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-  { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-  { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-  { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-  { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-  { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
-  { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
-  { id: '7_days', icon: '🔥', color: 'from-orange-400 to-red-500', days: 7 },
-  { id: '30_days', icon: '⚡', color: 'from-yellow-400 to-orange-500', days: 30 },
-  { id: '50_days', icon: '💪', color: 'from-purple-400 to-pink-500', days: 50 },
-  { id: '100_days', icon: '👑', color: 'from-blue-400 to-cyan-500', days: 100 },
-  { id: '365_days', icon: '🏆', color: 'from-green-400 to-emerald-500', days: 365 }];
-
+    { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+    { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+    { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+    { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+    { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+    { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+    { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
+    { id: '7_days', icon: '🔥', color: 'from-orange-400 to-red-500', days: 7 },
+    { id: '30_days', icon: '⚡', color: 'from-yellow-400 to-orange-500', days: 30 },
+    { id: '50_days', icon: '💪', color: 'from-purple-400 to-pink-500', days: 50 },
+    { id: '100_days', icon: '👑', color: 'from-blue-400 to-cyan-500', days: 100 },
+    { id: '365_days', icon: '🏆', color: 'from-green-400 to-emerald-500', days: 365 }
+  ];
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
         <p className="text-white">No user specified.</p>
-      </div>);
-
+      </div>
+    );
   }
 
   if (loadingUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-      </div>);
-
+      </div>
+    );
   }
 
   if (isError || !profileUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col items-center justify-center gap-4">
         <p className="text-white text-lg">User not found.</p>
         <Link to={createPageUrl('Friends')} className="text-blue-400 underline text-sm">Go back</Link>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-gradient-to-b from-slate-800/60 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-2.5">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link to={createPageUrl('Friends')}>
-            <button className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          </Link>
-          <h1 className="text-base font-semibold text-slate-100 truncate">{displayName}</h1>
-        </div>
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+
+      {/* ── TOP BAR ── */}
+      <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center gap-3">
+        <Link to={createPageUrl('Friends')} className="active:scale-90 transition-transform">
+          <ChevronLeft className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
+        </Link>
+        <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
       </div>
 
-      {/* Profile Header */}
-      <div className="relative pt-6 pb-4 px-4 overflow-hidden bg-gradient-to-b from-slate-800/40 to-transparent border-b border-slate-700/50">
-        {profileUser.hero_image_url &&
-        <>
-            <div className="absolute inset-0 z-0">
-              <img src={profileUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-40" />
-            </div>
-            <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/50 via-slate-900/60 to-slate-900" />
-          </>
-        }
+      {/* ── HERO ── */}
+      <div className="max-w-4xl mx-auto px-4 space-y-3 pb-4">
 
-        <div className="max-w-2xl mx-auto relative z-10">
-          <div className="flex items-start gap-5 mb-4">
-            {/* Avatar */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 flex-shrink-0">
-              {profileUser.avatar_url ?
-              <img src={profileUser.avatar_url} alt={displayName} className="w-full h-full object-cover" /> :
-
-              <span className="text-3xl font-semibold text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
-              }
-            </div>
-
-            {/* Name & Badges */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center flex-wrap gap-2 mb-2">
-                <h2 className="text-xl font-semibold text-white tracking-tight">{displayName}</h2>
-                <StatusBadge checkIns={checkIns} streak={streak} size="sm" />
+        {/* Avatar + stats */}
+        <div className="flex items-center gap-5">
+          <div className="flex-shrink-0">
+            <div className="w-[76px] h-[76px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
+              <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
+                {profileUser.avatar_url
+                  ? <img src={profileUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+                  : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
+                }
               </div>
-
-              {/* Equipped badges */}
-              {profileUser.equipped_badges?.length > 0 &&
-              <div className="flex items-center gap-2 mt-2">
-                  {profileUser.equipped_badges.map((badgeId) => {
-                  const badge = badgeDefs.find((b) => b.id === badgeId || `${b.days}_day_streak` === badgeId);
-                  if (!badge) return null;
-                  return (
-                    <div
-                      key={badgeId}
-                      className={`w-8 h-8 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40`}>
-
-                        <span className="text-sm">{badge.icon}</span>
-                      </div>);
-
-                })}
-                </div>
-              }
             </div>
           </div>
 
-          {/* Stats row */}
-          <div className="flex items-center gap-4 mt-2">
-            <div className="flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-orange-400" />
-              <span className="text-sm font-semibold text-white">{streak}</span>
-              <span className="text-xs text-slate-400">streak</span>
+          <div className="flex flex-1 justify-around items-center">
+            <div className="text-center">
+              <p className="text-[18px] font-black text-white leading-none">{favouritePosts.length}</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Posts</p>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-semibold text-white">{checkIns.length}</span>
-              <span className="text-xs text-slate-400">check-ins</span>
+            <div className="text-center">
+              <p className="text-[18px] font-black text-white leading-none">{checkIns.length}</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Check-ins</p>
             </div>
-            {longestStreak > 0 &&
-            <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-400">Best:</span>
-                <span className="text-sm font-semibold text-orange-300">{longestStreak}d</span>
-              </div>
-            }
-          </div>
-
-          {/* Location & Gym */}
-          <div className="mt-3 space-y-1.5">
-            
-
-
-
-
-
-            {primaryMembership &&
-            <div className="flex items-center gap-2">
-                <Building2 className="w-3.5 h-3.5 text-blue-400" />
-                <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">
-                  {primaryMembership.gym_name}
-                </Badge>
-              </div>
-            }
+            <div className="text-center">
+              <p className="text-[18px] font-black text-white leading-none">{streak}</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Favourite Posts */}
-      <div className="max-w-2xl mx-auto px-4 py-4 pb-32">
-        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-2">
-          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-          Favourite Posts
-        </h3>
-
-        {favouritePosts.length === 0 ?
-        <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
-            <Star className="w-10 h-10 text-slate-500 mx-auto mb-3" />
-            <p className="text-slate-400 text-sm">No favourite posts yet.</p>
-          </Card> :
-
-        <>
-            {/* Grid view */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {favouritePosts.map((post) =>
-            <div
-              key={post.id}
-              className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => setSelectedPost(post)}>
-
-                  {post.video_url ?
-              <video src={post.video_url} className="w-full h-full object-cover" /> :
-
-              <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
-              }
-                  <div className="absolute top-1.5 right-1.5">
-                    
-                  </div>
-                </div>
-            )}
+        {/* Status + meta */}
+        <div className="space-y-1">
+          <StatusBadge checkIns={checkIns} streak={streak} size="sm" />
+          {profileUser.gym_location && (
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3 h-3 text-slate-500 flex-shrink-0" />
+              <span className="text-[11px] text-slate-400">{profileUser.gym_location}</span>
             </div>
-          </>
-        }
+          )}
+          {primaryMembership && (
+            <div className="flex items-center gap-1.5">
+              <Building2 className="w-3 h-3 text-blue-400 flex-shrink-0" />
+              <span className="text-[11px] text-blue-400 font-semibold">{primaryMembership.gym_name}</span>
+            </div>
+          )}
+          {longestStreak > 0 && (
+            <div className="flex items-center gap-1.5">
+              <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />
+              <span className="text-[11px] text-slate-400">Best streak: <span className="text-orange-300 font-semibold">{longestStreak} days</span></span>
+            </div>
+          )}
+        </div>
+
+        {/* Badges */}
+        {profileUser.equipped_badges?.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            {profileUser.equipped_badges.map((badgeId) => {
+              const badge = badgeDefs.find((b) => b.id === badgeId || `${b.days}_day_streak` === badgeId);
+              if (!badge) return null;
+              return (
+                <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
+                  <span className="text-xs">{badge.icon}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Post Modal */}
-      {selectedPost &&
-      <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto"
-        onClick={() => setSelectedPost(null)}>
+      {/* ── POSTS ── */}
+      <div className="max-w-4xl mx-auto pb-32">
+        {favouritePosts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <div className="w-14 h-14 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-3">
+              <Star className="w-6 h-6 text-slate-600" />
+            </div>
+            <p className="text-sm font-black text-white mb-1">No favourite posts yet</p>
+            <p className="text-xs text-slate-500">Posts {displayName} marks as favourite will appear here.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-px">
+            {favouritePosts.map((post) => (
+              <div
+                key={post.id}
+                className="relative aspect-square bg-slate-900 cursor-pointer overflow-hidden"
+                onClick={() => setSelectedPost(post)}
+              >
+                {post.video_url
+                  ? <video src={post.video_url} className="w-full h-full object-cover" />
+                  : <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+                }
+                <div className="absolute top-1.5 right-1.5">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400 drop-shadow" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-          <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-lg">
+      {/* Post lightbox */}
+      {selectedPost && (
+        <div
+          className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedPost(null)}
+        >
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg">
             <PostCard
-            post={selectedPost}
-            fullWidth={false}
-            currentUser={currentUser}
-            onLike={() => {}}
-            onComment={() => {}}
-            onSave={() => {}}
-            onDelete={() => setSelectedPost(null)} />
-
+              post={selectedPost}
+              fullWidth={false}
+              currentUser={currentUser}
+              onLike={() => {}}
+              onComment={() => {}}
+              onSave={() => {}}
+              onDelete={() => setSelectedPost(null)}
+            />
           </div>
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }
