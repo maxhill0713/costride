@@ -130,10 +130,14 @@ export default function Friends() {
       action: 'add'
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries({ queryKey: ['friendRequests', currentUser?.id] });
       toast.success('Friend request sent!');
       setShowAddModal(false);
       setSearchQuery('');
+    },
+    onError: (error) => {
+      console.error('Failed to add friend:', error);
+      toast.error('Failed to send friend request');
     }
   });
 
