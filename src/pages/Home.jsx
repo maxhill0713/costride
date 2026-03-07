@@ -949,54 +949,78 @@ export default function Home() {
                         }
                       </button>
 
-                      {/* Duolingo-style popup tooltip */}
+                      {/* Drop-down tooltip — expands below the circle */}
                       <AnimatePresence>
-                        {activeCircleDay === day && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 6, scale: 0.88 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 6, scale: 0.88 }}
-                            transition={{ duration: 0.18, ease: 'easeOut' }}
-                            style={{
-                              position: 'absolute',
-                              bottom: size + 12,
-                              left: 0,
-                              right: 0,
-                              zIndex: 200,
-                              pointerEvents: 'none',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              transformOrigin: 'bottom center',
-                            }}>
-                            {/* Bubble */}
-                            <div style={{
-                              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-                              border: '1px solid rgba(148,163,184,0.2)',
-                              borderRadius: 10,
-                              padding: '6px 12px',
-                              boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
-                              whiteSpace: 'nowrap',
-                            }}>
-                              <span style={{
-                                fontSize: 12,
-                                fontWeight: 700,
-                                color: isRestDay ? '#86efac' : done ? '#93c5fd' : '#94a3b8',
-                                letterSpacing: '0.01em',
+                        {activeCircleDay === day && (() => {
+                          // The bubble is absolutely positioned relative to this circle's div.
+                          // We want the bubble centred on the circle but clamped so it
+                          // doesn't escape the visible screen edges.
+                          // Approximate: leftmost circles have index 0, rightmost 6.
+                          // Each slot is (size + 8px gap). Total row ~336px centred on screen.
+                          const BUBBLE_W = 150;
+                          const SLOT = size + 8;
+                          // Circle centre relative to start of row
+                          const circleCenterInRow = i * SLOT + size / 2;
+                          const rowWidth = 7 * SLOT - 8;
+                          // Ideal bubble left edge (relative to row start)
+                          const idealBubbleLeft = circleCenterInRow - BUBBLE_W / 2;
+                          // Clamp within row
+                          const clampedBubbleLeft = Math.max(0, Math.min(idealBubbleLeft, rowWidth - BUBBLE_W));
+                          // Convert to offset relative to this circle div's left edge
+                          const bubbleOffsetFromCircle = clampedBubbleLeft - i * SLOT;
+                          // Arrow x position within the bubble
+                          const arrowInBubble = circleCenterInRow - clampedBubbleLeft;
+                          // Clamp arrow so it stays inside bubble with margin
+                          const arrowClamped = Math.max(12, Math.min(arrowInBubble, BUBBLE_W - 12));
+
+                          return (
+                            <motion.div
+                              initial={{ opacity: 0, scaleY: 0, scaleX: 0.7 }}
+                              animate={{ opacity: 1, scaleY: 1, scaleX: 1 }}
+                              exit={{ opacity: 0, scaleY: 0, scaleX: 0.7 }}
+                              transition={{ duration: 0.22, ease: [0.34, 1.3, 0.64, 1] }}
+                              style={{
+                                position: 'absolute',
+                                top: size + 8,
+                                left: bubbleOffsetFromCircle,
+                                width: BUBBLE_W,
+                                zIndex: 200,
+                                pointerEvents: 'none',
+                                transformOrigin: `${arrowClamped}px top`,
                               }}>
-                                {getPopupLabel()}
-                              </span>
-                            </div>
-                            {/* Arrow pointing down */}
-                            <div style={{
-                              width: 0,
-                              height: 0,
-                              borderLeft: '6px solid transparent',
-                              borderRight: '6px solid transparent',
-                              borderTop: '6px solid #1e293b',
-                            }} />
-                          </motion.div>
-                        )}
+                              {/* Arrow pointing UP into the circle */}
+                              <div style={{
+                                width: 0,
+                                height: 0,
+                                borderLeft: '9px solid transparent',
+                                borderRight: '9px solid transparent',
+                                borderBottom: '9px solid #1e293b',
+                                marginLeft: arrowClamped - 9,
+                                filter: 'drop-shadow(0 -1px 0 rgba(148,163,184,0.15))',
+                              }} />
+                              {/* Bubble */}
+                              <div style={{
+                                background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+                                border: '1px solid rgba(148,163,184,0.2)',
+                                borderRadius: 14,
+                                padding: '12px 18px',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
+                                textAlign: 'center',
+                              }}>
+                                <span style={{
+                                  fontSize: 15,
+                                  fontWeight: 800,
+                                  color: isRestDay ? '#86efac' : done ? '#93c5fd' : '#94a3b8',
+                                  letterSpacing: '0.01em',
+                                  display: 'block',
+                                  lineHeight: 1.3,
+                                }}>
+                                  {getPopupLabel()}
+                                </span>
+                              </div>
+                            </motion.div>
+                          );
+                        })()}
                       </AnimatePresence>
 
                     </div>
