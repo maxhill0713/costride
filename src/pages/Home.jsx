@@ -796,7 +796,6 @@ export default function Home() {
                     }
                     if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
                     if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
-                    if (isFuture) return 'linear-gradient(to bottom, #93c5fd 0%, #60a5fa 35%, #3b82f6 100%)';
                     if (isTodayCircle) return 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)';
                     return 'linear-gradient(to bottom, #2d3748 0%, #1e293b 60%, #0f172a 100%)';
                   };
@@ -810,7 +809,6 @@ export default function Home() {
                     }
                     if (done) return '1px solid rgba(147,197,253,0.5)';
                     if (isMissed) return '1px solid rgba(248,113,113,0.5)';
-                    if (isFuture) return '1px solid rgba(147,197,253,0.4)';
                     if (isTodayCircle) return '1px solid rgba(100,116,139,0.7)';
                     return '1px solid rgba(71,85,105,0.5)';
                   };
@@ -823,8 +821,6 @@ export default function Home() {
                       return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
                     if (isMissed)
                       return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
-                    if (isFuture)
-                      return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.18), inset 0 0 14px rgba(255,255,255,0.05)';
                     if (isTodayCircle)
                       return '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
                     return '0 4px 0 0 #060d1a, 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
@@ -960,8 +956,8 @@ export default function Home() {
                                 width: isTodayCircle ? 18 : 14,
                                 height: isTodayCircle ? 18 : 14,
                                 borderRadius: '50%',
-                                border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(147,197,253,0.45)',
-                                background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)',
+                                border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
+                                background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent',
                                 boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
                               }} />
                         }
@@ -999,11 +995,9 @@ export default function Home() {
                                 ? '#3b82f6'
                                 : isMissed
                                   ? '#dc2626'
-                                  : isFuture
-                                    ? '#3b82f6'
-                                    : isTodayCircle
-                                      ? '#263244'
-                                      : '#1e2535';
+                                  : isTodayCircle
+                                    ? '#263244'
+                                    : '#1e2535';
 
                           // Day label for subtitle
                           const DAY_NAMES = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
