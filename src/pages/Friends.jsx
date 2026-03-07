@@ -283,11 +283,7 @@ export default function Friends() {
   !post.gym_join
   );
 
-  // Gym join posts (displayed separately with compact layout)
-  const gymJoinPosts = allPosts.filter((post) =>
-  friendIds.includes(post.member_id) &&
-  post.gym_join === true
-  );
+  // Gym join posts removed - no longer displayed
 
   // Create unified activity feed
   const createActivityFeed = () => {
