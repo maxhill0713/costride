@@ -196,7 +196,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, adjustedDay] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      if (onWorkoutLogged) onWorkoutLogged(data?.challengesData || []);
+      if (onWorkoutLogged) onWorkoutLogged(data?.challengesData || [], todayWorkout?.exercises || [], todayWorkout?.name || '');
     },
     onError: (error) => {
       console.error('Error logging workout:', error?.response?.data || error?.message || error);
