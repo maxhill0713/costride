@@ -206,11 +206,12 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     spawnParticles();
     p1.style.transition = 'opacity 0.15s ease';
     p1.style.opacity = '0';
-    // Remove inline opacity so the keyframe can control it
-    p2.style.removeProperty('opacity');
-    p2.style.opacity = '1';
-    // Reset animation completely before applying
+    // Make stage fully visible before swapping pose
+    stage.style.opacity = '1';
+    stage.style.animation = 'none';
+    // Reset p2 cleanly so keyframe starts from opacity 0
     p2.style.animation = 'none';
+    p2.style.opacity = '0';
     void p2.offsetWidth;
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
     stage.style.animation = 'none';
