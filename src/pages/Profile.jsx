@@ -457,10 +457,8 @@ export default function Profile() {
             }
           </div>
           <div className="relative z-20 sticky top-0 border-b border-white/5">
-            <TabsList className="w-full grid grid-cols-4 bg-transparent p-2 h-14 gap-1">
-              <TabsTrigger value="stats" className={tabTriggerClass}>Insights</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-2 bg-transparent p-2 h-14 gap-1">
               <TabsTrigger value="progress" className={tabTriggerClass}>Split</TabsTrigger>
-              <TabsTrigger value="goals" className={tabTriggerClass}>Goals</TabsTrigger>
               <TabsTrigger value="posts" className={tabTriggerClass}>Posts</TabsTrigger>
             </TabsList>
           </div>
