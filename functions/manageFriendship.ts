@@ -65,18 +65,14 @@ Deno.serve(async (req) => {
       // Update the original request to accepted
       await db.entities.Friend.update(friendRequest[0].id, { status: 'accepted' });
 
-      // Fetch current user's details to store on the reciprocal record
-      const friendUsers = await db.entities.User.filter({ id: friendId });
-      const friendUser = friendUsers[0];
-
       // Create reciprocal accepted record (current user -> friend)
       const reciprocal = await db.entities.Friend.create({
         user_id: user.id,
         user_name: user.full_name,
         user_avatar: user.avatar_url || '',
         friend_id: friendId,
-        friend_name: friendUser?.full_name || friendRequest[0].user_name || '',
-        friend_avatar: friendUser?.avatar_url || friendRequest[0].user_avatar || '',
+        friend_name: friendRequest[0].user_name || '',
+        friend_avatar: friendRequest[0].user_avatar || '',
         status: 'accepted'
       });
 
