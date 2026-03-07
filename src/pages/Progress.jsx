@@ -189,12 +189,26 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
 }
 
 // ─── Nav Card ─────────────────────────────────────────────────────────────────
-function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBorder, icon: Icon, tintFrom, tintTo, borderColor, iconBg, iconColor, onClick, as: As = 'button', href }) {
-  const sharedClass = "group relative w-full text-left overflow-hidden rounded-2xl transition-all duration-150 active:scale-[0.985] active:brightness-90";
+function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBorder, icon: Icon, tintFrom, tintTo, borderColor, iconBg, iconColor, glowColor, onClick, as: As = 'button', href }) {
+  const [pressed, setPressed] = useState(false);
+
+  const handleDown = () => setPressed(true);
+  const handleUp = () => setPressed(false);
+
+  const cardStyle = {
+    transform: pressed ? 'scale(0.965)' : 'scale(1)',
+    opacity: pressed ? 0.82 : 1,
+    transition: pressed
+      ? 'transform 0.08s ease, opacity 0.08s ease, box-shadow 0.08s ease'
+      : 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease',
+    boxShadow: pressed
+      ? `0 0 28px 6px ${glowColor}, 0 4px 20px rgba(0,0,0,0.5)`
+      : '0 2px 12px rgba(0,0,0,0.35)',
+  };
 
   const inner = (
-    <>
-      {/* frosted glass base */}
+    <div className="relative w-full overflow-hidden rounded-2xl" style={cardStyle}>
+      {/* frosted glass base — muted at rest, slightly more vivid on press via glow */}
       <div
         className="absolute inset-0 rounded-2xl"
         style={{
@@ -203,17 +217,39 @@ function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBord
           WebkitBackdropFilter: 'blur(16px)',
         }}
       />
-      {/* subtle top highlight */}
-      <div className="absolute inset-x-0 top-0 h-px rounded-t-2xl" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+      {/* pressed glow overlay */}
+      <div
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse at 30% 50%, ${glowColor} 0%, transparent 70%)`,
+          opacity: pressed ? 0.35 : 0,
+          transition: 'opacity 0.08s ease',
+        }}
+      />
+      {/* top highlight line */}
+      <div
+        className="absolute inset-x-0 top-0 h-px rounded-t-2xl"
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)' }}
+      />
       {/* border */}
-      <div className="absolute inset-0 rounded-2xl border" style={{ borderColor }} />
+      <div
+        className="absolute inset-0 rounded-2xl border pointer-events-none"
+        style={{
+          borderColor: pressed ? glowColor : borderColor,
+          transition: 'border-color 0.08s ease',
+        }}
+      />
 
       {/* content */}
       <div className="relative flex items-center gap-4 px-4 py-4">
         {/* icon */}
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: iconBg, boxShadow: `0 2px 8px ${iconColor}44` }}
+          style={{
+            background: iconBg,
+            boxShadow: pressed ? `0 0 14px 3px ${glowColor}` : `0 2px 8px ${iconColor}33`,
+            transition: 'box-shadow 0.08s ease',
+          }}
         >
           <Icon className="w-5 h-5" style={{ color: iconColor }} />
         </div>
@@ -233,17 +269,35 @@ function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBord
         </div>
 
         <ChevronRight
-          className="w-4 h-4 flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5"
-          style={{ color: iconColor, opacity: 0.7 }}
+          className="w-4 h-4 flex-shrink-0"
+          style={{ color: iconColor, opacity: 0.6 }}
         />
       </div>
-    </>
+    </div>
   );
 
+  const events = {
+    onMouseDown: handleDown,
+    onMouseUp: handleUp,
+    onMouseLeave: handleUp,
+    onTouchStart: handleDown,
+    onTouchEnd: handleUp,
+    onTouchCancel: handleUp,
+  };
+
   if (As === 'link') {
-    return <Link to={href} className={sharedClass}>{inner}</Link>;
+    return (
+      <Link to={href} className="block w-full" {...events}>
+        {inner}
+      </Link>
+    );
   }
-  return <button onClick={onClick} className={sharedClass}>{inner}</button>;
+
+  return (
+    <button className="w-full text-left" onClick={onClick} {...events}>
+      {inner}
+    </button>
+  );
 }
 
 // ─── Main Hub ────────────────────────────────────────────────────────────────
@@ -304,63 +358,67 @@ export default function Progress() {
       label: 'Workout Split',
       description: 'Day-by-day heatmap of your training week. See how consistently you hit each muscle group and track volume over time.',
       badge: currentUser?.workout_split ? 'Active split' : 'No split set',
-      badgeTextColor: currentUser?.workout_split ? '#a5b4fc' : '#94a3b8',
-      badgeBg: currentUser?.workout_split ? 'rgba(99,102,241,0.15)' : 'rgba(51,65,85,0.5)',
-      badgeBorder: currentUser?.workout_split ? 'rgba(99,102,241,0.35)' : 'rgba(71,85,105,0.4)',
+      badgeTextColor: currentUser?.workout_split ? '#a5b4fc' : '#64748b',
+      badgeBg: currentUser?.workout_split ? 'rgba(99,102,241,0.12)' : 'rgba(30,41,59,0.6)',
+      badgeBorder: currentUser?.workout_split ? 'rgba(99,102,241,0.28)' : 'rgba(51,65,85,0.5)',
       icon: Dumbbell,
-      tintFrom: 'rgba(67,56,202,0.18)',
-      tintTo: 'rgba(10,14,26,0.82)',
-      borderColor: 'rgba(99,102,241,0.25)',
-      iconBg: 'rgba(99,102,241,0.2)',
+      tintFrom: 'rgba(55,48,163,0.10)',
+      tintTo: 'rgba(8,10,20,0.88)',
+      borderColor: 'rgba(99,102,241,0.15)',
+      iconBg: 'rgba(99,102,241,0.14)',
       iconColor: '#818cf8',
+      glowColor: 'rgba(99,102,241,0.55)',
       isLink: false,
     },
     {
       id: 'analytics',
       label: 'Advanced Analytics',
-      description: 'Volume trends, personal records and muscle group breakdowns across every session you\'ve ever logged.',
+      description: "Volume trends, personal records and muscle group breakdowns across every session you've ever logged.",
       badge: workoutLogs.length > 0 ? `${workoutLogs.length} sessions` : 'No sessions yet',
-      badgeTextColor: '#d8b4fe',
-      badgeBg: 'rgba(124,58,237,0.15)',
-      badgeBorder: 'rgba(124,58,237,0.35)',
+      badgeTextColor: '#c4b5fd',
+      badgeBg: 'rgba(109,40,217,0.12)',
+      badgeBorder: 'rgba(109,40,217,0.28)',
       icon: BarChart3,
-      tintFrom: 'rgba(109,40,217,0.18)',
-      tintTo: 'rgba(10,14,26,0.82)',
-      borderColor: 'rgba(139,92,246,0.25)',
-      iconBg: 'rgba(139,92,246,0.2)',
+      tintFrom: 'rgba(88,28,135,0.10)',
+      tintTo: 'rgba(8,10,20,0.88)',
+      borderColor: 'rgba(139,92,246,0.15)',
+      iconBg: 'rgba(139,92,246,0.14)',
       iconColor: '#c084fc',
+      glowColor: 'rgba(139,92,246,0.55)',
       isLink: false,
     },
     {
       id: 'goals',
       label: 'Goals',
-      description: 'Create and track your fitness targets — lift milestones, attendance streaks, or bodyweight goals. Mark them off as you crush them.',
+      description: "Create and track your fitness targets — lift milestones, attendance streaks, or bodyweight goals. Mark them off as you crush them.",
       badge: activeGoals.length > 0 ? `${activeGoals.length} active` : 'No goals yet',
-      badgeTextColor: activeGoals.length > 0 ? '#93c5fd' : '#94a3b8',
-      badgeBg: activeGoals.length > 0 ? 'rgba(37,99,235,0.15)' : 'rgba(51,65,85,0.5)',
-      badgeBorder: activeGoals.length > 0 ? 'rgba(59,130,246,0.35)' : 'rgba(71,85,105,0.4)',
+      badgeTextColor: activeGoals.length > 0 ? '#93c5fd' : '#64748b',
+      badgeBg: activeGoals.length > 0 ? 'rgba(37,99,235,0.12)' : 'rgba(30,41,59,0.6)',
+      badgeBorder: activeGoals.length > 0 ? 'rgba(59,130,246,0.28)' : 'rgba(51,65,85,0.5)',
       icon: Target,
-      tintFrom: 'rgba(29,78,216,0.18)',
-      tintTo: 'rgba(10,14,26,0.82)',
-      borderColor: 'rgba(59,130,246,0.25)',
-      iconBg: 'rgba(59,130,246,0.2)',
+      tintFrom: 'rgba(23,37,84,0.10)',
+      tintTo: 'rgba(8,10,20,0.88)',
+      borderColor: 'rgba(59,130,246,0.15)',
+      iconBg: 'rgba(59,130,246,0.14)',
       iconColor: '#60a5fa',
+      glowColor: 'rgba(59,130,246,0.55)',
       isLink: false,
     },
     {
       id: 'community',
       label: 'Community',
-      description: 'Your gym\'s community feed and member activity. See who\'s training, react to posts, and stay motivated by those around you.',
+      description: "Your gym's community feed and member activity. See who's training, react to posts, and stay motivated by those around you.",
       badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'No gym joined',
-      badgeTextColor: gymMemberships.length > 0 ? '#6ee7b7' : '#94a3b8',
-      badgeBg: gymMemberships.length > 0 ? 'rgba(5,150,105,0.15)' : 'rgba(51,65,85,0.5)',
-      badgeBorder: gymMemberships.length > 0 ? 'rgba(16,185,129,0.35)' : 'rgba(71,85,105,0.4)',
+      badgeTextColor: gymMemberships.length > 0 ? '#6ee7b7' : '#64748b',
+      badgeBg: gymMemberships.length > 0 ? 'rgba(5,150,105,0.12)' : 'rgba(30,41,59,0.6)',
+      badgeBorder: gymMemberships.length > 0 ? 'rgba(16,185,129,0.28)' : 'rgba(51,65,85,0.5)',
       icon: Users,
-      tintFrom: 'rgba(5,150,105,0.18)',
-      tintTo: 'rgba(10,14,26,0.82)',
-      borderColor: 'rgba(16,185,129,0.25)',
-      iconBg: 'rgba(16,185,129,0.2)',
+      tintFrom: 'rgba(6,78,59,0.10)',
+      tintTo: 'rgba(8,10,20,0.88)',
+      borderColor: 'rgba(16,185,129,0.15)',
+      iconBg: 'rgba(16,185,129,0.14)',
       iconColor: '#34d399',
+      glowColor: 'rgba(16,185,129,0.55)',
       isLink: true,
       href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
     },
