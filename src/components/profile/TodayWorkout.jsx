@@ -322,8 +322,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       style={{ background: 'linear-gradient(135deg, rgba(55,48,163,0.10) 0%, rgba(8,10,20,0.88) 100%)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(99,102,241,0.15)' }}>
 
       <div className="space-y-2 mb-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
             <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
             <button
               onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
@@ -331,7 +331,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               <Info className="w-3.5 h-3.5" />
             </button>
           </div>
-          <h2 className={`font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${todayWorkout.name.length > 12 ? 'text-sm leading-6 break-words' : 'text-xl'}`}>
+          <h2 className={`flex-1 text-center font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight ${todayWorkout.name.length > 12 ? 'text-sm leading-6 break-words' : 'text-xl'}`}>
             {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
           </h2>
         </div>
