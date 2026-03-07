@@ -36,7 +36,7 @@ export default function Profile() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [showProfilePicture, setShowProfilePicture] = useState(false);
   const [showBadgesModal, setShowBadgesModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('stats');
+  const [activeTab, setActiveTab] = useState('progress');
   const [heatmapFilter, setHeatmapFilter] = useState('month');
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postContent, setPostContent] = useState('');
