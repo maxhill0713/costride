@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Clock, Calculator, BookOpen, Info } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PlateCalculatorModal from './PlateCalculatorModal.jsx';
@@ -566,13 +566,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               </Button>
             </div>
 
-            <Button
-              onClick={() => { setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              variant="ghost"
-              size="icon"
-              className="w-9 h-9 text-slate-400 hover:text-white ml-auto">
-              <ChevronUp className="w-6 h-6" />
-            </Button>
           </div>
 
         </div> :
@@ -580,26 +573,39 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center">
             <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
             <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
-            <div className="flex justify-center mt-4 pt-3 border-t border-slate-600/30">
-              <Button
-                onClick={() => { setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                variant="ghost"
-                size="icon"
-                className="w-9 h-9 text-slate-400 hover:text-white">
-                <ChevronUp className="w-6 h-6" />
-              </Button>
-            </div>
           </div> :
-          <div className="flex justify-center pt-0">
-            <Button
-              onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
-              variant="ghost"
-              size="icon"
-              className="w-9 h-9 text-slate-400 hover:text-white">
-              <ChevronDown className="w-6 h-6" />
-            </Button>
+          !isExpanded &&
+          <div className="flex flex-col items-center justify-between py-2 gap-3">
+            {alreadyLoggedToday &&
+              <Button
+                onClick={(e) => { e.stopPropagation(); setShowSummary(true); }}
+                size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                View Summary
+              </Button>
+            }
           </div>
       }
+
+      {/* Single chevron — always rendered, animates centre→bottom-right and rotates */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isExpanded) { setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+          else setIsExpanded(true);
+        }}
+        className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+        style={{
+          position: 'absolute',
+          bottom: isExpanded ? '10px' : '50%',
+          right: isExpanded ? '10px' : '50%',
+          transform: isExpanded
+            ? 'translate(0, 0) rotate(180deg)'
+            : 'translate(50%, 50%) rotate(0deg)',
+          transition: 'bottom 0.55s ease, right 0.55s ease, transform 0.55s ease',
+          zIndex: 20,
+        }}>
+        <ChevronDown className="w-5 h-5" />
+      </button>
 
       {/* Modals */}
       <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
