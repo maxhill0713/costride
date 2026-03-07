@@ -470,7 +470,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           </div>
 
         </div>
-      </div>
     </div>
   );
 }
