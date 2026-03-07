@@ -90,9 +90,9 @@ export default function QuoteCarousel() {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing -mt-6">
+            className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing">
 
-            <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight -mt-7">
+            <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
               "{quotes[current].text}"
             </p>
             <p className="mt-4 text-slate-300 text-sm font-medium tracking-widest opacity-90">
