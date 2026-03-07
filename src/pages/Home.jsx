@@ -267,6 +267,7 @@ export default function Home() {
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null); // day whose popup is open
+  const [summaryLog, setSummaryLog] = useState(null); // workout log to show in summary modal
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -952,11 +953,12 @@ export default function Home() {
                       {/* Drop-down tooltip — single unified SVG shape */}
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
-                          // 30% smaller than previous 300px = 210px
                           const BUBBLE_W = 210;
-                          const BUBBLE_H = 54;
-                          const ARROW_H = 12;
-                          const ARROW_W = 22;
+                          // Taller bubble to fit title + button
+                          const BUBBLE_H = done && !isRestDay ? 82 : 54;
+                          // Arrow 40% smaller than before: was 22w/12h → now 13w/7h
+                          const ARROW_H = 7;
+                          const ARROW_W = 13;
                           const RADIUS = 13;
                           const SVG_H = BUBBLE_H + ARROW_H;
 
@@ -967,48 +969,33 @@ export default function Home() {
                           const clampedBubbleLeft = Math.max(0, Math.min(idealBubbleLeft, rowWidth - BUBBLE_W));
                           const bubbleOffsetFromCircle = clampedBubbleLeft - i * SLOT;
                           const arrowInBubble = circleCenterInRow - clampedBubbleLeft;
-                          // Arrow tip x — clamped so the arrow stays within rounded corners
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
 
-                          // Exact top-of-gradient colour matching each circle state
+                          // Darker versions matching each circle's colour identity
                           const solidColor = isRestDay && done
-                            ? '#22c55e'   // green-500 — top of done rest day gradient
+                            ? '#14532d'   // dark green — darker than circle top
                             : isRestDay
-                              ? '#2d3748'   // top of undone rest day
+                              ? '#1a2030'   // dark slate for undone rest
                               : done
-                                ? '#60a5fa'   // blue-400 — top of done gym day gradient
+                                ? '#1e3a8a'   // dark blue — darker than circle top
                                 : isTodayCircle
-                                  ? '#334155'   // top of today circle
-                                  : '#2d3748';  // top of future undone circle
+                                  ? '#1e2b3c'   // dark today
+                                  : '#1a2030';  // dark future undone
 
-                          // Build the SVG path: rounded rect with upward arrow on top edge
-                          // Top edge: left-cap → flat → arrow-left → arrow-tip-up → arrow-right → flat → right-cap
-                          // Then right side, bottom edge, left side back up
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`,
-                            // top-left corner arc start → go right to arrow base left
                             `L ${arrowL} ${ARROW_H}`,
-                            // arrow up
                             `L ${arrowTip} 0`,
-                            // arrow back down
                             `L ${arrowR} ${ARROW_H}`,
-                            // continue right to corner
                             `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
-                            // top-right corner
                             `Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H + RADIUS}`,
-                            // right side
                             `L ${BUBBLE_W} ${SVG_H - RADIUS}`,
-                            // bottom-right corner
                             `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
-                            // bottom edge
                             `L ${RADIUS} ${SVG_H}`,
-                            // bottom-left corner
                             `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
-                            // left side
                             `L 0 ${ARROW_H + RADIUS}`,
-                            // top-left corner
                             `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,
                             `Z`
                           ].join(' ');
@@ -1026,43 +1013,69 @@ export default function Home() {
                                 width: BUBBLE_W,
                                 height: SVG_H,
                                 zIndex: 200,
-                                pointerEvents: 'none',
+                                pointerEvents: 'auto',
                                 transformOrigin: `${arrowTip}px top`,
                               }}>
                               {/* Single unified SVG shape */}
                               <svg
                                 width={BUBBLE_W}
                                 height={SVG_H}
-                                style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}>
+                                style={{ position: 'absolute', top: 0, left: 0 }}>
                                 <path d={path} fill={solidColor} />
                               </svg>
-                              {/* Text centred in the bubble body (below arrow) */}
+
+                              {/* Content inside bubble */}
                               <div style={{
                                 position: 'absolute',
-                                top: ARROW_H,
-                                left: 0,
-                                width: BUBBLE_W,
-                                height: BUBBLE_H,
+                                top: ARROW_H + 10,
+                                left: 12,
+                                right: 12,
+                                bottom: 10,
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '0 14px',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
                               }}>
+                                {/* Workout title — top left */}
                                 <span style={{
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   fontWeight: 800,
                                   color: '#ffffff',
                                   letterSpacing: '0.01em',
-                                  textAlign: 'center',
                                   lineHeight: 1.3,
-                                  textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
-                                  maxWidth: '100%',
                                 }}>
                                   {getPopupLabel()}
                                 </span>
+
+                                {/* View Summary button — only for logged gym days */}
+                                {done && !isRestDay && workoutLog && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSummaryLog(workoutLog);
+                                      setActiveCircleDay(null);
+                                    }}
+                                    style={{
+                                      marginTop: 8,
+                                      padding: '5px 10px',
+                                      borderRadius: 8,
+                                      background: 'rgba(255,255,255,0.15)',
+                                      border: '1px solid rgba(255,255,255,0.25)',
+                                      color: '#ffffff',
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                      letterSpacing: '0.02em',
+                                      alignSelf: 'flex-start',
+                                      backdropFilter: 'blur(4px)',
+                                      WebkitTapHighlightColor: 'transparent',
+                                    }}>
+                                    View Summary
+                                  </button>
+                                )}
                               </div>
                             </motion.div>
                           );
@@ -1222,6 +1235,114 @@ export default function Home() {
         isOpen={showSplitModal}
         onClose={() => setShowSplitModal(false)}
         currentUser={currentUser} />
+
+      {/* Workout Summary Modal */}
+      <AnimatePresence>
+        {summaryLog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setSummaryLog(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 500,
+              background: 'rgba(0,0,0,0.7)',
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+              padding: '0 0 32px 0',
+            }}>
+            <motion.div
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 60 }}
+              transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+                border: '1px solid rgba(147,197,253,0.2)',
+                borderRadius: 20,
+                padding: '24px 20px',
+                width: 'calc(100% - 32px)',
+                maxWidth: 480,
+                maxHeight: '70vh',
+                overflowY: 'auto',
+                boxShadow: '0 -8px 40px rgba(0,0,0,0.6)',
+              }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1.2 }}>
+                    {summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0', fontWeight: 500 }}>
+                    {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSummaryLog(null)}
+                  style={{
+                    background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10,
+                    width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#94a3b8', fontSize: 18, fontWeight: 700,
+                  }}>✕</button>
+              </div>
+
+              {/* Stats row */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                {[
+                  { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
+                  { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
+                  { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
+                ].map(stat => (
+                  <div key={stat.label} style={{
+                    flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 12,
+                    padding: '10px 8px', textAlign: 'center',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                  }}>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: '#93c5fd', margin: 0 }}>{stat.value}</p>
+                    <p style={{ fontSize: 10, color: '#64748b', margin: '2px 0 0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Exercises list */}
+              {summaryLog.exercises?.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Exercises</p>
+                  {summaryLog.exercises.map((ex, idx) => (
+                    <div key={idx} style={{
+                      background: 'rgba(255,255,255,0.04)', borderRadius: 10,
+                      padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)',
+                    }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
+                        {ex.name || ex.exercise_name || `Exercise ${idx + 1}`}
+                      </p>
+                      {(ex.sets || ex.reps || ex.weight) && (
+                        <p style={{ fontSize: 11, color: '#94a3b8', margin: '3px 0 0', fontWeight: 500 }}>
+                          {[ex.sets && `${ex.sets} sets`, ex.reps && `${ex.reps} reps`, ex.weight && `${ex.weight}kg`].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Notes */}
+              {summaryLog.notes && (
+                <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Notes</p>
+                  <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>{summaryLog.notes}</p>
+                </div>
+              )}
+
+              {/* Fallback if no detail data */}
+              {!summaryLog.exercises?.length && !summaryLog.notes && !summaryLog.duration_minutes && (
+                <p style={{ fontSize: 13, color: '#64748b', textAlign: 'center', marginTop: 8 }}>No additional details recorded for this workout.</p>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </PullToRefresh>
   );
