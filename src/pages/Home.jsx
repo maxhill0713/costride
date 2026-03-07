@@ -817,13 +817,15 @@ export default function Home() {
                   const getBoxShadow = () => {
                     if (isRestDay && done)
                       return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
+                    if (isRestDay)
+                      return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
                     if (done)
                       return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
                     if (isMissed)
                       return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
                     if (isTodayCircle)
-                      return '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
-                    return '0 4px 0 0 #060d1a, 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
+                      return '0 4px 0 0 #1a2332, 0 7px 16px rgba(30,40,60,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
+                    return '0 4px 0 0 #1a2030, 0 6px 14px rgba(20,30,50,0.55), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
                   };
 
                   const getAnimation = () => {
@@ -845,12 +847,9 @@ export default function Home() {
                         || 'Workout';
                     }
                     if (done) return 'Workout';
-                    const customTypes = currentUser?.custom_workout_types;
-                    const splitDay = customTypes
-                      ? Array.isArray(customTypes)
-                        ? customTypes.find((s) => s.day === day || s.day_of_week === day)
-                        : customTypes[day]
-                      : null;
+                    const splitDay = (currentUser?.custom_workout_types || []).find(
+                      (s) => s.day === day || s.day_of_week === day
+                    );
                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
                   };
 
@@ -1079,7 +1078,14 @@ export default function Home() {
                                 }}>
                                   {done && workoutLog?.completed_date
                                     ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
-                                    : daySubtitle}
+                                    : (() => {
+                                        // Calculate the actual date for this day slot this week
+                                        const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+                                        const slotDate = new Date(monday);
+                                        slotDate.setDate(monday.getDate() + (day - 1));
+                                        return slotDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+                                      })()
+                                  }
                                 </span>
 
                                 {/* View Summary — 3D blue button, full width, only for logged gym days */}
