@@ -435,12 +435,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               )}
 
               {/* Rest Timer & Tools */}
-              <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
+              <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                 <div className="flex-1 flex items-center gap-2">
                   <div className="relative" style={{ flex: '0 0 auto', width: '49%' }}>
                     <button
                       onClick={() => setShowTimerOptions(!showTimerOptions)}
-                      className="relative w-full flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all overflow-hidden"
+                      className="relative w-full flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu overflow-hidden"
                       style={{ height: '51px' }}>
                       <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <span className="text-blue-300 font-black text-2xl tabular-nums leading-none">
