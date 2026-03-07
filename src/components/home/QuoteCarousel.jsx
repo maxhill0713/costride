@@ -6,14 +6,17 @@ const quotes = [
 {
   text: "I am no longer accepting the things I cannot change. We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
   author: "Aristotle",
+  context: "True excellence comes from consistent action and habit formation. We must take control of what we can change and build excellence through repeated practice and discipline.",
 },
 {
   text: "I am changing the things I cannot accept.",
   author: "Angela Davis",
+  context: "Take action against injustice and inequity — we have the power to shape our world and challenge systems that need transformation.",
 },
 {
   text: "The only thing we have to fear is fear itself.",
   author: "Franklin D. Roosevelt",
+  context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere.",
 }];
 
 
@@ -39,8 +42,8 @@ export default function QuoteCarousel() {
     exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
-  // 5% shorter: was 224px collapsed → ~213px
-  const collapsedHeight = '213px';
+  // 5% shorter again: 213px → ~202px
+  const collapsedHeight = '202px';
 
   return (
     <motion.div
@@ -120,7 +123,19 @@ export default function QuoteCarousel() {
               />
             </button>
 
-            {/* Expanded context removed — no author description shown */}
+            {/* Expanded context — quote meaning only, no author bio */}
+            <AnimatePresence>
+              {expanded && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-3 text-slate-400 text-sm text-center leading-relaxed font-light px-2">
+                  {quotes[current].context}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </motion.div>
         </AnimatePresence>
       </div>
