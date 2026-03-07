@@ -202,13 +202,13 @@ function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBord
       ? 'transform 0.08s ease, opacity 0.08s ease, box-shadow 0.08s ease'
       : 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease',
     boxShadow: pressed
-      ? `0 0 28px 6px ${glowColor}, 0 4px 20px rgba(0,0,0,0.5)`
+      ? `0 0 10px 2px ${glowColor}, 0 2px 10px rgba(0,0,0,0.4)`
       : '0 2px 12px rgba(0,0,0,0.35)',
   };
 
   const inner = (
     <div className="relative w-full overflow-hidden rounded-2xl" style={cardStyle}>
-      {/* frosted glass base — muted at rest, slightly more vivid on press via glow */}
+      {/* frosted glass base */}
       <div
         className="absolute inset-0 rounded-2xl"
         style={{
@@ -217,16 +217,17 @@ function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBord
           WebkitBackdropFilter: 'blur(16px)',
         }}
       />
-      {/* pressed glow overlay */}
+      {/* pressed glow — small, tight, near icon area */}
       <div
-        className="absolute inset-0 rounded-2xl pointer-events-none"
+        className="absolute rounded-2xl pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 30% 50%, ${glowColor} 0%, transparent 70%)`,
-          opacity: pressed ? 0.35 : 0,
+          inset: 0,
+          background: `radial-gradient(circle at 18% 50%, ${glowColor} 0%, transparent 45%)`,
+          opacity: pressed ? 0.18 : 0,
           transition: 'opacity 0.08s ease',
         }}
       />
-      {/* top highlight line */}
+      {/* top highlight */}
       <div
         className="absolute inset-x-0 top-0 h-px rounded-t-2xl"
         style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)' }}
@@ -242,19 +243,17 @@ function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBord
 
       {/* content */}
       <div className="relative flex items-center gap-4 px-4 py-4">
-        {/* icon */}
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{
             background: iconBg,
-            boxShadow: pressed ? `0 0 14px 3px ${glowColor}` : `0 2px 8px ${iconColor}33`,
+            boxShadow: pressed ? `0 0 8px 2px ${glowColor}` : `0 2px 6px ${iconColor}22`,
             transition: 'box-shadow 0.08s ease',
           }}
         >
           <Icon className="w-5 h-5" style={{ color: iconColor }} />
         </div>
 
-        {/* text */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-[15px] font-bold text-white tracking-tight">{label}</span>
@@ -286,11 +285,7 @@ function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBord
   };
 
   if (As === 'link') {
-    return (
-      <Link to={href} className="block w-full" {...events}>
-        {inner}
-      </Link>
-    );
+    return <Link to={href} className="block w-full" {...events}>{inner}</Link>;
   }
 
   return (
@@ -427,7 +422,6 @@ export default function Progress() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32">
-        <h1 className="text-2xl font-black text-white tracking-tight pt-2 mb-4">Progress</h1>
         <div className="flex flex-col gap-3">
           {navCards.map((card) => (
             <NavCard
