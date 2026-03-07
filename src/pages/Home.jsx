@@ -150,6 +150,10 @@ const STREAK_KEYFRAMES = `
     85%           { transform: rotate(-3deg); }
     92%           { transform: rotate(2deg); }
   }
+  @keyframes todayRingPulse {
+    0%, 100% { transform: scale(1);    opacity: 0.55; }
+    50%       { transform: scale(1.13); opacity: 0.2;  }
+  }
 `;
 
 function injectStreakStyles() {
@@ -781,14 +785,37 @@ export default function Home() {
                     <div
                       key={day}
                       style={{
+                        position: 'relative',
                         width: size,
                         height: size,
-                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        marginTop: 11 + verticalOffset - (isToday ? 4 : 0),
+                      }}>
+                      {/* Pulsing grey ring behind today's circle */}
+                      {isToday && (
+                        <div style={{
+                          position: 'absolute',
+                          width: size + 14,
+                          height: size + 14,
+                          borderRadius: '50%',
+                          border: '3px solid rgba(148,163,184,0.45)',
+                          background: 'rgba(148,163,184,0.08)',
+                          animation: 'todayRingPulse 2s ease-in-out infinite',
+                          pointerEvents: 'none',
+                        }} />
+                      )}
+                      <div
+                        style={{
+                          width: size,
+                          height: size,
+                          borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         // Keep centres aligned on the wave by offsetting for size difference
-                        marginTop: 11 + verticalOffset - (isToday ? 4 : 0),
                         background: done
                           ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
                           : isToday
@@ -812,7 +839,6 @@ export default function Home() {
                             : 'dayWiggle 2.4s ease-in-out infinite',
                         animationDelay: bounce ? '0s' : `${i * 0.18}s`,
                         willChange: 'transform',
-                        flexShrink: 0,
                       }}>
                       {done
                         ? <svg width={isToday ? 20 : 16} height={isToday ? 20 : 16} viewBox="0 0 20 20" fill="none">
@@ -827,6 +853,7 @@ export default function Home() {
                             boxShadow: isToday ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
                           }} />
                       }
+                        </div>
                     </div>
                   );
                 })}
