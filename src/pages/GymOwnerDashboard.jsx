@@ -29,9 +29,31 @@ import QRScanner from '../components/gym/QRScanner';
 import CreatePollModal from '../components/polls/CreatePollModal';
 import QRCode from 'react-qr-code';
 
+// ── Palette aligned with Home screen's slate-950/blue-950 gradient aesthetic ──
 const N = {
-  950: '#060d1f', 900: '#0a1628', 850: '#0d1e35', 800: '#112040',
-  750: '#152649', 700: '#1a2f57', 600: '#213a6b', 500: '#2a4a85',
+  950: '#020817',  // slate-950
+  900: '#0f172a',  // slate-900
+  850: '#111827',  // slate-900/gray-900 midpoint
+  800: '#1e293b',  // slate-800
+  750: '#1a2540',  // slate-800/blue-950 midpoint
+  700: '#263354',  // blue-950-ish
+  600: '#334270',  // blue-900
+  500: '#3d5280',
+};
+
+// Background values matching Home screen gradient
+const BG = {
+  // Main page: diagonal slate-950 → blue-950 → slate-950
+  page: 'linear-gradient(135deg, #020817 0%, #0a1628 50%, #020817 100%)',
+  // Main content area: slightly more blue-950 in midpoint
+  main: 'linear-gradient(135deg, #020817 0%, #0c1a3a 50%, #020817 100%)',
+  // Sidebar/header: translucent slate with backdrop-blur (matches home header)
+  sidebar: 'rgba(10, 15, 35, 0.88)',
+  // Cards: slate-900/70 → slate-950/70 (matches home card style)
+  card: 'linear-gradient(160deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.7) 100%)',
+  cardHover: 'linear-gradient(160deg, rgba(30,41,59,0.85) 0%, rgba(15,23,42,0.85) 100%)',
+  // Item rows inside cards
+  row: 'rgba(15, 23, 42, 0.6)',
 };
 
 const A = {
@@ -52,17 +74,14 @@ const NAV = [
   { id:'gym',       label:'Settings',  icon:Settings },
 ];
 
-// ── Stat card with glowing top bar + large icon watermark ──────────────────
+// ── Stat card ──────────────────────────────────────────────────────────────
 const StatCard = ({ icon:Icon, ak='blue', label, value, sub, trend }) => {
   const a = A[ak];
   return (
     <div className="relative overflow-hidden rounded-2xl p-5 border group cursor-default transition-all duration-300 hover:-translate-y-1"
-      style={{ background:`linear-gradient(150deg,${N[800]} 0%,${N[850]} 100%)`, borderColor:a.border, boxShadow:`0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)` }}>
-      {/* Glowing top bar */}
+      style={{ background: BG.card, borderColor: a.border, boxShadow:`0 4px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)`, backdropFilter:'blur(12px)' }}>
       <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl" style={{ background:`linear-gradient(90deg,${a.c},${a.c}44,transparent)` }} />
-      {/* Faint glow blob */}
       <div className="absolute -top-8 -left-4 w-28 h-28 rounded-full opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-30" style={{ background:a.c }} />
-      {/* Watermark icon */}
       <div className="absolute -bottom-3 -right-3 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
         <Icon className="w-20 h-20 opacity-[0.06]" style={{ color:a.c }} />
       </div>
@@ -87,20 +106,18 @@ const StatCard = ({ icon:Icon, ak='blue', label, value, sub, trend }) => {
   );
 };
 
-// ── Main panel ─────────────────────────────────────────────────────────────
+// ── Panel ──────────────────────────────────────────────────────────────────
 const Panel = ({ children, className='' }) => (
   <div className={`rounded-2xl border ${className}`}
-    style={{ background:`linear-gradient(160deg,${N[800]} 0%,${N[850]} 100%)`, borderColor:'rgba(59,130,246,0.14)', boxShadow:'0 8px 32px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.03)' }}>
+    style={{ background: BG.card, borderColor:'rgba(59,130,246,0.15)', boxShadow:'0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)', backdropFilter:'blur(12px)' }}>
     {children}
   </div>
 );
 
-// ── Panel body ─────────────────────────────────────────────────────────────
 const PB = ({ children, className='' }) => (
   <div className={`p-4 md:p-6 ${className}`}>{children}</div>
 );
 
-// ── Panel header ───────────────────────────────────────────────────────────
 const PH = ({ title, subtitle, action, actionLabel, badge, ak, icon:Icon }) => {
   const accentColor = ak ? A[ak].c : '#60a5fa';
   return (
@@ -133,11 +150,10 @@ const PH = ({ title, subtitle, action, actionLabel, badge, ak, icon:Icon }) => {
   );
 };
 
-// Chart tooltip
 const DT = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl px-3 py-2 shadow-2xl text-xs" style={{ background:N[900], border:`1px solid ${N[600]}` }}>
+    <div className="rounded-xl px-3 py-2 shadow-2xl text-xs" style={{ background:N[900], border:`1px solid ${N[600]}`, backdropFilter:'blur(8px)' }}>
       <p className="mb-1" style={{ color:'#6b87b8' }}>{label}</p>
       {payload.map((p,i) => <p key={i} className="font-bold" style={{ color:p.color }}>{p.value} {p.name}</p>)}
     </div>
@@ -158,7 +174,7 @@ const Tag = ({ children, color='blue' }) => {
 
 const Empty = ({ icon:Icon, label, action, actionLabel }) => (
   <div className="py-10 text-center">
-    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background:N[750], border:`1px solid ${N[700]}` }}>
+    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background:'rgba(15,23,42,0.6)', border:`1px solid rgba(59,130,246,0.12)` }}>
       <Icon className="w-5 h-5" style={{ color:'#3d5a8a' }} />
     </div>
     <p className="text-sm" style={{ color:'#4a6492' }}>{label}</p>
@@ -223,8 +239,12 @@ export default function GymOwnerDashboard() {
   const deleteAccountM   = useMutation({mutationFn:()=>base44.functions.invoke('deleteUserAccount'),onSuccess:()=>{closeModal();base44.auth.logout();}});
   const createPollM      = useMutation({mutationFn:d=>base44.entities.Poll.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,created_by:currentUser.id,voters:[]}),onSuccess:()=>{inv('polls');closeModal();}});
 
-  // Splash
-  const Splash = ({children}) => <div className="min-h-screen flex items-center justify-center p-4" style={{background:N[950]}}><Panel className="max-w-md w-full"><PB className="text-center">{children}</PB></Panel></div>;
+  // Splash screens
+  const Splash = ({children}) => (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{background: BG.page}}>
+      <Panel className="max-w-md w-full"><PB className="text-center">{children}</PB></Panel>
+    </div>
+  );
   if(gymsError) return <Splash><div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center mx-auto mb-5"><X className="w-7 h-7 text-red-400"/></div><h2 className="text-xl font-black text-white mb-2">Error</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>{gymsError.message}</p><Button onClick={()=>window.location.reload()} className="bg-blue-600 text-white">Retry</Button></Splash>;
   if(approvedGyms.length===0&&pendingGyms.length>0) return <Splash><div className="w-14 h-14 rounded-2xl bg-yellow-500/10 border border-yellow-500/25 flex items-center justify-center mx-auto mb-5"><Clock className="w-7 h-7 text-yellow-400"/></div><h2 className="text-xl font-black text-white mb-2">Pending Approval</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>Your gym <span className="text-yellow-400 font-bold">{pendingGyms[0].name}</span> is under review.</p><Link to={createPageUrl('Home')}><Button style={{background:N[700],color:'#93b4e8'}}>Back to Home</Button></Link></Splash>;
   if(myGyms.length===0) return <Splash><div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center mx-auto mb-5"><Dumbbell className="w-7 h-7 text-blue-400"/></div><h2 className="text-xl font-black text-white mb-2">No Gyms Yet</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>Register your gym to get started.</p><Link to={createPageUrl('GymSignup')}><Button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">Register Your Gym</Button></Link></Splash>;
@@ -256,7 +276,6 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════
   const TabOverview = () => (
     <div className="space-y-5">
-      {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Dumbbell}  ak="blue"   label="Today's Check-ins" value={todayCI}        sub="members in today" />
         <StatCard icon={Users}     ak="green"  label="Active This Week"  value={activeThisWeek} sub={`of ${uniqueMembers} members`} trend={weeklyChangePct} />
@@ -264,7 +283,6 @@ export default function GymOwnerDashboard() {
         <StatCard icon={Star}      ak="yellow" label="Avg Rating"        value={selectedGym?.rating?.toFixed(1)??'—'} sub="member rating" />
       </div>
 
-      {/* Chart + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <Panel className="lg:col-span-2">
           <PH title="Check-ins — Last 7 Days" subtitle="Daily attendance" ak="blue" icon={Activity} />
@@ -338,7 +356,6 @@ export default function GymOwnerDashboard() {
         </Panel>
       </div>
 
-      {/* Quick create */}
       <div>
         <p className="text-xs font-bold uppercase tracking-widest mb-3 px-1" style={{color:'#3d5a8a'}}>Quick Create</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -367,7 +384,6 @@ export default function GymOwnerDashboard() {
         </div>
       </div>
 
-      {/* Recent activity */}
       <Panel>
         <PH title="Recent Activity" subtitle="Latest check-ins" ak="purple" icon={Activity}/>
         <PB>
@@ -398,7 +414,6 @@ export default function GymOwnerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* Tiers */}
         <Panel className="lg:col-span-2">
           <PH title="Engagement Tiers" subtitle="Based on last 30 days" ak="orange" icon={Flame}/>
           <PB>
@@ -425,7 +440,6 @@ export default function GymOwnerDashboard() {
           </PB>
         </Panel>
 
-        {/* Leaderboard */}
         <Panel className="lg:col-span-3">
           <PH title="Weekly Leaderboard" subtitle="Most check-ins this week" badge={ci7.length} action={()=>openModal('members')} actionLabel="All Members" ak="yellow" icon={Trophy}/>
           <PB>
@@ -437,7 +451,7 @@ export default function GymOwnerDashboard() {
                   const isTop=idx<3;
                   return (
                     <div key={name} className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                      style={{background:isTop?'linear-gradient(135deg,rgba(251,191,36,0.08),rgba(59,130,246,0.06))':N[750],border:`1px solid ${isTop?'rgba(251,191,36,0.2)':'rgba(59,130,246,0.08)'}`}}>
+                      style={{background:isTop?'linear-gradient(135deg,rgba(251,191,36,0.08),rgba(59,130,246,0.06))':BG.row,border:`1px solid ${isTop?'rgba(251,191,36,0.2)':'rgba(59,130,246,0.08)'}`}}>
                       <span className="text-base w-6 text-center flex-shrink-0">{medals[idx]||<span className="text-xs font-bold" style={{color:'#4a6492'}}>{idx+1}</span>}</span>
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{name?.charAt(0)?.toUpperCase()}</div>
                       <span className="flex-1 text-sm font-semibold text-white truncate">{name}</span>
@@ -467,7 +481,7 @@ export default function GymOwnerDashboard() {
                   <div key={name} className="flex items-center gap-3">
                     <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{color:'#3d5a8a'}}>#{rank+1}</span>
                     <span className="text-sm font-medium text-white w-24 flex-shrink-0">{name}</span>
-                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:N[700]}}>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:'rgba(15,23,42,0.6)'}}>
                       <div className="h-full rounded-full transition-all" style={{width:`${(count/max)*100}%`,background:'linear-gradient(90deg,#3b82f6,#06b6d4)'}}/>
                     </div>
                     <span className="text-sm font-bold text-white w-7 text-right flex-shrink-0">{count}</span>
@@ -484,7 +498,7 @@ export default function GymOwnerDashboard() {
             {rewards.length>0 ? (
               <div className="space-y-2">
                 {rewards.slice(0,6).map(r=>(
-                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg" style={{background:'rgba(167,139,250,0.12)',border:'1px solid rgba(139,92,246,0.25)'}}>{r.icon||'🎁'}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-white truncate">{r.title}</p>
@@ -506,7 +520,6 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════
   const TabContent = () => (
     <div className="space-y-5">
-      {/* Hero create buttons */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           {label:'New Post',      sub:'Share with members',  ak:'blue',   icon:MessageSquarePlus, action:()=>openModal('post')},
@@ -540,7 +553,7 @@ export default function GymOwnerDashboard() {
             {posts.length>0 ? (
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                 {posts.slice(0,10).map(post=>(
-                  <div key={post.id} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                  <div key={post.id} className="p-3.5 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                     <div className="flex items-center gap-2.5 mb-2">
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{post.member_name?.charAt(0)?.toUpperCase()}</div>
                       <p className="text-sm font-semibold text-white flex-1 truncate">{post.member_name}</p>
@@ -561,7 +574,7 @@ export default function GymOwnerDashboard() {
             {events.filter(e=>new Date(e.event_date)>=now).length>0 ? (
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                 {events.filter(e=>new Date(e.event_date)>=now).map(ev=>(
-                  <div key={ev.id} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                  <div key={ev.id} className="p-3.5 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                     {ev.image_url && <img src={ev.image_url} alt={ev.title} className="w-full h-24 object-cover rounded-lg mb-3"/>}
                     <p className="text-sm font-bold text-white mb-1 truncate">{ev.title}</p>
                     <p className="text-xs line-clamp-2 mb-2" style={{color:'#6b87b8'}}>{ev.description}</p>
@@ -687,7 +700,7 @@ export default function GymOwnerDashboard() {
                     <div key={hour} className="flex items-center gap-3">
                       <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{color:'#3d5a8a'}}>#{i+1}</span>
                       <span className="text-sm text-white w-12 flex-shrink-0">{label}</span>
-                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:N[700]}}>
+                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:'rgba(15,23,42,0.6)'}}>
                         <div className="h-full rounded-full" style={{width:`${(count/max)*100}%`,background:'linear-gradient(90deg,#8b5cf6,#ec4899)'}}/>
                       </div>
                       <span className="text-sm font-bold text-white w-7 text-right flex-shrink-0">{count}</span>
@@ -707,7 +720,6 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════
   const TabGym = () => (
     <div className="space-y-5">
-      {/* Gym info banner */}
       <Panel>
         <div className="p-5 md:p-6 flex items-start gap-4 border-b" style={{borderColor:'rgba(59,130,246,0.1)'}}>
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-blue-500/25 flex-shrink-0">
@@ -734,7 +746,7 @@ export default function GymOwnerDashboard() {
               {icon:'📍',l:'Address',  v:selectedGym?.address},
               {icon:'🏷️',l:'Postcode', v:selectedGym?.postcode},
             ].map((f,i)=>(
-              <div key={i} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+              <div key={i} className="p-3.5 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs">{f.icon}</span>
                   <p className="text-xs uppercase tracking-wide font-semibold" style={{color:'#4a6492'}}>{f.l}</p>
@@ -753,7 +765,7 @@ export default function GymOwnerDashboard() {
             {classes.length>0 ? (
               <div className="space-y-2">
                 {classes.slice(0,6).map(cls=>(
-                  <div key={cls.id} className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                  <div key={cls.id} className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:'rgba(52,211,153,0.12)',border:'1px solid rgba(52,211,153,0.25)'}}>
                       <Calendar className="w-4 h-4 text-emerald-400"/>
                     </div>
@@ -775,7 +787,7 @@ export default function GymOwnerDashboard() {
             {coaches.length>0 ? (
               <div className="space-y-2">
                 {coaches.slice(0,6).map(coach=>(
-                  <div key={coach.id} className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                  <div key={coach.id} className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">{coach.name?.charAt(0)?.toUpperCase()}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-white truncate">{coach.name}</p>
@@ -816,11 +828,11 @@ export default function GymOwnerDashboard() {
           {selectedGym?.gallery?.length>0 ? (
             <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
               {selectedGym.gallery.map((url,i)=>(
-                <img key={i} src={url} alt="" className="w-full h-16 object-cover rounded-xl hover:opacity-90 transition-opacity cursor-pointer" style={{border:`1px solid ${N[700]}`}}/>
+                <img key={i} src={url} alt="" className="w-full h-16 object-cover rounded-xl hover:opacity-90 transition-opacity cursor-pointer" style={{border:`1px solid rgba(59,130,246,0.15)`}}/>
               ))}
             </div>
           ) : (
-            <div className="flex items-center gap-4 p-4 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.12)'}}>
+            <div className="flex items-center gap-4 p-4 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.12)'}}>
               <ImageIcon className="w-5 h-5 flex-shrink-0" style={{color:'#4a6492'}}/>
               <p className="text-sm flex-1" style={{color:'#6b87b8'}}>Add photos to showcase your gym and attract members.</p>
               <button onClick={()=>openModal('photos')} className="text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0" style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}>Add Photos</button>
@@ -838,14 +850,14 @@ export default function GymOwnerDashboard() {
               {l:'Gym ID',v:selectedGym?.id,mono:true},
               {l:'Status',v:selectedGym?.verified?'✓ Verified':'Not Verified',c:selectedGym?.verified?'#34d399':'#f87171'},
             ].map((f,i)=>(
-              <div key={i} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+              <div key={i} className="p-3.5 rounded-xl" style={{background:BG.row,border:'1px solid rgba(59,130,246,0.1)'}}>
                 <p className="text-xs uppercase tracking-wide mb-1.5 font-semibold" style={{color:'#4a6492'}}>{f.l}</p>
                 <p className={`text-sm font-semibold truncate ${f.mono?'font-mono text-xs break-all':''}`} style={{color:f.c||'white'}}>{f.v||'—'}</p>
               </div>
             ))}
           </div>
           <Link to={createPageUrl('GymCommunity')+'?id='+selectedGym?.id}>
-            <button className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-125 flex items-center justify-center gap-2" style={{background:N[700],color:'#93b4e8',border:`1px solid ${N[600]}`}}>
+            <button className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-125 flex items-center justify-center gap-2" style={{background:'rgba(15,23,42,0.6)',color:'#93b4e8',border:`1px solid rgba(59,130,246,0.2)`}}>
               <Eye className="w-4 h-4"/>View Public Gym Page
             </button>
           </Link>
@@ -883,12 +895,12 @@ export default function GymOwnerDashboard() {
           </div>
           {expanded && approvedGyms.length>1 && (
             <div className="mt-3 relative">
-              <button onClick={()=>setGymOpen(o=>!o)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold" style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>
+              <button onClick={()=>setGymOpen(o=>!o)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold" style={{background:'rgba(15,23,42,0.6)',color:'#93b4e8',border:`1px solid rgba(59,130,246,0.2)`}}>
                 <span className="truncate">{selectedGym?.name}</span>
                 <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${gymOpen?'rotate-180':''}`}/>
               </button>
               {gymOpen && (
-                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:N[800],border:`1px solid ${N[600]}`}}>
+                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:N[900],border:`1px solid rgba(59,130,246,0.2)`,backdropFilter:'blur(12px)'}}>
                   {approvedGyms.map(g=>(
                     <button key={g.id} onClick={()=>{setSelectedGym(g);setGymOpen(false);}} className="w-full text-left px-3 py-2.5 text-xs font-semibold hover:brightness-125 transition-all" style={{color:selectedGym?.id===g.id?'#60a5fa':'#93b4e8',background:selectedGym?.id===g.id?'rgba(59,130,246,0.1)':'transparent'}}>{g.name}</button>
                   ))}
@@ -943,26 +955,32 @@ export default function GymOwnerDashboard() {
   // RENDER
   // ══════════════════════════════════════════════════════════════════
   return (
-    <div className="flex h-screen overflow-hidden" style={{background:N[950],fontFamily:"'DM Sans','Inter',sans-serif"}}>
+    <div className="flex h-screen overflow-hidden" style={{background: BG.page, fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
-      {sidebarOpen && <div className="fixed inset-0 z-40 md:hidden" style={{background:'rgba(6,13,31,0.75)',backdropFilter:'blur(4px)'}} onClick={()=>setSidebarOpen(false)}/>}
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 md:hidden" style={{background:'rgba(2,8,23,0.8)',backdropFilter:'blur(6px)'}} onClick={()=>setSidebarOpen(false)}/>
+      )}
 
+      {/* Mobile sidebar */}
       <div className={`fixed top-0 left-0 h-full z-50 flex flex-col transition-transform duration-300 md:hidden ${sidebarOpen?'translate-x-0':'-translate-x-full'}`}
-        style={{width:260,background:N[900],borderRight:'1px solid rgba(59,130,246,0.12)'}}>
+        style={{width:260, background: BG.sidebar, backdropFilter:'blur(16px)', borderRight:'1px solid rgba(59,130,246,0.15)'}}>
         <SidebarContent forceExpanded={true}/>
       </div>
 
+      {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
-        style={{width:collapsed?64:224,background:N[900],borderRight:'1px solid rgba(59,130,246,0.12)'}}>
+        style={{width:collapsed?64:224, background: BG.sidebar, backdropFilter:'blur(16px)', borderRight:'1px solid rgba(59,130,246,0.15)'}}>
         <SidebarContent/>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Header — matches home screen header style */}
         <header className="flex items-center justify-between px-4 md:px-6 py-3 flex-shrink-0 border-b"
-          style={{background:N[900],borderColor:'rgba(59,130,246,0.12)'}}>
+          style={{background: BG.sidebar, backdropFilter:'blur(16px)', borderColor:'rgba(59,130,246,0.15)'}}>
           <div className="flex items-center gap-3 min-w-0">
-            <button onClick={()=>setSidebarOpen(o=>!o)} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 md:hidden" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}><Menu className="w-4 h-4"/></button>
-            <button onClick={()=>setCollapsed(o=>!o)} className="w-8 h-8 rounded-lg items-center justify-center flex-shrink-0 hidden md:flex" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}><Menu className="w-4 h-4"/></button>
+            <button onClick={()=>setSidebarOpen(o=>!o)} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 md:hidden" style={{background:'rgba(30,41,59,0.6)',color:'#6b87b8',border:`1px solid rgba(59,130,246,0.2)`}}><Menu className="w-4 h-4"/></button>
+            <button onClick={()=>setCollapsed(o=>!o)} className="w-8 h-8 rounded-lg items-center justify-center flex-shrink-0 hidden md:flex" style={{background:'rgba(30,41,59,0.6)',color:'#6b87b8',border:`1px solid rgba(59,130,246,0.2)`}}><Menu className="w-4 h-4"/></button>
             <div className="min-w-0">
               <h1 className="text-sm md:text-base font-black text-white leading-tight truncate">{NAV.find(n=>n.id===tab)?.label}</h1>
               <p className="text-xs hidden sm:block" style={{color:'#3d5a8a'}}>{format(now,'EEE, d MMM yyyy')}</p>
@@ -973,7 +991,7 @@ export default function GymOwnerDashboard() {
             <button onClick={()=>openModal('post')} className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg text-xs font-bold hover:brightness-125 transition-all" style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}><Pencil className="w-3.5 h-3.5"/><span className="hidden sm:inline">New Post</span></button>
             <button onClick={()=>openModal('qrScanner')} className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg text-xs font-bold hover:brightness-125 transition-all" style={{background:'rgba(16,185,129,0.12)',color:'#34d399',border:'1px solid rgba(16,185,129,0.28)'}}><QrCode className="w-3.5 h-3.5"/><span className="hidden sm:inline">Scan QR</span></button>
             {selectedGym?.join_code ? (
-              <button onClick={()=>openModal('qrCode')} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold tracking-widest" style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>{selectedGym.join_code}</button>
+              <button onClick={()=>openModal('qrCode')} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold tracking-widest" style={{background:'rgba(30,41,59,0.6)',color:'#93b4e8',border:`1px solid rgba(59,130,246,0.2)`}}>{selectedGym.join_code}</button>
             ) : (
               <button onClick={async()=>{try{const r=await base44.functions.invoke('generateGymJoinCode',{gym_id:selectedGym.id});if(r.data?.success)invGyms();}catch{}}} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold" style={{background:'rgba(16,185,129,0.12)',color:'#34d399',border:'1px solid rgba(16,185,129,0.28)'}}><Plus className="w-3.5 h-3.5"/>Generate Code</button>
             )}
@@ -981,12 +999,14 @@ export default function GymOwnerDashboard() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 pb-24 md:pb-6" style={{background:N[950]}}>
+        {/* Main content area — slate-950/blue-950 gradient matching home screen */}
+        <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 pb-24 md:pb-6" style={{background: BG.main}}>
           <div className="max-w-[1400px] mx-auto">{TABS[tab]||TABS.overview}</div>
         </main>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex md:hidden border-t" style={{background:N[900],borderColor:'rgba(59,130,246,0.15)',paddingBottom:'env(safe-area-inset-bottom)'}}>
+      {/* Bottom mobile nav — matches home screen header with backdrop blur */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 flex md:hidden border-t" style={{background: BG.sidebar, backdropFilter:'blur(16px)', borderColor:'rgba(59,130,246,0.15)', paddingBottom:'env(safe-area-inset-bottom)'}}>
         {NAV.map(item=>{
           const active=tab===item.id;
           return (
@@ -1028,11 +1048,11 @@ export default function GymOwnerDashboard() {
       </AlertDialog>
 
       {modal==='qrCode' && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{background:'rgba(6,13,31,0.9)',backdropFilter:'blur(8px)'}}>
-          <div className="rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl" style={{background:N[900],border:`1px solid ${N[600]}`}}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{background:'rgba(2,8,23,0.9)',backdropFilter:'blur(10px)'}}>
+          <div className="rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl" style={{background: BG.card, backdropFilter:'blur(16px)', border:`1px solid rgba(59,130,246,0.2)`}}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-black text-white">Gym Join QR</h3>
-              <button onClick={closeModal} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}><X className="w-4 h-4"/></button>
+              <button onClick={closeModal} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'rgba(30,41,59,0.6)',color:'#6b87b8',border:`1px solid rgba(59,130,246,0.2)`}}><X className="w-4 h-4"/></button>
             </div>
             <div id="qr-fullscreen" className="flex justify-center p-5 rounded-2xl bg-white mb-4">
               <QRCode value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym?.join_code}`} size={220} level="H"/>
@@ -1040,7 +1060,7 @@ export default function GymOwnerDashboard() {
             <p className="text-center text-sm mb-4" style={{color:'#6b87b8'}}>Join code: <span className="font-black text-white tracking-widest">{selectedGym?.join_code}</span></p>
             <div className="space-y-2.5">
               <button onClick={()=>dlQR('qr-fullscreen')} className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-white" style={{background:'linear-gradient(135deg,#10b981,#0d9488)'}}><Download className="w-4 h-4"/>Download QR Code</button>
-              <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-sm" style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>Close</button>
+              <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-sm" style={{background:'rgba(30,41,59,0.6)',color:'#93b4e8',border:`1px solid rgba(59,130,246,0.2)`}}>Close</button>
             </div>
           </div>
         </div>
