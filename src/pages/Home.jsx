@@ -765,36 +765,46 @@ export default function Home() {
             );
 
             const sorted = [...trainingDays].sort((a, b) => a - b);
+            const todayDow = new Date().getDay();
+            const todayDay = todayDow === 0 ? 7 : todayDow;
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 80 }}>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88 }}>
                 {sorted.map((day, i) => {
-                  const done   = loggedDays.has(day);
-                  const bounce = justLoggedDay === day;
-                  // Gentle sine wave: amplitude 14px, each button offset vertically
+                  const done    = loggedDays.has(day);
+                  const bounce  = justLoggedDay === day;
+                  const isToday = day === todayDay;
+                  const size    = isToday ? 46 : 37;
                   const verticalOffset = Math.round(Math.sin((i / (sorted.length - 1 || 1)) * Math.PI * 2) * 11);
 
                   return (
                     <div
                       key={day}
                       style={{
-                        width: 37,
-                        height: 37,
+                        width: size,
+                        height: size,
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginTop: 11 + verticalOffset,
+                        // Keep centres aligned on the wave by offsetting for size difference
+                        marginTop: 11 + verticalOffset - (isToday ? 4 : 0),
                         background: done
-                          ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)'
-                          : 'linear-gradient(to bottom, #1e293b, #0f172a)',
+                          ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
+                          : isToday
+                            ? 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)'
+                            : 'linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)',
                         border: done
-                          ? '1px solid rgba(96,165,250,0.4)'
-                          : '1px solid rgba(51,65,85,0.8)',
+                          ? '1px solid rgba(147,197,253,0.5)'
+                          : isToday
+                            ? '1px solid rgba(100,116,139,0.7)'
+                            : '1px solid rgba(51,65,85,0.8)',
                         boxShadow: done
-                          ? '0 3px 0 0 #1a3fa8, 0 6px 16px rgba(0,0,80,0.5), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 0 16px rgba(255,255,255,0.04)'
-                          : '0 3px 0 0 #0a0f1a, 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 12px rgba(255,255,255,0.02)',
-                        transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
+                          ? '0 4px 0 0 #1233779, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)'
+                          : isToday
+                            ? '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)'
+                            : '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)',
+                        transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease',
                         animation: bounce
                           ? 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards'
                           : done
@@ -805,10 +815,17 @@ export default function Home() {
                         flexShrink: 0,
                       }}>
                       {done
-                        ? <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        ? <svg width={isToday ? 20 : 16} height={isToday ? 20 : 16} viewBox="0 0 20 20" fill="none">
                             <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
-                        : <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.45)', background: 'transparent' }} />
+                        : <div style={{
+                            width: isToday ? 18 : 14,
+                            height: isToday ? 18 : 14,
+                            borderRadius: '50%',
+                            border: isToday ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
+                            background: isToday ? 'rgba(255,255,255,0.05)' : 'transparent',
+                            boxShadow: isToday ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
+                          }} />
                       }
                     </div>
                   );
