@@ -17,9 +17,8 @@ Deno.serve(async (req) => {
 
     const q = query.toLowerCase();
 
-    // Fetch up to 200 users at a time and filter in memory
-    // This is safe because User.list returns paginated results
-    const allUsers = await base44.asServiceRole.entities.User.list('full_name', 200);
+    // Fetch a smaller batch to stay within CPU limits
+    const allUsers = await base44.asServiceRole.entities.User.list('full_name', 50);
 
     const results = allUsers
       .filter(u =>
