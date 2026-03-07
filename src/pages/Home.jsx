@@ -27,7 +27,7 @@ import { createPageUrl } from '../utils';
 // STREAK ICON URLS
 // ─────────────────────────────────────────────
 const POSE_1_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
-const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/760358372_STREAKICON21.png';
+const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/8bf862b3f_STREAKICON22.png';
 
 // ─────────────────────────────────────────────
 // WEB AUDIO HELPERS
