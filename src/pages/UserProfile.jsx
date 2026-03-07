@@ -59,35 +59,35 @@ export default function UserProfile() {
   const longestStreak = profileUser?.longest_streak || 0;
 
   const badgeDefs = [
-    { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-    { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-    { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-    { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-    { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-    { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-    { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
-    { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
-    { id: '7_days', icon: '🔥', color: 'from-orange-400 to-red-500', days: 7 },
-    { id: '30_days', icon: '⚡', color: 'from-yellow-400 to-orange-500', days: 30 },
-    { id: '50_days', icon: '💪', color: 'from-purple-400 to-pink-500', days: 50 },
-    { id: '100_days', icon: '👑', color: 'from-blue-400 to-cyan-500', days: 100 },
-    { id: '365_days', icon: '🏆', color: 'from-green-400 to-emerald-500', days: 365 }
-  ];
+  { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+  { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+  { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+  { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+  { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+  { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+  { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+  { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
+  { id: '7_days', icon: '🔥', color: 'from-orange-400 to-red-500', days: 7 },
+  { id: '30_days', icon: '⚡', color: 'from-yellow-400 to-orange-500', days: 30 },
+  { id: '50_days', icon: '💪', color: 'from-purple-400 to-pink-500', days: 50 },
+  { id: '100_days', icon: '👑', color: 'from-blue-400 to-cyan-500', days: 100 },
+  { id: '365_days', icon: '🏆', color: 'from-green-400 to-emerald-500', days: 365 }];
+
 
   if (!userId) {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
         <p className="text-white">No user specified.</p>
-      </div>
-    );
+      </div>);
+
   }
 
   if (loadingUser) {
     return (
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   if (isError || !profileUser) {
@@ -95,8 +95,8 @@ export default function UserProfile() {
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col items-center justify-center gap-4">
         <p className="text-white text-lg">User not found.</p>
         <Link to={createPageUrl('Friends')} className="text-blue-400 underline text-sm">Go back</Link>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -118,9 +118,9 @@ export default function UserProfile() {
           <div className="flex-shrink-0">
             <div className="w-[76px] h-[76px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
               <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
-                {profileUser.avatar_url
-                  ? <img src={profileUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-                  : <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
+                {profileUser.avatar_url ?
+                <img src={profileUser.avatar_url} alt={displayName} className="w-full h-full object-cover" /> :
+                <span className="text-xl font-black text-white">{displayName?.charAt(0)?.toUpperCase()}</span>
                 }
               </div>
             </div>
@@ -145,92 +145,92 @@ export default function UserProfile() {
         {/* Status + meta */}
         <div className="space-y-1">
           <StatusBadge checkIns={checkIns} streak={streak} size="sm" />
-          {profileUser.gym_location && (
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3 h-3 text-slate-500 flex-shrink-0" />
-              <span className="text-[11px] text-slate-400">{profileUser.gym_location}</span>
-            </div>
-          )}
-          {primaryMembership && (
-            <div className="flex items-center gap-1.5">
+          
+
+
+
+
+
+          {primaryMembership &&
+          <div className="flex items-center gap-1.5">
               <Building2 className="w-3 h-3 text-blue-400 flex-shrink-0" />
               <span className="text-[11px] text-blue-400 font-semibold">{primaryMembership.gym_name}</span>
             </div>
-          )}
-          {longestStreak > 0 && (
-            <div className="flex items-center gap-1.5">
+          }
+          {longestStreak > 0 &&
+          <div className="flex items-center gap-1.5">
               <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />
               <span className="text-[11px] text-slate-400">Best streak: <span className="text-orange-300 font-semibold">{longestStreak} days</span></span>
             </div>
-          )}
+          }
         </div>
 
         {/* Badges */}
-        {profileUser.equipped_badges?.length > 0 && (
-          <div className="flex items-center gap-1.5">
+        {profileUser.equipped_badges?.length > 0 &&
+        <div className="flex items-center gap-1.5">
             {profileUser.equipped_badges.map((badgeId) => {
-              const badge = badgeDefs.find((b) => b.id === badgeId || `${b.days}_day_streak` === badgeId);
-              if (!badge) return null;
-              return (
-                <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
+            const badge = badgeDefs.find((b) => b.id === badgeId || `${b.days}_day_streak` === badgeId);
+            if (!badge) return null;
+            return (
+              <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
                   <span className="text-xs">{badge.icon}</span>
-                </div>
-              );
-            })}
+                </div>);
+
+          })}
           </div>
-        )}
+        }
       </div>
 
       {/* ── POSTS ── */}
       <div className="max-w-4xl mx-auto pb-32">
-        {favouritePosts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+        {favouritePosts.length === 0 ?
+        <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <div className="w-14 h-14 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-3">
               <Star className="w-6 h-6 text-slate-600" />
             </div>
             <p className="text-sm font-black text-white mb-1">No favourite posts yet</p>
             <p className="text-xs text-slate-500">Posts {displayName} marks as favourite will appear here.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-px">
-            {favouritePosts.map((post) => (
-              <div
-                key={post.id}
-                className="relative aspect-square bg-slate-900 cursor-pointer overflow-hidden"
-                onClick={() => setSelectedPost(post)}
-              >
-                {post.video_url
-                  ? <video src={post.video_url} className="w-full h-full object-cover" />
-                  : <img src={post.image_url} alt="" className="w-full h-full object-cover" />
-                }
+          </div> :
+
+        <div className="grid grid-cols-3 gap-px">
+            {favouritePosts.map((post) =>
+          <div
+            key={post.id}
+            className="relative aspect-square bg-slate-900 cursor-pointer overflow-hidden"
+            onClick={() => setSelectedPost(post)}>
+
+                {post.video_url ?
+            <video src={post.video_url} className="w-full h-full object-cover" /> :
+            <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+            }
                 <div className="absolute top-1.5 right-1.5">
                   <Star className="w-3 h-3 fill-amber-400 text-amber-400 drop-shadow" />
                 </div>
               </div>
-            ))}
+          )}
           </div>
-        )}
+        }
       </div>
 
       {/* Post lightbox */}
-      {selectedPost && (
-        <div
-          className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedPost(null)}
-        >
+      {selectedPost &&
+      <div
+        className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={() => setSelectedPost(null)}>
+
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg">
             <PostCard
-              post={selectedPost}
-              fullWidth={false}
-              currentUser={currentUser}
-              onLike={() => {}}
-              onComment={() => {}}
-              onSave={() => {}}
-              onDelete={() => setSelectedPost(null)}
-            />
+            post={selectedPost}
+            fullWidth={false}
+            currentUser={currentUser}
+            onLike={() => {}}
+            onComment={() => {}}
+            onSave={() => {}}
+            onDelete={() => setSelectedPost(null)} />
+
           </div>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
