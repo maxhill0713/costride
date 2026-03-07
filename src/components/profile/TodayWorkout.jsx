@@ -307,7 +307,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       {/* COLLAPSED STATE */}
       {!isExpanded && (
-        <div className="flex flex-col items-center gap-3 pb-1">
+        <div className="flex flex-col items-center gap-2 pb-1">
           {alreadyLoggedToday && (
             <Button
               onClick={(e) => { e.stopPropagation(); setShowSummary(true); }}
@@ -316,8 +316,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               View Summary
             </Button>
           )}
-          {/* Spacer to give the absolute chevron room */}
-          <div className="h-7" />
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
+            className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1">
+            <ChevronDown className="w-5 h-5" />
+          </button>
         </div>
       )}
 
@@ -479,24 +482,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         </div>
       )}
 
-      {/* Single chevron — always rendered, animates centre→bottom-right and rotates */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (isExpanded) { setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-          else setIsExpanded(true);
-        }}
-        className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-        style={{
-          position: 'absolute',
-          bottom: isExpanded ? '10px' : '50%',
-          right: isExpanded ? '10px' : '50%',
-          transform: isExpanded ? 'translate(0, 0) rotate(180deg)' : 'translate(50%, 50%) rotate(0deg)',
-          transition: 'bottom 0.55s ease, right 0.55s ease, transform 0.55s ease',
-          zIndex: 20,
-        }}>
-        <ChevronDown className="w-5 h-5" />
-      </button>
+      {/* Collapse chevron — expanded state only, fixed bottom-right */}
+      {isExpanded && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+          style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 20 }}>
+          <ChevronDown className="w-5 h-5" style={{ transform: 'rotate(180deg)' }} />
+        </button>
+      )}
 
       {/* Modals */}
       <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
