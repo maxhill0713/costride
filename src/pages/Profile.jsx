@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Progress } from '@/components/ui/progress';
 import AddGoalModal from '../components/goals/AddGoalModal';
@@ -27,7 +26,6 @@ import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 import PostCard from '../components/feed/PostCard';
 import ExerciseInsights from '../components/profile/ExerciseInsights';
-
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -149,7 +147,6 @@ export default function Profile() {
   const displayName = currentUser?.username || currentUser?.full_name;
   const memberLifts = lifts;
   const userCheckIns = checkIns;
-
   const memberGyms = memberGymsData;
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
@@ -192,9 +189,9 @@ export default function Profile() {
       await queryClient.cancelQueries({ queryKey: ['goals', currentUser?.id] });
       const previous = queryClient.getQueryData(['goals', currentUser?.id]);
       queryClient.setQueryData(['goals', currentUser?.id], (old = []) => [
-      ...old,
-      { id: `temp-${Date.now()}`, ...data, status: 'active', current_value: 0 }]
-      );
+        ...old,
+        { id: `temp-${Date.now()}`, ...data, status: 'active', current_value: 0 }
+      ]);
       return { previous };
     },
     onError: (err, data, context) => {
@@ -212,7 +209,7 @@ export default function Profile() {
       await queryClient.cancelQueries({ queryKey: ['goals'] });
       const previousGoals = queryClient.getQueryData(['goals', currentUser?.id]);
       queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
-      old.map((goal) => goal.id === id ? { ...goal, ...data } : goal)
+        old.map((goal) => goal.id === id ? { ...goal, ...data } : goal)
       );
       return { previousGoals };
     },
@@ -230,7 +227,7 @@ export default function Profile() {
       await queryClient.cancelQueries({ queryKey: ['goals', currentUser?.id] });
       const previous = queryClient.getQueryData(['goals', currentUser?.id]);
       queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
-      old.filter((g) => g.id !== id)
+        old.filter((g) => g.id !== id)
       );
       return { previous };
     },
@@ -269,9 +266,9 @@ export default function Profile() {
       await queryClient.cancelQueries({ queryKey: ['userPosts', currentUser?.id] });
       const previous = queryClient.getQueryData(['userPosts', currentUser?.id]);
       queryClient.setQueryData(['userPosts', currentUser?.id], (old = []) => [
-      { id: `temp-${Date.now()}`, member_id: currentUser?.id, member_name: currentUser?.full_name, member_avatar: currentUser?.avatar_url, content: data.content, image_url: data.image_url || null, video_url: data.video_url || null, likes: 0, comments: [], created_date: new Date().toISOString() },
-      ...old]
-      );
+        { id: `temp-${Date.now()}`, member_id: currentUser?.id, member_name: currentUser?.full_name, member_avatar: currentUser?.avatar_url, content: data.content, image_url: data.image_url || null, video_url: data.video_url || null, likes: 0, comments: [], created_date: new Date().toISOString() },
+        ...old
+      ]);
       setShowCreatePost(false);
       setPostContent('');
       setPostImage('');
@@ -288,48 +285,33 @@ export default function Profile() {
   });
 
   const handleUpdateGoal = (goal, newValue, status, milestones) => {
-    const updateData = {
-      current_value: newValue,
-      status: status || goal.status
-    };
-    if (milestones) {
-      updateData.milestones = milestones;
-    }
-    updateGoalMutation.mutate({
-      id: goal.id,
-      data: updateData
-    });
+    const updateData = { current_value: newValue, status: status || goal.status };
+    if (milestones) { updateData.milestones = milestones; }
+    updateGoalMutation.mutate({ id: goal.id, data: updateData });
   };
 
   const handleToggleReminder = (goal) => {
-    updateGoalMutation.mutate({
-      id: goal.id,
-      data: { reminder_enabled: !goal.reminder_enabled }
-    });
+    updateGoalMutation.mutate({ id: goal.id, data: { reminder_enabled: !goal.reminder_enabled } });
   };
 
   const activeGoals = goals.filter((g) => g.status === 'active');
-
   const currentStreak = currentUser?.current_streak || 0;
   const longestStreak = currentUser?.longest_streak || 0;
   const lastCheckIn = currentUser?.last_check_in_date;
   const daysSinceCheckIn = lastCheckIn ? Math.floor((new Date() - new Date(lastCheckIn)) / (1000 * 60 * 60 * 24)) : null;
 
   const streakMilestones = [
-  { days: 7, name: '7 Day Warrior', icon: '🔥', color: 'from-orange-400 to-red-500' },
-  { days: 30, name: 'Monthly Master', icon: '⚡', color: 'from-yellow-400 to-orange-500' },
-  { days: 50, name: 'Unstoppable', icon: '💪', color: 'from-purple-400 to-pink-500' },
-  { days: 100, name: 'Century Champion', icon: '👑', color: 'from-blue-400 to-cyan-500' },
-  { days: 365, name: 'Year Legend', icon: '🏆', color: 'from-green-400 to-emerald-500' }];
+    { days: 7, name: '7 Day Warrior', icon: '🔥', color: 'from-orange-400 to-red-500' },
+    { days: 30, name: 'Monthly Master', icon: '⚡', color: 'from-yellow-400 to-orange-500' },
+    { days: 50, name: 'Unstoppable', icon: '💪', color: 'from-purple-400 to-pink-500' },
+    { days: 100, name: 'Century Champion', icon: '👑', color: 'from-blue-400 to-cyan-500' },
+    { days: 365, name: 'Year Legend', icon: '🏆', color: 'from-green-400 to-emerald-500' }
+  ];
 
   const nextMilestone = streakMilestones.find((m) => m.days > currentStreak) || streakMilestones[streakMilestones.length - 1];
   const streakProgress = currentStreak / nextMilestone.days * 100;
   const earnedBadges = streakMilestones.filter((m) => longestStreak >= m.days);
-
-  const completedChallenges = allChallenges.filter((c) =>
-  c.status === 'completed' &&
-  c.participants?.includes(currentUser?.id)
-  ).length;
+  const completedChallenges = allChallenges.filter((c) => c.status === 'completed' && c.participants?.includes(currentUser?.id)).length;
 
   const stats = {
     totalLifts: memberLifts.length,
@@ -344,7 +326,6 @@ export default function Profile() {
     const workouts = stats.totalLifts;
     const prs = stats.personalRecords;
     const streak = currentStreak;
-
     if (workouts < 5) return { title: 'Beginner', subtitle: 'Just Starting Out', next: 'Complete 5 workouts to become a Novice', color: 'from-gray-400 to-gray-500' };
     if (workouts < 20) return { title: 'Novice Lifter', subtitle: 'Building Habits', next: 'Complete 20 workouts to become Committed', color: 'from-blue-400 to-blue-500' };
     if (workouts < 50) return { title: 'Committed Athlete', subtitle: 'Making Progress', next: 'Complete 50 workouts to become Dedicated', color: 'from-purple-400 to-purple-500' };
@@ -367,15 +348,11 @@ export default function Profile() {
   const streakRisk = getStreakRisk();
 
   const getProgressData = () => {
-    const last30Days = memberLifts.
-    filter((l) => l.exercise === 'bench_press').
-    slice(0, 10).
-    reverse().
-    map((l, i) => ({
-      session: `S${i + 1}`,
-      weight: l.weight_lbs
-    }));
-    return last30Days;
+    return memberLifts
+      .filter((l) => l.exercise === 'bench_press')
+      .slice(0, 10)
+      .reverse()
+      .map((l, i) => ({ session: `S${i + 1}`, weight: l.weight_lbs }));
   };
 
   if (!currentUser) return null;
@@ -383,142 +360,106 @@ export default function Profile() {
   const tabTriggerClass = "flex-1 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2 py-1.5 flex items-center justify-center border border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#04070f,#1a3a8a,#04070f)]">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-
-        {/* ── BANNER: tall enough to contain avatar + info + tabs ── */}
+        {/* ── BANNER ── */}
         <div className="relative w-full overflow-hidden border-b border-slate-700/50">
-
-          {/* Background image / gradient — fills the whole header block including tabs */}
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-800/60 to-slate-950">
             {currentUser.hero_image_url &&
-            <>
+              <>
                 <img src={currentUser.hero_image_url} alt="" className="w-full h-full object-cover opacity-60" />
                 <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-slate-900/50 to-slate-950/80" />
               </>
             }
           </div>
 
-          {/* Settings icon — pinned to very top right of banner */}
           <div className="absolute top-3 right-4 z-30">
             <Link to={createPageUrl('Settings')} className="p-2 -m-2">
               <Settings className="lucide lucide-settings w-6 h-6 text-slate-300 hover:text-white transition-colors -translate-y-5" />
             </Link>
           </div>
 
-          {/* All header content stacked in normal flow on top of the background */}
           <div className="relative z-10 pt-3 pb-0 px-4 max-w-4xl mx-auto">
-
-            {/* Avatar + name row */}
             <div className="flex items-start gap-6 mb-5">
               <button
                 onClick={() => setShowProfilePicture(true)}
                 className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-slate-700/50 cursor-pointer hover:ring-blue-500/50 transition-all active:scale-95 flex-shrink-0">
                 {currentUser.avatar_url ?
-                <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" /> :
-                <span className="text-3xl font-semibold text-white tracking-tight">
-                    {displayName?.charAt(0)?.toUpperCase()}
-                  </span>
+                  <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" /> :
+                  <span className="text-3xl font-semibold text-white tracking-tight">{displayName?.charAt(0)?.toUpperCase()}</span>
                 }
               </button>
-
               <div className="pt-1 flex-1">
                 <div className="flex items-center flex-wrap gap-2 mb-2">
                   <h1 className="text-xl md:text-2xl font-medium tracking-[-0.02em] text-white leading-tight">{displayName}</h1>
                   <StatusBadge checkIns={userCheckIns} streak={currentStreak} size="sm" />
                 </div>
-
-                {/* Equipped Badges */}
-                <button
-                  onClick={() => setShowBadgesModal(true)}
-                  className="flex items-center gap-2 mt-1 hover:opacity-80 transition-opacity">
+                <button onClick={() => setShowBadgesModal(true)} className="flex items-center gap-2 mt-1 hover:opacity-80 transition-opacity">
                   {currentUser?.equipped_badges?.length > 0 ?
-                  currentUser.equipped_badges.map((badgeId) => {
-                    const badge = streakMilestones.find((m) => `${m.days}_day_streak` === badgeId) ||
-                    [
-                    { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-                    { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-                    { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-                    { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-                    { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-                    { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-                    { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
-                    { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }].
-                    find((b) => b.id === badgeId);
-                    if (!badge) return null;
-                    return (
-                      <div
-                        key={badgeId}
-                        className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:scale-110 transition-transform`}
-                        title={badge.name || badgeId}>
+                    currentUser.equipped_badges.map((badgeId) => {
+                      const badge = streakMilestones.find((m) => `${m.days}_day_streak` === badgeId) ||
+                        [
+                          { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+                          { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+                          { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+                          { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+                          { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+                          { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+                          { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+                          { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' }
+                        ].find((b) => b.id === badgeId);
+                      if (!badge) return null;
+                      return (
+                        <div key={badgeId} className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:scale-110 transition-transform`} title={badge.name || badgeId}>
                           <span className="text-base">{badge.icon}</span>
-                        </div>);
-
-                  }) :
-                  [0, 1, 2].map((i) =>
-                  <div
-                    key={`empty-${i}`}
-                    className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:ring-blue-400/50 transition-all opacity-60 hover:opacity-80">
+                        </div>
+                      );
+                    }) :
+                    [0, 1, 2].map((i) =>
+                      <div key={`empty-${i}`} className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg ring-2 ring-slate-600/40 cursor-pointer hover:ring-blue-400/50 transition-all opacity-60 hover:opacity-80">
                         <span className="text-base">✨</span>
                       </div>
-                  )
+                    )
                   }
                 </button>
               </div>
             </div>
 
-            {/* Gym location / editing */}
             {isEditing ?
-            <div className="space-y-3 mb-1">
+              <div className="space-y-3 mb-1">
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Gym Location</label>
-                  <Input
-                  value={editData.gym_location}
-                  onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })}
-                  placeholder="e.g. Iron Paradise, Manchester"
-                  className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
+                  <Input value={editData.gym_location} onChange={(e) => setEditData({ ...editData, gym_location: e.target.value })} placeholder="e.g. Iron Paradise, Manchester" className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
                 </div>
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block tracking-[-0.01em]">Profile Photo</label>
                   <div className="flex gap-2">
-                    <Input
-                    value={editData.avatar_url}
-                    onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
-                    placeholder="https://..."
-                    className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
-                    <Button
-                    type="button"
-                    onClick={() => setShowEditAvatar(true)}
-                    className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl px-4">
+                    <Input value={editData.avatar_url} onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })} placeholder="https://..." className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500" />
+                    <Button type="button" onClick={() => setShowEditAvatar(true)} className="bg-slate-700/60 hover:bg-slate-600/70 text-white border border-slate-600/40 backdrop-blur-sm rounded-xl px-4">
                       <Camera className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               </div> :
-
-            <div className="space-y-1 mb-1">
+              <div className="space-y-1 mb-1">
                 {currentUser.gym_location &&
-              <div className="flex items-center gap-2 text-slate-400">
+                  <div className="flex items-center gap-2 text-slate-400">
                     <MapPin className="w-4 h-4" />
                     <span className="text-sm font-normal tracking-[-0.01em]">{currentUser.gym_location}</span>
                   </div>
-              }
+                }
                 {primaryGym &&
-              <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
+                  <Link to={createPageUrl('GymCommunity') + `?id=${primaryGym.id}`}>
                     <div className="flex items-center gap-2 flex-wrap cursor-pointer hover:opacity-80 transition-opacity mt-1">
                       <Building2 className="w-4 h-4 text-blue-400" />
-                      <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">
-                        {primaryGym.name}
-                      </Badge>
+                      <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs">{primaryGym.name}</Badge>
                     </div>
                   </Link>
-              }
+                }
               </div>
             }
           </div>
 
-          {/* ── TABS: inside the banner, full width, no gap ── */}
           <div className="relative z-20 sticky top-0 border-b border-white/5">
             <TabsList className="w-full grid grid-cols-4 bg-transparent p-2 h-14 gap-1">
               <TabsTrigger value="stats" className={tabTriggerClass}>Insights</TabsTrigger>
@@ -527,233 +468,135 @@ export default function Profile() {
               <TabsTrigger value="posts" className={tabTriggerClass}>Posts</TabsTrigger>
             </TabsList>
           </div>
-
         </div>
         {/* ── END BANNER ── */}
 
-        {/* Main Content */}
         <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
-
           <TabsContent value="progress" className="space-y-4 mt-0">
             {currentUser?.workout_split ?
-            <>
-                <button
-                onClick={() => setShowSplitModal(true)}
-                className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-blue-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
-                  <Calendar className="w-3 h-3" />
-                  Edit Your Split
+              <>
+                <button onClick={() => setShowSplitModal(true)} className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-blue-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+                  <Calendar className="w-3 h-3" />Edit Your Split
                 </button>
-
                 <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
                   <div className="flex items-center gap-2 mb-3">
                     <Dumbbell className="w-4 h-4 text-indigo-400" />
                     <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
                   </div>
-                  <WorkoutSplitHeatmap
-                  checkIns={userCheckIns}
-                  workoutSplit={currentUser?.workout_split}
-                  weeklyGoal={currentUser?.weekly_goal}
-                  trainingDays={currentUser?.training_days}
-                  customWorkoutTypes={currentUser?.custom_workout_types || {}} />
+                  <WorkoutSplitHeatmap checkIns={userCheckIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
                 </Card>
               </> :
-            null}
+              null
+            }
             <WorkoutProgressTracker currentUser={currentUser} />
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-4">
-            <ExerciseInsights
-              workoutLogs={workoutLogs}
-              workoutSplit={currentUser?.custom_workout_types}
-              trainingDays={currentUser?.training_days} />
+            <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
           </TabsContent>
 
           <TabsContent value="posts" className="space-y-4">
             <div className="flex gap-2">
-              <Button
-                onClick={() => setShowCreatePost(true)}
-                className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-24 py-2 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Post
+              <Button onClick={() => setShowCreatePost(true)} className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-24 py-2 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+                <Plus className="w-4 h-4 mr-2" />Create Post
               </Button>
-              <Button
-                onClick={() => setGridView(!gridView)}
-                className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu"
-                title={gridView ? "List view" : "Grid view"}>
+              <Button onClick={() => setGridView(!gridView)} className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu" title={gridView ? "List view" : "Grid view"}>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  {gridView ?
-                  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /> :
-                  <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
-                  }
+                  {gridView ? <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /> : <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />}
                 </svg>
               </Button>
             </div>
 
             {userPosts.filter((post) => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ?
-            <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
+              <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                 <div className="max-w-sm mx-auto">
                   <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
                     <FileText className="w-8 h-8 text-slate-400" />
                   </div>
                   <h4 className="text-lg font-bold text-white mb-2">No Posts Yet</h4>
-                  <p className="text-slate-400 text-sm">
-                    Share your fitness journey with friends or your gym community!
-                  </p>
+                  <p className="text-slate-400 text-sm">Share your fitness journey with friends or your gym community!</p>
                 </div>
               </Card> :
-
-            <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
+              <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
                 {userPosts.filter((post) => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
-                if (a.is_favourite === b.is_favourite) return 0;
-                return a.is_favourite ? -1 : 1;
-              }).map((post) => {
-                if (gridView) {
-                  return (
-                    <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedGridPost(post)}>
-                        {post.video_url ?
-                      <video src={post.video_url} className="w-full h-full object-cover" /> :
-                      post.image_url ?
-                      <img src={post.image_url} alt="Post" className="w-full h-full object-cover" /> :
-                      <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
-                            <FileText className="w-8 h-8 text-slate-500" />
-                          </div>
-                      }
-                        {post.is_favourite &&
-                      <div className="absolute top-2 right-2">
-                            <Star className="w-5 h-5 fill-amber-400 text-amber-400 drop-shadow-lg" />
-                          </div>
-                      }
-                      </div>);
-
-                } else {
-                  return (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      fullWidth={true}
-                      isOwnProfile={true}
-                      currentUser={currentUser}
-                      onLike={() => {}}
-                      onComment={() => {}}
-                      onSave={() => {}}
-                      onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />);
-
-                }
-              })}
+                  if (a.is_favourite === b.is_favourite) return 0;
+                  return a.is_favourite ? -1 : 1;
+                }).map((post) => {
+                  if (gridView) {
+                    return (
+                      <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedGridPost(post)}>
+                        {post.video_url ? <video src={post.video_url} className="w-full h-full object-cover" /> :
+                          post.image_url ? <img src={post.image_url} alt="Post" className="w-full h-full object-cover" /> :
+                            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center"><FileText className="w-8 h-8 text-slate-500" /></div>
+                        }
+                        {post.is_favourite && <div className="absolute top-2 right-2"><Star className="w-5 h-5 fill-amber-400 text-amber-400 drop-shadow-lg" /></div>}
+                      </div>
+                    );
+                  } else {
+                    return <PostCard key={post.id} post={post} fullWidth={true} isOwnProfile={true} currentUser={currentUser} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />;
+                  }
+                })}
               </div>
             }
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
-            <Button
-              onClick={() => setShowAddGoal(true)}
-              className="hover:bg-primary/90 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-32 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
-              <Plus className="w-4 h-4 mr-2" />
-              New Goal
+            <Button onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-32 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+              <Plus className="w-4 h-4 mr-2" />New Goal
             </Button>
 
             {activeGoals.length === 0 ?
-            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
+              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
                 <div className="max-w-sm mx-auto">
                   <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center">
                     <Target className="w-10 h-10 text-blue-400" />
                   </div>
                   <h4 className="text-lg font-bold text-white mb-2">No Active Goals</h4>
-                  <p className="text-slate-400 text-sm mb-5 leading-relaxed">
-                    Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.
-                  </p>
-                  <Button
-                  onClick={() => setShowAddGoal(true)}
-                  className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white rounded-xl font-semibold border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Your First Goal
+                  <p className="text-slate-400 text-sm mb-5 leading-relaxed">Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.</p>
+                  <Button onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white rounded-xl font-semibold border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                    <Plus className="w-4 h-4 mr-2" />Create Your First Goal
                   </Button>
                 </div>
               </Card> :
-
-            <div className="space-y-3">
-                {activeGoals.map((goal) =>
-              <GoalCard
-                key={goal.id}
-                goal={goal}
-                onUpdate={handleUpdateGoal}
-                onDelete={(id) => deleteGoalMutation.mutate(id)}
-                onToggleReminder={handleToggleReminder} />
-              )}
+              <div className="space-y-3">
+                {activeGoals.map((goal) => <GoalCard key={goal.id} goal={goal} onUpdate={handleUpdateGoal} onDelete={(id) => deleteGoalMutation.mutate(id)} onToggleReminder={handleToggleReminder} />)}
               </div>
             }
 
             {goals.filter((g) => g.status === 'completed').length > 0 &&
-            <div className="mt-6">
+              <div className="mt-6">
                 <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  Completed Goals ({goals.filter((g) => g.status === 'completed').length})
+                  <CheckCircle className="w-4 h-4" />Completed Goals ({goals.filter((g) => g.status === 'completed').length})
                 </h4>
                 <div className="space-y-2">
                   {goals.filter((g) => g.status === 'completed').slice(0, 3).map((goal) =>
-                <Card key={goal.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
+                    <Card key={goal.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                           <CheckCircle className="w-5 h-5 text-green-400" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-white text-sm truncate">{goal.title}</h5>
-                          <p className="text-xs text-slate-400">
-                            {goal.target_value} {goal.unit} achieved
-                          </p>
+                          <p className="text-xs text-slate-400">{goal.target_value} {goal.unit} achieved</p>
                         </div>
-                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">
-                          ✓ Done
-                        </Badge>
+                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">✓ Done</Badge>
                       </div>
                     </Card>
-                )}
+                  )}
                 </div>
               </div>
             }
           </TabsContent>
-
         </div>
       </Tabs>
 
       {/* Modals */}
-      <AddGoalModal
-        open={showAddGoal}
-        onClose={() => setShowAddGoal(false)}
-        onSave={(data) => createGoalMutation.mutate(data)}
-        currentUser={currentUser}
-        isLoading={createGoalMutation.isPending} />
-
-      <EditHeroImageModal
-        open={showEditHero}
-        onClose={() => setShowEditHero(false)}
-        currentImageUrl={currentUser?.hero_image_url}
-        onSave={(hero_image_url) => updateHeroMutation.mutate(hero_image_url)}
-        isLoading={updateHeroMutation.isPending} />
-
-      <EditHeroImageModal
-        open={showEditAvatar}
-        onClose={() => setShowEditAvatar(false)}
-        currentImageUrl={currentUser?.avatar_url}
-        onSave={(avatar_url) => updateAvatarMutation.mutate(avatar_url)}
-        isLoading={updateAvatarMutation.isPending} />
-
-      <CreateSplitModal
-        isOpen={showSplitModal}
-        onClose={() => setShowSplitModal(false)}
-        currentUser={currentUser} />
-
-      <BadgesModal
-        isOpen={showBadgesModal}
-        onClose={() => setShowBadgesModal(false)}
-        user={currentUser}
-        checkIns={userCheckIns} />
-
-      <ProfilePictureModal
-        isOpen={showProfilePicture}
-        onClose={() => setShowProfilePicture(false)}
-        imageUrl={currentUser?.avatar_url}
-        userName={displayName}>
+      <AddGoalModal open={showAddGoal} onClose={() => setShowAddGoal(false)} onSave={(data) => createGoalMutation.mutate(data)} currentUser={currentUser} isLoading={createGoalMutation.isPending} />
+      <EditHeroImageModal open={showEditHero} onClose={() => setShowEditHero(false)} currentImageUrl={currentUser?.hero_image_url} onSave={(hero_image_url) => updateHeroMutation.mutate(hero_image_url)} isLoading={updateHeroMutation.isPending} />
+      <EditHeroImageModal open={showEditAvatar} onClose={() => setShowEditAvatar(false)} currentImageUrl={currentUser?.avatar_url} onSave={(avatar_url) => updateAvatarMutation.mutate(avatar_url)} isLoading={updateAvatarMutation.isPending} />
+      <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
+      <BadgesModal isOpen={showBadgesModal} onClose={() => setShowBadgesModal(false)} user={currentUser} checkIns={userCheckIns} />
+      <ProfilePictureModal isOpen={showProfilePicture} onClose={() => setShowProfilePicture(false)} imageUrl={currentUser?.avatar_url} userName={displayName}>
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-blue-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
@@ -772,7 +615,6 @@ export default function Profile() {
                 </div>
               </div>
             </Card>
-
             <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-orange-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
@@ -789,7 +631,6 @@ export default function Profile() {
                 </div>
               </div>
             </Card>
-
             <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-purple-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
@@ -808,7 +649,6 @@ export default function Profile() {
                 </div>
               </div>
             </Card>
-
             <Card className="group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-3 rounded-xl hover:border-green-400/30 transition-all cursor-pointer overflow-hidden shadow-2xl shadow-black/20">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
@@ -839,60 +679,32 @@ export default function Profile() {
         </div>
       </ProfilePictureModal>
 
-      {/* Grid Post Modal */}
       {selectedGridPost && gridView &&
-      <div className="fixed inset-0 bg-transparent backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto" onClick={() => setSelectedGridPost(null)}>
+        <div className="fixed inset-0 bg-transparent backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto" onClick={() => setSelectedGridPost(null)}>
           <div onClick={(e) => e.stopPropagation()} className="relative w-full">
-            <PostCard
-            post={selectedGridPost}
-            fullWidth={false}
-            onLike={() => {}}
-            onComment={() => {}}
-            onSave={() => {}}
-            onDelete={() => {
-              queryClient.invalidateQueries({ queryKey: ['userPosts'] });
-              setSelectedGridPost(null);
-            }} />
+            <PostCard post={selectedGridPost} fullWidth={false} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => { queryClient.invalidateQueries({ queryKey: ['userPosts'] }); setSelectedGridPost(null); }} />
           </div>
         </div>
       }
 
-      {/* Create Post Modal */}
       {showCreatePost &&
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <Card className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-white">Create Post</h3>
-              <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setShowCreatePost(false);
-                setPostContent('');
-                setPostImage('');
-                setPostVideo('');
-                setAllowGymRepost(false);
-              }}
-              className="text-slate-400 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={() => { setShowCreatePost(false); setPostContent(''); setPostImage(''); setPostVideo(''); setAllowGymRepost(false); }} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </Button>
             </div>
-
             <div className="space-y-4">
-              <Textarea
-              value={postContent}
-              onChange={(e) => setPostContent(e.target.value)}
-              placeholder="What's on your mind?"
-              className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 min-h-[120px]" />
-
+              <Textarea value={postContent} onChange={(e) => setPostContent(e.target.value)} placeholder="What's on your mind?" className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 min-h-[120px]" />
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">Add Image</label>
                 <div className="flex gap-2">
                   <label className="flex-1">
                     <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
                     <Button type="button" variant="outline" className="w-full border-slate-600/40 text-slate-300 hover:bg-slate-700/50" onClick={(e) => e.currentTarget.previousElementSibling?.click()} disabled={uploading}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploading ? 'Uploading...' : 'Upload Image'}
+                      <Upload className="w-4 h-4 mr-2" />{uploading ? 'Uploading...' : 'Upload Image'}
                     </Button>
                   </label>
                   <label>
@@ -902,19 +714,15 @@ export default function Profile() {
                     </Button>
                   </label>
                 </div>
-                {postImage &&
-              <Input value={postImage} onChange={(e) => setPostImage(e.target.value)} placeholder="Or paste image URL..." className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 mt-2 text-xs" />
-              }
+                {postImage && <Input value={postImage} onChange={(e) => setPostImage(e.target.value)} placeholder="Or paste image URL..." className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 mt-2 text-xs" />}
               </div>
-
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">Add Video</label>
                 <div className="flex gap-2">
                   <label className="flex-1">
                     <input type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
                     <Button type="button" variant="outline" className="w-full border-slate-600/40 text-slate-300 hover:bg-slate-700/50" onClick={(e) => e.currentTarget.previousElementSibling?.click()} disabled={uploading}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploading ? 'Uploading...' : 'Upload Video'}
+                      <Upload className="w-4 h-4 mr-2" />{uploading ? 'Uploading...' : 'Upload Video'}
                     </Button>
                   </label>
                   <label>
@@ -924,23 +732,10 @@ export default function Profile() {
                     </Button>
                   </label>
                 </div>
-                {postVideo &&
-              <Input value={postVideo} onChange={(e) => setPostVideo(e.target.value)} placeholder="Or paste video URL..." className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 mt-2 text-xs" />
-              }
+                {postVideo && <Input value={postVideo} onChange={(e) => setPostVideo(e.target.value)} placeholder="Or paste video URL..." className="bg-slate-800/60 border border-slate-600/40 rounded-xl text-white placeholder:text-slate-500 mt-2 text-xs" />}
               </div>
-
-              {postImage &&
-            <div className="rounded-xl overflow-hidden border border-slate-600/40">
-                  <img src={postImage} alt="Preview" className="w-full h-48 object-cover" />
-                </div>
-            }
-
-              {postVideo &&
-            <div className="rounded-xl overflow-hidden border border-slate-600/40">
-                  <video src={postVideo} controls className="w-full h-64 bg-black" />
-                </div>
-            }
-
+              {postImage && <div className="rounded-xl overflow-hidden border border-slate-600/40"><img src={postImage} alt="Preview" className="w-full h-48 object-cover" /></div>}
+              {postVideo && <div className="rounded-xl overflow-hidden border border-slate-600/40"><video src={postVideo} controls className="w-full h-64 bg-black" /></div>}
               <div className="flex flex-col gap-2 p-3 bg-slate-800/40 border border-slate-600/40 rounded-xl">
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="gym-repost" checked={allowGymRepost} onChange={(e) => setAllowGymRepost(e.target.checked)} className="w-4 h-4 cursor-pointer mt-0.5 flex-shrink-0" />
@@ -950,17 +745,13 @@ export default function Profile() {
                   </label>
                 </div>
               </div>
-
-              <Button
-              onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
-              disabled={!postContent.trim() || createPostMutation.isPending}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold disabled:opacity-50">
+              <Button onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })} disabled={!postContent.trim() || createPostMutation.isPending} className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg font-semibold disabled:opacity-50">
                 {createPostMutation.isPending ? 'Posting...' : 'Post'}
               </Button>
             </div>
           </Card>
         </div>
       }
-    </div>);
-
+    </div>
+  );
 }
