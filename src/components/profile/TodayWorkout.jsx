@@ -175,32 +175,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0]
       });
-      if (lastWorkout?.exercises) {
-        const improvements = todayWorkout.exercises.map((exercise, index) => {
-          const lastExercise = lastWorkout.exercises[index];
-          if (!lastExercise) return null;
-          const currentWeight = parseFloat(exercise.weight) || 0;
-          const lastWeight = parseFloat(lastExercise.weight) || 0;
-          if (currentWeight > lastWeight) return { exercise: exercise.exercise, increase: currentWeight - lastWeight };
-          return null;
-        }).filter(Boolean);
-        for (const improvement of improvements) {
-          await base44.entities.Post.create({
-            member_id: currentUser.id,
-            member_name: currentUser.full_name || currentUser.username || 'User',
-            member_avatar: currentUser.avatar_url || '',
-            content: `${currentUser.full_name || currentUser.username || 'User'} increased their weight on ${improvement.exercise} by ${improvement.increase.toFixed(1)}kg!`,
-            likes: 0, comments: [], reactions: {}
-          });
-        }
-      }
-      await base44.entities.Post.create({
-        member_id: currentUser.id,
-        member_name: currentUser.full_name || currentUser.username || 'User',
-        member_avatar: currentUser.avatar_url || '',
-        content: 'Well done, workout finished! Now its time to get your friends involved!',
-        likes: 0, comments: [], reactions: {}, exercise: 'workout_completion_nudge'
-      });
+
       const newStreak = (currentUser.current_streak || 0) + 1;
       await base44.auth.updateMe({ current_streak: newStreak });
       let challengesData = [];
