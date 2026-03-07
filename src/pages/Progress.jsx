@@ -102,7 +102,7 @@ function GoalsPage({ currentUser, onBack }) {
                 <Target className="w-10 h-10 text-blue-400" />
               </div>
               <h4 className="text-lg font-bold text-white mb-2">No Active Goals</h4>
-              <p className="text-slate-400 text-sm mb-5 leading-relaxed">Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.</p>
+              <p className="text-slate-400 text-sm mb-5 leading-relaxed">Set your first goal and start tracking your fitness journey.</p>
               <button onClick={() => setShowAddGoal(true)} className={btnClass + " mx-auto"}>
                 <Plus className="w-3.5 h-3.5" />Create Your First Goal
               </button>
@@ -188,6 +188,73 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   );
 }
 
+// ─── Duolingo Card ────────────────────────────────────────────────────────────
+function DuoCard({ label, description, badge, badgeColor, icon: Icon, bottomColor, onClick, as: As = 'button', href }) {
+  const [pressed, setPressed] = useState(false);
+
+  const handlePress = () => {
+    setPressed(true);
+    setTimeout(() => setPressed(false), 150);
+  };
+
+  const inner = (
+    <div
+      className="relative w-full"
+      style={{ transform: pressed ? 'translateY(4px)' : 'translateY(0)', transition: 'transform 0.1s ease' }}
+    >
+      {/* bottom shadow layer — the "floor" */}
+      <div
+        className="absolute inset-0 rounded-2xl"
+        style={{ backgroundColor: bottomColor, transform: 'translateY(4px)', zIndex: 0 }}
+      />
+      {/* top card face */}
+      <div
+        className="relative z-10 w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/10"
+        style={{ background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%)', backdropFilter: 'blur(12px)' }}
+      >
+        {/* icon */}
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: `${bottomColor}33`, border: `1px solid ${bottomColor}55` }}>
+          <Icon className="w-5 h-5" style={{ color: bottomColor }} />
+        </div>
+        {/* text */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-black text-white">{label}</span>
+            <span className={`text-[10px] font-bold border px-1.5 py-0.5 rounded-full ${badgeColor}`}>{badge}</span>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{description}</p>
+        </div>
+        <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+      </div>
+    </div>
+  );
+
+  if (As === 'link') {
+    return (
+      <Link
+        to={href}
+        className="block w-full"
+        onMouseDown={handlePress}
+        onTouchStart={handlePress}
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      className="w-full text-left"
+      onMouseDown={handlePress}
+      onTouchStart={handlePress}
+      onClick={onClick}
+    >
+      {inner}
+    </button>
+  );
+}
+
 // ─── Main Hub ────────────────────────────────────────────────────────────────
 export default function Progress() {
   const [view, setView] = useState('hub');
@@ -244,104 +311,61 @@ export default function Progress() {
     {
       id: 'split',
       label: 'Workout Split',
-      description: 'Visualise your training week with a day-by-day heatmap. See how consistently you hit each muscle group and track overall session volume over time.',
+      description: 'Heatmap of your training week and session volume over time.',
       badge: currentUser?.workout_split ? 'Active split' : 'No split set',
       badgeColor: currentUser?.workout_split ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
       icon: Dumbbell,
-      iconBg: 'from-indigo-500 to-purple-600',
-      iconShadow: 'shadow-[0_3px_0_0_#3730a3,0_8px_20px_rgba(79,70,229,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      accentColor: 'border-indigo-500/30 hover:border-indigo-400/50',
-      glowColor: 'from-indigo-600/10 via-purple-600/5 to-transparent',
+      bottomColor: '#4338ca',
       isLink: false,
     },
     {
       id: 'analytics',
       label: 'Advanced Analytics',
-      description: 'Dig into your exercise data with volume trends, personal records, muscle group breakdowns, and session frequency charts across every lift you\'ve logged.',
+      description: 'Volume trends, personal records and muscle group breakdowns.',
       badge: `${workoutLogs.length} sessions`,
       badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
       icon: BarChart3,
-      iconBg: 'from-purple-500 to-pink-600',
-      iconShadow: 'shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      accentColor: 'border-purple-500/30 hover:border-purple-400/50',
-      glowColor: 'from-purple-600/10 via-pink-600/5 to-transparent',
+      bottomColor: '#7c3aed',
       isLink: false,
     },
     {
       id: 'goals',
       label: 'Goals',
-      description: 'Create, manage and track your fitness targets. Set lift milestones, attendance streaks or bodyweight goals — and mark them off as you crush them.',
-      badge: activeGoals.length > 0 ? `${activeGoals.length} active` : 'No active goals',
+      description: 'Set lift milestones, attendance streaks and bodyweight targets.',
+      badge: activeGoals.length > 0 ? `${activeGoals.length} active` : 'No goals yet',
       badgeColor: activeGoals.length > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
       icon: Target,
-      iconBg: 'from-blue-500 to-cyan-500',
-      iconShadow: 'shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      accentColor: 'border-blue-500/30 hover:border-blue-400/50',
-      glowColor: 'from-blue-600/10 via-cyan-600/5 to-transparent',
+      bottomColor: '#1d4ed8',
       isLink: false,
     },
     {
       id: 'community',
       label: 'Community',
-      description: 'Connect with members at your gym. View the community feed, see who\'s training, react to posts, and stay motivated by the people training alongside you.',
-      badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'No gym joined',
-      badgeColor: gymMemberships.length > 0 ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
+      description: 'Your gym feed, members, and activity from people training alongside you.',
+      badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''}` : 'No gym joined',
+      badgeColor: gymMemberships.length > 0 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
       icon: Users,
-      iconBg: 'from-green-500 to-emerald-600',
-      iconShadow: 'shadow-[0_3px_0_0_#065f46,0_8px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      accentColor: 'border-green-500/30 hover:border-green-400/50',
-      glowColor: 'from-green-600/10 via-emerald-600/5 to-transparent',
+      bottomColor: '#059669',
       isLink: true,
       href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
     },
   ];
 
-  const sharedClass = (accentColor) =>
-    `group relative w-full bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border ${accentColor} rounded-2xl px-5 py-5 active:translate-y-[2px] active:scale-[0.99] transition-all duration-100 transform-gpu shadow-2xl shadow-black/20 text-left`;
-
-  const CardInner = ({ label, description, badge, badgeColor, icon: Icon, iconBg, iconShadow, glowColor }) => (
-    <>
-      <div className={`absolute inset-0 bg-gradient-to-r ${glowColor} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-      <div className="relative flex items-start gap-4">
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center flex-shrink-0 mt-0.5 ${iconShadow}`}>
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-        <div className="flex-1 min-w-0 pr-6">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <p className="text-base font-black text-white">{label}</p>
-            <Badge className={`text-[10px] font-semibold border px-2 py-0.5 ${badgeColor}`}>{badge}</Badge>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed">{description}</p>
-        </div>
-        <ChevronRight className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-      </div>
-    </>
-  );
-
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-3">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32">
 
-        <div className="pt-2 pb-1">
-          <h1 className="text-2xl font-black text-white tracking-tight">Progress</h1>
-          <p className="text-xs text-slate-400 mt-0.5">Everything you need to track and improve your training</p>
-        </div>
+        <h1 className="text-2xl font-black text-white tracking-tight pt-2 mb-4">Progress</h1>
 
         <div className="flex flex-col gap-3">
-          {navCards.map((card) => {
-            if (card.isLink) {
-              return (
-                <Link key={card.id} to={card.href} className={sharedClass(card.accentColor)}>
-                  <CardInner {...card} />
-                </Link>
-              );
-            }
-            return (
-              <button key={card.id} onClick={() => setView(card.id)} className={sharedClass(card.accentColor)}>
-                <CardInner {...card} />
-              </button>
-            );
-          })}
+          {navCards.map((card) => (
+            <DuoCard
+              key={card.id}
+              {...card}
+              as={card.isLink ? 'link' : 'button'}
+              onClick={card.isLink ? undefined : () => setView(card.id)}
+            />
+          ))}
         </div>
 
       </div>
