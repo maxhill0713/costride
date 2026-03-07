@@ -28,17 +28,13 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Friend request already exists' }, { status: 400 });
       }
 
-      // Fetch the friend's user record so we can store their name/avatar
-      const friendUsers = await db.entities.User.filter({ id: friendId });
-      const friendUser = friendUsers[0];
-
       const friendRequest = await db.entities.Friend.create({
         user_id: user.id,
         user_name: user.full_name,
         user_avatar: user.avatar_url || '',
         friend_id: friendId,
-        friend_name: friendUser?.full_name || '',
-        friend_avatar: friendUser?.avatar_url || '',
+        friend_name: '',
+        friend_avatar: '',
         status: 'pending'
       });
 
