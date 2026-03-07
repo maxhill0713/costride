@@ -908,7 +908,7 @@ export default function Home() {
                         {isRestDay
                           ? done
                             // Completed rest day — filled green leaf
-                            ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 24 24" fill="none">
+                            ? <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 24 24" fill="none">
                                 <path
                                   d="M12 3 C12 3 5 5 5 12 C5 16.5 8 19.5 12 21 C16 19.5 19 16.5 19 12 C19 5 12 3 12 3Z"
                                   fill="#4ade80"
@@ -922,7 +922,7 @@ export default function Home() {
                                 <path d="M12 13 Q14.5 14 16 13.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
                               </svg>
                             // Incomplete rest day — same leaf, just outlined grey
-                            : <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 24 24" fill="none">
+                            : <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 24 24" fill="none">
                                 <path
                                   d="M12 3 C12 3 5 5 5 12 C5 16.5 8 19.5 12 21 C16 19.5 19 16.5 19 12 C19 5 12 3 12 3Z"
                                   fill="none"
@@ -1037,7 +1037,7 @@ export default function Home() {
                               }}>
                                 {/* Workout title — top left */}
                                 <span style={{
-                                  fontSize: 13,
+                                  fontSize: 18,
                                   fontWeight: 800,
                                   color: '#ffffff',
                                   letterSpacing: '0.01em',
@@ -1053,10 +1053,16 @@ export default function Home() {
                                 {/* View Summary button — only for logged gym days */}
                                 {done && !isRestDay && workoutLog && (
                                   <button
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                       e.stopPropagation();
-                                      setSummaryLog(workoutLog);
                                       setActiveCircleDay(null);
+                                      // Fetch full workout log detail by ID
+                                      try {
+                                        const logs = await base44.entities.WorkoutLog.filter({ id: workoutLog.id });
+                                        setSummaryLog(logs[0] || workoutLog);
+                                      } catch {
+                                        setSummaryLog(workoutLog);
+                                      }
                                     }}
                                     style={{
                                       marginTop: 8,
@@ -1309,21 +1315,38 @@ export default function Home() {
               {summaryLog.exercises?.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Exercises</p>
-                  {summaryLog.exercises.map((ex, idx) => (
-                    <div key={idx} style={{
-                      background: 'rgba(255,255,255,0.04)', borderRadius: 10,
-                      padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)',
-                    }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
-                        {ex.name || ex.exercise_name || `Exercise ${idx + 1}`}
-                      </p>
-                      {(ex.sets || ex.reps || ex.weight) && (
-                        <p style={{ fontSize: 11, color: '#94a3b8', margin: '3px 0 0', fontWeight: 500 }}>
-                          {[ex.sets && `${ex.sets} sets`, ex.reps && `${ex.reps} reps`, ex.weight && `${ex.weight}kg`].filter(Boolean).join(' · ')}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                  {summaryLog.exercises.map((ex, idx) => {
+                    const exName = ex.name || ex.exercise_name || ex.title || `Exercise ${idx + 1}`;
+                    // Support sets as array of {reps, weight} or flat sets/reps/weight fields
+                    const setsArr = Array.isArray(ex.sets) ? ex.sets : null;
+                    const flatDetail = !setsArr && (ex.sets || ex.reps || ex.weight_kg || ex.weight)
+                      ? [
+                          ex.sets && `${ex.sets} sets`,
+                          ex.reps && `${ex.reps} reps`,
+                          (ex.weight_kg || ex.weight) && `${ex.weight_kg || ex.weight}kg`
+                        ].filter(Boolean).join(' · ')
+                      : null;
+                    return (
+                      <div key={idx} style={{
+                        background: 'rgba(255,255,255,0.04)', borderRadius: 10,
+                        padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)',
+                      }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>{exName}</p>
+                        {setsArr && setsArr.length > 0 && (
+                          <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            {setsArr.map((s, si) => (
+                              <p key={si} style={{ fontSize: 11, color: '#94a3b8', margin: 0, fontWeight: 500 }}>
+                                Set {si + 1}: {[s.reps && `${s.reps} reps`, (s.weight_kg || s.weight) && `${s.weight_kg || s.weight}kg`, s.duration_seconds && `${s.duration_seconds}s`].filter(Boolean).join(' · ')}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        {flatDetail && (
+                          <p style={{ fontSize: 11, color: '#94a3b8', margin: '3px 0 0', fontWeight: 500 }}>{flatDetail}</p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
