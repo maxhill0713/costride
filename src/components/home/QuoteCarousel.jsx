@@ -44,10 +44,12 @@ export default function QuoteCarousel() {
   };
 
   return (
-    <motion.div className="bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-950/80 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-950/50 flex flex-col overflow-hidden select-none relative py-2"
-
+    <motion.div className="rounded-2xl overflow-hidden select-none relative py-2 shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
     style={{
-      background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(6, 17, 34, 0.85) 100%)'
+      background: 'linear-gradient(135deg, rgba(88,28,135,0.10) 0%, rgba(8,10,20,0.88) 100%)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      border: '1px solid rgba(139,92,246,0.15)',
     }}
     animate={{ minHeight: expanded ? '400px' : '224px' }}
     transition={{ duration: 0.3 }}>
