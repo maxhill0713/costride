@@ -6,6 +6,7 @@ import { createPageUrl } from '../utils';
 import { ChevronLeft, MapPin, Building2, Flame, Star } from 'lucide-react';
 import PostCard from '../components/feed/PostCard';
 import StatusBadge from '../components/profile/StatusBadge';
+import ProfilePictureModal from '../components/profile/ProfilePictureModal';
 
 export default function UserProfile() {
   const urlParams = new URLSearchParams(window.location.search);
