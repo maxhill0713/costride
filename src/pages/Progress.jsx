@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell, Users } from 'lucide-react';
+import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell, Users, Flame, TrendingUp, Calendar, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -12,7 +12,30 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 
-// ─── Goals Sub-page ──────────────────────────────────────────────────────────
+// ─── Shared back-page wrapper ─────────────────────────────────────────────────
+function SubPage({ title, onBack, action, children }) {
+  return (
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      <div className="max-w-4xl mx-auto px-4 pt-5 pb-32">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
+            </button>
+            <h1 className="text-xl font-black text-white tracking-tight">{title}</h1>
+          </div>
+          {action}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Goals Sub-page ───────────────────────────────────────────────────────────
 function GoalsPage({ currentUser, onBack }) {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const queryClient = useQueryClient();
@@ -30,9 +53,7 @@ function GoalsPage({ currentUser, onBack }) {
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ['goals', currentUser?.id] });
       const previous = queryClient.getQueryData(['goals', currentUser?.id]);
-      queryClient.setQueryData(['goals', currentUser?.id], (old = []) => [
-        ...old, { id: `temp-${Date.now()}`, ...data, status: 'active', current_value: 0 },
-      ]);
+      queryClient.setQueryData(['goals', currentUser?.id], (old = []) => [...old, { id: `temp-${Date.now()}`, ...data, status: 'active', current_value: 0 }]);
       return { previous };
     },
     onError: (err, data, context) => { queryClient.setQueryData(['goals', currentUser?.id], context.previous); },
@@ -44,9 +65,7 @@ function GoalsPage({ currentUser, onBack }) {
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['goals'] });
       const previousGoals = queryClient.getQueryData(['goals', currentUser?.id]);
-      queryClient.setQueryData(['goals', currentUser?.id], (old = []) =>
-        old.map((goal) => goal.id === id ? { ...goal, ...data } : goal)
-      );
+      queryClient.setQueryData(['goals', currentUser?.id], (old = []) => old.map((goal) => goal.id === id ? { ...goal, ...data } : goal));
       return { previousGoals };
     },
     onError: (err, variables, context) => { queryClient.setQueryData(['goals', currentUser?.id], context.previousGoals); },
@@ -71,231 +90,142 @@ function GoalsPage({ currentUser, onBack }) {
     updateGoalMutation.mutate({ id: goal.id, data: updateData });
   };
 
-  const handleToggleReminder = (goal) => {
-    updateGoalMutation.mutate({ id: goal.id, data: { reminder_enabled: !goal.reminder_enabled } });
-  };
-
   const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
 
-  const btnClass = "bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-4 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
+  const btnCyan = "bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 text-white font-bold rounded-full px-4 py-1.5 flex items-center gap-1.5 justify-center shadow-[0_3px_0_0_#0369a1,0_6px_16px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-3">
-            <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95">
-              <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
-            </button>
-            <h1 className="text-xl font-black text-white tracking-tight">Goals</h1>
+    <SubPage title="Goals" onBack={onBack} action={
+      <button onClick={() => setShowAddGoal(true)} className={btnCyan}>
+        <Plus className="w-3.5 h-3.5" />New Goal
+      </button>
+    }>
+      {activeGoals.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-4">
+            <Target className="w-7 h-7 text-slate-600" />
           </div>
-          <button onClick={() => setShowAddGoal(true)} className={btnClass}>
-            <Plus className="w-3.5 h-3.5" />New Goal
-          </button>
+          <p className="text-base font-black text-white mb-1">No Goals Yet</p>
+          <p className="text-sm text-slate-500 mb-5">Set your first fitness goal and start tracking.</p>
+          <button onClick={() => setShowAddGoal(true)} className={btnCyan}><Plus className="w-3.5 h-3.5" />Create a Goal</button>
         </div>
-
-        {activeGoals.length === 0 ? (
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
-            <div className="max-w-sm mx-auto">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center">
-                <Target className="w-10 h-10 text-blue-400" />
+      ) : (
+        <div className="space-y-3">
+          {activeGoals.map((goal) => (
+            <GoalCard key={goal.id} goal={goal} onUpdate={handleUpdateGoal} onDelete={(id) => deleteGoalMutation.mutate(id)} onToggleReminder={(g) => updateGoalMutation.mutate({ id: g.id, data: { reminder_enabled: !g.reminder_enabled } })} />
+          ))}
+        </div>
+      )}
+      {completedGoals.length > 0 && (
+        <div className="mt-5">
+          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5" />Completed ({completedGoals.length})</h4>
+          <div className="space-y-2">
+            {completedGoals.slice(0, 3).map((goal) => (
+              <div key={goal.id} className="flex items-center gap-3 bg-slate-800/40 border border-green-500/20 rounded-xl px-4 py-3">
+                <div className="w-8 h-8 bg-green-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white truncate">{goal.title}</p>
+                  <p className="text-xs text-slate-500">{goal.target_value} {goal.unit}</p>
+                </div>
+                <span className="text-[10px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">Done</span>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">No Active Goals</h4>
-              <p className="text-slate-400 text-sm mb-5 leading-relaxed">Set your first goal and start tracking your fitness journey.</p>
-              <button onClick={() => setShowAddGoal(true)} className={btnClass + " mx-auto"}>
-                <Plus className="w-3.5 h-3.5" />Create Your First Goal
-              </button>
-            </div>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {activeGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} onUpdate={handleUpdateGoal} onDelete={(id) => deleteGoalMutation.mutate(id)} onToggleReminder={handleToggleReminder} />
             ))}
           </div>
-        )}
-
-        {completedGoals.length > 0 && (
-          <div className="mt-4">
-            <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />Completed Goals ({completedGoals.length})
-            </h4>
-            <div className="space-y-2">
-              {completedGoals.slice(0, 3).map((goal) => (
-                <Card key={goal.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h5 className="font-semibold text-white text-sm truncate">{goal.title}</h5>
-                      <p className="text-xs text-slate-400">{goal.target_value} {goal.unit} achieved</p>
-                    </div>
-                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">✓ Done</Badge>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
       <AddGoalModal open={showAddGoal} onClose={() => setShowAddGoal(false)} onSave={(data) => createGoalMutation.mutate(data)} currentUser={currentUser} isLoading={createGoalMutation.isPending} />
-    </div>
+    </SubPage>
   );
 }
 
-// ─── Split Sub-page ──────────────────────────────────────────────────────────
+// ─── Split Sub-page ───────────────────────────────────────────────────────────
 function SplitPage({ currentUser, checkIns, onBack }) {
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
-        <div className="flex items-center gap-3 pt-2">
-          <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95">
-            <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
-          </button>
-          <h1 className="text-xl font-black text-white tracking-tight">Split</h1>
-        </div>
-        {currentUser?.workout_split && (
-          <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
-            <div className="flex items-center gap-2 mb-3">
-              <Dumbbell className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
-            </div>
-            <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
-          </Card>
-        )}
-        <WorkoutProgressTracker currentUser={currentUser} />
-      </div>
-    </div>
+    <SubPage title="Workout Split" onBack={onBack}>
+      {currentUser?.workout_split && (
+        <Card className="bg-slate-900/60 border border-slate-700/40 p-4 rounded-2xl mb-4">
+          <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
+        </Card>
+      )}
+      <WorkoutProgressTracker currentUser={currentUser} />
+    </SubPage>
   );
 }
 
-// ─── Analytics Sub-page ──────────────────────────────────────────────────────
+// ─── Analytics Sub-page ───────────────────────────────────────────────────────
 function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
-        <div className="flex items-center gap-3 pt-2">
-          <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95">
-            <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
-          </button>
-          <h1 className="text-xl font-black text-white tracking-tight">Analytics</h1>
-        </div>
-        <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
-      </div>
-    </div>
+    <SubPage title="Analytics" onBack={onBack}>
+      <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
+    </SubPage>
   );
 }
 
-// ─── Nav Card ─────────────────────────────────────────────────────────────────
-function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBorder, icon: Icon, tintFrom, tintTo, borderColor, iconBg, iconColor, glowColor, onClick, as: As = 'button', href }) {
+// ─── 2×2 Grid Card ───────────────────────────────────────────────────────────
+function GridCard({ label, icon: Icon, iconColor, iconBg, glowColor, tintFrom, borderColor, stat, statLabel, onClick, as: As = 'button', href }) {
   const [pressed, setPressed] = useState(false);
-
-  const handleDown = () => setPressed(true);
-  const handleUp = () => setPressed(false);
+  const events = {
+    onMouseDown: () => setPressed(true),
+    onMouseUp: () => setPressed(false),
+    onMouseLeave: () => setPressed(false),
+    onTouchStart: () => setPressed(true),
+    onTouchEnd: () => setPressed(false),
+    onTouchCancel: () => setPressed(false),
+  };
 
   const cardStyle = {
-    transform: pressed ? 'scale(0.965)' : 'scale(1)',
+    transform: pressed ? 'scale(0.96)' : 'scale(1)',
     opacity: pressed ? 0.82 : 1,
     transition: pressed
       ? 'transform 0.08s ease, opacity 0.08s ease, box-shadow 0.08s ease'
       : 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease',
     boxShadow: pressed
-      ? `0 0 10px 2px ${glowColor}, 0 2px 10px rgba(0,0,0,0.4)`
-      : '0 2px 12px rgba(0,0,0,0.35)',
+      ? `0 0 14px 2px ${glowColor}, 0 2px 10px rgba(0,0,0,0.5)`
+      : '0 2px 12px rgba(0,0,0,0.4)',
   };
 
   const inner = (
-    <div className="relative w-full overflow-hidden rounded-2xl" style={cardStyle}>
-      {/* frosted glass base */}
-      <div
-        className="absolute inset-0 rounded-2xl"
-        style={{
-          background: `linear-gradient(135deg, ${tintFrom} 0%, ${tintTo} 100%)`,
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-        }}
-      />
-      {/* pressed glow — small, tight, near icon area */}
-      <div
-        className="absolute rounded-2xl pointer-events-none"
-        style={{
-          inset: 0,
-          background: `radial-gradient(circle at 18% 50%, ${glowColor} 0%, transparent 45%)`,
-          opacity: pressed ? 0.18 : 0,
-          transition: 'opacity 0.08s ease',
-        }}
-      />
+    <div className="relative w-full h-full overflow-hidden rounded-2xl" style={cardStyle}>
+      {/* bg */}
+      <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(145deg, ${tintFrom} 0%, rgba(8,10,20,0.92) 100%)` }} />
+      {/* pressed radial glow */}
+      <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: `radial-gradient(circle at 30% 30%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.2 : 0, transition: 'opacity 0.08s ease' }} />
       {/* top highlight */}
-      <div
-        className="absolute inset-x-0 top-0 h-px rounded-t-2xl"
-        style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)' }}
-      />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)' }} />
       {/* border */}
-      <div
-        className="absolute inset-0 rounded-2xl border pointer-events-none"
-        style={{
-          borderColor: pressed ? glowColor : borderColor,
-          transition: 'border-color 0.08s ease',
-        }}
-      />
+      <div className="absolute inset-0 rounded-2xl border pointer-events-none" style={{ borderColor: pressed ? glowColor : borderColor, transition: 'border-color 0.08s ease' }} />
 
       {/* content */}
-      <div className="relative flex items-center gap-4 px-4 py-4">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{
-            background: iconBg,
-            boxShadow: pressed ? `0 0 8px 2px ${glowColor}` : `0 2px 6px ${iconColor}22`,
-            transition: 'box-shadow 0.08s ease',
-          }}
-        >
+      <div className="relative flex flex-col justify-between h-full p-4 min-h-[130px]">
+        {/* top: icon */}
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg, boxShadow: pressed ? `0 0 8px 2px ${glowColor}` : 'none', transition: 'box-shadow 0.08s ease' }}>
           <Icon className="w-5 h-5" style={{ color: iconColor }} />
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-[15px] font-bold text-white tracking-tight">{label}</span>
-            <span
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
-              style={{ color: badgeTextColor, background: badgeBg, borderColor: badgeBorder }}
-            >
-              {badge}
-            </span>
-          </div>
-          <p className="text-[12px] text-slate-400 leading-snug">{description}</p>
+        {/* bottom: label + stat */}
+        <div>
+          {stat !== undefined && (
+            <p className="text-[20px] font-black text-white leading-none mb-0.5">{stat}</p>
+          )}
+          {statLabel && (
+            <p className="text-[10px] font-medium leading-tight" style={{ color: iconColor, opacity: 0.7 }}>{statLabel}</p>
+          )}
+          <p className="text-[13px] font-black text-white mt-1.5 leading-tight">{label}</p>
         </div>
-
-        <ChevronRight
-          className="w-4 h-4 flex-shrink-0"
-          style={{ color: iconColor, opacity: 0.6 }}
-        />
       </div>
     </div>
   );
 
-  const events = {
-    onMouseDown: handleDown,
-    onMouseUp: handleUp,
-    onMouseLeave: handleUp,
-    onTouchStart: handleDown,
-    onTouchEnd: handleUp,
-    onTouchCancel: handleUp,
-  };
-
   if (As === 'link') {
-    return <Link to={href} className="block w-full" {...events}>{inner}</Link>;
+    return <Link to={href} className="block" {...events}>{inner}</Link>;
   }
-
-  return (
-    <button className="w-full text-left" onClick={onClick} {...events}>
-      {inner}
-    </button>
-  );
+  return <button className="w-full text-left" onClick={onClick} {...events}>{inner}</button>;
 }
 
-// ─── Main Hub ────────────────────────────────────────────────────────────────
+// ─── Main Hub ─────────────────────────────────────────────────────────────────
 export default function Progress() {
   const [view, setView] = useState('hub');
 
@@ -345,75 +275,66 @@ export default function Progress() {
 
   const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
+  const streak = currentUser?.current_streak || 0;
+  const thisWeekCheckIns = checkIns.filter(c => {
+    const d = new Date(c.check_in_date);
+    const now = new Date();
+    const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+    return d >= weekStart;
+  }).length;
   const primaryGymId = currentUser?.primary_gym_id;
 
-  const navCards = [
+  const gridCards = [
     {
       id: 'split',
-      label: 'Workout Split',
-      description: 'Day-by-day heatmap of your training week. See how consistently you hit each muscle group and track volume over time.',
-      badge: currentUser?.workout_split ? 'Active split' : 'No split set',
-      badgeTextColor: currentUser?.workout_split ? '#a5b4fc' : '#64748b',
-      badgeBg: currentUser?.workout_split ? 'rgba(99,102,241,0.12)' : 'rgba(30,41,59,0.6)',
-      badgeBorder: currentUser?.workout_split ? 'rgba(99,102,241,0.28)' : 'rgba(51,65,85,0.5)',
+      label: 'Split',
       icon: Dumbbell,
-      tintFrom: 'rgba(55,48,163,0.10)',
-      tintTo: 'rgba(8,10,20,0.88)',
-      borderColor: 'rgba(99,102,241,0.15)',
-      iconBg: 'rgba(99,102,241,0.14)',
       iconColor: '#818cf8',
-      glowColor: 'rgba(99,102,241,0.55)',
+      iconBg: 'rgba(99,102,241,0.16)',
+      glowColor: 'rgba(99,102,241,0.5)',
+      tintFrom: 'rgba(55,48,163,0.14)',
+      borderColor: 'rgba(99,102,241,0.18)',
+      stat: currentUser?.workout_split ? (currentUser.custom_split_name || currentUser.workout_split) : '—',
+      statLabel: currentUser?.workout_split ? `${currentUser?.weekly_goal || 0}× per week` : 'No split set',
       isLink: false,
     },
     {
       id: 'analytics',
-      label: 'Advanced Analytics',
-      description: "Volume trends, personal records and muscle group breakdowns across every session you've ever logged.",
-      badge: workoutLogs.length > 0 ? `${workoutLogs.length} sessions` : 'No sessions yet',
-      badgeTextColor: '#c4b5fd',
-      badgeBg: 'rgba(109,40,217,0.12)',
-      badgeBorder: 'rgba(109,40,217,0.28)',
+      label: 'Analytics',
       icon: BarChart3,
-      tintFrom: 'rgba(88,28,135,0.10)',
-      tintTo: 'rgba(8,10,20,0.88)',
-      borderColor: 'rgba(139,92,246,0.15)',
-      iconBg: 'rgba(139,92,246,0.14)',
       iconColor: '#c084fc',
-      glowColor: 'rgba(139,92,246,0.55)',
+      iconBg: 'rgba(139,92,246,0.16)',
+      glowColor: 'rgba(139,92,246,0.5)',
+      tintFrom: 'rgba(88,28,135,0.14)',
+      borderColor: 'rgba(139,92,246,0.18)',
+      stat: workoutLogs.length,
+      statLabel: 'sessions logged',
       isLink: false,
     },
     {
       id: 'goals',
       label: 'Goals',
-      description: "Create and track your fitness targets — lift milestones, attendance streaks, or bodyweight goals. Mark them off as you crush them.",
-      badge: activeGoals.length > 0 ? `${activeGoals.length} active` : 'No goals yet',
-      badgeTextColor: activeGoals.length > 0 ? '#93c5fd' : '#64748b',
-      badgeBg: activeGoals.length > 0 ? 'rgba(37,99,235,0.12)' : 'rgba(30,41,59,0.6)',
-      badgeBorder: activeGoals.length > 0 ? 'rgba(59,130,246,0.28)' : 'rgba(51,65,85,0.5)',
       icon: Target,
-      tintFrom: 'rgba(23,37,84,0.10)',
-      tintTo: 'rgba(8,10,20,0.88)',
-      borderColor: 'rgba(59,130,246,0.15)',
-      iconBg: 'rgba(59,130,246,0.14)',
       iconColor: '#60a5fa',
-      glowColor: 'rgba(59,130,246,0.55)',
+      iconBg: 'rgba(59,130,246,0.16)',
+      glowColor: 'rgba(59,130,246,0.5)',
+      tintFrom: 'rgba(23,37,84,0.14)',
+      borderColor: 'rgba(59,130,246,0.18)',
+      stat: activeGoals.length,
+      statLabel: `${completedGoals.length} completed`,
       isLink: false,
     },
     {
       id: 'community',
       label: 'Community',
-      description: "Your gym's community feed and member activity. See who's training, react to posts, and stay motivated by those around you.",
-      badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'No gym joined',
-      badgeTextColor: gymMemberships.length > 0 ? '#6ee7b7' : '#64748b',
-      badgeBg: gymMemberships.length > 0 ? 'rgba(5,150,105,0.12)' : 'rgba(30,41,59,0.6)',
-      badgeBorder: gymMemberships.length > 0 ? 'rgba(16,185,129,0.28)' : 'rgba(51,65,85,0.5)',
       icon: Users,
-      tintFrom: 'rgba(6,78,59,0.10)',
-      tintTo: 'rgba(8,10,20,0.88)',
-      borderColor: 'rgba(16,185,129,0.15)',
-      iconBg: 'rgba(16,185,129,0.14)',
       iconColor: '#34d399',
-      glowColor: 'rgba(16,185,129,0.55)',
+      iconBg: 'rgba(16,185,129,0.16)',
+      glowColor: 'rgba(16,185,129,0.5)',
+      tintFrom: 'rgba(6,78,59,0.14)',
+      borderColor: 'rgba(16,185,129,0.18)',
+      stat: gymMemberships.length,
+      statLabel: gymMemberships.length === 1 ? 'gym joined' : 'gyms joined',
       isLink: true,
       href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
     },
@@ -421,10 +342,30 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32">
-        <div className="flex flex-col gap-3">
-          {navCards.map((card) => (
-            <NavCard
+      <div className="max-w-4xl mx-auto px-4 pt-6 pb-32">
+
+        {/* ── Page title ── */}
+        <h1 className="text-xl font-black text-white tracking-tight mb-5">Progress</h1>
+
+        {/* ── Overview stat strip ── */}
+        <div className="grid grid-cols-3 gap-2.5 mb-5">
+          {[
+            { label: 'Streak', value: streak, suffix: streak === 1 ? ' day' : ' days', icon: Flame, color: '#f97316' },
+            { label: 'This Week', value: thisWeekCheckIns, suffix: ' sessions', icon: Calendar, color: '#60a5fa' },
+            { label: 'All Time', value: checkIns.length, suffix: ' check-ins', icon: Zap, color: '#a78bfa' },
+          ].map(({ label, value, suffix, icon: Icon, color }) => (
+            <div key={label} className="bg-slate-900/60 border border-slate-700/40 rounded-2xl px-3 py-3 flex flex-col items-center text-center">
+              <Icon className="w-4 h-4 mb-1.5" style={{ color }} />
+              <p className="text-[20px] font-black text-white leading-none">{value}</p>
+              <p className="text-[9px] text-slate-500 font-medium mt-1 uppercase tracking-wider">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── 2×2 grid ── */}
+        <div className="grid grid-cols-2 gap-3">
+          {gridCards.map((card) => (
+            <GridCard
               key={card.id}
               {...card}
               as={card.isLink ? 'link' : 'button'}
@@ -432,6 +373,34 @@ export default function Progress() {
             />
           ))}
         </div>
+
+        {/* ── Quick wins: active goals preview ── */}
+        {activeGoals.length > 0 && (
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Active Goals</h2>
+              <button onClick={() => setView('goals')} className="text-[11px] text-blue-400 font-bold active:scale-95 transition-transform">View all →</button>
+            </div>
+            <div className="space-y-2">
+              {activeGoals.slice(0, 2).map((goal) => {
+                const pct = goal.target_value > 0 ? Math.min(100, Math.round((goal.current_value / goal.target_value) * 100)) : 0;
+                return (
+                  <div key={goal.id} className="bg-slate-900/60 border border-slate-700/40 rounded-2xl px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[13px] font-bold text-white truncate flex-1 mr-3">{goal.title}</p>
+                      <span className="text-[11px] font-black text-blue-400 flex-shrink-0">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                    </div>
+                    <p className="text-[10px] text-slate-600 mt-1.5">{goal.current_value} / {goal.target_value} {goal.unit}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
