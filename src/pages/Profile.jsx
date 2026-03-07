@@ -533,7 +533,6 @@ export default function Profile() {
       </Tabs>
 
       {/* Modals */}
-      <AddGoalModal open={showAddGoal} onClose={() => setShowAddGoal(false)} onSave={(data) => createGoalMutation.mutate(data)} currentUser={currentUser} isLoading={createGoalMutation.isPending} />
       <EditHeroImageModal open={showEditHero} onClose={() => setShowEditHero(false)} currentImageUrl={currentUser?.hero_image_url} onSave={(hero_image_url) => updateHeroMutation.mutate(hero_image_url)} isLoading={updateHeroMutation.isPending} />
       <EditHeroImageModal open={showEditAvatar} onClose={() => setShowEditAvatar(false)} currentImageUrl={currentUser?.avatar_url} onSave={(avatar_url) => updateAvatarMutation.mutate(avatar_url)} isLoading={updateAvatarMutation.isPending} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
