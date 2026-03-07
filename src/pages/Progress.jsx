@@ -165,7 +165,7 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
 }
 
 // ─── 2×2 Grid Card ───────────────────────────────────────────────────────────
-function GridCard({ label, icon: Icon, iconColor, iconBg, glowColor, tintFrom, borderColor, stat, statLabel, onClick, as: As = 'button', href }) {
+function GridCard({ label, icon: Icon, iconColor, stat, statLabel, onClick, as: As = 'button', href }) {
   const [pressed, setPressed] = useState(false);
   const events = {
     onMouseDown: () => setPressed(true),
@@ -176,45 +176,28 @@ function GridCard({ label, icon: Icon, iconColor, iconBg, glowColor, tintFrom, b
     onTouchCancel: () => setPressed(false),
   };
 
-  const cardStyle = {
-    transform: pressed ? 'scale(0.96)' : 'scale(1)',
-    opacity: pressed ? 0.82 : 1,
-    transition: pressed
-      ? 'transform 0.08s ease, opacity 0.08s ease, box-shadow 0.08s ease'
-      : 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease',
-    boxShadow: pressed
-      ? `0 0 14px 2px ${glowColor}, 0 2px 10px rgba(0,0,0,0.5)`
-      : '0 2px 12px rgba(0,0,0,0.4)',
-  };
-
   const inner = (
-    <div className="relative w-full h-full overflow-hidden rounded-2xl" style={cardStyle}>
-      {/* bg */}
-      <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(145deg, ${tintFrom} 0%, rgba(8,10,20,0.92) 100%)` }} />
-      {/* pressed radial glow */}
-      <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: `radial-gradient(circle at 30% 30%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.2 : 0, transition: 'opacity 0.08s ease' }} />
-      {/* top highlight */}
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)' }} />
-      {/* border */}
-      <div className="absolute inset-0 rounded-2xl border pointer-events-none" style={{ borderColor: pressed ? glowColor : borderColor, transition: 'border-color 0.08s ease' }} />
-
-      {/* content */}
-      <div className="relative flex flex-col justify-between h-full p-4 min-h-[130px]">
-        {/* top: icon */}
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg, boxShadow: pressed ? `0 0 8px 2px ${glowColor}` : 'none', transition: 'box-shadow 0.08s ease' }}>
-          <Icon className="w-5 h-5" style={{ color: iconColor }} />
-        </div>
-
-        {/* bottom: label + stat */}
-        <div>
-          {stat !== undefined && (
-            <p className="text-[20px] font-black text-white leading-none mb-0.5">{stat}</p>
-          )}
-          {statLabel && (
-            <p className="text-[10px] font-medium leading-tight" style={{ color: iconColor, opacity: 0.7 }}>{statLabel}</p>
-          )}
-          <p className="text-[13px] font-black text-white mt-1.5 leading-tight">{label}</p>
-        </div>
+    <div
+      className="w-full flex flex-col justify-between min-h-[130px] p-4 rounded-[20px]"
+      style={{
+        background: 'rgb(20,22,34)',
+        border: '1px solid rgba(255,255,255,0.05)',
+        transform: pressed ? 'scale(0.96)' : 'scale(1)',
+        opacity: pressed ? 0.7 : 1,
+        transition: pressed
+          ? 'transform 0.08s ease, opacity 0.08s ease'
+          : 'transform 0.2s ease, opacity 0.2s ease',
+      }}
+    >
+      <Icon className="w-[22px] h-[22px]" style={{ color: iconColor }} />
+      <div>
+        {stat !== undefined && (
+          <p className="text-[22px] font-black text-white leading-none">{stat}</p>
+        )}
+        {statLabel && (
+          <p className="text-[11px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.32)' }}>{statLabel}</p>
+        )}
+        <p className="text-[13px] font-bold text-white mt-2 leading-tight">{label}</p>
       </div>
     </div>
   );
@@ -290,10 +273,6 @@ export default function Progress() {
       label: 'Split',
       icon: Dumbbell,
       iconColor: '#818cf8',
-      iconBg: 'rgba(99,102,241,0.16)',
-      glowColor: 'rgba(99,102,241,0.5)',
-      tintFrom: 'rgba(55,48,163,0.14)',
-      borderColor: 'rgba(99,102,241,0.18)',
       stat: currentUser?.workout_split ? (currentUser.custom_split_name || currentUser.workout_split) : '—',
       statLabel: currentUser?.workout_split ? `${currentUser?.weekly_goal || 0}× per week` : 'No split set',
       isLink: false,
@@ -303,10 +282,6 @@ export default function Progress() {
       label: 'Analytics',
       icon: BarChart3,
       iconColor: '#c084fc',
-      iconBg: 'rgba(139,92,246,0.16)',
-      glowColor: 'rgba(139,92,246,0.5)',
-      tintFrom: 'rgba(88,28,135,0.14)',
-      borderColor: 'rgba(139,92,246,0.18)',
       stat: workoutLogs.length,
       statLabel: 'sessions logged',
       isLink: false,
@@ -316,10 +291,6 @@ export default function Progress() {
       label: 'Goals',
       icon: Target,
       iconColor: '#60a5fa',
-      iconBg: 'rgba(59,130,246,0.16)',
-      glowColor: 'rgba(59,130,246,0.5)',
-      tintFrom: 'rgba(23,37,84,0.14)',
-      borderColor: 'rgba(59,130,246,0.18)',
       stat: activeGoals.length,
       statLabel: `${completedGoals.length} completed`,
       isLink: false,
@@ -329,10 +300,6 @@ export default function Progress() {
       label: 'Community',
       icon: Users,
       iconColor: '#34d399',
-      iconBg: 'rgba(16,185,129,0.16)',
-      glowColor: 'rgba(16,185,129,0.5)',
-      tintFrom: 'rgba(6,78,59,0.14)',
-      borderColor: 'rgba(16,185,129,0.18)',
       stat: gymMemberships.length,
       statLabel: gymMemberships.length === 1 ? 'gym joined' : 'gyms joined',
       isLink: true,
@@ -354,7 +321,7 @@ export default function Progress() {
             { label: 'This Week', value: thisWeekCheckIns, suffix: ' sessions', icon: Calendar, color: '#60a5fa' },
             { label: 'All Time', value: checkIns.length, suffix: ' check-ins', icon: Zap, color: '#a78bfa' },
           ].map(({ label, value, suffix, icon: Icon, color }) => (
-            <div key={label} className="bg-slate-900/60 border border-slate-700/40 rounded-2xl px-3 py-3 flex flex-col items-center text-center">
+            <div key={label} className="rounded-[20px] px-3 py-3 flex flex-col items-center text-center" style={{background:"rgb(20,22,34)",border:"1px solid rgba(255,255,255,0.05)"}}>
               <Icon className="w-4 h-4 mb-1.5" style={{ color }} />
               <p className="text-[20px] font-black text-white leading-none">{value}</p>
               <p className="text-[9px] text-slate-500 font-medium mt-1 uppercase tracking-wider">{label}</p>
@@ -385,7 +352,7 @@ export default function Progress() {
               {activeGoals.slice(0, 2).map((goal) => {
                 const pct = goal.target_value > 0 ? Math.min(100, Math.round((goal.current_value / goal.target_value) * 100)) : 0;
                 return (
-                  <div key={goal.id} className="bg-slate-900/60 border border-slate-700/40 rounded-2xl px-4 py-3">
+                  <div key={goal.id} className="rounded-[20px] px-4 py-3" style={{background:"rgb(20,22,34)",border:"1px solid rgba(255,255,255,0.05)"}}>
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[13px] font-bold text-white truncate flex-1 mr-3">{goal.title}</p>
                       <span className="text-[11px] font-black text-blue-400 flex-shrink-0">{pct}%</span>
