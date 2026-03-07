@@ -774,7 +774,7 @@ export default function Home() {
             const todayDay = todayDow === 0 ? 7 : todayDow;
 
             return (
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88 }}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible' }}>
                 {allDays.map((day, i) => {
                   const done          = loggedDays.has(day);
                   const bounce        = justLoggedDay === day;
@@ -826,12 +826,24 @@ export default function Home() {
                     return 'dayWiggle 2.4s ease-in-out infinite';
                   };
 
-                  // ── Popup label ──
+                  // ── Popup label — workout title for logged days, split name for planned, Rest Day for rest ──
                   const getPopupLabel = () => {
                     if (isRestDay) return 'Rest Day';
-                    if (done && workoutLog) return workoutLog.workout_type || workoutLog.title || 'Workout';
+                    if (done && workoutLog) {
+                      // Try every common field name the WorkoutLog entity might use
+                      return workoutLog.workout_name
+                        || workoutLog.title
+                        || workoutLog.workout_type
+                        || workoutLog.name
+                        || workoutLog.split_name
+                        || 'Workout';
+                    }
                     if (done) return 'Workout';
-                    return DAY_LABELS[i];
+                    // Future / incomplete gym day — show planned split name if available
+                    const splitDay = (currentUser?.custom_workout_types || []).find(
+                      (s) => s.day === day || s.day_of_week === day
+                    );
+                    return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
                   };
 
                   return (
@@ -895,18 +907,25 @@ export default function Home() {
                           ? done
                             // Completed rest day — full colour leaf emoji
                             ? <span style={{ fontSize: isTodayCircle ? 18 : 14, lineHeight: 1, filter: 'brightness(1.5)' }}>🌿</span>
-                            // Future / today rest day — subtle grey SVG leaf outline
+                            // Future / today rest day — grey outline matching the leaf shape
                             : <svg
                                 width={isTodayCircle ? 20 : 16}
                                 height={isTodayCircle ? 20 : 16}
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="rgba(148,163,184,0.55)"
-                                strokeWidth="1.6"
+                                strokeWidth="1.5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round">
-                                <path d="M12 2C6 2 3 7 3 12c0 4 2.5 7 6 8.5V22h6v-1.5C19 19 21 16 21 12c0-5-3-10-9-10z" />
-                                <line x1="12" y1="12" x2="12" y2="22" />
+                                {/* Leaf blade */}
+                                <path d="M11 20C11 20 4 17 4 10C4 6 7.5 3 12 3C16.5 3 20 6 20 10C20 17 13 20 13 20" />
+                                {/* Centre stem */}
+                                <line x1="12" y1="3" x2="12" y2="20" />
+                                {/* Leaf veins */}
+                                <path d="M12 8 C10 9.5 8 9.5 6.5 9" />
+                                <path d="M12 12 C10 13.5 8 13.5 6.5 13" />
+                                <path d="M12 8 C14 9.5 16 9.5 17.5 9" />
+                                <path d="M12 12 C14 13.5 16 13.5 17.5 13" />
                               </svg>
                           : done
                             ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
@@ -933,12 +952,16 @@ export default function Home() {
                             transition={{ duration: 0.18, ease: 'easeOut' }}
                             style={{
                               position: 'absolute',
-                              bottom: size + 14,
+                              bottom: size + 12,
                               left: '50%',
-                              transform: 'translateX(-50%)',
+                              marginLeft: '-50%',
+                              width: 'max-content',
                               zIndex: 200,
-                              whiteSpace: 'nowrap',
                               pointerEvents: 'none',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              transformOrigin: 'bottom center',
                             }}>
                             {/* Bubble */}
                             <div style={{
@@ -947,6 +970,7 @@ export default function Home() {
                               borderRadius: 10,
                               padding: '6px 12px',
                               boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+                              whiteSpace: 'nowrap',
                             }}>
                               <span style={{
                                 fontSize: 12,
@@ -964,8 +988,6 @@ export default function Home() {
                               borderLeft: '6px solid transparent',
                               borderRight: '6px solid transparent',
                               borderTop: '6px solid #1e293b',
-                              margin: '0 auto',
-                              filter: 'drop-shadow(0 1px 0 rgba(148,163,184,0.15))',
                             }} />
                           </motion.div>
                         )}
