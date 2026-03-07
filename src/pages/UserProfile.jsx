@@ -226,6 +226,13 @@ export default function UserProfile() {
         }
       </div>
 
+      {/* Avatar modal */}
+      {showAvatarModal && profileUser.avatar_url &&
+      <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowAvatarModal(false)}>
+          <img src={profileUser.avatar_url} alt={displayName} className="w-72 h-72 rounded-full object-cover shadow-2xl ring-4 ring-white/20" onClick={(e) => e.stopPropagation()} />
+        </div>
+      }
+
       {/* Post lightbox */}
       {selectedPost &&
       <div
