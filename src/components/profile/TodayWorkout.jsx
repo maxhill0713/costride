@@ -268,8 +268,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         background: 'linear-gradient(135deg, rgba(55,48,163,0.10) 0%, rgba(8,10,20,0.88) 100%)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(99,102,241,0.15)',
-        transition: 'all 0.55s ease'
+        border: '1px solid rgba(99,102,241,0.15)'
       }}>
 
       {/* Header — always visible, never moves */}
@@ -329,11 +328,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-            style={{ overflow: 'hidden' }}>
+            initial={{ opacity: 0, scaleY: 0.92 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            exit={{ opacity: 0, scaleY: 0.92 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden', transformOrigin: 'top' }}>
             <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
 
           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
