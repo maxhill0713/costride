@@ -298,8 +298,8 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      {/* Central gradient color changed to a visible steel blue (#102a70) from a dark blue */}
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#102a70,#02040a)]">
+      {/* Central gradient color changed to a slightly darker steel blue (#0d2360) */}
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
 
         {/* Header */}
         <div className="bg-gradient-to-b from-slate-900/60 to-transparent backdrop-blur-sm border-b border-white/5 px-4 py-3">
