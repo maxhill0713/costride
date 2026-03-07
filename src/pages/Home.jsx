@@ -184,10 +184,10 @@ export default function Home() {
 
   if (userLoading || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)]">
+      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(to_bottom_right,#02040a,#081225,#02040a)]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-300">Loading...</p>
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -298,10 +298,10 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)]">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#081225,#02040a)]">
 
         {/* Header */}
-        <div className="bg-gradient-to-b from-slate-800/60 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
+        <div className="bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md border-b border-white/5 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
 
             {/* Streak button */}
@@ -327,7 +327,7 @@ export default function Home() {
               </span>
             </button>
 
-            <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight drop-shadow-sm">
               CoStride
             </h1>
 
@@ -340,12 +340,12 @@ export default function Home() {
               }}
               className="absolute right-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity p-2 -mr-2">
               <div className="relative">
-                <FriendsIcon className="w-7 h-7 text-cyan-400" />
+                <FriendsIcon className="w-7 h-7 text-cyan-500 drop-shadow-sm" />
                 {(friendPosts.length > 0 || notifications.length > 0) &&
                   (!currentUser?.last_friends_view ||
                     (friendPosts.length > 0 && new Date(friendPosts[0].created_date) > new Date(currentUser.last_friends_view)) ||
                     (notifications.length > 0 && new Date(notifications[0].created_date) > new Date(currentUser.last_friends_view))) &&
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
                 }
               </div>
             </Link>
@@ -355,7 +355,7 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
 
           {memberGym && <>
-            <p className="text-center text-xs text-slate-400 font-medium">
+            <p className="text-center text-xs text-slate-400 font-medium drop-shadow-sm">
               {weeklyComplete
                 ? `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done`
                 : `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
@@ -379,18 +379,18 @@ export default function Home() {
                       {displayedUsers.map((user) =>
                         <div key={user.id} className="relative group">
                           {user.avatar_url
-                            ? <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" />
-                            : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
+                            ? <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-800 shadow-md" />
+                            : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold border-2 border-green-800 shadow-md">
                                 {user.full_name?.[0] || 'U'}
                               </div>
                           }
-                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/90 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl border border-white/10">
                             {user.full_name}
                           </span>
                         </div>
                       )}
                       {remainingCount > 0 &&
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-500">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-600 shadow-md">
                           +{remainingCount}
                         </div>
                       }
@@ -409,23 +409,23 @@ export default function Home() {
                     workoutStartTime={workoutStartTime}
                     onWorkoutStart={() => setWorkoutStartTime(Date.now())}
                     onWorkoutLogged={handleWorkoutLogged} />
-                : <Card className="bg-gradient-to-br from-orange-500/10 via-slate-900/50 to-slate-950/50 backdrop-blur-2xl border border-orange-500/20 rounded-xl shadow-lg shadow-black/30 p-3 relative overflow-hidden">
+                : <Card className="bg-gradient-to-br from-orange-500/5 via-slate-950/80 to-black/90 backdrop-blur-2xl border border-orange-500/10 rounded-xl shadow-xl shadow-black/50 p-3 relative overflow-hidden">
                     <div className="relative space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20 border border-orange-400/20">
                           <Dumbbell className="w-4 h-4 text-white" />
                         </div>
-                        <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Create Workout Split</h3>
+                        <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase drop-shadow-sm">Create Workout Split</h3>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setShowSplitModal(true)}
-                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-orange-500/80 to-orange-600/80 hover:from-orange-500 hover:to-orange-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-orange-500/20">
+                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-orange-600/80 to-orange-700/80 hover:from-orange-500 hover:to-orange-600 border border-orange-500/20 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-orange-900/40">
                           <Calendar className="w-3 h-3" /> Start Building
                         </button>
                         <button
                           onClick={() => navigate(createPageUrl('Activity'))}
-                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-blue-500/20">
+                          className="flex-1 p-2 rounded-lg bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-500 hover:to-blue-600 border border-blue-500/20 text-white transition-all text-xs font-semibold flex items-center justify-center gap-1 shadow-lg shadow-blue-900/40">
                           <TrendingUp className="w-3 h-3" /> Log Workout
                         </button>
                       </div>
@@ -437,19 +437,19 @@ export default function Home() {
 
           {memberGym?.id &&
             <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-              <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-100 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group active:scale-95 active:translate-y-[3px] animate-[breathe_7s_ease-in-out_infinite]">
+              <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-black/80 via-slate-950/90 to-black/90 backdrop-blur-xl border border-white/5 hover:border-blue-500/30 transition-all duration-100 cursor-pointer shadow-2xl shadow-black/60 relative h-40 overflow-hidden group active:scale-95 active:translate-y-[3px] animate-[breathe_7s_ease-in-out_infinite]">
                 {memberGym?.image_url
-                  ? <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
-                  : <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-60 group-hover:opacity-70 transition-opacity" />
+                  ? <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity mix-blend-luminosity" loading="eager" fetchpriority="high" />
+                  : <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 to-cyan-900/80 opacity-60 group-hover:opacity-70 transition-opacity" />
                 }
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-slate-950/80 to-transparent" />
                 <div className="relative p-6 h-full flex flex-col justify-between animate-[breathe_12s_ease-in-out_infinite] active:scale-95 active:translate-y-[3px] transition-all duration-100 cursor-pointer">
                   <div>
-                    <p className="text-white font-semibold text-base tracking-tight">Your Community</p>
-                    <p className="text-slate-300 text-sm mt-1 font-medium">{memberGym.name}</p>
+                    <p className="text-white font-semibold text-base tracking-tight drop-shadow-md">Your Community</p>
+                    <p className="text-slate-300 text-sm mt-1 font-medium drop-shadow-md">{memberGym.name}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
+                    <span className="text-xs text-slate-400 font-medium">{getCommunityText()}</span>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center -space-x-2">
                         {(checkInUsers.length > 0 ? checkInUsers : [
@@ -458,15 +458,15 @@ export default function Home() {
                         ]).slice(0, 2).map((user) =>
                           <div key={user.id} className="relative group">
                             {user.avatar_url
-                              ? <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
-                              : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
+                              ? <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-800" />
+                              : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-800">
                                   {user.full_name?.[0] || 'U'}
                                 </div>
                             }
                           </div>
                         )}
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
                     </div>
                   </div>
                 </div>
@@ -477,14 +477,14 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' &&
-            <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
+            <Card className="bg-gradient-to-r from-blue-900/90 to-slate-900/90 border border-blue-500/20 p-6 rounded-2xl shadow-xl shadow-black/40 backdrop-blur-md">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h3 className="font-semibold text-white text-base mb-1 tracking-tight">Ready to Transform?</h3>
-                  <p className="text-blue-100 text-xs font-medium">Join a gym and build your winning streak today</p>
+                  <p className="text-blue-200/80 text-xs font-medium">Join a gym and build your winning streak today</p>
                 </div>
                 <Link to={createPageUrl('Gyms')}>
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold">Find Your Gym</Button>
+                  <Button className="bg-blue-950/80 text-blue-300 hover:bg-blue-900 border border-blue-500/30 font-semibold shadow-inner">Find Your Gym</Button>
                 </Link>
               </div>
             </Card>
@@ -500,7 +500,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center">
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -513,7 +513,7 @@ export default function Home() {
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
                   alt="streak"
-                  className="w-32 h-32 drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]"
+                  className="w-32 h-32 drop-shadow-[0_0_40px_rgba(249,115,22,0.9)]"
                   style={{ objectFit: 'contain' }} />
               </motion.div>
               <motion.div
@@ -524,7 +524,7 @@ export default function Home() {
                 className="text-8xl font-black tabular-nums select-none"
                 style={{
                   color: '#ffffff',
-                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
+                  textShadow: '0 4px 8px rgba(0,0,0,0.9), 0 1px 0 rgba(0,0,0,1)',
                   letterSpacing: '-0.02em'
                 }}>
                 {animatedNum}
@@ -535,17 +535,17 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.2, duration: 0.6 }}
                   className="w-80 space-y-3 mt-8">
-                  <p className="text-sm text-slate-300 font-semibold text-center">Challenge Progress</p>
+                  <p className="text-sm text-slate-300 font-semibold text-center drop-shadow-sm">Challenge Progress</p>
                   {celebrationChallenges.map((challenge, idx) =>
                     <div key={challenge.id} className="space-y-1.5">
                       <p className="text-xs text-slate-400 font-medium truncate">{challenge.title}</p>
                       <motion.div
-                        className="h-2 bg-slate-700/50 rounded-full overflow-hidden"
+                        className="h-2 bg-slate-800/80 rounded-full overflow-hidden border border-white/5"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 1.5 + idx * 0.2 }}>
                         <motion.div
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
+                          className="h-full bg-gradient-to-r from-green-500 to-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
                           initial={{ width: '0%' }}
                           animate={{ width: '100%' }}
                           transition={{ delay: 1.7 + idx * 0.2, duration: 1.2, ease: 'easeOut' }} />
