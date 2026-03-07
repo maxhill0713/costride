@@ -1283,6 +1283,23 @@ export default function Home() {
         }
       </AnimatePresence>
 
+      {/* ─────────────────────────────────────────────
+          STAGE 3 — Share Workout
+          ───────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showShareWorkout && (
+          <ShareWorkoutScreen
+            workoutName={celebrationWorkoutName}
+            exercises={celebrationExercises}
+            currentUser={currentUser}
+            onContinue={() => {
+              setShowShareWorkout(false);
+              setTimeout(() => setJustLoggedDay(null), 1500);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <StreakVariantPicker
         isOpen={showStreakVariants}
         onClose={() => setShowStreakVariants(false)}
