@@ -952,26 +952,33 @@ export default function Home() {
                       {/* Drop-down tooltip — expands below the circle */}
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
-                          // The bubble is absolutely positioned relative to this circle's div.
-                          // We want the bubble centred on the circle but clamped so it
-                          // doesn't escape the visible screen edges.
-                          // Approximate: leftmost circles have index 0, rightmost 6.
-                          // Each slot is (size + 8px gap). Total row ~336px centred on screen.
-                          const BUBBLE_W = 150;
+                          const BUBBLE_W = 300;
                           const SLOT = size + 8;
-                          // Circle centre relative to start of row
                           const circleCenterInRow = i * SLOT + size / 2;
                           const rowWidth = 7 * SLOT - 8;
-                          // Ideal bubble left edge (relative to row start)
                           const idealBubbleLeft = circleCenterInRow - BUBBLE_W / 2;
-                          // Clamp within row
                           const clampedBubbleLeft = Math.max(0, Math.min(idealBubbleLeft, rowWidth - BUBBLE_W));
-                          // Convert to offset relative to this circle div's left edge
                           const bubbleOffsetFromCircle = clampedBubbleLeft - i * SLOT;
-                          // Arrow x position within the bubble
                           const arrowInBubble = circleCenterInRow - clampedBubbleLeft;
-                          // Clamp arrow so it stays inside bubble with margin
-                          const arrowClamped = Math.max(12, Math.min(arrowInBubble, BUBBLE_W - 12));
+                          const arrowClamped = Math.max(18, Math.min(arrowInBubble, BUBBLE_W - 18));
+
+                          // Match bubble colour to the circle's state
+                          const bubbleBg = isRestDay && done
+                            ? 'linear-gradient(to bottom, #166534, #14532d)'
+                            : done
+                              ? 'linear-gradient(to bottom, #1e3a5f, #172554)'
+                              : 'linear-gradient(to bottom, #1e293b, #0f172a)';
+                          const bubbleBorder = isRestDay && done
+                            ? 'rgba(74,222,128,0.4)'
+                            : done
+                              ? 'rgba(147,197,253,0.35)'
+                              : 'rgba(100,116,139,0.35)';
+                          // Solid colour for the seamless arrow (matches top of gradient)
+                          const arrowColor = isRestDay && done
+                            ? '#166534'
+                            : done
+                              ? '#1e3a5f'
+                              : '#1e293b';
 
                           return (
                             <motion.div
@@ -981,36 +988,36 @@ export default function Home() {
                               transition={{ duration: 0.22, ease: [0.34, 1.3, 0.64, 1] }}
                               style={{
                                 position: 'absolute',
-                                top: size + 8,
+                                top: size + 6,
                                 left: bubbleOffsetFromCircle,
                                 width: BUBBLE_W,
                                 zIndex: 200,
                                 pointerEvents: 'none',
                                 transformOrigin: `${arrowClamped}px top`,
                               }}>
-                              {/* Arrow pointing UP into the circle */}
+                              {/* Seamless arrow — solid triangle same colour as bubble top */}
                               <div style={{
                                 width: 0,
                                 height: 0,
-                                borderLeft: '9px solid transparent',
-                                borderRight: '9px solid transparent',
-                                borderBottom: '9px solid #1e293b',
-                                marginLeft: arrowClamped - 9,
-                                filter: 'drop-shadow(0 -1px 0 rgba(148,163,184,0.15))',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderBottom: `12px solid ${arrowColor}`,
+                                marginLeft: arrowClamped - 12,
                               }} />
                               {/* Bubble */}
                               <div style={{
-                                background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-                                border: '1px solid rgba(148,163,184,0.2)',
-                                borderRadius: 14,
-                                padding: '12px 18px',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
+                                background: bubbleBg,
+                                border: `1.5px solid ${bubbleBorder}`,
+                                borderRadius: 18,
+                                padding: '18px 24px',
+                                boxShadow: '0 12px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
                                 textAlign: 'center',
+                                marginTop: -1, // overlap by 1px so arrow and bubble are flush
                               }}>
                                 <span style={{
-                                  fontSize: 15,
+                                  fontSize: 22,
                                   fontWeight: 800,
-                                  color: isRestDay ? '#86efac' : done ? '#93c5fd' : '#94a3b8',
+                                  color: '#ffffff',
                                   letterSpacing: '0.01em',
                                   display: 'block',
                                   lineHeight: 1.3,
