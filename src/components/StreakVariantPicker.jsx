@@ -23,46 +23,30 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <span className="text-white font-bold text-sm">{streakFreezes}</span>
         </div>
 
-        
-
-        <div className="flex justify-center gap-">
+        {/* 4-column grid — only 1 real icon, 3 empty placeholders */}
+        <div className="grid grid-cols-4 gap-2">
           {/* Default Icon */}
           <button
             onClick={() => onSelect('default')}
-            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${selectedVariant === 'default' ? 'ring-2 ring-green-500' : 'hover:opacity-80'}`}>
-            <div className="w-20 h-20 flex items-center justify-center">
-              <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
+            className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${selectedVariant === 'default' ? 'ring-2 ring-green-500' : 'hover:opacity-80'}`}>
+            <div className="w-14 h-14 flex items-center justify-center">
+              <img src={STREAK_ICON_URL} alt="streak" className="w-14 h-14" style={{ objectFit: 'contain' }} />
             </div>
-            {selectedVariant === 'default' &&
-            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
-                <Check className="w-4 h-4 text-white" />
+            {selectedVariant === 'default' && (
+              <div className="flex items-center justify-center w-5 h-5 bg-green-500 rounded-full">
+                <Check className="w-3 h-3 text-white" />
               </div>
-            }
+            )}
           </button>
 
-          {/* Sunglasses Icon */}
-          <button
-            onClick={() => onSelect('sunglasses')}
-            className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all ${selectedVariant === 'sunglasses' ? 'ring-2 ring-green-500' : 'hover:opacity-80'}`}>
-            <div className="relative w-20 h-20 flex items-center justify-center">
-              <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
-              <svg
-                className="absolute w-16 h-8 pointer-events-none"
-                viewBox="0 0 64 32"
-                style={{ top: '4px' }}>
-                <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
-                <circle cx="48" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" className="text-black" />
-                <line x1="23" y1="16" x2="41" y2="16" stroke="currentColor" strokeWidth="2" className="text-black" />
-              </svg>
+          {/* 3 empty placeholder slots */}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-2xl">
+              <div className="w-14 h-14 rounded-xl bg-slate-700/30 border border-slate-600/20" />
             </div>
-            {selectedVariant === 'sunglasses' &&
-            <div className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
-                <Check className="w-4 h-4 text-white" />
-              </div>
-            }
-          </button>
+          ))}
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }
