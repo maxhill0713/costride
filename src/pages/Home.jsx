@@ -781,6 +781,8 @@ export default function Home() {
                   const bounce        = justLoggedDay === day;
                   const isTodayCircle = day === todayDay;
                   const isRestDay     = !trainingDays.includes(day);
+                  const isMissed      = !isRestDay && !done && day < todayDay; // gym day before today, not logged
+                  const isFuture      = !isRestDay && !done && day > todayDay; // gym day after today
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
@@ -793,6 +795,8 @@ export default function Home() {
                         : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                     }
                     if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
+                    if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
+                    if (isFuture) return 'linear-gradient(to bottom, #93c5fd 0%, #60a5fa 35%, #3b82f6 100%)';
                     if (isTodayCircle) return 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)';
                     return 'linear-gradient(to bottom, #2d3748 0%, #1e293b 60%, #0f172a 100%)';
                   };
@@ -805,6 +809,8 @@ export default function Home() {
                         : '1px solid rgba(71,85,105,0.7)';
                     }
                     if (done) return '1px solid rgba(147,197,253,0.5)';
+                    if (isMissed) return '1px solid rgba(248,113,113,0.5)';
+                    if (isFuture) return '1px solid rgba(147,197,253,0.4)';
                     if (isTodayCircle) return '1px solid rgba(100,116,139,0.7)';
                     return '1px solid rgba(71,85,105,0.5)';
                   };
@@ -815,9 +821,12 @@ export default function Home() {
                       return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
                     if (done)
                       return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
+                    if (isMissed)
+                      return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
+                    if (isFuture)
+                      return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.18), inset 0 0 14px rgba(255,255,255,0.05)';
                     if (isTodayCircle)
                       return '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
-                    // All undone/future (gym or rest) — full 3D
                     return '0 4px 0 0 #060d1a, 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
                   };
 
@@ -830,8 +839,8 @@ export default function Home() {
                   // ── Popup label — workout title for logged days, split name for planned, Rest Day for rest ──
                   const getPopupLabel = () => {
                     if (isRestDay) return 'Rest Day';
+                    if (isMissed) return 'No Workout';
                     if (done && workoutLog) {
-                      // Try every common field name the WorkoutLog entity might use
                       return workoutLog.workout_name
                         || workoutLog.title
                         || workoutLog.workout_type
@@ -840,7 +849,6 @@ export default function Home() {
                         || 'Workout';
                     }
                     if (done) return 'Workout';
-                    // Future / incomplete gym day — show planned split name if available
                     const splitDay = (currentUser?.custom_workout_types || []).find(
                       (s) => s.day === day || s.day_of_week === day
                     );
@@ -944,12 +952,16 @@ export default function Home() {
                             ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
                                 <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
+                            : isMissed
+                              ? <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none">
+                                  <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round"/>
+                                </svg>
                             : <div style={{
                                 width: isTodayCircle ? 18 : 14,
                                 height: isTodayCircle ? 18 : 14,
                                 borderRadius: '50%',
-                                border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
-                                background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(147,197,253,0.45)',
+                                background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)',
                                 boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
                               }} />
                         }
@@ -978,16 +990,20 @@ export default function Home() {
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
 
-                          // Exact same colour as the circle top-of-gradient
+                          // Exact same colour as the circle top-of-gradient, slightly darkened
                           const solidColor = isRestDay && done
-                            ? '#4ade80'
+                            ? '#16a34a'
                             : isRestDay
-                              ? '#2d3748'
+                              ? '#1e2535'
                               : done
-                                ? '#60a5fa'
-                                : isTodayCircle
-                                  ? '#334155'
-                                  : '#2d3748';
+                                ? '#3b82f6'
+                                : isMissed
+                                  ? '#dc2626'
+                                  : isFuture
+                                    ? '#3b82f6'
+                                    : isTodayCircle
+                                      ? '#263244'
+                                      : '#1e2535';
 
                           // Day label for subtitle
                           const DAY_NAMES = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -1014,7 +1030,7 @@ export default function Home() {
                               initial={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
                               animate={{ opacity: 1, scaleY: 1, scaleX: 1 }}
                               exit={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
-                              transition={{ duration: 0.2, ease: [0.34, 1.3, 0.64, 1] }}
+                              transition={{ duration: 0.32, ease: [0.34, 1.3, 0.64, 1] }}
                               style={{
                                 position: 'absolute',
                                 top: size + 2,
