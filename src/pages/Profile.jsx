@@ -532,32 +532,32 @@ export default function Profile() {
         {/* ── END BANNER ── */}
 
         {/* Main Content */}
-<div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 pt-3 pb-6">
 
           <TabsContent value="progress" className="space-y-4 mt-0">
-            {currentUser?.workout_split ? (
-              <>
+            {currentUser?.workout_split ?
+            <>
                 <button
-                  onClick={() => setShowSplitModal(true)}
-                  className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-blue-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
+                onClick={() => setShowSplitModal(true)}
+                className="whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-blue-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-transparent shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
                   <Calendar className="w-3 h-3" />
                   Edit Your Split
                 </button>
 
-                <Card className="bg-gradient-to-br from-slate-800/60 via-slate-900/60 to-[#050b1a]/80 backdrop-blur-xl border border-slate-600/40 p-4 rounded-2xl shadow-2xl shadow-black/30">
+                <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl shadow-black/20">
                   <div className="flex items-center gap-2 mb-3">
-                    <Dumbbell className="w-4 h-4 text-indigo-400 drop-shadow-sm" />
-                    <h3 className="text-sm font-bold text-white drop-shadow-sm">Your Split Progress</h3>
+                    <Dumbbell className="w-4 h-4 text-indigo-400" />
+                    <h3 className="text-sm font-bold text-white">Your Split Progress</h3>
                   </div>
                   <WorkoutSplitHeatmap
-                    checkIns={userCheckIns}
-                    workoutSplit={currentUser?.workout_split}
-                    weeklyGoal={currentUser?.weekly_goal}
-                    trainingDays={currentUser?.training_days}
-                    customWorkoutTypes={currentUser?.custom_workout_types || {}} />
+                  checkIns={userCheckIns}
+                  workoutSplit={currentUser?.workout_split}
+                  weeklyGoal={currentUser?.weekly_goal}
+                  trainingDays={currentUser?.training_days}
+                  customWorkoutTypes={currentUser?.custom_workout_types || {}} />
                 </Card>
-              </>
-            ) : null}
+              </> :
+            null}
             <WorkoutProgressTracker currentUser={currentUser} />
           </TabsContent>
 
@@ -581,69 +581,67 @@ export default function Profile() {
                 className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-3 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu"
                 title={gridView ? "List view" : "Grid view"}>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  {gridView ? (
-                    <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
-                  ) : (
-                    <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
-                  )}
+                  {gridView ?
+                  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /> :
+                  <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
+                  }
                 </svg>
               </Button>
             </div>
 
-            {userPosts.filter((post) => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ? (
-              <Card className="bg-slate-800/40 backdrop-blur-xl border border-slate-600/40 shadow-xl shadow-black/20 p-10 text-center rounded-2xl">
+            {userPosts.filter((post) => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ?
+            <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                 <div className="max-w-sm mx-auto">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-slate-600/30 rounded-2xl flex items-center justify-center shadow-inner">
-                    <FileText className="w-8 h-8 text-blue-300/70" />
+                  <div className="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-2xl flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-slate-400" />
                   </div>
-                  <h4 className="text-lg font-bold text-white mb-2 drop-shadow-sm">No Posts Yet</h4>
-                  <p className="text-blue-200/60 text-sm">
+                  <h4 className="text-lg font-bold text-white mb-2">No Posts Yet</h4>
+                  <p className="text-slate-400 text-sm">
                     Share your fitness journey with friends or your gym community!
                   </p>
                 </div>
-              </Card> 
-            ) : (
-              <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
+              </Card> :
+
+            <div className={gridView ? "grid grid-cols-3 gap-2" : "w-full"}>
                 {userPosts.filter((post) => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true).sort((a, b) => {
-                  if (a.is_favourite === b.is_favourite) return 0;
-                  return a.is_favourite ? -1 : 1;
-                }).map((post) => {
-                  if (gridView) {
-                    return (
-                      <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800/60 backdrop-blur-sm border border-slate-600/40 shadow-md shadow-black/20 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedGridPost(post)}>
-                        {post.video_url ? (
-                          <video src={post.video_url} className="w-full h-full object-cover" />
-                        ) : post.image_url ? (
-                          <img src={post.image_url} alt="Post" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-slate-800/80 to-slate-900/80 flex items-center justify-center">
-                            <FileText className="w-8 h-8 text-slate-500/70" />
+                if (a.is_favourite === b.is_favourite) return 0;
+                return a.is_favourite ? -1 : 1;
+              }).map((post) => {
+                if (gridView) {
+                  return (
+                    <div key={post.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700/50 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedGridPost(post)}>
+                        {post.video_url ?
+                      <video src={post.video_url} className="w-full h-full object-cover" /> :
+                      post.image_url ?
+                      <img src={post.image_url} alt="Post" className="w-full h-full object-cover" /> :
+                      <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                            <FileText className="w-8 h-8 text-slate-500" />
                           </div>
-                        )}
-                        {post.is_favourite && (
-                          <div className="absolute top-2 right-2">
+                      }
+                        {post.is_favourite &&
+                      <div className="absolute top-2 right-2">
                             <Star className="w-5 h-5 fill-amber-400 text-amber-400 drop-shadow-lg" />
                           </div>
-                        )}
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        fullWidth={true}
-                        isOwnProfile={true}
-                        currentUser={currentUser}
-                        onLike={() => {}}
-                        onComment={() => {}}
-                        onSave={() => {}}
-                        onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />
-                    );
-                  }
-                })}
+                      }
+                      </div>);
+
+                } else {
+                  return (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      fullWidth={true}
+                      isOwnProfile={true}
+                      currentUser={currentUser}
+                      onLike={() => {}}
+                      onComment={() => {}}
+                      onSave={() => {}}
+                      onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />);
+
+                }
+              })}
               </div>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-4">
@@ -654,65 +652,65 @@ export default function Profile() {
               New Goal
             </Button>
 
-            {activeGoals.length === 0 ? (
-              <Card className="bg-slate-800/40 backdrop-blur-xl border-2 border-dashed border-slate-600/40 p-10 text-center rounded-2xl shadow-xl shadow-black/20">
+            {activeGoals.length === 0 ?
+            <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
                 <div className="max-w-sm mx-auto">
-                  <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center shadow-inner">
-                    <Target className="w-10 h-10 text-blue-400 drop-shadow-md" />
+                  <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center">
+                    <Target className="w-10 h-10 text-blue-400" />
                   </div>
-                  <h4 className="text-lg font-bold text-white mb-2 drop-shadow-sm">No Active Goals</h4>
-                  <p className="text-blue-200/60 text-sm mb-5 leading-relaxed">
+                  <h4 className="text-lg font-bold text-white mb-2">No Active Goals</h4>
+                  <p className="text-slate-400 text-sm mb-5 leading-relaxed">
                     Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.
                   </p>
                   <Button
-                    onClick={() => setShowAddGoal(true)}
-                    className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white rounded-xl font-semibold border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                  onClick={() => setShowAddGoal(true)}
+                  className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white rounded-xl font-semibold border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your First Goal
                   </Button>
                 </div>
-              </Card> 
-            ) : (
-              <div className="space-y-3">
-                {activeGoals.map((goal) => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onUpdate={handleUpdateGoal}
-                    onDelete={(id) => deleteGoalMutation.mutate(id)}
-                    onToggleReminder={handleToggleReminder} />
-                ))}
-              </div>
-            )}
+              </Card> :
 
-            {goals.filter((g) => g.status === 'completed').length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-bold text-blue-200/70 mb-3 flex items-center gap-2 drop-shadow-sm">
+            <div className="space-y-3">
+                {activeGoals.map((goal) =>
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onUpdate={handleUpdateGoal}
+                onDelete={(id) => deleteGoalMutation.mutate(id)}
+                onToggleReminder={handleToggleReminder} />
+              )}
+              </div>
+            }
+
+            {goals.filter((g) => g.status === 'completed').length > 0 &&
+            <div className="mt-6">
+                <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
                   Completed Goals ({goals.filter((g) => g.status === 'completed').length})
                 </h4>
                 <div className="space-y-2">
-                  {goals.filter((g) => g.status === 'completed').slice(0, 3).map((goal) => (
-                    <Card key={goal.id} className="bg-slate-800/40 backdrop-blur-md border border-green-500/30 p-4 rounded-xl shadow-md shadow-black/20">
+                  {goals.filter((g) => g.status === 'completed').slice(0, 3).map((goal) =>
+                <Card key={goal.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
-                          <CheckCircle className="w-5 h-5 text-green-400 drop-shadow-md" />
+                        <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-5 h-5 text-green-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h5 className="font-semibold text-white text-sm truncate drop-shadow-sm">{goal.title}</h5>
-                          <p className="text-xs text-blue-200/70">
+                          <h5 className="font-semibold text-white text-sm truncate">{goal.title}</h5>
+                          <p className="text-xs text-slate-400">
                             {goal.target_value} {goal.unit} achieved
                           </p>
                         </div>
-                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs shadow-sm">
+                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">
                           ✓ Done
                         </Badge>
                       </div>
                     </Card>
-                  ))}
+                )}
                 </div>
               </div>
-            )}
+            }
           </TabsContent>
 
         </div>
