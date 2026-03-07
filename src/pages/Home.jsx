@@ -958,13 +958,13 @@ export default function Home() {
                       {/* Drop-down tooltip — single unified SVG shape */}
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
-                          const BUBBLE_W = 210;
-                          // Taller bubble to fit title + button
-                          const BUBBLE_H = done && !isRestDay ? 82 : 54;
-                          // Arrow 40% smaller than before: was 22w/12h → now 13w/7h
+                          // 30% bigger than 210 = 273, round to 274
+                          const BUBBLE_W = 274;
+                          // Taller when View Summary shown
+                          const BUBBLE_H = done && !isRestDay ? 100 : 64;
                           const ARROW_H = 7;
                           const ARROW_W = 13;
-                          const RADIUS = 13;
+                          const RADIUS = 14;
                           const SVG_H = BUBBLE_H + ARROW_H;
 
                           const SLOT = size + 8;
@@ -978,16 +978,20 @@ export default function Home() {
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
 
-                          // Darker versions matching each circle's colour identity
+                          // Exact same colour as the circle top-of-gradient
                           const solidColor = isRestDay && done
-                            ? '#14532d'   // dark green — darker than circle top
+                            ? '#4ade80'
                             : isRestDay
-                              ? '#1a2030'   // dark slate for undone rest
+                              ? '#2d3748'
                               : done
-                                ? '#1e3a8a'   // dark blue — darker than circle top
+                                ? '#60a5fa'
                                 : isTodayCircle
-                                  ? '#1e2b3c'   // dark today
-                                  : '#1a2030';  // dark future undone
+                                  ? '#334155'
+                                  : '#2d3748';
+
+                          // Day label for subtitle
+                          const DAY_NAMES = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                          const daySubtitle = DAY_NAMES[day] || '';
 
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`,
@@ -1022,10 +1026,7 @@ export default function Home() {
                                 transformOrigin: `${arrowTip}px top`,
                               }}>
                               {/* Single unified SVG shape */}
-                              <svg
-                                width={BUBBLE_W}
-                                height={SVG_H}
-                                style={{ position: 'absolute', top: 0, left: 0 }}>
+                              <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}>
                                 <path d={path} fill={solidColor} />
                               </svg>
 
@@ -1033,21 +1034,21 @@ export default function Home() {
                               <div style={{
                                 position: 'absolute',
                                 top: ARROW_H + 10,
-                                left: 12,
-                                right: 12,
+                                left: 14,
+                                right: 14,
                                 bottom: 10,
                                 display: 'flex',
                                 flexDirection: 'column',
-                                justifyContent: 'space-between',
+                                gap: 2,
                               }}>
-                                {/* Workout title — top left */}
+                                {/* Workout title */}
                                 <span style={{
                                   fontSize: 18,
                                   fontWeight: 800,
                                   color: '#ffffff',
                                   letterSpacing: '0.01em',
-                                  lineHeight: 1.3,
-                                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                                  lineHeight: 1.2,
+                                  textShadow: '0 1px 3px rgba(0,0,0,0.35)',
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
@@ -1055,13 +1056,25 @@ export default function Home() {
                                   {getPopupLabel()}
                                 </span>
 
-                                {/* View Summary button — only for logged gym days */}
+                                {/* Day subtitle */}
+                                <span style={{
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  color: 'rgba(255,255,255,0.65)',
+                                  letterSpacing: '0.03em',
+                                  lineHeight: 1,
+                                }}>
+                                  {done && workoutLog?.completed_date
+                                    ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
+                                    : daySubtitle}
+                                </span>
+
+                                {/* View Summary — 3D blue button, full width, only for logged gym days */}
                                 {done && !isRestDay && workoutLog && (
                                   <button
                                     onClick={async (e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
-                                      // Fetch full workout log detail by ID
                                       try {
                                         const logs = await base44.entities.WorkoutLog.filter({ id: workoutLog.id });
                                         setSummaryLog(logs[0] || workoutLog);
@@ -1069,19 +1082,27 @@ export default function Home() {
                                         setSummaryLog(workoutLog);
                                       }
                                     }}
+                                    onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
+                                    onMouseUp={e => e.currentTarget.style.transform = ''}
+                                    onMouseLeave={e => e.currentTarget.style.transform = ''}
+                                    onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'}
+                                    onTouchEnd={e => e.currentTarget.style.transform = ''}
                                     style={{
                                       marginTop: 8,
-                                      padding: '5px 10px',
-                                      borderRadius: 8,
-                                      background: 'rgba(255,255,255,0.15)',
-                                      border: '1px solid rgba(255,255,255,0.25)',
+                                      width: '100%',
+                                      padding: '7px 0',
+                                      borderRadius: 9,
+                                      background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                                      border: 'none',
+                                      borderBottom: '3px solid #1d4ed8',
                                       color: '#ffffff',
-                                      fontSize: 11,
-                                      fontWeight: 700,
+                                      fontSize: 12,
+                                      fontWeight: 800,
                                       cursor: 'pointer',
-                                      letterSpacing: '0.02em',
-                                      alignSelf: 'flex-start',
-                                      backdropFilter: 'blur(4px)',
+                                      letterSpacing: '0.03em',
+                                      textAlign: 'center',
+                                      boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
+                                      transition: 'transform 0.1s ease',
                                       WebkitTapHighlightColor: 'transparent',
                                     }}>
                                     View Summary
