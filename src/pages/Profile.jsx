@@ -485,10 +485,6 @@ export default function Profile() {
             <WorkoutProgressTracker currentUser={currentUser} />
           </TabsContent>
 
-          <TabsContent value="stats" className="space-y-4">
-            <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
-          </TabsContent>
-
           <TabsContent value="posts" className="space-y-4">
             <div className="flex gap-2">
               <Button onClick={() => setShowCreatePost(true)} className="[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-24 py-2 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_3px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
