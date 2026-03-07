@@ -744,7 +744,8 @@ export default function Home() {
             transition={{ duration: 0.45 }}
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+            {/* Icon + Number side by side, centred */}
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
 
               {/* Icon stage — pose 1 and pose 2 stacked */}
               <div
@@ -781,11 +782,11 @@ export default function Home() {
                 />
               </div>
 
-              {/* Number — shows old streak first, ticks up on pose swap */}
+              {/* Number — to the right of the icon */}
               <div
                 id="streak-anim-num"
                 style={{
-                  fontSize: 100, fontWeight: 900, color: '#fff',
+                  fontSize: 120, fontWeight: 900, color: '#fff',
                   textShadow: '0 4px 12px rgba(0,0,0,0.8)',
                   letterSpacing: '-0.04em', lineHeight: 1,
                   opacity: 0, transform: 'scale(0.5)'
@@ -793,16 +794,8 @@ export default function Home() {
                 {celebrationStreakNum - 1}
               </div>
 
-              {/* Label */}
-              <div
-                id="streak-anim-lbl"
-                style={{
-                  fontSize: 16, fontWeight: 700,
-                  letterSpacing: '0.12em', textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.45)', opacity: 0
-                }}>
-                Day Streak 🔥
-              </div>
+              {/* Hidden label element kept so JS can still reference it without erroring */}
+              <div id="streak-anim-lbl" style={{ display: 'none' }} />
 
             </div>
           </motion.div>
