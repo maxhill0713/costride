@@ -184,7 +184,7 @@ export default function Home() {
 
   if (userLoading || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)]">
+      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(to_bottom_right,#02040a,#0c214d,#02040a)]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-300">Loading...</p>
@@ -298,11 +298,11 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      {/* Changed central color from #102a70 to #081538 for slight darkening */}
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#081538,#050b1a)]">
+      {/* Central gradient color changed to a visible steel blue (#102a70) from a dark blue */}
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#102a70,#02040a)]">
 
         {/* Header */}
-        <div className="bg-gradient-to-b from-slate-800/60 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
+        <div className="bg-gradient-to-b from-slate-900/60 to-transparent backdrop-blur-sm border-b border-white/5 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
 
             {/* Streak button */}
@@ -356,7 +356,7 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
 
           {memberGym && <>
-            <p className="text-center text-xs text-slate-400 font-medium">
+            <p className="text-center text-xs text-slate-300 font-medium">
               {weeklyComplete
                 ? `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done`
                 : `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
