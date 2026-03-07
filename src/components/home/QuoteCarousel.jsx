@@ -42,12 +42,13 @@ export default function QuoteCarousel() {
     exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
-  // 182px → 10% smaller = ~164px
-  const collapsedHeight = '164px';
+  // 148px → 5% bigger = 155px, 200px → 5% bigger = 210px
+  const COLLAPSED_H = 155;
+  const EXPANDED_H  = 210;
 
   return (
     <motion.div
-      className="rounded-2xl overflow-hidden select-none relative shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
+      className="rounded-2xl select-none relative shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
       style={{
         background: 'linear-gradient(135deg, rgba(88,28,135,0.10) 0%, rgba(8,10,20,0.88) 100%)',
         backdropFilter: 'blur(16px)',
@@ -55,9 +56,10 @@ export default function QuoteCarousel() {
         border: '1px solid rgba(139,92,246,0.15)',
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden',
       }}
-      animate={{ minHeight: expanded ? '222px' : collapsedHeight }}
-      transition={{ duration: 0.3 }}>
+      animate={{ height: expanded ? EXPANDED_H : COLLAPSED_H }}
+      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}>
 
       {/* Decorative gradient accent */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
