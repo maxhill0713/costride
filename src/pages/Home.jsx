@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PullToRefresh from '../components/PullToRefresh';
@@ -23,6 +23,128 @@ import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDista
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+// ─────────────────────────────────────────────
+// STREAK ICON URLS
+// ─────────────────────────────────────────────
+const POSE_1_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
+const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/760358372_STREAKICON21.png';
+
+// ─────────────────────────────────────────────
+// WEB AUDIO HELPERS
+// ─────────────────────────────────────────────
+function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainVal, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.05);
+}
+
+function soundBounceIn(ctx) {
+  const now = ctx.currentTime;
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(300, now);
+  osc.frequency.exponentialRampToValueAtTime(680, now + 0.18);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.22, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+  osc.start(now); osc.stop(now + 0.3);
+}
+
+function soundNumPop(ctx) {
+  const now = ctx.currentTime;
+  playTone(ctx, 900,  now,        0.08, 0.18);
+  playTone(ctx, 1100, now + 0.04, 0.07, 0.12);
+}
+
+function soundPoseSwap(ctx) {
+  const now = ctx.currentTime;
+  [[659, 0], [784, 0.10], [1047, 0.20]].forEach(([freq, t]) => {
+    playTone(ctx, freq,       now + t, 0.25, 0.28);
+    playTone(ctx, freq * 1.5, now + t, 0.18, 0.06);
+  });
+  playTone(ctx, 330, now, 0.4, 0.1);
+}
+
+function soundGlowPulse(ctx) {
+  const now = ctx.currentTime;
+  [523, 659, 784].forEach((freq, i) => {
+    playTone(ctx, freq, now + i * 0.03, 0.5, 0.09);
+  });
+}
+
+function soundTransition(ctx) {
+  const now = ctx.currentTime;
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(420, now);
+  osc.frequency.exponentialRampToValueAtTime(180, now + 0.3);
+  gain.gain.setValueAtTime(0.15, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+  osc.start(now); osc.stop(now + 0.35);
+}
+
+// ─────────────────────────────────────────────
+// CSS KEYFRAMES — injected once into the document
+// ─────────────────────────────────────────────
+const STREAK_KEYFRAMES = `
+  @keyframes streakBounceIn {
+    0%   { transform: scale(0.5) translateY(30px); opacity: 0; }
+    60%  { transform: scale(1.08) translateY(-5px); opacity: 1; }
+    80%  { transform: scale(0.97) translateY(2px); }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  @keyframes streakNumPop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    65%  { transform: scale(1.1); opacity: 1; }
+    85%  { transform: scale(0.97); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes streakFadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes streakWindup {
+    0%   { transform: scale(1) rotate(0deg); }
+    40%  { transform: scale(0.93) rotate(-3deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes streakIconPop {
+    0%   { transform: scale(0.6); opacity: 0; }
+    55%  { transform: scale(1.1); opacity: 1; }
+    72%  { transform: scale(0.97); }
+    85%  { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes streakGlowPulse {
+    0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,0.5)); }
+    50%      { filter: drop-shadow(0 0 42px rgba(249,115,22,0.9)); }
+  }
+  @keyframes streakParticleBurst {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
+  }
+`;
+
+function injectStreakStyles() {
+  if (document.getElementById('streak-keyframes')) return;
+  const style = document.createElement('style');
+  style.id = 'streak-keyframes';
+  style.textContent = STREAK_KEYFRAMES;
+  document.head.appendChild(style);
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -32,8 +154,17 @@ export default function Home() {
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
-  const [animatedNum, setAnimatedNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
+  const audioCtxRef = useRef(null);
+  const celebTimers = useRef([]);
+
+  // Inject keyframes once on mount
+  useEffect(() => { injectStreakStyles(); }, []);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => { celebTimers.current.forEach(clearTimeout); };
+  }, []);
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -236,12 +367,124 @@ export default function Home() {
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
 
+  // ─────────────────────────────────────────────
+  // STREAK ANIMATION HELPERS
+  // ─────────────────────────────────────────────
+  function trigAnim(el, name, dur, easing) {
+    if (!el) return;
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = `${name} ${dur}ms ${easing} forwards`;
+  }
+
+  function spawnParticles() {
+    const cols = ['#f97316', '#fb923c', '#fbbf24', '#ef4444', '#ffffff', '#fdba74'];
+    for (let i = 0; i < 18; i++) {
+      const p   = document.createElement('div');
+      const ang = (i / 18) * 360;
+      const d   = 70 + Math.random() * 70;
+      const tx  = Math.cos(ang * Math.PI / 180) * d;
+      const ty  = Math.sin(ang * Math.PI / 180) * d;
+      const sz  = 5 + Math.random() * 7;
+      p.style.cssText = [
+        'position:fixed', 'border-radius:50%', 'pointer-events:none', 'z-index:9999',
+        `width:${sz}px`, `height:${sz}px`,
+        `left:calc(50% - ${sz / 2}px)`, `top:36%`,
+        `background:${cols[i % cols.length]}`,
+        `--tx:${tx}px`, `--ty:${ty}px`,
+        `animation:streakParticleBurst ${0.7 + Math.random() * 0.35}s ease-out forwards`,
+        `animation-delay:${Math.random() * 0.05}s`
+      ].join(';');
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1200);
+    }
+  }
+
+  function runStreakAnimation(newStreak) {
+    const stage = document.getElementById('streak-anim-stage');
+    const p1    = document.getElementById('streak-anim-p1');
+    const p2    = document.getElementById('streak-anim-p2');
+    const num   = document.getElementById('streak-anim-num');
+    const lbl   = document.getElementById('streak-anim-lbl');
+    if (!stage || !p1 || !p2 || !num || !lbl) return;
+
+    const actx = audioCtxRef.current;
+
+    // T=0 — bounce in + whoosh
+    if (actx) soundBounceIn(actx);
+    trigAnim(stage, 'streakBounceIn', 750, 'cubic-bezier(0.34,1.3,0.64,1)');
+
+    // T=700 — number + label pop in
+    const t1 = setTimeout(() => {
+      if (actx) soundNumPop(actx);
+      trigAnim(num, 'streakNumPop', 520, 'cubic-bezier(0.34,1.3,0.64,1)');
+      trigAnim(lbl, 'streakFadeUp', 400, 'ease');
+    }, 700);
+
+    // T=1600 — wind-up squish
+    const t2 = setTimeout(() => {
+      trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
+    }, 1600);
+
+    // T=1980 — pose swap + fanfare + particles
+    const t3 = setTimeout(() => {
+      if (actx) soundPoseSwap(actx);
+      spawnParticles();
+      p1.style.transition = 'opacity 0.15s ease';
+      p1.style.opacity = '0';
+      // iconPop on p2 ONLY — not the wrapper — prevents layout stutter
+      trigAnim(p2, 'streakIconPop', 600, 'cubic-bezier(0.34,1.2,0.64,1)');
+      p2.style.opacity = '1';
+      stage.style.animation = 'none'; // clear wrapper animation immediately
+
+      // number ticks up after a beat
+      setTimeout(() => {
+        if (actx) soundNumPop(actx);
+        // Duolingo-style double-tap vibration on number tick-up
+        if (navigator.vibrate) navigator.vibrate([60, 80, 100]);
+        num.textContent = String(newStreak);
+        trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.25,0.64,1)');
+      }, 160);
+    }, 1980);
+
+    // T=2800 — glow pulse (filter only, no transform = no stutter)
+    const t4 = setTimeout(() => {
+      if (actx) soundGlowPulse(actx);
+      stage.style.animation = 'none';
+      void stage.offsetWidth;
+      stage.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
+    }, 2800);
+
+    // T=4600 — transition whoosh before dismiss
+    const t5 = setTimeout(() => {
+      if (actx) soundTransition(actx);
+    }, 4600);
+
+    celebTimers.current = [t1, t2, t3, t4, t5];
+  }
+
+  // Run animation whenever celebration mounts
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const init = setTimeout(() => {
+      runStreakAnimation(celebrationStreakNum);
+    }, 50);
+    return () => {
+      clearTimeout(init);
+      celebTimers.current.forEach(clearTimeout);
+    };
+  }, [showStreakCelebration]);
+
   const handleWorkoutLogged = async () => {
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
+
+    // AudioContext MUST be created inside a user gesture handler
+    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+
     const newStreak = userStreak + 1;
-    setCelebrationStreakNum(userStreak);
-    setAnimatedNum(userStreak);
+    setCelebrationStreakNum(newStreak);
+
     if (currentUser?.id) {
       const userChallenges = await base44.entities.Challenge.filter({
         participants: { $in: [currentUser.id] },
@@ -249,8 +492,8 @@ export default function Home() {
       });
       setCelebrationChallenges(userChallenges.slice(0, 3));
     }
+
     setShowStreakCelebration(true);
-    setTimeout(() => setAnimatedNum(newStreak), 900);
     setTimeout(() => setShowStreakCelebration(false), 5500);
   };
 
@@ -310,7 +553,7 @@ export default function Home() {
               onClick={() => setShowStreakVariants(true)}
               className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
+                src={POSE_1_URL}
                 alt="streak"
                 className="w-14 h-14 animate-[breathe_3s_ease-in-out_infinite]"
                 style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }}
@@ -493,69 +736,76 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Streak Celebration Overlay */}
+      {/* ─────────────────────────────────────────────
+          STREAK CELEBRATION OVERLAY
+          ───────────────────────────────────────────── */}
       <AnimatePresence>
         {showStreakCelebration &&
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 1.1, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-              className="flex items-center gap-4">
-              <motion.div
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ delay: 0.9, duration: 0.9, repeat: Infinity, repeatType: 'reverse' }}>
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png"
-                  alt="streak"
-                  className="w-32 h-32 drop-shadow-[0_0_30px_rgba(249,115,22,0.8)]"
-                  style={{ objectFit: 'contain' }} />
-              </motion.div>
-              <motion.div
-                key={animatedNum}
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 250, damping: 20 }}
-                className="text-8xl font-black tabular-nums select-none"
+            transition={{ duration: 0.45 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+
+              {/* Icon stage — pose 1 and pose 2 stacked */}
+              <div
+                id="streak-anim-stage"
                 style={{
-                  color: '#ffffff',
-                  textShadow: '0 3px 6px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
-                  letterSpacing: '-0.02em'
+                  position: 'relative',
+                  width: 180,
+                  height: 180,
+                  filter: 'drop-shadow(0 0 28px rgba(249,115,22,0.7))',
+                  opacity: 0
                 }}>
-                {animatedNum}
-              </motion.div>
-              {celebrationChallenges.length > 0 &&
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2, duration: 0.6 }}
-                  className="w-80 space-y-3 mt-8">
-                  <p className="text-sm text-slate-300 font-semibold text-center">Challenge Progress</p>
-                  {celebrationChallenges.map((challenge, idx) =>
-                    <div key={challenge.id} className="space-y-1.5">
-                      <p className="text-xs text-slate-400 font-medium truncate">{challenge.title}</p>
-                      <motion.div
-                        className="h-2 bg-slate-700/50 rounded-full overflow-hidden"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.5 + idx * 0.2 }}>
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
-                          initial={{ width: '0%' }}
-                          animate={{ width: '100%' }}
-                          transition={{ delay: 1.7 + idx * 0.2, duration: 1.2, ease: 'easeOut' }} />
-                      </motion.div>
-                    </div>
-                  )}
-                </motion.div>
-              }
-            </motion.div>
+                <img
+                  id="streak-anim-p1"
+                  src={POSE_1_URL}
+                  alt="streak pose 1"
+                  style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%',
+                    objectFit: 'contain', opacity: 1
+                  }}
+                />
+                <img
+                  id="streak-anim-p2"
+                  src={POSE_2_URL}
+                  alt="streak pose 2"
+                  style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%',
+                    objectFit: 'contain', opacity: 0
+                  }}
+                />
+              </div>
+
+              {/* Number — shows old streak first, ticks up on pose swap */}
+              <div
+                id="streak-anim-num"
+                style={{
+                  fontSize: 100, fontWeight: 900, color: '#fff',
+                  textShadow: '0 4px 12px rgba(0,0,0,0.8)',
+                  letterSpacing: '-0.04em', lineHeight: 1,
+                  opacity: 0, transform: 'scale(0.5)'
+                }}>
+                {celebrationStreakNum - 1}
+              </div>
+
+              {/* Label */}
+              <div
+                id="streak-anim-lbl"
+                style={{
+                  fontSize: 16, fontWeight: 700,
+                  letterSpacing: '0.12em', textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.45)', opacity: 0
+                }}>
+                Day Streak 🔥
+              </div>
+
+            </div>
           </motion.div>
         }
       </AnimatePresence>
