@@ -360,7 +360,7 @@ export default function Profile() {
   const tabTriggerClass = "flex-1 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2 py-1.5 flex items-center justify-center border border-slate-500/50 shadow-[0_3px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#04070f,#1a3a8a,#04070f)]">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* ── BANNER ── */}
         <div className="relative w-full overflow-hidden border-b border-slate-700/50">
@@ -372,13 +372,11 @@ export default function Profile() {
               </>
             }
           </div>
-
           <div className="absolute top-3 right-4 z-30">
             <Link to={createPageUrl('Settings')} className="p-2 -m-2">
               <Settings className="lucide lucide-settings w-6 h-6 text-slate-300 hover:text-white transition-colors -translate-y-5" />
             </Link>
           </div>
-
           <div className="relative z-10 pt-3 pb-0 px-4 max-w-4xl mx-auto">
             <div className="flex items-start gap-6 mb-5">
               <button
@@ -424,7 +422,6 @@ export default function Profile() {
                 </button>
               </div>
             </div>
-
             {isEditing ?
               <div className="space-y-3 mb-1">
                 <div>
@@ -459,7 +456,6 @@ export default function Profile() {
               </div>
             }
           </div>
-
           <div className="relative z-20 sticky top-0 border-b border-white/5">
             <TabsList className="w-full grid grid-cols-4 bg-transparent p-2 h-14 gap-1">
               <TabsTrigger value="stats" className={tabTriggerClass}>Insights</TabsTrigger>
@@ -506,7 +502,6 @@ export default function Profile() {
                 </svg>
               </Button>
             </div>
-
             {userPosts.filter((post) => (post.content || post.image_url || post.video_url) && !post.content?.includes("Well done, workout")).length === 0 ?
               <Card className="bg-slate-800/40 border border-slate-600/40 p-10 text-center rounded-2xl">
                 <div className="max-w-sm mx-auto">
@@ -544,7 +539,6 @@ export default function Profile() {
             <Button onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-32 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
               <Plus className="w-4 h-4 mr-2" />New Goal
             </Button>
-
             {activeGoals.length === 0 ?
               <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
                 <div className="max-w-sm mx-auto">
@@ -562,7 +556,6 @@ export default function Profile() {
                 {activeGoals.map((goal) => <GoalCard key={goal.id} goal={goal} onUpdate={handleUpdateGoal} onDelete={(id) => deleteGoalMutation.mutate(id)} onToggleReminder={handleToggleReminder} />)}
               </div>
             }
-
             {goals.filter((g) => g.status === 'completed').length > 0 &&
               <div className="mt-6">
                 <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
