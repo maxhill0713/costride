@@ -189,7 +189,7 @@ export default function Profile() {
         {/* Avatar + stats */}
         <div className="flex items-center gap-5">
           <button onClick={() => setShowProfilePicture(true)} className="flex-shrink-0 active:scale-95 transition-transform">
-            <div className="w-[76px] h-[76px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
+            <div className="w-[99px] h-[99px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
               <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
                 {currentUser.avatar_url
                   ? <img src={currentUser.avatar_url} alt={displayName} className="w-full h-full object-cover" />
