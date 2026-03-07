@@ -264,8 +264,11 @@ export default function Home() {
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
+  const [showShareWorkout, setShowShareWorkout] = useState(false);
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
+  const [celebrationExercises, setCelebrationExercises] = useState([]);
+  const [celebrationWorkoutName, setCelebrationWorkoutName] = useState('');
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null); // day whose popup is open
   const [summaryLog, setSummaryLog] = useState(null); // workout log to show in summary modal
