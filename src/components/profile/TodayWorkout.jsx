@@ -348,7 +348,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
               {/* Exercise Rows */}
               {todayWorkout.exercises.map((exercise, index) =>
-                <div key={index} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[5%] -mr-[5%]">
+                <div key={index} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all">
                   {editingIndex === index ? (
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between mb-2">
