@@ -307,6 +307,18 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
 
+  // Run animation whenever celebration mounts — must be before any early returns
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const init = setTimeout(() => {
+      runStreakAnimation(celebrationStreakNum);
+    }, 50);
+    return () => {
+      clearTimeout(init);
+      celebTimers.current.forEach(clearTimeout);
+    };
+  }, [showStreakCelebration]);
+
   const memberGym = memberGymData || null;
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
