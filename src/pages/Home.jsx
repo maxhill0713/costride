@@ -137,11 +137,18 @@ const STREAK_KEYFRAMES = `
   }
   @keyframes dayButtonBounce {
     0%   { transform: scale(1); }
-    25%  { transform: scale(0.85); }
-    55%  { transform: scale(1.25); }
-    75%  { transform: scale(0.95); }
-    90%  { transform: scale(1.08); }
+    20%  { transform: scale(0.82); }
+    50%  { transform: scale(1.28); }
+    70%  { transform: scale(0.94); }
+    85%  { transform: scale(1.07); }
     100% { transform: scale(1); }
+  }
+  @keyframes dayWiggle {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    65%           { transform: rotate(-6deg); }
+    75%           { transform: rotate(5deg); }
+    85%           { transform: rotate(-3deg); }
+    92%           { transform: rotate(2deg); }
   }
 `;
 
@@ -630,86 +637,7 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
 
           {memberGym && <>
-            {/* ── Duolingo-style weekly day buttons ── */}
-            {(() => {
-              const trainingDays = currentUser?.training_days || [];
-              if (trainingDays.length === 0) return null;
 
-              const DAY_LABELS = { 1:'Mo', 2:'Tu', 3:'We', 4:'Th', 5:'Fr', 6:'Sa', 7:'Su' };
-              const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-
-              // Which training days have a WorkoutLog this week?
-              const loggedDays = new Set(
-                weeklyWorkoutLogs.map((l) => {
-                  const d = new Date(l.completed_date).getDay();
-                  return d === 0 ? 7 : d;
-                })
-              );
-
-              const sorted = [...trainingDays].sort((a, b) => a - b);
-
-              return (
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 10, paddingBottom: 2 }}>
-                  {sorted.map((day) => {
-                    const done   = loggedDays.has(day);
-                    const bounce = justLoggedDay === day;
-
-                    return (
-                      <div
-                        key={day}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: 5,
-                        }}>
-                        {/* Day label above */}
-                        <span style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: '0.06em',
-                          color: done ? '#60a5fa' : 'rgba(148,163,184,0.6)',
-                          textTransform: 'uppercase',
-                          transition: 'color 0.4s ease',
-                        }}>
-                          {DAY_LABELS[day]}
-                        </span>
-
-                        {/* Circle button */}
-                        <div
-                          style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: done
-                              ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
-                              : 'rgba(30,41,59,0.8)',
-                            border: done
-                              ? '2px solid rgba(96,165,250,0.5)'
-                              : '2px solid rgba(71,85,105,0.5)',
-                            boxShadow: done
-                              ? '0 0 12px rgba(59,130,246,0.4), 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
-                              : '0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-                            transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
-                            animation: bounce ? 'dayButtonBounce 0.6s cubic-bezier(0.34,1.6,0.64,1) forwards' : 'none',
-                            willChange: 'transform',
-                          }}>
-                          {done
-                            ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            : <span style={{ fontSize: 16, color: 'rgba(148,163,184,0.5)' }}>○</span>
-                          }
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
 
             {!userCheckIns.some((c) => isToday(new Date(c.check_in_date))) &&
               <CheckInButton
@@ -822,6 +750,69 @@ export default function Home() {
               </Card>
             </Link>
           }
+
+          {/* ── Duolingo-style weekly workout circles ── */}
+          {memberGym?.id && (() => {
+            const trainingDays = (currentUser?.training_days || []).filter(d => d >= 1 && d <= 7);
+            if (trainingDays.length === 0) return null;
+
+            const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+            const loggedDays = new Set(
+              weeklyWorkoutLogs.map((l) => {
+                const d = new Date(l.completed_date).getDay();
+                return d === 0 ? 7 : d;
+              })
+            );
+
+            const sorted = [...trainingDays].sort((a, b) => a - b);
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '4px 0' }}>
+                {sorted.map((day) => {
+                  const done   = loggedDays.has(day);
+                  const bounce = justLoggedDay === day;
+
+                  return (
+                    <div
+                      key={day}
+                      style={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: done
+                          ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                          : 'rgba(30,41,59,0.8)',
+                        border: done
+                          ? '2px solid rgba(96,165,250,0.5)'
+                          : '2px solid rgba(71,85,105,0.5)',
+                        boxShadow: done
+                          ? '0 0 14px rgba(59,130,246,0.45), 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
+                          : '0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                        transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
+                        animation: bounce
+                          ? 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards'
+                          : done
+                            ? 'none'
+                            : 'dayWiggle 2.4s ease-in-out infinite',
+                        animationDelay: bounce ? '0s' : `${sorted.indexOf(day) * 0.18}s`,
+                        willChange: 'transform',
+                        flexShrink: 0,
+                      }}>
+                      {done
+                        ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(100,116,139,0.6)', background: 'transparent' }} />
+                      }
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {memberGym?.id && <QuoteCarousel />}
 
