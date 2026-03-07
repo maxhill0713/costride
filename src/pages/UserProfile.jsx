@@ -49,13 +49,7 @@ export default function UserProfile() {
 
   const { data: friendsList = [] } = useQuery({
     queryKey: ['userFriends', userId],
-    queryFn: async () => {
-      const [asSelf, asFriend] = await Promise.all([
-        base44.entities.Friendship.filter({ user_id: userId, status: 'accepted' }),
-        base44.entities.Friendship.filter({ friend_id: userId, status: 'accepted' })
-      ]);
-      return [...asSelf, ...asFriend];
-    },
+    queryFn: () => base44.entities.Friend.filter({ user_id: userId, status: 'accepted' }),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000
   });
