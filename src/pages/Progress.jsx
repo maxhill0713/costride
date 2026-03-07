@@ -232,10 +232,19 @@ export default function Progress() {
     placeholderData: (prev) => prev,
   });
 
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ['checkIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   if (!currentUser) return null;
 
   if (view === 'goals') return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
   if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
+  if (view === 'split') return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
   const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
