@@ -437,18 +437,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               {/* Rest Timer & Tools */}
               <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
                 <div className="flex-1 flex items-center gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative" style={{ flex: '0 0 auto', width: '49%' }}>
                     <button
                       onClick={() => setShowTimerOptions(!showTimerOptions)}
-                      className="relative w-full flex flex-col items-center justify-center gap-0.5 px-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all"
+                      className="relative w-full flex items-center justify-center gap-2 px-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all"
                       style={{ height: '52px' }}>
-                      <span className="text-[8px] font-bold text-blue-400/70 uppercase tracking-wider leading-none">Rest Timer</span>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-4 h-4 text-blue-400" />
-                        <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
-                          {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
-                        </span>
-                      </div>
+                      <Clock className="w-5 h-5 text-blue-400" />
+                      <span className="text-blue-300 font-black text-2xl tabular-nums leading-none">
+                        {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
+                      </span>
                     </button>
                     {showTimerOptions && (
                       <>
