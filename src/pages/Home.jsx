@@ -800,7 +800,7 @@ export default function Home() {
                             ? '1px solid rgba(100,116,139,0.7)'
                             : '1px solid rgba(51,65,85,0.8)',
                         boxShadow: done
-                          ? '0 4px 0 0 #1233779, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)'
+                          ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)'
                           : isToday
                             ? '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)'
                             : '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)',
