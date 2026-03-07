@@ -469,7 +469,7 @@ export default function Home() {
     return streak;
   };
 
-  const userStreak = calculateStreak(userCheckIns);
+  const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
   // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
@@ -480,7 +480,10 @@ export default function Home() {
     // AudioContext MUST be created inside a user gesture handler
     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
 
-    const newStreak = userStreak + 1;
+    // current_streak was already incremented by TodayWorkout's logWorkoutMutation
+    // Read the fresh value from the invalidated query, fallback to userStreak + 1
+    const freshUser = queryClient.getQueryData(['currentUser']);
+    const newStreak = freshUser?.current_streak || (userStreak + 1);
     setCelebrationStreakNum(newStreak);
     setCelebrationChallenges(challengesData);
 
