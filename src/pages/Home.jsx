@@ -907,33 +907,38 @@ export default function Home() {
                       >
                         {isRestDay
                           ? done
-                            // Completed rest day — filled green leaf
-                            ? <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 24 24" fill="none">
-                                <path
-                                  d="M12 3 C12 3 5 5 5 12 C5 16.5 8 19.5 12 21 C16 19.5 19 16.5 19 12 C19 5 12 3 12 3Z"
-                                  fill="#4ade80"
-                                  stroke="#22c55e"
-                                  strokeWidth="1"
-                                />
-                                <line x1="12" y1="5" x2="12" y2="21" stroke="#16a34a" strokeWidth="1.2" strokeLinecap="round"/>
-                                <path d="M12 9 Q9.5 10 8 9.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
-                                <path d="M12 13 Q9.5 14 8 13.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
-                                <path d="M12 9 Q14.5 10 16 9.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
-                                <path d="M12 13 Q14.5 14 16 13.5" stroke="#16a34a" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                            // Completed rest day — filled green multi-pointed leaf
+                            ? <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                                {/* Centre stem */}
+                                <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round"/>
+                                {/* Centre top blade */}
+                                <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
+                                {/* Upper-left blade */}
+                                <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
+                                {/* Upper-right blade */}
+                                <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
+                                {/* Lower-left blade */}
+                                <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
+                                {/* Lower-right blade */}
+                                <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
+                                {/* Vein lines */}
+                                <line x1="50" y1="30" x2="36" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
+                                <line x1="50" y1="30" x2="64" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
+                                <line x1="50" y1="50" x2="32" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
+                                <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
                               </svg>
-                            // Incomplete rest day — same leaf, just outlined grey
-                            : <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 24 24" fill="none">
-                                <path
-                                  d="M12 3 C12 3 5 5 5 12 C5 16.5 8 19.5 12 21 C16 19.5 19 16.5 19 12 C19 5 12 3 12 3Z"
-                                  fill="none"
-                                  stroke="rgba(148,163,184,0.55)"
-                                  strokeWidth="1.3"
-                                />
-                                <line x1="12" y1="5" x2="12" y2="21" stroke="rgba(148,163,184,0.4)" strokeWidth="1.1" strokeLinecap="round"/>
-                                <path d="M12 9 Q9.5 10 8 9.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
-                                <path d="M12 13 Q9.5 14 8 13.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
-                                <path d="M12 9 Q14.5 10 16 9.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
-                                <path d="M12 13 Q14.5 14 16 13.5" stroke="rgba(148,163,184,0.35)" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
+                            // Incomplete rest day — same shape, grey outline only
+                            : <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                                <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round"/>
+                                <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5"/>
+                                <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5"/>
+                                <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5"/>
+                                <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5"/>
+                                <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5"/>
+                                <line x1="50" y1="30" x2="36" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round"/>
+                                <line x1="50" y1="30" x2="64" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round"/>
+                                <line x1="50" y1="50" x2="32" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round"/>
+                                <line x1="50" y1="50" x2="68" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round"/>
                               </svg>
                           : done
                             ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
