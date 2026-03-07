@@ -243,9 +243,10 @@ export default function Progress() {
   const navCards = [
     {
       id: 'split',
-      label: 'Split',
-      description: 'Track your workout split progress',
-      sub: currentUser?.workout_split ? 'View your split & heatmap' : 'No split set up yet',
+      label: 'Workout Split',
+      description: 'Visualise your training week with a day-by-day heatmap. See how consistently you hit each muscle group and track overall session volume over time.',
+      badge: currentUser?.workout_split ? 'Active split' : 'No split set',
+      badgeColor: currentUser?.workout_split ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
       icon: Dumbbell,
       iconBg: 'from-indigo-500 to-purple-600',
       iconShadow: 'shadow-[0_3px_0_0_#3730a3,0_8px_20px_rgba(79,70,229,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
@@ -255,9 +256,10 @@ export default function Progress() {
     },
     {
       id: 'analytics',
-      label: 'Analytics',
-      description: 'Dive deep into your exercise data',
-      sub: `${workoutLogs.length} sessions logged`,
+      label: 'Advanced Analytics',
+      description: 'Dig into your exercise data with volume trends, personal records, muscle group breakdowns, and session frequency charts across every lift you\'ve logged.',
+      badge: `${workoutLogs.length} sessions`,
+      badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
       icon: BarChart3,
       iconBg: 'from-purple-500 to-pink-600',
       iconShadow: 'shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
@@ -268,8 +270,9 @@ export default function Progress() {
     {
       id: 'goals',
       label: 'Goals',
-      description: 'Set targets and track milestones',
-      sub: `${activeGoals.length} active · ${completedGoals.length} completed`,
+      description: 'Create, manage and track your fitness targets. Set lift milestones, attendance streaks or bodyweight goals — and mark them off as you crush them.',
+      badge: activeGoals.length > 0 ? `${activeGoals.length} active` : 'No active goals',
+      badgeColor: activeGoals.length > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
       icon: Target,
       iconBg: 'from-blue-500 to-cyan-500',
       iconShadow: 'shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)]',
@@ -280,8 +283,9 @@ export default function Progress() {
     {
       id: 'community',
       label: 'Community',
-      description: 'Your gym feed and members',
-      sub: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'Join a gym to connect',
+      description: 'Connect with members at your gym. View the community feed, see who\'s training, react to posts, and stay motivated by the people training alongside you.',
+      badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'No gym joined',
+      badgeColor: gymMemberships.length > 0 ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
       icon: Users,
       iconBg: 'from-green-500 to-emerald-600',
       iconShadow: 'shadow-[0_3px_0_0_#065f46,0_8px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
@@ -292,43 +296,49 @@ export default function Progress() {
     },
   ];
 
+  const sharedClass = (accentColor) =>
+    `group relative w-full bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border ${accentColor} rounded-2xl px-5 py-5 active:translate-y-[2px] active:scale-[0.99] transition-all duration-100 transform-gpu shadow-2xl shadow-black/20 text-left`;
+
+  const CardInner = ({ label, description, badge, badgeColor, icon: Icon, iconBg, iconShadow, glowColor }) => (
+    <>
+      <div className={`absolute inset-0 bg-gradient-to-r ${glowColor} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+      <div className="relative flex items-start gap-4">
+        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center flex-shrink-0 mt-0.5 ${iconShadow}`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 min-w-0 pr-6">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <p className="text-base font-black text-white">{label}</p>
+            <Badge className={`text-[10px] font-semibold border px-2 py-0.5 ${badgeColor}`}>{badge}</Badge>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed">{description}</p>
+        </div>
+        <ChevronRight className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-3">
 
-        <h1 className="text-2xl font-black text-white tracking-tight pt-2 pb-1">Progress</h1>
+        <div className="pt-2 pb-1">
+          <h1 className="text-2xl font-black text-white tracking-tight">Progress</h1>
+          <p className="text-xs text-slate-400 mt-0.5">Everything you need to track and improve your training</p>
+        </div>
 
         <div className="flex flex-col gap-3">
-          {navCards.map(({ id, label, description, sub, icon: Icon, iconBg, iconShadow, accentColor, glowColor, isLink, href }) => {
-            const inner = (
-              <>
-                <div className={`absolute inset-0 bg-gradient-to-r ${glowColor} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                <div className="relative flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center flex-shrink-0 ${iconShadow}`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="text-base font-black text-white">{label}</p>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">{sub}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                </div>
-              </>
-            );
-
-            const sharedClass = `group relative w-full bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border ${accentColor} rounded-2xl px-5 py-4 active:translate-y-[2px] active:scale-[0.99] transition-all duration-100 transform-gpu shadow-2xl shadow-black/20`;
-
-            if (isLink) {
+          {navCards.map((card) => {
+            if (card.isLink) {
               return (
-                <Link key={id} to={href} className={sharedClass}>
-                  {inner}
+                <Link key={card.id} to={card.href} className={sharedClass(card.accentColor)}>
+                  <CardInner {...card} />
                 </Link>
               );
             }
-
             return (
-              <button key={id} onClick={() => setView(id)} className={sharedClass}>
-                {inner}
+              <button key={card.id} onClick={() => setView(card.id)} className={sharedClass(card.accentColor)}>
+                <CardInner {...card} />
               </button>
             );
           })}
