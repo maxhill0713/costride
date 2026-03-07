@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Dumbbell, Calendar, Target, ChevronRight, Check, X, Plus, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -208,19 +207,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className="p-0 border-0 bg-transparent shadow-none max-w-lg w-full fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto md:mx-auto translate-x-0 translate-y-0 md:translate-x-[-50%] md:translate-y-[-50%]"
-        style={{ margin: 0 }}
-      >
-        <div className="bg-[#0b0f1c] border border-slate-700/40 rounded-t-3xl md:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
+  if (!isOpen) return null;
 
-          {/* ── DRAG HANDLE ── */}
-          <div className="flex justify-center pt-3 pb-1 md:hidden flex-shrink-0">
-            <div className="w-9 h-1 rounded-full bg-slate-700" />
-          </div>
+  return (
+    <div className="fixed inset-0 z-50 bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex flex-col">
+        <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
           {/* ── HEADER ── */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/40 flex-shrink-0">
@@ -248,7 +239,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           </div>
 
           {/* ── SCROLLABLE BODY ── */}
-          <div className="overflow-y-auto flex-1 pb-2">
+          <div className="overflow-y-auto flex-1 pb-4">
 
             {/* ════ STEP 1 — PICK PRESET ════ */}
             {step === 'pick' && (
@@ -479,7 +470,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           </div>
 
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
