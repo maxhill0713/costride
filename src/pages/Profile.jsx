@@ -23,7 +23,6 @@ export default function Profile() {
   const [postImage, setPostImage] = useState('');
   const [postVideo, setPostVideo] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [gridView, setGridView] = useState(true);
   const [selectedGridPost, setSelectedGridPost] = useState(null);
   const [allowGymRepost, setAllowGymRepost] = useState(false);
   const queryClient = useQueryClient();
@@ -263,20 +262,8 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ── DIVIDER ── */}
-      <div className="border-t border-slate-700/40" />
-
-      {/* ── POSTS ── */}
+      {/* ── POSTS (grid, directly below action buttons) ── */}
       <div className="max-w-4xl mx-auto pb-32">
-        <div className="flex justify-end px-3 pt-2 pb-0.5">
-          <button onClick={() => setGridView(!gridView)} className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors">
-            {gridView
-              ? <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" /></svg>
-              : <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" /></svg>
-            }
-          </button>
-        </div>
-
         {filteredPosts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <div className="w-14 h-14 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-3">
@@ -288,7 +275,7 @@ export default function Profile() {
               Share your first photo
             </button>
           </div>
-        ) : gridView ? (
+        ) : (
           <div className="grid grid-cols-3 gap-px">
             {filteredPosts
               .sort((a, b) => (a.is_favourite === b.is_favourite ? 0 : a.is_favourite ? -1 : 1))
@@ -310,12 +297,6 @@ export default function Profile() {
                 </div>
               ))}
           </div>
-        ) : (
-          <div className="px-4 pt-3 space-y-4">
-            {filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} fullWidth={true} isOwnProfile={true} currentUser={currentUser} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['userPosts'] })} />
-            ))}
-          </div>
         )}
       </div>
 
@@ -327,7 +308,7 @@ export default function Profile() {
       <ProfilePictureModal isOpen={showProfilePicture} onClose={() => setShowProfilePicture(false)} imageUrl={currentUser?.avatar_url} userName={displayName} />
 
       {/* Grid lightbox */}
-      {selectedGridPost && gridView && (
+      {selectedGridPost && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedGridPost(null)}>
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg">
             <PostCard post={selectedGridPost} fullWidth={false} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => { queryClient.invalidateQueries({ queryKey: ['userPosts'] }); setSelectedGridPost(null); }} />
@@ -406,28 +387,24 @@ export default function Profile() {
             {/* Bottom toolbar */}
             <div className="flex items-center justify-between gap-3 px-5 pt-3 pb-5 border-t border-slate-800/80">
               <div className="flex items-center gap-2">
-                {/* Photo from library */}
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
                   <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
                     <ImageIcon className="w-5 h-5 text-slate-400" />
                   </div>
                 </label>
-                {/* Video */}
                 <label className="cursor-pointer">
                   <input type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
                   <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
                     <Video className="w-5 h-5 text-slate-400" />
                   </div>
                 </label>
-                {/* Camera */}
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
                   <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
                     <Camera className="w-5 h-5 text-slate-400" />
                   </div>
                 </label>
-                {/* Gym share toggle */}
                 <button
                   onClick={() => setAllowGymRepost(!allowGymRepost)}
                   className={`w-11 h-11 rounded-2xl border flex items-center justify-center active:scale-90 transition-all ${
@@ -441,7 +418,6 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Post button */}
               <button
                 onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
                 disabled={!canPost || createPostMutation.isPending}
