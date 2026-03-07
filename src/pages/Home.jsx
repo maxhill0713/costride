@@ -145,6 +145,93 @@ function injectStreakStyles() {
   document.head.appendChild(style);
 }
 
+// ─────────────────────────────────────────────
+// STREAK ANIMATION HELPERS (outside component — no hook rules apply)
+// ─────────────────────────────────────────────
+function trigAnim(el, name, dur, easing) {
+  if (!el) return;
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = `${name} ${dur}ms ${easing} forwards`;
+}
+
+function spawnParticles() {
+  const cols = ['#f97316', '#fb923c', '#fbbf24', '#ef4444', '#ffffff', '#fdba74'];
+  for (let i = 0; i < 18; i++) {
+    const p   = document.createElement('div');
+    const ang = (i / 18) * 360;
+    const d   = 70 + Math.random() * 70;
+    const tx  = Math.cos(ang * Math.PI / 180) * d;
+    const ty  = Math.sin(ang * Math.PI / 180) * d;
+    const sz  = 5 + Math.random() * 7;
+    p.style.cssText = [
+      'position:fixed', 'border-radius:50%', 'pointer-events:none', 'z-index:9999',
+      `width:${sz}px`, `height:${sz}px`,
+      `left:calc(50% - ${sz / 2}px)`, `top:36%`,
+      `background:${cols[i % cols.length]}`,
+      `--tx:${tx}px`, `--ty:${ty}px`,
+      `animation:streakParticleBurst ${0.7 + Math.random() * 0.35}s ease-out forwards`,
+      `animation-delay:${Math.random() * 0.05}s`
+    ].join(';');
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+
+function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
+  const stage = document.getElementById('streak-anim-stage');
+  const p1    = document.getElementById('streak-anim-p1');
+  const p2    = document.getElementById('streak-anim-p2');
+  const num   = document.getElementById('streak-anim-num');
+  const lbl   = document.getElementById('streak-anim-lbl');
+  if (!stage || !p1 || !p2 || !num || !lbl) return;
+
+  const actx = audioCtxRef.current;
+
+  if (actx) soundBounceIn(actx);
+  trigAnim(stage, 'streakBounceIn', 750, 'cubic-bezier(0.34,1.3,0.64,1)');
+
+  const t1 = setTimeout(() => {
+    if (actx) soundNumPop(actx);
+    trigAnim(num, 'streakNumPop', 520, 'cubic-bezier(0.34,1.3,0.64,1)');
+    trigAnim(lbl, 'streakFadeUp', 400, 'ease');
+  }, 700);
+
+  const t2 = setTimeout(() => {
+    trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
+  }, 1600);
+
+  const t3 = setTimeout(() => {
+    if (actx) soundPoseSwap(actx);
+    spawnParticles();
+    p1.style.transition = 'opacity 0.15s ease';
+    p1.style.opacity = '0';
+    trigAnim(p2, 'streakIconPop', 600, 'cubic-bezier(0.34,1.2,0.64,1)');
+    p2.style.opacity = '1';
+    stage.style.animation = 'none';
+    setTimeout(() => {
+      if (actx) soundNumPop(actx);
+      if (navigator.vibrate) navigator.vibrate([60, 80, 100]);
+      num.textContent = String(newStreak);
+      trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.25,0.64,1)');
+    }, 160);
+  }, 1980);
+
+  const t4 = setTimeout(() => {
+    if (actx) soundGlowPulse(actx);
+    stage.style.animation = 'none';
+    void stage.offsetWidth;
+    stage.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
+  }, 2800);
+
+  const t5 = setTimeout(() => {
+    if (actx) soundTransition(actx);
+  }, 3200);
+
+  celebTimers.current = [t1, t2, t3, t4, t5];
+}
+
+
 export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -314,6 +401,18 @@ export default function Home() {
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
   const friendIds = friendIdList;
 
+  // Run animation whenever streak celebration mounts
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const init = setTimeout(() => {
+      runStreakAnimation(celebrationStreakNum, audioCtxRef, celebTimers);
+    }, 50);
+    return () => {
+      clearTimeout(init);
+      celebTimers.current.forEach(clearTimeout);
+    };
+  }, [showStreakCelebration]);
+
   if (userLoading || !currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
@@ -368,113 +467,6 @@ export default function Home() {
   const userStreak = calculateStreak(userCheckIns);
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  // ─────────────────────────────────────────────
-  // STREAK ANIMATION HELPERS
-  // ─────────────────────────────────────────────
-  function trigAnim(el, name, dur, easing) {
-    if (!el) return;
-    el.style.animation = 'none';
-    void el.offsetWidth;
-    el.style.animation = `${name} ${dur}ms ${easing} forwards`;
-  }
-
-  function spawnParticles() {
-    const cols = ['#f97316', '#fb923c', '#fbbf24', '#ef4444', '#ffffff', '#fdba74'];
-    for (let i = 0; i < 18; i++) {
-      const p   = document.createElement('div');
-      const ang = (i / 18) * 360;
-      const d   = 70 + Math.random() * 70;
-      const tx  = Math.cos(ang * Math.PI / 180) * d;
-      const ty  = Math.sin(ang * Math.PI / 180) * d;
-      const sz  = 5 + Math.random() * 7;
-      p.style.cssText = [
-        'position:fixed', 'border-radius:50%', 'pointer-events:none', 'z-index:9999',
-        `width:${sz}px`, `height:${sz}px`,
-        `left:calc(50% - ${sz / 2}px)`, `top:36%`,
-        `background:${cols[i % cols.length]}`,
-        `--tx:${tx}px`, `--ty:${ty}px`,
-        `animation:streakParticleBurst ${0.7 + Math.random() * 0.35}s ease-out forwards`,
-        `animation-delay:${Math.random() * 0.05}s`
-      ].join(';');
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 1200);
-    }
-  }
-
-  function runStreakAnimation(newStreak) {
-    const stage = document.getElementById('streak-anim-stage');
-    const p1    = document.getElementById('streak-anim-p1');
-    const p2    = document.getElementById('streak-anim-p2');
-    const num   = document.getElementById('streak-anim-num');
-    const lbl   = document.getElementById('streak-anim-lbl');
-    if (!stage || !p1 || !p2 || !num || !lbl) return;
-
-    const actx = audioCtxRef.current;
-
-    // T=0 — bounce in + whoosh
-    if (actx) soundBounceIn(actx);
-    trigAnim(stage, 'streakBounceIn', 750, 'cubic-bezier(0.34,1.3,0.64,1)');
-
-    // T=700 — number + label pop in
-    const t1 = setTimeout(() => {
-      if (actx) soundNumPop(actx);
-      trigAnim(num, 'streakNumPop', 520, 'cubic-bezier(0.34,1.3,0.64,1)');
-      trigAnim(lbl, 'streakFadeUp', 400, 'ease');
-    }, 700);
-
-    // T=1600 — wind-up squish
-    const t2 = setTimeout(() => {
-      trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
-    }, 1600);
-
-    // T=1980 — pose swap + fanfare + particles + vibration
-    const t3 = setTimeout(() => {
-      if (actx) soundPoseSwap(actx);
-      spawnParticles();
-      p1.style.transition = 'opacity 0.15s ease';
-      p1.style.opacity = '0';
-      // iconPop on p2 ONLY — not the wrapper — prevents layout stutter
-      trigAnim(p2, 'streakIconPop', 600, 'cubic-bezier(0.34,1.2,0.64,1)');
-      p2.style.opacity = '1';
-      stage.style.animation = 'none';
-
-      // number ticks up + vibration after a beat
-      setTimeout(() => {
-        if (actx) soundNumPop(actx);
-        // Duolingo-style double-tap vibration on number tick-up
-        if (navigator.vibrate) navigator.vibrate([60, 80, 100]);
-        num.textContent = String(newStreak);
-        trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.25,0.64,1)');
-      }, 160);
-    }, 1980);
-
-    // T=2800 — glow pulse (filter only, no transform = no stutter)
-    const t4 = setTimeout(() => {
-      if (actx) soundGlowPulse(actx);
-      stage.style.animation = 'none';
-      void stage.offsetWidth;
-      stage.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
-    }, 2800);
-
-    // T=3200 — transition whoosh before stage 2
-    const t5 = setTimeout(() => {
-      if (actx) soundTransition(actx);
-    }, 3200);
-
-    celebTimers.current = [t1, t2, t3, t4, t5];
-  }
-
-  // Run animation whenever streak celebration mounts
-  useEffect(() => {
-    if (!showStreakCelebration) return;
-    const init = setTimeout(() => {
-      runStreakAnimation(celebrationStreakNum);
-    }, 50);
-    return () => {
-      clearTimeout(init);
-      celebTimers.current.forEach(clearTimeout);
-    };
-  }, [showStreakCelebration]);
 
   // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
   const handleWorkoutLogged = async (challengesData = []) => {
