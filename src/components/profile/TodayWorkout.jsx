@@ -31,18 +31,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const queryClient = useQueryClient();
 
   const timerPresets = [
-  { label: '10s', value: 10 },
-  { label: '30s', value: 30 },
-  { label: '45s', value: 45 },
-  { label: '60s', value: 60 },
-  { label: '90s', value: 90 },
-  { label: '2m', value: 120 },
-  { label: '3m', value: 180 },
-  { label: '5m', value: 300 },
-  { label: '10m', value: 600 }];
+    { label: '10s', value: 10 },
+    { label: '30s', value: 30 },
+    { label: '45s', value: 45 },
+    { label: '60s', value: 60 },
+    { label: '90s', value: 90 },
+    { label: '2m', value: 120 },
+    { label: '3m', value: 180 },
+    { label: '5m', value: 300 },
+    { label: '10m', value: 600 }
+  ];
 
-
-  // Workout duration timer effect
   React.useEffect(() => {
     let interval;
     if (workoutStartTime && !showSummary) {
@@ -54,7 +53,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return () => clearInterval(interval);
   }, [workoutStartTime, showSummary]);
 
-  // Freeze duration when summary modal opens
   React.useEffect(() => {
     if (showSummary && !frozenDuration) {
       setFrozenDuration(workoutDuration);
@@ -63,13 +61,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       setFrozenDuration(0);
     }
   }, [showSummary, workoutDuration, frozenDuration]);
-
-  const startRestTimer = () => {
-    const time = parseInt(restTimer) || 90;
-    setRestTimer(time);
-    setInitialRestTime(time);
-    setIsTimerActive(true);
-  };
 
   const today = useMemo(() => new Date(), []);
   const dayOfWeek = today.getDay();
@@ -137,17 +128,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const handleSave = (index) => {
     const weight = editWeight;
     const setsReps = editReps;
-
     const updatedExercises = [...todayWorkout.exercises];
-    updatedExercises[index] = {
-      ...updatedExercises[index],
-      weight: weight,
-      setsReps: setsReps
-    };
-
+    updatedExercises[index] = { ...updatedExercises[index], weight, setsReps };
     const updatedWorkoutTypes = { ...currentUser.custom_workout_types };
     const currentWorkoutName = todayWorkout.name;
-
     Object.keys(updatedWorkoutTypes).forEach((dayKey) => {
       const workout = updatedWorkoutTypes[dayKey];
       if (workout.name === currentWorkoutName && parseInt(dayKey) !== adjustedDay) {
@@ -155,39 +139,31 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           updatedWorkoutTypes[dayKey] = {
             ...workout,
             exercises: workout.exercises.map((ex, i) =>
-            i === index ? { ...ex, weight: weight, setsReps: setsReps } : ex
+              i === index ? { ...ex, weight, setsReps } : ex
             )
           };
         }
       }
     });
-
     updatedWorkoutTypes[adjustedDay] = {
       ...currentUser.custom_workout_types[adjustedDay],
       exercises: updatedExercises
     };
-
     base44.auth.updateMe({ custom_workout_types: updatedWorkoutTypes }).then(() => {
       queryClient.invalidateQueries(['currentUser']);
       setEditingIndex(null);
     });
   };
 
-  const handleCancel = () => {
-    setEditingIndex(null);
-  };
+  const handleCancel = () => setEditingIndex(null);
 
   const logWorkoutMutation = useMutation({
     mutationFn: async () => {
-      if (alreadyLoggedToday) {
-        throw new Error('You have already logged this workout today');
-      }
+      if (alreadyLoggedToday) throw new Error('You have already logged this workout today');
       const user = await base44.auth.me();
       const workout_notes = user?.workout_notes || {};
       const workoutNotes = workout_notes[todayWorkout.name] || '';
-
       const previousStreak = currentUser.current_streak || 0;
-
       await base44.entities.WorkoutLog.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name || currentUser.username || 'User',
@@ -198,87 +174,52 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         notes: workoutNotes,
         completed_date: new Date().toISOString().split('T')[0]
       });
-
-      // Create posts for weight increases
       if (lastWorkout?.exercises) {
         const improvements = todayWorkout.exercises.map((exercise, index) => {
           const lastExercise = lastWorkout.exercises[index];
           if (!lastExercise) return null;
           const currentWeight = parseFloat(exercise.weight) || 0;
           const lastWeight = parseFloat(lastExercise.weight) || 0;
-          if (currentWeight > lastWeight) {
-            return { exercise: exercise.exercise, increase: currentWeight - lastWeight };
-          }
+          if (currentWeight > lastWeight) return { exercise: exercise.exercise, increase: currentWeight - lastWeight };
           return null;
         }).filter(Boolean);
-
         for (const improvement of improvements) {
           await base44.entities.Post.create({
             member_id: currentUser.id,
             member_name: currentUser.full_name || currentUser.username || 'User',
             member_avatar: currentUser.avatar_url || '',
             content: `${currentUser.full_name || currentUser.username || 'User'} increased their weight on ${improvement.exercise} by ${improvement.increase.toFixed(1)}kg!`,
-            likes: 0,
-            comments: [],
-            reactions: {}
+            likes: 0, comments: [], reactions: {}
           });
         }
       }
-
-      // Create workout completion post
       await base44.entities.Post.create({
         member_id: currentUser.id,
         member_name: currentUser.full_name || currentUser.username || 'User',
         member_avatar: currentUser.avatar_url || '',
         content: 'Well done, workout finished! Now its time to get your friends involved!',
-        likes: 0,
-        comments: [],
-        reactions: {},
-        exercise: 'workout_completion_nudge'
+        likes: 0, comments: [], reactions: {}, exercise: 'workout_completion_nudge'
       });
-
-      // Increment user's streak
-      const newStreak = previousStreak + 1;
+      const newStreak = (currentUser.current_streak || 0) + 1;
       await base44.auth.updateMe({ current_streak: newStreak });
-
-      // Fetch user's active challenges
       let challengesData = [];
       try {
-        const participants = await base44.entities.ChallengeParticipant.filter({
-          user_id: currentUser.id,
-          status: 'active'
-        });
-
-        challengesData = await Promise.all(
-          participants.map(async (p) => {
-            try {
-              const challenge = await base44.entities.Challenge.filter({ id: p.challenge_id });
-              return {
-                id: p.id,
-                title: challenge[0]?.title || 'Challenge',
-                target_value: p.target_value,
-                current_progress: p.current_progress,
-                previous_progress: Math.max(0, p.current_progress - 1)
-              };
-            } catch (err) {
-              console.error('Error fetching challenge:', err);
-              return null;
-            }
-          })
-        );
+        const participants = await base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id, status: 'active' });
+        challengesData = await Promise.all(participants.map(async (p) => {
+          try {
+            const challenge = await base44.entities.Challenge.filter({ id: p.challenge_id });
+            return { id: p.id, title: challenge[0]?.title || 'Challenge', target_value: p.target_value, current_progress: p.current_progress, previous_progress: Math.max(0, p.current_progress - 1) };
+          } catch (err) { return null; }
+        }));
         challengesData = challengesData.filter(Boolean);
-      } catch (err) {
-        console.error('Error fetching challenges:', err);
-      }
-
-      return { previousStreak, newStreak, challengesData };
+      } catch (err) {}
+      return { previousStreak: currentUser.current_streak || 0, newStreak, challengesData };
     },
     onSuccess: (data) => {
       setShowSummary(false);
       queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, adjustedDay] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      // Pass challenges data up to Home so it can run the two-stage celebration
       if (onWorkoutLogged) onWorkoutLogged(data?.challengesData || []);
     },
     onError: (error) => {
@@ -296,13 +237,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] font-semibold px-1.5 py-0">
           <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
           +{(currentWeight - lastWeight).toFixed(1)}
-        </Badge>);
+        </Badge>
+      );
     } else if (currentWeight < lastWeight) {
       return (
         <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px] font-semibold px-1.5 py-0">
           <TrendingDown className="w-2.5 h-2.5 mr-0.5" />
           {(currentWeight - lastWeight).toFixed(1)}
-        </Badge>);
+        </Badge>
+      );
     }
     return null;
   };
@@ -312,16 +255,24 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-4 text-center">
         <Dumbbell className="w-8 h-8 text-slate-400 mx-auto mb-2" />
         <p className="text-slate-300 font-semibold text-xs">No workout split configured yet</p>
-      </Card>);
+      </Card>
+    );
   }
 
   return (
     <Card
       onClick={() => !isExpanded && setIsExpanded(true)}
       className={`relative overflow-hidden rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.35)] p-3 ${!isExpanded && 'cursor-pointer'}`}
-      style={{ background: 'linear-gradient(135deg, rgba(55,48,163,0.10) 0%, rgba(8,10,20,0.88) 100%)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(99,102,241,0.15)', transition: 'all 0.55s ease' }}>
+      style={{
+        background: 'linear-gradient(135deg, rgba(55,48,163,0.10) 0%, rgba(8,10,20,0.88) 100%)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(99,102,241,0.15)',
+        transition: 'all 0.55s ease'
+      }}>
 
-      <div className="space-y-2 mb-4">
+      {/* Header — always visible, never moves */}
+      <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
             <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
@@ -354,231 +305,179 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         }
       </div>
 
-      {/* Exercises - Collapsible */}
-      <div style={{ overflow: 'hidden', transition: 'opacity 0.55s ease', opacity: isExpanded ? 1 : 0, pointerEvents: isExpanded ? 'auto' : 'none' }}>
-        {isExpanded &&
-          <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
-        }
-      {isExpanded && todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
-        <div className="px-2 space-y-2">
-          {/* Headers */}
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-2">Sets x Reps</div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
-            <div className="w-6"></div>
-          </div>
-
-          {/* Exercise Rows */}
-          {todayWorkout.exercises.map((exercise, index) =>
-            <div key={index} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[5%] -mr-[5%]">
-              {editingIndex === index ?
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
-                    {lastWorkout?.exercises?.[index] &&
-                      <div className="text-xs text-slate-400 font-medium">
-                        Last: {lastWorkout.exercises[index].weight}kg
-                      </div>
-                    }
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1">
-                      <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Sets x Reps</label>
-                      <Input
-                        type="text"
-                        placeholder="e.g. 3x10"
-                        value={editReps}
-                        onChange={(e) => setEditReps(e.target.value)}
-                        className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Weight</label>
-                      <Input
-                        type="text"
-                        placeholder="kg"
-                        value={editWeight}
-                        onChange={(e) => setEditWeight(e.target.value)}
-                        className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      onClick={() => handleSave(index)}
-                      size="sm"
-                      disabled={updateWorkoutMutation.isPending}
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#c2410c,0_8px_20px_rgba(194,65,12,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      onClick={handleCancel}
-                      size="sm"
-                      variant="ghost"
-                      className="flex-1 text-slate-400 hover:text-white h-7">
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div> :
-                <>
-                  <div className="flex flex-col gap-1 ml-2">
-                    <div className="text-sm font-bold text-white leading-tight -ml-1">
-                      {exercise.exercise || '-'}
-                    </div>
-                    {lastWorkout?.exercises?.[index] &&
-                      <div className="text-[10px] text-slate-500 font-medium">
-                        Last: {lastWorkout.exercises[index].weight}kg
-                      </div>
-                    }
-                  </div>
-                  <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[60px] mr-auto">
-                    {exercise.setsReps || '-'}
-                  </div>
-                  <div className="flex items-center gap- ml-4">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
-                        {exercise.weight || '-'}
-                        <span className="text-[10px] font-bold">kg</span>
-                      </div>
-                      {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
-                    </div>
-                    <Button
-                      onClick={() => handleEdit(index, exercise)}
-                      size="icon"
-                      variant="ghost"
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0 ml-1 -mr-[12%]">
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </>
-              }
-            </div>
-          )}
-
-          {/* Log Workout Button */}
-          {isExpanded && !alreadyLoggedToday &&
-            <div className="mb-3 space-y-2">
-              {workoutStartTime &&
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
-                  <Clock className="w-4 h-4 text-amber-400" />
-                  <span className="text-[11px] text-amber-300 font-semibold">
-                    {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
-                  </span>
-                </div>
-              }
-              <Button
-                onClick={() => {
-                  setFrozenDuration(workoutDuration);
-                  logWorkoutMutation.mutate();
-                }}
-                disabled={logWorkoutMutation.isPending}
-                size="sm" className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-white px-3 w-full h-8 text-[10px] font-bold bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 backdrop-blur-md rounded-lg border border-slate-500/50 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
-              </Button>
-            </div>
-          }
-
-          {/* Summary Button - Show after logged */}
-          {isExpanded && alreadyLoggedToday &&
+      {/* COLLAPSED STATE */}
+      {!isExpanded && (
+        <div className="flex flex-col items-center gap-3 pb-1">
+          {alreadyLoggedToday && (
             <Button
-              onClick={() => setShowSummary(true)}
-              size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-[109%] h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3 -ml-3.5">
+              onClick={(e) => { e.stopPropagation(); setShowSummary(true); }}
+              size="sm"
+              className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
               View Summary
             </Button>
-          }
+          )}
+          {/* Spacer to give the absolute chevron room */}
+          <div className="h-7" />
+        </div>
+      )}
 
-          {/* Rest Timer & Tools */}
-          <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
-            <div className="flex-1 flex items-center gap-3">
-              <div className="relative flex-1">
-                <button
-                  onClick={() => setShowTimerOptions(!showTimerOptions)}
-                  className="relative w-full flex flex-col items-center gap-1 px-5 py-2 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all">
-                  <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-blue-400" />
-                    <span className="text-blue-300 font-black text-2xl tabular-nums">
-                      {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
-                    </span>
-                  </div>
-                </button>
+      {/* EXPANDED STATE */}
+      {isExpanded && (
+        <div style={{ opacity: 1, transition: 'opacity 0.55s ease' }}>
+          <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
 
-                {showTimerOptions &&
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
-                    <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/50 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
-                      <button
-                        onClick={() => {
-                          const currentValue = parseInt(restTimer) || 90;
-                          const newValue = Math.max(10, currentValue - 10);
-                          setRestTimer(newValue);
-                        }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
-                        −
-                      </button>
-                      <button
-                        onClick={() => {
-                          const currentValue = parseInt(restTimer) || 90;
-                          const newValue = currentValue + 10;
-                          setRestTimer(newValue);
-                        }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">
-                        +
-                      </button>
-                    </div>
-                  </>
-                }
+          {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+            <div className="px-2 space-y-2">
+              {/* Headers */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-2">Sets x Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
+                <div className="w-6"></div>
               </div>
 
-              <button
-                onClick={() => {
-                  if (!isTimerActive) {
-                    const time = parseInt(restTimer) || 90;
-                    setRestTimer(time);
-                    setInitialRestTime(time);
-                  }
-                  setIsTimerActive(!isTimerActive);
-                }} className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                {isTimerActive ? 'Stop' : 'Go'}
-              </button>
+              {/* Exercise Rows */}
+              {todayWorkout.exercises.map((exercise, index) =>
+                <div key={index} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[5%] -mr-[5%]">
+                  {editingIndex === index ? (
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
+                        {lastWorkout?.exercises?.[index] &&
+                          <div className="text-xs text-slate-400 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
+                        }
+                      </div>
+                      <div className="flex gap-2 items-end">
+                        <div className="flex-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Sets x Reps</label>
+                          <Input type="text" placeholder="e.g. 3x10" value={editReps} onChange={(e) => setEditReps(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Weight</label>
+                          <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button onClick={() => handleSave(index)} size="sm" disabled={updateWorkoutMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#c2410c,0_8px_20px_rgba(194,65,12,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                          <Check className="w-3 h-3" />
+                        </Button>
+                        <Button onClick={handleCancel} size="sm" variant="ghost" className="flex-1 text-slate-400 hover:text-white h-7">
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-1 ml-2">
+                        <div className="text-sm font-bold text-white leading-tight -ml-1">{exercise.exercise || '-'}</div>
+                        {lastWorkout?.exercises?.[index] &&
+                          <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
+                        }
+                      </div>
+                      <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[60px] mr-auto">
+                        {exercise.setsReps || '-'}
+                      </div>
+                      <div className="flex items-center gap- ml-4">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
+                            {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
+                          </div>
+                          {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
+                        </div>
+                        <Button onClick={() => handleEdit(index, exercise)} size="icon" variant="ghost" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all shrink-0 ml-1 -mr-[12%]">
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Log Workout Button */}
+              {!alreadyLoggedToday && (
+                <div className="mb-3 space-y-2">
+                  {workoutStartTime && (
+                    <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
+                      <Clock className="w-4 h-4 text-amber-400" />
+                      <span className="text-[11px] text-amber-300 font-semibold">
+                        {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
+                      </span>
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => { setFrozenDuration(workoutDuration); logWorkoutMutation.mutate(); }}
+                    disabled={logWorkoutMutation.isPending}
+                    size="sm"
+                    className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-white px-3 w-full h-8 text-[10px] font-bold bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 backdrop-blur-md rounded-lg border border-slate-500/50 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                    {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
+                  </Button>
+                </div>
+              )}
+
+              {/* View Summary — expanded state */}
+              {alreadyLoggedToday && (
+                <Button
+                  onClick={() => setShowSummary(true)}
+                  size="sm"
+                  className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-[109%] h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu mt-3 -ml-3.5">
+                  View Summary
+                </Button>
+              )}
+
+              {/* Rest Timer & Tools */}
+              <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3">
+                <div className="flex-1 flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <button
+                      onClick={() => setShowTimerOptions(!showTimerOptions)}
+                      className="relative w-full flex flex-col items-center gap-1 px-5 py-2 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all">
+                      <span className="text-[10px] font-bold text-blue-400/70 uppercase tracking-wider">Rest Timer</span>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-blue-400" />
+                        <span className="text-blue-300 font-black text-2xl tabular-nums">
+                          {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
+                        </span>
+                      </div>
+                    </button>
+                    {showTimerOptions && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowTimerOptions(false)} />
+                        <div className="absolute bottom-full mb-2 left-0 right-0 bg-slate-900/50 backdrop-blur-2xl border border-white/10 rounded-lg shadow-2xl shadow-black/20 z-50 flex items-center justify-center gap-2.5 px-2 py-2">
+                          <button onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(Math.max(10, v - 10)); }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">−</button>
+                          <button onClick={() => { const v = parseInt(restTimer) || 90; setRestTimer(v + 10); }} className="flex items-center justify-center w-14 h-10 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu text-xl font-bold">+</button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!isTimerActive) { const time = parseInt(restTimer) || 90; setRestTimer(time); setInitialRestTime(time); }
+                      setIsTimerActive(!isTimerActive);
+                    }}
+                    className="text-sm font-bold px-6 py-3.5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                    {isTimerActive ? 'Stop' : 'Go'}
+                  </button>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Button onClick={() => setShowCalculator(true)} size="icon" variant="ghost" className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all" title="Plate Calculator">
+                    <Calculator className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button onClick={() => setShowNotes(true)} size="icon" variant="ghost" className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all" title="Notes">
+                    <BookOpen className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                {/* Spacer so chevron doesn't overlap tools */}
+                <div className="w-7" />
+              </div>
             </div>
-
-            <div className="flex items-center gap-1.5">
-              <Button
-                onClick={() => setShowCalculator(true)}
-                size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-                title="Plate Calculator">
-                <Calculator className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                onClick={() => setShowNotes(true)}
-                size="icon"
-                variant="ghost"
-                className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-                title="Notes">
-                <BookOpen className="w-3.5 h-3.5" />
-              </Button>
+          ) : (
+            <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-8">
+              <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
+              <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
             </div>
-
-          </div>
-
-        </div> :
-        isExpanded && todayWorkout.exercises.length === 0 ?
-          <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center">
-            <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
-            <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
-          </div> :
-          !isExpanded &&
-          <div className="flex flex-col items-center justify-between py-2 gap-3">
-            {alreadyLoggedToday &&
-              <Button
-                onClick={(e) => { e.stopPropagation(); setShowSummary(true); }}
-                size="sm" className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                View Summary
-              </Button>
-            }
-          </div>
-      }
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Single chevron — always rendered, animates centre→bottom-right and rotates */}
       <button
@@ -592,9 +491,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           position: 'absolute',
           bottom: isExpanded ? '10px' : '50%',
           right: isExpanded ? '10px' : '50%',
-          transform: isExpanded
-            ? 'translate(0, 0) rotate(180deg)'
-            : 'translate(50%, 50%) rotate(0deg)',
+          transform: isExpanded ? 'translate(0, 0) rotate(180deg)' : 'translate(50%, 50%) rotate(0deg)',
           transition: 'bottom 0.55s ease, right 0.55s ease, transform 0.55s ease',
           zIndex: 20,
         }}>
@@ -604,7 +501,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       {/* Modals */}
       <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
       <WorkoutNotesModal isOpen={showNotes} onClose={() => setShowNotes(false)} workoutName={todayWorkout?.name} />
-
       <WorkoutSummaryModal
         isOpen={showSummary}
         duration={frozenDuration * 1000}
@@ -616,5 +512,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending} />
 
-    </Card>);
+    </Card>
+  );
 }
