@@ -29,8 +29,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <button
             onClick={() => onSelect('default')}
             className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${selectedVariant === 'default' ? 'ring-2 ring-green-500' : 'hover:opacity-80'}`}>
-            <div className="w-[88px] h-[88px] flex items-center justify-center">
-              <img src={STREAK_ICON_URL} alt="streak" className="w-[88px] h-[88px]" style={{ objectFit: 'contain' }} />
+            <div className="w-[106px] h-[106px] flex items-center justify-center">
+              <img src={STREAK_ICON_URL} alt="streak" className="w-[106px] h-[106px]" style={{ objectFit: 'contain' }} />
             </div>
             {selectedVariant === 'default' && (
               <div className="flex items-center justify-center w-5 h-5 bg-green-500 rounded-full">
