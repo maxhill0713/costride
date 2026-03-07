@@ -78,8 +78,8 @@ export default function QuoteCarousel() {
         </LayoutGroup>
       </div>
 
-      {/* Swipeable Quote — flex-1 so it fills remaining space and centres content */}
-      <div className="flex-1 relative overflow-hidden px-6 z-10" style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Swipeable Quote — flex-1 so it fills remaining space */}
+      <div className="flex-1 relative overflow-hidden px-6 z-10 pb-8" style={{ display: 'flex', flexDirection: 'column' }}>
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -100,7 +100,7 @@ export default function QuoteCarousel() {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'grab',
-              paddingBottom: 32, // room for chevron below author
+              paddingTop: 14,
             }}>
 
             <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
@@ -110,19 +110,6 @@ export default function QuoteCarousel() {
               — {quotes[current].author}
             </p>
 
-            {/* Expand chevron — sits directly below author, slow transition */}
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="mt-3 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200">
-              <ChevronDown
-                className="w-5 h-5"
-                style={{
-                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.55s ease',
-                }}
-              />
-            </button>
-
             {/* Expanded context — quote meaning only, no author bio */}
             <AnimatePresence>
               {expanded && (
@@ -131,13 +118,28 @@ export default function QuoteCarousel() {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="mt-3 text-slate-400 text-sm text-center leading-relaxed font-light px-2">
+                  className="mt-4 text-slate-400 text-sm text-center leading-relaxed font-light px-2">
                   {quotes[current].context}
                 </motion.p>
               )}
             </AnimatePresence>
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Chevron — always pinned to the bottom of the card */}
+      <div className="flex justify-center pb-2 pt-1 flex-shrink-0 z-10 relative">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1">
+          <ChevronDown
+            className="w-5 h-5"
+            style={{
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.55s ease',
+            }}
+          />
+        </button>
       </div>
     </motion.div>
   );
