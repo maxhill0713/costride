@@ -653,24 +653,6 @@ export default function Friends() {
            </div>
         }
 
-         {/* Gym Join Posts */}
-         {gymJoinPosts.length > 0 &&
-        <div className="space-y-2 mt-3">
-             <h3 className="text-xs font-bold text-slate-400 px-2 uppercase tracking-wide">Gym Activity</h3>
-             {gymJoinPosts.map((post) =>
-          <PostCard
-            key={post.id}
-            post={post}
-            currentUser={currentUser}
-            onLike={() => {}}
-            onComment={() => {}}
-            onSave={() => {}}
-            onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-
-          )}
-           </div>
-        }
-
 
 
         {/* Friends Modal */}
