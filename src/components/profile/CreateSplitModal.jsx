@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Calendar, Target, ChevronRight, Check, X, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Dumbbell, ChevronRight, X, Plus, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
