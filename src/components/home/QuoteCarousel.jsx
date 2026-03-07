@@ -42,8 +42,8 @@ export default function QuoteCarousel() {
     exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
-  // 202px → 10% smaller = ~182px
-  const collapsedHeight = '182px';
+  // 182px → 10% smaller = ~164px
+  const collapsedHeight = '164px';
 
   return (
     <motion.div
@@ -56,7 +56,7 @@ export default function QuoteCarousel() {
         display: 'flex',
         flexDirection: 'column',
       }}
-      animate={{ minHeight: expanded ? '290px' : collapsedHeight }}
+      animate={{ minHeight: expanded ? '222px' : collapsedHeight }}
       transition={{ duration: 0.3 }}>
 
       {/* Decorative gradient accent */}
