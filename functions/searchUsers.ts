@@ -15,35 +15,24 @@ Deno.serve(async (req) => {
       return Response.json({ users: [] });
     }
 
-    // Fetch users by name match and by email match separately, then merge
-    const [byName, byEmail] = await Promise.all([
-      base44.asServiceRole.entities.User.filter(
-        { full_name: { $regex: query, $options: 'i' } },
-        'full_name',
-        50
-      ).catch(() => []),
-      base44.asServiceRole.entities.User.filter(
-        { email: { $regex: query, $options: 'i' } },
-        'full_name',
-        50
-      ).catch(() => [])
-    ]);
+    const q = query.toLowerCase();
 
-    // Merge, deduplicate, exclude self
-    const seen = new Set();
-    const results = [];
-    for (const u of [...byName, ...byEmail]) {
-      if (!seen.has(u.id) && u.id !== user.id) {
-        seen.add(u.id);
-        results.push({
-          id: u.id,
-          full_name: u.full_name,
-          email: u.email,
-          avatar_url: u.avatar_url || null
-        });
-      }
-      if (results.length >= limit) break;
-    }
+    // Fetch up to 200 users at a time and filter in memory
+    // This is safe because User.list returns paginated results
+    const allUsers = await base44.asServiceRole.entities.User.list('full_name', 200);
+
+    const results = allUsers
+      .filter(u =>
+        u.id !== user.id &&
+        (u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))
+      )
+      .slice(0, limit)
+      .map(u => ({
+        id: u.id,
+        full_name: u.full_name,
+        email: u.email,
+        avatar_url: u.avatar_url || null
+      }));
 
     return Response.json({ users: results });
   } catch (error) {
