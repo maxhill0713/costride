@@ -206,8 +206,13 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     spawnParticles();
     p1.style.transition = 'opacity 0.15s ease';
     p1.style.opacity = '0';
-    trigAnim(p2, 'streakIconPop', 600, 'cubic-bezier(0.34,1.2,0.64,1)');
+    // Remove inline opacity so the keyframe can control it
+    p2.style.removeProperty('opacity');
     p2.style.opacity = '1';
+    // Reset animation completely before applying
+    p2.style.animation = 'none';
+    void p2.offsetWidth;
+    p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
     stage.style.animation = 'none';
     setTimeout(() => {
       if (actx) soundNumPop(actx);
@@ -749,7 +754,8 @@ export default function Home() {
                   width: 180,
                   height: 180,
                   filter: 'drop-shadow(0 0 28px rgba(249,115,22,0.7))',
-                  opacity: 0
+                  opacity: 0,
+                  willChange: 'transform, opacity, filter'
                 }}>
                 <img
                   id="streak-anim-p1"
@@ -768,7 +774,9 @@ export default function Home() {
                   style={{
                     position: 'absolute', inset: 0,
                     width: '100%', height: '100%',
-                    objectFit: 'contain', opacity: 0
+                    objectFit: 'contain',
+                    opacity: 0,
+                    willChange: 'transform, opacity'
                   }}
                 />
               </div>
