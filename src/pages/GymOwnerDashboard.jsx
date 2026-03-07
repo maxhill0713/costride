@@ -47,7 +47,7 @@ const BG = {
   // Page: radial glow from bottom-center like the screenshot, deep navy
   page: 'radial-gradient(ellipse 120% 80% at 50% 110%, #0e1d45 0%, #0b1120 55%, #080e1e 100%)',
   // Main scrollable area — same deep navy
-  main: 'radial-gradient(ellipse 100% 70% at 50% 100%, #0d1a3e 0%, #0a0f1e 60%, #080e1e 100%)',
+  main: '#0b1120',
   // Sidebar — slightly darker, flat
   sidebar: '#0d1630',
   // Header — matches sidebar
