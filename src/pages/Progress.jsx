@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell } from 'lucide-react';
+import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import AddGoalModal from '../components/goals/AddGoalModal';
 import GoalCard from '../components/goals/GoalCard';
 import ExerciseInsights from '../components/profile/ExerciseInsights';
@@ -83,10 +85,7 @@ function GoalsPage({ currentUser, onBack }) {
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95"
-            >
+            <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95">
               <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
             </button>
             <h1 className="text-xl font-black text-white tracking-tight">Goals</h1>
@@ -141,14 +140,7 @@ function GoalsPage({ currentUser, onBack }) {
           </div>
         )}
       </div>
-
-      <AddGoalModal
-        open={showAddGoal}
-        onClose={() => setShowAddGoal(false)}
-        onSave={(data) => createGoalMutation.mutate(data)}
-        currentUser={currentUser}
-        isLoading={createGoalMutation.isPending}
-      />
+      <AddGoalModal open={showAddGoal} onClose={() => setShowAddGoal(false)} onSave={(data) => createGoalMutation.mutate(data)} currentUser={currentUser} isLoading={createGoalMutation.isPending} />
     </div>
   );
 }
@@ -159,10 +151,7 @@ function SplitPage({ currentUser, checkIns, onBack }) {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
         <div className="flex items-center gap-3 pt-2">
-          <button
-            onClick={onBack}
-            className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95"
-          >
+          <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95">
             <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
           </button>
           <h1 className="text-xl font-black text-white tracking-tight">Split</h1>
@@ -188,19 +177,12 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
         <div className="flex items-center gap-3 pt-2">
-          <button
-            onClick={onBack}
-            className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95"
-          >
+          <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95">
             <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
           </button>
           <h1 className="text-xl font-black text-white tracking-tight">Analytics</h1>
         </div>
-        <ExerciseInsights
-          workoutLogs={workoutLogs}
-          workoutSplit={currentUser?.custom_workout_types}
-          trainingDays={currentUser?.training_days}
-        />
+        <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
       </div>
     </div>
   );
@@ -240,6 +222,14 @@ export default function Progress() {
     placeholderData: (prev) => prev,
   });
 
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   if (!currentUser) return null;
 
   if (view === 'goals') return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
@@ -248,64 +238,100 @@ export default function Progress() {
 
   const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
+  const primaryGymId = currentUser?.primary_gym_id;
 
   const navCards = [
     {
       id: 'split',
-      icon: Dumbbell,
       label: 'Split',
-      sub: currentUser?.workout_split ? 'View your split progress' : 'No split set up yet',
-      iconBg: 'from-indigo-500 to-purple-500',
+      description: 'Track your workout split progress',
+      sub: currentUser?.workout_split ? 'View your split & heatmap' : 'No split set up yet',
+      icon: Dumbbell,
+      iconBg: 'from-indigo-500 to-purple-600',
       iconShadow: 'shadow-[0_3px_0_0_#3730a3,0_8px_20px_rgba(79,70,229,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      hoverBorder: 'hover:border-indigo-500/40',
-      hoverGlow: 'from-indigo-500/10 to-purple-500/10',
-    },
-    {
-      id: 'goals',
-      icon: Target,
-      label: 'Goals',
-      sub: `${activeGoals.length} active · ${completedGoals.length} completed`,
-      iconBg: 'from-blue-500 to-cyan-500',
-      iconShadow: 'shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      hoverBorder: 'hover:border-blue-500/40',
-      hoverGlow: 'from-blue-500/10 to-cyan-500/10',
+      accentColor: 'border-indigo-500/30 hover:border-indigo-400/50',
+      glowColor: 'from-indigo-600/10 via-purple-600/5 to-transparent',
+      isLink: false,
     },
     {
       id: 'analytics',
-      icon: BarChart3,
       label: 'Analytics',
+      description: 'Dive deep into your exercise data',
       sub: `${workoutLogs.length} sessions logged`,
-      iconBg: 'from-purple-500 to-pink-500',
+      icon: BarChart3,
+      iconBg: 'from-purple-500 to-pink-600',
       iconShadow: 'shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
-      hoverBorder: 'hover:border-purple-500/40',
-      hoverGlow: 'from-purple-500/10 to-pink-500/10',
+      accentColor: 'border-purple-500/30 hover:border-purple-400/50',
+      glowColor: 'from-purple-600/10 via-pink-600/5 to-transparent',
+      isLink: false,
+    },
+    {
+      id: 'goals',
+      label: 'Goals',
+      description: 'Set targets and track milestones',
+      sub: `${activeGoals.length} active · ${completedGoals.length} completed`,
+      icon: Target,
+      iconBg: 'from-blue-500 to-cyan-500',
+      iconShadow: 'shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)]',
+      accentColor: 'border-blue-500/30 hover:border-blue-400/50',
+      glowColor: 'from-blue-600/10 via-cyan-600/5 to-transparent',
+      isLink: false,
+    },
+    {
+      id: 'community',
+      label: 'Community',
+      description: 'Your gym feed and members',
+      sub: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'Join a gym to connect',
+      icon: Users,
+      iconBg: 'from-green-500 to-emerald-600',
+      iconShadow: 'shadow-[0_3px_0_0_#065f46,0_8px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]',
+      accentColor: 'border-green-500/30 hover:border-green-400/50',
+      glowColor: 'from-green-600/10 via-emerald-600/5 to-transparent',
+      isLink: true,
+      href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
     },
   ];
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-4">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32 space-y-3">
 
-        <h1 className="text-2xl font-black text-white tracking-tight pt-2">Progress</h1>
+        <h1 className="text-2xl font-black text-white tracking-tight pt-2 pb-1">Progress</h1>
 
-        <div className="grid grid-cols-2 gap-3">
-          {navCards.map(({ id, icon: Icon, label, sub, iconBg, iconShadow, hoverBorder, hoverGlow }) => (
-            <button
-              key={id}
-              onClick={() => setView(id)}
-              className={`group relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 ${hoverBorder} rounded-2xl p-5 text-left active:translate-y-[2px] active:scale-[0.98] transition-all duration-100 transform-gpu shadow-2xl shadow-black/20`}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${hoverGlow} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-              <div className="relative">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center mb-3 ${iconShadow}`}>
-                  <Icon className="w-5 h-5 text-white" />
+        <div className="flex flex-col gap-3">
+          {navCards.map(({ id, label, description, sub, icon: Icon, iconBg, iconShadow, accentColor, glowColor, isLink, href }) => {
+            const inner = (
+              <>
+                <div className={`absolute inset-0 bg-gradient-to-r ${glowColor} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <div className="relative flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center flex-shrink-0 ${iconShadow}`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="text-base font-black text-white">{label}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">{sub}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                 </div>
-                <p className="text-base font-black text-white">{label}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-              </div>
-              <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors" />
-            </button>
-          ))}
+              </>
+            );
+
+            const sharedClass = `group relative w-full bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border ${accentColor} rounded-2xl px-5 py-4 active:translate-y-[2px] active:scale-[0.99] transition-all duration-100 transform-gpu shadow-2xl shadow-black/20`;
+
+            if (isLink) {
+              return (
+                <Link key={id} to={href} className={sharedClass}>
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <button key={id} onClick={() => setView(id)} className={sharedClass}>
+                {inner}
+              </button>
+            );
+          })}
         </div>
 
       </div>
