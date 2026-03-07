@@ -847,9 +847,12 @@ export default function Home() {
                         || 'Workout';
                     }
                     if (done) return 'Workout';
-                    const splitDay = (currentUser?.custom_workout_types || []).find(
-                      (s) => s.day === day || s.day_of_week === day
-                    );
+                    const customTypes = currentUser?.custom_workout_types;
+                    const splitDay = customTypes
+                      ? Array.isArray(customTypes)
+                        ? customTypes.find((s) => s.day === day || s.day_of_week === day)
+                        : customTypes[day]
+                      : null;
                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
                   };
 
