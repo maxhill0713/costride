@@ -11,6 +11,7 @@ export default function UserProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('id');
   const [selectedPost, setSelectedPost] = useState(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
