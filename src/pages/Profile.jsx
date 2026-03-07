@@ -529,51 +529,6 @@ export default function Profile() {
             }
           </TabsContent>
 
-          <TabsContent value="goals" className="space-y-4">
-            <Button onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white font-bold rounded-full px-32 py-1.5 flex items-center gap-2 justify-center border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu">
-              <Plus className="w-4 h-4 mr-2" />New Goal
-            </Button>
-            {activeGoals.length === 0 ?
-              <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border-2 border-dashed border-white/10 p-10 text-center rounded-2xl shadow-2xl shadow-black/20">
-                <div className="max-w-sm mx-auto">
-                  <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center">
-                    <Target className="w-10 h-10 text-blue-400" />
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">No Active Goals</h4>
-                  <p className="text-slate-400 text-sm mb-5 leading-relaxed">Set your first goal and start tracking your fitness journey. Whether it's lifting heavier, working out more often, or building consistency.</p>
-                  <Button onClick={() => setShowAddGoal(true)} className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 backdrop-blur-md text-white rounded-xl font-semibold border border-slate-500/50 shadow-[0_4px_0_0_#0369a1,0_8px_20px_rgba(6,100,200,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                    <Plus className="w-4 h-4 mr-2" />Create Your First Goal
-                  </Button>
-                </div>
-              </Card> :
-              <div className="space-y-3">
-                {activeGoals.map((goal) => <GoalCard key={goal.id} goal={goal} onUpdate={handleUpdateGoal} onDelete={(id) => deleteGoalMutation.mutate(id)} onToggleReminder={handleToggleReminder} />)}
-              </div>
-            }
-            {goals.filter((g) => g.status === 'completed').length > 0 &&
-              <div className="mt-6">
-                <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />Completed Goals ({goals.filter((g) => g.status === 'completed').length})
-                </h4>
-                <div className="space-y-2">
-                  {goals.filter((g) => g.status === 'completed').slice(0, 3).map((goal) =>
-                    <Card key={goal.id} className="bg-slate-800/40 border border-green-500/30 p-4 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h5 className="font-semibold text-white text-sm truncate">{goal.title}</h5>
-                          <p className="text-xs text-slate-400">{goal.target_value} {goal.unit} achieved</p>
-                        </div>
-                        <Badge className="bg-green-500/20 text-green-300 border border-green-500/40 text-xs">✓ Done</Badge>
-                      </div>
-                    </Card>
-                  )}
-                </div>
-              </div>
-            }
-          </TabsContent>
         </div>
       </Tabs>
 
