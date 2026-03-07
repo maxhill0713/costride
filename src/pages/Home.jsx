@@ -772,7 +772,7 @@ export default function Home() {
                   const done   = loggedDays.has(day);
                   const bounce = justLoggedDay === day;
                   // Gentle sine wave: amplitude 14px, each button offset vertically
-                  const verticalOffset = Math.round(Math.sin((i / (sorted.length - 1 || 1)) * Math.PI * 2) * 14);
+                  const verticalOffset = Math.round(Math.sin((i / (sorted.length - 1 || 1)) * Math.PI * 2) * 11);
 
                   return (
                     <div
@@ -784,16 +784,16 @@ export default function Home() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginTop: 14 + verticalOffset,
+                        marginTop: 11 + verticalOffset,
                         background: done
-                          ? 'linear-gradient(135deg, #2d6bc4 0%, #1a3a8a 100%)'
-                          : 'rgba(30,41,59,0.8)',
+                          ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)'
+                          : 'linear-gradient(to bottom, #1e293b, #0f172a)',
                         border: done
-                          ? '2px solid rgba(70,130,200,0.35)'
-                          : '2px solid rgba(71,85,105,0.5)',
+                          ? '1px solid rgba(96,165,250,0.4)'
+                          : '1px solid rgba(51,65,85,0.8)',
                         boxShadow: done
-                          ? '0 0 8px rgba(45,107,196,0.3), 0 3px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
-                          : '0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                          ? '0 3px 0 0 #1a3fa8, 0 6px 16px rgba(0,0,80,0.5), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 0 16px rgba(255,255,255,0.04)'
+                          : '0 3px 0 0 #0a0f1a, 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 12px rgba(255,255,255,0.02)',
                         transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
                         animation: bounce
                           ? 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards'
