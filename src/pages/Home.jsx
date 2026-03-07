@@ -516,7 +516,7 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  const handleWorkoutLogged = async (challengesData = []) => {
+  const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '') => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
     setJustLoggedDay(todayAdjusted);
@@ -530,6 +530,12 @@ export default function Home() {
     const newStreak = freshUser?.current_streak || (userStreak + 1);
     setCelebrationStreakNum(newStreak);
     setCelebrationChallenges(challengesData);
+    setCelebrationExercises(exercises);
+    setCelebrationWorkoutName(workoutName);
+
+    const showShare = () => {
+      setShowShareWorkout(true);
+    };
 
     setShowStreakCelebration(true);
     setTimeout(() => {
@@ -538,10 +544,10 @@ export default function Home() {
         setShowChallengesCelebration(true);
         setTimeout(() => {
           setShowChallengesCelebration(false);
-          setTimeout(() => setJustLoggedDay(null), 1500);
+          showShare();
         }, 4000);
       } else {
-        setTimeout(() => setJustLoggedDay(null), 1500);
+        showShare();
       }
     }, 3500);
   };
