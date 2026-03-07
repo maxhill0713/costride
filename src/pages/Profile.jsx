@@ -3,8 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Settings, Dumbbell, MapPin, X, Plus, Building2, Camera, Image as ImageIcon, Video, Star } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Settings, Dumbbell, MapPin, X, Plus, Building2, Camera, Image as ImageIcon, Video, Star, Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import BadgesModal from '../components/profile/BadgesModal';
 import StatusBadge from '../components/profile/StatusBadge';
@@ -109,6 +108,14 @@ export default function Profile() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['currentUser'] }); setShowEditAvatar(false); }
   });
 
+  const closeCreatePost = () => {
+    setShowCreatePost(false);
+    setPostContent('');
+    setPostImage('');
+    setPostVideo('');
+    setAllowGymRepost(false);
+  };
+
   const handleFileUpload = async (file, type) => {
     try {
       setUploading(true);
@@ -136,7 +143,7 @@ export default function Profile() {
         { id: `temp-${Date.now()}`, member_id: currentUser?.id, member_name: currentUser?.full_name, member_avatar: currentUser?.avatar_url, content: data.content, image_url: data.image_url || null, video_url: data.video_url || null, likes: 0, comments: [], created_date: new Date().toISOString() },
         ...old
       ]);
-      setShowCreatePost(false); setPostContent(''); setPostImage(''); setPostVideo(''); setAllowGymRepost(false);
+      closeCreatePost();
       return { previous };
     },
     onError: (err, data, context) => { queryClient.setQueryData(['userPosts', currentUser?.id], context.previous); },
@@ -151,6 +158,7 @@ export default function Profile() {
   const currentStreak = currentUser?.current_streak || 0;
   const filteredPosts = userPosts.filter((post) => (post.image_url || post.video_url) && !post.content?.includes("Well done, workout") && post.gym_join !== true);
   const friendCount = friends.length;
+  const canPost = !!(postContent.trim() || postImage || postVideo);
 
   const badgeDefs = [
     { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
@@ -168,21 +176,18 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
 
-      {/* ── TOP BAR: username left, settings right — flush to top ── */}
+      {/* ── TOP BAR ── */}
       <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
         <h1 className="text-[17px] font-black text-white tracking-tight">{displayName}</h1>
-        <Link
-          to={createPageUrl('Settings')}
-          className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors active:scale-95"
-        >
-          <Settings className="w-4.5 h-4.5 text-slate-300" />
+        <Link to={createPageUrl('Settings')} className="active:scale-90 transition-transform">
+          <Settings className="w-[22px] h-[22px] text-slate-400 hover:text-slate-200 transition-colors" />
         </Link>
       </div>
 
-      {/* ── HERO — tight to top bar ── */}
+      {/* ── HERO ── */}
       <div className="max-w-4xl mx-auto px-4 space-y-3 pb-4">
 
-        {/* Avatar + compact stats */}
+        {/* Avatar + stats */}
         <div className="flex items-center gap-5">
           <button onClick={() => setShowProfilePicture(true)} className="flex-shrink-0 active:scale-95 transition-transform">
             <div className="w-[76px] h-[76px] rounded-full p-[2.5px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 shadow-[0_0_16px_rgba(99,102,241,0.3)]">
@@ -195,7 +200,6 @@ export default function Profile() {
             </div>
           </button>
 
-          {/* Stats — compact, no dividers */}
           <div className="flex flex-1 justify-around items-center">
             <div className="text-center">
               <p className="text-[18px] font-black text-white leading-none">{filteredPosts.length}</p>
@@ -207,19 +211,14 @@ export default function Profile() {
             </div>
             <div className="text-center">
               <p className="text-[18px] font-black text-white leading-none">{currentStreak}</p>
-              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak 🔥</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Streak</p>
             </div>
           </div>
         </div>
 
-        {/* Status badge + bio + location + gym */}
+        {/* Status + location + gym */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <StatusBadge checkIns={checkIns} streak={currentStreak} size="sm" />
-          </div>
-          {currentUser.bio && (
-            <p className="text-[13px] text-slate-300 leading-snug">{currentUser.bio}</p>
-          )}
+          <StatusBadge checkIns={checkIns} streak={currentStreak} size="sm" />
           {currentUser.gym_location && (
             <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3 text-slate-500 flex-shrink-0" />
@@ -264,10 +263,10 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ── GRID DIVIDER ── */}
+      {/* ── DIVIDER ── */}
       <div className="border-t border-slate-700/40" />
 
-      {/* ── POSTS (no tab bar — just the grid) ── */}
+      {/* ── POSTS ── */}
       <div className="max-w-4xl mx-auto pb-32">
         <div className="flex justify-end px-3 pt-2 pb-0.5">
           <button onClick={() => setGridView(!gridView)} className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors">
@@ -336,69 +335,129 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Create post sheet */}
+      {/* ── CREATE POST BOTTOM SHEET ── */}
       {showCreatePost && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4">
-          <Card className="bg-slate-900 border border-slate-700/60 rounded-t-3xl md:rounded-2xl w-full md:max-w-lg p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-black text-white">New Post</h3>
-              <button
-                onClick={() => { setShowCreatePost(false); setPostContent(''); setPostImage(''); setPostVideo(''); setAllowGymRepost(false); }}
-                className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center"
-              >
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end justify-center"
+          onClick={closeCreatePost}
+        >
+          <div
+            className="w-full max-w-2xl bg-[#0d1220] border-t border-slate-700/50 rounded-t-3xl"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-9 h-1 rounded-full bg-slate-700/80" />
+            </div>
+
+            {/* Header row */}
+            <div className="flex items-center justify-between px-5 py-3">
+              <span className="text-[15px] font-black text-white">New Post</span>
+              <button onClick={closeCreatePost} className="w-7 h-7 flex items-center justify-center rounded-full bg-slate-800 active:scale-90 transition-transform">
                 <X className="w-4 h-4 text-slate-400" />
               </button>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-700 flex-shrink-0 flex items-center justify-center">
+
+            {/* Composer */}
+            <div className="px-5 pb-2">
+              <div className="flex gap-3 items-start">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700 flex-shrink-0 flex items-center justify-center">
                   {currentUser.avatar_url
                     ? <img src={currentUser.avatar_url} className="w-full h-full object-cover" alt="" />
                     : <span className="text-sm font-black text-white">{displayName?.charAt(0)}</span>
                   }
                 </div>
-                <Textarea
-                  value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
-                  placeholder="Share your workout..."
-                  className="bg-transparent border-none text-white placeholder:text-slate-500 min-h-[80px] p-0 focus-visible:ring-0 resize-none text-sm flex-1"
-                />
+                <div className="flex-1 min-h-[90px]">
+                  <Textarea
+                    value={postContent}
+                    onChange={(e) => setPostContent(e.target.value)}
+                    placeholder="What's your workout win today?"
+                    className="bg-transparent border-none text-white placeholder:text-slate-600 p-0 focus-visible:ring-0 resize-none text-[16px] leading-relaxed w-full min-h-[90px]"
+                    autoFocus
+                  />
+                </div>
               </div>
-              {postImage && <div className="rounded-xl overflow-hidden border border-slate-700/50"><img src={postImage} alt="Preview" className="w-full max-h-48 object-cover" /></div>}
-              {postVideo && <div className="rounded-xl overflow-hidden border border-slate-700/50"><video src={postVideo} controls className="w-full max-h-48 bg-black" /></div>}
-              <div className="flex items-center gap-2 pt-2 border-t border-slate-700/40">
+
+              {/* Media preview */}
+              {(postImage || postVideo || uploading) && (
+                <div className="mt-3 ml-[52px]">
+                  {uploading && <p className="text-xs text-slate-500 animate-pulse py-2">Uploading…</p>}
+                  {postImage && (
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-700/50">
+                      <img src={postImage} alt="Preview" className="w-full max-h-52 object-cover" />
+                      <button onClick={() => setPostImage('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
+                  )}
+                  {postVideo && (
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-700/50">
+                      <video src={postVideo} controls className="w-full max-h-52 bg-black" />
+                      <button onClick={() => setPostVideo('')} className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center">
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom toolbar */}
+            <div className="flex items-center justify-between gap-3 px-5 pt-3 pb-5 border-t border-slate-800/80">
+              <div className="flex items-center gap-2">
+                {/* Photo from library */}
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
-                  <div className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors">
-                    <ImageIcon className="w-4 h-4 text-slate-400" />
+                  <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
+                    <ImageIcon className="w-5 h-5 text-slate-400" />
                   </div>
                 </label>
+                {/* Video */}
                 <label className="cursor-pointer">
                   <input type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
-                  <div className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors">
-                    <Video className="w-4 h-4 text-slate-400" />
+                  <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
+                    <Video className="w-5 h-5 text-slate-400" />
                   </div>
                 </label>
+                {/* Camera */}
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
-                  <div className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center hover:bg-slate-700/60 transition-colors">
-                    <Camera className="w-4 h-4 text-slate-400" />
+                  <div className="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform hover:border-slate-500/80">
+                    <Camera className="w-5 h-5 text-slate-400" />
                   </div>
                 </label>
-                <div className="flex items-center gap-1.5 ml-1">
-                  <input type="checkbox" id="gym-repost" checked={allowGymRepost} onChange={(e) => setAllowGymRepost(e.target.checked)} className="w-3.5 h-3.5 cursor-pointer" />
-                  <label htmlFor="gym-repost" className="text-[11px] text-slate-400 cursor-pointer">Allow gym share</label>
-                </div>
+                {/* Gym share toggle */}
                 <button
-                  onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
-                  disabled={!postContent.trim() || createPostMutation.isPending}
-                  className="ml-auto bg-slate-800/70 border border-slate-600/50 text-slate-200 font-bold rounded-full px-4 py-1.5 flex items-center gap-1.5 text-xs shadow-[0_3px_0_0_#0f172a,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 disabled:opacity-40 transform-gpu"
+                  onClick={() => setAllowGymRepost(!allowGymRepost)}
+                  className={`w-11 h-11 rounded-2xl border flex items-center justify-center active:scale-90 transition-all ${
+                    allowGymRepost
+                      ? 'bg-blue-600/25 border-blue-500/50 text-blue-400'
+                      : 'bg-slate-800 border-slate-700/50 text-slate-500'
+                  }`}
+                  title="Allow gym to share"
                 >
-                  {createPostMutation.isPending ? 'Posting…' : 'Post'}
+                  <Building2 className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Post button */}
+              <button
+                onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, allow_gym_repost: allowGymRepost })}
+                disabled={!canPost || createPostMutation.isPending}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-[14px] transition-all duration-150 transform-gpu ${
+                  canPost && !createPostMutation.isPending
+                    ? 'bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95'
+                    : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                }`}
+              >
+                {createPostMutation.isPending
+                  ? <span className="animate-pulse">Posting…</span>
+                  : <><Send className="w-4 h-4" />Post</>
+                }
+              </button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>
