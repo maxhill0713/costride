@@ -42,9 +42,9 @@ export default function QuoteCarousel() {
     exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
-  // 148px → 5% bigger = 155px, 200px → 5% bigger = 210px
-  const COLLAPSED_H = 155;
-  const EXPANDED_H  = 210;
+  // 148px → 10% bigger = 163px, 200px → 10% bigger = 220px
+  const COLLAPSED_H = 163;
+  const EXPANDED_H  = 220;
 
   return (
     <motion.div
