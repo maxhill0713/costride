@@ -19,6 +19,11 @@ const quotes = [
   context: "Fear is often the only real obstacle between us and our goals. When we overcome fear, we unlock our potential and find the strength to persevere.",
 }];
 
+// Fixed collapsed height — sized for Aristotle (longest quote)
+const COLLAPSED_H  = 212;
+const DOTS_H       = 28;
+const CHEVRON_H    = 32;
+const QUOTE_AREA_H = COLLAPSED_H - DOTS_H - CHEVRON_H;
 
 export default function QuoteCarousel() {
   const [current, setCurrent] = useState(0);
@@ -42,12 +47,8 @@ export default function QuoteCarousel() {
     exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 })
   };
 
-  // 163px → 30% bigger = 212px, expanded needs to show full quote + context
-  const COLLAPSED_H = 212;
-  const EXPANDED_H  = 340;
-
   return (
-    <motion.div
+    <div
       className="rounded-2xl select-none relative shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
       style={{
         background: 'linear-gradient(135deg, rgba(88,28,135,0.10) 0%, rgba(8,10,20,0.88) 100%)',
@@ -57,15 +58,13 @@ export default function QuoteCarousel() {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-      }}
-      animate={{ height: expanded ? EXPANDED_H : COLLAPSED_H }}
-      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}>
+      }}>
 
       {/* Decorative gradient accent */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
 
-      {/* Dots */}
-      <div className="flex justify-center gap-2 pt-3 pb-1 relative z-10 flex-shrink-0">
+      {/* Dots — fixed height */}
+      <div className="flex justify-center gap-2 pt-3 pb-1 relative z-10 flex-shrink-0" style={{ height: DOTS_H }}>
         <LayoutGroup>
           {quotes.map((_, i) =>
             <motion.button
@@ -80,8 +79,10 @@ export default function QuoteCarousel() {
         </LayoutGroup>
       </div>
 
-      {/* Swipeable Quote — flex-1 so it fills remaining space */}
-      <div className="flex-1 relative overflow-hidden px-6 z-10 pb-4" style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Quote + author — FIXED height, never moves or resizes */}
+      <div
+        className="relative px-6 z-10 flex-shrink-0"
+        style={{ height: QUOTE_AREA_H, overflow: 'hidden' }}>
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={current}
@@ -96,41 +97,43 @@ export default function QuoteCarousel() {
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
             style={{
-              flex: 1,
+              height: '100%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'grab',
-              paddingTop: 8,
             }}>
-
             <p className="text-white text-lg font-light text-center leading-relaxed italic tracking-tight">
               "{quotes[current].text}"
             </p>
             <p className="mt-2 text-slate-300 text-sm font-medium tracking-widest opacity-90">
               — {quotes[current].author}
             </p>
-
-            {/* Expanded context — quote meaning only, no author bio */}
-            <AnimatePresence>
-              {expanded && (
-                <motion.p
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-4 text-slate-400 text-sm text-center leading-relaxed font-light px-2">
-                  {quotes[current].context}
-                </motion.p>
-              )}
-            </AnimatePresence>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Chevron — always pinned to the bottom of the card */}
-      <div className="flex justify-center pb-2 pt-1 flex-shrink-0 z-10 relative">
+      {/* Context — expands dynamically to fit however long the text is */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            key={current + '-context'}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}
+            className="px-6 z-10 flex-shrink-0">
+            <p className="text-slate-400 text-sm text-center leading-relaxed font-light py-3">
+              {quotes[current].context}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chevron — always pinned below everything */}
+      <div className="flex justify-center pb-2 pt-1 flex-shrink-0 z-10 relative" style={{ height: CHEVRON_H }}>
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1">
@@ -143,6 +146,6 @@ export default function QuoteCarousel() {
           />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
