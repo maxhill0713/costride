@@ -225,10 +225,8 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     spawnParticles();
     p1.style.transition = 'opacity 0.15s ease';
     p1.style.opacity = '0';
-    // Remove inline opacity so the keyframe can control it
     p2.style.removeProperty('opacity');
     p2.style.opacity = '1';
-    // Reset animation completely before applying
     p2.style.animation = 'none';
     void p2.offsetWidth;
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
@@ -267,14 +265,12 @@ export default function Home() {
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
-  const [justLoggedDay, setJustLoggedDay] = useState(null); // day number 1-7 that just got logged
+  const [justLoggedDay, setJustLoggedDay] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
-  // Inject keyframes once on mount
   useEffect(() => { injectStreakStyles(); }, []);
 
-  // Clean up timers on unmount
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
@@ -410,7 +406,6 @@ export default function Home() {
     gcTime: 5 * 60 * 1000
   });
 
-  // Fetch this week's workout logs to know which days are done
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id],
     queryFn: async () => {
@@ -434,7 +429,6 @@ export default function Home() {
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
 
-  // Run animation whenever streak celebration mounts
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
@@ -506,7 +500,6 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
   const handleWorkoutLogged = async (challengesData = []) => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
@@ -515,26 +508,20 @@ export default function Home() {
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
 
-    // AudioContext MUST be created inside a user gesture handler
     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
 
-    // current_streak was already incremented by TodayWorkout's logWorkoutMutation
-    // Read the fresh value from the invalidated query, fallback to userStreak + 1
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || (userStreak + 1);
     setCelebrationStreakNum(newStreak);
     setCelebrationChallenges(challengesData);
 
-    // Stage 1 — new streak animation for 3.5s
     setShowStreakCelebration(true);
     setTimeout(() => {
       setShowStreakCelebration(false);
-      // Stage 2 — fullscreen challenges (only if user has challenges)
       if (challengesData.length > 0) {
         setShowChallengesCelebration(true);
         setTimeout(() => {
           setShowChallengesCelebration(false);
-          // Clear bounce after animation — keep it blue, just stop bouncing
           setTimeout(() => setJustLoggedDay(null), 1500);
         }, 4000);
       } else {
@@ -641,8 +628,6 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
 
           {memberGym && <>
-
-
             {!userCheckIns.some((c) => isToday(new Date(c.check_in_date))) &&
               <CheckInButton
                 gym={memberGym}
@@ -768,7 +753,6 @@ export default function Home() {
               })
             );
 
-            // Always show all 7 days Mon→Sun
             const allDays = [1, 2, 3, 4, 5, 6, 7];
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
@@ -778,10 +762,52 @@ export default function Home() {
                 {allDays.map((day, i) => {
                   const done      = loggedDays.has(day);
                   const bounce    = justLoggedDay === day;
-                  const isToday   = day === todayDay;
+                  const isTodayCircle = day === todayDay;
                   const isRestDay = !trainingDays.includes(day);
-                  const size      = isToday ? 46 : 37;
+                  const size      = isTodayCircle ? 46 : 37;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
+
+                  // Colour logic — rest days always stay green (done or not), just vary opacity/brightness
+                  // Gym days: blue when done, dark when not
+                  const getBg = () => {
+                    if (isRestDay) {
+                      return done
+                        ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)'
+                        : 'linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)';
+                    }
+                    if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
+                    if (isTodayCircle) return 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)';
+                    return 'linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)';
+                  };
+
+                  const getBorder = () => {
+                    if (isRestDay) {
+                      return done
+                        ? '1px solid rgba(74,222,128,0.5)'
+                        : '1px solid rgba(51,65,85,0.8)';
+                    }
+                    if (done) return '1px solid rgba(147,197,253,0.5)';
+                    if (isTodayCircle) return '1px solid rgba(100,116,139,0.7)';
+                    return '1px solid rgba(51,65,85,0.8)';
+                  };
+
+                  const getBoxShadow = () => {
+                    if (isRestDay) {
+                      return done
+                        ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)'
+                        : '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                    }
+                    if (done) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
+                    if (isTodayCircle) return '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
+                    return '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
+                  };
+
+                  const getAnimation = () => {
+                    if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards';
+                    if (isRestDay) return 'none';
+                    if (done) return 'none';
+                    return 'dayWiggle 2.4s ease-in-out infinite';
+                  };
 
                   return (
                     <div
@@ -794,10 +820,10 @@ export default function Home() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        marginTop: 11 + verticalOffset - (isToday ? 4 : 0),
+                        marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0),
                       }}>
                       {/* Pulsing grey ring behind today's circle */}
-                      {isToday && (
+                      {isTodayCircle && (
                         <div style={{
                           position: 'absolute',
                           width: size + 14,
@@ -814,56 +840,38 @@ export default function Home() {
                           width: size,
                           height: size,
                           borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        // Keep centres aligned on the wave by offsetting for size difference
-                        background: done
-                          ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
-                          : isRestDay
-                            ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)'
-                            : isToday
-                              ? 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)'
-                              : 'linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)',
-                        border: done
-                          ? '1px solid rgba(147,197,253,0.5)'
-                          : isRestDay
-                            ? '1px solid rgba(74,222,128,0.35)'
-                            : isToday
-                              ? '1px solid rgba(100,116,139,0.7)'
-                              : '1px solid rgba(51,65,85,0.8)',
-                        boxShadow: done
-                          ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)'
-                          : isRestDay
-                            ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)'
-                            : isToday
-                              ? '0 4px 0 0 #060d1a, 0 7px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)'
-                              : '0 3px 0 0 #060d1a, 0 5px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)',
-                        transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease',
-                        animation: bounce
-                          ? 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards'
-                          : (done || isRestDay)
-                            ? 'none'
-                            : 'dayWiggle 2.4s ease-in-out infinite',
-                        animationDelay: bounce ? '0s' : `${i * 0.18}s`,
-                        willChange: 'transform',
-                      }}>
-                      {done
-                        ? <svg width={isToday ? 20 : 16} height={isToday ? 20 : 16} viewBox="0 0 20 20" fill="none">
-                            <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        : isRestDay
-                          ? <span style={{ fontSize: 14, lineHeight: 1, filter: 'brightness(1.6)', opacity: 0.85 }}>🌿</span>
-                          : <div style={{
-                              width: isToday ? 18 : 14,
-                              height: isToday ? 18 : 14,
-                              borderRadius: '50%',
-                              border: isToday ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
-                              background: isToday ? 'rgba(255,255,255,0.05)' : 'transparent',
-                              boxShadow: isToday ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
-                            }} />
-                      }
-                        </div>
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: getBg(),
+                          border: getBorder(),
+                          boxShadow: getBoxShadow(),
+                          transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease',
+                          animation: getAnimation(),
+                          animationDelay: bounce ? '0s' : `${i * 0.18}s`,
+                          willChange: 'transform',
+                        }}>
+                        {isRestDay
+                          ? <span style={{
+                              fontSize: 14,
+                              lineHeight: 1,
+                              filter: 'brightness(1.6)',
+                              opacity: done ? 0.85 : 0.5,
+                            }}>🌿</span>
+                          : done
+                            ? <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
+                                <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            : <div style={{
+                                width: isTodayCircle ? 18 : 14,
+                                height: isTodayCircle ? 18 : 14,
+                                borderRadius: '50%',
+                                border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
+                                background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
+                              }} />
+                        }
+                      </div>
                     </div>
                   );
                 })}
@@ -901,10 +909,7 @@ export default function Home() {
             transition={{ duration: 0.45 }}
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
 
-            {/* Icon + Number side by side, centred */}
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-
-              {/* Icon stage — pose 1 and pose 2 stacked */}
               <div
                 id="streak-anim-stage"
                 style={{
@@ -939,7 +944,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* Number — to the right of the icon */}
               <div
                 id="streak-anim-num"
                 style={{
@@ -951,9 +955,7 @@ export default function Home() {
                 {celebrationStreakNum - 1}
               </div>
 
-              {/* Hidden label element kept so JS can still reference it without erroring */}
               <div id="streak-anim-lbl" style={{ display: 'none' }} />
-
             </div>
           </motion.div>
         }
