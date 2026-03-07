@@ -767,10 +767,12 @@ export default function Home() {
             const sorted = [...trainingDays].sort((a, b) => a - b);
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '4px 0' }}>
-                {sorted.map((day) => {
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 80 }}>
+                {sorted.map((day, i) => {
                   const done   = loggedDays.has(day);
                   const bounce = justLoggedDay === day;
+                  // Gentle sine wave: amplitude 14px, each button offset vertically
+                  const verticalOffset = Math.round(Math.sin((i / (sorted.length - 1 || 1)) * Math.PI * 2) * 14);
 
                   return (
                     <div
@@ -782,6 +784,7 @@ export default function Home() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        marginTop: 14 + verticalOffset,
                         background: done
                           ? 'linear-gradient(135deg, #2d6bc4 0%, #1a3a8a 100%)'
                           : 'rgba(30,41,59,0.8)',
@@ -797,7 +800,7 @@ export default function Home() {
                           : done
                             ? 'none'
                             : 'dayWiggle 2.4s ease-in-out infinite',
-                        animationDelay: bounce ? '0s' : `${sorted.indexOf(day) * 0.18}s`,
+                        animationDelay: bounce ? '0s' : `${i * 0.18}s`,
                         willChange: 'transform',
                         flexShrink: 0,
                       }}>
