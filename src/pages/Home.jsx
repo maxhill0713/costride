@@ -949,10 +949,17 @@ export default function Home() {
                         }
                       </button>
 
-                      {/* Drop-down tooltip — expands below the circle */}
+                      {/* Drop-down tooltip — single unified SVG shape */}
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
-                          const BUBBLE_W = 300;
+                          // 30% smaller than previous 300px = 210px
+                          const BUBBLE_W = 210;
+                          const BUBBLE_H = 54;
+                          const ARROW_H = 12;
+                          const ARROW_W = 22;
+                          const RADIUS = 13;
+                          const SVG_H = BUBBLE_H + ARROW_H;
+
                           const SLOT = size + 8;
                           const circleCenterInRow = i * SLOT + size / 2;
                           const rowWidth = 7 * SLOT - 8;
@@ -960,67 +967,99 @@ export default function Home() {
                           const clampedBubbleLeft = Math.max(0, Math.min(idealBubbleLeft, rowWidth - BUBBLE_W));
                           const bubbleOffsetFromCircle = clampedBubbleLeft - i * SLOT;
                           const arrowInBubble = circleCenterInRow - clampedBubbleLeft;
-                          const arrowClamped = Math.max(18, Math.min(arrowInBubble, BUBBLE_W - 18));
+                          // Arrow tip x — clamped so the arrow stays within rounded corners
+                          const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
+                          const arrowL = arrowTip - ARROW_W / 2;
+                          const arrowR = arrowTip + ARROW_W / 2;
 
-                          // Match bubble colour to the circle's state
-                          const bubbleBg = isRestDay && done
-                            ? 'linear-gradient(to bottom, #166534, #14532d)'
-                            : done
-                              ? 'linear-gradient(to bottom, #1e3a5f, #172554)'
-                              : 'linear-gradient(to bottom, #1e293b, #0f172a)';
-                          const bubbleBorder = isRestDay && done
-                            ? 'rgba(74,222,128,0.4)'
-                            : done
-                              ? 'rgba(147,197,253,0.35)'
-                              : 'rgba(100,116,139,0.35)';
-                          // Solid colour for the seamless arrow (matches top of gradient)
-                          const arrowColor = isRestDay && done
-                            ? '#166534'
-                            : done
-                              ? '#1e3a5f'
-                              : '#1e293b';
+                          // Exact top-of-gradient colour matching each circle state
+                          const solidColor = isRestDay && done
+                            ? '#22c55e'   // green-500 — top of done rest day gradient
+                            : isRestDay
+                              ? '#2d3748'   // top of undone rest day
+                              : done
+                                ? '#60a5fa'   // blue-400 — top of done gym day gradient
+                                : isTodayCircle
+                                  ? '#334155'   // top of today circle
+                                  : '#2d3748';  // top of future undone circle
+
+                          // Build the SVG path: rounded rect with upward arrow on top edge
+                          // Top edge: left-cap → flat → arrow-left → arrow-tip-up → arrow-right → flat → right-cap
+                          // Then right side, bottom edge, left side back up
+                          const path = [
+                            `M ${RADIUS} ${ARROW_H}`,
+                            // top-left corner arc start → go right to arrow base left
+                            `L ${arrowL} ${ARROW_H}`,
+                            // arrow up
+                            `L ${arrowTip} 0`,
+                            // arrow back down
+                            `L ${arrowR} ${ARROW_H}`,
+                            // continue right to corner
+                            `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
+                            // top-right corner
+                            `Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H + RADIUS}`,
+                            // right side
+                            `L ${BUBBLE_W} ${SVG_H - RADIUS}`,
+                            // bottom-right corner
+                            `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
+                            // bottom edge
+                            `L ${RADIUS} ${SVG_H}`,
+                            // bottom-left corner
+                            `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
+                            // left side
+                            `L 0 ${ARROW_H + RADIUS}`,
+                            // top-left corner
+                            `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,
+                            `Z`
+                          ].join(' ');
 
                           return (
                             <motion.div
-                              initial={{ opacity: 0, scaleY: 0, scaleX: 0.7 }}
+                              initial={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
                               animate={{ opacity: 1, scaleY: 1, scaleX: 1 }}
-                              exit={{ opacity: 0, scaleY: 0, scaleX: 0.7 }}
-                              transition={{ duration: 0.22, ease: [0.34, 1.3, 0.64, 1] }}
+                              exit={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
+                              transition={{ duration: 0.2, ease: [0.34, 1.3, 0.64, 1] }}
                               style={{
                                 position: 'absolute',
-                                top: size + 6,
+                                top: size + 2,
                                 left: bubbleOffsetFromCircle,
                                 width: BUBBLE_W,
+                                height: SVG_H,
                                 zIndex: 200,
                                 pointerEvents: 'none',
-                                transformOrigin: `${arrowClamped}px top`,
+                                transformOrigin: `${arrowTip}px top`,
                               }}>
-                              {/* Seamless arrow — solid triangle same colour as bubble top */}
+                              {/* Single unified SVG shape */}
+                              <svg
+                                width={BUBBLE_W}
+                                height={SVG_H}
+                                style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}>
+                                <path d={path} fill={solidColor} />
+                              </svg>
+                              {/* Text centred in the bubble body (below arrow) */}
                               <div style={{
-                                width: 0,
-                                height: 0,
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderBottom: `12px solid ${arrowColor}`,
-                                marginLeft: arrowClamped - 12,
-                              }} />
-                              {/* Bubble */}
-                              <div style={{
-                                background: bubbleBg,
-                                border: `1.5px solid ${bubbleBorder}`,
-                                borderRadius: 18,
-                                padding: '18px 24px',
-                                boxShadow: '0 12px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
-                                textAlign: 'center',
-                                marginTop: -1, // overlap by 1px so arrow and bubble are flush
+                                position: 'absolute',
+                                top: ARROW_H,
+                                left: 0,
+                                width: BUBBLE_W,
+                                height: BUBBLE_H,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '0 14px',
                               }}>
                                 <span style={{
-                                  fontSize: 22,
+                                  fontSize: 15,
                                   fontWeight: 800,
                                   color: '#ffffff',
                                   letterSpacing: '0.01em',
-                                  display: 'block',
+                                  textAlign: 'center',
                                   lineHeight: 1.3,
+                                  textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  maxWidth: '100%',
                                 }}>
                                   {getPopupLabel()}
                                 </span>
