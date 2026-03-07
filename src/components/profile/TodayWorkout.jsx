@@ -440,12 +440,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <div className="relative flex-1">
                     <button
                       onClick={() => setShowTimerOptions(!showTimerOptions)}
-                      className="relative w-full flex items-center justify-between gap-2 px-3 rounded-2xl bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-indigo-500/20 shadow-[0_3px_0_0_rgba(30,27,75,0.6),0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.07)] hover:border-indigo-500/40 transition-all active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu"
+                      className="relative w-full flex flex-col items-center justify-center gap-0.5 px-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all"
                       style={{ height: '52px' }}>
-                      <span className="text-[9px] font-bold text-indigo-300/60 uppercase tracking-widest">Rest</span>
+                      <span className="text-[8px] font-bold text-blue-400/70 uppercase tracking-wider leading-none">Rest Timer</span>
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                        <span className="text-white font-black text-lg tabular-nums">
+                        <Clock className="w-4 h-4 text-blue-400" />
+                        <span className="text-blue-300 font-black text-xl tabular-nums leading-none">
                           {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
                         </span>
                       </div>
