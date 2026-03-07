@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -325,9 +326,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       )}
 
       {/* EXPANDED STATE */}
-      {isExpanded && (
-        <div style={{ opacity: 1, transition: 'opacity 0.55s ease' }}>
-          <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}>
+            <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
 
           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
             <div className="px-2 space-y-2">
@@ -479,18 +486,25 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
             </div>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Collapse chevron — expanded state only, fixed bottom-right */}
-      {isExpanded && (
-        <button
-          onClick={(e) => { e.stopPropagation(); setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-          style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 20 }}>
-          <ChevronDown className="w-5 h-5" style={{ transform: 'rotate(180deg)' }} />
-        </button>
-      )}
+      {/* Collapse chevron — fades in after expand animation, fixed bottom-right */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, delay: 0.45 }}
+            onClick={(e) => { e.stopPropagation(); setIsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+            style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 20 }}>
+            <ChevronDown className="w-5 h-5" style={{ transform: 'rotate(180deg)' }} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Modals */}
       <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
