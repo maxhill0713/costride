@@ -188,71 +188,62 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   );
 }
 
-// ─── Duolingo Card ────────────────────────────────────────────────────────────
-function DuoCard({ label, description, badge, badgeColor, icon: Icon, bottomColor, onClick, as: As = 'button', href }) {
-  const [pressed, setPressed] = useState(false);
-
-  const handlePress = () => {
-    setPressed(true);
-    setTimeout(() => setPressed(false), 150);
-  };
+// ─── Nav Card ─────────────────────────────────────────────────────────────────
+function NavCard({ label, description, badge, badgeTextColor, badgeBg, badgeBorder, icon: Icon, tintFrom, tintTo, borderColor, iconBg, iconColor, onClick, as: As = 'button', href }) {
+  const sharedClass = "group relative w-full text-left overflow-hidden rounded-2xl transition-all duration-150 active:scale-[0.985] active:brightness-90";
 
   const inner = (
-    <div
-      className="relative w-full"
-      style={{ transform: pressed ? 'translateY(4px)' : 'translateY(0)', transition: 'transform 0.1s ease' }}
-    >
-      {/* bottom shadow layer — the "floor" */}
+    <>
+      {/* frosted glass base */}
       <div
         className="absolute inset-0 rounded-2xl"
-        style={{ backgroundColor: bottomColor, transform: 'translateY(4px)', zIndex: 0 }}
+        style={{
+          background: `linear-gradient(135deg, ${tintFrom} 0%, ${tintTo} 100%)`,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        }}
       />
-      {/* top card face */}
-      <div
-        className="relative z-10 w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/10"
-        style={{ background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%)', backdropFilter: 'blur(12px)' }}
-      >
+      {/* subtle top highlight */}
+      <div className="absolute inset-x-0 top-0 h-px rounded-t-2xl" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+      {/* border */}
+      <div className="absolute inset-0 rounded-2xl border" style={{ borderColor }} />
+
+      {/* content */}
+      <div className="relative flex items-center gap-4 px-4 py-4">
         {/* icon */}
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: `${bottomColor}33`, border: `1px solid ${bottomColor}55` }}>
-          <Icon className="w-5 h-5" style={{ color: bottomColor }} />
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: iconBg, boxShadow: `0 2px 8px ${iconColor}44` }}
+        >
+          <Icon className="w-5 h-5" style={{ color: iconColor }} />
         </div>
+
         {/* text */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-black text-white">{label}</span>
-            <span className={`text-[10px] font-bold border px-1.5 py-0.5 rounded-full ${badgeColor}`}>{badge}</span>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[15px] font-bold text-white tracking-tight">{label}</span>
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+              style={{ color: badgeTextColor, background: badgeBg, borderColor: badgeBorder }}
+            >
+              {badge}
+            </span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{description}</p>
+          <p className="text-[12px] text-slate-400 leading-snug">{description}</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+
+        <ChevronRight
+          className="w-4 h-4 flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5"
+          style={{ color: iconColor, opacity: 0.7 }}
+        />
       </div>
-    </div>
+    </>
   );
 
   if (As === 'link') {
-    return (
-      <Link
-        to={href}
-        className="block w-full"
-        onMouseDown={handlePress}
-        onTouchStart={handlePress}
-      >
-        {inner}
-      </Link>
-    );
+    return <Link to={href} className={sharedClass}>{inner}</Link>;
   }
-
-  return (
-    <button
-      className="w-full text-left"
-      onMouseDown={handlePress}
-      onTouchStart={handlePress}
-      onClick={onClick}
-    >
-      {inner}
-    </button>
-  );
+  return <button onClick={onClick} className={sharedClass}>{inner}</button>;
 }
 
 // ─── Main Hub ────────────────────────────────────────────────────────────────
@@ -311,41 +302,65 @@ export default function Progress() {
     {
       id: 'split',
       label: 'Workout Split',
-      description: 'Heatmap of your training week and session volume over time.',
+      description: 'Day-by-day heatmap of your training week. See how consistently you hit each muscle group and track volume over time.',
       badge: currentUser?.workout_split ? 'Active split' : 'No split set',
-      badgeColor: currentUser?.workout_split ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
+      badgeTextColor: currentUser?.workout_split ? '#a5b4fc' : '#94a3b8',
+      badgeBg: currentUser?.workout_split ? 'rgba(99,102,241,0.15)' : 'rgba(51,65,85,0.5)',
+      badgeBorder: currentUser?.workout_split ? 'rgba(99,102,241,0.35)' : 'rgba(71,85,105,0.4)',
       icon: Dumbbell,
-      bottomColor: '#4338ca',
+      tintFrom: 'rgba(67,56,202,0.18)',
+      tintTo: 'rgba(10,14,26,0.82)',
+      borderColor: 'rgba(99,102,241,0.25)',
+      iconBg: 'rgba(99,102,241,0.2)',
+      iconColor: '#818cf8',
       isLink: false,
     },
     {
       id: 'analytics',
       label: 'Advanced Analytics',
-      description: 'Volume trends, personal records and muscle group breakdowns.',
-      badge: `${workoutLogs.length} sessions`,
-      badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      description: 'Volume trends, personal records and muscle group breakdowns across every session you\'ve ever logged.',
+      badge: workoutLogs.length > 0 ? `${workoutLogs.length} sessions` : 'No sessions yet',
+      badgeTextColor: '#d8b4fe',
+      badgeBg: 'rgba(124,58,237,0.15)',
+      badgeBorder: 'rgba(124,58,237,0.35)',
       icon: BarChart3,
-      bottomColor: '#7c3aed',
+      tintFrom: 'rgba(109,40,217,0.18)',
+      tintTo: 'rgba(10,14,26,0.82)',
+      borderColor: 'rgba(139,92,246,0.25)',
+      iconBg: 'rgba(139,92,246,0.2)',
+      iconColor: '#c084fc',
       isLink: false,
     },
     {
       id: 'goals',
       label: 'Goals',
-      description: 'Set lift milestones, attendance streaks and bodyweight targets.',
+      description: 'Create and track your fitness targets — lift milestones, attendance streaks, or bodyweight goals. Mark them off as you crush them.',
       badge: activeGoals.length > 0 ? `${activeGoals.length} active` : 'No goals yet',
-      badgeColor: activeGoals.length > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
+      badgeTextColor: activeGoals.length > 0 ? '#93c5fd' : '#94a3b8',
+      badgeBg: activeGoals.length > 0 ? 'rgba(37,99,235,0.15)' : 'rgba(51,65,85,0.5)',
+      badgeBorder: activeGoals.length > 0 ? 'rgba(59,130,246,0.35)' : 'rgba(71,85,105,0.4)',
       icon: Target,
-      bottomColor: '#1d4ed8',
+      tintFrom: 'rgba(29,78,216,0.18)',
+      tintTo: 'rgba(10,14,26,0.82)',
+      borderColor: 'rgba(59,130,246,0.25)',
+      iconBg: 'rgba(59,130,246,0.2)',
+      iconColor: '#60a5fa',
       isLink: false,
     },
     {
       id: 'community',
       label: 'Community',
-      description: 'Your gym feed, members, and activity from people training alongside you.',
-      badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''}` : 'No gym joined',
-      badgeColor: gymMemberships.length > 0 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600/40',
+      description: 'Your gym\'s community feed and member activity. See who\'s training, react to posts, and stay motivated by those around you.',
+      badge: gymMemberships.length > 0 ? `${gymMemberships.length} gym${gymMemberships.length > 1 ? 's' : ''} joined` : 'No gym joined',
+      badgeTextColor: gymMemberships.length > 0 ? '#6ee7b7' : '#94a3b8',
+      badgeBg: gymMemberships.length > 0 ? 'rgba(5,150,105,0.15)' : 'rgba(51,65,85,0.5)',
+      badgeBorder: gymMemberships.length > 0 ? 'rgba(16,185,129,0.35)' : 'rgba(71,85,105,0.4)',
       icon: Users,
-      bottomColor: '#059669',
+      tintFrom: 'rgba(5,150,105,0.18)',
+      tintTo: 'rgba(10,14,26,0.82)',
+      borderColor: 'rgba(16,185,129,0.25)',
+      iconBg: 'rgba(16,185,129,0.2)',
+      iconColor: '#34d399',
       isLink: true,
       href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
     },
@@ -354,12 +369,10 @@ export default function Progress() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-32">
-
         <h1 className="text-2xl font-black text-white tracking-tight pt-2 mb-4">Progress</h1>
-
         <div className="flex flex-col gap-3">
           {navCards.map((card) => (
-            <DuoCard
+            <NavCard
               key={card.id}
               {...card}
               as={card.isLink ? 'link' : 'button'}
@@ -367,7 +380,6 @@ export default function Progress() {
             />
           ))}
         </div>
-
       </div>
     </div>
   );
