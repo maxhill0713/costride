@@ -27,7 +27,7 @@ import { createPageUrl } from '../utils';
 // STREAK ICON URLS
 // ─────────────────────────────────────────────
 const POSE_1_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
-const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/8bf862b3f_STREAKICON22.png';
+const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/760358372_STREAKICON21.png';
 
 // ─────────────────────────────────────────────
 // WEB AUDIO HELPERS
@@ -135,6 +135,14 @@ const STREAK_KEYFRAMES = `
     0%   { transform: translate(0,0) scale(1); opacity: 1; }
     100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
   }
+  @keyframes dayButtonBounce {
+    0%   { transform: scale(1); }
+    25%  { transform: scale(0.85); }
+    55%  { transform: scale(1.25); }
+    75%  { transform: scale(0.95); }
+    90%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
 `;
 
 function injectStreakStyles() {
@@ -206,12 +214,11 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
     spawnParticles();
     p1.style.transition = 'opacity 0.15s ease';
     p1.style.opacity = '0';
-    // Make stage fully visible before swapping pose
-    stage.style.opacity = '1';
-    stage.style.animation = 'none';
-    // Reset p2 cleanly so keyframe starts from opacity 0
+    // Remove inline opacity so the keyframe can control it
+    p2.style.removeProperty('opacity');
+    p2.style.opacity = '1';
+    // Reset animation completely before applying
     p2.style.animation = 'none';
-    p2.style.opacity = '0';
     void p2.offsetWidth;
     p2.style.animation = 'streakIconPop 600ms cubic-bezier(0.34,1.2,0.64,1) forwards';
     stage.style.animation = 'none';
@@ -249,6 +256,7 @@ export default function Home() {
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
   const [celebrationChallenges, setCelebrationChallenges] = useState([]);
+  const [justLoggedDay, setJustLoggedDay] = useState(null); // day number 1-7 that just got logged
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -391,6 +399,20 @@ export default function Home() {
     gcTime: 5 * 60 * 1000
   });
 
+  // Fetch this week's workout logs to know which days are done
+  const { data: weeklyWorkoutLogs = [] } = useQuery({
+    queryKey: ['weeklyWorkoutLogs', currentUser?.id],
+    queryFn: async () => {
+      const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const logs = await base44.entities.WorkoutLog.filter({ user_id: currentUser.id });
+      return logs.filter((l) => new Date(l.completed_date) >= monday);
+    },
+    enabled: !!currentUser?.id,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
@@ -475,8 +497,12 @@ export default function Home() {
 
   // Stage 1: new streak animation (3.5s) → Stage 2: fullscreen challenges (4s)
   const handleWorkoutLogged = async (challengesData = []) => {
+    const todayDow = new Date().getDay();
+    const todayAdjusted = todayDow === 0 ? 7 : todayDow;
+    setJustLoggedDay(todayAdjusted);
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
+    await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
 
     // AudioContext MUST be created inside a user gesture handler
     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -495,7 +521,13 @@ export default function Home() {
       // Stage 2 — fullscreen challenges (only if user has challenges)
       if (challengesData.length > 0) {
         setShowChallengesCelebration(true);
-        setTimeout(() => setShowChallengesCelebration(false), 4000);
+        setTimeout(() => {
+          setShowChallengesCelebration(false);
+          // Clear bounce after animation — keep it blue, just stop bouncing
+          setTimeout(() => setJustLoggedDay(null), 1500);
+        }, 4000);
+      } else {
+        setTimeout(() => setJustLoggedDay(null), 1500);
       }
     }, 3500);
   };
@@ -598,12 +630,86 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
 
           {memberGym && <>
-            <p className="text-center text-xs text-slate-400 font-medium">
-              {weeklyComplete
-                ? `🎯 Weekly goal crushed! ${weeklyCheckIns.length}/${weeklyTarget} workouts done`
-                : `${weeklyTarget - weeklyCheckIns.length} workout${weeklyTarget - weeklyCheckIns.length === 1 ? '' : 's'} away from your weekly goal`
-              }
-            </p>
+            {/* ── Duolingo-style weekly day buttons ── */}
+            {(() => {
+              const trainingDays = currentUser?.training_days || [];
+              if (trainingDays.length === 0) return null;
+
+              const DAY_LABELS = { 1:'Mo', 2:'Tu', 3:'We', 4:'Th', 5:'Fr', 6:'Sa', 7:'Su' };
+              const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+
+              // Which training days have a WorkoutLog this week?
+              const loggedDays = new Set(
+                weeklyWorkoutLogs.map((l) => {
+                  const d = new Date(l.completed_date).getDay();
+                  return d === 0 ? 7 : d;
+                })
+              );
+
+              const sorted = [...trainingDays].sort((a, b) => a - b);
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 10, paddingBottom: 2 }}>
+                  {sorted.map((day) => {
+                    const done   = loggedDays.has(day);
+                    const bounce = justLoggedDay === day;
+
+                    return (
+                      <div
+                        key={day}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 5,
+                        }}>
+                        {/* Day label above */}
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          letterSpacing: '0.06em',
+                          color: done ? '#60a5fa' : 'rgba(148,163,184,0.6)',
+                          textTransform: 'uppercase',
+                          transition: 'color 0.4s ease',
+                        }}>
+                          {DAY_LABELS[day]}
+                        </span>
+
+                        {/* Circle button */}
+                        <div
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: done
+                              ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                              : 'rgba(30,41,59,0.8)',
+                            border: done
+                              ? '2px solid rgba(96,165,250,0.5)'
+                              : '2px solid rgba(71,85,105,0.5)',
+                            boxShadow: done
+                              ? '0 0 12px rgba(59,130,246,0.4), 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
+                              : '0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                            transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease',
+                            animation: bounce ? 'dayButtonBounce 0.6s cubic-bezier(0.34,1.6,0.64,1) forwards' : 'none',
+                            willChange: 'transform',
+                          }}>
+                          {done
+                            ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            : <span style={{ fontSize: 16, color: 'rgba(148,163,184,0.5)' }}>○</span>
+                          }
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {!userCheckIns.some((c) => isToday(new Date(c.check_in_date))) &&
               <CheckInButton
