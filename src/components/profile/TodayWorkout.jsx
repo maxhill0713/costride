@@ -441,7 +441,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     <button
                       onClick={() => setShowTimerOptions(!showTimerOptions)}
                       className="relative w-full flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-blue-700/30 shadow-lg shadow-black/10 hover:border-blue-700/50 transition-all overflow-hidden"
-                      style={{ height: '52px' }}>
+                      style={{ height: '51px' }}>
                       <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <span className="text-blue-300 font-black text-2xl tabular-nums leading-none">
                         {(() => { const t = parseInt(restTimer) || 90; return `${Math.floor(t / 60)}:${(t % 60).toString().padStart(2, '0')}`; })()}
@@ -463,7 +463,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       setIsTimerActive(!isTimerActive);
                     }}
                     className="text-sm font-bold px-5 rounded-2xl bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu flex-shrink-0"
-                    style={{ height: '52px' }}>
+                    style={{ height: '51px' }}>
                     {isTimerActive ? 'Stop' : 'Go'}
                   </button>
                 </div>
