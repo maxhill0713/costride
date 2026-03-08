@@ -394,10 +394,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
               {PRESET_SPLITS.map((preset) => (
                 <button
                   key={preset.id}
-                  onClick={() => {
-                    if (!selectingActive) selectPreset(preset);
-                  }}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl active:scale-[0.98] transition-all group text-left ${selectingActive ? 'opacity-40 cursor-default' : ''}`}
+                  onClick={() => selectPreset(preset)}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl active:scale-[0.98] transition-all group text-left"
                   style={{
                     background: 'rgba(15,20,40,0.7)',
                     border: '1px solid rgba(255,255,255,0.06)',
