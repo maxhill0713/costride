@@ -48,179 +48,319 @@ const CARD_STYLE = {
 };
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
-function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
-  const tabs = [
-    { id: 'checkins', label: 'Check-ins', icon: CheckCircle, accent: '#10b981', glow: 'rgba(16,185,129,0.25)', dim: 'rgba(16,185,129,0.08)' },
-    { id: 'streaks',  label: 'Streaks',   icon: Flame,       accent: '#f97316', glow: 'rgba(249,115,22,0.25)',  dim: 'rgba(249,115,22,0.08)'  },
-    { id: 'progress', label: 'Progress',  icon: TrendingUp,  accent: '#818cf8', glow: 'rgba(129,140,248,0.25)', dim: 'rgba(129,140,248,0.08)' },
-  ];
+const LBOARD_ANIM = `
+@keyframes lb-slide-up {
+  from { opacity:0; transform:translateY(32px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes lb-card-in {
+  from { opacity:0; transform:translateY(16px) scale(0.95); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes lb-row-in {
+  from { opacity:0; transform:translateX(-10px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes lb-flame {
+  0%,100% { transform:scale(1) rotate(-4deg); }
+  50%      { transform:scale(1.18) rotate(4deg); }
+}
+@keyframes lb-glow-pulse {
+  0%,100% { box-shadow: 0 0 18px 4px rgba(255,200,0,0.35); }
+  50%      { box-shadow: 0 0 32px 8px rgba(255,200,0,0.55); }
+}
+`;
 
+function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
+  const [open, setOpen] = React.useState(false);
+  const [timeframe, setTimeframe] = React.useState('week');
+
+  const tabs = [
+    { id: 'checkins', label: 'Check-ins', icon: CheckCircle, accent: '#10b981', unit: 'check-ins' },
+    { id: 'streaks',  label: 'Streaks',   icon: Flame,       accent: '#f97316', unit: 'day streak' },
+    { id: 'progress', label: 'Progress',  icon: TrendingUp,  accent: '#818cf8', unit: 'kg gained'  },
+  ];
   const current = tabs.find(t => t.id === view);
 
   const getData = () => {
-    if (view === 'checkins') return { list: checkInLeaderboard, getVal: m => m.count,     fmt: m => `${m.count}`,       unit: 'check-ins' };
-    if (view === 'streaks')  return { list: streakLeaderboard,  getVal: m => m.streak,    fmt: m => `${m.streak}d`,     unit: 'day streak' };
-    return                          { list: progressLeaderboard,getVal: m => m.increase,  fmt: m => `+${m.increase}kg`, unit: 'kg gained'  };
+    if (view === 'checkins') return { list: checkInLeaderboard, getVal: m => m.count,    fmt: v => v,           fmtLabel: v => `${v} check-ins` };
+    if (view === 'streaks')  return { list: streakLeaderboard,  getVal: m => m.streak,   fmt: v => `${v}d`,     fmtLabel: v => `${v} day streak` };
+    return                          { list: progressLeaderboard,getVal: m => m.increase, fmt: v => `+${v}kg`,   fmtLabel: v => `+${v}kg gained`  };
   };
-  const { list, getVal, fmt, unit } = getData();
+  const { list, getVal, fmt, fmtLabel } = getData();
   const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
 
-  // Medal colours for top 3
-  const medals = ['#FFD700', '#C0C8D8', '#CD7F32'];
-  const medalBg = ['rgba(255,215,0,0.12)', 'rgba(192,200,216,0.1)', 'rgba(205,127,50,0.1)'];
-  const medalBorder = ['rgba(255,215,0,0.3)', 'rgba(192,200,216,0.2)', 'rgba(205,127,50,0.25)'];
+  const medals   = ['#FFD700','#C8D0DC','#CD7F32'];
+  const medalBg  = ['linear-gradient(135deg,#2a2000,#1a1400)','linear-gradient(135deg,#1a1e26,#111520)','linear-gradient(135deg,#1e1008,#140a04)'];
+  const medalGlow= ['rgba(255,215,0,0.5)','rgba(200,208,220,0.35)','rgba(205,127,50,0.45)'];
+  const rankEmoji= ['🥇','🥈','🥉'];
 
-  return (
-    <div className="rounded-2xl overflow-hidden" style={{
-      background: 'linear-gradient(160deg, rgba(10,16,35,0.98) 0%, rgba(6,10,24,0.99) 100%)',
-      border: '1px solid rgba(255,255,255,0.07)',
-      boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-    }}>
+  const podium = list.slice(0,3);
+  const restList = list.slice(3,10);
 
-      {/* ── HEADER ── */}
-      <div className="relative px-4 pt-4 pb-3 overflow-hidden" style={{
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-        background: 'linear-gradient(135deg, rgba(15,25,55,0.9) 0%, rgba(8,14,32,0.95) 100%)',
-      }}>
-        {/* Subtle grid texture */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }} />
-        {/* Glow orb top-right */}
-        <div className="absolute -top-8 -right-4 w-32 h-32 pointer-events-none" style={{
-          background: `radial-gradient(circle, ${current.glow} 0%, transparent 70%)`,
-          transition: 'background 0.4s ease',
-        }} />
+  const initials = (name) => (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{
-              background: `linear-gradient(135deg, ${current.dim}, rgba(0,0,0,0.3))`,
-              border: `1px solid ${medalBorder[0]}`,
-              boxShadow: `0 0 12px ${current.glow}`,
-              transition: 'all 0.35s ease',
+  // ── COLLAPSED BUTTON ──────────────────────────────────────────────────────
+  if (!open) {
+    const top3 = list.slice(0,3);
+    return (
+      <>
+        <style>{LBOARD_ANIM}</style>
+        <button onClick={() => setOpen(true)}
+          className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.985] transition-transform duration-150"
+          style={{
+            background: 'linear-gradient(135deg, rgba(10,20,50,0.95) 0%, rgba(6,12,30,0.98) 100%)',
+            border: '1px solid rgba(255,215,0,0.2)',
+            boxShadow: '0 4px 32px rgba(0,0,0,0.5), 0 0 0 0 transparent',
+          }}>
+          {/* shimmer line top */}
+          <div className="absolute inset-x-0 top-0 h-px" style={{ background:'linear-gradient(90deg,transparent,rgba(255,215,0,0.3),transparent)' }} />
+          <div className="flex items-center gap-3 px-4 py-4">
+            {/* Trophy icon */}
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{
+              background:'linear-gradient(135deg,rgba(255,215,0,0.18),rgba(180,130,0,0.1))',
+              border:'1px solid rgba(255,215,0,0.3)',
+              boxShadow:'0 0 16px rgba(255,215,0,0.2)',
             }}>
-              <Trophy className="w-4.5 h-4.5" style={{ color: '#FFD700', width: 18, height: 18 }} />
+              <Trophy style={{ width:20, height:20, color:'#FFD700' }} />
             </div>
-            <div>
-              <p className="text-[15px] font-black text-white leading-tight tracking-tight">Leaderboard</p>
-              <p className="text-[10px] font-semibold uppercase tracking-widest mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>This week</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] font-black text-white leading-tight">Community Leaderboard</p>
+              <p className="text-[11px] mt-0.5 font-semibold" style={{ color:'rgba(255,255,255,0.38)' }}>
+                {list.length > 0 ? `${list.length} members ranked this week` : 'No data yet this week'}
+              </p>
+            </div>
+            {/* Top 3 avatar stack */}
+            {top3.length > 0 && (
+              <div className="flex -space-x-2 flex-shrink-0">
+                {top3.map((m,i) => (
+                  <div key={i} className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black"
+                    style={{
+                      background: medalBg[i],
+                      border:`2px solid ${medals[i]}`,
+                      color: medals[i],
+                      zIndex: 3-i,
+                      boxShadow:`0 0 8px ${medalGlow[i]}`,
+                    }}>
+                    {initials(m.userName)}
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Chevron */}
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)' }}>
+              <ChevronRight style={{ width:14, height:14, color:'rgba(255,255,255,0.4)' }} />
             </div>
           </div>
-          {/* Live pill */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{
-            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)'
-          }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Live</span>
+        </button>
+      </>
+    );
+  }
+
+  // ── FULL-SCREEN OVERLAY ──────────────────────────────────────────────────
+  return (
+    <>
+      <style>{LBOARD_ANIM}</style>
+      <div className="fixed inset-0 z-50 flex flex-col" style={{
+        background:'linear-gradient(160deg,#050c22 0%,#0a1840 35%,#060e28 70%,#030812 100%)',
+        animation:'lb-slide-up 0.38s cubic-bezier(0.34,1.2,0.64,1) both',
+      }}>
+        {/* ── BG TEXTURE ── */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage:'radial-gradient(rgba(255,255,255,0.025) 1px,transparent 1px)',
+          backgroundSize:'24px 24px',
+        }}/>
+        {/* ── GOLD GLOW ORB ── */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-40 pointer-events-none" style={{
+          background:'radial-gradient(ellipse,rgba(255,200,0,0.12) 0%,transparent 70%)',
+        }}/>
+
+        {/* ── HEADER BAR ── */}
+        <div className="relative flex-shrink-0 px-4 pt-12 pb-4" style={{ borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+          <button onClick={() => setOpen(false)}
+            className="absolute top-12 left-4 w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)' }}>
+            <ChevronRight style={{ width:18, height:18, color:'rgba(255,255,255,0.7)', transform:'rotate(180deg)' }} />
+          </button>
+
+          <div className="text-center mb-4">
+            <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color:'rgba(255,215,0,0.6)' }}>Community</p>
+            <h2 className="text-[22px] font-black text-white tracking-tight">Leaderboard</h2>
+          </div>
+
+          {/* Timeframe tabs */}
+          <div className="flex justify-center gap-2 mb-4">
+            {['week','month','all'].map(tf => (
+              <button key={tf} onClick={() => setTimeframe(tf)}
+                className="px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150 active:scale-95"
+                style={{
+                  background: timeframe===tf ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  border:`1px solid ${timeframe===tf ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                  color: timeframe===tf ? '#fff' : 'rgba(255,255,255,0.3)',
+                }}>
+                {tf==='week'?'This Week':tf==='month'?'This Month':'Overall'}
+              </button>
+            ))}
+          </div>
+
+          {/* Metric tabs */}
+          <div className="flex gap-2">
+            {tabs.map(({ id, label, icon: Icon, accent }) => {
+              const active = view===id;
+              return (
+                <button key={id} onClick={() => setView(id)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-bold transition-all duration-200 active:scale-95"
+                  style={{
+                    background: active ? `${accent}18` : 'rgba(255,255,255,0.04)',
+                    border:`1px solid ${active ? accent+'50' : 'rgba(255,255,255,0.06)'}`,
+                    color: active ? accent : 'rgba(255,255,255,0.3)',
+                  }}>
+                  <Icon style={{ width:12, height:12 }} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* ── TAB ROW ── */}
-        <div className="relative flex gap-1.5 mt-3">
-          {tabs.map(({ id, label, icon: Icon, accent, dim }) => {
-            const active = view === id;
-            return (
-              <button key={id} onClick={() => setView(id)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-bold transition-all duration-200 active:scale-95"
-                style={{
-                  background: active ? dim : 'transparent',
-                  border: `1px solid ${active ? accent + '50' : 'rgba(255,255,255,0.05)'}`,
-                  color: active ? accent : 'rgba(255,255,255,0.3)',
-                  boxShadow: active ? `0 2px 12px ${accent}25` : 'none',
+        {/* ── SCROLLABLE BODY ── */}
+        <div className="flex-1 overflow-y-auto pb-16">
+
+          {list.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-3">
+              <Trophy style={{ width:40, height:40, color:'rgba(255,255,255,0.08)' }} />
+              <p className="text-sm font-bold" style={{ color:'rgba(255,255,255,0.25)' }}>No data yet this week</p>
+            </div>
+          ) : (
+            <>
+              {/* ── TOP 3 PODIUM ── */}
+              <div className="px-4 pt-5 pb-4">
+                <p className="text-center text-[12px] font-black uppercase tracking-widest mb-4"
+                  style={{ color:'rgba(255,215,0,0.55)' }}>
+                  Top 3 · {current.label} of the Week
+                </p>
+
+                {/* Cards: 2nd | 1st | 3rd */}
+                <div className="flex items-end justify-center gap-3">
+                  {[
+                    { data: podium[1], rank: 1, size: 'sm' },
+                    { data: podium[0], rank: 0, size: 'lg' },
+                    { data: podium[2], rank: 2, size: 'sm' },
+                  ].filter(p => p.data).map(({ data, rank, size }) => {
+                    const isFirst = rank===0;
+                    return (
+                      <div key={rank}
+                        className="flex flex-col items-center rounded-2xl overflow-hidden relative"
+                        style={{
+                          width: isFirst ? 134 : 104,
+                          background: medalBg[rank],
+                          border:`1.5px solid ${medals[rank]}40`,
+                          boxShadow: isFirst ? `0 0 28px ${medalGlow[rank]}, 0 8px 32px rgba(0,0,0,0.6)` : `0 4px 20px rgba(0,0,0,0.5)`,
+                          animation:`lb-card-in 0.45s cubic-bezier(0.34,1.2,0.64,1) ${rank*0.07}s both`,
+                        }}>
+                        {isFirst && (
+                          <div className="absolute top-1.5 right-2" style={{ fontSize:22, animation:'lb-flame 1.2s ease-in-out infinite' }}>🔥</div>
+                        )}
+                        {/* Rank badge */}
+                        <div className="absolute -top-1 -left-1 w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black"
+                          style={{ background:medals[rank], color:'#000', boxShadow:`0 0 10px ${medalGlow[rank]}`, animation: isFirst ? 'lb-glow-pulse 2s ease-in-out infinite' : 'none' }}>
+                          {rank+1}
+                        </div>
+                        {/* Avatar circle */}
+                        <div className="mt-5 mb-2 flex items-center justify-center"
+                          style={{
+                            width: isFirst?64:52, height: isFirst?64:52,
+                            borderRadius:'50%',
+                            background:`linear-gradient(135deg,${medals[rank]}40,${medals[rank]}15)`,
+                            border:`2.5px solid ${medals[rank]}`,
+                            boxShadow:`0 0 16px ${medalGlow[rank]}`,
+                            fontSize: isFirst?22:18, fontWeight:900,
+                            color: medals[rank],
+                          }}>
+                          {initials(data.userName)}
+                        </div>
+                        {/* Name */}
+                        <p className="font-black text-center px-2 leading-tight"
+                          style={{ color:'#fff', fontSize: isFirst?13:11, maxWidth:'100%', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', paddingLeft:8, paddingRight:8 }}>
+                          {data.userName || '—'}
+                        </p>
+                        {/* Stat */}
+                        <div className="px-3 pt-1.5 pb-3 text-center">
+                          <p className="text-[9px] uppercase tracking-wider font-bold mb-0.5" style={{ color:'rgba(255,255,255,0.3)' }}>
+                            {current.unit.toUpperCase()}
+                          </p>
+                          <p className="font-black" style={{ color: medals[rank], fontSize: isFirst?20:16 }}>
+                            {fmt(getVal(data))}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── DIVIDER ── */}
+              <div className="mx-4 mb-3" style={{ height:1, background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)' }} />
+
+              {/* ── REST OF LIST (4–10) ── */}
+              {restList.length > 0 && (
+                <div className="mx-3 rounded-2xl overflow-hidden" style={{
+                  background:'rgba(255,255,255,0.03)',
+                  border:'1px solid rgba(255,255,255,0.06)',
                 }}>
-                <Icon style={{ width: 12, height: 12 }} />
-                {label}
-              </button>
-            );
-          })}
+                  {/* Column headers */}
+                  <div className="grid px-4 py-2.5" style={{ gridTemplateColumns:'28px 36px 1fr 60px 48px', gap:'0 8px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color:'rgba(255,255,255,0.2)' }}>RK</span>
+                    <span />
+                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color:'rgba(255,255,255,0.2)' }}>NAME</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-right" style={{ color:'rgba(255,255,255,0.2)' }}>{current.label.toUpperCase()}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-right" style={{ color:'rgba(255,255,255,0.2)' }}>RANK</span>
+                  </div>
+
+                  {restList.map((m, i) => {
+                    const globalRank = i + 4;
+                    const pct = Math.max(3, Math.round((getVal(m)/maxVal)*100));
+                    return (
+                      <div key={m.userId||i}
+                        className="grid items-center px-4 py-3"
+                        style={{
+                          gridTemplateColumns:'28px 36px 1fr 60px 48px',
+                          gap:'0 8px',
+                          borderBottom: i < restList.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                          animation:`lb-row-in 0.3s ease ${(i+3)*0.06}s both`,
+                        }}>
+                        {/* Rank */}
+                        <span className="text-[12px] font-black text-center" style={{ color:'rgba(255,255,255,0.3)' }}>{globalRank}</span>
+                        {/* Avatar */}
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black"
+                          style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.6)' }}>
+                          {initials(m.userName)}
+                        </div>
+                        {/* Name */}
+                        <p className="text-[13px] font-bold truncate" style={{ color:'rgba(255,255,255,0.65)' }}>{m.userName||'—'}</p>
+                        {/* Value */}
+                        <p className="text-[13px] font-black text-right" style={{ color:'rgba(255,255,255,0.45)' }}>{fmt(getVal(m))}</p>
+                        {/* Bar */}
+                        <div className="flex items-center justify-end">
+                          <div className="rounded-full overflow-hidden" style={{ width:44, height:4, background:'rgba(255,255,255,0.07)' }}>
+                            <div className="h-full rounded-full" style={{ width:`${pct}%`, background:`linear-gradient(90deg,${current.accent},${current.accent}80)` }} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Footer label */}
+              <p className="text-center text-[10px] font-bold uppercase tracking-widest mt-4 pb-2" style={{ color:'rgba(255,255,255,0.15)' }}>
+                Ranked by {current.unit}
+              </p>
+            </>
+          )}
         </div>
       </div>
-
-      {/* ── LIST ── */}
-      {list.length === 0 ? (
-        <div className="py-12 text-center">
-          <Trophy style={{ width: 36, height: 36, margin: '0 auto 10px', color: 'rgba(255,255,255,0.07)' }} />
-          <p className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>No data yet this week</p>
-        </div>
-      ) : (
-        <div>
-          {list.slice(0, 10).map((m, i) => {
-            const pct = Math.max(4, Math.round((getVal(m) / maxVal) * 100));
-            const isTop3 = i < 3;
-            const initials = (m.userName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-
-            return (
-              <div key={m.userId || i}
-                className="flex items-center gap-3 px-4 py-3 relative"
-                style={{
-                  borderBottom: i < list.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  background: isTop3 ? `linear-gradient(90deg, ${medalBg[i]} 0%, transparent 60%)` : 'transparent',
-                }}>
-
-                {/* Rank */}
-                <div className="w-7 flex-shrink-0 text-center">
-                  {isTop3 ? (
-                    <span className="text-[15px]">{['🥇','🥈','🥉'][i]}</span>
-                  ) : (
-                    <span className="text-[12px] font-black" style={{ color: 'rgba(255,255,255,0.2)' }}>{i + 1}</span>
-                  )}
-                </div>
-
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-black text-white"
-                  style={{
-                    background: isTop3
-                      ? `linear-gradient(135deg, ${medals[i]}30, ${medals[i]}15)`
-                      : 'rgba(255,255,255,0.06)',
-                    border: `1.5px solid ${isTop3 ? medals[i] + '50' : 'rgba(255,255,255,0.08)'}`,
-                    color: isTop3 ? medals[i] : 'rgba(255,255,255,0.7)',
-                  }}>
-                  {initials}
-                </div>
-
-                {/* Name + bar */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate leading-tight mb-1.5"
-                    style={{ color: isTop3 ? '#fff' : 'rgba(255,255,255,0.55)' }}>
-                    {m.userName || '—'}
-                  </p>
-                  {/* Progress bar */}
-                  <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <div className="h-full rounded-full transition-all duration-700" style={{
-                      width: `${pct}%`,
-                      background: isTop3
-                        ? `linear-gradient(90deg, ${medals[i]}, ${medals[i]}aa)`
-                        : `linear-gradient(90deg, ${current.accent}80, ${current.accent}40)`,
-                    }} />
-                  </div>
-                </div>
-
-                {/* Value badge */}
-                <div className="flex-shrink-0 flex items-center justify-center rounded-lg px-2.5 py-1 min-w-[52px] text-center"
-                  style={{
-                    background: isTop3 ? `${medals[i]}15` : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${isTop3 ? medals[i] + '30' : 'rgba(255,255,255,0.06)'}`,
-                  }}>
-                  <span className="text-[13px] font-black" style={{ color: isTop3 ? medals[i] : 'rgba(255,255,255,0.4)' }}>
-                    {fmt(m)}
-                  </span>
-                </div>
-
-              </div>
-            );
-          })}
-
-          {/* Footer unit label */}
-          <div className="px-4 py-2.5 flex items-center justify-end gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.18)' }}>
-              ranked by {unit}
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
