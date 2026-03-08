@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // ─── Preset split templates ───────────────────────────────────────────────────
@@ -114,33 +114,31 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   const [splitName, setSplitName] = useState('');
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts] = useState({});
-  const [localSavedSplits, setLocalSavedSplits] = useState([]);
   const [selectingActive, setSelectingActive] = useState(false);
-  // Optimistic local active name so UI updates instantly on tap
-  const [localActiveName, setLocalActiveName] = useState('');
+
+  // ── Own local state for saved splits and active name ──────────────────────
+  // These are seeded from the prop on open but then managed independently
+  // so they don't depend on the parent re-rendering with a new currentUser prop.
+  const [savedSplits, setSavedSplits] = useState([]);
+  const [activeName, setActiveName] = useState('');
 
   const queryClient = useQueryClient();
 
-  // Keep local state in sync with currentUser
-  useEffect(() => {
-    setLocalSavedSplits(currentUser?.saved_splits || []);
-    setLocalActiveName(currentUser?.custom_split_name || '');
-  }, [currentUser?.saved_splits, currentUser?.custom_split_name]);
-
+  // Seed local state whenever the modal opens
   useEffect(() => {
     if (!isOpen) return;
+    setSavedSplits(currentUser?.saved_splits || []);
+    setActiveName(currentUser?.custom_split_name || '');
     setStep('pick');
     setSelectedPreset(null);
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
     setSelectingActive(false);
-    setLocalSavedSplits(currentUser?.saved_splits || []);
-    setLocalActiveName(currentUser?.custom_split_name || '');
   }, [isOpen]);
 
-  const activeSaved = localSavedSplits.find(s => s.name === localActiveName);
-  const otherSaved = localSavedSplits.filter(s => s.name !== localActiveName);
+  const activeSaved = savedSplits.find(s => s.name === activeName);
+  const otherSaved = savedSplits.filter(s => s.name !== activeName);
 
   // ── Navigation ────────────────────────────────────────────────────────────
   const loadSavedSplit = (split) => {
@@ -202,7 +200,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   const saveMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' });
       toast.success('Split saved!');
       onClose();
     },
@@ -211,7 +209,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   const setActiveMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['currentUser']);
+      // Force a full refetch so Profile.jsx picks up the new active split
+      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' });
+    },
+    onError: () => {
+      toast.error('Failed to update — please try again');
     },
   });
 
@@ -224,7 +226,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
       workouts,
       created_at: new Date().toISOString(),
     };
-    const updated = [...localSavedSplits.filter(s => s.name !== newSplit.name), newSplit];
+    const updated = [...savedSplits.filter(s => s.name !== newSplit.name), newSplit];
+    setSavedSplits(updated);
     saveMutation.mutate({
       workout_split: selectedPreset?.id || 'custom',
       custom_split_name: newSplit.name,
@@ -234,11 +237,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     });
   };
 
-  // Sets a split as active — updates local state immediately, then persists
+  // Sets a split as active — updates local state immediately so UI responds
+  // instantly without waiting for API or prop update from parent.
   const handlePickActive = (split) => {
-    setLocalActiveName(split.name);   // instant UI update
+    // 1. Update local UI immediately
+    setActiveName(split.name);
     setSelectingActive(false);
-    toast.success(`"${split.name}" is now active!`);
+    toast.success(`"${split.name}" set as active!`);
+    // 2. Persist to server
     setActiveMutation.mutate({
       workout_split: split.preset_id || 'custom',
       custom_split_name: split.name,
@@ -249,8 +255,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
 
   const deleteSavedSplit = (splitId, e) => {
     e.stopPropagation();
-    const updated = localSavedSplits.filter(s => s.id !== splitId);
-    setLocalSavedSplits(updated);
+    const updated = savedSplits.filter(s => s.id !== splitId);
+    setSavedSplits(updated);
+    // If we deleted the active one, clear active name
+    const deleted = savedSplits.find(s => s.id === splitId);
+    if (deleted?.name === activeName) setActiveName('');
     saveMutation.mutate({ saved_splits: updated });
   };
 
@@ -287,14 +296,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
             </h2>
           </div>
 
-          {/* Right: green tick button — pick screen only */}
+          {/* Right: green tick — pick screen only, only if there are saved splits to pick from */}
           <div className="w-10 flex-shrink-0 flex justify-end">
-            {step === 'pick' && (
+            {step === 'pick' && savedSplits.length > 0 && (
               <button
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  setSelectingActive(prev => !prev);
-                }}
+                onClick={() => setSelectingActive(prev => !prev)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
                   bg-gradient-to-b from-emerald-400 to-emerald-600
                   shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
@@ -308,11 +314,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           </div>
         </div>
 
-        {/* Selecting-active banner */}
+        {/* Selecting-active hint banner */}
         {step === 'pick' && selectingActive && (
           <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-            <p className="text-[11px] font-bold text-emerald-400">Tap any split to make it your active one</p>
+            <p className="text-[11px] font-bold text-emerald-400">Tap any split below to make it your active one</p>
           </div>
         )}
 
@@ -323,18 +329,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           {step === 'pick' && (
             <div className="p-4 space-y-2">
 
-              {/* Active saved split — green border, always first */}
+              {/* Active saved split */}
               {activeSaved && (() => {
                 const preset = PRESET_SPLITS.find(p => p.id === activeSaved.preset_id) || PRESET_SPLITS[4];
                 return (
                   <div
-                    onPointerDown={() => {
-                      if (selectingActive) {
-                        handlePickActive(activeSaved);
-                      } else {
-                        loadSavedSplit(activeSaved);
-                      }
-                    }}
+                    onClick={() => selectingActive ? handlePickActive(activeSaved) : loadSavedSplit(activeSaved)}
                     className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
                     style={{
                       background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))',
@@ -357,22 +357,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                         <span className="text-[9px] text-slate-500">· {(activeSaved.training_days || []).length} days</span>
                       </div>
                     </div>
-                    {!selectingActive && (
+                    {selectingActive ? (
+                      <div className="w-6 h-6 rounded-full bg-emerald-500/25 border-2 border-emerald-400 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      </div>
+                    ) : (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25 pointer-events-none">
                           <Edit2 className="w-3.5 h-3.5 text-emerald-400" />
                         </div>
                         <button
-                          onPointerDown={(e) => { e.stopPropagation(); deleteSavedSplit(activeSaved.id, e); }}
+                          onClick={(e) => { e.stopPropagation(); deleteSavedSplit(activeSaved.id, e); }}
                           className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-slate-500" />
                         </button>
-                      </div>
-                    )}
-                    {selectingActive && (
-                      <div className="w-6 h-6 rounded-full bg-emerald-500/25 border-2 border-emerald-400 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
                       </div>
                     )}
                   </div>
@@ -385,17 +384,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 return (
                   <div
                     key={split.id}
-                    onPointerDown={() => {
-                      if (selectingActive) {
-                        handlePickActive(split);
-                      } else {
-                        loadSavedSplit(split);
-                      }
-                    }}
+                    onClick={() => selectingActive ? handlePickActive(split) : loadSavedSplit(split)}
                     className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
                     style={{
                       background: 'rgba(15,20,40,0.7)',
-                      border: selectingActive ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(255,255,255,0.06)',
+                      border: selectingActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.06)',
                     }}
                   >
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${preset.color} flex items-center justify-center text-lg shadow flex-shrink-0`}>
@@ -410,32 +403,31 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                         <span className="text-[9px] text-slate-600">· {(split.training_days || []).length} days</span>
                       </div>
                     </div>
-                    {!selectingActive && (
+                    {selectingActive ? (
+                      <div className="w-6 h-6 rounded-full border-2 border-slate-600 flex-shrink-0" />
+                    ) : (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 pointer-events-none">
                           <Edit2 className="w-3.5 h-3.5 text-slate-400" />
                         </div>
                         <button
-                          onPointerDown={(e) => { e.stopPropagation(); deleteSavedSplit(split.id, e); }}
+                          onClick={(e) => { e.stopPropagation(); deleteSavedSplit(split.id, e); }}
                           className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-slate-500" />
                         </button>
                       </div>
                     )}
-                    {selectingActive && (
-                      <div className="w-6 h-6 rounded-full border-2 border-slate-600 flex-shrink-0" />
-                    )}
                   </div>
                 );
               })}
 
-              {/* Preset templates — always shown */}
+              {/* Preset templates */}
               {PRESET_SPLITS.map((preset) => (
                 <div
                   key={preset.id}
-                  onPointerDown={() => { if (!selectingActive) selectPreset(preset); }}
-                  className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-35' : ''}`}
+                  onClick={() => { if (!selectingActive) selectPreset(preset); }}
+                  className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}
                   style={{
                     background: 'rgba(15,20,40,0.7)',
                     border: '1px solid rgba(255,255,255,0.06)',
@@ -457,9 +449,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                       </div>
                     )}
                   </div>
-                  {!selectingActive && (
-                    <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                  )}
+                  <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
                 </div>
               ))}
 
