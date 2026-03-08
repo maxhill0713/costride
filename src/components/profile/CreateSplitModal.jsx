@@ -131,7 +131,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
-    setSelectingActive(false);
     setLocalSavedSplits(currentUser?.saved_splits || []);
   }, [isOpen]);
 
