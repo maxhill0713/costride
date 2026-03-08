@@ -292,15 +292,21 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                       }}>{rank+1}</div>
                       {/* Avatar */}
                       <div style={{
-                        width:isFirst?58:46, height:isFirst?58:46, borderRadius:'50%',
-                        background:'rgba(255,255,255,0.06)',
-                        border:`2px solid ${M.color}`,
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                        fontSize:isFirst?19:15, fontWeight:900, color:M.color,
-                        margin:`${isFirst?18:14}px auto 8px`,
-                        backdropFilter:'blur(8px)',
-                        animation: isFirst ? 'lb-gold-pulse 2.5s ease-in-out infinite' : 'none',
-                      }}>{initials(data.userName)}</div>
+                       width:isFirst?58:46, height:isFirst?58:46, borderRadius:'50%',
+                       background:'rgba(255,255,255,0.06)',
+                       border:`2px solid ${M.color}`,
+                       display:'flex', alignItems:'center', justifyContent:'center',
+                       fontSize:isFirst?19:15, fontWeight:900, color:M.color,
+                       margin:`${isFirst?18:14}px auto 8px`,
+                       backdropFilter:'blur(8px)',
+                       overflow:'hidden',
+                       animation: isFirst ? 'lb-gold-pulse 2.5s ease-in-out infinite' : 'none',
+                      }}>
+                       {avatarMap[data.userId]
+                         ? <img src={avatarMap[data.userId]} alt={data.userName} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                         : initials(data.userName)
+                       }
+                      </div>
                       {/* Name */}
                       <p style={{
                         color:'#fff', fontWeight:900, textAlign:'center',
