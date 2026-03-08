@@ -284,14 +284,8 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                        fontSize:isFirst?19:15, fontWeight:900, color:M.color,
                        margin:`${isFirst?18:14}px auto 8px`,
                        backdropFilter:'blur(8px)',
-                       overflow:'hidden',
                        animation: isFirst ? 'lb-gold-pulse 2.5s ease-in-out infinite' : 'none',
-                      }}>
-                       {avatarMap[data.userId]
-                         ? <img src={avatarMap[data.userId]} alt={data.userName} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                         : initials(data.userName)
-                       }
-                      </div>
+                      }}>{initials(data.userName)}</div>
                       {/* Name */}
                       <p style={{
                         color:'#fff', fontWeight:900, textAlign:'center',
