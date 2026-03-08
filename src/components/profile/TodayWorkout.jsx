@@ -310,7 +310,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             exit={{ opacity: 0, height: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             style={{ overflow: 'hidden', transformOrigin: 'top' }}>
-            <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
+            <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</p>
 
           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
             <div className="px-2 space-y-2">
