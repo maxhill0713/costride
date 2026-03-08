@@ -11,7 +11,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 
-// ─── Shared styles ─────────────────────────────────────────────────────────────
+// ─── Shared styles ──────────────────────────────────────────────────────────────
 const CARD = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
   border: '1px solid rgba(255,255,255,0.07)',
