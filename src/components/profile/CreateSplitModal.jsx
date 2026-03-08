@@ -130,16 +130,34 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   // Reset & seed whenever modal opens
   useEffect(() => {
     if (!isOpen) return;
-    // Always start at the pick screen
+
+    // Load saved splits from user data
+    const existing = currentUser?.saved_splits || [];
+    setSavedSplits(existing);
+
+    // If "Edit Split" was clicked and user has an active split, load it directly
+    if (openToEdit && currentUser?.workout_split) {
+      const activeSplit = existing.find(s => s.name === currentUser.custom_split_name) || null;
+      if (activeSplit) {
+        loadSavedSplit(activeSplit);
+        return;
+      }
+      // Fallback: reconstruct from user fields
+      const preset = PRESET_SPLITS.find(p => p.id === currentUser.workout_split) || PRESET_SPLITS[4];
+      setSelectedPreset(preset);
+      setSplitName(currentUser.custom_split_name || '');
+      setSelectedDays(currentUser.training_days || []);
+      setWorkouts(currentUser.custom_workout_types || {});
+      setStep('configure');
+      return;
+    }
+
+    // Default: start at the pick screen
     setStep('pick');
     setSelectedPreset(null);
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
-
-    // Load saved splits from user data
-    const existing = currentUser?.saved_splits || [];
-    setSavedSplits(existing);
   }, [isOpen]);
 
   // ── Preset selection ────────────────────────────────────────────────────────
