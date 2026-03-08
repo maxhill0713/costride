@@ -144,7 +144,8 @@ export default function Layout({ children, currentPageName }) {
                 }`}>
 
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${isActive ? '' : 'text-slate-400'}`} strokeWidth={isActive ? 2 : 1.5} fill={isActive ? 'currentColor' : 'none'} />
+                  {isActive && <div className="absolute inset-0 bg-current opacity-10 rounded-full blur-md" />}
+                  <item.icon className={`w-7 h-7 drop-shadow-sm ${isActive ? '' : 'text-slate-300'}`} strokeWidth={isActive ? 2.5 : 1} fill={isActive ? 'currentColor' : 'none'} />
                   {item.badge > 0 &&
                   <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border border-white">
                        {item.badge > 9 ? '9+' : item.badge}
