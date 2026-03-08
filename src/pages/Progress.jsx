@@ -345,7 +345,7 @@ export default function Progress() {
     enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
 
-  if (!currentUser) return null;
+  if (!currentUser) return <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]" />;
   if (view === 'goals')     return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
   if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
   if (view === 'split')     return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
