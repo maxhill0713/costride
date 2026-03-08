@@ -39,7 +39,6 @@ import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
 import { motion } from 'framer-motion';
 
-// ─── Shared card style (CoStride frosted glass) ───────────────────────────────
 const CARD_STYLE = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.90) 100%)',
   border: '1px solid rgba(255,255,255,0.07)',
@@ -47,18 +46,17 @@ const CARD_STYLE = {
   WebkitBackdropFilter: 'blur(20px)',
 };
 
-// ─── Leaderboard — Premium Gamified Design ───────────────────────────────────
 const LBOARD_ANIM = `
 @keyframes lb-slide-up {
   from { opacity:0; transform:translateY(100%); }
   to   { opacity:1; transform:translateY(0); }
 }
 @keyframes lb-card-in {
-  from { opacity:0; transform:translateY(32px) scale(0.88) rotateX(8deg); }
+  from { opacity:0; transform:translateY(28px) scale(0.9) rotateX(8deg); }
   to   { opacity:1; transform:translateY(0) scale(1) rotateX(0deg); }
 }
 @keyframes lb-row-in {
-  from { opacity:0; transform:translateX(-16px); }
+  from { opacity:0; transform:translateX(-14px); }
   to   { opacity:1; transform:translateX(0); }
 }
 @keyframes lb-flame {
@@ -67,8 +65,8 @@ const LBOARD_ANIM = `
   66%     { transform:scale(0.9) rotate(-2deg) translateY(1px); filter:brightness(0.9); }
 }
 @keyframes lb-gold-pulse {
-  0%,100% { box-shadow:0 0 0 2px rgba(255,196,0,0.5),0 0 20px rgba(255,196,0,0.25),0 0 60px rgba(255,196,0,0.08); }
-  50%     { box-shadow:0 0 0 4px rgba(255,196,0,0.8),0 0 40px rgba(255,196,0,0.5),0 0 80px rgba(255,196,0,0.15); }
+  0%,100% { box-shadow:0 0 0 2px rgba(255,196,0,0.5),0 0 20px rgba(255,196,0,0.25); }
+  50%     { box-shadow:0 0 0 4px rgba(255,196,0,0.8),0 0 40px rgba(255,196,0,0.5); }
 }
 @keyframes lb-silver-pulse {
   0%,100% { box-shadow:0 0 0 2px rgba(192,212,232,0.4),0 0 16px rgba(192,212,232,0.18); }
@@ -86,10 +84,6 @@ const LBOARD_ANIM = `
   from { opacity:0; transform:translateY(6px); }
   to   { opacity:1; transform:translateY(0); }
 }
-@keyframes lb-crown-float {
-  0%,100% { transform:translateY(0) rotate(-5deg); }
-  50%     { transform:translateY(-4px) rotate(5deg); }
-}
 @keyframes lb-orb-drift {
   0%,100% { transform:translate(0,0) scale(1); opacity:0.6; }
   33%     { transform:translate(20px,-15px) scale(1.1); opacity:0.8; }
@@ -99,25 +93,17 @@ const LBOARD_ANIM = `
   0%   { top:0%; opacity:0.4; }
   100% { top:100%; opacity:0; }
 }
-@keyframes lb-xp-bar {
-  from { width:0%; }
-  to   { width:var(--xp-w); }
-}
 @keyframes lb-badge-pop {
   0%   { transform:scale(0) rotate(-20deg); opacity:0; }
   60%  { transform:scale(1.15) rotate(5deg); opacity:1; }
   100% { transform:scale(1) rotate(0deg); opacity:1; }
-}
-@keyframes lb-particle {
-  0%   { transform:translate(0,0) scale(1); opacity:1; }
-  100% { transform:translate(var(--px),var(--py)) scale(0); opacity:0; }
 }
 `;
 
 const MEDALS = [
   {
     rank: 1,
-    color: '#FFD700', colorDim: '#B8960C', colorRgb: '255,215,0',
+    color: '#FFD700', colorRgb: '255,215,0',
     cardBorder: 'rgba(255,215,0,0.55)', cardBorderDim: 'rgba(255,215,0,0.15)',
     glow: 'rgba(255,215,0,0.3)', glowStrong: 'rgba(255,215,0,0.6)',
     bg: 'linear-gradient(160deg,rgba(60,42,0,0.95) 0%,rgba(28,18,0,0.98) 100%)',
@@ -127,15 +113,12 @@ const MEDALS = [
     pulse: 'lb-gold-pulse',
     shine: 'rgba(255,225,80,0.22)',
     insetGlow: 'rgba(255,215,0,0.14)',
-    crownColor: '#FFD700',
-    label: '👑',
-    tierLabel: 'CHAMPION',
-    tierColor: '#FFD700',
-    heightExtra: 28,
+    label: '👑', tierLabel: 'CHAMPION', tierColor: '#FFD700',
+    heightExtra: 20,
   },
   {
     rank: 2,
-    color: '#C8D8EC', colorDim: '#7A9ABE', colorRgb: '200,216,236',
+    color: '#C8D8EC', colorRgb: '200,216,236',
     cardBorder: 'rgba(180,205,230,0.48)', cardBorderDim: 'rgba(180,205,230,0.12)',
     glow: 'rgba(180,205,230,0.2)', glowStrong: 'rgba(180,205,230,0.45)',
     bg: 'linear-gradient(160deg,rgba(16,28,52,0.95) 0%,rgba(6,12,28,0.98) 100%)',
@@ -145,15 +128,12 @@ const MEDALS = [
     pulse: 'lb-silver-pulse',
     shine: 'rgba(200,220,240,0.14)',
     insetGlow: 'rgba(180,205,230,0.09)',
-    crownColor: '#C8D8EC',
-    label: '🥈',
-    tierLabel: 'ELITE',
-    tierColor: '#C8D8EC',
-    heightExtra: 10,
+    label: '🥈', tierLabel: 'ELITE', tierColor: '#C8D8EC',
+    heightExtra: 6,
   },
   {
     rank: 3,
-    color: '#E8904A', colorDim: '#A05820', colorRgb: '232,144,74',
+    color: '#E8904A', colorRgb: '232,144,74',
     cardBorder: 'rgba(215,128,58,0.5)', cardBorderDim: 'rgba(215,128,58,0.14)',
     glow: 'rgba(215,128,58,0.22)', glowStrong: 'rgba(215,128,58,0.45)',
     bg: 'linear-gradient(160deg,rgba(48,22,6,0.95) 0%,rgba(20,8,2,0.98) 100%)',
@@ -163,32 +143,31 @@ const MEDALS = [
     pulse: 'lb-bronze-pulse',
     shine: 'rgba(218,140,72,0.15)',
     insetGlow: 'rgba(215,128,58,0.1)',
-    crownColor: '#E8904A',
-    label: '🥉',
-    tierLabel: 'PRO',
-    tierColor: '#E8904A',
+    label: '🥉', tierLabel: 'PRO', tierColor: '#E8904A',
     heightExtra: 0,
   },
 ];
 
-const ROW_CARD = {
-  background: 'linear-gradient(135deg,rgba(14,22,48,0.85) 0%,rgba(6,10,24,0.95) 100%)',
-  border: '1px solid rgba(59,130,246,0.12)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-};
-
-const RANK_COLORS = ['','','','rgba(99,155,255,0.9)','rgba(99,155,255,0.8)','rgba(99,155,255,0.7)','rgba(99,155,255,0.6)','rgba(99,155,255,0.5)','rgba(99,155,255,0.4)','rgba(99,155,255,0.35)','rgba(99,155,255,0.3)'];
+// Duolingo 3D row colors — rank 4 (index 0) is most vivid, fades toward rank 10
+const DUO_ROW = [
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.95) 0%,rgba(29,78,216,0.88) 100%)', floor: '#1239a0', accent: '#93c5fd' },
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.82) 0%,rgba(29,78,216,0.75) 100%)', floor: '#1239a0', accent: '#bfdbfe' },
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.70) 0%,rgba(29,78,216,0.62) 100%)', floor: '#1239a0', accent: '#bfdbfe' },
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.58) 0%,rgba(29,78,216,0.50) 100%)', floor: '#1239a0', accent: '#dbeafe' },
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.46) 0%,rgba(29,78,216,0.38) 100%)', floor: '#1239a0', accent: '#dbeafe' },
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.36) 0%,rgba(29,78,216,0.28) 100%)', floor: '#1239a0', accent: '#eff6ff' },
+  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.27) 0%,rgba(29,78,216,0.20) 100%)', floor: '#1239a0', accent: '#eff6ff' },
+];
 
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
-  const [hoveredRow, setHoveredRow] = React.useState(null);
+  const [pressedRow, setPressedRow] = React.useState(null);
 
   const tabs = [
-    { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', accentRgb:'16,185,129', unit:'check-ins',  symbol:'✓' },
-    { id:'streaks',  label:'Streaks',   icon:Flame,       accent:'#f97316', accentRgb:'249,115,22',  unit:'day streak', symbol:'🔥' },
-    { id:'progress', label:'Progress',  icon:TrendingUp,  accent:'#818cf8', accentRgb:'129,140,248', unit:'kg gained',  symbol:'↑' },
+    { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', accentRgb:'16,185,129', unit:'check-ins' },
+    { id:'streaks',  label:'Streaks',   icon:Flame,       accent:'#f97316', accentRgb:'249,115,22',  unit:'day streak' },
+    { id:'progress', label:'Progress',  icon:TrendingUp,  accent:'#818cf8', accentRgb:'129,140,248', unit:'kg gained' },
   ];
   const current = tabs.find(t => t.id === view);
   const getData = () => {
@@ -197,17 +176,17 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     return                        { list:progressLeaderboard,getVal:m=>m.increase, fmt:v=>`+${v}kg`, unit:'kg gained'  };
   };
   const { list, getVal, fmt, unit } = getData();
-  const maxVal = list.length>0 ? Math.max(...list.map(getVal),1) : 1;
+  const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
   const initials = n => (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   const podium = list.slice(0,3);
   const restList = list.slice(3,10);
 
-  // ── COLLAPSED ──────────────────────────────────────────────────────────────
+  // ── COLLAPSED PILL ─────────────────────────────────────────────────────────
   if (!open) return (
     <>
       <style>{LBOARD_ANIM}</style>
       <button
-        onClick={()=>setOpen(true)}
+        onClick={() => setOpen(true)}
         className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
         style={{
           background:'linear-gradient(135deg,rgba(14,22,48,0.92) 0%,rgba(6,10,26,0.97) 100%)',
@@ -215,18 +194,14 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
           boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
-        {/* Animated shimmer sweep */}
         <div style={{ position:'absolute',top:0,left:0,right:0,bottom:0,overflow:'hidden',pointerEvents:'none',borderRadius:'inherit' }}>
           <div style={{ position:'absolute',top:0,bottom:0,width:'30%',background:'linear-gradient(90deg,transparent,rgba(255,215,0,0.04),transparent)',animation:'lb-shimmer 3.5s ease-in-out infinite' }}/>
         </div>
-        {/* Gold top line */}
         <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,transparent 0%,rgba(255,215,0,0.6) 30%,rgba(255,215,0,0.9) 50%,rgba(255,215,0,0.6) 70%,transparent 100%)',borderRadius:'inherit' }}/>
         <div className="flex items-center gap-3 px-4 py-3.5">
-          {/* Icon */}
           <div style={{ width:44,height:44,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,180,0,0.08))',border:'1px solid rgba(255,215,0,0.25)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
             <Trophy style={{ width:20,height:20,color:'#FFD700',filter:'drop-shadow(0 0 6px rgba(255,215,0,0.5))' }}/>
           </div>
-          {/* Text */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p style={{ fontSize:15,fontWeight:900,color:'#fff',letterSpacing:'-0.02em',lineHeight:1 }}>Community Leaderboard</p>
@@ -236,20 +211,16 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
               {list.length>0 ? `${list.length} athletes ranked this week` : 'No activity this week'}
             </p>
           </div>
-          {/* Top 3 stacked avatars */}
           {podium.length>0 && (
             <div style={{ display:'flex',alignItems:'center',marginRight:4 }}>
               {podium.map((m,i)=>(
                 <div key={i} style={{ width:32,height:32,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].bg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,marginLeft:i===0?0:-10,zIndex:3-i,boxShadow:`0 0 12px ${MEDALS[i].glow},0 2px 8px rgba(0,0,0,0.4)`,flexShrink:0 }}>
-                  {m.userAvatar
-                    ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
-                    : null}
+                  {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}} /> : null}
                   <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900 }}>{initials(m.userName)}</span>
                 </div>
               ))}
             </div>
           )}
-          {/* Arrow */}
           <div style={{ width:30,height:30,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',flexShrink:0 }}>
             <ChevronRight style={{ width:15,height:15,color:'rgba(255,255,255,0.4)' }}/>
           </div>
@@ -269,65 +240,78 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
         animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
         overflow:'hidden',
       }}>
-        {/* ── Atmospheric background layers ── */}
-        {/* Dot grid */}
+        {/* Atmospheric bg */}
         <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)',backgroundSize:'24px 24px',opacity:0.8 }}/>
-        {/* Ambient orbs */}
         <div style={{ position:'absolute',top:'8%',left:'15%',width:280,height:280,borderRadius:'50%',background:'radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 12s ease-in-out infinite' }}/>
         <div style={{ position:'absolute',top:'40%',right:'5%',width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,rgba(${current.accentRgb},0.06) 0%,transparent 70%)`,pointerEvents:'none',animation:'lb-orb-drift 9s ease-in-out infinite 3s' }}/>
-        <div style={{ position:'absolute',bottom:'20%',left:'10%',width:160,height:160,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.05) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 14s ease-in-out infinite 6s' }}/>
-        {/* Scan line */}
         <div style={{ position:'absolute',left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.15),transparent)`,pointerEvents:'none',animation:'lb-scan-line 8s linear infinite',zIndex:1 }}/>
 
         {/* ── HEADER ── */}
-        <div style={{ flexShrink:0,paddingTop:52,paddingLeft:16,paddingRight:16,paddingBottom:14,borderBottom:'1px solid rgba(255,255,255,0.05)',position:'relative',zIndex:2 }}>
-          {/* Back */}
-          <button onClick={()=>setOpen(false)} style={{ position:'absolute',top:12,left:16,width:38,height:38,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',backdropFilter:'blur(10px)' }}>
-            <ChevronRight style={{ width:18,height:18,color:'rgba(255,255,255,0.6)',transform:'rotate(180deg)' }}/>
+        <div style={{ flexShrink:0,paddingTop:18,paddingLeft:16,paddingRight:16,paddingBottom:12,borderBottom:'1px solid rgba(255,255,255,0.05)',position:'relative',zIndex:2 }}>
+          <button onClick={() => setOpen(false)}
+            onMouseDown={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+            onMouseUp={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+            onMouseLeave={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+            onTouchStart={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+            onTouchEnd={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+            style={{ position:'absolute',top:14,left:16,width:36,height:36,borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(30,40,80,0.9)',border:'1px solid rgba(255,255,255,0.15)',borderBottom:'3px solid rgba(0,0,0,0.55)',boxShadow:'0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12)',transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
+            <ChevronRight style={{ width:17,height:17,color:'rgba(255,255,255,0.7)',transform:'rotate(180deg)' }}/>
           </button>
-
-          {/* Title block */}
-          <div style={{ textAlign:'center',marginBottom:14 }}>
-            <div style={{ display:'inline-flex',alignItems:'center',gap:6,marginBottom:4 }}>
-              <div style={{ width:20,height:20,display:'flex',alignItems:'center',justifyContent:'center' }}>
-                <Trophy style={{ width:16,height:16,color:'#FFD700',filter:'drop-shadow(0 0 8px rgba(255,215,0,0.7))' }}/>
-              </div>
-              <span style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.28em',color:'rgba(255,215,0,0.65)',fontVariantNumeric:'tabular-nums' }}>Community Rankings</span>
+          <div style={{ textAlign:'center',marginBottom:10 }}>
+            <div style={{ display:'inline-flex',alignItems:'center',gap:6,marginBottom:3 }}>
+              <Trophy style={{ width:14,height:14,color:'#FFD700',filter:'drop-shadow(0 0 8px rgba(255,215,0,0.7))' }}/>
+              <span style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.28em',color:'rgba(255,215,0,0.65)' }}>Community Rankings</span>
             </div>
-            <h2 style={{ fontSize:28,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.04em',lineHeight:1,textShadow:'0 0 40px rgba(255,255,255,0.15)' }}>Leaderboard</h2>
+            <h2 style={{ fontSize:26,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.04em',lineHeight:1 }}>Leaderboard</h2>
           </div>
-
-          {/* Timeframe pills */}
-          <div style={{ display:'flex',justifyContent:'center',gap:6,marginBottom:12 }}>
+          {/* Timeframe pills — 3D button style */}
+          <div style={{ display:'flex',justifyContent:'center',gap:6,marginBottom:10 }}>
             {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf,label])=>{
               const active = timeframe===tf;
               return (
-                <button key={tf} onClick={()=>setTimeframe(tf)} style={{
-                  padding:'5px 14px',borderRadius:99,fontSize:11,fontWeight:700,
-                  background:active?`rgba(${current.accentRgb},0.15)`:'rgba(255,255,255,0.04)',
-                  border:`1px solid ${active?`rgba(${current.accentRgb},0.45)`:'rgba(255,255,255,0.07)'}`,
-                  color:active?current.accent:'rgba(255,255,255,0.3)',
-                  transition:'all 0.18s',
-                  boxShadow:active?`0 0 12px rgba(${current.accentRgb},0.2)`:''
-                }}>{label}</button>
+                <button key={tf} onClick={() => setTimeframe(tf)}
+                  onMouseDown={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom=`1px solid rgba(0,0,0,0.4)`;}}
+                  onMouseUp={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+                  onMouseLeave={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+                  onTouchStart={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom=`1px solid rgba(0,0,0,0.4)`;}}
+                  onTouchEnd={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+                  style={{
+                    padding:'5px 14px',borderRadius:99,fontSize:11,fontWeight:800,
+                    background: active ? `rgba(${current.accentRgb},0.18)` : 'rgba(20,28,60,0.8)',
+                    border: `1px solid ${active ? `rgba(${current.accentRgb},0.5)` : 'rgba(255,255,255,0.1)'}`,
+                    borderBottom: active ? `3px solid rgba(${current.accentRgb},0.6)` : '3px solid rgba(0,0,0,0.5)',
+                    color: active ? current.accent : 'rgba(255,255,255,0.35)',
+                    boxShadow: active
+                      ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15),0 0 12px rgba(${current.accentRgb},0.2)`
+                      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08)',
+                    transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
+                  }}>{label}</button>
               );
             })}
           </div>
-
-          {/* Metric tabs — segmented control style */}
-          <div style={{ display:'flex',gap:4,background:'rgba(255,255,255,0.04)',borderRadius:14,padding:4,border:'1px solid rgba(255,255,255,0.06)' }}>
+          {/* Metric tabs — 3D button style */}
+          <div style={{ display:'flex',gap:6,padding:4 }}>
             {tabs.map(({id,label,icon:Icon,accent,accentRgb})=>{
-              const active=view===id;
+              const active = view===id;
               return (
-                <button key={id} onClick={()=>setView(id)} style={{
-                  flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:5,
-                  padding:'8px 4px',borderRadius:10,fontSize:11,fontWeight:700,
-                  background:active?`rgba(${accentRgb},0.18)`:'transparent',
-                  border:`1px solid ${active?`rgba(${accentRgb},0.4)`:'transparent'}`,
-                  color:active?accent:'rgba(255,255,255,0.3)',
-                  transition:'all 0.18s',
-                  boxShadow:active?`0 0 16px rgba(${accentRgb},0.18),inset 0 1px 0 rgba(255,255,255,0.08)`:''
-                }}>
+                <button key={id} onClick={() => setView(id)}
+                  onMouseDown={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+                  onMouseUp={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+                  onMouseLeave={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+                  onTouchStart={e=>{const b=e.currentTarget;b.style.transform='translateY(3px)';b.style.boxShadow='none';b.style.borderBottom='1px solid rgba(0,0,0,0.4)';}}
+                  onTouchEnd={e=>{const b=e.currentTarget;b.style.transform='';b.style.boxShadow='';b.style.borderBottom='';}}
+                  style={{
+                    flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:5,
+                    padding:'8px 4px',borderRadius:12,fontSize:11,fontWeight:800,
+                    background: active ? `rgba(${accentRgb},0.2)` : 'rgba(20,28,60,0.75)',
+                    border: `1px solid ${active ? `rgba(${accentRgb},0.5)` : 'rgba(255,255,255,0.09)'}`,
+                    borderBottom: active ? `3px solid rgba(${accentRgb},0.55)` : '3px solid rgba(0,0,0,0.5)',
+                    color: active ? accent : 'rgba(255,255,255,0.3)',
+                    boxShadow: active
+                      ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18),0 0 14px rgba(${accentRgb},0.18)`
+                      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',
+                    transition:'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
+                  }}>
                   <Icon style={{ width:12,height:12 }}/>{label}
                 </button>
               );
@@ -338,9 +322,9 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
         {/* ── SCROLL BODY ── */}
         <div style={{ flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',position:'relative',zIndex:2 }}>
           {list.length===0 ? (
-            <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:300,gap:16 }}>
-              <div style={{ width:64,height:64,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)' }}>
-                <Trophy style={{ width:28,height:28,color:'rgba(255,255,255,0.1)' }}/>
+            <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:280,gap:16 }}>
+              <div style={{ width:60,height:60,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)' }}>
+                <Trophy style={{ width:26,height:26,color:'rgba(255,255,255,0.1)' }}/>
               </div>
               <div style={{ textAlign:'center' }}>
                 <p style={{ fontSize:15,fontWeight:800,color:'rgba(255,255,255,0.25)',margin:'0 0 4px' }}>No Rankings Yet</p>
@@ -349,173 +333,137 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
             </div>
           ) : (<>
 
-            {/* ── PODIUM LABEL ── */}
-            <div style={{ textAlign:'center',padding:'18px 0 4px' }}>
-              <span style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.22em',color:`rgba(${current.accentRgb},0.55)` }}>
-                ◆ Top Performers ◆
-              </span>
-            </div>
-
-            {/* ── PREMIUM PODIUM ── */}
-            <div style={{ padding:'4px 16px 20px',display:'flex',alignItems:'flex-end',justifyContent:'center',gap:8,perspective:800 }}>
-              {/* ORDER: 2nd | 1st | 3rd */}
+            {/* ── COMPACT PODIUM ── */}
+            <div style={{ padding:'8px 16px 10px',display:'flex',alignItems:'flex-end',justifyContent:'center',gap:6,perspective:800 }}>
               {[{data:podium[1],mIdx:1},{data:podium[0],mIdx:0},{data:podium[2],mIdx:2}]
-                .filter(p=>p.data)
-                .map(({data,mIdx},colIdx)=>{
+                .filter(p => p.data)
+                .map(({data,mIdx},colIdx) => {
                   const M = MEDALS[mIdx];
                   const isFirst = mIdx===0;
-                  const cardW = isFirst ? 136 : 110;
-                  const avatarSz = isFirst ? 68 : 52;
+                  const cardW = isFirst ? 116 : 94;
+                  const avatarSz = isFirst ? 50 : 38;
                   return (
                     <div key={mIdx} style={{
-                      width:cardW,
-                      borderRadius:22,
-                      overflow:'hidden',
-                      position:'relative',
-                      background:M.bg,
-                      border:`1.5px solid ${M.cardBorder}`,
-                      backdropFilter:'blur(40px)',
-                      WebkitBackdropFilter:'blur(40px)',
-                      boxShadow:`0 20px 60px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,
+                      width:cardW, borderRadius:18, overflow:'hidden', position:'relative',
+                      background:M.bg, border:`1.5px solid ${M.cardBorder}`,
+                      backdropFilter:'blur(40px)', WebkitBackdropFilter:'blur(40px)',
+                      boxShadow:`0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,
                       animation:`lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx*0.08}s both`,
-                      marginBottom: M.heightExtra,
-                      transformOrigin:'bottom center',
+                      marginBottom:M.heightExtra, transformOrigin:'bottom center',
                     }}>
-                      {/* Top color line */}
                       <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent 0%,${M.color} 40%,${M.glowStrong} 50%,${M.color} 60%,transparent 100%)`,zIndex:3 }}/>
-                      {/* Inner glow */}
                       <div style={{ position:'absolute',inset:0,pointerEvents:'none',background:`radial-gradient(ellipse at 50% 0%,${M.insetGlow} 0%,transparent 55%)` }}/>
-                      {/* Shimmer sweep */}
                       <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none' }}>
                         <div style={{ position:'absolute',top:0,bottom:0,width:'25%',background:`linear-gradient(90deg,transparent,${M.shine},transparent)`,animation:'lb-shimmer 4s ease-in-out infinite',animationDelay:`${mIdx*0.8}s` }}/>
                       </div>
-
-                      {/* Rank badge */}
-                      <div style={{ position:'absolute',top:0,left:0,width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:M.badgeBg,borderRadius:'0 0 12px 0',zIndex:4,boxShadow:`inset 0 1px 0 rgba(255,255,255,0.3),0 2px 8px rgba(0,0,0,0.3)` }}>
-                        <span style={{ fontSize:12,fontWeight:900,color:M.badgeText }}>{mIdx+1}</span>
+                      {/* Rank corner badge */}
+                      <div style={{ position:'absolute',top:0,left:0,width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center',background:M.badgeBg,borderRadius:'0 0 9px 0',zIndex:4,boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)' }}>
+                        <span style={{ fontSize:10,fontWeight:900,color:M.badgeText }}>{mIdx+1}</span>
                       </div>
-
-                      {/* Flame for #1 */}
                       {isFirst && (
-                        <div style={{ position:'absolute',top:8,right:10,fontSize:18,animation:'lb-flame 1.6s ease-in-out infinite',pointerEvents:'none',zIndex:4,filter:'drop-shadow(0 0 8px rgba(255,150,0,0.7))' }}>🔥</div>
+                        <div style={{ position:'absolute',top:5,right:7,fontSize:14,animation:'lb-flame 1.6s ease-in-out infinite',pointerEvents:'none',zIndex:4,filter:'drop-shadow(0 0 6px rgba(255,150,0,0.7))' }}>🔥</div>
                       )}
-
-                      {/* Tier label */}
-                      <div style={{ display:'flex',justifyContent:'center',paddingTop:isFirst?22:18,paddingBottom:4,position:'relative',zIndex:2 }}>
-                        <span style={{ fontSize:7,fontWeight:900,letterSpacing:'0.2em',color:M.tierColor,opacity:0.7,textTransform:'uppercase',background:`rgba(${M.colorRgb},0.1)`,border:`1px solid rgba(${M.colorRgb},0.2)`,padding:'2px 7px',borderRadius:99 }}>{M.tierLabel}</span>
+                      {/* Tier pill */}
+                      <div style={{ display:'flex',justifyContent:'center',paddingTop:isFirst?16:13,paddingBottom:3,position:'relative',zIndex:2 }}>
+                        <span style={{ fontSize:6,fontWeight:900,letterSpacing:'0.2em',color:M.tierColor,opacity:0.7,textTransform:'uppercase',background:`rgba(${M.colorRgb},0.1)`,border:`1px solid rgba(${M.colorRgb},0.2)`,padding:'1px 6px',borderRadius:99 }}>{M.tierLabel}</span>
                       </div>
-
-                      {/* Avatar with conic ring */}
-                      <div style={{ display:'flex',justifyContent:'center',paddingBottom:6,position:'relative',zIndex:2 }}>
+                      {/* Avatar ring */}
+                      <div style={{ display:'flex',justifyContent:'center',paddingBottom:4,position:'relative',zIndex:2 }}>
                         <div style={{ position:'relative' }}>
-                          {/* Conic gradient ring */}
-                          <div style={{ width:avatarSz+8,height:avatarSz+8,borderRadius:'50%',background:M.avatarRing,animation:`${M.pulse} 2.5s ease-in-out infinite`,display:'flex',alignItems:'center',justifyContent:'center' }}>
-                            {/* Avatar inner */}
-                            <div style={{ width:avatarSz,height:avatarSz,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:isFirst?22:16,fontWeight:900,color:M.color,background:M.bg,border:`2px solid rgba(0,0,0,0.3)` }}>
-                              {data.userAvatar
-                                ? <img src={data.userAvatar} alt={data.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
-                                : null}
-                              <span style={{ display:data.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:isFirst?22:16,color:M.color }}>{initials(data.userName)}</span>
+                          <div style={{ width:avatarSz+6,height:avatarSz+6,borderRadius:'50%',background:M.avatarRing,animation:`${M.pulse} 2.5s ease-in-out infinite`,display:'flex',alignItems:'center',justifyContent:'center' }}>
+                            <div style={{ width:avatarSz,height:avatarSz,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,color:M.color,background:M.bg,border:'2px solid rgba(0,0,0,0.3)' }}>
+                              {data.userAvatar ? <img src={data.userAvatar} alt={data.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}} /> : null}
+                              <span style={{ display:data.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:isFirst?17:12,color:M.color }}>{initials(data.userName)}</span>
                             </div>
                           </div>
-                          {/* Rank emoji badge */}
-                          <div style={{ position:'absolute',bottom:-2,right:-2,width:22,height:22,borderRadius:'50%',background:'rgba(6,10,24,0.9)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,boxShadow:`0 0 0 2px ${M.color},0 4px 12px rgba(0,0,0,0.5)`,animation:'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both',zIndex:5 }}>{M.label}</div>
+                          <div style={{ position:'absolute',bottom:-2,right:-2,width:17,height:17,borderRadius:'50%',background:'rgba(6,10,24,0.9)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,boxShadow:`0 0 0 2px ${M.color}`,animation:'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both',zIndex:5 }}>{M.label}</div>
                         </div>
                       </div>
-
                       {/* Name */}
-                      <p style={{ color:'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?13:11,lineHeight:1.2,padding:'0 10px 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:`0 0 20px ${M.glow}`,letterSpacing:'-0.01em',position:'relative',zIndex:2 }}>{data.userName||'—'}</p>
-
-                      {/* Score block */}
-                      <div style={{ textAlign:'center',padding:`4px 10px ${isFirst?18:14}px`,position:'relative',zIndex:2 }}>
-                        <p style={{ fontSize:isFirst?26:19,fontWeight:900,color:M.color,lineHeight:1,textShadow:`0 0 30px ${M.glowStrong}`,letterSpacing:'-0.03em',animation:'lb-count-up 0.5s ease 0.2s both' }}>{fmt(getVal(data))}</p>
-                        <p style={{ fontSize:7,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:`rgba(${M.colorRgb},0.45)`,marginTop:2 }}>{unit}</p>
+                      <p style={{ color:'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?11:9,lineHeight:1.2,padding:'0 6px 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:`0 0 16px ${M.glow}`,position:'relative',zIndex:2 }}>{data.userName||'—'}</p>
+                      {/* Score */}
+                      <div style={{ textAlign:'center',padding:`2px 8px ${isFirst?13:9}px`,position:'relative',zIndex:2 }}>
+                        <p style={{ fontSize:isFirst?20:15,fontWeight:900,color:M.color,lineHeight:1,textShadow:`0 0 24px ${M.glowStrong}`,letterSpacing:'-0.03em',animation:'lb-count-up 0.5s ease 0.2s both' }}>{fmt(getVal(data))}</p>
+                        <p style={{ fontSize:6,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.16em',color:`rgba(${M.colorRgb},0.45)`,marginTop:1 }}>{unit}</p>
                       </div>
                     </div>
                   );
-              })}
+                })}
             </div>
 
-            {/* ── XP / PROGRESS BAR FOR #1 ── */}
-            {podium[0] && (
-              <div style={{ margin:'0 16px 16px',padding:'12px 14px',borderRadius:16,background:'linear-gradient(135deg,rgba(255,215,0,0.07),rgba(255,180,0,0.03))',border:'1px solid rgba(255,215,0,0.15)' }}>
-                <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7 }}>
-                  <div style={{ display:'flex',alignItems:'center',gap:6 }}>
-                    <Trophy style={{ width:12,height:12,color:'#FFD700' }}/>
-                    <span style={{ fontSize:10,fontWeight:900,color:'rgba(255,215,0,0.8)',letterSpacing:'0.08em',textTransform:'uppercase' }}>Current Leader</span>
-                  </div>
-                  <span style={{ fontSize:10,fontWeight:700,color:'rgba(255,255,255,0.35)' }}>{podium[0].userName}</span>
-                </div>
-                <div style={{ height:4,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden' }}>
-                  <div style={{ height:'100%',borderRadius:99,background:'linear-gradient(90deg,#FFD700,#FFA500)',width:'100%',boxShadow:'0 0 8px rgba(255,215,0,0.5)' }}/>
-                </div>
-                <div style={{ display:'flex',justifyContent:'space-between',marginTop:5 }}>
-                  <span style={{ fontSize:9,color:'rgba(255,255,255,0.2)',fontWeight:700 }}>0</span>
-                  <span style={{ fontSize:9,color:'rgba(255,215,0,0.45)',fontWeight:800 }}>RANK #1 THIS WEEK</span>
-                  <span style={{ fontSize:9,color:'rgba(255,255,255,0.2)',fontWeight:700 }}>{fmt(getVal(podium[0]))}</span>
-                </div>
-              </div>
-            )}
-
-            {/* ── DIVIDER ── */}
-            <div style={{ margin:'0 16px 12px',display:'flex',alignItems:'center',gap:10 }}>
-              <div style={{ flex:1,height:1,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.2))` }}/>
-              <span style={{ fontSize:9,fontWeight:900,letterSpacing:'0.18em',color:`rgba(${current.accentRgb},0.4)`,textTransform:'uppercase' }}>Rankings 4–10</span>
-              <div style={{ flex:1,height:1,background:`linear-gradient(90deg,rgba(${current.accentRgb},0.2),transparent)` }}/>
-            </div>
-
-            {/* ── ROWS 4-10 ── */}
-            {restList.length>0 && (
-              <div style={{ display:'flex',flexDirection:'column',gap:6,padding:'0 12px' }}>
-                {restList.map((m,i)=>{
+            {/* ── DUOLINGO 3D ROWS 4-10 (no divider label) ── */}
+            {restList.length > 0 && (
+              <div style={{ display:'flex',flexDirection:'column',gap:5,padding:'4px 12px 20px' }}>
+                {restList.map((m,i) => {
                   const globalRank = i+4;
-                  const pct = Math.max(3,Math.round((getVal(m)/maxVal)*100));
-                  const isHovered = hoveredRow===i;
+                  const pct = Math.max(4, Math.round((getVal(m)/maxVal)*100));
+                  const C = DUO_ROW[i] || DUO_ROW[DUO_ROW.length-1];
+                  const isPressed = pressedRow === i;
                   return (
                     <div key={m.userId||i}
-                      onTouchStart={()=>setHoveredRow(i)}
-                      onTouchEnd={()=>setHoveredRow(null)}
+                      onTouchStart={() => setPressedRow(i)}
+                      onTouchEnd={() => setPressedRow(null)}
+                      onMouseDown={() => setPressedRow(i)}
+                      onMouseUp={() => setPressedRow(null)}
+                      onMouseLeave={() => setPressedRow(null)}
                       style={{
-                        ...ROW_CARD,
-                        borderRadius:16,
-                        padding:'10px 12px',
+                        borderRadius:14,
+                        padding:'9px 11px',
                         display:'flex',
                         alignItems:'center',
-                        gap:10,
-                        animation:`lb-row-in 0.28s ease ${(i+3)*0.045}s both`,
+                        gap:9,
+                        animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,
                         position:'relative',
                         overflow:'hidden',
-                        transition:'all 0.15s',
-                        boxShadow:isHovered?`0 0 0 1px rgba(${current.accentRgb},0.3),0 4px 20px rgba(0,0,0,0.4)`:'0 2px 12px rgba(0,0,0,0.3)',
+                        cursor:'default',
+                        background: C.bg,
+                        border: '1px solid rgba(255,255,255,0.14)',
+                        // Duolingo 3D: thick bottom border = the "floor shadow"
+                        borderBottom: isPressed ? `1px solid rgba(0,0,0,0.5)` : `4px solid ${C.floor}`,
+                        boxShadow: isPressed ? 'none' : '0 2px 0 rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+                        transform: isPressed ? 'translateY(3px)' : 'translateY(0)',
+                        transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
                       }}>
-                      {/* Shimmer */}
-                      <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.12),transparent)`,pointerEvents:'none' }}/>
+                      {/* Top sheen */}
+                      <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:'rgba(255,255,255,0.22)',pointerEvents:'none' }}/>
                       {/* Rank number */}
-                      <div style={{ width:30,height:30,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:RANK_COLORS[globalRank]||'rgba(255,255,255,0.25)' }}>{globalRank}</div>
+                      <div style={{ width:26,height:26,borderRadius:8,flexShrink:0,background:'rgba(0,0,0,0.22)',border:'1px solid rgba(255,255,255,0.18)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'rgba(255,255,255,0.95)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.12)' }}>{globalRank}</div>
                       {/* Avatar */}
-                      <div style={{ width:38,height:38,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:900,color:`rgba(${current.accentRgb},0.9)`,background:`linear-gradient(135deg,rgba(${current.accentRgb},0.15),rgba(${current.accentRgb},0.05))`,border:`1.5px solid rgba(${current.accentRgb},0.25)`,boxShadow:`0 0 12px rgba(${current.accentRgb},0.12)` }}>
-                        {m.userAvatar
-                          ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
-                          : null}
-                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:900,color:`rgba(${current.accentRgb},0.9)` }}>{initials(m.userName)}</span>
+                      <div style={{ width:34,height:34,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:C.accent,background:'rgba(0,0,0,0.25)',border:'2px solid rgba(255,255,255,0.22)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+                        {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}} /> : null}
+                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:C.accent }}>{initials(m.userName)}</span>
                       </div>
-                      {/* Name + XP bar */}
+                      {/* Name + mini bar */}
                       <div style={{ flex:1,minWidth:0 }}>
-                        <p style={{ fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.8)',margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',letterSpacing:'-0.01em' }}>{m.userName||'—'}</p>
-                        <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.05)',overflow:'hidden' }}>
-                          <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:`linear-gradient(90deg,${current.accent},${current.accent}88)`,boxShadow:`0 0 4px rgba(${current.accentRgb},0.4)`,transition:'width 0.6s ease' }}/>
+                        <p style={{ fontSize:13,fontWeight:800,color:'rgba(255,255,255,0.95)',margin:'0 0 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:'0 1px 4px rgba(0,0,0,0.5)' }}>{m.userName||'—'}</p>
+                        <div style={{ height:3,borderRadius:99,background:'rgba(0,0,0,0.28)',overflow:'hidden' }}>
+                          <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:'rgba(255,255,255,0.5)',transition:'width 0.6s ease' }}/>
                         </div>
                       </div>
-                      {/* Value pill */}
-                      <div style={{ flexShrink:0,padding:'4px 10px',borderRadius:9,background:`rgba(${current.accentRgb},0.1)`,border:`1px solid rgba(${current.accentRgb},0.2)`,fontSize:13,fontWeight:900,color:current.accent,letterSpacing:'-0.02em',boxShadow:`0 0 8px rgba(${current.accentRgb},0.1)` }}>{fmt(getVal(m))}</div>
+                      {/* Score pill — also Duolingo 3D */}
+                      <div style={{
+                        flexShrink:0,
+                        padding:'4px 10px',
+                        borderRadius:9,
+                        background:'rgba(0,0,0,0.28)',
+                        border:'1px solid rgba(255,255,255,0.22)',
+                        borderBottom: isPressed ? '1px solid rgba(0,0,0,0.5)' : '3px solid rgba(0,0,0,0.45)',
+                        fontSize:13,
+                        fontWeight:900,
+                        color:'#fff',
+                        textShadow:'0 1px 3px rgba(0,0,0,0.6)',
+                        boxShadow: isPressed ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.28)',
+                        transform: isPressed ? 'translateY(2px)' : 'translateY(0)',
+                        transition:'transform 0.08s, border-bottom 0.08s, box-shadow 0.08s',
+                        letterSpacing:'-0.02em',
+                      }}>{fmt(getVal(m))}</div>
                     </div>
                   );
                 })}
               </div>
             )}
 
-            {/* Footer */}
-            <p style={{ textAlign:'center',fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:'rgba(255,255,255,0.08)',padding:'20px 0 8px' }}>
+            <p style={{ textAlign:'center',fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:'rgba(255,255,255,0.08)',paddingBottom:10 }}>
               Ranked by {unit} · Updates in real-time
             </p>
           </>)}
@@ -564,7 +512,6 @@ export default function GymCommunity() {
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
   useEffect(() => { window.scrollTo(0, 0); }, [gymId]);
-
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
   const [showManageRewards, setShowManageRewards] = useState(false);
@@ -589,7 +536,6 @@ export default function GymCommunity() {
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
 
-  // ── Queries ──────────────────────────────────────────────────────────────────
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
@@ -608,61 +554,32 @@ export default function GymCommunity() {
   const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
 
-  // ── Collect unique user IDs from check-ins for avatar lookup ─────────────────
   const leaderboardUserIds = React.useMemo(() => {
     const seen = new Set();
     checkIns.forEach(c => { if (c.user_id) seen.add(c.user_id); });
     return [...seen].slice(0, 50);
   }, [checkIns]);
 
-  // ── Fetch User profiles to get real avatars ───────────────────────────────
-  // Uses Promise.allSettled so one failed fetch doesn't break the rest
   const { data: leaderboardUsers = [] } = useQuery({
     queryKey: ['leaderboardUsers', gymId, leaderboardUserIds.length],
     queryFn: async () => {
       if (leaderboardUserIds.length === 0) return [];
-      const results = await Promise.allSettled(
-        leaderboardUserIds.map(uid =>
-          base44.entities.User.filter({ id: uid }).then(r => (r && r[0]) ? r[0] : null)
-        )
-      );
-      return results
-        .filter(r => r.status === 'fulfilled' && r.value != null)
-        .map(r => r.value);
+      const results = await Promise.allSettled(leaderboardUserIds.map(uid => base44.entities.User.filter({ id: uid }).then(r => (r && r[0]) ? r[0] : null)));
+      return results.filter(r => r.status === 'fulfilled' && r.value != null).map(r => r.value);
     },
     enabled: leaderboardUserIds.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 20 * 60 * 1000,
   });
 
-  // ── Avatar map: userId → avatarUrl ────────────────────────────────────────
-  // Built from three sources in priority order:
-  //   1. GymMember records (keyed by user_id, NOT the record id)
-  //   2. Directly-fetched User profiles (most reliable)
-  //   3. currentUser (always accurate for the logged-in user)
   const memberAvatarMap = React.useMemo(() => {
     const map = {};
-    // 1. GymMember — must key by user_id, not m.id
-    members.forEach(m => {
-      if (!m.user_id) return;
-      const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
-      if (avatar) map[m.user_id] = avatar;
-    });
-    // 2. User profiles fetched directly
-    leaderboardUsers.forEach(u => {
-      if (!u?.id) return;
-      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
-      if (avatar) map[u.id] = avatar;
-    });
-    // 3. Current user
-    if (currentUser?.id) {
-      const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
-      if (myAvatar) map[currentUser.id] = myAvatar;
-    }
+    members.forEach(m => { if (!m.user_id) return; const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null; if (avatar) map[m.user_id] = avatar; });
+    leaderboardUsers.forEach(u => { if (!u?.id) return; const avatar = u.avatar_url || u.profile_picture || u.photo_url || null; if (avatar) map[u.id] = avatar; });
+    if (currentUser?.id) { const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null; if (myAvatar) map[currentUser.id] = myAvatar; }
     return map;
   }, [members, leaderboardUsers, currentUser]);
 
-  // ── Mutations ─────────────────────────────────────────────────────────────────
   const createEventMutation = useMutation({ mutationFn: (eventData) => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async (eventData) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); const tempEvent = { ...eventData, id: `temp-${Date.now()}`, gym_id: gymId, gym_name: gym?.name, attendees: 0 }; queryClient.setQueryData(['events', gymId], (old = []) => [tempEvent, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
   const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old = []) => old.map((e) => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
   const updateEquipmentMutation = useMutation({ mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManageEquipment(false); } });
@@ -687,13 +604,11 @@ export default function GymCommunity() {
   const joinChallengeMutation = useMutation({ mutationFn: async (challenge) => { const currentParticipants = challenge.participants || []; await base44.entities.Challenge.update(challenge.id, { participants: [...currentParticipants, currentUser.id] }); await base44.entities.ChallengeParticipant.create({ user_id: currentUser.id, user_name: currentUser.full_name, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }); }, onMutate: async (challenge) => { await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]); queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [...old, { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }]); return { previous }; }, onError: (err, challenge, context) => { queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); queryClient.invalidateQueries({ queryKey: ['challenges'] }); queryClient.invalidateQueries({ queryKey: ['activeChallenges'] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'challenge', title: '💪 Challenge Joined!', message: 'Good luck on your new challenge!', icon: '🎯' }); } });
   const claimBonusMutation = useMutation({ mutationFn: ({ bonusType, offerDetails }) => base44.entities.ClaimedBonus.create({ user_id: currentUser.id, gym_id: gymId, bonus_type: bonusType, offer_details: offerDetails }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'reward', title: '🎁 Bonus Claimed!', message: 'Your gym bonus has been claimed successfully', icon: '🎉' }); } });
 
-  // ── Helpers ───────────────────────────────────────────────────────────────────
   const hasClaimedBonus = (bonusType) => claimedBonuses.some((b) => b.bonus_type === bonusType);
   const hasjoinedChallenge = (challengeId) => challengeParticipants.some((p) => p.challenge_id === challengeId);
   const calculateCurrentStreak = (userCheckIns) => { if (userCheckIns.length === 0) return 0; const sorted = [...userCheckIns].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date)); let streak = 1; let cur = new Date(sorted[0].check_in_date); cur.setHours(0,0,0,0); for (let i = 1; i < sorted.length; i++) { const d = new Date(sorted[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; } return streak; };
   const meetsRequirement = (requirement) => { if (!currentUser) return false; const userCheckIns = checkIns.filter((c) => c.user_id === currentUser.id); switch (requirement) { case 'first_visit': return userCheckIns.length >= 1; case 'visits_3': return userCheckIns.length >= 3; case 'visits_5': return userCheckIns.length >= 5; case 'visits_10': case 'check_ins_10': return userCheckIns.length >= 10; case 'visits_25': return userCheckIns.length >= 25; case 'visits_50': case 'check_ins_50': return userCheckIns.length >= 50; case 'visits_100': return userCheckIns.length >= 100; case 'streak_7': return calculateCurrentStreak(userCheckIns) >= 7; case 'streak_30': return calculateCurrentStreak(userCheckIns) >= 30; case 'streak_90': return calculateCurrentStreak(userCheckIns) >= 90; default: return true; } };
 
-  // ── Derived data ──────────────────────────────────────────────────────────────
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
   const isGhostGym = gym && !gym.admin_id && !gym.owner_email;
   const currentCoach = currentUser && coaches.find((c) => c.user_email === currentUser.email);
@@ -705,7 +620,6 @@ export default function GymCommunity() {
   const weeklyCheckIns = checkIns.filter((c) => new Date(c.check_in_date) >= weekAgo);
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
-  // ── Leaderboard datasets — all use memberAvatarMap keyed by user_id ──────────
   const checkInLeaderboard = Object.values(
     weeklyCheckIns.reduce((acc, c) => {
       const id = c.user_id;
@@ -759,7 +673,6 @@ export default function GymCommunity() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-          {/* ── HERO BANNER ── */}
           <div className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
               {gym.image_url
@@ -817,7 +730,6 @@ export default function GymCommunity() {
           </div>
 
           <div className="max-w-4xl mx-auto px-3 md:px-4 pt-3 pb-28 space-y-3 w-full overflow-hidden">
-            {/* ── HOME TAB ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 {isGhostGym && !isMember && !showOwnerControls && (
@@ -933,7 +845,6 @@ export default function GymCommunity() {
               </motion.div>
             </TabsContent>
 
-            {/* ── FEED TAB ── */}
             <TabsContent value="feed" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 {upcomingEvents.length > 0 && (
@@ -950,7 +861,6 @@ export default function GymCommunity() {
               </motion.div>
             </TabsContent>
 
-            {/* ── CHALLENGES TAB ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 {showOwnerControls && (
@@ -965,7 +875,6 @@ export default function GymCommunity() {
               </motion.div>
             </TabsContent>
 
-            {/* ── EVENTS TAB ── */}
             <TabsContent value="events" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
@@ -1049,7 +958,6 @@ export default function GymCommunity() {
           </div>
         </Tabs>
 
-        {/* ── Modals ── */}
         <CreateEventModal open={showCreateEvent} onClose={() => setShowCreateEvent(false)} onSave={(data) => createEventMutation.mutate(data)} gym={gym} isLoading={createEventMutation.isPending} />
         <ManageEquipmentModal open={showManageEquipment} onClose={() => setShowManageEquipment(false)} equipment={gym?.equipment || []} onSave={(equipment) => updateEquipmentMutation.mutate(equipment)} isLoading={updateEquipmentMutation.isPending} />
         <ManageRewardsModal open={showManageRewards} onClose={() => setShowManageRewards(false)} rewards={rewards} onCreateReward={(data) => createRewardMutation.mutate(data)} onDeleteReward={(id) => deleteRewardMutation.mutate(id)} gym={gym} isLoading={createRewardMutation.isPending} />
