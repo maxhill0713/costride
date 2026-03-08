@@ -741,28 +741,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         </div>
 
         {/* ── FOOTER ── */}
-        {step === 'preview' && previewSplit && (
-          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
-            <button onClick={handleBack} className={btnSecondary}>Back</button>
-            <button
-              onClick={() => {
-                handleSetActive({
-                  id: previewSplit.id,
-                  preset_id: previewSplit.id,
-                  name: previewSplit.name,
-                  training_days: previewSplit.days,
-                  workouts: previewSplit.workouts,
-                });
-                setStep('pick');
-                setPreviewSplit(null);
-              }}
-              disabled={setActiveMutation.isPending}
-              className="bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#065f46,0_6px_20px_rgba(16,185,129,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {setActiveMutation.isPending ? 'Setting…' : 'Set as Active'}
-            </button>
-          </div>
-        )}
         {step === 'configure' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
             <button onClick={handleBack} className={btnSecondary}>Back</button>
