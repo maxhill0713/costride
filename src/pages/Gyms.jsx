@@ -665,6 +665,7 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
+      <AnimatePresence>
       {showFilterModal &&
         <>
           <motion.div
