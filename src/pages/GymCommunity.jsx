@@ -47,58 +47,148 @@ const CARD_STYLE = {
   WebkitBackdropFilter: 'blur(20px)',
 };
 
-// ─── Leaderboard animations ───────────────────────────────────────────────────
+// ─── Leaderboard — Premium Gamified Design ───────────────────────────────────
 const LBOARD_ANIM = `
 @keyframes lb-slide-up {
   from { opacity:0; transform:translateY(100%); }
   to   { opacity:1; transform:translateY(0); }
 }
 @keyframes lb-card-in {
-  from { opacity:0; transform:translateY(18px) scale(0.93); }
-  to   { opacity:1; transform:translateY(0) scale(1); }
+  from { opacity:0; transform:translateY(32px) scale(0.88) rotateX(8deg); }
+  to   { opacity:1; transform:translateY(0) scale(1) rotateX(0deg); }
 }
 @keyframes lb-row-in {
-  from { opacity:0; transform:translateX(-10px); }
+  from { opacity:0; transform:translateX(-16px); }
   to   { opacity:1; transform:translateX(0); }
 }
 @keyframes lb-flame {
-  0%,100% { transform:scale(1) rotate(-3deg); }
-  50%      { transform:scale(1.22) rotate(3deg); }
+  0%,100% { transform:scale(1) rotate(-4deg) translateY(0); filter:brightness(1); }
+  33%     { transform:scale(1.3) rotate(4deg) translateY(-2px); filter:brightness(1.3); }
+  66%     { transform:scale(0.9) rotate(-2deg) translateY(1px); filter:brightness(0.9); }
 }
 @keyframes lb-gold-pulse {
-  0%,100% { box-shadow:0 0 0 3px rgba(255,196,0,0.35),0 0 28px rgba(255,196,0,0.22); }
-  50%      { box-shadow:0 0 0 4px rgba(255,196,0,0.6),0 0 44px rgba(255,196,0,0.38); }
+  0%,100% { box-shadow:0 0 0 2px rgba(255,196,0,0.5),0 0 20px rgba(255,196,0,0.25),0 0 60px rgba(255,196,0,0.08); }
+  50%     { box-shadow:0 0 0 4px rgba(255,196,0,0.8),0 0 40px rgba(255,196,0,0.5),0 0 80px rgba(255,196,0,0.15); }
 }
 @keyframes lb-silver-pulse {
-  0%,100% { box-shadow:0 0 0 2.5px rgba(185,205,228,0.3),0 0 20px rgba(185,205,228,0.14); }
-  50%      { box-shadow:0 0 0 3.5px rgba(185,205,228,0.55),0 0 32px rgba(185,205,228,0.26); }
+  0%,100% { box-shadow:0 0 0 2px rgba(192,212,232,0.4),0 0 16px rgba(192,212,232,0.18); }
+  50%     { box-shadow:0 0 0 3px rgba(192,212,232,0.65),0 0 28px rgba(192,212,232,0.32); }
 }
 @keyframes lb-bronze-pulse {
-  0%,100% { box-shadow:0 0 0 2.5px rgba(205,115,52,0.32),0 0 20px rgba(205,115,52,0.16); }
-  50%      { box-shadow:0 0 0 3.5px rgba(205,115,52,0.58),0 0 32px rgba(205,115,52,0.3); }
+  0%,100% { box-shadow:0 0 0 2px rgba(210,120,50,0.42),0 0 16px rgba(210,120,50,0.18); }
+  50%     { box-shadow:0 0 0 3px rgba(210,120,50,0.68),0 0 28px rgba(210,120,50,0.32); }
+}
+@keyframes lb-shimmer {
+  0%   { transform:translateX(-100%); }
+  100% { transform:translateX(400%); }
+}
+@keyframes lb-count-up {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes lb-crown-float {
+  0%,100% { transform:translateY(0) rotate(-5deg); }
+  50%     { transform:translateY(-4px) rotate(5deg); }
+}
+@keyframes lb-orb-drift {
+  0%,100% { transform:translate(0,0) scale(1); opacity:0.6; }
+  33%     { transform:translate(20px,-15px) scale(1.1); opacity:0.8; }
+  66%     { transform:translate(-10px,10px) scale(0.95); opacity:0.5; }
+}
+@keyframes lb-scan-line {
+  0%   { top:0%; opacity:0.4; }
+  100% { top:100%; opacity:0; }
+}
+@keyframes lb-xp-bar {
+  from { width:0%; }
+  to   { width:var(--xp-w); }
+}
+@keyframes lb-badge-pop {
+  0%   { transform:scale(0) rotate(-20deg); opacity:0; }
+  60%  { transform:scale(1.15) rotate(5deg); opacity:1; }
+  100% { transform:scale(1) rotate(0deg); opacity:1; }
+}
+@keyframes lb-particle {
+  0%   { transform:translate(0,0) scale(1); opacity:1; }
+  100% { transform:translate(var(--px),var(--py)) scale(0); opacity:0; }
 }
 `;
 
 const MEDALS = [
-  { color:'#FFC400', colorDim:'#CC9400', cardBorder:'rgba(255,196,0,0.6)', cardBorderDim:'rgba(255,196,0,0.2)', glow:'rgba(255,196,0,0.28)', bg:'linear-gradient(155deg,rgba(52,36,0,0.88) 0%,rgba(22,15,0,0.96) 100%)', avatarBg:'linear-gradient(135deg,#3a2800,#1c1400)', badgeBg:'linear-gradient(145deg,#FFD44A,#CC8E00)', pulse:'lb-gold-pulse', shine:'rgba(255,210,60,0.18)', insetGlow:'rgba(255,196,0,0.12)' },
-  { color:'#C2D6EC', colorDim:'#8AACCF', cardBorder:'rgba(175,200,228,0.52)', cardBorderDim:'rgba(175,200,228,0.15)', glow:'rgba(175,200,228,0.18)', bg:'linear-gradient(155deg,rgba(18,28,50,0.9) 0%,rgba(8,14,30,0.97) 100%)', avatarBg:'linear-gradient(135deg,#182240,#0c1428)', badgeBg:'linear-gradient(145deg,#C8DCEE,#6A96BC)', pulse:'lb-silver-pulse', shine:'rgba(195,215,236,0.12)', insetGlow:'rgba(175,200,228,0.08)' },
-  { color:'#E08040', colorDim:'#A85C24', cardBorder:'rgba(210,125,55,0.55)', cardBorderDim:'rgba(210,125,55,0.18)', glow:'rgba(210,125,55,0.22)', bg:'linear-gradient(155deg,rgba(44,20,6,0.9) 0%,rgba(18,8,2,0.97) 100%)', avatarBg:'linear-gradient(135deg,#2c1406,#140802)', badgeBg:'linear-gradient(145deg,#D87C3C,#8C4818)', pulse:'lb-bronze-pulse', shine:'rgba(215,138,70,0.14)', insetGlow:'rgba(210,125,55,0.1)' },
+  {
+    rank: 1,
+    color: '#FFD700', colorDim: '#B8960C', colorRgb: '255,215,0',
+    cardBorder: 'rgba(255,215,0,0.55)', cardBorderDim: 'rgba(255,215,0,0.15)',
+    glow: 'rgba(255,215,0,0.3)', glowStrong: 'rgba(255,215,0,0.6)',
+    bg: 'linear-gradient(160deg,rgba(60,42,0,0.95) 0%,rgba(28,18,0,0.98) 100%)',
+    avatarRing: 'conic-gradient(#FFD700,#FFA500,#FFD700,#FFF0A0,#FFD700)',
+    badgeBg: 'linear-gradient(145deg,#FFE566,#CC8800)',
+    badgeText: 'rgba(80,40,0,0.9)',
+    pulse: 'lb-gold-pulse',
+    shine: 'rgba(255,225,80,0.22)',
+    insetGlow: 'rgba(255,215,0,0.14)',
+    crownColor: '#FFD700',
+    label: '👑',
+    tierLabel: 'CHAMPION',
+    tierColor: '#FFD700',
+    heightExtra: 28,
+  },
+  {
+    rank: 2,
+    color: '#C8D8EC', colorDim: '#7A9ABE', colorRgb: '200,216,236',
+    cardBorder: 'rgba(180,205,230,0.48)', cardBorderDim: 'rgba(180,205,230,0.12)',
+    glow: 'rgba(180,205,230,0.2)', glowStrong: 'rgba(180,205,230,0.45)',
+    bg: 'linear-gradient(160deg,rgba(16,28,52,0.95) 0%,rgba(6,12,28,0.98) 100%)',
+    avatarRing: 'conic-gradient(#C8D8EC,#8AACCF,#C8D8EC,#E8F0FA,#C8D8EC)',
+    badgeBg: 'linear-gradient(145deg,#D4E4F4,#6A96BC)',
+    badgeText: 'rgba(10,30,60,0.85)',
+    pulse: 'lb-silver-pulse',
+    shine: 'rgba(200,220,240,0.14)',
+    insetGlow: 'rgba(180,205,230,0.09)',
+    crownColor: '#C8D8EC',
+    label: '🥈',
+    tierLabel: 'ELITE',
+    tierColor: '#C8D8EC',
+    heightExtra: 10,
+  },
+  {
+    rank: 3,
+    color: '#E8904A', colorDim: '#A05820', colorRgb: '232,144,74',
+    cardBorder: 'rgba(215,128,58,0.5)', cardBorderDim: 'rgba(215,128,58,0.14)',
+    glow: 'rgba(215,128,58,0.22)', glowStrong: 'rgba(215,128,58,0.45)',
+    bg: 'linear-gradient(160deg,rgba(48,22,6,0.95) 0%,rgba(20,8,2,0.98) 100%)',
+    avatarRing: 'conic-gradient(#E8904A,#A05820,#E8904A,#F4C090,#E8904A)',
+    badgeBg: 'linear-gradient(145deg,#E8904A,#8C4818)',
+    badgeText: 'rgba(50,15,0,0.85)',
+    pulse: 'lb-bronze-pulse',
+    shine: 'rgba(218,140,72,0.15)',
+    insetGlow: 'rgba(215,128,58,0.1)',
+    crownColor: '#E8904A',
+    label: '🥉',
+    tierLabel: 'PRO',
+    tierColor: '#E8904A',
+    heightExtra: 0,
+  },
 ];
 
 const ROW_CARD = {
-  background:'linear-gradient(135deg,rgba(30,45,90,0.72) 0%,rgba(8,15,40,0.90) 100%)',
-  border:'1px solid rgba(59,130,246,0.15)',
-  backdropFilter:'blur(20px)',
-  WebkitBackdropFilter:'blur(20px)',
+  background: 'linear-gradient(135deg,rgba(14,22,48,0.85) 0%,rgba(6,10,24,0.95) 100%)',
+  border: '1px solid rgba(59,130,246,0.12)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
 };
+
+const RANK_COLORS = ['','','','rgba(99,155,255,0.9)','rgba(99,155,255,0.8)','rgba(99,155,255,0.7)','rgba(99,155,255,0.6)','rgba(99,155,255,0.5)','rgba(99,155,255,0.4)','rgba(99,155,255,0.35)','rgba(99,155,255,0.3)'];
 
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
+  const [hoveredRow, setHoveredRow] = React.useState(null);
+
   const tabs = [
-    { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', unit:'check-ins' },
-    { id:'streaks',  label:'Streaks',   icon:Flame,       accent:'#f97316', unit:'day streak' },
-    { id:'progress', label:'Progress',  icon:TrendingUp,  accent:'#818cf8', unit:'kg gained'  },
+    { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', accentRgb:'16,185,129', unit:'check-ins',  symbol:'✓' },
+    { id:'streaks',  label:'Streaks',   icon:Flame,       accent:'#f97316', accentRgb:'249,115,22',  unit:'day streak', symbol:'🔥' },
+    { id:'progress', label:'Progress',  icon:TrendingUp,  accent:'#818cf8', accentRgb:'129,140,248', unit:'kg gained',  symbol:'↑' },
   ];
   const current = tabs.find(t => t.id === view);
   const getData = () => {
@@ -109,141 +199,324 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   const { list, getVal, fmt, unit } = getData();
   const maxVal = list.length>0 ? Math.max(...list.map(getVal),1) : 1;
   const initials = n => (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const podium   = list.slice(0,3);
+  const podium = list.slice(0,3);
   const restList = list.slice(3,10);
 
+  // ── COLLAPSED ──────────────────────────────────────────────────────────────
   if (!open) return (
     <>
       <style>{LBOARD_ANIM}</style>
-      <button onClick={()=>setOpen(true)}
-        className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.985] transition-transform duration-150"
-        style={{ background:'linear-gradient(135deg,rgba(30,35,60,0.72) 0%,rgba(8,10,20,0.90) 100%)', border:'1px solid rgba(255,255,255,0.07)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-        <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)' }}/>
-        <div className="flex items-center gap-3 px-4 py-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:'rgba(255,196,0,0.1)', border:'1px solid rgba(255,196,0,0.2)' }}>
-            <Trophy style={{ width:18,height:18,color:'#FFC400' }}/>
+      <button
+        onClick={()=>setOpen(true)}
+        className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
+        style={{
+          background:'linear-gradient(135deg,rgba(14,22,48,0.92) 0%,rgba(6,10,26,0.97) 100%)',
+          border:'1px solid rgba(255,215,0,0.18)',
+          backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
+          boxShadow:'0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)',
+        }}>
+        {/* Animated shimmer sweep */}
+        <div style={{ position:'absolute',top:0,left:0,right:0,bottom:0,overflow:'hidden',pointerEvents:'none',borderRadius:'inherit' }}>
+          <div style={{ position:'absolute',top:0,bottom:0,width:'30%',background:'linear-gradient(90deg,transparent,rgba(255,215,0,0.04),transparent)',animation:'lb-shimmer 3.5s ease-in-out infinite' }}/>
+        </div>
+        {/* Gold top line */}
+        <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,transparent 0%,rgba(255,215,0,0.6) 30%,rgba(255,215,0,0.9) 50%,rgba(255,215,0,0.6) 70%,transparent 100%)',borderRadius:'inherit' }}/>
+        <div className="flex items-center gap-3 px-4 py-3.5">
+          {/* Icon */}
+          <div style={{ width:44,height:44,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,180,0,0.08))',border:'1px solid rgba(255,215,0,0.25)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+            <Trophy style={{ width:20,height:20,color:'#FFD700',filter:'drop-shadow(0 0 6px rgba(255,215,0,0.5))' }}/>
           </div>
+          {/* Text */}
           <div className="flex-1 min-w-0">
-            <p className="text-[15px] font-black text-white leading-tight">Community Leaderboard</p>
-            <p className="text-[11px] mt-0.5 font-semibold" style={{ color:'rgba(255,255,255,0.38)' }}>
-              {list.length>0 ? `${list.length} members ranked · tap to view` : 'No data yet this week'}
+            <div className="flex items-center gap-2">
+              <p style={{ fontSize:15,fontWeight:900,color:'#fff',letterSpacing:'-0.02em',lineHeight:1 }}>Community Leaderboard</p>
+              {list.length>0 && <span style={{ fontSize:9,fontWeight:900,letterSpacing:'0.1em',color:'rgba(255,215,0,0.7)',background:'rgba(255,215,0,0.1)',border:'1px solid rgba(255,215,0,0.2)',padding:'2px 6px',borderRadius:4,textTransform:'uppercase' }}>LIVE</span>}
+            </div>
+            <p style={{ fontSize:11,marginTop:3,fontWeight:600,color:'rgba(255,255,255,0.35)' }}>
+              {list.length>0 ? `${list.length} athletes ranked this week` : 'No activity this week'}
             </p>
           </div>
+          {/* Top 3 stacked avatars */}
           {podium.length>0 && (
-            <div className="flex -space-x-2 flex-shrink-0 mr-1">
+            <div style={{ display:'flex',alignItems:'center',marginRight:4 }}>
               {podium.map((m,i)=>(
-                <div key={i} style={{ width:30,height:30,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].avatarBg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,zIndex:3-i,boxShadow:`0 0 8px ${MEDALS[i].glow}`,overflow:'hidden',flexShrink:0 }}>
+                <div key={i} style={{ width:32,height:32,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].bg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,marginLeft:i===0?0:-10,zIndex:3-i,boxShadow:`0 0 12px ${MEDALS[i].glow},0 2px 8px rgba(0,0,0,0.4)`,flexShrink:0 }}>
                   {m.userAvatar
-                    ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
-                    : initials(m.userName)
-                  }
+                    ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
+                    : null}
+                  <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900 }}>{initials(m.userName)}</span>
                 </div>
               ))}
             </div>
           )}
-          <div style={{ width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.07)',flexShrink:0 }}>
-            <ChevronRight style={{ width:14,height:14,color:'rgba(255,255,255,0.35)' }}/>
+          {/* Arrow */}
+          <div style={{ width:30,height:30,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',flexShrink:0 }}>
+            <ChevronRight style={{ width:15,height:15,color:'rgba(255,255,255,0.4)' }}/>
           </div>
         </div>
       </button>
     </>
   );
 
+  // ── FULL-SCREEN OVERLAY ────────────────────────────────────────────────────
   return (
     <>
       <style>{LBOARD_ANIM}</style>
-      <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999, display:'flex', flexDirection:'column', background:'linear-gradient(160deg,#040d22 0%,#07122e 40%,#040d22 75%,#020810 100%)', animation:'lb-slide-up 0.38s cubic-bezier(0.16,1,0.3,1) both', overflow:'hidden' }}>
-        <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.018) 1px,transparent 1px)',backgroundSize:'22px 22px' }}/>
-        <div style={{ position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:320,height:100,pointerEvents:'none',background:'radial-gradient(ellipse,rgba(255,196,0,0.09) 0%,transparent 70%)' }}/>
-        <div style={{ flexShrink:0, paddingTop:52, paddingLeft:16, paddingRight:16, paddingBottom:12, borderBottom:'1px solid rgba(255,255,255,0.05)', position:'relative' }}>
-          <button onClick={()=>setOpen(false)} style={{ position:'absolute',top:12,left:16,width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)' }}>
-            <ChevronRight style={{ width:17,height:17,color:'rgba(255,255,255,0.65)',transform:'rotate(180deg)' }}/>
+      <div style={{
+        position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,
+        display:'flex',flexDirection:'column',
+        background:'linear-gradient(175deg,#020918 0%,#050e28 35%,#030c22 65%,#010510 100%)',
+        animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
+        overflow:'hidden',
+      }}>
+        {/* ── Atmospheric background layers ── */}
+        {/* Dot grid */}
+        <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)',backgroundSize:'24px 24px',opacity:0.8 }}/>
+        {/* Ambient orbs */}
+        <div style={{ position:'absolute',top:'8%',left:'15%',width:280,height:280,borderRadius:'50%',background:'radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 12s ease-in-out infinite' }}/>
+        <div style={{ position:'absolute',top:'40%',right:'5%',width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,rgba(${current.accentRgb},0.06) 0%,transparent 70%)`,pointerEvents:'none',animation:'lb-orb-drift 9s ease-in-out infinite 3s' }}/>
+        <div style={{ position:'absolute',bottom:'20%',left:'10%',width:160,height:160,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.05) 0%,transparent 70%)',pointerEvents:'none',animation:'lb-orb-drift 14s ease-in-out infinite 6s' }}/>
+        {/* Scan line */}
+        <div style={{ position:'absolute',left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.15),transparent)`,pointerEvents:'none',animation:'lb-scan-line 8s linear infinite',zIndex:1 }}/>
+
+        {/* ── HEADER ── */}
+        <div style={{ flexShrink:0,paddingTop:52,paddingLeft:16,paddingRight:16,paddingBottom:14,borderBottom:'1px solid rgba(255,255,255,0.05)',position:'relative',zIndex:2 }}>
+          {/* Back */}
+          <button onClick={()=>setOpen(false)} style={{ position:'absolute',top:12,left:16,width:38,height:38,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',backdropFilter:'blur(10px)' }}>
+            <ChevronRight style={{ width:18,height:18,color:'rgba(255,255,255,0.6)',transform:'rotate(180deg)' }}/>
           </button>
-          <div style={{ textAlign:'center',marginBottom:10 }}>
-            <p style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.22em',color:'rgba(255,196,0,0.6)',margin:'0 0 2px' }}>Community</p>
-            <h2 style={{ fontSize:21,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.02em' }}>Leaderboard</h2>
+
+          {/* Title block */}
+          <div style={{ textAlign:'center',marginBottom:14 }}>
+            <div style={{ display:'inline-flex',alignItems:'center',gap:6,marginBottom:4 }}>
+              <div style={{ width:20,height:20,display:'flex',alignItems:'center',justifyContent:'center' }}>
+                <Trophy style={{ width:16,height:16,color:'#FFD700',filter:'drop-shadow(0 0 8px rgba(255,215,0,0.7))' }}/>
+              </div>
+              <span style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.28em',color:'rgba(255,215,0,0.65)',fontVariantNumeric:'tabular-nums' }}>Community Rankings</span>
+            </div>
+            <h2 style={{ fontSize:28,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.04em',lineHeight:1,textShadow:'0 0 40px rgba(255,255,255,0.15)' }}>Leaderboard</h2>
           </div>
-          <div style={{ display:'flex',justifyContent:'center',gap:7,marginBottom:9 }}>
-            {[['week','This Week'],['month','This Month'],['all','Overall']].map(([tf,label])=>(
-              <button key={tf} onClick={()=>setTimeframe(tf)} style={{ padding:'5px 13px',borderRadius:99,fontSize:11,fontWeight:700,background:timeframe===tf?'rgba(255,255,255,0.11)':'transparent',border:`1px solid ${timeframe===tf?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)'}`,color:timeframe===tf?'#fff':'rgba(255,255,255,0.3)',transition:'all 0.15s' }}>{label}</button>
-            ))}
+
+          {/* Timeframe pills */}
+          <div style={{ display:'flex',justifyContent:'center',gap:6,marginBottom:12 }}>
+            {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf,label])=>{
+              const active = timeframe===tf;
+              return (
+                <button key={tf} onClick={()=>setTimeframe(tf)} style={{
+                  padding:'5px 14px',borderRadius:99,fontSize:11,fontWeight:700,
+                  background:active?`rgba(${current.accentRgb},0.15)`:'rgba(255,255,255,0.04)',
+                  border:`1px solid ${active?`rgba(${current.accentRgb},0.45)`:'rgba(255,255,255,0.07)'}`,
+                  color:active?current.accent:'rgba(255,255,255,0.3)',
+                  transition:'all 0.18s',
+                  boxShadow:active?`0 0 12px rgba(${current.accentRgb},0.2)`:''
+                }}>{label}</button>
+              );
+            })}
           </div>
-          <div style={{ display:'flex',gap:7 }}>
-            {tabs.map(({id,label,icon:Icon,accent})=>{
+
+          {/* Metric tabs — segmented control style */}
+          <div style={{ display:'flex',gap:4,background:'rgba(255,255,255,0.04)',borderRadius:14,padding:4,border:'1px solid rgba(255,255,255,0.06)' }}>
+            {tabs.map(({id,label,icon:Icon,accent,accentRgb})=>{
               const active=view===id;
               return (
-                <button key={id} onClick={()=>setView(id)} style={{ flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'7px 0',borderRadius:11,fontSize:12,fontWeight:700,background:active?`${accent}16`:'rgba(255,255,255,0.03)',border:`1px solid ${active?accent+'48':'rgba(255,255,255,0.05)'}`,color:active?accent:'rgba(255,255,255,0.28)',transition:'all 0.15s' }}>
+                <button key={id} onClick={()=>setView(id)} style={{
+                  flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:5,
+                  padding:'8px 4px',borderRadius:10,fontSize:11,fontWeight:700,
+                  background:active?`rgba(${accentRgb},0.18)`:'transparent',
+                  border:`1px solid ${active?`rgba(${accentRgb},0.4)`:'transparent'}`,
+                  color:active?accent:'rgba(255,255,255,0.3)',
+                  transition:'all 0.18s',
+                  boxShadow:active?`0 0 16px rgba(${accentRgb},0.18),inset 0 1px 0 rgba(255,255,255,0.08)`:''
+                }}>
                   <Icon style={{ width:12,height:12 }}/>{label}
                 </button>
               );
             })}
           </div>
         </div>
-        <div style={{ flex:1,overflowY:'auto',padding:'0 12px 80px',WebkitOverflowScrolling:'touch' }}>
+
+        {/* ── SCROLL BODY ── */}
+        <div style={{ flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',position:'relative',zIndex:2 }}>
           {list.length===0 ? (
-            <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:260,gap:12 }}>
-              <Trophy style={{ width:36,height:36,color:'rgba(255,255,255,0.07)' }}/>
-              <p style={{ fontSize:14,fontWeight:700,color:'rgba(255,255,255,0.2)' }}>No data yet this week</p>
+            <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:300,gap:16 }}>
+              <div style={{ width:64,height:64,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)' }}>
+                <Trophy style={{ width:28,height:28,color:'rgba(255,255,255,0.1)' }}/>
+              </div>
+              <div style={{ textAlign:'center' }}>
+                <p style={{ fontSize:15,fontWeight:800,color:'rgba(255,255,255,0.25)',margin:'0 0 4px' }}>No Rankings Yet</p>
+                <p style={{ fontSize:12,color:'rgba(255,255,255,0.12)',margin:0 }}>Start tracking to appear here</p>
+              </div>
             </div>
           ) : (<>
-            <p style={{ textAlign:'center',fontSize:11,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.16em',color:'rgba(255,196,0,0.48)',padding:'14px 0 10px',margin:0 }}>
-              Top 3 · {current.label} Leaders
-            </p>
-            <div style={{ display:'flex',alignItems:'flex-end',justifyContent:'center',gap:10,paddingBottom:14 }}>
-              {[{data:podium[1],rank:1,w:108},{data:podium[0],rank:0,w:132},{data:podium[2],rank:2,w:108}]
-                .filter(p=>p.data).map(({data,rank,w})=>{
-                const M=MEDALS[rank]; const isFirst=rank===0;
-                return (
-                  <div key={rank} style={{ width:w,borderRadius:20,overflow:'hidden',position:'relative',background:M.bg,border:`1.5px solid ${M.cardBorder}`,backdropFilter:'blur(32px)',WebkitBackdropFilter:'blur(32px)',boxShadow:`0 14px 44px rgba(0,0,0,0.6),inset 0 1px 0 ${M.shine},0 0 0 0.5px ${M.cardBorderDim}`,animation:`lb-card-in 0.42s cubic-bezier(0.34,1.2,0.64,1) ${rank*0.07}s both` }}>
-                    <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${M.color}55,transparent)` }}/>
-                    <div style={{ position:'absolute',inset:0,pointerEvents:'none',background:`radial-gradient(ellipse at 50% -10%,${M.insetGlow} 0%,transparent 62%)` }}/>
-                    {isFirst && <div style={{ position:'absolute',top:7,right:9,fontSize:17,animation:'lb-flame 1.3s ease-in-out infinite',pointerEvents:'none' }}>🔥</div>}
-                    <div style={{ position:'absolute',top:0,left:0,width:24,height:24,borderRadius:'0 0 10px 0',background:M.badgeBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'rgba(0,0,0,0.65)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.25)' }}>{rank+1}</div>
-                    <div style={{ width:isFirst?62:50,height:isFirst?62:50,borderRadius:'50%',background:M.avatarBg,border:`2.5px solid ${M.color}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:isFirst?21:16,fontWeight:900,color:M.color,margin:`${isFirst?20:16}px auto 9px`,animation:`${M.pulse} 2.8s ease-in-out infinite`,letterSpacing:'-0.01em',overflow:'hidden',flexShrink:0 }}>
-                      {data.userAvatar
-                        ? <img src={data.userAvatar} alt={data.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
-                        : initials(data.userName)
-                      }
-                    </div>
-                    <p style={{ color:'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?13:11,lineHeight:1.2,padding:'0 10px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:`0 1px 10px ${M.glow}` }}>{data.userName||'—'}</p>
-                    <div style={{ textAlign:'center',padding:`${isFirst?8:6}px 10px ${isFirst?16:13}px` }}>
-                      <p style={{ fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.14em',color:'rgba(255,255,255,0.3)',marginBottom:3 }}>{unit}</p>
-                      <p style={{ fontSize:isFirst?23:17,fontWeight:900,color:M.color,lineHeight:1,textShadow:`0 0 22px ${M.glow}` }}>{fmt(getVal(data))}</p>
-                    </div>
-                  </div>
-                );
-              })}
+
+            {/* ── PODIUM LABEL ── */}
+            <div style={{ textAlign:'center',padding:'18px 0 4px' }}>
+              <span style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.22em',color:`rgba(${current.accentRgb},0.55)` }}>
+                ◆ Top Performers ◆
+              </span>
             </div>
-            <div style={{ height:1,margin:'0 4px 10px',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)' }}/>
-            {restList.length>0 && (
-              <div style={{ display:'flex',flexDirection:'column',gap:7 }}>
-                {restList.map((m,i)=>{
-                  const globalRank=i+4;
-                  const pct=Math.max(4,Math.round((getVal(m)/maxVal)*100));
+
+            {/* ── PREMIUM PODIUM ── */}
+            <div style={{ padding:'4px 16px 20px',display:'flex',alignItems:'flex-end',justifyContent:'center',gap:8,perspective:800 }}>
+              {/* ORDER: 2nd | 1st | 3rd */}
+              {[{data:podium[1],mIdx:1},{data:podium[0],mIdx:0},{data:podium[2],mIdx:2}]
+                .filter(p=>p.data)
+                .map(({data,mIdx},colIdx)=>{
+                  const M = MEDALS[mIdx];
+                  const isFirst = mIdx===0;
+                  const cardW = isFirst ? 136 : 110;
+                  const avatarSz = isFirst ? 68 : 52;
                   return (
-                    <div key={m.userId||i} style={{ ...ROW_CARD,borderRadius:16,padding:'11px 13px',display:'flex',alignItems:'center',gap:11,animation:`lb-row-in 0.26s ease ${(i+3)*0.05}s both`,position:'relative',overflow:'hidden' }}>
-                      <div style={{ position:'absolute',top:0,left:0,right:0,height:1,pointerEvents:'none',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }}/>
-                      <div style={{ width:28,height:28,borderRadius:8,flexShrink:0,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(255,255,255,0.35)' }}>{globalRank}</div>
-                      <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(30,58,138,0.15))',border:'1.5px solid rgba(59,130,246,0.25)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(147,197,253,0.85)',overflow:'hidden' }}>
-                        {m.userAvatar
-                          ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
-                          : initials(m.userName)
-                        }
+                    <div key={mIdx} style={{
+                      width:cardW,
+                      borderRadius:22,
+                      overflow:'hidden',
+                      position:'relative',
+                      background:M.bg,
+                      border:`1.5px solid ${M.cardBorder}`,
+                      backdropFilter:'blur(40px)',
+                      WebkitBackdropFilter:'blur(40px)',
+                      boxShadow:`0 20px 60px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`,
+                      animation:`lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx*0.08}s both`,
+                      marginBottom: M.heightExtra,
+                      transformOrigin:'bottom center',
+                    }}>
+                      {/* Top color line */}
+                      <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent 0%,${M.color} 40%,${M.glowStrong} 50%,${M.color} 60%,transparent 100%)`,zIndex:3 }}/>
+                      {/* Inner glow */}
+                      <div style={{ position:'absolute',inset:0,pointerEvents:'none',background:`radial-gradient(ellipse at 50% 0%,${M.insetGlow} 0%,transparent 55%)` }}/>
+                      {/* Shimmer sweep */}
+                      <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none' }}>
+                        <div style={{ position:'absolute',top:0,bottom:0,width:'25%',background:`linear-gradient(90deg,transparent,${M.shine},transparent)`,animation:'lb-shimmer 4s ease-in-out infinite',animationDelay:`${mIdx*0.8}s` }}/>
                       </div>
-                      <div style={{ flex:1,minWidth:0 }}>
-                        <p style={{ fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.75)',margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{m.userName||'—'}</p>
-                        <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden' }}>
-                          <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:`linear-gradient(90deg,${current.accent},${current.accent}70)` }}/>
+
+                      {/* Rank badge */}
+                      <div style={{ position:'absolute',top:0,left:0,width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:M.badgeBg,borderRadius:'0 0 12px 0',zIndex:4,boxShadow:`inset 0 1px 0 rgba(255,255,255,0.3),0 2px 8px rgba(0,0,0,0.3)` }}>
+                        <span style={{ fontSize:12,fontWeight:900,color:M.badgeText }}>{mIdx+1}</span>
+                      </div>
+
+                      {/* Flame for #1 */}
+                      {isFirst && (
+                        <div style={{ position:'absolute',top:8,right:10,fontSize:18,animation:'lb-flame 1.6s ease-in-out infinite',pointerEvents:'none',zIndex:4,filter:'drop-shadow(0 0 8px rgba(255,150,0,0.7))' }}>🔥</div>
+                      )}
+
+                      {/* Tier label */}
+                      <div style={{ display:'flex',justifyContent:'center',paddingTop:isFirst?22:18,paddingBottom:4,position:'relative',zIndex:2 }}>
+                        <span style={{ fontSize:7,fontWeight:900,letterSpacing:'0.2em',color:M.tierColor,opacity:0.7,textTransform:'uppercase',background:`rgba(${M.colorRgb},0.1)`,border:`1px solid rgba(${M.colorRgb},0.2)`,padding:'2px 7px',borderRadius:99 }}>{M.tierLabel}</span>
+                      </div>
+
+                      {/* Avatar with conic ring */}
+                      <div style={{ display:'flex',justifyContent:'center',paddingBottom:6,position:'relative',zIndex:2 }}>
+                        <div style={{ position:'relative' }}>
+                          {/* Conic gradient ring */}
+                          <div style={{ width:avatarSz+8,height:avatarSz+8,borderRadius:'50%',background:M.avatarRing,animation:`${M.pulse} 2.5s ease-in-out infinite`,display:'flex',alignItems:'center',justifyContent:'center' }}>
+                            {/* Avatar inner */}
+                            <div style={{ width:avatarSz,height:avatarSz,borderRadius:'50%',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:isFirst?22:16,fontWeight:900,color:M.color,background:M.bg,border:`2px solid rgba(0,0,0,0.3)` }}>
+                              {data.userAvatar
+                                ? <img src={data.userAvatar} alt={data.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
+                                : null}
+                              <span style={{ display:data.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:isFirst?22:16,color:M.color }}>{initials(data.userName)}</span>
+                            </div>
+                          </div>
+                          {/* Rank emoji badge */}
+                          <div style={{ position:'absolute',bottom:-2,right:-2,width:22,height:22,borderRadius:'50%',background:'rgba(6,10,24,0.9)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,boxShadow:`0 0 0 2px ${M.color},0 4px 12px rgba(0,0,0,0.5)`,animation:'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both',zIndex:5 }}>{M.label}</div>
                         </div>
                       </div>
-                      <div style={{ flexShrink:0,padding:'4px 10px',borderRadius:8,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.07)',fontSize:13,fontWeight:900,color:'rgba(255,255,255,0.45)' }}>{fmt(getVal(m))}</div>
+
+                      {/* Name */}
+                      <p style={{ color:'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?13:11,lineHeight:1.2,padding:'0 10px 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:`0 0 20px ${M.glow}`,letterSpacing:'-0.01em',position:'relative',zIndex:2 }}>{data.userName||'—'}</p>
+
+                      {/* Score block */}
+                      <div style={{ textAlign:'center',padding:`4px 10px ${isFirst?18:14}px`,position:'relative',zIndex:2 }}>
+                        <p style={{ fontSize:isFirst?26:19,fontWeight:900,color:M.color,lineHeight:1,textShadow:`0 0 30px ${M.glowStrong}`,letterSpacing:'-0.03em',animation:'lb-count-up 0.5s ease 0.2s both' }}>{fmt(getVal(data))}</p>
+                        <p style={{ fontSize:7,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:`rgba(${M.colorRgb},0.45)`,marginTop:2 }}>{unit}</p>
+                      </div>
+                    </div>
+                  );
+              })}
+            </div>
+
+            {/* ── XP / PROGRESS BAR FOR #1 ── */}
+            {podium[0] && (
+              <div style={{ margin:'0 16px 16px',padding:'12px 14px',borderRadius:16,background:'linear-gradient(135deg,rgba(255,215,0,0.07),rgba(255,180,0,0.03))',border:'1px solid rgba(255,215,0,0.15)' }}>
+                <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7 }}>
+                  <div style={{ display:'flex',alignItems:'center',gap:6 }}>
+                    <Trophy style={{ width:12,height:12,color:'#FFD700' }}/>
+                    <span style={{ fontSize:10,fontWeight:900,color:'rgba(255,215,0,0.8)',letterSpacing:'0.08em',textTransform:'uppercase' }}>Current Leader</span>
+                  </div>
+                  <span style={{ fontSize:10,fontWeight:700,color:'rgba(255,255,255,0.35)' }}>{podium[0].userName}</span>
+                </div>
+                <div style={{ height:4,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden' }}>
+                  <div style={{ height:'100%',borderRadius:99,background:'linear-gradient(90deg,#FFD700,#FFA500)',width:'100%',boxShadow:'0 0 8px rgba(255,215,0,0.5)' }}/>
+                </div>
+                <div style={{ display:'flex',justifyContent:'space-between',marginTop:5 }}>
+                  <span style={{ fontSize:9,color:'rgba(255,255,255,0.2)',fontWeight:700 }}>0</span>
+                  <span style={{ fontSize:9,color:'rgba(255,215,0,0.45)',fontWeight:800 }}>RANK #1 THIS WEEK</span>
+                  <span style={{ fontSize:9,color:'rgba(255,255,255,0.2)',fontWeight:700 }}>{fmt(getVal(podium[0]))}</span>
+                </div>
+              </div>
+            )}
+
+            {/* ── DIVIDER ── */}
+            <div style={{ margin:'0 16px 12px',display:'flex',alignItems:'center',gap:10 }}>
+              <div style={{ flex:1,height:1,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.2))` }}/>
+              <span style={{ fontSize:9,fontWeight:900,letterSpacing:'0.18em',color:`rgba(${current.accentRgb},0.4)`,textTransform:'uppercase' }}>Rankings 4–10</span>
+              <div style={{ flex:1,height:1,background:`linear-gradient(90deg,rgba(${current.accentRgb},0.2),transparent)` }}/>
+            </div>
+
+            {/* ── ROWS 4-10 ── */}
+            {restList.length>0 && (
+              <div style={{ display:'flex',flexDirection:'column',gap:6,padding:'0 12px' }}>
+                {restList.map((m,i)=>{
+                  const globalRank = i+4;
+                  const pct = Math.max(3,Math.round((getVal(m)/maxVal)*100));
+                  const isHovered = hoveredRow===i;
+                  return (
+                    <div key={m.userId||i}
+                      onTouchStart={()=>setHoveredRow(i)}
+                      onTouchEnd={()=>setHoveredRow(null)}
+                      style={{
+                        ...ROW_CARD,
+                        borderRadius:16,
+                        padding:'10px 12px',
+                        display:'flex',
+                        alignItems:'center',
+                        gap:10,
+                        animation:`lb-row-in 0.28s ease ${(i+3)*0.045}s both`,
+                        position:'relative',
+                        overflow:'hidden',
+                        transition:'all 0.15s',
+                        boxShadow:isHovered?`0 0 0 1px rgba(${current.accentRgb},0.3),0 4px 20px rgba(0,0,0,0.4)`:'0 2px 12px rgba(0,0,0,0.3)',
+                      }}>
+                      {/* Shimmer */}
+                      <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.12),transparent)`,pointerEvents:'none' }}/>
+                      {/* Rank number */}
+                      <div style={{ width:30,height:30,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:RANK_COLORS[globalRank]||'rgba(255,255,255,0.25)' }}>{globalRank}</div>
+                      {/* Avatar */}
+                      <div style={{ width:38,height:38,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:900,color:`rgba(${current.accentRgb},0.9)`,background:`linear-gradient(135deg,rgba(${current.accentRgb},0.15),rgba(${current.accentRgb},0.05))`,border:`1.5px solid rgba(${current.accentRgb},0.25)`,boxShadow:`0 0 12px rgba(${current.accentRgb},0.12)` }}>
+                        {m.userAvatar
+                          ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
+                          : null}
+                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:900,color:`rgba(${current.accentRgb},0.9)` }}>{initials(m.userName)}</span>
+                      </div>
+                      {/* Name + XP bar */}
+                      <div style={{ flex:1,minWidth:0 }}>
+                        <p style={{ fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.8)',margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',letterSpacing:'-0.01em' }}>{m.userName||'—'}</p>
+                        <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.05)',overflow:'hidden' }}>
+                          <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:`linear-gradient(90deg,${current.accent},${current.accent}88)`,boxShadow:`0 0 4px rgba(${current.accentRgb},0.4)`,transition:'width 0.6s ease' }}/>
+                        </div>
+                      </div>
+                      {/* Value pill */}
+                      <div style={{ flexShrink:0,padding:'4px 10px',borderRadius:9,background:`rgba(${current.accentRgb},0.1)`,border:`1px solid rgba(${current.accentRgb},0.2)`,fontSize:13,fontWeight:900,color:current.accent,letterSpacing:'-0.02em',boxShadow:`0 0 8px rgba(${current.accentRgb},0.1)` }}>{fmt(getVal(m))}</div>
                     </div>
                   );
                 })}
               </div>
             )}
-            <p style={{ textAlign:'center',fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.14em',color:'rgba(255,255,255,0.1)',padding:'14px 0 4px' }}>
-              Ranked by {unit}
+
+            {/* Footer */}
+            <p style={{ textAlign:'center',fontSize:9,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.18em',color:'rgba(255,255,255,0.08)',padding:'20px 0 8px' }}>
+              Ranked by {unit} · Updates in real-time
             </p>
           </>)}
         </div>
