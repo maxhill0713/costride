@@ -11,7 +11,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 
-// ─── Shared styles ────────────────────────────────────────────────────────────
+// ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
   border: '1px solid rgba(255,255,255,0.07)',
@@ -21,7 +21,7 @@ const CARD = {
 
 const btnCyan = "bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 text-white font-bold rounded-full px-4 py-1.5 flex items-center gap-1.5 justify-center shadow-[0_3px_0_0_#0369a1,0_6px_16px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
-// ─── Sub-page wrapper ─────────────────────────────────────────────────────────
+// ─── Sub-page wrapper ──────────────────────────────────────────────────────────
 function SubPage({ title, onBack, action, children }) {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
@@ -41,17 +41,15 @@ function SubPage({ title, onBack, action, children }) {
   );
 }
 
-// ─── Goals sub-page ───────────────────────────────────────────────────────────
+// ─── Goals sub-page ────────────────────────────────────────────────────────────
 function GoalsPage({ currentUser, onBack }) {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const queryClient = useQueryClient();
-
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
     enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
-
   const createGoalMutation = useMutation({
     mutationFn: (data) => base44.entities.Goal.create(data),
     onMutate: async (data) => {
@@ -63,7 +61,6 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, data, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); setShowAddGoal(false); },
   });
-
   const updateGoalMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
     onMutate: async ({ id, data }) => {
@@ -75,7 +72,6 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, v, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.prev); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
   });
-
   const deleteGoalMutation = useMutation({
     mutationFn: (id) => base44.entities.Goal.delete(id),
     onMutate: async (id) => {
@@ -87,10 +83,8 @@ function GoalsPage({ currentUser, onBack }) {
     onError: (err, id, ctx) => { queryClient.setQueryData(['goals', currentUser?.id], ctx.previous); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['goals'] }); },
   });
-
   const activeGoals = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
-
   return (
     <SubPage title="Goals" onBack={onBack} action={
       <button onClick={() => setShowAddGoal(true)} className={btnCyan}><Plus className="w-3.5 h-3.5" />New Goal</button>
@@ -135,7 +129,7 @@ function GoalsPage({ currentUser, onBack }) {
   );
 }
 
-// ─── Split sub-page ───────────────────────────────────────────────────────────
+// ─── Split sub-page ────────────────────────────────────────────────────────────
 function SplitPage({ currentUser, checkIns, onBack }) {
   return (
     <SubPage title="Workout Split" onBack={onBack}>
@@ -158,8 +152,99 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   );
 }
 
-// ─── 2×2 Nav Card ────────────────────────────────────────────────────────────
-function GridCard({ label, icon: Icon, iconColor, iconBg, glowColor, accentBorder, stat, statLabel, onClick, as: As = 'button', href }) {
+// ─── Decorative SVG illustrations ─────────────────────────────────────────────
+function AnalyticsIllustration() {
+  return (
+    <svg width="120" height="96" viewBox="0 0 120 96" fill="none">
+      <rect x="8"  y="56" width="16" height="32" rx="5" fill="url(#ab1)" />
+      <rect x="30" y="38" width="16" height="50" rx="5" fill="url(#ab2)" />
+      <rect x="52" y="20" width="16" height="68" rx="5" fill="url(#ab3)" />
+      <rect x="74" y="30" width="16" height="58" rx="5" fill="url(#ab4)" />
+      <rect x="96" y="10" width="16" height="78" rx="5" fill="url(#ab5)" />
+      <polyline points="16,56 38,38 60,20 82,30 104,10" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.75" />
+      {[[16,56],[38,38],[60,20],[82,30],[104,10]].map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="3.5" fill="#e879f9" opacity="0.9" />
+      ))}
+      <defs>
+        <linearGradient id="ab1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity="0.85"/><stop offset="100%" stopColor="#7c3aed" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/><stop offset="100%" stopColor="#9333ea" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#e879f9" stopOpacity="0.9"/><stop offset="100%" stopColor="#a855f7" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/><stop offset="100%" stopColor="#7c3aed" stopOpacity="0.25"/></linearGradient>
+        <linearGradient id="ab5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f0abfc" stopOpacity="0.9"/><stop offset="100%" stopColor="#c026d3" stopOpacity="0.25"/></linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function SplitIllustration() {
+  return (
+    <svg width="120" height="96" viewBox="0 0 120 96" fill="none">
+      <rect x="42" y="42" width="36" height="12" rx="6" fill="url(#si1)" />
+      <rect x="12" y="28" width="18" height="40" rx="7" fill="url(#si2)" />
+      <rect x="30" y="34" width="12" height="28" rx="4" fill="url(#si3)" />
+      <rect x="90" y="28" width="18" height="40" rx="7" fill="url(#si2)" />
+      <rect x="78" y="34" width="12" height="28" rx="4" fill="url(#si3)" />
+      <circle cx="60" cy="48" r="5" fill="#818cf8" opacity="0.7" />
+      {[10,24,38,52,66,80,94,108].map((x, i) => (
+        <circle key={i} cx={x} cy="88" r="5"
+          fill={i < 5 ? '#6366f1' : 'rgba(99,102,241,0.18)'}
+          opacity={i < 5 ? 0.9 : 0.5}
+        />
+      ))}
+      <defs>
+        <linearGradient id="si1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
+        <linearGradient id="si2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#818cf8" stopOpacity="0.9"/><stop offset="100%" stopColor="#4338ca" stopOpacity="0.4"/></linearGradient>
+        <linearGradient id="si3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a5b4fc" stopOpacity="0.8"/><stop offset="100%" stopColor="#6366f1" stopOpacity="0.35"/></linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function GoalsIllustration() {
+  return (
+    <svg width="120" height="96" viewBox="0 0 120 96" fill="none">
+      <circle cx="60" cy="48" r="42" stroke="rgba(96,165,250,0.15)" strokeWidth="2" fill="none" />
+      <circle cx="60" cy="48" r="30" stroke="rgba(96,165,250,0.25)" strokeWidth="2" fill="none" />
+      <circle cx="60" cy="48" r="18" stroke="rgba(96,165,250,0.4)"  strokeWidth="2" fill="none" />
+      <circle cx="60" cy="48" r="8"  fill="url(#gi1)" />
+      <circle cx="60" cy="48" r="3"  fill="white" opacity="0.95" />
+      <line x1="90" y1="18" x2="66" y2="44" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" />
+      <polygon points="66,44 76,26 84,36" fill="#60a5fa" opacity="0.85" />
+      <rect x="4" y="22" width="6" height="52" rx="3" fill="rgba(59,130,246,0.12)" />
+      <rect x="4" y="48" width="6" height="26" rx="3" fill="url(#gi2)" />
+      <rect x="14" y="22" width="6" height="52" rx="3" fill="rgba(59,130,246,0.12)" />
+      <rect x="14" y="34" width="6" height="40" rx="3" fill="url(#gi2)" />
+      <defs>
+        <radialGradient id="gi1"><stop offset="0%" stopColor="#93c5fd"/><stop offset="100%" stopColor="#2563eb"/></radialGradient>
+        <linearGradient id="gi2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#60a5fa"/><stop offset="100%" stopColor="#1d4ed8"/></linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function CommunityIllustration() {
+  return (
+    <svg width="120" height="96" viewBox="0 0 120 96" fill="none">
+      <circle cx="28"  cy="30" r="11" fill="url(#ci1)" opacity="0.75" />
+      <path d="M12 76 C12 56 44 56 44 76" fill="url(#ci1)" opacity="0.55" />
+      <circle cx="60"  cy="26" r="14" fill="url(#ci2)" />
+      <path d="M38 78 C38 54 82 54 82 78" fill="url(#ci2)" opacity="0.8" />
+      <circle cx="92" cy="30" r="11" fill="url(#ci1)" opacity="0.75" />
+      <path d="M76 76 C76 56 108 56 108 76" fill="url(#ci1)" opacity="0.55" />
+      <line x1="39" y1="30" x2="46" y2="28" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.55" />
+      <line x1="74" y1="28" x2="81" y2="30" stroke="#34d399" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.55" />
+      <circle cx="60" cy="26" r="22" stroke="#34d399" strokeWidth="1" fill="none" opacity="0.2" />
+      <circle cx="60" cy="26" r="32" stroke="#34d399" strokeWidth="1" fill="none" opacity="0.1" />
+      <defs>
+        <radialGradient id="ci1"><stop offset="0%" stopColor="#6ee7b7"/><stop offset="100%" stopColor="#059669"/></radialGradient>
+        <radialGradient id="ci2"><stop offset="0%" stopColor="#a7f3d0"/><stop offset="100%" stopColor="#10b981"/></radialGradient>
+      </defs>
+    </svg>
+  );
+}
+
+// ─── Tall nav card ─────────────────────────────────────────────────────────────
+function TallCard({ label, subtitle, description, bullets, icon: Icon, iconColor, iconBg, accentColor, accentBorder, glowColor, illustration: Illustration, onClick, as: As = 'button', href }) {
   const [pressed, setPressed] = useState(false);
   const events = {
     onMouseDown: () => setPressed(true), onMouseUp: () => setPressed(false),
@@ -169,138 +254,102 @@ function GridCard({ label, icon: Icon, iconColor, iconBg, glowColor, accentBorde
 
   const inner = (
     <div
-      className="relative overflow-hidden rounded-2xl flex flex-col justify-between p-4"
+      className="relative overflow-hidden rounded-2xl p-5 w-full text-left"
       style={{
-        minHeight: '130px',
-        background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+        minHeight: 168,
+        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
         border: `1px solid ${pressed ? accentBorder : 'rgba(255,255,255,0.07)'}`,
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        transform: pressed ? 'scale(0.965)' : 'scale(1)',
-        opacity: pressed ? 0.84 : 1,
-        boxShadow: pressed ? `0 0 12px 2px ${glowColor}` : '0 2px 12px rgba(0,0,0,0.3)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        transform: pressed ? 'scale(0.977) translateY(2px)' : 'scale(1)',
+        boxShadow: pressed
+          ? `0 2px 8px rgba(0,0,0,0.5), 0 0 22px 2px ${glowColor}`
+          : `0 4px 24px rgba(0,0,0,0.4)`,
         transition: pressed
-          ? 'transform 0.08s ease, opacity 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
-          : 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+          ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
+          : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
       }}
     >
-      {/* subtle top shine */}
-      <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent)' }} />
-      {/* pressed glow */}
-      <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: `radial-gradient(circle at 25% 25%, ${glowColor} 0%, transparent 55%)`, opacity: pressed ? 0.16 : 0, transition: 'opacity 0.08s ease' }} />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
-      {/* Icon */}
-      <div className="relative w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
-        <Icon className="w-[18px] h-[18px]" style={{ color: iconColor }} />
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none rounded-2xl"
+        style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
+
+      {/* Illustration — top right */}
+      <div className="absolute top-0 right-0 pointer-events-none" style={{ transform: 'translate(6px, -2px)' }}>
+        <Illustration />
       </div>
 
-      {/* Stat + label */}
-      <div className="relative">
-        {stat !== undefined && stat !== null && (
-          <p className="text-[22px] font-black text-white leading-none">{stat}</p>
+      {/* Content */}
+      <div className="relative flex flex-col gap-2.5" style={{ maxWidth: '60%' }}>
+        {/* Icon + title */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
+            <Icon className="w-[18px] h-[18px]" style={{ color: iconColor }} />
+          </div>
+          <span className="text-[16px] font-black text-white tracking-tight">{label}</span>
+        </div>
+
+        {/* Subtitle */}
+        {subtitle && (
+          <p className="text-[12px] font-bold" style={{ color: accentColor }}>{subtitle}</p>
         )}
-        {statLabel && (
-          <p className="text-[11px] mt-0.5 font-medium leading-tight" style={{ color: 'rgba(255,255,255,0.38)' }}>{statLabel}</p>
+
+        {/* Description */}
+        {description && (
+          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>{description}</p>
         )}
-        <p className="text-[13px] font-bold text-white mt-2 leading-tight">{label}</p>
+
+        {/* Bullets */}
+        {bullets?.length > 0 && (
+          <ul className="flex flex-col gap-1.5 mt-0.5">
+            {bullets.map((b, i) => (
+              <li key={i} className="flex items-center gap-2">
+                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: accentColor, opacity: 0.7 }} />
+                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{b}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Arrow chip bottom-right */}
+      <div className="absolute bottom-4 right-4">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center"
+          style={{ background: iconBg, border: `1px solid ${accentBorder}` }}>
+          <ChevronRight className="w-4 h-4" style={{ color: iconColor }} />
+        </div>
       </div>
     </div>
   );
 
   if (As === 'link') return <Link to={href} className="block" {...events}>{inner}</Link>;
-  return <button className="w-full text-left" onClick={onClick} {...events}>{inner}</button>;
+  return <button className="w-full" onClick={onClick} {...events}>{inner}</button>;
 }
 
-// ─── Weekly Consistency Bar ───────────────────────────────────────────────────
-function WeeklyConsistency({ checkIns, weeklyGoal = 4 }) {
-  // Build last 8 weeks of data
-  const weeks = [];
-  const now = new Date();
-  for (let w = 7; w >= 0; w--) {
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay() - w * 7);
-    weekStart.setHours(0, 0, 0, 0);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 7);
-    const count = checkIns.filter(c => {
-      const d = new Date(c.check_in_date);
-      return d >= weekStart && d < weekEnd;
-    }).length;
-    weeks.push({ count, isCurrentWeek: w === 0 });
-  }
-
-  const maxCount = Math.max(...weeks.map(w => w.count), weeklyGoal, 1);
-
-  return (
-    <div className="rounded-2xl p-4" style={CARD}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-blue-400" />
-          <span className="text-[13px] font-black text-white">Weekly Consistency</span>
-        </div>
-        <span className="text-[10px] text-slate-500 font-medium">Goal: {weeklyGoal}× / week</span>
-      </div>
-      <div className="flex items-end gap-1.5 h-14">
-        {weeks.map((week, i) => {
-          const pct = Math.min(100, (week.count / maxCount) * 100);
-          const metGoal = week.count >= weeklyGoal;
-          const isThis = week.isCurrentWeek;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full rounded-t-md overflow-hidden" style={{ height: '44px', background: 'rgba(255,255,255,0.05)', position: 'relative' }}>
-                <div
-                  className="absolute bottom-0 w-full rounded-t-md transition-all duration-500"
-                  style={{
-                    height: `${pct}%`,
-                    background: isThis
-                      ? 'linear-gradient(to top, #3b82f6, #60a5fa)'
-                      : metGoal
-                        ? 'linear-gradient(to top, #1d4ed8, #3b82f6)'
-                        : 'linear-gradient(to top, rgba(99,102,241,0.4), rgba(99,102,241,0.6))',
-                  }}
-                />
-              </div>
-              <span className="text-[8px] font-bold" style={{ color: isThis ? '#60a5fa' : 'rgba(255,255,255,0.2)' }}>
-                {isThis ? 'now' : `W${i + 1}`}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      {/* Goal line label */}
-      <div className="flex items-center gap-2 mt-2.5">
-        <div className="flex-1 h-px" style={{ background: 'rgba(59,130,246,0.25)', borderTop: '1px dashed rgba(59,130,246,0.35)' }} />
-        <span className="text-[9px] text-blue-400/60 font-bold uppercase tracking-wider">Goal line</span>
-        <div className="flex-1 h-px" style={{ background: 'rgba(59,130,246,0.25)', borderTop: '1px dashed rgba(59,130,246,0.35)' }} />
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Hub ─────────────────────────────────────────────────────────────────
+// ─── Main Hub ──────────────────────────────────────────────────────────────────
 export default function Progress() {
   const [view, setView] = useState('hub');
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
-
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser.id }),
     enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
-
   const { data: workoutLogs = [] } = useQuery({
     queryKey: ['workoutLogs', currentUser?.id],
     queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }),
     enabled: !!currentUser, staleTime: 5 * 60 * 1000, placeholderData: (prev) => prev,
   });
-
   const { data: checkIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 200),
     enabled: !!currentUser, staleTime: 2 * 60 * 1000, placeholderData: (prev) => prev,
   });
-
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
@@ -308,53 +357,71 @@ export default function Progress() {
   });
 
   if (!currentUser) return null;
-
-  if (view === 'goals') return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
+  if (view === 'goals')     return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
   if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
-  if (view === 'split') return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
+  if (view === 'split')     return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
-  const activeGoals = goals.filter((g) => g.status === 'active');
+  const activeGoals    = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
-  const streak = currentUser?.current_streak || 0;
-  const longestStreak = currentUser?.longest_streak || 0;
-  const primaryGymId = currentUser?.primary_gym_id;
-  const weeklyGoal = currentUser?.weekly_goal || 4;
+  const primaryGymId   = currentUser?.primary_gym_id;
+  const weeklyGoal     = currentUser?.weekly_goal || 4;
 
-  const now = new Date();
-  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay()); weekStart.setHours(0,0,0,0);
-  const thisWeek = checkIns.filter(c => new Date(c.check_in_date) >= weekStart).length;
-  const weekPct = Math.min(100, Math.round((thisWeek / weeklyGoal) * 100));
-
-  // Month consistency % (last 30 days)
-  const monthAgo = new Date(now); monthAgo.setDate(now.getDate() - 30);
-  const monthCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= monthAgo).length;
-  const monthPct = Math.round((monthCheckIns / 30) * 100);
-
-  const gridCards = [
+  const cards = [
     {
-      id: 'split', label: 'Split',
-      icon: Dumbbell, iconColor: '#818cf8', iconBg: 'rgba(99,102,241,0.16)',
-      glowColor: 'rgba(99,102,241,0.45)', accentBorder: 'rgba(99,102,241,0.45)',
-      stat: currentUser?.workout_split ? (currentUser.custom_split_name || '—') : '—',
-      statLabel: currentUser?.workout_split ? `${weeklyGoal}× / week` : 'No split set',
+      id: 'analytics',
+      label: 'Analytics',
+      subtitle: `${workoutLogs.length} sessions logged`,
+      description: 'Dive into your performance data, track personal records, and see how your lifts have progressed over time.',
+      bullets: ['Exercise volume trends', 'Personal records', 'Muscle group breakdown'],
+      icon: BarChart3,
+      iconColor: '#e879f9',
+      iconBg: 'rgba(168,85,247,0.18)',
+      accentColor: '#d946ef',
+      accentBorder: 'rgba(168,85,247,0.45)',
+      glowColor: 'rgba(168,85,247,0.35)',
+      illustration: AnalyticsIllustration,
     },
     {
-      id: 'analytics', label: 'Analytics',
-      icon: BarChart3, iconColor: '#c084fc', iconBg: 'rgba(139,92,246,0.16)',
-      glowColor: 'rgba(139,92,246,0.45)', accentBorder: 'rgba(139,92,246,0.45)',
-      stat: workoutLogs.length, statLabel: 'sessions logged',
+      id: 'split',
+      label: 'Workout Split',
+      subtitle: currentUser?.custom_split_name || (currentUser?.workout_split ? 'Active split' : 'No split set'),
+      description: 'View your weekly training schedule, heatmap, and track which sessions you\'ve completed.',
+      bullets: ['Weekly heatmap view', 'Rest day tracking', 'Split progress'],
+      icon: Dumbbell,
+      iconColor: '#818cf8',
+      iconBg: 'rgba(99,102,241,0.18)',
+      accentColor: '#a5b4fc',
+      accentBorder: 'rgba(99,102,241,0.45)',
+      glowColor: 'rgba(99,102,241,0.35)',
+      illustration: SplitIllustration,
     },
     {
-      id: 'goals', label: 'Goals',
-      icon: Target, iconColor: '#60a5fa', iconBg: 'rgba(59,130,246,0.16)',
-      glowColor: 'rgba(59,130,246,0.45)', accentBorder: 'rgba(59,130,246,0.45)',
-      stat: activeGoals.length, statLabel: `${completedGoals.length} completed`,
+      id: 'goals',
+      label: 'Goals',
+      subtitle: `${activeGoals.length} active · ${completedGoals.length} completed`,
+      description: 'Set targets, log milestones, and track your progress toward every fitness goal you set.',
+      bullets: ['Custom targets & units', 'Milestone tracking', 'Progress reminders'],
+      icon: Target,
+      iconColor: '#60a5fa',
+      iconBg: 'rgba(59,130,246,0.18)',
+      accentColor: '#93c5fd',
+      accentBorder: 'rgba(59,130,246,0.45)',
+      glowColor: 'rgba(59,130,246,0.35)',
+      illustration: GoalsIllustration,
     },
     {
-      id: 'community', label: 'Community',
-      icon: Users, iconColor: '#34d399', iconBg: 'rgba(16,185,129,0.16)',
-      glowColor: 'rgba(16,185,129,0.45)', accentBorder: 'rgba(16,185,129,0.45)',
-      stat: gymMemberships.length, statLabel: gymMemberships.length === 1 ? 'gym joined' : 'gyms joined',
+      id: 'community',
+      label: 'Community',
+      subtitle: gymMemberships.length === 1 ? '1 gym joined' : `${gymMemberships.length} gyms joined`,
+      description: 'See the leaderboard, check who\'s training today, and stay motivated with your gym crew.',
+      bullets: ['Live check-in feed', 'Weekly leaderboard', 'Busy times chart'],
+      icon: Users,
+      iconColor: '#34d399',
+      iconBg: 'rgba(16,185,129,0.18)',
+      accentColor: '#6ee7b7',
+      accentBorder: 'rgba(16,185,129,0.45)',
+      glowColor: 'rgba(16,185,129,0.35)',
+      illustration: CommunityIllustration,
       isLink: true,
       href: primaryGymId ? createPageUrl('GymCommunity') + `?id=${primaryGymId}` : createPageUrl('Gyms'),
     },
@@ -362,149 +429,16 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-4">
-
-        <h1 className="text-xl font-black text-white tracking-tight">Progress</h1>
-
-        {/* ── Top stat row ── */}
-        <div className="grid grid-cols-3 gap-2.5">
-          {[
-            { label: 'Streak', value: streak, sub: `Best ${longestStreak}`, icon: Flame, color: '#f97316', bg: 'rgba(249,115,22,0.14)' },
-            { label: 'This Week', value: thisWeek, sub: `of ${weeklyGoal} sessions`, icon: Calendar, color: '#60a5fa', bg: 'rgba(59,130,246,0.14)' },
-            { label: 'All Time', value: checkIns.length, sub: 'check-ins', icon: Zap, color: '#a78bfa', bg: 'rgba(167,139,250,0.14)' },
-          ].map(({ label, value, sub, icon: Icon, color, bg }) => (
-            <div key={label} className="rounded-2xl p-3 flex flex-col items-center text-center" style={CARD}>
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2" style={{ background: bg }}>
-                <Icon className="w-3.5 h-3.5" style={{ color }} />
-              </div>
-              <p className="text-[22px] font-black text-white leading-none">{value}</p>
-              <p className="text-[9px] text-white/30 font-medium mt-1 leading-tight">{sub}</p>
-              <p className="text-[9px] font-bold mt-1 uppercase tracking-wider" style={{ color }}>{label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* ── This week progress bar ── */}
-        <div className="rounded-2xl p-4" style={CARD}>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[13px] font-black text-white">This Week</p>
-              <p className="text-[10px] text-white/35 mt-0.5">{thisWeek} of {weeklyGoal} sessions done</p>
-            </div>
-            <span className="text-[18px] font-black" style={{ color: weekPct >= 100 ? '#34d399' : '#60a5fa' }}>{weekPct}%</span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${weekPct}%`,
-                background: weekPct >= 100
-                  ? 'linear-gradient(90deg, #10b981, #34d399)'
-                  : 'linear-gradient(90deg, #3b82f6, #60a5fa)',
-              }}
-            />
-          </div>
-          {/* Day dots */}
-          <div className="flex gap-1.5 mt-3">
-            {['M','T','W','T','F','S','S'].map((day, i) => {
-              const dayDate = new Date(weekStart); dayDate.setDate(weekStart.getDate() + i);
-              const done = checkIns.some(c => {
-                const d = new Date(c.check_in_date);
-                return d.toDateString() === dayDate.toDateString();
-              });
-              const isToday = dayDate.toDateString() === now.toDateString();
-              const isPast = dayDate < now && !isToday;
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className="w-full h-6 rounded-md flex items-center justify-center"
-                    style={{
-                      background: done
-                        ? 'linear-gradient(135deg, #3b82f6, #60a5fa)'
-                        : isToday
-                          ? 'rgba(59,130,246,0.2)'
-                          : 'rgba(255,255,255,0.05)',
-                      border: isToday ? '1px solid rgba(59,130,246,0.5)' : '1px solid transparent',
-                    }}
-                  >
-                    {done && <div className="w-1.5 h-1.5 rounded-full bg-white opacity-90" />}
-                  </div>
-                  <span className="text-[8px] font-bold" style={{ color: isToday ? '#60a5fa' : 'rgba(255,255,255,0.2)' }}>{day}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── 2×2 nav grid ── */}
-        <div className="grid grid-cols-2 gap-3">
-          {gridCards.map((card) => (
-            <GridCard
-              key={card.id}
-              {...card}
-              as={card.isLink ? 'link' : 'button'}
-              onClick={card.isLink ? undefined : () => setView(card.id)}
-            />
-          ))}
-        </div>
-
-        {/* ── Weekly consistency chart ── */}
-        <WeeklyConsistency checkIns={checkIns} weeklyGoal={weeklyGoal} />
-
-        {/* ── Month consistency pill ── */}
-        <div className="rounded-2xl p-4" style={CARD}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-amber-400" />
-              <span className="text-[13px] font-black text-white">30-Day Consistency</span>
-            </div>
-            <span className="text-[13px] font-black" style={{ color: monthPct >= 70 ? '#34d399' : monthPct >= 40 ? '#60a5fa' : '#f97316' }}>
-              {monthPct}%
-            </span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${monthPct}%`,
-                background: monthPct >= 70
-                  ? 'linear-gradient(90deg, #10b981, #34d399)'
-                  : monthPct >= 40
-                    ? 'linear-gradient(90deg, #3b82f6, #60a5fa)'
-                    : 'linear-gradient(90deg, #f97316, #fb923c)',
-              }}
-            />
-          </div>
-          <p className="text-[10px] text-white/30 mt-2">{monthCheckIns} sessions in the last 30 days</p>
-        </div>
-
-        {/* ── Active goals preview ── */}
-        {activeGoals.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-2.5">
-              <h2 className="text-[11px] font-black text-white/40 uppercase tracking-wider">Active Goals</h2>
-              <button onClick={() => setView('goals')} className="text-[11px] text-blue-400 font-bold active:scale-95 transition-transform">View all →</button>
-            </div>
-            <div className="space-y-2">
-              {activeGoals.slice(0, 2).map((goal) => {
-                const pct = goal.target_value > 0 ? Math.min(100, Math.round((goal.current_value / goal.target_value) * 100)) : 0;
-                return (
-                  <div key={goal.id} className="rounded-2xl px-4 py-3" style={CARD}>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[13px] font-bold text-white truncate flex-1 mr-3">{goal.title}</p>
-                      <span className="text-[11px] font-black text-blue-400 flex-shrink-0">{pct}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                      <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-                    </div>
-                    <p className="text-[10px] text-white/25 mt-1.5">{goal.current_value} / {goal.target_value} {goal.unit}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
+      <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-3">
+        <h1 className="text-xl font-black text-white tracking-tight mb-1">Progress</h1>
+        {cards.map((card) => (
+          <TallCard
+            key={card.id}
+            {...card}
+            as={card.isLink ? 'link' : 'button'}
+            onClick={card.isLink ? undefined : () => setView(card.id)}
+          />
+        ))}
       </div>
     </div>
   );
