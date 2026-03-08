@@ -298,7 +298,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
 
           {/* Right: green tick — pick screen only, only if there are saved splits to pick from */}
           <div className="w-10 flex-shrink-0 flex justify-end">
-            {step === 'pick' && savedSplits.length > 0 && (
+            {step === 'pick' && (
               <button
                 onClick={() => setSelectingActive(prev => !prev)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
