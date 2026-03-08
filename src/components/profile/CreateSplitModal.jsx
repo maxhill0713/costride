@@ -1,51 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-// ─── Preset split templates ───────────────────────────────────────────────────
-// Presets with isDefault=true are read-only and can only be set as active.
-// The custom preset (isDefault=false) opens the configure screen as before.
-const PRESET_SPLITS = [
+// ─────────────────────────────────────────────────────────────────────────────
+// DEFAULT SPLITS — fully populated, read-only, 6 exercises per day
+// ─────────────────────────────────────────────────────────────────────────────
+const DEFAULT_SPLITS = [
   {
     id: 'bro',
     name: 'Bro Split',
     description: '5 days · one muscle group per day',
     icon: '💪',
     color: 'from-purple-500 to-indigo-600',
-    isDefault: true,
     days: [1, 2, 3, 4, 5],
     workouts: {
       1: { name: 'Chest', color: 'blue', exercises: [
-        { exercise: 'Barbell Bench Press', sets: '4', reps: '8', weight: '' },
-        { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Dips', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Barbell Bench Press',    sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Fly',              sets: '3', reps: '12', weight: '' },
+        { exercise: 'Dips',                   sets: '3', reps: '10', weight: '' },
+        { exercise: 'Push-Ups',               sets: '3', reps: '15', weight: '' },
+        { exercise: 'Pec Deck',               sets: '3', reps: '12', weight: '' },
       ]},
       2: { name: 'Back', color: 'purple', exercises: [
-        { exercise: 'Deadlift', sets: '4', reps: '6', weight: '' },
-        { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' },
-        { exercise: 'Barbell Row', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Lat Pulldown', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Deadlift',         sets: '4', reps: '5',  weight: '' },
+        { exercise: 'Pull-Ups',         sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Barbell Row',      sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Lat Pulldown',     sets: '3', reps: '12', weight: '' },
+        { exercise: 'Cable Row',        sets: '3', reps: '12', weight: '' },
+        { exercise: 'Dumbbell Row',     sets: '3', reps: '10', weight: '' },
       ]},
       3: { name: 'Shoulders', color: 'cyan', exercises: [
-        { exercise: 'Overhead Press', sets: '4', reps: '8', weight: '' },
-        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
-        { exercise: 'Front Raises', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Face Pulls', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Overhead Press',          sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Dumbbell Lateral Raise',  sets: '4', reps: '15', weight: '' },
+        { exercise: 'Front Raises',            sets: '3', reps: '12', weight: '' },
+        { exercise: 'Face Pulls',              sets: '3', reps: '15', weight: '' },
+        { exercise: 'Arnold Press',            sets: '3', reps: '10', weight: '' },
+        { exercise: 'Shrugs',                  sets: '3', reps: '15', weight: '' },
       ]},
       4: { name: 'Arms', color: 'pink', exercises: [
-        { exercise: 'Barbell Curl', sets: '4', reps: '10', weight: '' },
-        { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Skull Crushers', sets: '4', reps: '10', weight: '' },
-        { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Barbell Curl',      sets: '4', reps: '10', weight: '' },
+        { exercise: 'Hammer Curls',      sets: '3', reps: '12', weight: '' },
+        { exercise: 'Incline Curl',      sets: '3', reps: '12', weight: '' },
+        { exercise: 'Skull Crushers',    sets: '4', reps: '10', weight: '' },
+        { exercise: 'Tricep Pushdown',   sets: '3', reps: '12', weight: '' },
+        { exercise: 'Overhead Tricep',   sets: '3', reps: '12', weight: '' },
       ]},
       5: { name: 'Legs', color: 'green', exercises: [
-        { exercise: 'Barbell Squat', sets: '4', reps: '8', weight: '' },
-        { exercise: 'Romanian Deadlift', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Leg Press', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+        { exercise: 'Barbell Squat',     sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Romanian Deadlift', sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Leg Press',         sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Curl',          sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Extension',     sets: '3', reps: '15', weight: '' },
+        { exercise: 'Calf Raises',       sets: '4', reps: '20', weight: '' },
       ]},
     },
   },
@@ -55,33 +64,39 @@ const PRESET_SPLITS = [
     description: '4 days · upper & lower alternating',
     icon: '⚡',
     color: 'from-blue-500 to-cyan-500',
-    isDefault: true,
     days: [1, 2, 4, 5],
     workouts: {
       1: { name: 'Upper A', color: 'blue', exercises: [
-        { exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' },
-        { exercise: 'Barbell Row', sets: '4', reps: '6', weight: '' },
-        { exercise: 'Overhead Press', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Pull-Ups', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Barbell Bench Press',   sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Barbell Row',           sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Overhead Press',        sets: '3', reps: '8',  weight: '' },
+        { exercise: 'Pull-Ups',              sets: '3', reps: '8',  weight: '' },
+        { exercise: 'Lateral Raises',        sets: '3', reps: '15', weight: '' },
+        { exercise: 'Tricep Pushdown',       sets: '3', reps: '12', weight: '' },
       ]},
       2: { name: 'Lower A', color: 'green', exercises: [
-        { exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' },
-        { exercise: 'Romanian Deadlift', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Leg Press', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Barbell Squat',         sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Romanian Deadlift',     sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Leg Press',             sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Curl',              sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Extension',         sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises',           sets: '4', reps: '20', weight: '' },
       ]},
       4: { name: 'Upper B', color: 'cyan', exercises: [
-        { exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' },
-        { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' },
-        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
-        { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Incline Dumbbell Press',   sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Row',                sets: '4', reps: '10', weight: '' },
+        { exercise: 'Dumbbell Shoulder Press',  sets: '3', reps: '10', weight: '' },
+        { exercise: 'Lat Pulldown',             sets: '3', reps: '12', weight: '' },
+        { exercise: 'Barbell Curl',             sets: '3', reps: '12', weight: '' },
+        { exercise: 'Skull Crushers',           sets: '3', reps: '12', weight: '' },
       ]},
       5: { name: 'Lower B', color: 'purple', exercises: [
-        { exercise: 'Deadlift', sets: '4', reps: '5', weight: '' },
-        { exercise: 'Bulgarian Split Squat', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+        { exercise: 'Deadlift',               sets: '4', reps: '5',  weight: '' },
+        { exercise: 'Bulgarian Split Squat',  sets: '3', reps: '10', weight: '' },
+        { exercise: 'Hack Squat',             sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Curl',               sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Extension',          sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises',            sets: '4', reps: '20', weight: '' },
       ]},
     },
   },
@@ -91,50 +106,55 @@ const PRESET_SPLITS = [
     description: '6 days · PPL ×2',
     icon: '🔄',
     color: 'from-cyan-500 to-teal-500',
-    isDefault: true,
     days: [1, 2, 3, 5, 6, 7],
     workouts: {
       1: { name: 'Push A', color: 'orange', exercises: [
-        { exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' },
-        { exercise: 'Overhead Press', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Barbell Bench Press',    sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Overhead Press',         sets: '4', reps: '8',  weight: '' },
         { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
-        { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Cable Fly',              sets: '3', reps: '12', weight: '' },
+        { exercise: 'Lateral Raises',         sets: '3', reps: '15', weight: '' },
+        { exercise: 'Tricep Pushdown',        sets: '3', reps: '12', weight: '' },
       ]},
       2: { name: 'Pull A', color: 'blue', exercises: [
-        { exercise: 'Deadlift', sets: '4', reps: '5', weight: '' },
-        { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' },
-        { exercise: 'Barbell Row', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Face Pulls', sets: '3', reps: '15', weight: '' },
-        { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Deadlift',      sets: '4', reps: '5',  weight: '' },
+        { exercise: 'Pull-Ups',      sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Barbell Row',   sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Face Pulls',    sets: '3', reps: '15', weight: '' },
+        { exercise: 'Barbell Curl',  sets: '3', reps: '12', weight: '' },
+        { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' },
       ]},
       3: { name: 'Legs A', color: 'green', exercises: [
-        { exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' },
-        { exercise: 'Romanian Deadlift', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Leg Press', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+        { exercise: 'Barbell Squat',     sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Romanian Deadlift', sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Leg Press',         sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Curl',          sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Extension',     sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises',       sets: '4', reps: '20', weight: '' },
       ]},
       5: { name: 'Push B', color: 'orange', exercises: [
-        { exercise: 'Incline Barbell Press', sets: '4', reps: '8', weight: '' },
-        { exercise: 'Dumbbell Shoulder Press', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
-        { exercise: 'Skull Crushers', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Incline Barbell Press',   sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Dumbbell Shoulder Press', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Fly',               sets: '3', reps: '12', weight: '' },
+        { exercise: 'Lateral Raises',          sets: '4', reps: '15', weight: '' },
+        { exercise: 'Skull Crushers',          sets: '3', reps: '12', weight: '' },
+        { exercise: 'Overhead Tricep',         sets: '3', reps: '12', weight: '' },
       ]},
       6: { name: 'Pull B', color: 'blue', exercises: [
-        { exercise: 'Lat Pulldown', sets: '4', reps: '10', weight: '' },
-        { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' },
-        { exercise: 'Dumbbell Row', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Lat Pulldown',  sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Row',     sets: '4', reps: '10', weight: '' },
+        { exercise: 'Dumbbell Row',  sets: '3', reps: '10', weight: '' },
         { exercise: 'Rear Delt Fly', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Incline Curl',  sets: '3', reps: '12', weight: '' },
         { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' },
       ]},
       7: { name: 'Legs B', color: 'green', exercises: [
-        { exercise: 'Front Squat', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Front Squat',           sets: '4', reps: '8',  weight: '' },
         { exercise: 'Bulgarian Split Squat', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' },
-        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+        { exercise: 'Hack Squat',            sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Curl',              sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Extension',         sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises',           sets: '4', reps: '20', weight: '' },
       ]},
     },
   },
@@ -144,41 +164,39 @@ const PRESET_SPLITS = [
     description: '3 days · total body each session',
     icon: '🏋️',
     color: 'from-emerald-500 to-green-600',
-    isDefault: true,
     days: [1, 3, 5],
     workouts: {
       1: { name: 'Full Body A', color: 'green', exercises: [
-        { exercise: 'Barbell Squat', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Barbell Bench Press', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Barbell Row', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Overhead Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Barbell Squat',       sets: '4', reps: '6',  weight: '' },
+        { exercise: 'Barbell Bench Press', sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Barbell Row',         sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Overhead Press',      sets: '3', reps: '10', weight: '' },
+        { exercise: 'Barbell Curl',        sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises',         sets: '3', reps: '15', weight: '' },
       ]},
       3: { name: 'Full Body B', color: 'cyan', exercises: [
-        { exercise: 'Deadlift', sets: '3', reps: '6', weight: '' },
-        { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Pull-Ups', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Deadlift',               sets: '4', reps: '5',  weight: '' },
+        { exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Pull-Ups',               sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Dumbbell Shoulder Press',sets: '3', reps: '10', weight: '' },
+        { exercise: 'Tricep Pushdown',        sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Curl',               sets: '3', reps: '12', weight: '' },
       ]},
       5: { name: 'Full Body C', color: 'blue', exercises: [
-        { exercise: 'Front Squat', sets: '3', reps: '8', weight: '' },
-        { exercise: 'Dumbbell Bench Press', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Cable Row', sets: '3', reps: '10', weight: '' },
-        { exercise: 'Dumbbell Shoulder Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Front Squat',           sets: '4', reps: '8',  weight: '' },
+        { exercise: 'Dumbbell Bench Press',  sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Row',             sets: '4', reps: '10', weight: '' },
+        { exercise: 'Lateral Raises',        sets: '3', reps: '15', weight: '' },
+        { exercise: 'Hammer Curls',         sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises',           sets: '3', reps: '20', weight: '' },
       ]},
     },
   },
-  {
-    id: 'custom',
-    name: 'Custom Split',
-    description: 'Build your own from scratch',
-    icon: '✏️',
-    color: 'from-slate-600 to-slate-700',
-    isDefault: false,
-    days: [],
-    workouts: {},
-  },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
 const COLOR_OPTIONS = [
   { value: 'blue',   gradient: 'from-blue-500 to-blue-600' },
   { value: 'purple', gradient: 'from-purple-500 to-purple-600' },
@@ -189,122 +207,112 @@ const COLOR_OPTIONS = [
   { value: 'red',    gradient: 'from-red-500 to-red-600' },
   { value: 'yellow', gradient: 'from-yellow-400 to-yellow-500' },
 ];
-
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
 function colorGradient(c) {
   return COLOR_OPTIONS.find(o => o.value === c)?.gradient || 'from-blue-500 to-blue-600';
 }
-
 const INPUT_BASE = { fontSize: '16px', WebkitAppearance: 'none', MozAppearance: 'textfield' };
 
 function SmallInput({ value, onChange, placeholder }) {
   return (
     <input
-      type="text"
-      inputMode="decimal"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
+      type="text" inputMode="decimal" value={value}
+      onChange={e => onChange(e.target.value)} placeholder={placeholder}
       style={INPUT_BASE}
       className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
     />
   );
 }
 
-export default function CreateSplitModal({ isOpen, onClose, currentUser, openToEdit = false }) {
-  const [step, setStep] = useState('pick');
-  const [selectedPreset, setSelectedPreset] = useState(null);
-  const [splitName, setSplitName] = useState('');
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [workouts, setWorkouts] = useState({});
-  const [selectingActive, setSelectingActive] = useState(false);
-  const [previewPreset, setPreviewPreset] = useState(null); // read-only preview for default splits
+// ─────────────────────────────────────────────────────────────────────────────
+// READ-ONLY DAY CARD — mirrors the custom configure card but locked
+// ─────────────────────────────────────────────────────────────────────────────
+function ReadOnlyDayCard({ day, workout }) {
+  const grad = colorGradient(workout.color);
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
+        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center flex-shrink-0 shadow`}>
+          <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
+        </div>
+        <p className="flex-1 text-white text-[14px] font-bold">{workout.name}</p>
+        <Lock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+      </div>
 
-  // ── Own local state for saved splits and active name ──────────────────────
-  // These are seeded from the prop on open but then managed independently
-  // so they don't depend on the parent re-rendering with a new currentUser prop.
+      {/* Colour swatches — display only */}
+      <div className="flex gap-1.5 px-4 pb-3">
+        {COLOR_OPTIONS.map(c => (
+          <div key={c.value}
+            className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} ${
+              workout.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-20'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Exercise table — same columns as configure, but plain text */}
+      {workout.exercises?.length > 0 && (
+        <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
+          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
+          </div>
+          {workout.exercises.map((ex, idx) => (
+            <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
+              <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
+              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.sets}</p>
+              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.reps}</p>
+              <p className="text-[13px] text-slate-500 text-center">—</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Lock label */}
+      <div className="px-4 pb-3.5 pt-2">
+        <p className="text-[11px] text-slate-600 font-bold flex items-center gap-1.5">
+          <Lock className="w-3 h-3" /> Read-only — set as active below
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
+  // step: 'pick' | 'preview' | 'configure'
+  const [step, setStep]               = useState('pick');
+  const [previewSplit, setPreviewSplit] = useState(null); // DEFAULT_SPLITS entry
+  const [splitName, setSplitName]     = useState('');
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [workouts, setWorkouts]       = useState({});
+  const [selectingActive, setSelectingActive] = useState(false);
   const [savedSplits, setSavedSplits] = useState([]);
-  const [activeName, setActiveName] = useState('');
+  const [activeName, setActiveName]   = useState('');
 
   const queryClient = useQueryClient();
 
-  // Seed local state whenever the modal opens
   useEffect(() => {
     if (!isOpen) return;
     setSavedSplits(currentUser?.saved_splits || []);
     setActiveName(currentUser?.custom_split_name || '');
     setStep('pick');
-    setSelectedPreset(null);
+    setPreviewSplit(null);
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
     setSelectingActive(false);
-    setPreviewPreset(null);
   }, [isOpen]);
 
   const activeSaved = savedSplits.find(s => s.name === activeName);
-  const otherSaved = savedSplits.filter(s => s.name !== activeName);
+  const otherSaved  = savedSplits.filter(s => s.name !== activeName);
 
-  // ── Navigation ────────────────────────────────────────────────────────────
-  const loadSavedSplit = (split) => {
-    const preset = PRESET_SPLITS.find(p => p.id === split.preset_id) || PRESET_SPLITS[4];
-    setSelectedPreset(preset);
-    setSplitName(split.name || '');
-    setSelectedDays(split.training_days || []);
-    setWorkouts(split.workouts || {});
-    setStep('configure');
-  };
-
-  const selectPreset = (preset) => {
-    if (preset.isDefault) {
-      // Read-only preview — don't go to configure
-      setPreviewPreset(preset);
-      return;
-    }
-    // Custom split → open configure screen as before
-    setSelectedPreset(preset);
-    setSplitName('');
-    setSelectedDays([]);
-    setWorkouts({});
-    setStep('configure');
-  };
-
-  // ── Day / exercise helpers ────────────────────────────────────────────────
-  const toggleDay = (dayNum) => {
-    if (selectedDays.includes(dayNum)) {
-      setSelectedDays(prev => prev.filter(d => d !== dayNum));
-      setWorkouts(prev => { const n = { ...prev }; delete n[dayNum]; return n; });
-    } else {
-      setSelectedDays(prev => [...prev, dayNum].sort((a, b) => a - b));
-      setWorkouts(prev => ({ ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } }));
-    }
-  };
-
-  const updateWorkout = (day, field, value) =>
-    setWorkouts(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
-
-  const addExercise = (day) =>
-    setWorkouts(prev => ({
-      ...prev,
-      [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), { exercise: '', sets: '3', reps: '10', weight: '' }] },
-    }));
-
-  const updateExercise = (day, idx, field, value) =>
-    setWorkouts(prev => {
-      const exs = [...(prev[day]?.exercises || [])];
-      exs[idx] = { ...exs[idx], [field]: value };
-      return { ...prev, [day]: { ...prev[day], exercises: exs } };
-    });
-
-  const removeExercise = (day, idx) =>
-    setWorkouts(prev => {
-      const exs = [...(prev[day]?.exercises || [])];
-      exs.splice(idx, 1);
-      return { ...prev, [day]: { ...prev[day], exercises: exs } };
-    });
-
-  // ── Mutations ─────────────────────────────────────────────────────────────
+  // ── Mutations ──────────────────────────────────────────────────────────────
   const saveMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
@@ -316,44 +324,56 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
 
   const setActiveMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: () => {
-      // Force a full refetch so Profile.jsx picks up the new active split
-      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' });
-    },
-    onError: () => {
-      toast.error('Failed to update — please try again');
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' }),
+    onError: () => toast.error('Failed to update — please try again'),
   });
 
-  const handleSave = () => {
-    const newSplit = {
-      id: Date.now().toString(),
-      preset_id: selectedPreset?.id || 'custom',
-      name: splitName || selectedPreset?.name || 'My Split',
-      training_days: selectedDays,
-      workouts,
-      created_at: new Date().toISOString(),
-    };
-    const updated = [...savedSplits.filter(s => s.name !== newSplit.name), newSplit];
-    setSavedSplits(updated);
-    saveMutation.mutate({
-      workout_split: selectedPreset?.id || 'custom',
-      custom_split_name: newSplit.name,
-      training_days: selectedDays,
-      custom_workout_types: workouts,
-      saved_splits: updated,
-    });
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  const handleBack = () => {
+    if (step === 'preview' || step === 'configure') {
+      setStep('pick');
+      setPreviewSplit(null);
+      setSelectingActive(false);
+    } else {
+      onClose();
+    }
   };
 
-  // Sets a split as active — updates local state immediately so UI responds
-  // instantly without waiting for API or prop update from parent.
+  // Tap a saved split card in pick screen
+  const openSavedSplit = (split) => {
+    // If it's a default split, show the read-only preview using the DEFAULT_SPLITS data
+    const def = DEFAULT_SPLITS.find(d => d.id === split.preset_id);
+    if (def) {
+      setPreviewSplit(def);
+      setStep('preview');
+    } else {
+      // Custom — open editable configure screen
+      setSplitName(split.name || '');
+      setSelectedDays(split.training_days || []);
+      setWorkouts(split.workouts || {});
+      setStep('configure');
+    }
+  };
+
+  // Tap a default template in the template list
+  const openDefaultPreview = (def) => {
+    setPreviewSplit(def);
+    setStep('preview');
+  };
+
+  // Tap Custom Split
+  const openCustomConfigure = () => {
+    setSplitName('');
+    setSelectedDays([]);
+    setWorkouts({});
+    setStep('configure');
+  };
+
+  // Set active from pick screen (selectingActive mode)
   const handlePickActive = (split) => {
-    // 1. Update local UI immediately
     setActiveName(split.name);
     setSelectingActive(false);
     toast.success(`"${split.name}" set as active!`);
-    // 2. Persist to server — include saved_splits so the full user object
-    //    stays consistent and the parent re-render doesn't clobber our change.
     setActiveMutation.mutate({
       workout_split: split.preset_id || 'custom',
       custom_split_name: split.name,
@@ -363,19 +383,83 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     });
   };
 
+  // Set active from the preview screen
+  const handleSetDefaultActive = () => {
+    if (!previewSplit) return;
+    const split = {
+      id: previewSplit.id,
+      preset_id: previewSplit.id,
+      name: previewSplit.name,
+      training_days: previewSplit.days,
+      workouts: previewSplit.workouts,
+      created_at: new Date().toISOString(),
+    };
+    const updated = [...savedSplits.filter(s => s.id !== split.id), split];
+    setSavedSplits(updated);
+    setActiveName(split.name);
+    toast.success(`"${split.name}" set as active!`);
+    setStep('pick');
+    setPreviewSplit(null);
+    setActiveMutation.mutate({
+      workout_split: split.preset_id,
+      custom_split_name: split.name,
+      training_days: split.training_days,
+      custom_workout_types: split.workouts,
+      saved_splits: updated,
+    });
+  };
+
+  // Save a custom split
+  const handleSave = () => {
+    const newSplit = {
+      id: Date.now().toString(),
+      preset_id: 'custom',
+      name: splitName || 'My Split',
+      training_days: selectedDays,
+      workouts,
+      created_at: new Date().toISOString(),
+    };
+    const updated = [...savedSplits.filter(s => s.name !== newSplit.name), newSplit];
+    setSavedSplits(updated);
+    saveMutation.mutate({
+      workout_split: 'custom',
+      custom_split_name: newSplit.name,
+      training_days: selectedDays,
+      custom_workout_types: workouts,
+      saved_splits: updated,
+    });
+  };
+
   const deleteSavedSplit = (splitId, e) => {
     e.stopPropagation();
+    const deleted = savedSplits.find(s => s.id === splitId);
     const updated = savedSplits.filter(s => s.id !== splitId);
     setSavedSplits(updated);
-    // If we deleted the active one, clear active name
-    const deleted = savedSplits.find(s => s.id === splitId);
     if (deleted?.name === activeName) setActiveName('');
     saveMutation.mutate({ saved_splits: updated });
   };
 
-  const canSave = selectedDays.length > 0;
-  const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
+  // ── Custom configure helpers ───────────────────────────────────────────────
+  const toggleDay = (dayNum) => {
+    if (selectedDays.includes(dayNum)) {
+      setSelectedDays(prev => prev.filter(d => d !== dayNum));
+      setWorkouts(prev => { const n = { ...prev }; delete n[dayNum]; return n; });
+    } else {
+      setSelectedDays(prev => [...prev, dayNum].sort((a, b) => a - b));
+      setWorkouts(prev => ({ ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } }));
+    }
+  };
+  const updateWorkout  = (day, field, value) => setWorkouts(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
+  const addExercise    = (day) => setWorkouts(prev => ({ ...prev, [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), { exercise: '', sets: '3', reps: '10', weight: '' }] } }));
+  const updateExercise = (day, idx, field, value) => setWorkouts(prev => { const exs = [...(prev[day]?.exercises || [])]; exs[idx] = { ...exs[idx], [field]: value }; return { ...prev, [day]: { ...prev[day], exercises: exs } }; });
+  const removeExercise = (day, idx) => setWorkouts(prev => { const exs = [...(prev[day]?.exercises || [])]; exs.splice(idx, 1); return { ...prev, [day]: { ...prev[day], exercises: exs } }; });
+
+  // ── Styles ─────────────────────────────────────────────────────────────────
+  const btnPrimary   = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
+  const btnGreen     = "bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#065f46,0_6px_20px_rgba(16,185,129,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
+
+  const headerTitle = step === 'preview' ? previewSplit?.name : step === 'configure' ? 'Custom Split' : 'My Splits';
 
   if (!isOpen) return null;
 
@@ -385,86 +469,69 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
 
         {/* ── HEADER ── */}
         <div className="flex items-center px-4 py-4 border-b border-slate-700/40 flex-shrink-0">
-
-          {/* Left: bare chevron */}
           <div className="w-10 flex-shrink-0">
-            <button
-              onClick={() => {
-                if (previewPreset) { setPreviewPreset(null); }
-                else if (step === 'configure') { setStep('pick'); setSelectingActive(false); }
-                else { onClose(); }
-              }}
-              className="flex items-center justify-center active:scale-90 transition-transform"
-            >
+            <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
               <ChevronLeft className="w-6 h-6 text-slate-300" />
             </button>
           </div>
-
-          {/* Centre: title */}
           <div className="flex-1 flex justify-center">
-            <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">
-              {previewPreset ? previewPreset.name : step === 'pick' ? 'My Splits' : (splitName || selectedPreset?.name || 'Configure Split')}
-            </h2>
+            <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
-
-          {/* Right: green tick — pick screen only, only if there are saved splits to pick from */}
           <div className="w-10 flex-shrink-0 flex justify-end">
-            {step === 'pick' && !previewPreset && (
+            {step === 'pick' && (
               <button
                 onClick={() => setSelectingActive(prev => !prev)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
                   bg-gradient-to-b from-emerald-400 to-emerald-600
                   shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
                   active:shadow-none active:translate-y-[3px] active:scale-90
-                  ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}
-                `}
+                  ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}`}
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
               </button>
             )}
+            {step === 'preview' && (
+              <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800/60">
+                <Lock className="w-4 h-4 text-slate-500" />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Selecting-active hint banner */}
-        {step === 'pick' && selectingActive && !previewPreset && (
+        {/* Selecting-active hint */}
+        {step === 'pick' && selectingActive && (
           <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-            <p className="text-[11px] font-bold text-emerald-400">Tap any split below to make it your active one</p>
+            <p className="text-[11px] font-bold text-emerald-400">Tap any saved split to make it your active one</p>
           </div>
         )}
 
         {/* ── SCROLLABLE BODY ── */}
         <div className="overflow-y-auto flex-1 pb-4">
 
-          {/* ════ STEP 1 — PICK ════ */}
-          {!previewPreset && step === 'pick' && (
+          {/* ════ PICK ════ */}
+          {step === 'pick' && (
             <div className="p-4 space-y-2">
 
               {/* Active saved split */}
               {activeSaved && (() => {
-                const preset = PRESET_SPLITS.find(p => p.id === activeSaved.preset_id) || PRESET_SPLITS[4];
+                const def   = DEFAULT_SPLITS.find(d => d.id === activeSaved.preset_id);
+                const icon  = def?.icon  || '✏️';
+                const color = def?.color || 'from-slate-600 to-slate-700';
                 return (
                   <div
-                    onClick={() => selectingActive ? handlePickActive(activeSaved) : loadSavedSplit(activeSaved)}
+                    onClick={() => selectingActive ? handlePickActive(activeSaved) : openSavedSplit(activeSaved)}
                     className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
-                    style={{
-                      background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))',
-                      border: '2px solid rgba(16,185,129,0.55)',
-                      boxShadow: '0 0 16px rgba(16,185,129,0.08)',
-                    }}
+                    style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))', border: '2px solid rgba(16,185,129,0.55)', boxShadow: '0 0 16px rgba(16,185,129,0.08)' }}
                   >
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${preset.color} flex items-center justify-center text-lg shadow flex-shrink-0`}>
-                      {preset.icon}
-                    </div>
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-lg shadow flex-shrink-0`}>{icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-[13px] font-black text-white truncate">{activeSaved.name}</p>
                         <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        {(activeSaved.training_days || []).map(d => (
-                          <span key={d} className="text-[9px] font-bold text-slate-400">{DAY_NAMES[d - 1]}</span>
-                        ))}
+                        {(activeSaved.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-400">{DAY_NAMES[d - 1]}</span>)}
                         <span className="text-[9px] text-slate-500">· {(activeSaved.training_days || []).length} days</span>
                       </div>
                     </div>
@@ -475,12 +542,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                     ) : (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25 pointer-events-none">
-                          <Edit2 className="w-3.5 h-3.5 text-emerald-400" />
+                          {def ? <Lock className="w-3.5 h-3.5 text-emerald-400" /> : <Edit2 className="w-3.5 h-3.5 text-emerald-400" />}
                         </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteSavedSplit(activeSaved.id, e); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
-                        >
+                        <button onClick={(e) => deleteSavedSplit(activeSaved.id, e)} className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors">
                           <Trash2 className="w-3.5 h-3.5 text-slate-500" />
                         </button>
                       </div>
@@ -491,26 +555,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
 
               {/* Other saved splits */}
               {otherSaved.map((split) => {
-                const preset = PRESET_SPLITS.find(p => p.id === split.preset_id) || PRESET_SPLITS[4];
+                const def   = DEFAULT_SPLITS.find(d => d.id === split.preset_id);
+                const icon  = def?.icon  || '✏️';
+                const color = def?.color || 'from-slate-600 to-slate-700';
                 return (
                   <div
                     key={split.id}
-                    onClick={() => selectingActive ? handlePickActive(split) : loadSavedSplit(split)}
+                    onClick={() => selectingActive ? handlePickActive(split) : openSavedSplit(split)}
                     className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
-                    style={{
-                      background: 'rgba(15,20,40,0.7)',
-                      border: selectingActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.06)',
-                    }}
+                    style={{ background: 'rgba(15,20,40,0.7)', border: selectingActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
                   >
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${preset.color} flex items-center justify-center text-lg shadow flex-shrink-0`}>
-                      {preset.icon}
-                    </div>
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-lg shadow flex-shrink-0`}>{icon}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-black text-white truncate">{split.name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        {(split.training_days || []).map(d => (
-                          <span key={d} className="text-[9px] font-bold text-slate-500">{DAY_NAMES[d - 1]}</span>
-                        ))}
+                        {(split.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-500">{DAY_NAMES[d - 1]}</span>)}
                         <span className="text-[9px] text-slate-600">· {(split.training_days || []).length} days</span>
                       </div>
                     </div>
@@ -519,12 +578,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                     ) : (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 pointer-events-none">
-                          <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                          {def ? <Lock className="w-3.5 h-3.5 text-slate-400" /> : <Edit2 className="w-3.5 h-3.5 text-slate-400" />}
                         </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteSavedSplit(split.id, e); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
-                        >
+                        <button onClick={(e) => deleteSavedSplit(split.id, e)} className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors">
                           <Trash2 className="w-3.5 h-3.5 text-slate-500" />
                         </button>
                       </div>
@@ -533,53 +589,79 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 );
               })}
 
-              {/* Preset templates */}
-              {PRESET_SPLITS.map((preset) => (
+              {/* Default split templates */}
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Default Splits</p>
+              {DEFAULT_SPLITS.map((def) => (
                 <div
-                  key={preset.id}
-                  onClick={() => { if (!selectingActive) selectPreset(preset); }}
+                  key={def.id}
+                  onClick={() => { if (!selectingActive) openDefaultPreview(def); }}
                   className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}
-                  style={{
-                    background: 'rgba(15,20,40,0.7)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                  }}
+                  style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${preset.color} flex items-center justify-center text-xl shadow-lg flex-shrink-0`}>
-                    {preset.icon}
-                  </div>
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${def.color} flex items-center justify-center text-xl shadow-lg flex-shrink-0`}>{def.icon}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-black text-white">{preset.name}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{preset.description}</p>
-                    {preset.days.length > 0 && (
-                      <div className="flex gap-1 mt-1.5 flex-wrap">
-                        {preset.days.map(d => (
-                          <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${preset.color} text-white opacity-70`}>
-                            {DAY_NAMES[d - 1]}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <p className="text-[14px] font-black text-white">{def.name}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">{def.description}</p>
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                      {def.days.map(d => (
+                        <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-70`}>{DAY_NAMES[d - 1]}</span>
+                      ))}
+                    </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
                 </div>
               ))}
 
+              {/* Custom split */}
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Custom</p>
+              <div
+                onClick={() => { if (!selectingActive) openCustomConfigure(); }}
+                className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}
+                style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xl shadow-lg flex-shrink-0">✏️</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-black text-white">Custom Split</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Build your own from scratch</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+              </div>
+
             </div>
           )}
 
-          {/* ════ STEP 2 — CONFIGURE ════ */}
-          {!previewPreset && step === 'configure' && (
-            <div className="p-4 space-y-4">
+          {/* ════ PREVIEW — read-only default split ════ */}
+          {step === 'preview' && previewSplit && (
+            <div className="p-4 space-y-3">
+              {/* Summary bar */}
+              <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span className="text-3xl">{previewSplit.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
+                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                    {previewSplit.days.map(d => (
+                      <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              {/* One read-only card per training day */}
+              {previewSplit.days.map(day => {
+                const wt = previewSplit.workouts[day];
+                if (!wt) return null;
+                return <ReadOnlyDayCard key={day} day={day} workout={wt} />;
+              })}
+            </div>
+          )}
 
+          {/* ════ CONFIGURE — custom split ════ */}
+          {step === 'configure' && (
+            <div className="p-4 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
                 <input
-                  type="text"
-                  value={splitName}
-                  onChange={(e) => setSplitName(e.target.value.slice(0, 30))}
-                  placeholder={selectedPreset?.name || 'My Training Split'}
-                  maxLength={30}
-                  style={{ fontSize: '16px' }}
+                  type="text" value={splitName} onChange={(e) => setSplitName(e.target.value.slice(0, 30))}
+                  placeholder="My Training Split" maxLength={30} style={{ fontSize: '16px' }}
                   className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors"
                 />
               </div>
@@ -588,27 +670,19 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Training Days</label>
                 <div className="grid grid-cols-7 gap-1.5">
                   {DAY_NAMES.map((name, i) => {
-                    const d = i + 1;
-                    const on = selectedDays.includes(d);
+                    const d = i + 1; const on = selectedDays.includes(d);
                     return (
-                      <button
-                        key={d}
-                        onClick={() => toggleDay(d)}
+                      <button key={d} onClick={() => toggleDay(d)}
                         className={`flex flex-col items-center gap-0.5 py-2.5 rounded-xl border-2 font-bold text-[10px] transition-all active:scale-90 ${
-                          on
-                            ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/50 text-white shadow-[0_2px_0_0_#1a3fa8]'
-                            : 'bg-slate-900/60 border-slate-700/40 text-slate-600'
-                        }`}
+                          on ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/50 text-white shadow-[0_2px_0_0_#1a3fa8]'
+                             : 'bg-slate-900/60 border-slate-700/40 text-slate-600'}`}
                       >
-                        {name}
-                        {on && <div className="w-1 h-1 rounded-full bg-blue-200 opacity-70" />}
+                        {name}{on && <div className="w-1 h-1 rounded-full bg-blue-200 opacity-70" />}
                       </button>
                     );
                   })}
                 </div>
-                <p className="text-[10px] text-slate-600 font-medium">
-                  {selectedDays.length} training · {7 - selectedDays.length} rest
-                </p>
+                <p className="text-[10px] text-slate-600 font-medium">{selectedDays.length} training · {7 - selectedDays.length} rest</p>
               </div>
 
               {selectedDays.length > 0 && (
@@ -618,38 +692,23 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                     const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
                     const exs = wt.exercises || [];
                     return (
-                      <div
-                        key={day}
-                        className="rounded-2xl overflow-hidden"
-                        style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
-                      >
+                      <div key={day} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
                         <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
                           <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
                             <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
                           </div>
-                          <input
-                            type="text"
-                            value={wt.name || ''}
-                            onChange={(e) => updateWorkout(day, 'name', e.target.value.slice(0, 25))}
-                            placeholder={`Day ${day} workout…`}
-                            maxLength={25}
-                            style={{ fontSize: '16px' }}
+                          <input type="text" value={wt.name || ''} onChange={(e) => updateWorkout(day, 'name', e.target.value.slice(0, 25))}
+                            placeholder={`Day ${day} workout…`} maxLength={25} style={{ fontSize: '16px' }}
                             className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none"
                           />
                         </div>
-
                         <div className="flex gap-1.5 px-4 pb-3">
                           {COLOR_OPTIONS.map(c => (
-                            <button
-                              key={c.value}
-                              onClick={() => updateWorkout(day, 'color', c.value)}
-                              className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${
-                                wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'
-                              }`}
+                            <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)}
+                              className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`}
                             />
                           ))}
                         </div>
-
                         {exs.length > 0 && (
                           <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
                             <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px 28px' }}>
@@ -661,12 +720,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                             </div>
                             {exs.map((ex, idx) => (
                               <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px 28px' }}>
-                                <input
-                                  type="text"
-                                  value={ex.exercise || ''}
-                                  onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)}
-                                  placeholder="e.g. Bench press"
-                                  style={{ fontSize: '16px' }}
+                                <input type="text" value={ex.exercise || ''} onChange={(e) => updateExercise(day, idx, 'exercise', e.target.value)}
+                                  placeholder="e.g. Bench press" style={{ fontSize: '16px' }}
                                   className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
                                 />
                                 <SmallInput value={ex.sets ?? '3'} onChange={(v) => updateExercise(day, idx, 'sets', v)} placeholder="3" />
@@ -675,24 +730,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                                   <SmallInput value={ex.weight ?? ''} onChange={(v) => updateExercise(day, idx, 'weight', v)} placeholder="—" />
                                   <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
                                 </div>
-                                <button
-                                  onClick={() => removeExercise(day, idx)}
-                                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"
-                                >
+                                <button onClick={() => removeExercise(day, idx)} className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             ))}
                           </div>
                         )}
-
                         <div className="px-4 pb-3.5 pt-2">
-                          <button
-                            onClick={() => addExercise(day)}
-                            className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors active:scale-95"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            Add exercise
+                          <button onClick={() => addExercise(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors active:scale-95">
+                            <Plus className="w-3.5 h-3.5" /> Add exercise
                           </button>
                         </div>
                       </div>
@@ -702,52 +749,24 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
               )}
             </div>
           )}
+
         </div>
 
         {/* ── FOOTER ── */}
-        {previewPreset && (
+        {step === 'preview' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
-            <button onClick={() => setPreviewPreset(null)} className={btnSecondary}>Back</button>
-            <button
-              onClick={() => {
-                // Build a saved-split entry from the preset and set it active
-                const split = {
-                  id: previewPreset.id,
-                  preset_id: previewPreset.id,
-                  name: previewPreset.name,
-                  training_days: previewPreset.days,
-                  workouts: previewPreset.workouts,
-                  created_at: new Date().toISOString(),
-                };
-                // Merge into saved splits (replace any existing entry with same id)
-                const updated = [...savedSplits.filter(s => s.id !== split.id), split];
-                setSavedSplits(updated);
-                setActiveName(split.name);
-                setPreviewPreset(null);
-                toast.success(`"${split.name}" set as active!`);
-                setActiveMutation.mutate({
-                  workout_split: split.preset_id,
-                  custom_split_name: split.name,
-                  training_days: split.training_days,
-                  custom_workout_types: split.workouts,
-                  saved_splits: updated,
-                });
-              }}
-              disabled={setActiveMutation.isPending}
-              className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}
-            >
+            <button onClick={handleBack} className={btnSecondary}>Back</button>
+            <button onClick={handleSetDefaultActive} disabled={setActiveMutation.isPending}
+              className={btnGreen + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}>
               {setActiveMutation.isPending ? 'Setting…' : 'Set as Active'}
             </button>
           </div>
         )}
-        {!previewPreset && step === 'configure' && (
+        {step === 'configure' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
-            <button onClick={() => setStep('pick')} className={btnSecondary}>Back</button>
-            <button
-              onClick={handleSave}
-              disabled={!canSave || saveMutation.isPending}
-              className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}
-            >
+            <button onClick={handleBack} className={btnSecondary}>Back</button>
+            <button onClick={handleSave} disabled={selectedDays.length === 0 || saveMutation.isPending}
+              className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}>
               {saveMutation.isPending ? 'Saving…' : 'Save Split'}
             </button>
           </div>
