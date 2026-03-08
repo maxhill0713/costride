@@ -143,11 +143,103 @@ function SplitPage({ currentUser, checkIns, onBack }) {
   );
 }
 
+// ─── Weekly Check-ins Chart ───────────────────────────────────────────────────
+function WeeklyCheckInsChart({ checkIns }) {
+  const data = React.useMemo(() => {
+    const weeks = [];
+    const now = new Date();
+    for (let w = 7; w >= 0; w--) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay() - w * 7 + 1); // Mon start
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+      const count = checkIns.filter(c => {
+        const d = new Date(c.check_in_date);
+        return d >= weekStart && d < weekEnd;
+      }).length;
+      const label = w === 0 ? 'This week' : w === 1 ? 'Last week' : `${w}w ago`;
+      weeks.push({ label: w === 0 ? 'Now' : w === 1 ? '-1w' : `-${w}w`, fullLabel: label, count });
+    }
+    return weeks;
+  }, [checkIns]);
+
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  const total = checkIns.length;
+  const thisWeek = data[data.length - 1]?.count || 0;
+  const lastWeek = data[data.length - 2]?.count || 0;
+  const trend = thisWeek - lastWeek;
+
+  return (
+    <div className="rounded-2xl p-4" style={CARD}>
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-blue-400" />
+          <span className="text-[13px] font-black text-white">Weekly Check-ins</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-bold" style={{ color: trend > 0 ? '#34d399' : trend < 0 ? '#f87171' : '#94a3b8' }}>
+            {trend > 0 ? `↑ ${trend} vs last week` : trend < 0 ? `↓ ${Math.abs(trend)} vs last week` : '= same as last week'}
+          </span>
+        </div>
+      </div>
+      <p className="text-[10px] text-slate-500 mb-4">{total} total check-ins all time</p>
+
+      {/* Bar chart */}
+      <div className="flex items-end gap-1.5" style={{ height: 80 }}>
+        {data.map((week, i) => {
+          const pct = Math.round((week.count / maxCount) * 100);
+          const isLast = i === data.length - 1;
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full relative flex items-end justify-center" style={{ height: 64 }}>
+                <div
+                  className="w-full rounded-t-md"
+                  style={{
+                    height: `${Math.max(pct, week.count > 0 ? 6 : 0)}%`,
+                    minHeight: week.count > 0 ? 4 : 0,
+                    background: isLast
+                      ? 'linear-gradient(to top, #1d4ed8, #60a5fa)'
+                      : 'linear-gradient(to top, rgba(59,130,246,0.35), rgba(96,165,250,0.55))',
+                    borderRadius: '4px 4px 0 0',
+                    transition: 'height 0.5s ease',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0, right: 0,
+                  }}
+                />
+                {week.count > 0 && (
+                  <span
+                    className="absolute font-black"
+                    style={{
+                      bottom: `${Math.max(pct, 6)}%`,
+                      fontSize: 9,
+                      color: isLast ? '#93c5fd' : 'rgba(148,163,184,0.7)',
+                      marginBottom: 2,
+                    }}>
+                    {week.count}
+                  </span>
+                )}
+              </div>
+              <span className="text-[8px] font-bold" style={{ color: isLast ? '#60a5fa' : 'rgba(255,255,255,0.2)' }}>
+                {week.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Analytics sub-page ───────────────────────────────────────────────────────
-function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
+function AnalyticsPage({ currentUser, workoutLogs, checkIns, onBack }) {
   return (
     <SubPage title="Analytics" onBack={onBack}>
-      <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
+      <div className="space-y-4">
+        <WeeklyCheckInsChart checkIns={checkIns} />
+        <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
+      </div>
     </SubPage>
   );
 }
