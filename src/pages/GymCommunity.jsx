@@ -312,17 +312,53 @@ export default function GymCommunity() {
 
                 {/* ── LEADERBOARD ── */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  {/* Header */}
-                  <div className="px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(234,179,8,0.15)' }}>
-                        <Trophy className="w-4 h-4 text-yellow-400" />
+                  {/* Header — navy professional gym banner */}
+                  <div
+                    className="relative px-4 pt-5 pb-4 overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, #0a1628 0%, #0d2255 50%, #0a1a3d 100%)',
+                      borderBottom: '1px solid rgba(59,130,246,0.15)',
+                    }}
+                  >
+                    {/* Subtle grid texture */}
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                      backgroundImage: 'linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px)',
+                      backgroundSize: '24px 24px',
+                    }} />
+                    {/* Glow orb top-right */}
+                    <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)' }} />
+
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {/* Trophy badge */}
+                        <div className="relative">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
+                            background: 'linear-gradient(135deg, rgba(234,179,8,0.25) 0%, rgba(180,130,0,0.15) 100%)',
+                            border: '1px solid rgba(234,179,8,0.3)',
+                            boxShadow: '0 0 16px rgba(234,179,8,0.2)',
+                          }}>
+                            <Trophy className="w-5 h-5 text-yellow-400" />
+                          </div>
+                          {/* Pulse ring */}
+                          <div className="absolute inset-0 rounded-xl animate-ping" style={{ background: 'rgba(234,179,8,0.12)', animationDuration: '2.5s' }} />
+                        </div>
+                        <div>
+                          <h3 className="text-[15px] font-black tracking-tight leading-none" style={{ color: '#e2e8f0', letterSpacing: '-0.01em' }}>
+                            Community Leaderboard
+                          </h3>
+                          <p className="text-[10px] font-semibold mt-1 uppercase tracking-widest" style={{ color: 'rgba(96,165,250,0.6)' }}>
+                            This week's top performers
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-[14px] font-black text-white leading-none">Community Leaderboard</h3>
-                        <p className="text-[10px] text-white/35 mt-0.5">This week's top performers</p>
+                      {/* Live pill */}
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Live</span>
                       </div>
                     </div>
+                  </div>
+                  <div className="px-4 pt-3 pb-1">
 
                     {/* View toggle pills */}
                     <div className="flex gap-1.5">
