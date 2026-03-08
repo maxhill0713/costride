@@ -315,6 +315,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           {/* ════ STEP 1 — PICK ════ */}
           {step === 'pick' && (
             <div className="p-4 space-y-2">
+              {/* Selecting active banner */}
+              {selectingActive && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 mb-1">
+                  <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                  <p className="text-[11px] font-bold text-emerald-400">Tap a split to make it active</p>
+                </div>
+              )}
 
               {/* Active saved split — always first, green border */}
               {activeSaved && (() => {
