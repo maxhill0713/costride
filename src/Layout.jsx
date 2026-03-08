@@ -119,7 +119,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-start pt-2.5 h-[90px] px-2">
+          <div className="flex justify-around items-start pt-1 h-[72px] px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
 
@@ -131,7 +131,7 @@ export default function Layout({ children, currentPageName }) {
                   handleTabClick(item, e);
                   if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
                 }}
-                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl hover:bg-white/5"
+                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl"
                 style={{ transition: 'transform 60ms ease-in-out' }}
                 onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
                 onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
@@ -172,10 +172,7 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={item.page}
                 to={getTabLink(item)}
-                onClick={(e) => {
-                  handleTabClick(item, e);
-                  if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
-                }}
+                onClick={(e) => handleTabClick(item, e)}
                 className={`
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive ?
@@ -202,7 +199,7 @@ export default function Layout({ children, currentPageName }) {
       }
 
             {/* Main Content */}
-            <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(5.625rem + env(safe-area-inset-bottom))' }}>
+            <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
               <ErrorBoundary>
                 <TimerProvider value={{ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }}>
                   <PageTransition key={currentPageName}>
