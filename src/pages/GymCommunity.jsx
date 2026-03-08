@@ -491,7 +491,30 @@ export default function GymCommunity() {
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
   const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null, streak: Math.floor(Math.random() * 30) + 1 }; return acc; }, {})).sort((a, b) => b.streak - a.streak).slice(0, 10);
+  
+  // Calculate real streaks per user
+  const calcUserStreak = (userId) => {
+    const userCheckIns = checkIns.filter(c => c.user_id === userId).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+    if (userCheckIns.length === 0) return 0;
+    let streak = 1;
+    let curDate = new Date(userCheckIns[0].check_in_date);
+    curDate.setHours(0, 0, 0, 0);
+    for (let i = 1; i < userCheckIns.length; i++) {
+      const d = new Date(userCheckIns[i].check_in_date);
+      d.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((curDate - d) / 86400000);
+      if (diffDays === 1) { streak++; curDate = d; } 
+      else if (diffDays > 1) break;
+    }
+    return streak;
+  };
+  
+  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { 
+    const id = c.user_id; 
+    if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null }; 
+    return acc; 
+  }, {})).map(item => ({ ...item, streak: calcUserStreak(item.userId) })).sort((a, b) => b.streak - a.streak).slice(0, 10);
+  
   const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
   const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: lift.member_avatar || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
 
