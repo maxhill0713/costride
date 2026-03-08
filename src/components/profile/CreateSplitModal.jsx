@@ -272,7 +272,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           <div className="w-10 flex-shrink-0">
             <button
               onClick={() => {
-                if (step === 'configure') { setStep('pick'); setSelectingActive(false); }
+                if (step === 'configure') { setStep('pick'); }
                 else { onClose(); }
               }}
               className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
