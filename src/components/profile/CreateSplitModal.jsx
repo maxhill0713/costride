@@ -136,10 +136,15 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     setLocalSavedSplits(currentUser?.saved_splits || []);
   }, [isOpen]);
 
-  // Always derive active/other from localSavedSplits so it stays in sync
-  const activeSplitName = currentUser?.custom_split_name;
-  const activeSaved = localSavedSplits.find(s => s.name === activeSplitName);
-  const otherSaved = localSavedSplits.filter(s => s.name !== activeSplitName);
+  // Local active name — updated optimistically so UI reflects instantly on tap
+  const [localActiveName, setLocalActiveName] = useState(currentUser?.custom_split_name || '');
+
+  useEffect(() => {
+    setLocalActiveName(currentUser?.custom_split_name || '');
+  }, [currentUser?.custom_split_name]);
+
+  const activeSaved = localSavedSplits.find(s => s.name === localActiveName);
+  const otherSaved = localSavedSplits.filter(s => s.name !== localActiveName);
 
   // ── Navigation helpers ────────────────────────────────────────────────────
   const loadSavedSplit = (split) => {
@@ -212,7 +217,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     onSuccess: () => {
       queryClient.invalidateQueries(['currentUser']);
       toast.success('Active split updated!');
-      setSelectingActive(false);
     },
   });
 
@@ -236,11 +240,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   };
 
   const handlePickActive = (split) => {
+    // Update UI immediately so user sees the green border move right away
+    setLocalActiveName(split.name);
+    setSelectingActive(false);
     setActiveMutation.mutate({
       workout_split: split.preset_id || 'custom',
       custom_split_name: split.name,
-      training_days: split.training_days,
-      custom_workout_types: split.workouts,
+      training_days: split.training_days || [],
+      custom_workout_types: split.workouts || {},
     });
   };
 
@@ -318,7 +325,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 return (
                   <div
                     onClick={() => selectingActive ? handlePickActive(activeSaved) : loadSavedSplit(activeSaved)}
-                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all select-none"
+                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all "
                     style={{
                       background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))',
                       border: '2px solid rgba(16,185,129,0.55)',
@@ -370,7 +377,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                   <div
                     key={split.id}
                     onClick={() => selectingActive ? handlePickActive(split) : loadSavedSplit(split)}
-                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all select-none"
+                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all "
                     style={{
                       background: 'rgba(15,20,40,0.7)',
                       border: '1px solid rgba(255,255,255,0.06)',
