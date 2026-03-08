@@ -280,6 +280,45 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
           <Lock className="w-3 h-3" /> Read-only — set as active below
         </p>
       </div>
+
+      {/* ── CONFIRM DELETE MODAL ── */}
+      {confirmDeleteSplitId && (
+        <div
+          className="absolute inset-0 z-60 flex items-center justify-center px-6"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setConfirmDeleteSplitId(null)}
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl p-6 space-y-4"
+            style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
+            <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setConfirmDeleteSplitId(null)}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const id = confirmDeleteSplitId;
+                  setConfirmDeleteSplitId(null);
+                  const updated = savedSplits.filter(s => s.id !== id);
+                  setSavedSplits(updated);
+                  if (activeSplitId === id) setActiveSplitId('');
+                  saveMutation.mutate({ saved_splits: updated });
+                }}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -297,8 +336,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [selectingActive, setSelectingActive] = useState(false);
   const [previewWeights, setPreviewWeights] = useState({}); // { [day]: { [exIdx]: weight } }
   const [weightsDirty, setWeightsDirty] = useState(false);
-  const [dotsMenuSplitId, setDotsMenuSplitId] = useState(null); // which split's dots menu is open
+  const [dotsMenuOpen, setDotsMenuOpen] = useState(false); // dots menu on configure screen
   const [confirmDeleteSplitId, setConfirmDeleteSplitId] = useState(null); // which split to confirm delete
+  const [editingSplitId, setEditingSplitId] = useState(null); // id of custom split being edited (null = new)
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState(''); // tracks by id
 
@@ -325,6 +365,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setSelectedDays([]);
     setWorkouts({});
     setSelectingActive(false);
+    setEditingSplitId(null);
+    setDotsMenuOpen(false);
   }, [isOpen]);
 
   // ── Mutations ──────────────────────────────────────────────────────────────
@@ -353,6 +395,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       setStep('pick');
       setPreviewSplit(null);
     } else if (step === 'configure') {
+      setDotsMenuOpen(false);
+      setEditingSplitId(null);
       setStep('pick');
     } else {
       onClose();
@@ -429,6 +473,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setSplitName(split.name || '');
     setSelectedDays(split.training_days || []);
     setWorkouts(split.workouts || {});
+    setEditingSplitId(split.id);
+    setDotsMenuOpen(false);
     setStep('configure');
   };
 
@@ -437,6 +483,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
+    setEditingSplitId(null);
+    setDotsMenuOpen(false);
     setStep('configure');
   };
 
@@ -518,6 +566,29 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
               </button>
+            )}
+            {step === 'configure' && editingSplitId && (
+              <div className="relative">
+                <button
+                  onClick={() => setDotsMenuOpen(prev => !prev)}
+                  className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
+                >
+                  <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
+                </button>
+                {dotsMenuOpen && (
+                  <div
+                    className="absolute right-0 top-10 z-20 rounded-xl overflow-hidden shadow-xl"
+                    style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <button
+                      onClick={() => { setDotsMenuOpen(false); setConfirmDeleteSplitId(editingSplitId); }}
+                      className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap"
+                    >
+                      Delete Split
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
           </div>
@@ -603,38 +674,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       <div
                         key={split.id}
                         onClick={() => selectingActive ? handleSetActive(splitEntry) : openEditCustom(split)}
-                        className="relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
+                        className="flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
                         style={{
                           background: isActive ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))' : 'rgba(15,20,40,0.7)',
                           border: isActive ? '2px solid rgba(16,185,129,0.55)' : selectingActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.06)',
                           boxShadow: isActive ? '0 0 16px rgba(16,185,129,0.08)' : 'none',
                         }}
                       >
-                        {/* Three-dots button — absolute top-right, no background */}
-                        {!selectingActive && (
-                          <div className="absolute top-2 right-2 z-10">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setDotsMenuSplitId(prev => prev === split.id ? null : split.id); }}
-                              className="w-6 h-6 flex items-center justify-center transition-colors active:scale-90"
-                            >
-                              <MoreVertical className="w-3.5 h-3.5 text-slate-500" />
-                            </button>
-                            {dotsMenuSplitId === split.id && (
-                              <div
-                                className="absolute right-0 top-7 z-10 rounded-xl overflow-hidden shadow-xl"
-                                style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
-                                onClick={e => e.stopPropagation()}
-                              >
-                                <button
-                                  onClick={() => { setDotsMenuSplitId(null); setConfirmDeleteSplitId(split.id); }}
-                                  className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap"
-                                >
-                                  Delete Split
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
                         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xl shadow-lg flex-shrink-0">✏️</div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[14px] font-black text-white truncate">{split.name}</p>
