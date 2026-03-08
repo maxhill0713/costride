@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell, Users, Flame, Calendar, Zap, TrendingUp, Award } from 'lucide-react';
@@ -11,7 +11,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 
-// ─── Shared styles ──────────────────────────────────────────────────────────────
+// ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
   border: '1px solid rgba(255,255,255,0.07)',
@@ -138,6 +138,7 @@ function SplitPage({ currentUser, checkIns, onBack }) {
           <WorkoutSplitHeatmap checkIns={checkIns} workoutSplit={currentUser?.workout_split} weeklyGoal={currentUser?.weekly_goal} trainingDays={currentUser?.training_days} customWorkoutTypes={currentUser?.custom_workout_types || {}} />
         </div>
       )}
+      <WorkoutProgressTracker currentUser={currentUser} />
     </SubPage>
   );
 }
@@ -146,10 +147,7 @@ function SplitPage({ currentUser, checkIns, onBack }) {
 function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   return (
     <SubPage title="Analytics" onBack={onBack}>
-      <div className="space-y-4">
-        <WorkoutProgressTracker currentUser={currentUser} />
-        <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
-      </div>
+      <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
     </SubPage>
   );
 }
@@ -246,7 +244,7 @@ function CommunityIllustration() {
 }
 
 // ─── Tall nav card ─────────────────────────────────────────────────────────────
-function TallCard({ label, subtitle, description, bullets, icon: Icon, iconColor, iconBg, accentColor, accentBorder, glowColor, illustration: Illustration, onClick, as: As = 'button', href }) {
+function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg, accentColor, accentBorder, glowColor, illustration: Illustration, onClick, as: As = 'button', href }) {
   const [pressed, setPressed] = useState(false);
   const events = {
     onMouseDown: () => setPressed(true), onMouseUp: () => setPressed(false),
@@ -256,9 +254,8 @@ function TallCard({ label, subtitle, description, bullets, icon: Icon, iconColor
 
   const inner = (
     <div
-      className="relative overflow-hidden rounded-2xl p-5 w-full text-left"
+      className="relative overflow-hidden rounded-2xl p-4 w-full text-left"
       style={{
-        minHeight: 168,
         background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
         border: `1px solid ${pressed ? accentBorder : 'rgba(255,255,255,0.07)'}`,
         backdropFilter: 'blur(20px)',
@@ -280,49 +277,39 @@ function TallCard({ label, subtitle, description, bullets, icon: Icon, iconColor
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
 
-      {/* Illustration — top right */}
-      <div className="absolute top-0 right-0 pointer-events-none" style={{ transform: 'translate(6px, -2px)' }}>
-        <Illustration />
+      {/* Illustration — right side, vertically centred */}
+      <div className="absolute top-1/2 right-0 pointer-events-none" style={{ transform: 'translateY(-50%) translateX(8px)', opacity: 0.85 }}>
+        <div style={{ transform: 'scale(0.72)', transformOrigin: 'right center' }}>
+          <Illustration />
+        </div>
       </div>
 
       {/* Content */}
-      <div className="relative flex flex-col gap-2.5" style={{ maxWidth: '60%' }}>
-        {/* Icon + title */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
-            <Icon className="w-[18px] h-[18px]" style={{ color: iconColor }} />
+      <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
+        {/* Icon + title row */}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
+            <Icon className="w-4 h-4" style={{ color: iconColor }} />
           </div>
-          <span className="text-[16px] font-black text-white tracking-tight">{label}</span>
+          <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
         </div>
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-[12px] font-bold" style={{ color: accentColor }}>{subtitle}</p>
+          <p className="text-[11px] font-bold" style={{ color: accentColor }}>{subtitle}</p>
         )}
 
         {/* Description */}
         {description && (
-          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>{description}</p>
-        )}
-
-        {/* Bullets */}
-        {bullets?.length > 0 && (
-          <ul className="flex flex-col gap-1.5 mt-0.5">
-            {bullets.map((b, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: accentColor, opacity: 0.7 }} />
-                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{b}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>{description}</p>
         )}
       </div>
 
       {/* Arrow chip bottom-right */}
-      <div className="absolute bottom-4 right-4">
-        <div className="w-7 h-7 rounded-full flex items-center justify-center"
+      <div className="absolute bottom-3 right-3">
+        <div className="w-6 h-6 rounded-full flex items-center justify-center"
           style={{ background: iconBg, border: `1px solid ${accentBorder}` }}>
-          <ChevronRight className="w-4 h-4" style={{ color: iconColor }} />
+          <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
         </div>
       </div>
     </div>
