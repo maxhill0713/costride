@@ -1,887 +1,756 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Progress } from '@/components/ui/progress';
-import { Card } from '@/components/ui/card';
+import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut, SlidersHorizontal } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import PostCard from '../components/feed/PostCard';
-import CreateGymPostButton from '../components/feed/CreateGymPostButton';
-import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
-import EventCard from '../components/events/EventCard';
-import CreateEventModal from '../components/events/CreateEventModal';
-import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
-import CheckInButton from '../components/gym/CheckInButton';
-import ManageRewardsModal from '../components/gym/ManageRewardsModal';
-import ManageClassesModal from '../components/gym/ManageClassesModal';
-import ManageCoachesModal from '../components/gym/ManageCoachesModal';
-import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
-import EditGymLogoModal from '../components/gym/EditGymLogoModal';
-import ManageMembersModal from '../components/gym/ManageMembersModal';
-import InviteOwnerModal from '../components/gym/InviteOwnerModal';
-import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
-import JoinGymModal from '../components/membership/JoinGymModal';
-import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
-import WeeklyEventCard from '../components/feed/WeeklyEventCard';
-import SystemChallengeCard from '../components/challenges/SystemChallengeCard';
-import AppChallengeCard from '../components/challenges/AppChallengeCard';
-import GymChallengeCard from '../components/challenges/GymChallengeCard';
-import MiniLeaderboard from '../components/challenges/MiniLeaderboard';
-import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
-import PullToRefresh from '../components/PullToRefresh';
-import PollCard from '../components/polls/PollCard';
-import BusyTimesChart from '../components/gym/BusyTimesChart';
-import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
-import { motion } from 'framer-motion';
+import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-// ─── Shared card style (CoStride frosted glass) ───────────────────────────────
-const CARD_STYLE = {
-  background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.90) 100%)',
-  border: '1px solid rgba(255,255,255,0.07)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-};
-
-// ─── Leaderboard table (matches reference screenshot style) ──────────────────
-function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
-  const views = [
-    { id: 'checkins', icon: CheckCircle, label: 'Check-ins', color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)' },
-    { id: 'streaks',  icon: Flame,       label: 'Streaks',   color: '#f97316', bg: 'rgba(249,115,22,0.15)',  border: 'rgba(249,115,22,0.3)'  },
-    { id: 'progress', icon: TrendingUp,  label: 'Progress',  color: '#60a5fa', bg: 'rgba(96,165,250,0.15)',  border: 'rgba(96,165,250,0.3)'  },
-  ];
-
-  const getData = () => {
-    if (view === 'checkins') return { list: checkInLeaderboard, getVal: m => m.count,    getLabel: m => m.count,         colA: 'CHECK-INS' };
-    if (view === 'streaks')  return { list: streakLeaderboard,  getVal: m => m.streak,   getLabel: m => `${m.streak}d`,  colA: 'STREAK'    };
-    return                          { list: progressLeaderboard,getVal: m => m.increase, getLabel: m => `+${m.increase}kg`, colA: 'PROGRESS' };
-  };
-
-  const { list, getVal, getLabel, colA } = getData();
-  const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
-
-  const rankColor = (i) => i === 0 ? '#fbbf24' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7c3a' : 'rgba(255,255,255,0.35)';
-  const barColor  = (i) => i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7c3a' : '#3b82f6';
-
-  return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(180deg,#07101f 0%,#060d1a 100%)', border: '1px solid rgba(59,130,246,0.12)' }}>
-
-      {/* ── HEADER ── */}
-      <div className="relative px-4 pt-5 pb-4 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#0a1628 0%,#0d2255 50%,#0a1a3d 100%)', borderBottom: '1px solid rgba(59,130,246,0.15)' }}>
-        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
-        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%)' }} />
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,rgba(234,179,8,0.25),rgba(180,130,0,0.15))', border: '1px solid rgba(234,179,8,0.3)', boxShadow: '0 0 16px rgba(234,179,8,0.2)' }}>
-                <Trophy className="w-5 h-5 text-yellow-400" />
-              </div>
-              <div className="absolute inset-0 rounded-xl animate-ping" style={{ background: 'rgba(234,179,8,0.12)', animationDuration: '2.5s' }} />
-            </div>
-            <div>
-              <h3 className="text-[15px] font-black tracking-tight leading-none" style={{ color: '#e2e8f0' }}>Community Leaderboard</h3>
-              <p className="text-[10px] font-semibold mt-1 uppercase tracking-widest" style={{ color: 'rgba(96,165,250,0.6)' }}>This week&apos;s top performers</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Live</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── TOGGLE PILLS ── */}
-      <div className="flex gap-1.5 px-4 pt-3 pb-2">
-        {views.map(({ id, icon: Icon, label, color, bg, border }) => {
-          const active = view === id;
-          return (
-            <button key={id} onClick={() => setView(id)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all active:scale-95"
-              style={{ background: active ? bg : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? border : 'rgba(255,255,255,0.06)'}`, color: active ? color : 'rgba(255,255,255,0.35)' }}>
-              <Icon className="w-3 h-3" />{label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── TABLE ── */}
-      {list.length === 0 ? (
-        <div className="py-10 text-center pb-4">
-          <Trophy className="w-10 h-10 mx-auto mb-2 text-slate-800" />
-          <p className="text-slate-600 text-sm">No data yet this week</p>
-        </div>
-      ) : (
-        <div className="pb-3">
-          {/* Column headers */}
-          <div className="grid px-4 py-2 mb-1" style={{ gridTemplateColumns: '32px 36px 1fr auto auto', gap: '0 10px', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
-            <span className="text-[9px] font-black uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>RK</span>
-            <span />
-            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>NAME</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)', minWidth: '48px' }}>{colA}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)', minWidth: '48px' }}>RANK</span>
-          </div>
-
-          {/* Rows */}
-          {list.slice(0, 10).map((m, i) => {
-            const pct = Math.round((getVal(m) / maxVal) * 100);
-            const isTop3 = i < 3;
-            return (
-              <div key={m.userId || i}
-                className="grid items-center px-4 py-2.5"
-                style={{
-                  gridTemplateColumns: '32px 36px 1fr auto auto',
-                  gap: '0 10px',
-                  borderBottom: '1px solid rgba(255,255,255,0.04)',
-                  background: isTop3 ? 'rgba(255,255,255,0.025)' : 'transparent',
-                }}>
-
-                {/* Rank number */}
-                <span className="text-[13px] font-black text-center" style={{ color: rankColor(i) }}>
-                  {i + 1}
-                </span>
-
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-black text-white flex-shrink-0"
-                  style={{ background: isTop3 ? `linear-gradient(135deg,#1e3a5f,#0d2255)` : 'rgba(255,255,255,0.06)', border: `1px solid ${isTop3 ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.08)'}` }}>
-                  {(m.userName || '?').charAt(0).toUpperCase()}
-                </div>
-
-                {/* Name */}
-                <p className="text-[13px] font-bold truncate" style={{ color: isTop3 ? '#fff' : 'rgba(255,255,255,0.7)' }}>
-                  {m.userName || '—'}
-                </p>
-
-                {/* Stat value */}
-                <span className="text-[13px] font-black text-right" style={{ color: isTop3 ? rankColor(i) : 'rgba(255,255,255,0.45)', minWidth: '48px' }}>
-                  {getLabel(m)}
-                </span>
-
-                {/* Bar */}
-                <div className="flex items-center justify-end" style={{ minWidth: '48px' }}>
-                  <div className="rounded-full overflow-hidden" style={{ width: '44px', height: '5px', background: 'rgba(255,255,255,0.07)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor(i) }} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-// ─── Animated dropdown panel (Duolingo-style) ────────────────────────────────
-function SlidePanel({ open, children }) {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateRows: open ? '1fr' : '0fr',
-        transition: 'grid-template-rows 0.38s cubic-bezier(0.34,1.4,0.64,1)',
-      }}
-    >
-      <div style={{ overflow: 'hidden' }}>
-        <div
-          style={{
-            opacity: open ? 1 : 0,
-            transform: open ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.97)',
-            transition: open
-              ? 'opacity 0.28s ease 0.08s, transform 0.38s cubic-bezier(0.34,1.4,0.64,1) 0.04s'
-              : 'opacity 0.15s ease, transform 0.18s ease',
-          }}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Ripple button ────────────────────────────────────────────────────────────
-function RippleButton({ onClick, children, className, style }) {
-  const [ripples, setRipples] = React.useState([]);
-  const handleClick = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const id = Date.now();
-    setRipples(r => [...r, { id, x, y }]);
-    setTimeout(() => setRipples(r => r.filter(r => r.id !== id)), 600);
-    onClick && onClick(e);
-  };
-  return (
-    <button onClick={handleClick} className={className} style={{ ...style, position: 'relative', overflow: 'hidden' }}>
-      {ripples.map(({ id, x, y }) => (
-        <span key={id} style={{
-          position: 'absolute', left: x, top: y,
-          width: 4, height: 4, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.45)',
-          transform: 'translate(-50%,-50%) scale(0)',
-          animation: 'costride-ripple 0.55s ease-out forwards',
-          pointerEvents: 'none',
-        }} />
-      ))}
-      {children}
-      <style>{`@keyframes costride-ripple { to { transform: translate(-50%,-50%) scale(60); opacity: 0; } }`}</style>
-    </button>
-  );
-}
-
-
-export default function GymCommunity() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const gymId = urlParams.get('id');
+export default function Gyms() {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [maxDistance, setMaxDistance] = useState('all');
+  const [selectedEquipment, setSelectedEquipment] = useState('all');
+  const [editingGym, setEditingGym] = useState(null);
+  const [showJoinWithCode, setShowJoinWithCode] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [savedGyms, setSavedGyms] = useState([]);
+  const [equipmentGym, setEquipmentGym] = useState(null);
+  const [galleryGym, setGalleryGym] = useState(null);
+  const [placesResults, setPlacesResults] = useState([]);
+  const [searchingPlaces, setSearchingPlaces] = useState(false);
+  const [showAddGymModal, setShowAddGymModal] = useState(false);
+  const [selectedPlaceGym, setSelectedPlaceGym] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [gymType, setGymType] = useState('general');
+  const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
+  const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
+  const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
   const queryClient = useQueryClient();
 
-  useEffect(() => { window.scrollTo(0, 0); }, [gymId]);
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me().catch(() => null),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
 
-  const [showCreateEvent, setShowCreateEvent] = useState(false);
-  const [showManageEquipment, setShowManageEquipment] = useState(false);
-  const [showManageRewards, setShowManageRewards] = useState(false);
-  const [showManageClasses, setShowManageClasses] = useState(false);
-  const [showManageCoaches, setShowManageCoaches] = useState(false);
-  const [leaderboardView, setLeaderboardView] = useState('checkins');
-  const [showManagePhotos, setShowManagePhotos] = useState(false);
-  const [showEditHeroImage, setShowEditHeroImage] = useState(false);
-  const [showEditGymLogo, setShowEditGymLogo] = useState(false);
-  const [showManageMembers, setShowManageMembers] = useState(false);
-  const [viewAsMember, setViewAsMember] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showJoinGymModal, setShowJoinGymModal] = useState(false);
-  const [joinPanel, setJoinPanel] = useState(null); // 'code' | 'primary' | null
-  const [joinCode, setJoinCode] = useState('');
-  const [joinCodeError, setJoinCodeError] = useState('');
-  const [joinCodeSuccess, setJoinCodeSuccess] = useState(false);
-  const [primaryConfirmed, setPrimaryConfirmed] = useState(false);
-  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
-  const [copiedCoachId, setCopiedCoachId] = useState(null);
-  const [showInviteOwner, setShowInviteOwner] = useState(false);
-  const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed) {
+      navigate(createPageUrl('Onboarding'));
+    }
+  }, [currentUser, navigate]);
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
-  const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10 * 60 * 1000, gcTime: 20 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: posts = [] } = useQuery({ queryKey: ['posts', gymId], queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: checkIns = [] } = useQuery({ queryKey: ['checkIns', gymId], queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: lifts = [] } = useQuery({ queryKey: ['lifts', gymId], queryFn: () => base44.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 100), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: events = [] } = useQuery({ queryKey: ['events', gymId], queryFn: () => base44.entities.Event.filter({ gym_id: gymId }, '-event_date'), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: classes = [] } = useQuery({ queryKey: ['classes', gymId], queryFn: () => base44.entities.GymClass.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10 * 60 * 1000, gcTime: 20 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const gymChallenges = challenges.filter((c) => c.status === 'active' || c.status === 'upcoming');
-  const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10 * 60 * 1000, gcTime: 30 * 60 * 1000 });
-  const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then((r) => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinCode = urlParams.get('joinCode');
+    if (joinCode && currentUser) {
+      setShowJoinWithCode(true);
+    }
+  }, [currentUser]);
 
-  // ── Mutations (unchanged logic) ──────────────────────────────────────────────
-  const createEventMutation = useMutation({ mutationFn: (eventData) => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async (eventData) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); const tempEvent = { ...eventData, id: `temp-${Date.now()}`, gym_id: gymId, gym_name: gym?.name, attendees: 0 }; queryClient.setQueryData(['events', gymId], (old = []) => [tempEvent, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
-  const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old = []) => old.map((e) => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
-  const updateEquipmentMutation = useMutation({ mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManageEquipment(false); } });
-  const createRewardMutation = useMutation({ mutationFn: (rewardData) => base44.entities.Reward.create(rewardData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
-  const deleteRewardMutation = useMutation({ mutationFn: (rewardId) => base44.entities.Reward.delete(rewardId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
-  const claimRewardMutation = useMutation({ mutationFn: ({ rewardId, userId, currentClaimed }) => base44.entities.Reward.update(rewardId, { claimed_by: [...currentClaimed, userId] }), onMutate: async ({ rewardId, userId, currentClaimed }) => { await queryClient.cancelQueries({ queryKey: ['rewards', gymId] }); const previous = queryClient.getQueryData(['rewards', gymId]); queryClient.setQueryData(['rewards', gymId], (old = []) => old.map((r) => r.id === rewardId ? { ...r, claimed_by: [...currentClaimed, userId] } : r)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['rewards', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards', gymId] }); } });
-  const createClassMutation = useMutation({ mutationFn: (classData) => base44.entities.GymClass.create(classData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['classes', gymId] }); } });
-  const deleteClassMutation = useMutation({ mutationFn: (classId) => base44.entities.GymClass.delete(classId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['classes', gymId] }); } });
-  const createCoachMutation = useMutation({ mutationFn: (coachData) => base44.entities.Coach.create(coachData), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
-  const deleteCoachMutation = useMutation({ mutationFn: (coachId) => base44.entities.Coach.delete(coachId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
-  const deleteChallengeMutation = useMutation({ mutationFn: (challengeId) => base44.entities.Challenge.delete(challengeId), onMutate: async (challengeId) => { await queryClient.cancelQueries({ queryKey: ['challenges', gymId] }); const previous = queryClient.getQueryData(['challenges', gymId]); queryClient.setQueryData(['challenges', gymId], (old = []) => old.filter((c) => c.id !== challengeId)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['challenges', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); } });
-  const deleteEventMutation = useMutation({ mutationFn: (eventId) => base44.entities.Event.delete(eventId), onMutate: async (eventId) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old = []) => old.filter((e) => e.id !== eventId)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
-  const votePollMutation = useMutation({ mutationFn: async ({ pollId, optionId }) => { const poll = polls.find((p) => p.id === pollId); const updatedOptions = poll.options.map((opt) => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt); const updatedVoters = [...(poll.voters || []), currentUser.id]; await base44.entities.Poll.update(pollId, { options: updatedOptions, voters: updatedVoters }); }, onMutate: async ({ pollId, optionId }) => { await queryClient.cancelQueries({ queryKey: ['polls', gymId] }); const previous = queryClient.getQueryData(['polls', gymId]); queryClient.setQueryData(['polls', gymId], (old = []) => old.map((p) => p.id === pollId ? { ...p, voters: [...(p.voters || []), currentUser.id], options: p.options.map((opt) => opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt) } : p)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['polls', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['polls', gymId] }); } });
-  const updateCoachMutation = useMutation({ mutationFn: ({ coachId, data }) => base44.entities.Coach.update(coachId, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['coaches', gymId] }); } });
-  const createChallengeMutation = useMutation({ mutationFn: (challengeData) => { const fullData = { ...challengeData, gym_id: gymId, gym_name: gym?.name }; return base44.entities.Challenge.create(fullData); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); setShowCreateChallenge(false); }, onError: (error) => { console.error('Challenge creation failed:', error); } });
-  const updateGalleryMutation = useMutation({ mutationFn: (gallery) => base44.entities.Gym.update(gymId, { gallery }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManagePhotos(false); } });
-  const updateHeroImageMutation = useMutation({ mutationFn: (image_url) => base44.entities.Gym.update(gymId, { image_url }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowEditHeroImage(false); } });
-  const updateGymLogoMutation = useMutation({ mutationFn: (logo_url) => base44.entities.Gym.update(gymId, { logo_url }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowEditGymLogo(false); } });
-  const banMemberMutation = useMutation({ mutationFn: (userId) => { const currentBanned = gym?.banned_members || []; return base44.entities.Gym.update(gymId, { banned_members: [...currentBanned, userId] }); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); } });
-  const unbanMemberMutation = useMutation({ mutationFn: (userId) => { const currentBanned = gym?.banned_members || []; return base44.entities.Gym.update(gymId, { banned_members: currentBanned.filter((id) => id !== userId) }); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); } });
-  const joinGhostGymMutation = useMutation({ mutationFn: async () => { await base44.entities.GymMembership.create({ user_id: currentUser.id, user_name: currentUser.full_name, user_email: currentUser.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime' }); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] }); window.location.href = createPageUrl('Home'); } });
-  const joinChallengeMutation = useMutation({ mutationFn: async (challenge) => { const currentParticipants = challenge.participants || []; await base44.entities.Challenge.update(challenge.id, { participants: [...currentParticipants, currentUser.id] }); await base44.entities.ChallengeParticipant.create({ user_id: currentUser.id, user_name: currentUser.full_name, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }); }, onMutate: async (challenge) => { await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]); queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [...old, { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }]); return { previous }; }, onError: (err, challenge, context) => { queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); queryClient.invalidateQueries({ queryKey: ['challenges'] }); queryClient.invalidateQueries({ queryKey: ['activeChallenges'] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'challenge', title: '💪 Challenge Joined!', message: 'Good luck on your new challenge!', icon: '🎯' }); } });
-  const claimBonusMutation = useMutation({ mutationFn: ({ bonusType, offerDetails }) => base44.entities.ClaimedBonus.create({ user_id: currentUser.id, gym_id: gymId, bonus_type: bonusType, offer_details: offerDetails }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'reward', title: '🎁 Bonus Claimed!', message: 'Your gym bonus has been claimed successfully', icon: '🎉' }); } });
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-  const hasClaimedBonus = (bonusType) => claimedBonuses.some((b) => b.bonus_type === bonusType);
-  const hasjoinedChallenge = (challengeId) => challengeParticipants.some((p) => p.challenge_id === challengeId);
-  const calculateCurrentStreak = (userCheckIns) => { if (userCheckIns.length === 0) return 0; const sorted = [...userCheckIns].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date)); let streak = 1; let cur = new Date(sorted[0].check_in_date); cur.setHours(0,0,0,0); for (let i = 1; i < sorted.length; i++) { const d = new Date(sorted[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; } return streak; };
-  const meetsRequirement = (requirement) => { if (!currentUser) return false; const userCheckIns = checkIns.filter((c) => c.user_id === currentUser.id); switch (requirement) { case 'first_visit': return userCheckIns.length >= 1; case 'visits_3': return userCheckIns.length >= 3; case 'visits_5': return userCheckIns.length >= 5; case 'visits_10': case 'check_ins_10': return userCheckIns.length >= 10; case 'visits_25': return userCheckIns.length >= 25; case 'visits_50': case 'check_ins_50': return userCheckIns.length >= 50; case 'visits_100': return userCheckIns.length >= 100; case 'streak_7': return calculateCurrentStreak(userCheckIns) >= 7; case 'streak_30': return calculateCurrentStreak(userCheckIns) >= 30; case 'streak_90': return calculateCurrentStreak(userCheckIns) >= 90; default: return true; } };
+  const { data: gyms = [] } = useQuery({
+    queryKey: ['gyms'],
+    queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 100),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
 
-  // ── Derived data ──────────────────────────────────────────────────────────────
-  const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
-  const isGhostGym = gym && !gym.admin_id && !gym.owner_email;
-  const currentCoach = currentUser && coaches.find((c) => c.user_email === currentUser.email);
-  const isCoach = !!currentCoach;
-  const showOwnerControls = isGymOwner && !viewAsMember;
-  const canManageEvents = isGymOwner || (currentCoach?.can_manage_events ?? false);
-  const canManageClasses = isGymOwner || (currentCoach?.can_manage_classes ?? false);
-  const canPost = isGymOwner || (currentCoach?.can_post ?? false);
-  const isMember = !!gymMembership || isGymOwner;
+  const memberGymIds = gymMemberships.map((m) => m.gym_id);
+  const { data: userGymsData = [] } = useQuery({
+    queryKey: ['memberGyms', currentUser?.id],
+    queryFn: async () => {
+      if (memberGymIds.length === 0) return [];
+      const results = await Promise.all(
+        memberGymIds.map((id) => base44.entities.Gym.filter({ id }).then((r) => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: !!currentUser && gymMemberships.length > 0,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev
+  });
 
-  const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const weeklyCheckIns = checkIns.filter((c) => new Date(c.check_in_date) >= weekAgo);
+  const updateGymImageMutation = useMutation({
+    mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      setEditingGym(null);
+    }
+  });
 
-  const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
+  const updatePrimaryGymMutation = useMutation({
+    mutationFn: (gymId) => base44.auth.updateMe({ primary_gym_id: gymId }),
+    onMutate: async (gymId) => {
+      const previous = queryClient.getQueryData(['currentUser']);
+      queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, primary_gym_id: gymId } : old);
+      return { previous };
+    },
+    onError: (err, gymId, context) => {
+      queryClient.setQueryData(['currentUser'], context.previous);
+    },
+    onSuccess: () => {
+      setShowPrimaryGymModal(false);
+      setSelectedPrimaryGym(null);
+    }
+  });
 
-  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, streak: Math.floor(Math.random() * 30) + 1 }; return acc; }, {})).sort((a, b) => b.streak - a.streak).slice(0, 10);
-  const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
-  const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
+  const leaveGymMutation = useMutation({
+    mutationFn: async (gymId) => {
+      const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: currentUser?.id });
+      if (memberships.length > 0) {
+        await base44.entities.GymMembership.delete(memberships[0].id);
+      }
+    },
+    onMutate: async (gymId) => {
+      await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+      const previous = queryClient.getQueryData(['gymMemberships', currentUser?.id]);
+      queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) =>
+        old.filter((m) => m.gym_id !== gymId)
+      );
+      return { previous };
+    },
+    onError: (err, gymId, context) => {
+      queryClient.setQueryData(['gymMemberships', currentUser?.id], context.previous);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    }
+  });
 
-  if (gymLoading && !gym) return <GymCommunitySkeleton />;
-  if (!gymLoading && !gym) return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center p-4">
-      <div className="p-8 text-center rounded-2xl" style={CARD_STYLE}><p className="text-slate-400 mb-4">Gym not found</p><Link to={createPageUrl('Gyms')} className="text-blue-400 font-bold">Back to Gyms</Link></div>
-    </div>
-  );
+  const userGyms = [...userGymsData].sort((a, b) => {
+    if (a.id === currentUser?.primary_gym_id) return -1;
+    if (b.id === currentUser?.primary_gym_id) return 1;
+    return 0;
+  });
 
-  // ── Tab trigger style matching CoStride nav pattern ───────────────────────────
-  const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-3 py-1.5 flex items-center gap-1.5 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
+  const filteredGyms = gyms.filter((gym) => {
+    const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === 'all' || gym.type === selectedType;
+    const matchesDistance = maxDistance === 'all' || gym.distance_km && gym.distance_km <= parseFloat(maxDistance);
+    const matchesEquipment = selectedEquipment === 'all' ||
+      gym.equipment && gym.equipment.includes(selectedEquipment);
+    const isGhostOrApproved = gym.status === 'approved' || !gym.admin_id && !gym.owner_email;
+    return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
+  });
+
+  const toggleSave = (gymId) => {
+    setSavedGyms((prev) =>
+      prev.includes(gymId) ? prev.filter((id) => id !== gymId) : [...prev, gymId]
+    );
+  };
+
+  const searchPlaces = async (query) => {
+    if (!query.trim() || query.length < 2) {
+      setPlacesResults([]);
+      return;
+    }
+    setSearchingPlaces(true);
+    try {
+      const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
+      const results = response.data.results || [];
+      const existingPlaceIds = gyms.map((g) => g.google_place_id).filter(Boolean);
+      const newPlaces = results.filter((place) => !existingPlaceIds.includes(place.place_id));
+      setPlacesResults(newPlaces);
+    } catch (error) {
+      console.error('Places search failed:', error);
+      setPlacesResults([]);
+    } finally {
+      setSearchingPlaces(false);
+    }
+  };
+
+  const handleSelectPlace = (place) => {
+    setSelectedPlaceGym(place);
+    setShowAddGymModal(true);
+  };
+
+  const [showConfirmJoin, setShowConfirmJoin] = useState(false);
+  const [pendingGymData, setPendingGymData] = useState(null);
+
+  const createGymMutation = useMutation({
+    mutationFn: async (gymData) => {
+      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
+      if (existingGyms.length > 0) {
+        return { exists: true, gym: existingGyms[0] };
+      }
+      const newGym = await base44.entities.Gym.create(gymData);
+      return { exists: false, gym: newGym };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      setShowAddGymModal(false);
+      setShowConfirmJoin(false);
+      setSelectedPlaceGym(null);
+      setPendingGymData(null);
+      setPlacesResults([]);
+      setSearchQuery('');
+    }
+  });
+
+  const handleCreateGym = async () => {
+    if (!selectedPlaceGym) return;
+    if (gymMemberships.length >= 3 && !isOwner) {
+      alert('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
+      return;
+    }
+    if (!isOwner) {
+      const userCreatedGhostGyms = gyms.filter((g) =>
+        g.created_by === currentUser?.email && !g.admin_id && !g.owner_email
+      );
+      if (userCreatedGhostGyms.length >= 3) {
+        alert('You have reached the limit of 3 ghost gyms you can create. Please claim ownership if you manage this gym.');
+        return;
+      }
+    }
+    const addressParts = selectedPlaceGym.address.split(',');
+    const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedPlaceGym.address;
+    const gymData = {
+      name: selectedPlaceGym.name,
+      address: selectedPlaceGym.address,
+      city: city,
+      google_place_id: selectedPlaceGym.place_id,
+      latitude: selectedPlaceGym.latitude,
+      longitude: selectedPlaceGym.longitude,
+      type: gymType,
+      claim_status: isOwner ? 'claimed' : 'unclaimed',
+      admin_id: isOwner ? currentUser?.id : null,
+      owner_email: isOwner ? currentUser?.email : null,
+      verified: isOwner,
+      status: 'approved',
+      members_count: 0,
+      image_url: selectedPlaceGym.photo_url || null
+    };
+    if (isOwner && gymMemberships.length > 0) {
+      setPendingGymData(gymData);
+      setShowConfirmJoin(true);
+    } else {
+      createGymMutation.mutate(gymData);
+    }
+  };
+
+  const handleConfirmJoin = () => {
+    if (pendingGymData) {
+      createGymMutation.mutate(pendingGymData);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchPlaces(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, gyms]);
+
+  const GymCard = ({ gym }) => {
+    const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
+    return (
+      <div className="group cursor-pointer">
+        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl">
+          {gym.image_url &&
+            <div className="relative w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+              <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="w-full px-4">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">View Community</Button>
+                </Link>
+              </div>
+              <div className="absolute top-3 left-3 flex gap-2">
+                {gym.verified && <Badge className="bg-green-500/90 text-white text-xs"><BadgeCheck className="w-3 h-3 mr-1" />Verified</Badge>}
+              </div>
+              <div className="absolute top-3 right-3 flex gap-2">
+                <button onClick={() => setEquipmentGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
+                  <Dumbbell className="w-4 h-4 text-slate-300" />
+                </button>
+                <button onClick={() => toggleSave(gym.id)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
+                  <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+                </button>
+                {isOwner && <button onClick={() => setEditingGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors"><Edit className="w-4 h-4 text-slate-300" /></button>}
+              </div>
+            </div>
+          }
+          <div className="p-4 space-y-3">
+            <div>
+              <h3 className="text-lg font-bold text-slate-100 line-clamp-2">{gym.name}</h3>
+              <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="line-clamp-1">{gym.address || gym.city}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {gym.type && <Badge className="bg-blue-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge>}
+              {gym.distance_km && <Badge className="bg-slate-700/50 text-slate-300 border border-slate-600/50 text-xs">{gym.distance_km} km</Badge>}
+            </div>
+            <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
+              {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-semibold text-slate-100 text-sm">{gym.rating}/5</span></div>}
+              {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span>{gym.members_count}</span></div>}
+            </div>
+            {gym.reward_offer && <div className="bg-orange-600/20 border border-orange-500/30 rounded-lg p-2.5 flex items-center gap-2"><Gift className="w-4 h-4 text-orange-400 flex-shrink-0" /><span className="text-sm font-medium text-orange-200 line-clamp-1">{gym.reward_offer}</span></div>}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
-      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-
-          {/* ── HERO BANNER ── */}
-          <div className="relative overflow-hidden">
-            {/* Hero image */}
-            <div className="absolute inset-0 z-0">
-              {gym.image_url
-                ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" />
-                : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
+    <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+      <Tabs defaultValue={gymMemberships.length > 0 ? "my-gyms" : "explore"} className="w-full">
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center h-18 gap-6">
+              {gymMemberships.length > 0 &&
+                <Button onClick={() => setShowPrimaryGymModal(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8.5 px-3 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                  <Star className="w-4 h-4" />
+                </Button>
               }
-              {/* Gradient overlays for depth */}
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(2,4,10,0.5) 0%, transparent 60%)' }} />
+              <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-12 border-0">
+                {userGyms.length > 0 &&
+                  <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base">
+                    <Users className="w-5 h-5 mr-2" />My Gyms
+                  </TabsTrigger>
+                }
+                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-base">
+                  <MapPin className="w-5 h-5 mr-2" />Explore
+                </TabsTrigger>
+              </TabsList>
+              <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8.5 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                <Key className="w-4 h-4" />
+                <span className="hidden md:inline">Join with Code</span>
+              </Button>
             </div>
+          </div>
+        </div>
 
-            {/* Banner content */}
-            <div className="relative z-10 px-4 pt-4 pb-0" style={{ minHeight: '140px' }}>
-              {/* Top row: gym name + controls */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 mr-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length > 28 ? 'text-base' : gym.name.length > 18 ? 'text-lg' : 'text-xl'}`}>
-                      {gym.name}
-                    </h1>
-                    {gym.verified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow" />}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-white/60 text-[11px] flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />{gym.city}
-                    </p>
-                    {/* Member count pill */}
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                      <Users className="w-3 h-3 text-white/70" />
-                      <span className="text-[11px] font-bold text-white">{gym?.members_count || 0} members</span>
+        {userGyms.length > 0 &&
+          <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
+            <div className="max-w-6xl mx-auto">
+              {userGyms.length === 0 ?
+                <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div> :
+                <div className="grid md:grid-cols-2 gap-4">
+                  {userGyms.map((gym) =>
+                    <div key={gym.id} className="group relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                      <div className="relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300 shadow-2xl shadow-black/20">
+                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                          {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                            <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                              <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
+                            </Button>
+                          </Link>
+                          <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+                            {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ?
+                              <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge> :
+                              <Badge className="inline-flex items-center rounded-md border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-slate-600 bg-slate-700/95 text-slate-200 text-xs shadow-lg font-semibold">Unofficial</Badge>
+                            }
+                            {currentUser && currentUser.email === gym.owner_email &&
+                              <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">Owner</Badge>
+                            }
+                          </div>
+                          {currentUser?.primary_gym_id === gym.id &&
+                            <div className="absolute bottom-3 left-3">
+                              <div className="w-9 h-9 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
+                                <Star className="w-5 h-5 text-white" />
+                              </div>
+                            </div>
+                          }
+                          <div className="absolute top-3 right-3 flex gap-3">
+                            <button onClick={(e) => { e.preventDefault(); setGalleryGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all">
+                              <Images className="w-5 h-5 text-slate-400 drop-shadow-lg" />
+                            </button>
+                            <button onClick={(e) => { e.preventDefault(); setEquipmentGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all">
+                              <Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" />
+                            </button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button onClick={(e) => e.preventDefault()} className="flex items-center justify-center hover:scale-110 transition-all">
+                                  <MoreVertical className="w-5 h-5 text-slate-400 drop-shadow-lg" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="z-50 min-w-[8rem] overflow-hidden p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-slate-800 border border-slate-700/50 rounded-lg transition-all duration-100 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
+                                {currentUser && currentUser.email === gym.owner_email &&
+                                  <DropdownMenuItem onClick={(e) => { e.preventDefault(); setEditingGym(gym); }} className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer">
+                                    <Edit className="w-4 h-4 mr-2" />Edit Gym
+                                  </DropdownMenuItem>
+                                }
+                                <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmLeaveGym(gym); }} disabled={leaveGymMutation.isPending} className="text-red-400 hover:text-red-300 hover:bg-slate-700 cursor-pointer">
+                                  <LogOut className="w-4 h-4 mr-2" />Leave Gym
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <div>
+                            <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                              <MapPin className="w-4 h-4 flex-shrink-0" />
+                              <span className="line-clamp-1">{gym.address || gym.city}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
+                            {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
+                            {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
+                          </div>
+                          {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
+                        </div>
+                      </div>
                     </div>
+                  )}
+                </div>
+              }
+            </div>
+          </TabsContent>
+        }
+
+        <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input placeholder="Search gyms or add new..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex w-full px-3 py-1 text-base shadow-sm file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200" />
+                  {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
+                </div>
+                <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
+                  <Filter className="w-5 h-5" />
+                  {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />}
+                </button>
+              </div>
+
+              {searchingPlaces && searchQuery.length >= 2 &&
+                <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
+                  <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
+                  <div className="space-y-2">
+                    {[...Array(3)].map((_, i) =>
+                      <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch gap-0">
+                        <div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" />
+                        <div className="flex-1 p-3 flex flex-col justify-center gap-2">
+                          <div className="h-4 bg-slate-600/60 rounded w-3/4" />
+                          <div className="h-3 bg-slate-600/40 rounded w-1/2" />
+                          <div className="h-3 bg-slate-600/30 rounded w-16" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+              }
 
-                {/* Owner / coach controls */}
-                <div className="flex flex-col gap-1.5 flex-shrink-0">
-                  {isGhostGym && !isGymOwner && (
-                    <button onClick={() => setShowInviteOwnerModal(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_3px_0_0_#5b21b6,0_6px_20px_rgba(120,40,220,0.4)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100">
-                      <Crown className="w-3.5 h-3.5" />Make Official
-                    </button>
+              {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
+                <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
+                  <p className="text-xs font-semibold flex items-center gap-2">
+                    <Plus className="w-3 h-3 text-green-400" />
+                    <span className="text-green-400">Found {placesResults.length} gyms on Google Places</span>
+                  </p>
+                  <div className="space-y-2">
+                    {placesResults.slice(0, 5).map((place) =>
+                      <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
+                        <div className="flex items-stretch gap-0">
+                          <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
+                            {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
+                          </div>
+                          <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
+                            <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
+                            <div className="flex items-center gap-1 text-slate-400 text-xs"><MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{place.address}</span></div>
+                            {place.rating && <div className="flex items-center gap-1 mt-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-xs">{place.rating}</span></div>}
+                          </div>
+                          <div className="flex items-center pr-3">
+                            <Badge className="inline-flex items-center justify-center rounded-lg px-2.5 py-0.5 text-xs font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring gap-2 bg-gradient-to-b from-green-400 via-green-500 to-green-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#065f46,0_2px_5px_rgba(16,185,129,0.3),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">Add</Badge>
+                          </div>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              }
+            </div>
+
+            {filteredGyms.length === 0 ?
+              <div className="text-center py-12">
+                <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                <p className="text-slate-400">No gyms found</p>
+                <p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
+              </div> :
+              <div className="grid md:grid-cols-2 gap-4">
+                {filteredGyms.map((gym) =>
+                  <div key={gym.id} className="group relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                    <div className="relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300 shadow-2xl shadow-black/20">
+                      <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                        {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="eager" fetchpriority="high" />}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                          <Button className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                            <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
+                          </Button>
+                        </Link>
+                        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+                          {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) && <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge>}
+                        </div>
+                        <div className="absolute top-3 right-3 flex gap-3">
+                          <button onClick={(e) => { e.preventDefault(); setGalleryGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all"><Images className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
+                          <button onClick={(e) => { e.preventDefault(); setEquipmentGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all"><Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
+                          {currentUser && currentUser.email === gym.owner_email && <button onClick={() => setEditingGym(gym)} className="flex items-center justify-center hover:scale-110 transition-all"><Edit className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>}
+                        </div>
+                      </div>
+                      <div className="p-4 space-y-2">
+                        <div>
+                          <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-slate-400"><MapPin className="w-4 h-4 flex-shrink-0" /><span className="line-clamp-1">{gym.address || gym.city}</span></div>
+                        </div>
+                        <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
+                          {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
+                          {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
+                        </div>
+                        {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            }
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <EditHeroImageModal open={!!editingGym} onClose={() => setEditingGym(null)} currentImageUrl={editingGym?.image_url} onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })} isLoading={updateGymImageMutation.isPending} />
+      <JoinWithCodeModal open={showJoinWithCode} onClose={() => setShowJoinWithCode(false)} currentUser={currentUser} />
+
+      <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
+          <div className="space-y-3">
+            {(() => {
+              const isBodystreakGym = equipmentGym?.name?.toLowerCase().includes('bodystreak');
+              const mockEquipment = ['Nautilus Rows', 'Hammer Strength Chest Press', 'Leg Press', 'Smith Machine', 'Cable Crossover', 'Hack Squat', 'Preacher Curl Bench', 'Seated Calf Raise', 'Lat Pulldown', 'Pec Deck', 'Leg Extension', 'Leg Curl', 'Shoulder Press Machine', 'Cable Fly', 'T-Bar Row'];
+              const equipmentList = isBodystreakGym ? mockEquipment : equipmentGym?.equipment;
+              return equipmentList && equipmentList.length > 0 ?
+                <div className="grid grid-cols-2 gap-2">
+                  {equipmentList.map((item, idx) =>
+                    <div key={idx} className="flex items-center gap-2 p-2 bg-slate-700/50 rounded-lg border border-slate-600/50">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                      <span className="text-slate-200 text-sm">{item}</span>
+                    </div>
                   )}
-                  {showOwnerControls && (
-                    <button onClick={() => setShowEditHeroImage(true)}
-                      className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white/90 active:scale-95 transition-transform">
-                      <Edit className="w-3 h-3 inline mr-1" />Edit Hero
-                    </button>
+                </div> :
+                <div className="text-center py-8 text-slate-400"><Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" /><p>No equipment information available</p></div>;
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!galleryGym} onOpenChange={() => setGalleryGym(null)}>
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
+          <div>
+            {galleryGym?.gallery && galleryGym.gallery.length > 0 ?
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {galleryGym.gallery.map((imageUrl, idx) =>
+                  <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600/50">
+                    <img src={imageUrl} alt={`${galleryGym.name} photo ${idx + 1}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" />
+                  </div>
+                )}
+              </div> :
+              <div className="text-center py-12 text-slate-400"><Images className="w-16 h-16 mx-auto mb-3 opacity-50" /><p>No photos available</p></div>
+            }
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPrimaryGymModal} onOpenChange={setShowPrimaryGymModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg [&>button]:hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2"><Star className="w-5 h-5 text-purple-400" />Set Primary Gym</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
+              <p className="text-purple-200 text-sm">Your primary gym is the default community shown on the Home page and accessed via the Community navigation button.</p>
+            </div>
+            <div className="space-y-2">
+              {userGyms.map((gym) => {
+                const isPrimary = selectedPrimaryGym === gym.id || !selectedPrimaryGym && currentUser?.primary_gym_id === gym.id;
+                return (
+                  <button key={gym.id} onClick={() => setSelectedPrimaryGym(gym.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isPrimary ? 'bg-purple-500' : 'bg-slate-700'}`}>
+                          <Dumbbell className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white">{gym.name}</h4>
+                          <p className="text-xs text-slate-400">{gym.city}</p>
+                        </div>
+                      </div>
+                      {isPrimary && <Badge className="bg-purple-500 text-white"><Star className="w-3 h-3 mr-1" />Primary</Badge>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={() => { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); }} variant="outline" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-black backdrop-blur-md text-white border border-slate-700 h-9 px-4 flex-1 shadow-[0_3px_0_0_rgba(0,0,0,0.5),0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">Cancel</Button>
+              <Button onClick={() => { if (selectedPrimaryGym) { updatePrimaryGymMutation.mutate(selectedPrimaryGym); } else { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); } }} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                {updatePrimaryGymMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showConfirmJoin} onOpenChange={() => { setShowConfirmJoin(false); setPendingGymData(null); }}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{gymMemberships.length > 0 ? 'Replace Primary Gym?' : 'Join This Community?'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {gymMemberships.length > 0 ?
+              <p className="text-slate-300 text-sm">You're currently a member of <span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span>. Joining <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> will replace your primary gym.</p> :
+              <p className="text-slate-300 text-sm">Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? This is an unclaimed community gym.</p>
+            }
+            <div className="flex gap-3 pt-2">
+              <Button onClick={() => { setShowConfirmJoin(false); setPendingGymData(null); }} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
+              <Button onClick={handleConfirmJoin} disabled={createGymMutation.isPending} className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
+                {createGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmLeaveGym} onOpenChange={() => setConfirmLeaveGym(null)}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Leave {confirmLeaveGym?.name}?</DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-300 text-sm">Are you sure you want to leave this gym? You'll lose access to its community.</p>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={() => setConfirmLeaveGym(null)} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
+            <Button onClick={() => { leaveGymMutation.mutate(confirmLeaveGym.id); setConfirmLeaveGym(null); }} disabled={leaveGymMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
+              {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Leave Gym'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showFilterModal &&
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
+          <div className="fixed bottom-24 left-0 right-0 z-50 bg-slate-800/30 backdrop-blur-md border-t border-slate-700/20 rounded-3xl p-5 space-y-2 shadow-2xl shadow-black/20" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Filters</h3>
+              <div className="flex items-center gap-3">
+                {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
+                  <button onClick={() => { setSelectedType('all'); setMaxDistance('all'); setSelectedEquipment('all'); }} className="text-xs text-blue-400 font-semibold">Clear all</button>
+                }
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Gym Type</label>
+                <div className="flex flex-wrap gap-2">
+                  {[['all', 'All Types'], ['powerlifting', 'Powerlifting'], ['bodybuilding', 'Bodybuilding'], ['crossfit', 'CrossFit'], ['boxing', 'Boxing'], ['mma', 'MMA'], ['general', 'General']].map(([val, label]) =>
+                    <button key={val} onClick={() => setSelectedType(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
                   )}
-                  {isGymOwner && (
-                    <button onClick={() => setViewAsMember(!viewAsMember)}
-                      className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white/90 active:scale-95 transition-transform">
-                      {viewAsMember ? '👤 Member' : '👑 Owner'}
-                    </button>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Distance</label>
+                <div className="flex flex-wrap gap-2">
+                  {[['all', 'Any Distance'], ['5', 'Within 5 km'], ['10', 'Within 10 km'], ['20', 'Within 20 km'], ['50', 'Within 50 km']].map(([val, label]) =>
+                    <button key={val} onClick={() => setMaxDistance(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
                   )}
-                  {isCoach && !isGymOwner && (
-                    <div className="px-3 py-1 rounded-full text-xs font-bold text-white" style={{ background: 'rgba(59,130,246,0.7)' }}>🎓 Coach</div>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Equipment</label>
+                <div className="flex flex-wrap gap-2">
+                  {[['all', 'All Equipment'], ['Power Racks', 'Power Racks'], ['Barbells', 'Barbells'], ['Dumbbells', 'Dumbbells'], ['Cable Machines', 'Cable Machines'], ['Cardio Equipment', 'Cardio'], ['Olympic Platforms', 'Olympic Platforms']].map(([val, label]) =>
+                    <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
                   )}
                 </div>
               </div>
             </div>
+          </div>
+        </>
+      }
 
-            {/* ── TAB BAR ── */}
-            <div className="relative z-10 pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              <TabsList className="w-full flex justify-around bg-transparent px-3 py-2 h-auto gap-1.5">
-                <TabsTrigger value="home" className={tabTriggerClass}>
-                  <Home className="w-3.5 h-3.5" /><span>Home</span>
-                </TabsTrigger>
-                <TabsTrigger value="feed" className={tabTriggerClass}>
-                  <MessageCircle className="w-3.5 h-3.5" /><span>Feed</span>
-                </TabsTrigger>
-                <TabsTrigger value="challenges" className={tabTriggerClass}>
-                  <Trophy className="w-3.5 h-3.5" /><span>Challenges</span>
-                </TabsTrigger>
-                <TabsTrigger value="events" className={tabTriggerClass}>
-                  <Calendar className="w-3.5 h-3.5" /><span>Events</span>
-                </TabsTrigger>
-              </TabsList>
+      <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle>
+          </DialogHeader>
+          {selectedPlaceGym &&
+            <div className="space-y-4">
+              <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white text-lg mb-1">{selectedPlaceGym.name}</h3>
+                    <div className="flex items-start gap-2 text-slate-300 text-sm mb-2"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /><span>{selectedPlaceGym.address}</span></div>
+                    {selectedPlaceGym.rating && <div className="flex items-center gap-1"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-sm">{selectedPlaceGym.rating} rating</span></div>}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="text-slate-300 text-sm font-semibold mb-2 block">Gym Type</label>
+                <Select value={gymType} onValueChange={setGymType}>
+                  <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General Fitness</SelectItem>
+                    <SelectItem value="powerlifting">Powerlifting</SelectItem>
+                    <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
+                    <SelectItem value="crossfit">CrossFit</SelectItem>
+                    <SelectItem value="boxing">Boxing</SelectItem>
+                    <SelectItem value="mma">MMA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {currentUser?.account_type === 'gym_owner' &&
+                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={isOwner} onChange={(e) => setIsOwner(e.target.checked)} className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1"><span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span><Crown className="w-4 h-4 text-purple-400" /></div>
+                      <p className="text-slate-300 text-xs">Check this if you own or manage this gym. You'll have full control over the gym's profile.</p>
+                    </div>
+                  </label>
+                </div>
+              }
+              <Button onClick={handleCreateGym} disabled={createGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 w-full bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white rounded-xl font-bold py-6 text-base shadow-[0_4px_0_0_#065f46,0_2px_10px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-[0.98] transform-gpu">
+                {createGymMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
+                {isOwner ? 'Claim & Add Gym' : 'Add Gym'}
+              </Button>
+              {isOwner && <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-3"><p className="text-blue-300 text-xs text-center">✓ Your gym will be marked as verified and you'll become the admin</p></div>}
             </div>
-          </div>
-          {/* ── END HERO ── */}
-
-          {/* ── CONTENT ── */}
-          <div className="max-w-4xl mx-auto px-3 md:px-4 pt-3 pb-28 space-y-3 w-full overflow-hidden">
-
-            {/* HOME TAB */}
-            <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-
-                {/* Ghost gym join banner */}
-                {isGhostGym && !isMember && !showOwnerControls && (
-                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3"
-                    style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
-                    <div>
-                      <p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p>
-                      <p className="text-xs text-slate-400">Join this gym community</p>
-                    </div>
-                    <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending}
-                      className="px-4 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform"
-                      style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}>
-                      {joinGhostGymMutation.isPending ? 'Joining…' : 'Join Gym'}
-                    </button>
-                  </div>
-                )}
-
-                {!showOwnerControls && isMember && <CheckInButton gym={gym} />}
-
-                {/* ── JOIN WITH CODE + SET PRIMARY GYM ── */}
-                {!isMember && !isGhostGym && !showOwnerControls && (
-                  <div className="space-y-2">
-                    {/* Buttons row */}
-                    <div className="flex gap-2">
-                      {/* Join with Code */}
-                      <RippleButton
-                        onClick={() => { setJoinPanel(p => p === 'code' ? null : 'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{
-                          background: joinPanel === 'code'
-                            ? 'linear-gradient(135deg,#1d4ed8,#1e40af)'
-                            : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))',
-                          border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`,
-                          boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)',
-                          color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)',
-                          transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)',
-                        }}>
-                        <span style={{ fontSize: 16 }}>🔑</span>
-                        <span>Join with Code</span>
-                        <span style={{
-                          display: 'inline-block',
-                          transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)',
-                          fontSize: 11, opacity: 0.7,
-                        }}>▼</span>
-                      </RippleButton>
-
-                      {/* Set Primary Gym */}
-                      <RippleButton
-                        onClick={() => { setJoinPanel(p => p === 'primary' ? null : 'primary'); setPrimaryConfirmed(false); }}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{
-                          background: joinPanel === 'primary'
-                            ? 'linear-gradient(135deg,#b45309,#92400e)'
-                            : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))',
-                          border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`,
-                          boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)',
-                          color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)',
-                          transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)',
-                        }}>
-                        <span style={{ fontSize: 16 }}>⭐</span>
-                        <span>Set Primary</span>
-                        <span style={{
-                          display: 'inline-block',
-                          transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)',
-                          fontSize: 11, opacity: 0.7,
-                        }}>▼</span>
-                      </RippleButton>
-                    </div>
-
-                    {/* ── JOIN WITH CODE PANEL ── */}
-                    <SlidePanel open={joinPanel === 'code'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border: '1px solid rgba(59,130,246,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                        <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
-                        <p className="text-[11px] mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
-                        {joinCodeSuccess ? (
-                          <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
-                              style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
-                            <p className="text-sm font-black text-emerald-400">You're in!</p>
-                            <p className="text-xs text-slate-400">Welcome to {gym?.name}</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex gap-2">
-                              <input
-                                value={joinCode}
-                                onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinCodeError(''); }}
-                                placeholder="e.g. GYM-XK29"
-                                maxLength={10}
-                                className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold text-white placeholder-slate-600 outline-none"
-                                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }}
-                              />
-                              <button
-                                onClick={() => {
-                                  if (!joinCode.trim()) { setJoinCodeError('Please enter a code'); return; }
-                                  // Wire to real mutation: joinGymMutation.mutate({ code: joinCode })
-                                  setJoinCodeSuccess(true);
-                                }}
-                                className="px-4 py-2.5 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                                style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>
-                                Join
-                              </button>
-                            </div>
-                            {joinCodeError && <p className="text-[11px] text-red-400 mt-1.5 font-semibold">{joinCodeError}</p>}
-                          </>
-                        )}
-                      </div>
-                    </SlidePanel>
-
-                    {/* ── SET PRIMARY GYM PANEL ── */}
-                    <SlidePanel open={joinPanel === 'primary'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border: '1px solid rgba(251,191,36,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                        {primaryConfirmed ? (
-                          <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
-                              style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.4)' }}>⭐</div>
-                            <p className="text-sm font-black text-yellow-400">{gym?.name} is now your primary gym!</p>
-                            <p className="text-xs text-slate-400">Your stats and check-ins will be tracked here</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-                                style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
-                              <div>
-                                <p className="text-[13px] font-black text-white leading-tight">Set as your home gym</p>
-                                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(148,163,184,0.65)' }}>Your check-ins, leaderboard rank &amp; streak will be tracked at {gym?.name}</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => {
-                                setPrimaryConfirmed(true);
-                                // Wire: updatePrimaryGymMutation.mutate({ gymId })
-                              }}
-                              className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                              style={{ background: 'linear-gradient(135deg,#d97706,#b45309)', boxShadow: '0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
-                              ⭐ Confirm — Set {gym?.name} as Primary
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </SlidePanel>
-                  </div>
-                )}
-
-                {/* Polls */}
-                {polls.length > 0 && (
-                  <div className="space-y-3">
-                    {polls.map((poll) => (
-                      <PollCard key={poll.id} poll={poll}
-                        onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
-                        userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
-                    ))}
-                  </div>
-                )}
-
-                {/* Busy times */}
-                <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-
-                {/* ── LEADERBOARD ── */}
-                <LeaderboardSection
-                  view={leaderboardView}
-                  setView={setLeaderboardView}
-                  checkInLeaderboard={checkInLeaderboard}
-                  streakLeaderboard={streakLeaderboard}
-                  progressLeaderboard={progressLeaderboard}
-                />
-
-                {/* Upcoming events preview */}
-                {upcomingEvents.length > 0 && (
-                  <div className="rounded-2xl p-4" style={CARD_STYLE}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}>
-                        <Calendar className="w-3.5 h-3.5 text-orange-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">This Week</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {upcomingEvents.map((event) => (
-                        <WeeklyEventCard key={event.id} event={event}
-                          onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null}
-                          disabled={showOwnerControls} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Active challenges preview */}
-                {gymChallenges.length > 0 && (
-                  <div className="rounded-2xl p-4" style={CARD_STYLE}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}>
-                        <Trophy className="w-3.5 h-3.5 text-purple-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">New Challenges</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {gymChallenges.slice(0, 1).map((challenge) => (
-                        <GymChallengeCard key={challenge.id} challenge={challenge}
-                          isJoined={hasjoinedChallenge(challenge.id)}
-                          onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                          currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            </TabsContent>
-
-            {/* FEED TAB */}
-            <TabsContent value="feed" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-                {upcomingEvents.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-black text-white/40 uppercase tracking-wider">📅 This Week</p>
-                    {upcomingEvents.map((event) => (
-                      <WeeklyEventCard key={event.id} event={event}
-                        onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null}
-                        disabled={showOwnerControls} />
-                    ))}
-                  </div>
-                )}
-                {showOwnerControls && <CreateGymPostButton gym={gym} currentUser={currentUser} onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />}
-                {posts.length === 0
-                  ? (
-                    <div className="rounded-2xl p-10 text-center" style={CARD_STYLE}>
-                      <MessageCircle className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                      <p className="text-white font-bold mb-1 text-sm">No community posts yet</p>
-                      <p className="text-xs text-slate-500">Be the first to share your workout! 💪</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {posts.slice(0, 10).map((post) => (
-                        <PostCard key={post.id} post={post} fullWidth currentUser={currentUser}
-                          onLike={() => {}} onComment={() => {}} onSave={() => {}}
-                          onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-                      ))}
-                    </div>
-                  )
-                }
-              </motion.div>
-            </TabsContent>
-
-            {/* CHALLENGES TAB */}
-            <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-                {showOwnerControls && (
-                  <button onClick={() => setShowCreateChallenge(true)}
-                    className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform"
-                    style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border: '1px solid rgba(59,130,246,0.3)' }}>
-                    <Plus className="w-5 h-5" />
-                    <span className="text-sm">Create Gym Challenge</span>
-                  </button>
-                )}
-                {gymChallenges.length > 0
-                  ? gymChallenges.map((challenge) => (
-                    <GymChallengeCard key={challenge.id} challenge={challenge}
-                      isJoined={hasjoinedChallenge(challenge.id)}
-                      onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                      currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls}
-                      onDelete={showOwnerControls ? (id) => { if (window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} />
-                  ))
-                  : (
-                    <div className="rounded-2xl p-10 text-center" style={CARD_STYLE}>
-                      <Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                      <p className="text-white font-bold mb-1 text-sm">No Active Challenges</p>
-                      <p className="text-xs text-slate-500">Check back soon for new challenges!</p>
-                    </div>
-                  )
-                }
-              </motion.div>
-            </TabsContent>
-
-            {/* EVENTS TAB */}
-            <TabsContent value="events" className="space-y-3 mt-0 w-full" asChild>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-
-                {/* Classes */}
-                <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}>
-                        <Target className="w-3.5 h-3.5 text-purple-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">Classes</h3>
-                    </div>
-                    {showOwnerControls && (
-                      <button onClick={() => setShowManageClasses(true)}
-                        className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform"
-                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                        Manage
-                      </button>
-                    )}
-                  </div>
-                  <div className="px-3 pb-4">
-                    {classes.length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No classes scheduled</p></div>
-                      : <div className="space-y-2">
-                        {classes.map((gymClass) => (
-                          <div key={gymClass.id} className="flex items-start gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2))' }}>
-                              <Target className="w-5 h-5 text-purple-300" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-white text-[13px] mb-0.5 truncate">{gymClass.name}</h4>
-                              <p className="text-xs text-slate-500 mb-1.5 truncate">{gymClass.description}</p>
-                              <div className="flex flex-wrap gap-1">
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-purple-300" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)' }}>{gymClass.instructor}</span>
-                                {gymClass.duration_minutes && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-300" style={{ background: 'rgba(255,255,255,0.07)' }}>{gymClass.duration_minutes}min</span>}
-                              </div>
-                            </div>
-                            {showOwnerControls && (
-                              <button onClick={() => { if (window.confirm('Delete this class?')) deleteClassMutation.mutate(gymClass.id); }}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-                                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                {/* Upcoming Events */}
-                <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}>
-                        <Calendar className="w-3.5 h-3.5 text-orange-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">Upcoming Events</h3>
-                    </div>
-                    {showOwnerControls && (
-                      <button onClick={() => setShowCreateEvent(true)}
-                        className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform"
-                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                        <Plus className="w-3 h-3" />Create
-                      </button>
-                    )}
-                  </div>
-                  <div className="px-3 pb-4">
-                    {events.filter((e) => new Date(e.event_date) >= now).length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No upcoming events</p></div>
-                      : <div className="space-y-2">
-                        {events.filter((e) => new Date(e.event_date) >= now).slice(0, 5).map((event) => (
-                          <EventCard key={event.id} event={event}
-                            onRSVP={(eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); }}
-                            isOwner={showOwnerControls}
-                            onDelete={showOwnerControls ? (eventId) => { if (window.confirm('Delete?')) deleteEventMutation.mutate(eventId); } : null} />
-                        ))}
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                {/* Coaches */}
-                <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(96,165,250,0.15)' }}>
-                        <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">Coaches</h3>
-                    </div>
-                    {showOwnerControls && (
-                      <button onClick={() => setShowManageCoaches(true)}
-                        className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform"
-                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                        Manage
-                      </button>
-                    )}
-                  </div>
-                  <div className="px-3 pb-4">
-                    {coaches.length === 0
-                      ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><GraduationCap className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No coaches listed</p></div>
-                      : <div className="space-y-2">
-                        {coaches.slice(0, 5).map((coach) => {
-                          const handleCopyEmail = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
-                          return (
-                            <div key={coach.id} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'linear-gradient(135deg, #3b82f6, #06b6d4)' }}>
-                                {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} className="w-full h-full object-cover" /> : <span className="text-base font-black text-white">{coach.name.charAt(0)}</span>}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                  <h4 className="font-bold text-white text-[13px] truncate">{coach.name}</h4>
-                                  {coach.rating && <div className="flex items-center gap-0.5"><Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" /><span className="text-[10px] font-bold text-slate-300">{coach.rating}</span></div>}
-                                </div>
-                                {coach.specialties?.length > 0 && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {coach.specialties.slice(0, 2).map((s, i) => <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-blue-300" style={{ background: 'rgba(59,130,246,0.12)' }}>{s}</span>)}
-                                  </div>
-                                )}
-                              </div>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <button className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'rgba(59,130,246,0.1)' }}>
-                                    <Mail className="w-3.5 h-3.5 text-blue-400" />
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-3 bg-slate-800 border-slate-700">
-                                  <div className="flex items-center gap-2">
-                                    <a href={`mailto:${coach.user_email}`} className="text-blue-400 text-xs font-medium break-all flex-1">{coach.user_email}</a>
-                                    <button onClick={handleCopyEmail} className="w-7 h-7 flex items-center justify-center hover:bg-slate-700 rounded transition-colors">
-                                      <Copy className={`w-3.5 h-3.5 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} />
-                                    </button>
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    }
-                  </div>
-                </div>
-              </motion.div>
-            </TabsContent>
-
-          </div>
-        </Tabs>
-
-        {/* Modals — unchanged */}
-        <CreateEventModal open={showCreateEvent} onClose={() => setShowCreateEvent(false)} onSave={(data) => createEventMutation.mutate(data)} gym={gym} isLoading={createEventMutation.isPending} />
-        <ManageEquipmentModal open={showManageEquipment} onClose={() => setShowManageEquipment(false)} equipment={gym?.equipment || []} onSave={(equipment) => updateEquipmentMutation.mutate(equipment)} isLoading={updateEquipmentMutation.isPending} />
-        <ManageRewardsModal open={showManageRewards} onClose={() => setShowManageRewards(false)} rewards={rewards} onCreateReward={(data) => createRewardMutation.mutate(data)} onDeleteReward={(id) => deleteRewardMutation.mutate(id)} gym={gym} isLoading={createRewardMutation.isPending} />
-        <ManageClassesModal open={showManageClasses} onClose={() => setShowManageClasses(false)} classes={classes} onCreateClass={(data) => createClassMutation.mutate(data)} onDeleteClass={(id) => deleteClassMutation.mutate(id)} gym={gym} isLoading={createClassMutation.isPending} />
-        <ManageCoachesModal open={showManageCoaches} onClose={() => setShowManageCoaches(false)} coaches={coaches} onCreateCoach={(data) => createCoachMutation.mutate(data)} onDeleteCoach={(id) => deleteCoachMutation.mutate(id)} onUpdateCoach={(coachId, data) => updateCoachMutation.mutate({ coachId, data })} gym={gym} isLoading={createCoachMutation.isPending} />
-        <ManageGymPhotosModal open={showManagePhotos} onClose={() => setShowManagePhotos(false)} gallery={gym?.gallery || []} onSave={(gallery) => updateGalleryMutation.mutate(gallery)} isLoading={updateGalleryMutation.isPending} />
-        <EditHeroImageModal open={showEditHeroImage} onClose={() => setShowEditHeroImage(false)} currentImageUrl={gym?.image_url} onSave={(image_url) => updateHeroImageMutation.mutate(image_url)} isLoading={updateHeroImageMutation.isPending} />
-        <EditGymLogoModal open={showEditGymLogo} onClose={() => setShowEditGymLogo(false)} currentLogoUrl={gym?.logo_url} onSave={(logo_url) => updateGymLogoMutation.mutate(logo_url)} isLoading={updateGymLogoMutation.isPending} />
-        <ManageMembersModal open={showManageMembers} onClose={() => setShowManageMembers(false)} gym={gym} onBanMember={(userId) => banMemberMutation.mutate(userId)} onUnbanMember={(userId) => unbanMemberMutation.mutate(userId)} />
-        <UpgradeMembershipModal open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} currentUser={currentUser} />
-        <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
-        <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
-      </div>
-    </PullToRefresh>
+          }
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
