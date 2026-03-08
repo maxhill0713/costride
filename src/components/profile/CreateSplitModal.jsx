@@ -328,7 +328,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 const preset = PRESET_SPLITS.find(p => p.id === activeSaved.preset_id) || PRESET_SPLITS[4];
                 return (
                   <div
-                    onClick={() => loadSavedSplit(activeSaved)}
+                    onClick={() => selectingActive ? (handlePickActive(activeSaved), setSelectingActive(false)) : loadSavedSplit(activeSaved)}
                     className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all "
                     style={{
                       background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))',
