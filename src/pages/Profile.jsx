@@ -259,6 +259,7 @@ export default function Profile() {
             <Dumbbell className="w-3.5 h-3.5" />
             {currentUser?.workout_split ? 'Edit Split' : 'Create Split'}
           </button>
+
         </div>
       </div>
 
