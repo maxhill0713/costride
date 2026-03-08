@@ -277,9 +277,9 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
 
-      {/* Illustration — right side, vertically centred */}
-      <div className="absolute top-1/2 right-0 pointer-events-none" style={{ transform: 'translateY(-50%) translateX(8px)', opacity: 0.85 }}>
-        <div style={{ transform: 'scale(0.72)', transformOrigin: 'right center' }}>
+      {/* Illustration — top right corner */}
+      <div className="absolute top-0 right-0 pointer-events-none" style={{ transform: 'translate(6px, -6px)', opacity: 0.85 }}>
+        <div style={{ transform: 'scale(0.72)', transformOrigin: 'top right' }}>
           <Illustration />
         </div>
       </div>
