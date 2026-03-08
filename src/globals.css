@@ -291,23 +291,28 @@ css
     min-width: 44px;
   }
 
-  /* Interactive Elements - iOS Spring Physics */
-  a,
+  /* Duolingo-style press physics — snap down on press, spring back on release */
   button,
   [role="button"],
   [role="link"],
   input[type="checkbox"],
   input[type="radio"] {
-    @apply active:scale-95 transition-transform;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 80ms ease-in-out, box-shadow 80ms ease-in-out;
     will-change: transform;
   }
 
   button:active,
-  a[role="button"]:active,
   [role="button"]:active,
   [role="link"]:active {
-    animation: iosHaptic 0.1s ease-in-out;
+    transform: scale(0.93) translateY(2px) !important;
+    transition: transform 60ms ease-in-out !important;
+  }
+
+  /* Release spring-back */
+  button:not(:active),
+  [role="button"]:not(:active),
+  [role="link"]:not(:active) {
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   /* Tap Feedback Animation */
