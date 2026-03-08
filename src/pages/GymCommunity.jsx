@@ -426,30 +426,7 @@ export default function GymCommunity() {
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  // Fetch user profiles so we can show real avatars on the leaderboard
-  const leaderboardUserIds = React.useMemo(() => {
-    const ids = new Set();
-    checkIns.forEach(c => { if (c.user_id) ids.add(c.user_id); });
-    return [...ids].slice(0, 50);
-  }, [checkIns]);
-
-  const { data: leaderboardUsers = [] } = useQuery({
-    queryKey: ['leaderboardUsers', gymId, leaderboardUserIds.join(',')],
-    queryFn: async () => {
-      if (leaderboardUserIds.length === 0) return [];
-      const results = await Promise.all(
-        leaderboardUserIds.map(uid =>
-          base44.entities.User.filter({ id: uid }).then(r => r[0]).catch(() => null)
-        )
-      );
-      return results.filter(Boolean);
-    },
-    enabled: leaderboardUserIds.length > 0,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
-  });
-
+  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10 * 60 * 1000, gcTime: 20 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: posts = [] } = useQuery({ queryKey: ['posts', gymId], queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: checkIns = [] } = useQuery({ queryKey: ['checkIns', gymId], queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
@@ -459,23 +436,6 @@ export default function GymCommunity() {
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards', gymId], queryFn: () => base44.entities.Reward.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: challenges = [] } = useQuery({ queryKey: ['challenges', gymId], queryFn: () => base44.entities.Challenge.filter({ gym_id: gymId, is_app_challenge: false }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: polls = [] } = useQuery({ queryKey: ['polls', gymId], queryFn: () => base44.entities.Poll.filter({ gym_id: gymId, status: 'active' }, '-created_date'), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  // Collect unique user IDs from check-ins so we can fetch their profile avatars
-  const checkinUserIds = React.useMemo(() => [...new Set(checkIns.map(c => c.user_id).filter(Boolean))], [checkIns]);
-  const { data: gymUsers = [] } = useQuery({
-    queryKey: ['gymUsers', gymId, checkinUserIds.length],
-    queryFn: async () => {
-      if (checkinUserIds.length === 0) return [];
-      // Fetch user profiles in batches — base44 User entity stores avatar_url
-      const results = await Promise.all(
-        checkinUserIds.map(uid => base44.entities.User.filter({ id: uid }).then(r => r[0]).catch(() => null))
-      );
-      return results.filter(Boolean);
-    },
-    enabled: !!gymId && checkinUserIds.length > 0,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
-  });
-
   const gymChallenges = challenges.filter((c) => c.status === 'active' || c.status === 'upcoming');
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10 * 60 * 1000, gcTime: 30 * 60 * 1000 });
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then((r) => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
@@ -530,29 +490,36 @@ export default function GymCommunity() {
 
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
-  // Build a quick userId -> avatar lookup from the members list
-  const memberAvatarMap = useMemo(() => {
-    const map = {};
-    members.forEach(m => {
-      const uid = m.user_id;
-      if (!uid) return;
-      const avatar = m.avatar_url || m.user_avatar || m.profile_picture || m.photo_url || null;
-      if (avatar) map[uid] = avatar;
-    });
-    checkIns.forEach(c => {
-      if (c.user_id && c.user_avatar && !map[c.user_id]) map[c.user_id] = c.user_avatar;
-    });
-    if (currentUser?.id) {
-      const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
-      if (myAvatar) map[currentUser.id] = myAvatar;
+  // Get member avatars map
+  const memberAvatarMap = members.reduce((acc, m) => { acc[m.id] = m.avatar_url; return acc; }, {});
+  
+  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
+  
+  // Calculate real streaks per user
+  const calcUserStreak = (userId) => {
+    const userCheckIns = checkIns.filter(c => c.user_id === userId).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+    if (userCheckIns.length === 0) return 0;
+    let streak = 1;
+    let curDate = new Date(userCheckIns[0].check_in_date);
+    curDate.setHours(0, 0, 0, 0);
+    for (let i = 1; i < userCheckIns.length; i++) {
+      const d = new Date(userCheckIns[i].check_in_date);
+      d.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((curDate - d) / 86400000);
+      if (diffDays === 1) { streak++; curDate = d; } 
+      else if (diffDays > 1) break;
     }
-    return map;
-  }, [members, checkIns, currentUser]);
-
-  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || c.user_avatar || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || c.user_avatar || null, streak: Math.floor(Math.random() * 30) + 1 }; return acc; }, {})).sort((a, b) => b.streak - a.streak).slice(0, 10);
+    return streak;
+  };
+  
+  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { 
+    const id = c.user_id; 
+    if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null }; 
+    return acc; 
+  }, {})).map(item => ({ ...item, streak: calcUserStreak(item.userId) })).sort((a, b) => b.streak - a.streak).slice(0, 10);
+  
   const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
-  const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || lift.member_avatar || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
+  const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
 
   if (gymLoading && !gym) return <GymCommunitySkeleton />;
   if (!gymLoading && !gym) return (
