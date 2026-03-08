@@ -232,11 +232,11 @@ function WeeklyCheckInsChart({ checkIns }) {
 }
 
 // ─── Analytics sub-page ───────────────────────────────────────────────────────
-function AnalyticsPage({ currentUser, workoutLogs, checkIns, onBack }) {
+function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   return (
     <SubPage title="Analytics" onBack={onBack}>
       <div className="space-y-4">
-        <WeeklyCheckInsChart checkIns={checkIns} />
+        <WorkoutProgressTracker currentUser={currentUser} />
         <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
       </div>
     </SubPage>
