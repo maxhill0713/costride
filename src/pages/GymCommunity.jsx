@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Image as ImageIcon, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
@@ -175,8 +175,11 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           {podium.length>0 && (
             <div className="flex -space-x-2 flex-shrink-0 mr-1">
               {podium.map((m,i)=>(
-                <div key={i} style={{ width:30,height:30,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].avatarBg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,zIndex:3-i,boxShadow:`0 0 8px ${MEDALS[i].glow}` }}>
-                  {initials(m.userName)}
+                <div key={i} style={{ width:30,height:30,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,background:MEDALS[i].avatarBg,border:`2px solid ${MEDALS[i].color}`,color:MEDALS[i].color,zIndex:3-i,boxShadow:`0 0 8px ${MEDALS[i].glow}`,overflow:'hidden',flexShrink:0 }}>
+                  {m.userAvatar
+                    ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
+                    : initials(m.userName)
+                  }
                 </div>
               ))}
             </div>
@@ -268,8 +271,11 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                     {/* Rank corner */}
                     <div style={{ position:'absolute',top:0,left:0,width:24,height:24,borderRadius:'0 0 10px 0',background:M.badgeBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'rgba(0,0,0,0.65)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.25)' }}>{rank+1}</div>
                     {/* Avatar */}
-                    <div style={{ width:isFirst?62:50,height:isFirst?62:50,borderRadius:'50%',background:M.avatarBg,border:`2.5px solid ${M.color}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:isFirst?21:16,fontWeight:900,color:M.color,margin:`${isFirst?20:16}px auto 9px`,animation:`${M.pulse} 2.8s ease-in-out infinite`,letterSpacing:'-0.01em',boxShadow:`inset 0 1px 0 rgba(255,255,255,0.08)` }}>
-                      {initials(data.userName)}
+                    <div style={{ width:isFirst?62:50,height:isFirst?62:50,borderRadius:'50%',background:M.avatarBg,border:`2.5px solid ${M.color}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:isFirst?21:16,fontWeight:900,color:M.color,margin:`${isFirst?20:16}px auto 9px`,animation:`${M.pulse} 2.8s ease-in-out infinite`,letterSpacing:'-0.01em',overflow:'hidden',flexShrink:0 }}>
+                      {data.userAvatar
+                        ? <img src={data.userAvatar} alt={data.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
+                        : initials(data.userName)
+                      }
                     </div>
                     {/* Name */}
                     <p style={{ color:'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?13:11,lineHeight:1.2,padding:'0 10px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:`0 1px 10px ${M.glow}` }}>{data.userName||'—'}</p>
@@ -298,7 +304,12 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                       {/* Rank badge */}
                       <div style={{ width:28,height:28,borderRadius:8,flexShrink:0,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(255,255,255,0.35)' }}>{globalRank}</div>
                       {/* Avatar */}
-                      <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(30,58,138,0.15))',border:'1.5px solid rgba(59,130,246,0.25)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(147,197,253,0.85)' }}>{initials(m.userName)}</div>
+                      <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(30,58,138,0.15))',border:'1.5px solid rgba(59,130,246,0.25)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(147,197,253,0.85)',overflow:'hidden' }}>
+                        {m.userAvatar
+                          ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
+                          : initials(m.userName)
+                        }
+                      </div>
                       {/* Name + bar */}
                       <div style={{ flex:1,minWidth:0 }}>
                         <p style={{ fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.75)',margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{m.userName||'—'}</p>
@@ -479,10 +490,10 @@ export default function GymCommunity() {
 
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
-  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, streak: Math.floor(Math.random() * 30) + 1 }; return acc; }, {})).sort((a, b) => b.streak - a.streak).slice(0, 10);
+  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
+  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null, streak: Math.floor(Math.random() * 30) + 1 }; return acc; }, {})).sort((a, b) => b.streak - a.streak).slice(0, 10);
   const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
-  const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
+  const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: lift.member_avatar || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
 
   if (gymLoading && !gym) return <GymCommunitySkeleton />;
   if (!gymLoading && !gym) return (
