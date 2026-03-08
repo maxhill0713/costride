@@ -490,7 +490,10 @@ export default function GymCommunity() {
 
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
-  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
+  // Get member avatars map
+  const memberAvatarMap = members.reduce((acc, m) => { acc[m.id] = m.avatar_url; return acc; }, {});
+  
+  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
   
   // Calculate real streaks per user
   const calcUserStreak = (userId) => {
@@ -511,7 +514,7 @@ export default function GymCommunity() {
   
   const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { 
     const id = c.user_id; 
-    if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: c.user_avatar || null }; 
+    if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null }; 
     return acc; 
   }, {})).map(item => ({ ...item, streak: calcUserStreak(item.userId) })).sort((a, b) => b.streak - a.streak).slice(0, 10);
   
