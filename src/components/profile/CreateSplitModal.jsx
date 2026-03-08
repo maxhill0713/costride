@@ -649,7 +649,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               )}
 
               {/* ── Create Custom ── */}
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Create New</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Create a Custom Split</p>
               <div
                 onClick={() => { if (!selectingActive) openCustomConfigure(); }}
                 className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}
@@ -657,7 +657,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               >
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xl shadow-lg flex-shrink-0">✏️</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-black text-white">Custom Split</p>
+                  <p className="text-[14px] font-black text-white">Create New</p>
                   <p className="text-[11px] text-slate-500 mt-0.5">Build your own from scratch</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
