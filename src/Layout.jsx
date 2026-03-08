@@ -172,7 +172,10 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={item.page}
                 to={getTabLink(item)}
-                onClick={(e) => handleTabClick(item, e)}
+                onClick={(e) => {
+                  handleTabClick(item, e);
+                  if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
+                }}
                 className={`
                   relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300
                   ${isActive ?
