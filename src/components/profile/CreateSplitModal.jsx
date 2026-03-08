@@ -417,9 +417,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                       </div>
                     )}
                   </div>
-                  {!selectingActive && (
-                    <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0" />
-                  )}
+                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0" />
                 </button>
               ))}
 
