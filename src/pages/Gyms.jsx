@@ -717,6 +717,7 @@ export default function Gyms() {
           </motion.div>
         </>
       }
+      </AnimatePresence>
 
       <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
