@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -280,6 +280,45 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
           <Lock className="w-3 h-3" /> Read-only — set as active below
         </p>
       </div>
+
+      {/* ── CONFIRM DELETE MODAL ── */}
+      {confirmDeleteSplitId && (
+        <div
+          className="absolute inset-0 z-60 flex items-center justify-center px-6"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setConfirmDeleteSplitId(null)}
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl p-6 space-y-4"
+            style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
+            <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setConfirmDeleteSplitId(null)}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const id = confirmDeleteSplitId;
+                  setConfirmDeleteSplitId(null);
+                  const updated = savedSplits.filter(s => s.id !== id);
+                  setSavedSplits(updated);
+                  if (activeSplitId === id) setActiveSplitId('');
+                  saveMutation.mutate({ saved_splits: updated });
+                }}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -297,6 +336,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [selectingActive, setSelectingActive] = useState(false);
   const [previewWeights, setPreviewWeights] = useState({}); // { [day]: { [exIdx]: weight } }
   const [weightsDirty, setWeightsDirty] = useState(false);
+  const [dotsMenuSplitId, setDotsMenuSplitId] = useState(null); // which split's dots menu is open
+  const [confirmDeleteSplitId, setConfirmDeleteSplitId] = useState(null); // which split to confirm delete
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState(''); // tracks by id
 
@@ -328,10 +369,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   // ── Mutations ──────────────────────────────────────────────────────────────
   const saveMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' });
       toast.success('Split saved!');
-      onClose();
+      // Return to the splits list, not the profile
+      setSplitName('');
+      setSelectedDays([]);
+      setWorkouts({});
+      setStep('pick');
     },
   });
 
@@ -597,19 +642,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       <div
                         key={split.id}
                         onClick={() => selectingActive ? handleSetActive(splitEntry) : openEditCustom(split)}
-                        className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
+                        className="flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
                         style={{
                           background: isActive ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))' : 'rgba(15,20,40,0.7)',
                           border: isActive ? '2px solid rgba(16,185,129,0.55)' : selectingActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.06)',
                           boxShadow: isActive ? '0 0 16px rgba(16,185,129,0.08)' : 'none',
                         }}
                       >
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-lg shadow flex-shrink-0">✏️</div>
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xl shadow-lg flex-shrink-0">✏️</div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-black text-white truncate">{split.name}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            {(split.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-500">{DAY_NAMES[d - 1]}</span>)}
-                            <span className="text-[9px] text-slate-600">· {(split.training_days || []).length} days</span>
+                          <p className="text-[14px] font-black text-white truncate">{split.name}</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">{(split.training_days || []).length} days · custom</p>
+                          <div className="flex gap-1 mt-1.5 flex-wrap">
+                            {(split.training_days || []).map(d => (
+                              <span key={d} className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-70">{DAY_NAMES[d - 1]}</span>
+                            ))}
                           </div>
                         </div>
                         {selectingActive ? (
@@ -623,12 +670,28 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                 <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                               </div>
                             )}
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 pointer-events-none">
-                              <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                            <div className="relative">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setDotsMenuSplitId(prev => prev === split.id ? null : split.id); }}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 transition-colors active:scale-90"
+                              >
+                                <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
+                              </button>
+                              {dotsMenuSplitId === split.id && (
+                                <div
+                                  className="absolute right-0 top-9 z-10 rounded-xl overflow-hidden shadow-xl"
+                                  style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <button
+                                    onClick={() => { setDotsMenuSplitId(null); setConfirmDeleteSplitId(split.id); }}
+                                    className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap"
+                                  >
+                                    Delete Split
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                            <button onClick={(e) => deleteSavedSplit(split.id, e)} className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors">
-                              <Trash2 className="w-3.5 h-3.5 text-slate-500" />
-                            </button>
                           </div>
                         )}
                       </div>
@@ -847,6 +910,45 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         )}
 
       </div>
+
+      {/* ── CONFIRM DELETE MODAL ── */}
+      {confirmDeleteSplitId && (
+        <div
+          className="absolute inset-0 z-60 flex items-center justify-center px-6"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setConfirmDeleteSplitId(null)}
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl p-6 space-y-4"
+            style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
+            <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setConfirmDeleteSplitId(null)}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const id = confirmDeleteSplitId;
+                  setConfirmDeleteSplitId(null);
+                  const updated = savedSplits.filter(s => s.id !== id);
+                  setSavedSplits(updated);
+                  if (activeSplitId === id) setActiveSplitId('');
+                  saveMutation.mutate({ saved_splits: updated });
+                }}
+                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
