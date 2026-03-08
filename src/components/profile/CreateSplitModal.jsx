@@ -225,92 +225,34 @@ function SmallInput({ value, onChange, placeholder }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// READ-ONLY DAY CARD — mirrors the custom configure card but locked
-// ─────────────────────────────────────────────────────────────────────────────
-function ReadOnlyDayCard({ day, workout }) {
-  const grad = colorGradient(workout.color);
-  return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
-        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center flex-shrink-0 shadow`}>
-          <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
-        </div>
-        <p className="flex-1 text-white text-[14px] font-bold">{workout.name}</p>
-        <Lock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-      </div>
-
-      {/* Colour swatches — display only */}
-      <div className="flex gap-1.5 px-4 pb-3">
-        {COLOR_OPTIONS.map(c => (
-          <div key={c.value}
-            className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} ${
-              workout.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-20'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Exercise table — same columns as configure, but plain text */}
-      {workout.exercises?.length > 0 && (
-        <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
-          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
-          </div>
-          {workout.exercises.map((ex, idx) => (
-            <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
-              <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
-              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.sets}</p>
-              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.reps}</p>
-              <p className="text-[13px] text-slate-500 text-center">—</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Lock label */}
-      <div className="px-4 pb-3.5 pt-2">
-        <p className="text-[11px] text-slate-600 font-bold flex items-center gap-1.5">
-          <Lock className="w-3 h-3" /> Read-only — set as active below
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
-  // step: 'pick' | 'preview' | 'configure'
+  // step: 'pick' | 'configure'
   const [step, setStep]               = useState('pick');
-  const [previewSplit, setPreviewSplit] = useState(null); // DEFAULT_SPLITS entry
   const [splitName, setSplitName]     = useState('');
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts]       = useState({});
   const [selectingActive, setSelectingActive] = useState(false);
   const [savedSplits, setSavedSplits] = useState([]);
-  const [activeName, setActiveName]   = useState('');
+  const [activeSplitId, setActiveSplitId] = useState(''); // tracks by id
 
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isOpen) return;
-    setSavedSplits(currentUser?.saved_splits || []);
-    setActiveName(currentUser?.custom_split_name || '');
+    const saved = currentUser?.saved_splits || [];
+    setSavedSplits(saved);
+    // Determine active split id from saved splits matching the active name
+    const activeName = currentUser?.custom_split_name || '';
+    const active = saved.find(s => s.name === activeName);
+    setActiveSplitId(active?.id || currentUser?.workout_split || '');
     setStep('pick');
-    setPreviewSplit(null);
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
     setSelectingActive(false);
   }, [isOpen]);
-
-  const activeSaved = savedSplits.find(s => s.name === activeName);
-  const otherSaved  = savedSplits.filter(s => s.name !== activeName);
 
   // ── Mutations ──────────────────────────────────────────────────────────────
   const saveMutation = useMutation({
@@ -330,38 +272,48 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleBack = () => {
-    if (step === 'preview' || step === 'configure') {
+    if (step === 'configure') {
       setStep('pick');
-      setPreviewSplit(null);
-      setSelectingActive(false);
     } else {
       onClose();
     }
   };
 
-  // Tap a saved split card in pick screen
-  const openSavedSplit = (split) => {
-    // If it's a default split, show the read-only preview using the DEFAULT_SPLITS data
-    const def = DEFAULT_SPLITS.find(d => d.id === split.preset_id);
-    if (def) {
-      setPreviewSplit(def);
-      setStep('preview');
-    } else {
-      // Custom — open editable configure screen
-      setSplitName(split.name || '');
-      setSelectedDays(split.training_days || []);
-      setWorkouts(split.workouts || {});
-      setStep('configure');
-    }
+  // ── Set a split as active (works for both default and custom) ──────────────
+  const handleSetActive = (splitEntry) => {
+    // splitEntry: { id, preset_id, name, training_days, workouts }
+    setActiveSplitId(splitEntry.id);
+    setSelectingActive(false);
+    toast.success(`"${splitEntry.name}" set as active!`);
+
+    // Ensure it's in savedSplits
+    const alreadySaved = savedSplits.find(s => s.id === splitEntry.id);
+    const updated = alreadySaved
+      ? savedSplits
+      : [...savedSplits, { ...splitEntry, created_at: new Date().toISOString() }];
+    setSavedSplits(updated);
+
+    setActiveMutation.mutate({
+      workout_split: splitEntry.preset_id || 'custom',
+      custom_split_name: splitEntry.name,
+      training_days: splitEntry.training_days,
+      custom_workout_types: splitEntry.workouts,
+      saved_splits: updated,
+    });
   };
 
-  // Tap a default template in the template list
-  const openDefaultPreview = (def) => {
-    setPreviewSplit(def);
-    setStep('preview');
+  // Build unified list: default splits + custom saved splits (non-default)
+  const customSavedSplits = savedSplits.filter(s => !s.preset_id || s.preset_id === 'custom');
+
+  // Open custom split for editing
+  const openEditCustom = (split) => {
+    setSplitName(split.name || '');
+    setSelectedDays(split.training_days || []);
+    setWorkouts(split.workouts || {});
+    setStep('configure');
   };
 
-  // Tap Custom Split
+  // Open new custom split
   const openCustomConfigure = () => {
     setSplitName('');
     setSelectedDays([]);
@@ -369,44 +321,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setStep('configure');
   };
 
-  // Set active from pick screen (selectingActive mode)
-  const handlePickActive = (split) => {
-    setActiveName(split.name);
-    setSelectingActive(false);
-    toast.success(`"${split.name}" set as active!`);
-    setActiveMutation.mutate({
-      workout_split: split.preset_id || 'custom',
-      custom_split_name: split.name,
-      training_days: split.training_days || [],
-      custom_workout_types: split.workouts || {},
-      saved_splits: savedSplits,
-    });
-  };
-
-  // Set active from the preview screen
-  const handleSetDefaultActive = () => {
-    if (!previewSplit) return;
-    const split = {
-      id: previewSplit.id,
-      preset_id: previewSplit.id,
-      name: previewSplit.name,
-      training_days: previewSplit.days,
-      workouts: previewSplit.workouts,
-      created_at: new Date().toISOString(),
-    };
-    const updated = [...savedSplits.filter(s => s.id !== split.id), split];
+  const deleteSavedSplit = (splitId, e) => {
+    e.stopPropagation();
+    const updated = savedSplits.filter(s => s.id !== splitId);
     setSavedSplits(updated);
-    setActiveName(split.name);
-    toast.success(`"${split.name}" set as active!`);
-    setStep('pick');
-    setPreviewSplit(null);
-    setActiveMutation.mutate({
-      workout_split: split.preset_id,
-      custom_split_name: split.name,
-      training_days: split.training_days,
-      custom_workout_types: split.workouts,
-      saved_splits: updated,
-    });
+    if (activeSplitId === splitId) setActiveSplitId('');
+    saveMutation.mutate({ saved_splits: updated });
   };
 
   // Save a custom split
@@ -430,15 +350,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     });
   };
 
-  const deleteSavedSplit = (splitId, e) => {
-    e.stopPropagation();
-    const deleted = savedSplits.find(s => s.id === splitId);
-    const updated = savedSplits.filter(s => s.id !== splitId);
-    setSavedSplits(updated);
-    if (deleted?.name === activeName) setActiveName('');
-    saveMutation.mutate({ saved_splits: updated });
-  };
-
   // ── Custom configure helpers ───────────────────────────────────────────────
   const toggleDay = (dayNum) => {
     if (selectedDays.includes(dayNum)) {
@@ -457,9 +368,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   // ── Styles ─────────────────────────────────────────────────────────────────
   const btnPrimary   = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
-  const btnGreen     = "bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#065f46,0_6px_20px_rgba(16,185,129,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
 
-  const headerTitle = step === 'preview' ? previewSplit?.name : step === 'configure' ? 'Custom Split' : 'My Splits';
+  const headerTitle = step === 'configure' ? 'Custom Split' : 'My Splits';
 
   if (!isOpen) return null;
 
@@ -490,11 +400,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
               </button>
             )}
-            {step === 'preview' && (
-              <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800/60">
-                <Lock className="w-4 h-4 text-slate-500" />
-              </div>
-            )}
           </div>
         </div>
 
@@ -502,7 +407,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         {step === 'pick' && selectingActive && (
           <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-            <p className="text-[11px] font-bold text-emerald-400">Tap any saved split to make it your active one</p>
+            <p className="text-[11px] font-bold text-emerald-400">Tap any split to make it your active one</p>
           </div>
         )}
 
@@ -513,107 +418,125 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           {step === 'pick' && (
             <div className="p-4 space-y-2">
 
-              {/* Active saved split */}
-              {activeSaved && (() => {
-                const def   = DEFAULT_SPLITS.find(d => d.id === activeSaved.preset_id);
-                const icon  = def?.icon  || '✏️';
-                const color = def?.color || 'from-slate-600 to-slate-700';
+              {/* ── Default Splits ── */}
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-1 px-1">Default Splits</p>
+              {DEFAULT_SPLITS.map((def) => {
+                const isActive = activeSplitId === def.id;
+                const splitEntry = {
+                  id: def.id,
+                  preset_id: def.id,
+                  name: def.name,
+                  training_days: def.days,
+                  workouts: def.workouts,
+                };
                 return (
                   <div
-                    onClick={() => selectingActive ? handlePickActive(activeSaved) : openSavedSplit(activeSaved)}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
-                    style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))', border: '2px solid rgba(16,185,129,0.55)', boxShadow: '0 0 16px rgba(16,185,129,0.08)' }}
+                    key={def.id}
+                    onClick={() => selectingActive ? handleSetActive(splitEntry) : null}
+                    className={`flex items-center gap-4 p-4 rounded-2xl transition-transform ${selectingActive ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+                    style={{
+                      background: isActive
+                        ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))'
+                        : 'rgba(15,20,40,0.7)',
+                      border: isActive
+                        ? '2px solid rgba(16,185,129,0.55)'
+                        : selectingActive
+                          ? '1px solid rgba(16,185,129,0.25)'
+                          : '1px solid rgba(255,255,255,0.06)',
+                      boxShadow: isActive ? '0 0 16px rgba(16,185,129,0.08)' : 'none',
+                    }}
                   >
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-lg shadow flex-shrink-0`}>{icon}</div>
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${def.color} flex items-center justify-center text-xl shadow-lg flex-shrink-0`}>{def.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-[13px] font-black text-white truncate">{activeSaved.name}</p>
-                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
+                        <p className="text-[14px] font-black text-white">{def.name}</p>
+                        {isActive && (
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        {(activeSaved.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-400">{DAY_NAMES[d - 1]}</span>)}
-                        <span className="text-[9px] text-slate-500">· {(activeSaved.training_days || []).length} days</span>
-                      </div>
-                    </div>
-                    {selectingActive ? (
-                      <div className="w-6 h-6 rounded-full bg-emerald-500/25 border-2 border-emerald-400 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25 pointer-events-none">
-                          {def ? <Lock className="w-3.5 h-3.5 text-emerald-400" /> : <Edit2 className="w-3.5 h-3.5 text-emerald-400" />}
-                        </div>
-                        <button onClick={(e) => deleteSavedSplit(activeSaved.id, e)} className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5 text-slate-500" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* Other saved splits */}
-              {otherSaved.map((split) => {
-                const def   = DEFAULT_SPLITS.find(d => d.id === split.preset_id);
-                const icon  = def?.icon  || '✏️';
-                const color = def?.color || 'from-slate-600 to-slate-700';
-                return (
-                  <div
-                    key={split.id}
-                    onClick={() => selectingActive ? handlePickActive(split) : openSavedSplit(split)}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
-                    style={{ background: 'rgba(15,20,40,0.7)', border: selectingActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
-                  >
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-lg shadow flex-shrink-0`}>{icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-black text-white truncate">{split.name}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        {(split.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-500">{DAY_NAMES[d - 1]}</span>)}
-                        <span className="text-[9px] text-slate-600">· {(split.training_days || []).length} days</span>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{def.description}</p>
+                      <div className="flex gap-1 mt-1.5 flex-wrap">
+                        {def.days.map(d => (
+                          <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-70`}>{DAY_NAMES[d - 1]}</span>
+                        ))}
                       </div>
                     </div>
                     {selectingActive ? (
-                      <div className="w-6 h-6 rounded-full border-2 border-slate-600 flex-shrink-0" />
-                    ) : (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 pointer-events-none">
-                          {def ? <Lock className="w-3.5 h-3.5 text-slate-400" /> : <Edit2 className="w-3.5 h-3.5 text-slate-400" />}
-                        </div>
-                        <button onClick={(e) => deleteSavedSplit(split.id, e)} className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5 text-slate-500" />
-                        </button>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-500/25 border-emerald-400' : 'border-slate-600'}`}>
+                        {isActive && <Check className="w-3.5 h-3.5 text-emerald-400" />}
                       </div>
+                    ) : (
+                      <Lock className="w-4 h-4 text-slate-600 flex-shrink-0" />
                     )}
                   </div>
                 );
               })}
 
-              {/* Default split templates */}
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Default Splits</p>
-              {DEFAULT_SPLITS.map((def) => (
-                <div
-                  key={def.id}
-                  onClick={() => { if (!selectingActive) openDefaultPreview(def); }}
-                  className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}
-                  style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${def.color} flex items-center justify-center text-xl shadow-lg flex-shrink-0`}>{def.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-black text-white">{def.name}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{def.description}</p>
-                    <div className="flex gap-1 mt-1.5 flex-wrap">
-                      {def.days.map(d => (
-                        <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-70`}>{DAY_NAMES[d - 1]}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                </div>
-              ))}
+              {/* ── Custom Saved Splits ── */}
+              {customSavedSplits.length > 0 && (
+                <>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">My Custom Splits</p>
+                  {customSavedSplits.map((split) => {
+                    const isActive = activeSplitId === split.id;
+                    const splitEntry = {
+                      id: split.id,
+                      preset_id: 'custom',
+                      name: split.name,
+                      training_days: split.training_days,
+                      workouts: split.workouts,
+                    };
+                    return (
+                      <div
+                        key={split.id}
+                        onClick={() => selectingActive ? handleSetActive(splitEntry) : openEditCustom(split)}
+                        className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
+                        style={{
+                          background: isActive
+                            ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))'
+                            : 'rgba(15,20,40,0.7)',
+                          border: isActive
+                            ? '2px solid rgba(16,185,129,0.55)'
+                            : selectingActive
+                              ? '1px solid rgba(16,185,129,0.25)'
+                              : '1px solid rgba(255,255,255,0.06)',
+                          boxShadow: isActive ? '0 0 16px rgba(16,185,129,0.08)' : 'none',
+                        }}
+                      >
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-lg shadow flex-shrink-0">✏️</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[13px] font-black text-white truncate">{split.name}</p>
+                            {isActive && (
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            {(split.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-500">{DAY_NAMES[d - 1]}</span>)}
+                            <span className="text-[9px] text-slate-600">· {(split.training_days || []).length} days</span>
+                          </div>
+                        </div>
+                        {selectingActive ? (
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-500/25 border-emerald-400' : 'border-slate-600'}`}>
+                            {isActive && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 pointer-events-none">
+                              <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                            </div>
+                            <button onClick={(e) => deleteSavedSplit(split.id, e)} className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors">
+                              <Trash2 className="w-3.5 h-3.5 text-slate-500" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              )}
 
-              {/* Custom split */}
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Custom</p>
+              {/* ── Create Custom ── */}
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Create New</p>
               <div
                 onClick={() => { if (!selectingActive) openCustomConfigure(); }}
                 className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}
@@ -627,30 +550,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
               </div>
 
-            </div>
-          )}
-
-          {/* ════ PREVIEW — read-only default split ════ */}
-          {step === 'preview' && previewSplit && (
-            <div className="p-4 space-y-3">
-              {/* Summary bar */}
-              <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span className="text-3xl">{previewSplit.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
-                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                    {previewSplit.days.map(d => (
-                      <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              {/* One read-only card per training day */}
-              {previewSplit.days.map(day => {
-                const wt = previewSplit.workouts[day];
-                if (!wt) return null;
-                return <ReadOnlyDayCard key={day} day={day} workout={wt} />;
-              })}
             </div>
           )}
 
@@ -753,15 +652,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         </div>
 
         {/* ── FOOTER ── */}
-        {step === 'preview' && (
-          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
-            <button onClick={handleBack} className={btnSecondary}>Back</button>
-            <button onClick={handleSetDefaultActive} disabled={setActiveMutation.isPending}
-              className={btnGreen + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}>
-              {setActiveMutation.isPending ? 'Setting…' : 'Set as Active'}
-            </button>
-          </div>
-        )}
         {step === 'configure' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
             <button onClick={handleBack} className={btnSecondary}>Back</button>
