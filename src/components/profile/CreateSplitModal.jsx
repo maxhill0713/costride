@@ -296,6 +296,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [workouts, setWorkouts]       = useState({});
   const [selectingActive, setSelectingActive] = useState(false);
   const [previewWeights, setPreviewWeights] = useState({}); // { [day]: { [exIdx]: weight } }
+  const [weightsDirty, setWeightsDirty] = useState(false);
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState(''); // tracks by id
 
@@ -317,6 +318,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setStep('pick');
     setPreviewSplit(null);
     setPreviewWeights({});
+    setWeightsDirty(false);
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
@@ -394,9 +396,25 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const customSavedSplits = savedSplits.filter(s => !s.preset_id || s.preset_id === 'custom');
 
   // Open read-only preview for a default split
+  // Load any previously saved weights from savedSplits for this split
   const openDefaultPreview = (def) => {
     setPreviewSplit(def);
-    setPreviewWeights({});
+    const savedVersion = savedSplits.find(s => s.id === def.id);
+    if (savedVersion?.workouts) {
+      // Extract weights map from saved workouts: { [day]: { [exIdx]: weight } }
+      const loadedWeights = Object.fromEntries(
+        Object.entries(savedVersion.workouts).map(([day, wt]) => [
+          day,
+          Object.fromEntries(
+            (wt.exercises || []).map((ex, idx) => [idx, ex.weight || ''])
+          ),
+        ])
+      );
+      setPreviewWeights(loadedWeights);
+    } else {
+      setPreviewWeights({});
+    }
+    setWeightsDirty(false);
     setStep('preview');
   };
 
@@ -672,12 +690,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     day={day}
                     workout={wt}
                     weights={previewWeights[day] || {}}
-                    onWeightChange={(idx, val) =>
+                    onWeightChange={(idx, val) => {
                       setPreviewWeights(prev => ({
                         ...prev,
                         [day]: { ...(prev[day] || {}), [idx]: val },
-                      }))
-                    }
+                      }));
+                      setWeightsDirty(true);
+                    }}
                   />
                 );
               })}
@@ -783,7 +802,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         </div>
 
         {/* ── FOOTER ── */}
-        {step === 'preview' && Object.keys(previewWeights).length > 0 && (
+        {step === 'preview' && weightsDirty && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
             <button
               onClick={() => {
@@ -820,7 +839,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   } : {}),
                 });
                 toast.success('Weights saved!');
-                setPreviewWeights({});
+                setWeightsDirty(false);
               }}
               disabled={setActiveMutation.isPending}
               className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
