@@ -225,9 +225,9 @@ function SmallInput({ value, onChange, placeholder }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// READ-ONLY DAY CARD
+// READ-ONLY DAY CARD (weight column is editable)
 // ─────────────────────────────────────────────────────────────────────────────
-function ReadOnlyDayCard({ day, workout }) {
+function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
   const grad = colorGradient(workout.color);
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -260,7 +260,17 @@ function ReadOnlyDayCard({ day, workout }) {
               <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
               <p className="text-[13px] text-slate-400 text-center font-bold">{ex.sets}</p>
               <p className="text-[13px] text-slate-400 text-center font-bold">{ex.reps}</p>
-              <p className="text-[13px] text-slate-500 text-center">—</p>
+              <div className="relative">
+                <input
+                  type="text" inputMode="decimal"
+                  value={weights?.[idx] ?? ''}
+                  onChange={e => onWeightChange(idx, e.target.value)}
+                  placeholder="—"
+                  style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                  className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600"
+                />
+                <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+              </div>
             </div>
           ))}
         </div>
@@ -285,6 +295,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts]       = useState({});
   const [selectingActive, setSelectingActive] = useState(false);
+  const [previewWeights, setPreviewWeights] = useState({}); // { [day]: { [exIdx]: weight } }
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState(''); // tracks by id
 
@@ -305,6 +316,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     }
     setStep('pick');
     setPreviewSplit(null);
+    setPreviewWeights({});
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
@@ -340,17 +352,32 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   };
 
   // ── Set a split as active (works for both default and custom) ──────────────
-  const handleSetActive = (splitEntry) => {
+  const handleSetActive = (splitEntry, weightsMap = {}) => {
     // splitEntry: { id, preset_id, name, training_days, workouts }
+    // weightsMap: { [day]: { [exIdx]: weightString } } — only used for default splits previewed with weights
+
+    // Merge any entered weights into the workouts before saving
+    const mergedWorkouts = Object.fromEntries(
+      Object.entries(splitEntry.workouts).map(([day, wt]) => {
+        const dayWeights = weightsMap[day] || {};
+        const mergedExercises = (wt.exercises || []).map((ex, idx) => ({
+          ...ex,
+          weight: dayWeights[idx] ?? ex.weight ?? '',
+        }));
+        return [day, { ...wt, exercises: mergedExercises }];
+      })
+    );
+    const mergedEntry = { ...splitEntry, workouts: mergedWorkouts };
+
     setActiveSplitId(splitEntry.id);
     setSelectingActive(false);
     toast.success(`"${splitEntry.name}" set as active!`);
 
-    // Ensure it's in savedSplits
-    const alreadySaved = savedSplits.find(s => s.id === splitEntry.id);
-    const updated = alreadySaved
-      ? savedSplits
-      : [...savedSplits, { ...splitEntry, created_at: new Date().toISOString() }];
+    // Ensure it's in savedSplits (with merged weights)
+    const updated = [
+      ...savedSplits.filter(s => s.id !== splitEntry.id),
+      { ...mergedEntry, created_at: new Date().toISOString() },
+    ];
     setSavedSplits(updated);
 
     setActiveMutation.mutate({
@@ -358,7 +385,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       workout_split: splitEntry.preset_id || 'custom',
       custom_split_name: splitEntry.name,
       training_days: splitEntry.training_days,
-      custom_workout_types: splitEntry.workouts,
+      custom_workout_types: mergedWorkouts,
       saved_splits: updated,
     });
   };
@@ -369,6 +396,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   // Open read-only preview for a default split
   const openDefaultPreview = (def) => {
     setPreviewSplit(def);
+    setPreviewWeights({});
     setStep('preview');
   };
 
@@ -463,6 +491,27 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
                   active:shadow-none active:translate-y-[3px] active:scale-90
                   ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}`}
+              >
+                <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
+              </button>
+            )}
+            {step === 'preview' && previewSplit && (
+              <button
+                onClick={() => {
+                  handleSetActive({
+                    id: previewSplit.id,
+                    preset_id: previewSplit.id,
+                    name: previewSplit.name,
+                    training_days: previewSplit.days,
+                    workouts: previewSplit.workouts,
+                  }, previewWeights);
+                  setStep('pick');
+                  setPreviewSplit(null);
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
+                  bg-gradient-to-b from-emerald-400 to-emerald-600
+                  shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  active:shadow-none active:translate-y-[3px] active:scale-90"
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
               </button>
@@ -637,7 +686,20 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
               {previewSplit.days.map(day => {
                 const wt = previewSplit.workouts[day];
                 if (!wt) return null;
-                return <ReadOnlyDayCard key={day} day={day} workout={wt} />;
+                return (
+                  <ReadOnlyDayCard
+                    key={day}
+                    day={day}
+                    workout={wt}
+                    weights={previewWeights[day] || {}}
+                    onWeightChange={(idx, val) =>
+                      setPreviewWeights(prev => ({
+                        ...prev,
+                        [day]: { ...(prev[day] || {}), [idx]: val },
+                      }))
+                    }
+                  />
+                );
               })}
             </div>
           )}
