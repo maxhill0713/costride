@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // ─── Preset split templates ───────────────────────────────────────────────────
+// Presets with isDefault=true are read-only and can only be set as active.
+// The custom preset (isDefault=false) opens the configure screen as before.
 const PRESET_SPLITS = [
   {
     id: 'bro',
@@ -12,13 +14,39 @@ const PRESET_SPLITS = [
     description: '5 days · one muscle group per day',
     icon: '💪',
     color: 'from-purple-500 to-indigo-600',
-    days: [1,2,3,4,5],
+    isDefault: true,
+    days: [1, 2, 3, 4, 5],
     workouts: {
-      1: { name: 'Chest', color: 'blue' },
-      2: { name: 'Back', color: 'purple' },
-      3: { name: 'Shoulders', color: 'cyan' },
-      4: { name: 'Arms', color: 'pink' },
-      5: { name: 'Legs', color: 'green' },
+      1: { name: 'Chest', color: 'blue', exercises: [
+        { exercise: 'Barbell Bench Press', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Dips', sets: '3', reps: '10', weight: '' },
+      ]},
+      2: { name: 'Back', color: 'purple', exercises: [
+        { exercise: 'Deadlift', sets: '4', reps: '6', weight: '' },
+        { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Barbell Row', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Lat Pulldown', sets: '3', reps: '12', weight: '' },
+      ]},
+      3: { name: 'Shoulders', color: 'cyan', exercises: [
+        { exercise: 'Overhead Press', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Front Raises', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Face Pulls', sets: '3', reps: '15', weight: '' },
+      ]},
+      4: { name: 'Arms', color: 'pink', exercises: [
+        { exercise: 'Barbell Curl', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Skull Crushers', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' },
+      ]},
+      5: { name: 'Legs', color: 'green', exercises: [
+        { exercise: 'Barbell Squat', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Romanian Deadlift', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Press', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+      ]},
     },
   },
   {
@@ -27,12 +55,34 @@ const PRESET_SPLITS = [
     description: '4 days · upper & lower alternating',
     icon: '⚡',
     color: 'from-blue-500 to-cyan-500',
-    days: [1,2,4,5],
+    isDefault: true,
+    days: [1, 2, 4, 5],
     workouts: {
-      1: { name: 'Upper A', color: 'blue' },
-      2: { name: 'Lower A', color: 'green' },
-      4: { name: 'Upper B', color: 'cyan' },
-      5: { name: 'Lower B', color: 'purple' },
+      1: { name: 'Upper A', color: 'blue', exercises: [
+        { exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' },
+        { exercise: 'Barbell Row', sets: '4', reps: '6', weight: '' },
+        { exercise: 'Overhead Press', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Pull-Ups', sets: '3', reps: '8', weight: '' },
+      ]},
+      2: { name: 'Lower A', color: 'green', exercises: [
+        { exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' },
+        { exercise: 'Romanian Deadlift', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Leg Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' },
+      ]},
+      4: { name: 'Upper B', color: 'cyan', exercises: [
+        { exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' },
+      ]},
+      5: { name: 'Lower B', color: 'purple', exercises: [
+        { exercise: 'Deadlift', sets: '4', reps: '5', weight: '' },
+        { exercise: 'Bulgarian Split Squat', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+      ]},
     },
   },
   {
@@ -41,14 +91,51 @@ const PRESET_SPLITS = [
     description: '6 days · PPL ×2',
     icon: '🔄',
     color: 'from-cyan-500 to-teal-500',
-    days: [1,2,3,5,6,7],
+    isDefault: true,
+    days: [1, 2, 3, 5, 6, 7],
     workouts: {
-      1: { name: 'Push', color: 'orange' },
-      2: { name: 'Pull', color: 'blue' },
-      3: { name: 'Legs', color: 'green' },
-      5: { name: 'Push', color: 'orange' },
-      6: { name: 'Pull', color: 'blue' },
-      7: { name: 'Legs', color: 'green' },
+      1: { name: 'Push A', color: 'orange', exercises: [
+        { exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' },
+        { exercise: 'Overhead Press', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' },
+      ]},
+      2: { name: 'Pull A', color: 'blue', exercises: [
+        { exercise: 'Deadlift', sets: '4', reps: '5', weight: '' },
+        { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Barbell Row', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Face Pulls', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' },
+      ]},
+      3: { name: 'Legs A', color: 'green', exercises: [
+        { exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' },
+        { exercise: 'Romanian Deadlift', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Leg Press', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+      ]},
+      5: { name: 'Push B', color: 'orange', exercises: [
+        { exercise: 'Incline Barbell Press', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Dumbbell Shoulder Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Skull Crushers', sets: '3', reps: '12', weight: '' },
+      ]},
+      6: { name: 'Pull B', color: 'blue', exercises: [
+        { exercise: 'Lat Pulldown', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' },
+        { exercise: 'Dumbbell Row', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Rear Delt Fly', sets: '3', reps: '15', weight: '' },
+        { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' },
+      ]},
+      7: { name: 'Legs B', color: 'green', exercises: [
+        { exercise: 'Front Squat', sets: '4', reps: '8', weight: '' },
+        { exercise: 'Bulgarian Split Squat', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' },
+        { exercise: 'Calf Raises', sets: '4', reps: '15', weight: '' },
+      ]},
     },
   },
   {
@@ -57,11 +144,27 @@ const PRESET_SPLITS = [
     description: '3 days · total body each session',
     icon: '🏋️',
     color: 'from-emerald-500 to-green-600',
-    days: [1,3,5],
+    isDefault: true,
+    days: [1, 3, 5],
     workouts: {
-      1: { name: 'Full Body A', color: 'green' },
-      3: { name: 'Full Body B', color: 'cyan' },
-      5: { name: 'Full Body C', color: 'blue' },
+      1: { name: 'Full Body A', color: 'green', exercises: [
+        { exercise: 'Barbell Squat', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Barbell Bench Press', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Barbell Row', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Overhead Press', sets: '3', reps: '10', weight: '' },
+      ]},
+      3: { name: 'Full Body B', color: 'cyan', exercises: [
+        { exercise: 'Deadlift', sets: '3', reps: '6', weight: '' },
+        { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Pull-Ups', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' },
+      ]},
+      5: { name: 'Full Body C', color: 'blue', exercises: [
+        { exercise: 'Front Squat', sets: '3', reps: '8', weight: '' },
+        { exercise: 'Dumbbell Bench Press', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Cable Row', sets: '3', reps: '10', weight: '' },
+        { exercise: 'Dumbbell Shoulder Press', sets: '3', reps: '10', weight: '' },
+      ]},
     },
   },
   {
@@ -70,6 +173,7 @@ const PRESET_SPLITS = [
     description: 'Build your own from scratch',
     icon: '✏️',
     color: 'from-slate-600 to-slate-700',
+    isDefault: false,
     days: [],
     workouts: {},
   },
@@ -115,6 +219,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts] = useState({});
   const [selectingActive, setSelectingActive] = useState(false);
+  const [previewPreset, setPreviewPreset] = useState(null); // read-only preview for default splits
 
   // ── Own local state for saved splits and active name ──────────────────────
   // These are seeded from the prop on open but then managed independently
@@ -135,6 +240,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     setSelectedDays([]);
     setWorkouts({});
     setSelectingActive(false);
+    setPreviewPreset(null);
   }, [isOpen]);
 
   const activeSaved = savedSplits.find(s => s.name === activeName);
@@ -151,14 +257,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   };
 
   const selectPreset = (preset) => {
+    if (preset.isDefault) {
+      // Read-only preview — don't go to configure
+      setPreviewPreset(preset);
+      return;
+    }
+    // Custom split → open configure screen as before
     setSelectedPreset(preset);
-    setSplitName(preset.id !== 'custom' ? preset.name : '');
-    setSelectedDays([...preset.days]);
-    const w = {};
-    Object.entries(preset.workouts).forEach(([day, wt]) => {
-      w[day] = { name: wt.name, color: wt.color, exercises: [] };
-    });
-    setWorkouts(w);
+    setSplitName('');
+    setSelectedDays([]);
+    setWorkouts({});
     setStep('configure');
   };
 
@@ -282,7 +390,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           <div className="w-10 flex-shrink-0">
             <button
               onClick={() => {
-                if (step === 'configure') { setStep('pick'); setSelectingActive(false); }
+                if (previewPreset) { setPreviewPreset(null); }
+                else if (step === 'configure') { setStep('pick'); setSelectingActive(false); }
                 else { onClose(); }
               }}
               className="flex items-center justify-center active:scale-90 transition-transform"
@@ -294,13 +403,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           {/* Centre: title */}
           <div className="flex-1 flex justify-center">
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">
-              {step === 'pick' ? 'My Splits' : (splitName || selectedPreset?.name || 'Configure Split')}
+              {previewPreset ? previewPreset.name : step === 'pick' ? 'My Splits' : (splitName || selectedPreset?.name || 'Configure Split')}
             </h2>
           </div>
 
           {/* Right: green tick — pick screen only, only if there are saved splits to pick from */}
           <div className="w-10 flex-shrink-0 flex justify-end">
-            {step === 'pick' && (
+            {step === 'pick' && !previewPreset && (
               <button
                 onClick={() => setSelectingActive(prev => !prev)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
@@ -317,7 +426,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
         </div>
 
         {/* Selecting-active hint banner */}
-        {step === 'pick' && selectingActive && (
+        {step === 'pick' && selectingActive && !previewPreset && (
           <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
             <p className="text-[11px] font-bold text-emerald-400">Tap any split below to make it your active one</p>
@@ -328,7 +437,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
         <div className="overflow-y-auto flex-1 pb-4">
 
           {/* ════ STEP 1 — PICK ════ */}
-          {step === 'pick' && (
+          {!previewPreset && step === 'pick' && (
             <div className="p-4 space-y-2">
 
               {/* Active saved split */}
@@ -459,7 +568,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           )}
 
           {/* ════ STEP 2 — CONFIGURE ════ */}
-          {step === 'configure' && (
+          {!previewPreset && step === 'configure' && (
             <div className="p-4 space-y-4">
 
               <div className="space-y-1.5">
@@ -595,8 +704,43 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
           )}
         </div>
 
-        {/* ── FOOTER (configure only) ── */}
-        {step === 'configure' && (
+        {/* ── FOOTER ── */}
+        {previewPreset && (
+          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+            <button onClick={() => setPreviewPreset(null)} className={btnSecondary}>Back</button>
+            <button
+              onClick={() => {
+                // Build a saved-split entry from the preset and set it active
+                const split = {
+                  id: previewPreset.id,
+                  preset_id: previewPreset.id,
+                  name: previewPreset.name,
+                  training_days: previewPreset.days,
+                  workouts: previewPreset.workouts,
+                  created_at: new Date().toISOString(),
+                };
+                // Merge into saved splits (replace any existing entry with same id)
+                const updated = [...savedSplits.filter(s => s.id !== split.id), split];
+                setSavedSplits(updated);
+                setActiveName(split.name);
+                setPreviewPreset(null);
+                toast.success(`"${split.name}" set as active!`);
+                setActiveMutation.mutate({
+                  workout_split: split.preset_id,
+                  custom_split_name: split.name,
+                  training_days: split.training_days,
+                  custom_workout_types: split.workouts,
+                  saved_splits: updated,
+                });
+              }}
+              disabled={setActiveMutation.isPending}
+              className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}
+            >
+              {setActiveMutation.isPending ? 'Setting…' : 'Set as Active'}
+            </button>
+          </div>
+        )}
+        {!previewPreset && step === 'configure' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
             <button onClick={() => setStep('pick')} className={btnSecondary}>Back</button>
             <button
