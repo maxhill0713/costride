@@ -225,11 +225,62 @@ function SmallInput({ value, onChange, placeholder }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// READ-ONLY DAY CARD
+// ─────────────────────────────────────────────────────────────────────────────
+function ReadOnlyDayCard({ day, workout }) {
+  const grad = colorGradient(workout.color);
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
+        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center flex-shrink-0 shadow`}>
+          <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
+        </div>
+        <p className="flex-1 text-white text-[14px] font-bold">{workout.name}</p>
+        <Lock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+      </div>
+      <div className="flex gap-1.5 px-4 pb-3">
+        {COLOR_OPTIONS.map(c => (
+          <div key={c.value}
+            className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} ${
+              workout.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-20'
+            }`}
+          />
+        ))}
+      </div>
+      {workout.exercises?.length > 0 && (
+        <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
+          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
+          </div>
+          {workout.exercises.map((ex, idx) => (
+            <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
+              <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
+              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.sets}</p>
+              <p className="text-[13px] text-slate-400 text-center font-bold">{ex.reps}</p>
+              <p className="text-[13px] text-slate-500 text-center">—</p>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="px-4 pb-3.5 pt-2">
+        <p className="text-[11px] text-slate-600 font-bold flex items-center gap-1.5">
+          <Lock className="w-3 h-3" /> Read-only — set as active below
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
-  // step: 'pick' | 'configure'
+  // step: 'pick' | 'preview' | 'configure'
   const [step, setStep]               = useState('pick');
+  const [previewSplit, setPreviewSplit] = useState(null);
   const [splitName, setSplitName]     = useState('');
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts]       = useState({});
@@ -243,11 +294,17 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     if (!isOpen) return;
     const saved = currentUser?.saved_splits || [];
     setSavedSplits(saved);
-    // Determine active split id from saved splits matching the active name
-    const activeName = currentUser?.custom_split_name || '';
-    const active = saved.find(s => s.name === activeName);
-    setActiveSplitId(active?.id || currentUser?.workout_split || '');
+    // active_split_id is saved explicitly whenever a split is set active — most reliable source
+    const storedActiveId = currentUser?.active_split_id || '';
+    if (storedActiveId) {
+      setActiveSplitId(storedActiveId);
+    } else {
+      const activeName = currentUser?.custom_split_name || '';
+      const activeByName = saved.find(s => s.name === activeName);
+      setActiveSplitId(activeByName?.id || currentUser?.workout_split || '');
+    }
     setStep('pick');
+    setPreviewSplit(null);
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
@@ -272,7 +329,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleBack = () => {
-    if (step === 'configure') {
+    if (step === 'preview') {
+      setStep('pick');
+      setPreviewSplit(null);
+    } else if (step === 'configure') {
       setStep('pick');
     } else {
       onClose();
@@ -294,6 +354,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setSavedSplits(updated);
 
     setActiveMutation.mutate({
+      active_split_id: splitEntry.id,
       workout_split: splitEntry.preset_id || 'custom',
       custom_split_name: splitEntry.name,
       training_days: splitEntry.training_days,
@@ -304,6 +365,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
   // Build unified list: default splits + custom saved splits (non-default)
   const customSavedSplits = savedSplits.filter(s => !s.preset_id || s.preset_id === 'custom');
+
+  // Open read-only preview for a default split
+  const openDefaultPreview = (def) => {
+    setPreviewSplit(def);
+    setStep('preview');
+  };
 
   // Open custom split for editing
   const openEditCustom = (split) => {
@@ -369,7 +436,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const btnPrimary   = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
   const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
 
-  const headerTitle = step === 'configure' ? 'Custom Split' : 'My Splits';
+  const headerTitle = step === 'preview' ? previewSplit?.name : step === 'configure' ? 'Custom Split' : 'My Splits';
 
   if (!isOpen) return null;
 
@@ -432,8 +499,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 return (
                   <div
                     key={def.id}
-                    onClick={() => selectingActive ? handleSetActive(splitEntry) : null}
-                    className={`flex items-center gap-4 p-4 rounded-2xl transition-transform ${selectingActive ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+                    onClick={() => selectingActive ? handleSetActive(splitEntry) : openDefaultPreview(def)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-transform active:scale-[0.98]`}
                     style={{
                       background: isActive
                         ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))'
@@ -466,7 +533,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         {isActive && <Check className="w-3.5 h-3.5 text-emerald-400" />}
                       </div>
                     ) : (
-                      <Lock className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
                     )}
                   </div>
                 );
@@ -550,6 +617,28 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
               </div>
 
+            </div>
+          )}
+
+          {/* ════ PREVIEW — read-only default split ════ */}
+          {step === 'preview' && previewSplit && (
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span className="text-3xl">{previewSplit.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
+                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                    {previewSplit.days.map(d => (
+                      <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              {previewSplit.days.map(day => {
+                const wt = previewSplit.workouts[day];
+                if (!wt) return null;
+                return <ReadOnlyDayCard key={day} day={day} workout={wt} />;
+              })}
             </div>
           )}
 
@@ -652,6 +741,28 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         </div>
 
         {/* ── FOOTER ── */}
+        {step === 'preview' && previewSplit && (
+          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+            <button onClick={handleBack} className={btnSecondary}>Back</button>
+            <button
+              onClick={() => {
+                handleSetActive({
+                  id: previewSplit.id,
+                  preset_id: previewSplit.id,
+                  name: previewSplit.name,
+                  training_days: previewSplit.days,
+                  workouts: previewSplit.workouts,
+                });
+                setStep('pick');
+                setPreviewSplit(null);
+              }}
+              disabled={setActiveMutation.isPending}
+              className="bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#065f46,0_6px_20px_rgba(16,185,129,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {setActiveMutation.isPending ? 'Setting…' : 'Set as Active'}
+            </button>
+          </div>
+        )}
         {step === 'configure' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
             <button onClick={handleBack} className={btnSecondary}>Back</button>
