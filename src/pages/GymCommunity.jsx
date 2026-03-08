@@ -48,105 +48,34 @@ const CARD_STYLE = {
   WebkitBackdropFilter: 'blur(20px)',
 };
 
-// ─── Leaderboard: Podium card (top 3) ────────────────────────────────────────
-const PODIUM_CONFIG = [
-  // rank 1 — gold, center, tallest
-  { order: 2, borderColor: '#c9a227', glowColor: 'rgba(234,179,8,0.35)', bg: 'linear-gradient(160deg,#1a1400 0%,#2d2000 60%,#1a1400 100%)', rankBg: 'linear-gradient(135deg,#f59e0b,#d97706)', rankColor: '#fff', labelColor: '#fbbf24', height: 'h-[148px]', numberSize: 'text-[28px]', avatarSize: 'w-14 h-14', nameSize: 'text-[11px]' },
-  // rank 2 — silver, left
-  { order: 1, borderColor: '#7a8fa6', glowColor: 'rgba(148,163,184,0.25)', bg: 'linear-gradient(160deg,#0d1520 0%,#152030 60%,#0d1520 100%)', rankBg: 'linear-gradient(135deg,#94a3b8,#64748b)', rankColor: '#fff', labelColor: '#94a3b8', height: 'h-[120px]', numberSize: 'text-[22px]', avatarSize: 'w-11 h-11', nameSize: 'text-[10px]' },
-  // rank 3 — bronze, right
-  { order: 3, borderColor: '#8b5a2b', glowColor: 'rgba(180,100,30,0.25)', bg: 'linear-gradient(160deg,#120d06 0%,#1e1408 60%,#120d06 100%)', rankBg: 'linear-gradient(135deg,#d97706,#b45309)', rankColor: '#fff', labelColor: '#f97316', height: 'h-[120px]', numberSize: 'text-[22px]', avatarSize: 'w-11 h-11', nameSize: 'text-[10px]' },
-];
-
-function PodiumCard({ member, rank, valueLabel, statLabel }) {
-  const cfg = PODIUM_CONFIG[rank];
-  const initial = (member?.userName || '?').charAt(0).toUpperCase();
-  return (
-    <div className="flex flex-col items-center gap-2" style={{ order: cfg.order, flex: rank === 0 ? '1.15' : '1' }}>
-      {/* Avatar + rank badge */}
-      <div className="relative">
-        <div className={`${cfg.avatarSize} rounded-full flex items-center justify-center font-black text-white text-lg`}
-          style={{ background: 'linear-gradient(135deg,#1e3a5f,#0d2255)', border: `2px solid ${cfg.borderColor}`, boxShadow: `0 0 16px ${cfg.glowColor}` }}>
-          {initial}
-        </div>
-        <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
-          style={{ background: cfg.rankBg, color: cfg.rankColor, boxShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
-          {rank + 1}
-        </div>
-        {rank === 0 && <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-lg">🔥</div>}
-      </div>
-      {/* Card */}
-      <div className={`w-full ${cfg.height} rounded-2xl flex flex-col items-center justify-center px-2 py-3 relative overflow-hidden`}
-        style={{ background: cfg.bg, border: `1px solid ${cfg.borderColor}40` }}>
-        {/* Corner glow */}
-        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 0%, ${cfg.glowColor} 0%, transparent 65%)` }} />
-        <p className={`${cfg.nameSize} font-black text-white text-center leading-tight mb-1.5 relative px-1`} style={{ wordBreak: 'break-word' }}>
-          {member?.userName || '—'}
-        </p>
-        <p className="text-[8px] uppercase tracking-widest font-bold mb-1 relative" style={{ color: 'rgba(255,255,255,0.3)' }}>{statLabel}</p>
-        <p className={`${cfg.numberSize} font-black relative leading-none`} style={{ color: cfg.labelColor }}>{valueLabel}</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Leaderboard: Table row (rank 4+) ────────────────────────────────────────
-function LeaderboardTableRow({ member, rank, valueLabel, statLabel, maxValue }) {
-  const pct = maxValue > 0 ? Math.min(100, (Number(String(valueLabel).replace(/[^0-9]/g, '')) / maxValue) * 100) : 0;
-  const barColor = rank % 2 === 0 ? '#3b82f6' : '#06b6d4';
-  return (
-    <div className="flex items-center gap-2 px-3 py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-      {/* Rank */}
-      <span className="w-6 text-center text-[11px] font-black flex-shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }}>{rank + 1}</span>
-      {/* Avatar */}
-      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black text-white"
-        style={{ background: 'linear-gradient(135deg,#1e3a5f,#0d2255)', border: '1px solid rgba(59,130,246,0.25)' }}>
-        {(member?.userName || '?').charAt(0).toUpperCase()}
-      </div>
-      {/* Name */}
-      <p className="flex-1 text-[12px] font-bold text-white truncate">{member?.userName || '—'}</p>
-      {/* Value */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Mini bar */}
-        <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
-        </div>
-        <span className="text-[11px] font-black w-14 text-right" style={{ color: 'rgba(255,255,255,0.5)' }}>{valueLabel}</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Full leaderboard component ───────────────────────────────────────────────
+// ─── Leaderboard table (matches reference screenshot style) ──────────────────
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const views = [
     { id: 'checkins', icon: CheckCircle, label: 'Check-ins', color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)' },
-    { id: 'streaks', icon: Flame, label: 'Streaks', color: '#f97316', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)' },
-    { id: 'progress', icon: TrendingUp, label: 'Progress', color: '#60a5fa', bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.3)' },
+    { id: 'streaks',  icon: Flame,       label: 'Streaks',   color: '#f97316', bg: 'rgba(249,115,22,0.15)',  border: 'rgba(249,115,22,0.3)'  },
+    { id: 'progress', icon: TrendingUp,  label: 'Progress',  color: '#60a5fa', bg: 'rgba(96,165,250,0.15)',  border: 'rgba(96,165,250,0.3)'  },
   ];
 
   const getData = () => {
-    if (view === 'checkins') return { list: checkInLeaderboard, getVal: m => m.count, getLabel: m => `${m.count}`, statLabel: 'CHECK-INS', empty: <><CheckCircle className="w-10 h-10 mx-auto mb-2 text-slate-700" /><p className="text-slate-500 text-sm">No check-ins this week</p></> };
-    if (view === 'streaks') return { list: streakLeaderboard, getVal: m => m.streak, getLabel: m => `${m.streak}d`, statLabel: 'DAY STREAK', empty: <><Flame className="w-10 h-10 mx-auto mb-2 text-slate-700" /><p className="text-slate-500 text-sm">No streaks yet</p></> };
-    return { list: progressLeaderboard, getVal: m => m.increase, getLabel: m => `+${m.increase}kg`, statLabel: 'KG GAINED', empty: <><TrendingUp className="w-10 h-10 mx-auto mb-2 text-slate-700" /><p className="text-slate-500 text-sm">No progress this week</p></> };
+    if (view === 'checkins') return { list: checkInLeaderboard, getVal: m => m.count,    getLabel: m => m.count,         colA: 'CHECK-INS' };
+    if (view === 'streaks')  return { list: streakLeaderboard,  getVal: m => m.streak,   getLabel: m => `${m.streak}d`,  colA: 'STREAK'    };
+    return                          { list: progressLeaderboard,getVal: m => m.increase, getLabel: m => `+${m.increase}kg`, colA: 'PROGRESS' };
   };
 
-  const { list, getVal, getLabel, statLabel, empty } = getData();
-  const top3 = list.slice(0, 3);
-  const rest = list.slice(3, 10);
-  const maxVal = list.length > 0 ? getVal(list[0]) : 1;
+  const { list, getVal, getLabel, colA } = getData();
+  const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
 
-  // Reorder top3 for podium: silver(1), gold(0), bronze(2)
-  const podiumOrder = [top3[1], top3[0], top3[2]];
+  const rankColor = (i) => i === 0 ? '#fbbf24' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7c3a' : 'rgba(255,255,255,0.35)';
+  const barColor  = (i) => i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7c3a' : '#3b82f6';
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(180deg, #080e1c 0%, #070c18 100%)', border: '1px solid rgba(59,130,246,0.12)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(180deg,#07101f 0%,#060d1a 100%)', border: '1px solid rgba(59,130,246,0.12)' }}>
 
       {/* ── HEADER ── */}
       <div className="relative px-4 pt-5 pb-4 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2255 50%, #0a1a3d 100%)', borderBottom: '1px solid rgba(59,130,246,0.15)' }}>
-        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)' }} />
+        style={{ background: 'linear-gradient(135deg,#0a1628 0%,#0d2255 50%,#0a1a3d 100%)', borderBottom: '1px solid rgba(59,130,246,0.15)' }}>
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%)' }} />
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -181,38 +110,73 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
         })}
       </div>
 
+      {/* ── TABLE ── */}
       {list.length === 0 ? (
-        <div className="py-10 text-center">{empty}</div>
+        <div className="py-10 text-center pb-4">
+          <Trophy className="w-10 h-10 mx-auto mb-2 text-slate-800" />
+          <p className="text-slate-600 text-sm">No data yet this week</p>
+        </div>
       ) : (
-        <>
-          {/* ── PODIUM (top 3) ── */}
-          <div className="flex items-end gap-2 px-3 pt-3 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            {podiumOrder.map((m, i) => {
-              const realRank = i === 0 ? 1 : i === 1 ? 0 : 2;
-              if (!m) return <div key={i} style={{ flex: '1', order: PODIUM_CONFIG[realRank].order }} />;
-              return <PodiumCard key={m.userId} member={m} rank={realRank} valueLabel={getLabel(m)} statLabel={statLabel} />;
-            })}
+        <div className="pb-3">
+          {/* Column headers */}
+          <div className="grid px-4 py-2 mb-1" style={{ gridTemplateColumns: '32px 36px 1fr auto auto', gap: '0 10px', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+            <span className="text-[9px] font-black uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>RK</span>
+            <span />
+            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>NAME</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)', minWidth: '48px' }}>{colA}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)', minWidth: '48px' }}>RANK</span>
           </div>
 
-          {/* ── TABLE (rank 4+) ── */}
-          {rest.length > 0 && (
-            <div>
-              {/* Column headers */}
-              <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
-                <span className="w-6 text-center text-[9px] font-black uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>RK</span>
-                <span className="flex-1 text-[9px] font-black uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)', marginLeft: '2.5rem' }}>NAME</span>
-                <span className="text-[9px] font-black uppercase tracking-wider pr-1" style={{ color: 'rgba(255,255,255,0.2)' }}>{statLabel}</span>
+          {/* Rows */}
+          {list.slice(0, 10).map((m, i) => {
+            const pct = Math.round((getVal(m) / maxVal) * 100);
+            const isTop3 = i < 3;
+            return (
+              <div key={m.userId || i}
+                className="grid items-center px-4 py-2.5"
+                style={{
+                  gridTemplateColumns: '32px 36px 1fr auto auto',
+                  gap: '0 10px',
+                  borderBottom: '1px solid rgba(255,255,255,0.04)',
+                  background: isTop3 ? 'rgba(255,255,255,0.025)' : 'transparent',
+                }}>
+
+                {/* Rank number */}
+                <span className="text-[13px] font-black text-center" style={{ color: rankColor(i) }}>
+                  {i + 1}
+                </span>
+
+                {/* Avatar */}
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-black text-white flex-shrink-0"
+                  style={{ background: isTop3 ? `linear-gradient(135deg,#1e3a5f,#0d2255)` : 'rgba(255,255,255,0.06)', border: `1px solid ${isTop3 ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.08)'}` }}>
+                  {(m.userName || '?').charAt(0).toUpperCase()}
+                </div>
+
+                {/* Name */}
+                <p className="text-[13px] font-bold truncate" style={{ color: isTop3 ? '#fff' : 'rgba(255,255,255,0.7)' }}>
+                  {m.userName || '—'}
+                </p>
+
+                {/* Stat value */}
+                <span className="text-[13px] font-black text-right" style={{ color: isTop3 ? rankColor(i) : 'rgba(255,255,255,0.45)', minWidth: '48px' }}>
+                  {getLabel(m)}
+                </span>
+
+                {/* Bar */}
+                <div className="flex items-center justify-end" style={{ minWidth: '48px' }}>
+                  <div className="rounded-full overflow-hidden" style={{ width: '44px', height: '5px', background: 'rgba(255,255,255,0.07)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor(i) }} />
+                  </div>
+                </div>
               </div>
-              {rest.map((m, i) => (
-                <LeaderboardTableRow key={m.userId || i} member={m} rank={i + 3} valueLabel={getLabel(m)} statLabel={statLabel} maxVal={maxVal} />
-              ))}
-            </div>
-          )}
-        </>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 }
+
 
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
