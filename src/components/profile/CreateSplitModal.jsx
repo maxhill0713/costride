@@ -575,8 +575,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           </div>
                         </div>
                         {selectingActive ? (
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-500/25 border-emerald-400' : 'border-slate-600'}`}>
-                            {isActive && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                          <div className={`w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0 transition-all ${isActive ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]' : 'bg-slate-800/70 border border-slate-600/50'}`}>
+                            {isActive && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
                           </div>
                         ) : isActive ? (
                           <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)] flex-shrink-0">
@@ -613,8 +613,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           </div>
                         </div>
                         {selectingActive ? (
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-500/25 border-emerald-400' : 'border-slate-600'}`}>
-                            {isActive && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                          <div className={`w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0 transition-all ${isActive ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]' : 'bg-slate-800/70 border border-slate-600/50'}`}>
+                            {isActive && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 flex-shrink-0">
