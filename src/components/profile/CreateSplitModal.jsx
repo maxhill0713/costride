@@ -290,22 +290,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
             </h2>
           </div>
 
-          {/* Right: green tick button (pick screen only) — fixed width matches left */}
-          <div className="w-10 flex-shrink-0 flex justify-end">
-            {step === 'pick' && (
-              <button
-                onClick={() => setSelectingActive(prev => !prev)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 active:scale-90 transform-gpu
-                  bg-gradient-to-b from-emerald-400 to-emerald-600
-                  shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
-                  active:shadow-none active:translate-y-[3px]
-                  ${selectingActive ? 'ring-2 ring-emerald-300/50' : ''}
-                `}
-              >
-                <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </button>
-            )}
-          </div>
+          {/* Right: spacer to keep title centred */}
+          <div className="w-10 flex-shrink-0" />
         </div>
 
         {/* ── SCROLLABLE BODY ── */}
