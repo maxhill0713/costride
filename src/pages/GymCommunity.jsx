@@ -47,7 +47,7 @@ const CARD_STYLE = {
   WebkitBackdropFilter: 'blur(20px)',
 };
 
-// ─── Leaderboard ─────────────────────────────────────────────────────────────
+// ─── Leaderboard animations ───────────────────────────────────────────────────
 const LBOARD_ANIM = `
 @keyframes lb-slide-up {
   from { opacity:0; transform:translateY(100%); }
@@ -80,39 +80,9 @@ const LBOARD_ANIM = `
 `;
 
 const MEDALS = [
-  {
-    color:'#FFC400', colorDim:'#CC9400',
-    cardBorder:'rgba(255,196,0,0.6)', cardBorderDim:'rgba(255,196,0,0.2)',
-    glow:'rgba(255,196,0,0.28)',
-    bg:'linear-gradient(155deg,rgba(52,36,0,0.88) 0%,rgba(22,15,0,0.96) 100%)',
-    avatarBg:'linear-gradient(135deg,#3a2800,#1c1400)',
-    badgeBg:'linear-gradient(145deg,#FFD44A,#CC8E00)',
-    pulse:'lb-gold-pulse',
-    shine:'rgba(255,210,60,0.18)',
-    insetGlow:'rgba(255,196,0,0.12)',
-  },
-  {
-    color:'#C2D6EC', colorDim:'#8AACCF',
-    cardBorder:'rgba(175,200,228,0.52)', cardBorderDim:'rgba(175,200,228,0.15)',
-    glow:'rgba(175,200,228,0.18)',
-    bg:'linear-gradient(155deg,rgba(18,28,50,0.9) 0%,rgba(8,14,30,0.97) 100%)',
-    avatarBg:'linear-gradient(135deg,#182240,#0c1428)',
-    badgeBg:'linear-gradient(145deg,#C8DCEE,#6A96BC)',
-    pulse:'lb-silver-pulse',
-    shine:'rgba(195,215,236,0.12)',
-    insetGlow:'rgba(175,200,228,0.08)',
-  },
-  {
-    color:'#E08040', colorDim:'#A85C24',
-    cardBorder:'rgba(210,125,55,0.55)', cardBorderDim:'rgba(210,125,55,0.18)',
-    glow:'rgba(210,125,55,0.22)',
-    bg:'linear-gradient(155deg,rgba(44,20,6,0.9) 0%,rgba(18,8,2,0.97) 100%)',
-    avatarBg:'linear-gradient(135deg,#2c1406,#140802)',
-    badgeBg:'linear-gradient(145deg,#D87C3C,#8C4818)',
-    pulse:'lb-bronze-pulse',
-    shine:'rgba(215,138,70,0.14)',
-    insetGlow:'rgba(210,125,55,0.1)',
-  },
+  { color:'#FFC400', colorDim:'#CC9400', cardBorder:'rgba(255,196,0,0.6)', cardBorderDim:'rgba(255,196,0,0.2)', glow:'rgba(255,196,0,0.28)', bg:'linear-gradient(155deg,rgba(52,36,0,0.88) 0%,rgba(22,15,0,0.96) 100%)', avatarBg:'linear-gradient(135deg,#3a2800,#1c1400)', badgeBg:'linear-gradient(145deg,#FFD44A,#CC8E00)', pulse:'lb-gold-pulse', shine:'rgba(255,210,60,0.18)', insetGlow:'rgba(255,196,0,0.12)' },
+  { color:'#C2D6EC', colorDim:'#8AACCF', cardBorder:'rgba(175,200,228,0.52)', cardBorderDim:'rgba(175,200,228,0.15)', glow:'rgba(175,200,228,0.18)', bg:'linear-gradient(155deg,rgba(18,28,50,0.9) 0%,rgba(8,14,30,0.97) 100%)', avatarBg:'linear-gradient(135deg,#182240,#0c1428)', badgeBg:'linear-gradient(145deg,#C8DCEE,#6A96BC)', pulse:'lb-silver-pulse', shine:'rgba(195,215,236,0.12)', insetGlow:'rgba(175,200,228,0.08)' },
+  { color:'#E08040', colorDim:'#A85C24', cardBorder:'rgba(210,125,55,0.55)', cardBorderDim:'rgba(210,125,55,0.18)', glow:'rgba(210,125,55,0.22)', bg:'linear-gradient(155deg,rgba(44,20,6,0.9) 0%,rgba(18,8,2,0.97) 100%)', avatarBg:'linear-gradient(135deg,#2c1406,#140802)', badgeBg:'linear-gradient(145deg,#D87C3C,#8C4818)', pulse:'lb-bronze-pulse', shine:'rgba(215,138,70,0.14)', insetGlow:'rgba(210,125,55,0.1)' },
 ];
 
 const ROW_CARD = {
@@ -125,14 +95,12 @@ const ROW_CARD = {
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
-
   const tabs = [
     { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', unit:'check-ins' },
     { id:'streaks',  label:'Streaks',   icon:Flame,       accent:'#f97316', unit:'day streak' },
     { id:'progress', label:'Progress',  icon:TrendingUp,  accent:'#818cf8', unit:'kg gained'  },
   ];
   const current = tabs.find(t => t.id === view);
-
   const getData = () => {
     if (view==='checkins') return { list:checkInLeaderboard, getVal:m=>m.count,    fmt:v=>`${v}`,    unit:'check-ins'  };
     if (view==='streaks')  return { list:streakLeaderboard,  getVal:m=>m.streak,   fmt:v=>`${v}d`,   unit:'day streak' };
@@ -144,34 +112,23 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   const podium   = list.slice(0,3);
   const restList = list.slice(3,10);
 
-  // ── COLLAPSED BUTTON ─────────────────────────────────────────────────────
   if (!open) return (
     <>
       <style>{LBOARD_ANIM}</style>
       <button onClick={()=>setOpen(true)}
         className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.985] transition-transform duration-150"
-        style={{
-          background:'linear-gradient(135deg,rgba(30,35,60,0.72) 0%,rgba(8,10,20,0.90) 100%)',
-          border:'1px solid rgba(255,255,255,0.07)',
-          backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
-          boxShadow:'0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.05)',
-        }}>
-        {/* Top shimmer */}
+        style={{ background:'linear-gradient(135deg,rgba(30,35,60,0.72) 0%,rgba(8,10,20,0.90) 100%)', border:'1px solid rgba(255,255,255,0.07)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.05)' }}>
         <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)' }}/>
         <div className="flex items-center gap-3 px-4 py-4">
-          {/* Trophy icon box */}
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background:'rgba(255,196,0,0.1)', border:'1px solid rgba(255,196,0,0.2)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:'rgba(255,196,0,0.1)', border:'1px solid rgba(255,196,0,0.2)' }}>
             <Trophy style={{ width:18,height:18,color:'#FFC400' }}/>
           </div>
-          {/* Text */}
           <div className="flex-1 min-w-0">
             <p className="text-[15px] font-black text-white leading-tight">Community Leaderboard</p>
             <p className="text-[11px] mt-0.5 font-semibold" style={{ color:'rgba(255,255,255,0.38)' }}>
               {list.length>0 ? `${list.length} members ranked · tap to view` : 'No data yet this week'}
             </p>
           </div>
-          {/* Podium avatar stack */}
           {podium.length>0 && (
             <div className="flex -space-x-2 flex-shrink-0 mr-1">
               {podium.map((m,i)=>(
@@ -184,7 +141,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
               ))}
             </div>
           )}
-          {/* Chevron */}
           <div style={{ width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.07)',flexShrink:0 }}>
             <ChevronRight style={{ width:14,height:14,color:'rgba(255,255,255,0.35)' }}/>
           </div>
@@ -193,43 +149,25 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     </>
   );
 
-  // ── FULL-SCREEN OVERLAY ───────────────────────────────────────────────────
   return (
     <>
       <style>{LBOARD_ANIM}</style>
-      <div style={{
-        position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999,
-        display:'flex', flexDirection:'column',
-        background:'linear-gradient(160deg,#040d22 0%,#07122e 40%,#040d22 75%,#020810 100%)',
-        animation:'lb-slide-up 0.38s cubic-bezier(0.16,1,0.3,1) both',
-        overflow:'hidden',
-      }}>
-        {/* BG dots */}
+      <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999, display:'flex', flexDirection:'column', background:'linear-gradient(160deg,#040d22 0%,#07122e 40%,#040d22 75%,#020810 100%)', animation:'lb-slide-up 0.38s cubic-bezier(0.16,1,0.3,1) both', overflow:'hidden' }}>
         <div style={{ position:'absolute',inset:0,pointerEvents:'none',backgroundImage:'radial-gradient(rgba(255,255,255,0.018) 1px,transparent 1px)',backgroundSize:'22px 22px' }}/>
-        {/* Gold top-glow */}
         <div style={{ position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:320,height:100,pointerEvents:'none',background:'radial-gradient(ellipse,rgba(255,196,0,0.09) 0%,transparent 70%)' }}/>
-
-        {/* ── HEADER — starts at very top, no gap ── */}
         <div style={{ flexShrink:0, paddingTop:52, paddingLeft:16, paddingRight:16, paddingBottom:12, borderBottom:'1px solid rgba(255,255,255,0.05)', position:'relative' }}>
-          {/* Back button */}
           <button onClick={()=>setOpen(false)} style={{ position:'absolute',top:12,left:16,width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)' }}>
             <ChevronRight style={{ width:17,height:17,color:'rgba(255,255,255,0.65)',transform:'rotate(180deg)' }}/>
           </button>
-
-          {/* Title */}
           <div style={{ textAlign:'center',marginBottom:10 }}>
             <p style={{ fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.22em',color:'rgba(255,196,0,0.6)',margin:'0 0 2px' }}>Community</p>
             <h2 style={{ fontSize:21,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.02em' }}>Leaderboard</h2>
           </div>
-
-          {/* Timeframe pills */}
           <div style={{ display:'flex',justifyContent:'center',gap:7,marginBottom:9 }}>
             {[['week','This Week'],['month','This Month'],['all','Overall']].map(([tf,label])=>(
               <button key={tf} onClick={()=>setTimeframe(tf)} style={{ padding:'5px 13px',borderRadius:99,fontSize:11,fontWeight:700,background:timeframe===tf?'rgba(255,255,255,0.11)':'transparent',border:`1px solid ${timeframe===tf?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)'}`,color:timeframe===tf?'#fff':'rgba(255,255,255,0.3)',transition:'all 0.15s' }}>{label}</button>
             ))}
           </div>
-
-          {/* Metric tabs */}
           <div style={{ display:'flex',gap:7 }}>
             {tabs.map(({id,label,icon:Icon,accent})=>{
               const active=view===id;
@@ -241,8 +179,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
             })}
           </div>
         </div>
-
-        {/* ── SCROLL BODY ── */}
         <div style={{ flex:1,overflowY:'auto',padding:'0 12px 80px',WebkitOverflowScrolling:'touch' }}>
           {list.length===0 ? (
             <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:260,gap:12 }}>
@@ -250,36 +186,26 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
               <p style={{ fontSize:14,fontWeight:700,color:'rgba(255,255,255,0.2)' }}>No data yet this week</p>
             </div>
           ) : (<>
-            {/* Label */}
             <p style={{ textAlign:'center',fontSize:11,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.16em',color:'rgba(255,196,0,0.48)',padding:'14px 0 10px',margin:0 }}>
               Top 3 · {current.label} Leaders
             </p>
-
-            {/* ── PODIUM ── */}
             <div style={{ display:'flex',alignItems:'flex-end',justifyContent:'center',gap:10,paddingBottom:14 }}>
               {[{data:podium[1],rank:1,w:108},{data:podium[0],rank:0,w:132},{data:podium[2],rank:2,w:108}]
                 .filter(p=>p.data).map(({data,rank,w})=>{
                 const M=MEDALS[rank]; const isFirst=rank===0;
                 return (
                   <div key={rank} style={{ width:w,borderRadius:20,overflow:'hidden',position:'relative',background:M.bg,border:`1.5px solid ${M.cardBorder}`,backdropFilter:'blur(32px)',WebkitBackdropFilter:'blur(32px)',boxShadow:`0 14px 44px rgba(0,0,0,0.6),inset 0 1px 0 ${M.shine},0 0 0 0.5px ${M.cardBorderDim}`,animation:`lb-card-in 0.42s cubic-bezier(0.34,1.2,0.64,1) ${rank*0.07}s both` }}>
-                    {/* top edge shine */}
                     <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${M.color}55,transparent)` }}/>
-                    {/* inner radial glow */}
                     <div style={{ position:'absolute',inset:0,pointerEvents:'none',background:`radial-gradient(ellipse at 50% -10%,${M.insetGlow} 0%,transparent 62%)` }}/>
-                    {/* Flame */}
                     {isFirst && <div style={{ position:'absolute',top:7,right:9,fontSize:17,animation:'lb-flame 1.3s ease-in-out infinite',pointerEvents:'none' }}>🔥</div>}
-                    {/* Rank corner */}
                     <div style={{ position:'absolute',top:0,left:0,width:24,height:24,borderRadius:'0 0 10px 0',background:M.badgeBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'rgba(0,0,0,0.65)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.25)' }}>{rank+1}</div>
-                    {/* Avatar */}
                     <div style={{ width:isFirst?62:50,height:isFirst?62:50,borderRadius:'50%',background:M.avatarBg,border:`2.5px solid ${M.color}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:isFirst?21:16,fontWeight:900,color:M.color,margin:`${isFirst?20:16}px auto 9px`,animation:`${M.pulse} 2.8s ease-in-out infinite`,letterSpacing:'-0.01em',overflow:'hidden',flexShrink:0 }}>
                       {data.userAvatar
                         ? <img src={data.userAvatar} alt={data.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
                         : initials(data.userName)
                       }
                     </div>
-                    {/* Name */}
                     <p style={{ color:'#fff',fontWeight:900,textAlign:'center',fontSize:isFirst?13:11,lineHeight:1.2,padding:'0 10px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:`0 1px 10px ${M.glow}` }}>{data.userName||'—'}</p>
-                    {/* Stat */}
                     <div style={{ textAlign:'center',padding:`${isFirst?8:6}px 10px ${isFirst?16:13}px` }}>
                       <p style={{ fontSize:8,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.14em',color:'rgba(255,255,255,0.3)',marginBottom:3 }}>{unit}</p>
                       <p style={{ fontSize:isFirst?23:17,fontWeight:900,color:M.color,lineHeight:1,textShadow:`0 0 22px ${M.glow}` }}>{fmt(getVal(data))}</p>
@@ -288,11 +214,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                 );
               })}
             </div>
-
-            {/* Divider */}
             <div style={{ height:1,margin:'0 4px 10px',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)' }}/>
-
-            {/* ── ROWS 4–10 ── */}
             {restList.length>0 && (
               <div style={{ display:'flex',flexDirection:'column',gap:7 }}>
                 {restList.map((m,i)=>{
@@ -301,30 +223,25 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                   return (
                     <div key={m.userId||i} style={{ ...ROW_CARD,borderRadius:16,padding:'11px 13px',display:'flex',alignItems:'center',gap:11,animation:`lb-row-in 0.26s ease ${(i+3)*0.05}s both`,position:'relative',overflow:'hidden' }}>
                       <div style={{ position:'absolute',top:0,left:0,right:0,height:1,pointerEvents:'none',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }}/>
-                      {/* Rank badge */}
                       <div style={{ width:28,height:28,borderRadius:8,flexShrink:0,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(255,255,255,0.35)' }}>{globalRank}</div>
-                      {/* Avatar */}
                       <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(30,58,138,0.15))',border:'1.5px solid rgba(59,130,246,0.25)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:'rgba(147,197,253,0.85)',overflow:'hidden' }}>
                         {m.userAvatar
                           ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%' }}/>
                           : initials(m.userName)
                         }
                       </div>
-                      {/* Name + bar */}
                       <div style={{ flex:1,minWidth:0 }}>
                         <p style={{ fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.75)',margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{m.userName||'—'}</p>
                         <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden' }}>
                           <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:`linear-gradient(90deg,${current.accent},${current.accent}70)` }}/>
                         </div>
                       </div>
-                      {/* Value */}
                       <div style={{ flexShrink:0,padding:'4px 10px',borderRadius:8,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.07)',fontSize:13,fontWeight:900,color:'rgba(255,255,255,0.45)' }}>{fmt(getVal(m))}</div>
                     </div>
                   );
                 })}
               </div>
             )}
-
             <p style={{ textAlign:'center',fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.14em',color:'rgba(255,255,255,0.1)',padding:'14px 0 4px' }}>
               Ranked by {unit}
             </p>
@@ -335,26 +252,11 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   );
 }
 
-// ─── Animated dropdown panel (Duolingo-style) ────────────────────────────────
 function SlidePanel({ open, children }) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateRows: open ? '1fr' : '0fr',
-        transition: 'grid-template-rows 0.38s cubic-bezier(0.34,1.4,0.64,1)',
-      }}
-    >
-      <div style={{ overflow: 'hidden' }}>
-        <div
-          style={{
-            opacity: open ? 1 : 0,
-            transform: open ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.97)',
-            transition: open
-              ? 'opacity 0.28s ease 0.08s, transform 0.38s cubic-bezier(0.34,1.4,0.64,1) 0.04s'
-              : 'opacity 0.15s ease, transform 0.18s ease',
-          }}
-        >
+    <div style={{ display:'grid', gridTemplateRows:open?'1fr':'0fr', transition:'grid-template-rows 0.38s cubic-bezier(0.34,1.4,0.64,1)' }}>
+      <div style={{ overflow:'hidden' }}>
+        <div style={{ opacity:open?1:0, transform:open?'translateY(0) scale(1)':'translateY(-12px) scale(0.97)', transition:open?'opacity 0.28s ease 0.08s, transform 0.38s cubic-bezier(0.34,1.4,0.64,1) 0.04s':'opacity 0.15s ease, transform 0.18s ease' }}>
           {children}
         </div>
       </div>
@@ -362,7 +264,6 @@ function SlidePanel({ open, children }) {
   );
 }
 
-// ─── Ripple button ────────────────────────────────────────────────────────────
 function RippleButton({ onClick, children, className, style }) {
   const [ripples, setRipples] = React.useState([]);
   const handleClick = (e) => {
@@ -375,16 +276,9 @@ function RippleButton({ onClick, children, className, style }) {
     onClick && onClick(e);
   };
   return (
-    <button onClick={handleClick} className={className} style={{ ...style, position: 'relative', overflow: 'hidden' }}>
+    <button onClick={handleClick} className={className} style={{ ...style, position:'relative', overflow:'hidden' }}>
       {ripples.map(({ id, x, y }) => (
-        <span key={id} style={{
-          position: 'absolute', left: x, top: y,
-          width: 4, height: 4, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.45)',
-          transform: 'translate(-50%,-50%) scale(0)',
-          animation: 'costride-ripple 0.55s ease-out forwards',
-          pointerEvents: 'none',
-        }} />
+        <span key={id} style={{ position:'absolute', left:x, top:y, width:4, height:4, borderRadius:'50%', background:'rgba(255,255,255,0.45)', transform:'translate(-50%,-50%) scale(0)', animation:'costride-ripple 0.55s ease-out forwards', pointerEvents:'none' }} />
       ))}
       {children}
       <style>{`@keyframes costride-ripple { to { transform: translate(-50%,-50%) scale(60); opacity: 0; } }`}</style>
@@ -392,12 +286,10 @@ function RippleButton({ onClick, children, className, style }) {
   );
 }
 
-
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
-
   useEffect(() => { window.scrollTo(0, 0); }, [gymId]);
 
   const [showCreateEvent, setShowCreateEvent] = useState(false);
@@ -413,7 +305,7 @@ export default function GymCommunity() {
   const [viewAsMember, setViewAsMember] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
-  const [joinPanel, setJoinPanel] = useState(null); // 'code' | 'primary' | null
+  const [joinPanel, setJoinPanel] = useState(null);
   const [joinCode, setJoinCode] = useState('');
   const [joinCodeError, setJoinCodeError] = useState('');
   const [joinCodeSuccess, setJoinCodeSuccess] = useState(false);
@@ -424,9 +316,10 @@ export default function GymCommunity() {
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
 
+  // ── Queries ──────────────────────────────────────────────────────────────────
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
-  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
+  const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: coaches = [] } = useQuery({ queryKey: ['coaches', gymId], queryFn: () => base44.entities.Coach.filter({ gym_id: gymId }), enabled: !!gymId, staleTime: 10 * 60 * 1000, gcTime: 20 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: posts = [] } = useQuery({ queryKey: ['posts', gymId], queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: checkIns = [] } = useQuery({ queryKey: ['checkIns', gymId], queryFn: () => base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
@@ -442,7 +335,61 @@ export default function GymCommunity() {
   const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }), enabled: !!currentUser, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
 
-  // ── Mutations (unchanged logic) ──────────────────────────────────────────────
+  // ── Collect unique user IDs from check-ins for avatar lookup ─────────────────
+  const leaderboardUserIds = React.useMemo(() => {
+    const seen = new Set();
+    checkIns.forEach(c => { if (c.user_id) seen.add(c.user_id); });
+    return [...seen].slice(0, 50);
+  }, [checkIns]);
+
+  // ── Fetch User profiles to get real avatars ───────────────────────────────
+  // Uses Promise.allSettled so one failed fetch doesn't break the rest
+  const { data: leaderboardUsers = [] } = useQuery({
+    queryKey: ['leaderboardUsers', gymId, leaderboardUserIds.length],
+    queryFn: async () => {
+      if (leaderboardUserIds.length === 0) return [];
+      const results = await Promise.allSettled(
+        leaderboardUserIds.map(uid =>
+          base44.entities.User.filter({ id: uid }).then(r => (r && r[0]) ? r[0] : null)
+        )
+      );
+      return results
+        .filter(r => r.status === 'fulfilled' && r.value != null)
+        .map(r => r.value);
+    },
+    enabled: leaderboardUserIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+  });
+
+  // ── Avatar map: userId → avatarUrl ────────────────────────────────────────
+  // Built from three sources in priority order:
+  //   1. GymMember records (keyed by user_id, NOT the record id)
+  //   2. Directly-fetched User profiles (most reliable)
+  //   3. currentUser (always accurate for the logged-in user)
+  const memberAvatarMap = React.useMemo(() => {
+    const map = {};
+    // 1. GymMember — must key by user_id, not m.id
+    members.forEach(m => {
+      if (!m.user_id) return;
+      const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
+      if (avatar) map[m.user_id] = avatar;
+    });
+    // 2. User profiles fetched directly
+    leaderboardUsers.forEach(u => {
+      if (!u?.id) return;
+      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
+      if (avatar) map[u.id] = avatar;
+    });
+    // 3. Current user
+    if (currentUser?.id) {
+      const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
+      if (myAvatar) map[currentUser.id] = myAvatar;
+    }
+    return map;
+  }, [members, leaderboardUsers, currentUser]);
+
+  // ── Mutations ─────────────────────────────────────────────────────────────────
   const createEventMutation = useMutation({ mutationFn: (eventData) => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async (eventData) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); const tempEvent = { ...eventData, id: `temp-${Date.now()}`, gym_id: gymId, gym_name: gym?.name, attendees: 0 }; queryClient.setQueryData(['events', gymId], (old = []) => [tempEvent, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
   const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old = []) => old.map((e) => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
   const updateEquipmentMutation = useMutation({ mutationFn: (equipment) => base44.entities.Gym.update(gymId, { equipment }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gym', gymId] }); setShowManageEquipment(false); } });
@@ -467,7 +414,7 @@ export default function GymCommunity() {
   const joinChallengeMutation = useMutation({ mutationFn: async (challenge) => { const currentParticipants = challenge.participants || []; await base44.entities.Challenge.update(challenge.id, { participants: [...currentParticipants, currentUser.id] }); await base44.entities.ChallengeParticipant.create({ user_id: currentUser.id, user_name: currentUser.full_name, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }); }, onMutate: async (challenge) => { await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]); queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [...old, { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }]); return { previous }; }, onError: (err, challenge, context) => { queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['challenges', gymId] }); queryClient.invalidateQueries({ queryKey: ['challenges'] }); queryClient.invalidateQueries({ queryKey: ['activeChallenges'] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'challenge', title: '💪 Challenge Joined!', message: 'Good luck on your new challenge!', icon: '🎯' }); } });
   const claimBonusMutation = useMutation({ mutationFn: ({ bonusType, offerDetails }) => base44.entities.ClaimedBonus.create({ user_id: currentUser.id, gym_id: gymId, bonus_type: bonusType, offer_details: offerDetails }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['claimedBonuses', currentUser?.id, gymId] }); base44.entities.Notification.create({ user_id: currentUser.id, type: 'reward', title: '🎁 Bonus Claimed!', message: 'Your gym bonus has been claimed successfully', icon: '🎉' }); } });
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────────
   const hasClaimedBonus = (bonusType) => claimedBonuses.some((b) => b.bonus_type === bonusType);
   const hasjoinedChallenge = (challengeId) => challengeParticipants.some((p) => p.challenge_id === challengeId);
   const calculateCurrentStreak = (userCheckIns) => { if (userCheckIns.length === 0) return 0; const sorted = [...userCheckIns].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date)); let streak = 1; let cur = new Date(sorted[0].check_in_date); cur.setHours(0,0,0,0); for (let i = 1; i < sorted.length; i++) { const d = new Date(sorted[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; } return streak; };
@@ -479,47 +426,52 @@ export default function GymCommunity() {
   const currentCoach = currentUser && coaches.find((c) => c.user_email === currentUser.email);
   const isCoach = !!currentCoach;
   const showOwnerControls = isGymOwner && !viewAsMember;
-  const canManageEvents = isGymOwner || (currentCoach?.can_manage_events ?? false);
-  const canManageClasses = isGymOwner || (currentCoach?.can_manage_classes ?? false);
-  const canPost = isGymOwner || (currentCoach?.can_post ?? false);
   const isMember = !!gymMembership || isGymOwner;
-
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const weeklyCheckIns = checkIns.filter((c) => new Date(c.check_in_date) >= weekAgo);
-
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
-  // Get member avatars map
-  const memberAvatarMap = members.reduce((acc, m) => { acc[m.id] = m.avatar_url; return acc; }, {});
-  
-  const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
-  
-  // Calculate real streaks per user
+  // ── Leaderboard datasets — all use memberAvatarMap keyed by user_id ──────────
+  const checkInLeaderboard = Object.values(
+    weeklyCheckIns.reduce((acc, c) => {
+      const id = c.user_id;
+      if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null, count: 0 };
+      acc[id].count++;
+      return acc;
+    }, {})
+  ).sort((a, b) => b.count - a.count).slice(0, 10);
+
   const calcUserStreak = (userId) => {
-    const userCheckIns = checkIns.filter(c => c.user_id === userId).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-    if (userCheckIns.length === 0) return 0;
-    let streak = 1;
-    let curDate = new Date(userCheckIns[0].check_in_date);
-    curDate.setHours(0, 0, 0, 0);
-    for (let i = 1; i < userCheckIns.length; i++) {
-      const d = new Date(userCheckIns[i].check_in_date);
-      d.setHours(0, 0, 0, 0);
-      const diffDays = Math.floor((curDate - d) / 86400000);
-      if (diffDays === 1) { streak++; curDate = d; } 
-      else if (diffDays > 1) break;
-    }
+    const uci = checkIns.filter(c => c.user_id === userId).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+    if (uci.length === 0) return 0;
+    let streak = 1; let cur = new Date(uci[0].check_in_date); cur.setHours(0,0,0,0);
+    for (let i = 1; i < uci.length; i++) { const d = new Date(uci[i].check_in_date); d.setHours(0,0,0,0); const diff = Math.floor((cur - d) / 86400000); if (diff === 1) { streak++; cur = d; } else if (diff > 1) break; }
     return streak;
   };
-  
-  const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { 
-    const id = c.user_id; 
-    if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null }; 
-    return acc; 
-  }, {})).map(item => ({ ...item, streak: calcUserStreak(item.userId) })).sort((a, b) => b.streak - a.streak).slice(0, 10);
-  
+
+  const streakLeaderboard = Object.values(
+    checkIns.reduce((acc, c) => {
+      const id = c.user_id;
+      if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || null };
+      return acc;
+    }, {})
+  ).map(item => ({ ...item, streak: calcUserStreak(item.userId) }))
+   .sort((a, b) => b.streak - a.streak).slice(0, 10);
+
   const weekAgoDate = new Date(now.getTime() - 7 * 86400000);
-  const progressLeaderboard = Object.values(lifts.reduce((acc, lift) => { if (new Date(lift.lift_date) >= weekAgoDate) { const key = `${lift.member_id}-${lift.exercise}`; if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 }; else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; } } return acc; }, {})).map((item) => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax })).filter((item) => item.increase > 0).sort((a, b) => b.increase - a.increase).slice(0, 10);
+  const progressLeaderboard = Object.values(
+    lifts.reduce((acc, lift) => {
+      if (new Date(lift.lift_date) >= weekAgoDate) {
+        const key = `${lift.member_id}-${lift.exercise}`;
+        if (!acc[key]) acc[key] = { userId: lift.member_id, userName: lift.member_name, userAvatar: memberAvatarMap[lift.member_id] || null, exercise: lift.exercise, maxWeight: lift.weight_lbs, previousMax: 0 };
+        else if (lift.weight_lbs > acc[key].maxWeight) { acc[key].previousMax = acc[key].maxWeight; acc[key].maxWeight = lift.weight_lbs; }
+      }
+      return acc;
+    }, {})
+  ).map(item => ({ userId: item.userId, userName: item.userName, userAvatar: item.userAvatar || null, exercise: item.exercise, increase: item.maxWeight - item.previousMax }))
+   .filter(item => item.increase > 0)
+   .sort((a, b) => b.increase - a.increase).slice(0, 10);
 
   if (gymLoading && !gym) return <GymCommunitySkeleton />;
   if (!gymLoading && !gym) return (
@@ -528,67 +480,50 @@ export default function GymCommunity() {
     </div>
   );
 
-  // ── Tab trigger style matching CoStride nav pattern ───────────────────────────
   const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-3 py-1.5 flex items-center gap-1.5 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu";
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-
           {/* ── HERO BANNER ── */}
           <div className="relative overflow-hidden">
-            {/* Hero image */}
             <div className="absolute inset-0 z-0">
               {gym.image_url
                 ? <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" />
                 : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
               }
-              {/* Gradient overlays for depth */}
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(2,4,10,0.5) 0%, transparent 60%)' }} />
             </div>
-
-            {/* Banner content */}
             <div className="relative z-10 px-4 pt-4 pb-0" style={{ minHeight: '140px' }}>
-              {/* Top row: gym name + controls */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 mr-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length > 28 ? 'text-base' : gym.name.length > 18 ? 'text-lg' : 'text-xl'}`}>
-                      {gym.name}
-                    </h1>
+                    <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length > 28 ? 'text-base' : gym.name.length > 18 ? 'text-lg' : 'text-xl'}`}>{gym.name}</h1>
                     {gym.verified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow" />}
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className="text-white/60 text-[11px] flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />{gym.city}
-                    </p>
-                    {/* Member count pill */}
+                    <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym.city}</p>
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
                       <Users className="w-3 h-3 text-white/70" />
                       <span className="text-[11px] font-bold text-white">{gym?.members_count || 0} members</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Owner / coach controls */}
                 <div className="flex flex-col gap-1.5 flex-shrink-0">
                   {isGhostGym && !isGymOwner && (
-                    <button onClick={() => setShowInviteOwnerModal(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_3px_0_0_#5b21b6,0_6px_20px_rgba(120,40,220,0.4)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100">
+                    <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_3px_0_0_#5b21b6,0_6px_20px_rgba(120,40,220,0.4)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100">
                       <Crown className="w-3.5 h-3.5" />Make Official
                     </button>
                   )}
                   {showOwnerControls && (
-                    <button onClick={() => setShowEditHeroImage(true)}
-                      className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white/90 active:scale-95 transition-transform">
+                    <button onClick={() => setShowEditHeroImage(true)} className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white/90 active:scale-95 transition-transform">
                       <Edit className="w-3 h-3 inline mr-1" />Edit Hero
                     </button>
                   )}
                   {isGymOwner && (
-                    <button onClick={() => setViewAsMember(!viewAsMember)}
-                      className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white/90 active:scale-95 transition-transform">
+                    <button onClick={() => setViewAsMember(!viewAsMember)} className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white/90 active:scale-95 transition-transform">
                       {viewAsMember ? '👤 Member' : '👑 Owner'}
                     </button>
                   )}
@@ -598,170 +533,87 @@ export default function GymCommunity() {
                 </div>
               </div>
             </div>
-
-            {/* ── TAB BAR ── */}
             <div className="relative z-10 pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <TabsList className="w-full flex justify-around bg-transparent px-3 py-2 h-auto gap-1.5">
-                <TabsTrigger value="home" className={tabTriggerClass}>
-                  <Home className="w-3.5 h-3.5" /><span>Home</span>
-                </TabsTrigger>
-                <TabsTrigger value="feed" className={tabTriggerClass}>
-                  <MessageCircle className="w-3.5 h-3.5" /><span>Feed</span>
-                </TabsTrigger>
-                <TabsTrigger value="challenges" className={tabTriggerClass}>
-                  <Trophy className="w-3.5 h-3.5" /><span>Challenges</span>
-                </TabsTrigger>
-                <TabsTrigger value="events" className={tabTriggerClass}>
-                  <Calendar className="w-3.5 h-3.5" /><span>Events</span>
-                </TabsTrigger>
+                <TabsTrigger value="home" className={tabTriggerClass}><Home className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
+                <TabsTrigger value="feed" className={tabTriggerClass}><MessageCircle className="w-3.5 h-3.5" /><span>Feed</span></TabsTrigger>
+                <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
+                <TabsTrigger value="events" className={tabTriggerClass}><Calendar className="w-3.5 h-3.5" /><span>Events</span></TabsTrigger>
               </TabsList>
             </div>
           </div>
-          {/* ── END HERO ── */}
 
-          {/* ── CONTENT ── */}
           <div className="max-w-4xl mx-auto px-3 md:px-4 pt-3 pb-28 space-y-3 w-full overflow-hidden">
-
-            {/* HOME TAB */}
+            {/* ── HOME TAB ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-
-                {/* Ghost gym join banner */}
                 {isGhostGym && !isMember && !showOwnerControls && (
-                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3"
-                    style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
-                    <div>
-                      <p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p>
-                      <p className="text-xs text-slate-400">Join this gym community</p>
-                    </div>
-                    <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending}
-                      className="px-4 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform"
-                      style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}>
-                      {joinGhostGymMutation.isPending ? 'Joining…' : 'Join Gym'}
+                  <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
+                    <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
+                    <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending} className="px-4 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}>
+                      {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
                     </button>
                   </div>
                 )}
-
-
-                {/* ── JOIN WITH CODE + SET PRIMARY GYM ── */}
                 {!isMember && !isGhostGym && !showOwnerControls && (
                   <div className="space-y-2">
-                    {/* Buttons row */}
                     <div className="flex gap-2">
-                      {/* Join with Code */}
-                      <RippleButton
-                        onClick={() => { setJoinPanel(p => p === 'code' ? null : 'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
+                      <RippleButton onClick={() => { setJoinPanel(p => p === 'code' ? null : 'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
                         className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{
-                          background: joinPanel === 'code'
-                            ? 'linear-gradient(135deg,#1d4ed8,#1e40af)'
-                            : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))',
-                          border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`,
-                          boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)',
-                          color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)',
-                          transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)',
-                        }}>
-                        <span style={{ fontSize: 16 }}>🔑</span>
-                        <span>Join with Code</span>
-                        <span style={{
-                          display: 'inline-block',
-                          transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)',
-                          fontSize: 11, opacity: 0.7,
-                        }}>▼</span>
+                        style={{ background: joinPanel === 'code' ? 'linear-gradient(135deg,#1d4ed8,#1e40af)' : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))', border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`, boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)', transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)' }}>
+                        <span style={{ fontSize: 16 }}>🔑</span><span>Join with Code</span>
+                        <span style={{ display: 'inline-block', transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
                       </RippleButton>
-
-                      {/* Set Primary Gym */}
-                      <RippleButton
-                        onClick={() => { setJoinPanel(p => p === 'primary' ? null : 'primary'); setPrimaryConfirmed(false); }}
+                      <RippleButton onClick={() => { setJoinPanel(p => p === 'primary' ? null : 'primary'); setPrimaryConfirmed(false); }}
                         className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{
-                          background: joinPanel === 'primary'
-                            ? 'linear-gradient(135deg,#b45309,#92400e)'
-                            : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))',
-                          border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`,
-                          boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)',
-                          color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)',
-                          transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)',
-                        }}>
-                        <span style={{ fontSize: 16 }}>⭐</span>
-                        <span>Set Primary</span>
-                        <span style={{
-                          display: 'inline-block',
-                          transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)',
-                          fontSize: 11, opacity: 0.7,
-                        }}>▼</span>
+                        style={{ background: joinPanel === 'primary' ? 'linear-gradient(135deg,#b45309,#92400e)' : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))', border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`, boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)', transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)' }}>
+                        <span style={{ fontSize: 16 }}>⭐</span><span>Set Primary</span>
+                        <span style={{ display: 'inline-block', transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
                       </RippleButton>
                     </div>
-
-                    {/* ── JOIN WITH CODE PANEL ── */}
                     <SlidePanel open={joinPanel === 'code'}>
                       <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border: '1px solid rgba(59,130,246,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
                         <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
                         <p className="text-[11px] mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
                         {joinCodeSuccess ? (
                           <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
-                              style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
                             <p className="text-sm font-black text-emerald-400">You're in!</p>
                             <p className="text-xs text-slate-400">Welcome to {gym?.name}</p>
                           </div>
                         ) : (
                           <>
                             <div className="flex gap-2">
-                              <input
-                                value={joinCode}
-                                onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinCodeError(''); }}
-                                placeholder="e.g. GYM-XK29"
-                                maxLength={10}
+                              <input value={joinCode} onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinCodeError(''); }} placeholder="e.g. GYM-XK29" maxLength={10}
                                 className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold text-white placeholder-slate-600 outline-none"
-                                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }}
-                              />
-                              <button
-                                onClick={() => {
-                                  if (!joinCode.trim()) { setJoinCodeError('Please enter a code'); return; }
-                                  // Wire to real mutation: joinGymMutation.mutate({ code: joinCode })
-                                  setJoinCodeSuccess(true);
-                                }}
+                                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }} />
+                              <button onClick={() => { if (!joinCode.trim()) { setJoinCodeError('Please enter a code'); return; } setJoinCodeSuccess(true); }}
                                 className="px-4 py-2.5 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                                style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>
-                                Join
-                              </button>
+                                style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>Join</button>
                             </div>
                             {joinCodeError && <p className="text-[11px] text-red-400 mt-1.5 font-semibold">{joinCodeError}</p>}
                           </>
                         )}
                       </div>
                     </SlidePanel>
-
-                    {/* ── SET PRIMARY GYM PANEL ── */}
                     <SlidePanel open={joinPanel === 'primary'}>
                       <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border: '1px solid rgba(251,191,36,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
                         {primaryConfirmed ? (
                           <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
-                              style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.4)' }}>⭐</div>
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.4)' }}>⭐</div>
                             <p className="text-sm font-black text-yellow-400">{gym?.name} is now your primary gym!</p>
                             <p className="text-xs text-slate-400">Your stats and check-ins will be tracked here</p>
                           </div>
                         ) : (
                           <>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-                                style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
                               <div>
                                 <p className="text-[13px] font-black text-white leading-tight">Set as your home gym</p>
                                 <p className="text-[11px] mt-0.5" style={{ color: 'rgba(148,163,184,0.65)' }}>Your check-ins, leaderboard rank &amp; streak will be tracked at {gym?.name}</p>
                               </div>
                             </div>
-                            <button
-                              onClick={() => {
-                                setPrimaryConfirmed(true);
-                                // Wire: updatePrimaryGymMutation.mutate({ gymId })
-                              }}
-                              className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                              style={{ background: 'linear-gradient(135deg,#d97706,#b45309)', boxShadow: '0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
+                            <button onClick={() => setPrimaryConfirmed(true)} className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform" style={{ background: 'linear-gradient(135deg,#d97706,#b45309)', boxShadow: '0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
                               ⭐ Confirm — Set {gym?.name} as Primary
                             </button>
                           </>
@@ -770,64 +622,37 @@ export default function GymCommunity() {
                     </SlidePanel>
                   </div>
                 )}
-
-                {/* Polls */}
                 {polls.length > 0 && (
                   <div className="space-y-3">
                     {polls.map((poll) => (
-                      <PollCard key={poll.id} poll={poll}
-                        onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
-                        userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
+                      <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} />
                     ))}
                   </div>
                 )}
-
-                {/* Busy times */}
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-
-                {/* ── LEADERBOARD ── */}
-                <LeaderboardSection
-                  view={leaderboardView}
-                  setView={setLeaderboardView}
-                  checkInLeaderboard={checkInLeaderboard}
-                  streakLeaderboard={streakLeaderboard}
-                  progressLeaderboard={progressLeaderboard}
-                />
-
-                {/* Upcoming events preview */}
+                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboard={progressLeaderboard} />
                 {upcomingEvents.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}>
-                        <Calendar className="w-3.5 h-3.5 text-orange-400" />
-                      </div>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div>
                       <h3 className="text-[13px] font-black text-white">This Week</h3>
                     </div>
                     <div className="space-y-2">
                       {upcomingEvents.map((event) => (
-                        <WeeklyEventCard key={event.id} event={event}
-                          onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null}
-                          disabled={showOwnerControls} />
+                        <WeeklyEventCard key={event.id} event={event} onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null} disabled={showOwnerControls} />
                       ))}
                     </div>
                   </div>
                 )}
-
-                {/* Active challenges preview */}
                 {gymChallenges.length > 0 && (
                   <div className="rounded-2xl p-4" style={CARD_STYLE}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}>
-                        <Trophy className="w-3.5 h-3.5 text-purple-400" />
-                      </div>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}><Trophy className="w-3.5 h-3.5 text-purple-400" /></div>
                       <h3 className="text-[13px] font-black text-white">New Challenges</h3>
                     </div>
                     <div className="space-y-2">
                       {gymChallenges.slice(0, 1).map((challenge) => (
-                        <GymChallengeCard key={challenge.id} challenge={challenge}
-                          isJoined={hasjoinedChallenge(challenge.id)}
-                          onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                          currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} />
+                        <GymChallengeCard key={challenge.id} challenge={challenge} isJoined={hasjoinedChallenge(challenge.id)} onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={null} />
                       ))}
                     </div>
                   </div>
@@ -835,100 +660,52 @@ export default function GymCommunity() {
               </motion.div>
             </TabsContent>
 
-            {/* FEED TAB */}
+            {/* ── FEED TAB ── */}
             <TabsContent value="feed" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 {upcomingEvents.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-[11px] font-black text-white/40 uppercase tracking-wider">📅 This Week</p>
-                    {upcomingEvents.map((event) => (
-                      <WeeklyEventCard key={event.id} event={event}
-                        onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null}
-                        disabled={showOwnerControls} />
-                    ))}
+                    {upcomingEvents.map((event) => (<WeeklyEventCard key={event.id} event={event} onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null} disabled={showOwnerControls} />))}
                   </div>
                 )}
                 {showOwnerControls && <CreateGymPostButton gym={gym} currentUser={currentUser} onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />}
                 {posts.length === 0
-                  ? (
-                    <div className="rounded-2xl p-10 text-center" style={CARD_STYLE}>
-                      <MessageCircle className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                      <p className="text-white font-bold mb-1 text-sm">No community posts yet</p>
-                      <p className="text-xs text-slate-500">Be the first to share your workout! 💪</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {posts.slice(0, 10).map((post) => (
-                        <PostCard key={post.id} post={post} fullWidth currentUser={currentUser}
-                          onLike={() => {}} onComment={() => {}} onSave={() => {}}
-                          onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-                      ))}
-                    </div>
-                  )
+                  ? (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><MessageCircle className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No community posts yet</p><p className="text-xs text-slate-500">Be the first to share your workout! 💪</p></div>)
+                  : (<div className="space-y-3">{posts.slice(0, 10).map((post) => (<PostCard key={post.id} post={post} fullWidth currentUser={currentUser} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />))}</div>)
                 }
               </motion.div>
             </TabsContent>
 
-            {/* CHALLENGES TAB */}
+            {/* ── CHALLENGES TAB ── */}
             <TabsContent value="challenges" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 {showOwnerControls && (
-                  <button onClick={() => setShowCreateChallenge(true)}
-                    className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform"
-                    style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border: '1px solid rgba(59,130,246,0.3)' }}>
-                    <Plus className="w-5 h-5" />
-                    <span className="text-sm">Create Gym Challenge</span>
+                  <button onClick={() => setShowCreateChallenge(true)} className="w-full rounded-2xl py-4 flex flex-col items-center gap-2 text-white font-bold active:scale-[0.98] transition-transform" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15))', border: '1px solid rgba(59,130,246,0.3)' }}>
+                    <Plus className="w-5 h-5" /><span className="text-sm">Create Gym Challenge</span>
                   </button>
                 )}
                 {gymChallenges.length > 0
-                  ? gymChallenges.map((challenge) => (
-                    <GymChallengeCard key={challenge.id} challenge={challenge}
-                      isJoined={hasjoinedChallenge(challenge.id)}
-                      onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null}
-                      currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls}
-                      onDelete={showOwnerControls ? (id) => { if (window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} />
-                  ))
-                  : (
-                    <div className="rounded-2xl p-10 text-center" style={CARD_STYLE}>
-                      <Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                      <p className="text-white font-bold mb-1 text-sm">No Active Challenges</p>
-                      <p className="text-xs text-slate-500">Check back soon for new challenges!</p>
-                    </div>
-                  )
+                  ? gymChallenges.map((challenge) => (<GymChallengeCard key={challenge.id} challenge={challenge} isJoined={hasjoinedChallenge(challenge.id)} onJoin={!showOwnerControls ? (challenge) => joinChallengeMutation.mutate(challenge) : null} currentUser={currentUser} disabled={showOwnerControls} isOwner={showOwnerControls} onDelete={showOwnerControls ? (id) => { if (window.confirm('Delete this challenge?')) deleteChallengeMutation.mutate(id); } : null} />))
+                  : (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><Trophy className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No Active Challenges</p><p className="text-xs text-slate-500">Check back soon for new challenges!</p></div>)
                 }
               </motion.div>
             </TabsContent>
 
-            {/* EVENTS TAB */}
+            {/* ── EVENTS TAB ── */}
             <TabsContent value="events" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-
-                {/* Classes */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}>
-                        <Target className="w-3.5 h-3.5 text-purple-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">Classes</h3>
-                    </div>
-                    {showOwnerControls && (
-                      <button onClick={() => setShowManageClasses(true)}
-                        className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform"
-                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                        Manage
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(167,139,250,0.15)' }}><Target className="w-3.5 h-3.5 text-purple-400" /></div><h3 className="text-[13px] font-black text-white">Classes</h3></div>
+                    {showOwnerControls && <button onClick={() => setShowManageClasses(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>Manage</button>}
                   </div>
                   <div className="px-3 pb-4">
                     {classes.length === 0
                       ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No classes scheduled</p></div>
-                      : <div className="space-y-2">
-                        {classes.map((gymClass) => (
+                      : <div className="space-y-2">{classes.map((gymClass) => (
                           <div key={gymClass.id} className="flex items-start gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2))' }}>
-                              <Target className="w-5 h-5 text-purple-300" />
-                            </div>
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2))' }}><Target className="w-5 h-5 text-purple-300" /></div>
                             <div className="flex-1 min-w-0">
                               <h4 className="font-bold text-white text-[13px] mb-0.5 truncate">{gymClass.name}</h4>
                               <p className="text-xs text-slate-500 mb-1.5 truncate">{gymClass.description}</p>
@@ -937,74 +714,33 @@ export default function GymCommunity() {
                                 {gymClass.duration_minutes && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-300" style={{ background: 'rgba(255,255,255,0.07)' }}>{gymClass.duration_minutes}min</span>}
                               </div>
                             </div>
-                            {showOwnerControls && (
-                              <button onClick={() => { if (window.confirm('Delete this class?')) deleteClassMutation.mutate(gymClass.id); }}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-                                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                              </button>
-                            )}
+                            {showOwnerControls && <button onClick={() => { if (window.confirm('Delete this class?')) deleteClassMutation.mutate(gymClass.id); }} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}><Trash2 className="w-4 h-4 text-red-400" /></button>}
                           </div>
-                        ))}
-                      </div>
+                        ))}</div>
                     }
                   </div>
                 </div>
-
-                {/* Upcoming Events */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}>
-                        <Calendar className="w-3.5 h-3.5 text-orange-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">Upcoming Events</h3>
-                    </div>
-                    {showOwnerControls && (
-                      <button onClick={() => setShowCreateEvent(true)}
-                        className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform"
-                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                        <Plus className="w-3 h-3" />Create
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(251,146,60,0.15)' }}><Calendar className="w-3.5 h-3.5 text-orange-400" /></div><h3 className="text-[13px] font-black text-white">Upcoming Events</h3></div>
+                    {showOwnerControls && <button onClick={() => setShowCreateEvent(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-transform" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}><Plus className="w-3 h-3" />Create</button>}
                   </div>
                   <div className="px-3 pb-4">
                     {events.filter((e) => new Date(e.event_date) >= now).length === 0
                       ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><Calendar className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No upcoming events</p></div>
-                      : <div className="space-y-2">
-                        {events.filter((e) => new Date(e.event_date) >= now).slice(0, 5).map((event) => (
-                          <EventCard key={event.id} event={event}
-                            onRSVP={(eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); }}
-                            isOwner={showOwnerControls}
-                            onDelete={showOwnerControls ? (eventId) => { if (window.confirm('Delete?')) deleteEventMutation.mutate(eventId); } : null} />
-                        ))}
-                      </div>
+                      : <div className="space-y-2">{events.filter((e) => new Date(e.event_date) >= now).slice(0, 5).map((event) => (<EventCard key={event.id} event={event} onRSVP={(eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); }} isOwner={showOwnerControls} onDelete={showOwnerControls ? (eventId) => { if (window.confirm('Delete?')) deleteEventMutation.mutate(eventId); } : null} />))}</div>
                     }
                   </div>
                 </div>
-
-                {/* Coaches */}
                 <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
                   <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(96,165,250,0.15)' }}>
-                        <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
-                      </div>
-                      <h3 className="text-[13px] font-black text-white">Coaches</h3>
-                    </div>
-                    {showOwnerControls && (
-                      <button onClick={() => setShowManageCoaches(true)}
-                        className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform"
-                        style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                        Manage
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(96,165,250,0.15)' }}><GraduationCap className="w-3.5 h-3.5 text-blue-400" /></div><h3 className="text-[13px] font-black text-white">Coaches</h3></div>
+                    {showOwnerControls && <button onClick={() => setShowManageCoaches(true)} className="text-[11px] font-bold text-blue-400 px-3 py-1 rounded-full active:scale-95 transition-transform" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>Manage</button>}
                   </div>
                   <div className="px-3 pb-4">
                     {coaches.length === 0
                       ? <div className="py-6 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}><GraduationCap className="w-7 h-7 mx-auto mb-1 text-slate-700" /><p className="text-slate-600 text-xs">No coaches listed</p></div>
-                      : <div className="space-y-2">
-                        {coaches.slice(0, 5).map((coach) => {
+                      : <div className="space-y-2">{coaches.slice(0, 5).map((coach) => {
                           const handleCopyEmail = () => { navigator.clipboard.writeText(coach.user_email); setCopiedCoachId(coach.id); setTimeout(() => setCopiedCoachId(null), 2000); };
                           return (
                             <div key={coach.id} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1016,41 +752,31 @@ export default function GymCommunity() {
                                   <h4 className="font-bold text-white text-[13px] truncate">{coach.name}</h4>
                                   {coach.rating && <div className="flex items-center gap-0.5"><Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" /><span className="text-[10px] font-bold text-slate-300">{coach.rating}</span></div>}
                                 </div>
-                                {coach.specialties?.length > 0 && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {coach.specialties.slice(0, 2).map((s, i) => <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-blue-300" style={{ background: 'rgba(59,130,246,0.12)' }}>{s}</span>)}
-                                  </div>
-                                )}
+                                {coach.specialties?.length > 0 && (<div className="flex flex-wrap gap-1">{coach.specialties.slice(0, 2).map((s, i) => <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-blue-300" style={{ background: 'rgba(59,130,246,0.12)' }}>{s}</span>)}</div>)}
                               </div>
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <button className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'rgba(59,130,246,0.1)' }}>
-                                    <Mail className="w-3.5 h-3.5 text-blue-400" />
-                                  </button>
+                                  <button className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'rgba(59,130,246,0.1)' }}><Mail className="w-3.5 h-3.5 text-blue-400" /></button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-3 bg-slate-800 border-slate-700">
                                   <div className="flex items-center gap-2">
                                     <a href={`mailto:${coach.user_email}`} className="text-blue-400 text-xs font-medium break-all flex-1">{coach.user_email}</a>
-                                    <button onClick={handleCopyEmail} className="w-7 h-7 flex items-center justify-center hover:bg-slate-700 rounded transition-colors">
-                                      <Copy className={`w-3.5 h-3.5 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} />
-                                    </button>
+                                    <button onClick={handleCopyEmail} className="w-7 h-7 flex items-center justify-center hover:bg-slate-700 rounded transition-colors"><Copy className={`w-3.5 h-3.5 ${copiedCoachId === coach.id ? 'text-green-400' : 'text-slate-400'}`} /></button>
                                   </div>
                                 </PopoverContent>
                               </Popover>
                             </div>
                           );
-                        })}
-                      </div>
+                        })}</div>
                     }
                   </div>
                 </div>
               </motion.div>
             </TabsContent>
-
           </div>
         </Tabs>
 
-        {/* Modals — unchanged */}
+        {/* ── Modals ── */}
         <CreateEventModal open={showCreateEvent} onClose={() => setShowCreateEvent(false)} onSave={(data) => createEventMutation.mutate(data)} gym={gym} isLoading={createEventMutation.isPending} />
         <ManageEquipmentModal open={showManageEquipment} onClose={() => setShowManageEquipment(false)} equipment={gym?.equipment || []} onSave={(equipment) => updateEquipmentMutation.mutate(equipment)} isLoading={updateEquipmentMutation.isPending} />
         <ManageRewardsModal open={showManageRewards} onClose={() => setShowManageRewards(false)} rewards={rewards} onCreateReward={(data) => createRewardMutation.mutate(data)} onDeleteReward={(id) => deleteRewardMutation.mutate(id)} gym={gym} isLoading={createRewardMutation.isPending} />
