@@ -238,9 +238,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   };
 
   const handlePickActive = (split) => {
-    // Update UI immediately so user sees the green border move right away
     setLocalActiveName(split.name);
-    setSelectingActive(false);
     setActiveMutation.mutate({
       workout_split: split.preset_id || 'custom',
       custom_split_name: split.name,
