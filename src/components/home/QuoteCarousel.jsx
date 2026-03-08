@@ -51,10 +51,10 @@ export default function QuoteCarousel() {
     <div
       className="rounded-2xl select-none relative shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
       style={{
-        background: 'linear-gradient(135deg, rgba(88,28,135,0.10) 0%, rgba(8,10,20,0.88) 100%)',
+        background: 'linear-gradient(135deg, rgba(55,48,163,0.10) 0%, rgba(8,10,20,0.88) 100%)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(139,92,246,0.15)',
+        border: '1px solid rgba(99,102,241,0.15)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
