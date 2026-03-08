@@ -370,21 +370,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {selectingActive ? (
-                        <div className="w-7 h-7 rounded-full border border-slate-600 flex items-center justify-center" />
-                      ) : (
-                        <>
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60">
-                            <Edit2 className="w-3.5 h-3.5 text-slate-400" />
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); deleteSavedSplit(split.id, e); }}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePickActive(split); }}
+                        className="text-[9px] font-black px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-colors active:scale-90"
+                      >
+                        SET ACTIVE
+                      </button>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60">
+                        <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteSavedSplit(split.id, e); }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
+                      </button>
                     </div>
                   </div>
                 );
