@@ -133,6 +133,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     setSelectedDays([]);
     setWorkouts({});
     setLocalSavedSplits(currentUser?.saved_splits || []);
+    setSelectingActive(false);
   }, [isOpen]);
 
   // Local active name — updated optimistically so UI reflects instantly on tap
