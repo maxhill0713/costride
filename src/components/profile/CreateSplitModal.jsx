@@ -244,12 +244,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
     setActiveName(split.name);
     setSelectingActive(false);
     toast.success(`"${split.name}" set as active!`);
-    // 2. Persist to server
+    // 2. Persist to server — include saved_splits so the full user object
+    //    stays consistent and the parent re-render doesn't clobber our change.
     setActiveMutation.mutate({
       workout_split: split.preset_id || 'custom',
       custom_split_name: split.name,
       training_days: split.training_days || [],
       custom_workout_types: split.workouts || {},
+      saved_splits: savedSplits,
     });
   };
 
