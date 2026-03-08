@@ -88,21 +88,6 @@ const ROW_CARD = {
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
-  const [avatarMap, setAvatarMap] = React.useState({});
-
-  // Fetch avatars for all leaderboard users
-  React.useEffect(() => {
-    const allUsers = [...checkInLeaderboard, ...streakLeaderboard, ...progressLeaderboard];
-    const uniqueIds = [...new Set(allUsers.map(u => u.userId).filter(Boolean))];
-    if (uniqueIds.length === 0) return;
-    Promise.all(
-      uniqueIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
-    ).then(users => {
-      const map = {};
-      users.forEach(u => { if (u) map[u.id] = u.avatar_url || null; });
-      setAvatarMap(map);
-    }).catch(() => {});
-  }, [checkInLeaderboard.length, streakLeaderboard.length, progressLeaderboard.length]);
 
   const tabs = [
     { id: 'checkins', label: 'Check-ins', icon: CheckCircle, accent: '#10b981', unit: 'check-ins' },
