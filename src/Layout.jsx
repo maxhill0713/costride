@@ -118,33 +118,42 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-start pt-3 h-[90px] px-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-slate-200 z-50 md:hidden pb-[env(safe-area-inset-bottom)]">
+          <div className="flex justify-around items-center pt-2 pb-3 h-[92px] px-1.5">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
+            const colorMap = {
+              'text-indigo-500': '#6366f1',
+              'text-blue-500': '#3b82f6',
+              'text-green-500': '#22c55e',
+              'text-amber-500': '#f59e0b',
+              'text-pink-500': '#ec4899',
+              'text-orange-500': '#f97316',
+              'text-cyan-500': '#06b6d4'
+            };
+            const tabColor = colorMap[item.color] || '#6366f1';
 
             return (
               <Link
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl hover:bg-white/5"
-                style={{ transition: 'transform 60ms ease-in-out' }}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
-                onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
-                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
-
+                aria-label={item.name}
+                className={`relative flex flex-col items-center justify-center gap-1.5 px-3 py-2 min-w-0 flex-1 rounded-2xl font-bold transition-colors ${
+                  isActive
+                    ? 'bg-white border-4 border-yellow-400 text-slate-900 shadow-[0_4px_0_0_rgba(250,204,21,0.6)]'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon className="w-6 h-6" strokeWidth={2.5} />
                   {item.badge > 0 &&
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
+                  <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">
                        {item.badge > 9 ? '9+' : item.badge}
                      </div>
                   }
                 </div>
-                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
+                <span className="text-[9px] font-black uppercase tracking-tight">{item.name}</span>
               </Link>);
 
           })}
