@@ -280,45 +280,6 @@ function ReadOnlyDayCard({ day, workout, weights, onWeightChange }) {
           <Lock className="w-3 h-3" /> Read-only — set as active below
         </p>
       </div>
-
-      {/* ── CONFIRM DELETE MODAL ── */}
-      {confirmDeleteSplitId && (
-        <div
-          className="absolute inset-0 z-60 flex items-center justify-center px-6"
-          style={{ background: 'rgba(0,0,0,0.7)' }}
-          onClick={() => setConfirmDeleteSplitId(null)}
-        >
-          <div
-            className="w-full max-w-xs rounded-2xl p-6 space-y-4"
-            style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
-            <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={() => setConfirmDeleteSplitId(null)}
-                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  const id = confirmDeleteSplitId;
-                  setConfirmDeleteSplitId(null);
-                  const updated = savedSplits.filter(s => s.id !== id);
-                  setSavedSplits(updated);
-                  if (activeSplitId === id) setActiveSplitId('');
-                  saveMutation.mutate({ saved_splits: updated });
-                }}
-                className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
