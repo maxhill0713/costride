@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell, Users, Flame, Calendar, Zap, TrendingUp, Award } from 'lucide-react';
@@ -450,7 +450,7 @@ export default function Progress() {
 
   if (!currentUser) return null;
   if (view === 'goals')     return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
-  if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
+  if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} onBack={() => setView('hub')} />;
   if (view === 'split')     return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
   const activeGoals    = goals.filter((g) => g.status === 'active');
