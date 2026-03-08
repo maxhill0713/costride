@@ -704,7 +704,7 @@ export default function Gyms() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </>
       }
 
