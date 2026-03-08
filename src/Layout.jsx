@@ -134,11 +134,7 @@ export default function Layout({ children, currentPageName }) {
                 onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
                 onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
-                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-
-
-
-
+                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
 
                 <div className="relative">
                   <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
