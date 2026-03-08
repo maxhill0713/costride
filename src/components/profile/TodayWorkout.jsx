@@ -305,9 +305,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
             transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{ overflow: 'hidden', transformOrigin: 'top' }}>
             <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</p>
