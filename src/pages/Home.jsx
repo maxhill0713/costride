@@ -931,14 +931,36 @@ export default function Home() {
                   const bounce        = justLoggedDay === day;
                   const isTodayCircle = day === todayDay;
 
-                  // ── KEY FIX ──
-                  // If the user has already logged this day, it is always treated as a
-                  // training day (never a rest day), regardless of the current active split.
-                  // Only unlogged days respect the current split's training_days.
-                  const isRestDay = done ? false : !trainingDays.includes(day);
+                  // ── CIRCLE STATE RULES ──
+                  // • Logged days                        → blue ✓
+                  // • Past rest days                     → green leaf
+                  // • Past missed training days          → red ✗
+                  // • Days before user joined this week  → grey (shows planned workout on tap)
+                  // • Today / future training days       → grey empty circle
+                  //
+                  // "Before join" days are treated like future days — the user simply
+                  // wasn't on the app yet, so they can't have missed anything.
 
-                  const isMissed      = !isRestDay && !done && day < todayDay;
-                  const isFuture      = !isRestDay && !done && day > todayDay;
+                  // Work out which day-of-week the user joined (1=Mon…7=Sun), if this week.
+                  const joinDate = currentUser?.created_date || currentUser?.created_at || null;
+                  const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+                  const joinedThisWeek = joinDate && new Date(joinDate) >= mondayThisWeek;
+                  const joinDayNum = joinedThisWeek
+                    ? (() => { const d = new Date(joinDate).getDay(); return d === 0 ? 7 : d; })()
+                    : null; // null means joined before this week — all past days are fair game
+
+                  const isPast   = day < todayDay;
+                  const isFuture = day > todayDay;
+
+                  // Days before the user joined this week: treat as "pre-join" (grey, no red)
+                  const isPreJoin = joinDayNum !== null && day < joinDayNum;
+
+                  const isInCurrentSplit = trainingDays.includes(day);
+                  // Rest day = not in split. Logged days are never rest days.
+                  const isRestDay = done ? false : !isInCurrentSplit;
+
+                  // Only show red ✗ for past training days the user could actually have done
+                  const isMissed = !isRestDay && !done && isPast && !isPreJoin;
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
@@ -977,19 +999,18 @@ export default function Home() {
                   };
                   const getAnimation = () => {
                     if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards';
-                    if (isRestDay || done) return 'none';
+                    if (isRestDay || done || isPreJoin) return 'none';
                     return 'dayWiggle 2.4s ease-in-out infinite';
                   };
                   const getPopupLabel = () => {
                     if (isRestDay) return 'Rest Day';
                     if (isMissed) return 'No Workout';
-                    // Always use the logged workout name for completed days —
-                    // this is locked to what they actually did, not the current split.
+                    // Always use the logged workout name for completed days.
                     if (done && workoutLog) {
                       return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                     }
                     if (done) return 'Workout';
-                    // For unlogged future days, show the current active split's name.
+                    // For unlogged days (future OR pre-join), show the planned workout name.
                     const customTypes = currentUser?.custom_workout_types;
                     const splitDay = customTypes
                       ? Array.isArray(customTypes)
