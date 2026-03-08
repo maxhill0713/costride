@@ -119,143 +119,84 @@ function CheckInButton({ gym, onCheckInSuccess }) {
   const isSuccess = success;
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.90) 100%)',
-      border: '1px solid rgba(255,255,255,0.07)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderRadius: 20,
-      padding: '14px 16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-    }}>
-      {/* Gym info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(99,102,241,0.2))',
-            border: '1px solid rgba(59,130,246,0.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Dumbbell style={{ width: 14, height: 14, color: '#60a5fa' }} />
-          </div>
-          <p style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
-            {gym?.name || 'Your Gym'}
-          </p>
-        </div>
-        {gym?.city && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 34 }}>
-            <MapPin style={{ width: 10, height: 10, color: 'rgba(148,163,184,0.6)', flexShrink: 0 }} />
-            <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.7)', margin: 0, fontWeight: 500 }}>
-              {gym.city}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* 3D Check-in button */}
-      <div style={{ position: 'relative', flexShrink: 0 }}>
-        {/* Bottom shadow layer — the 3D floor */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: 14,
-          background: isSuccess ? '#15803d' : '#1a3fa8',
-          transform: 'translateY(4px)',
-        }} />
-        {/* Top face */}
-        <button
-          ref={btnRef}
-          onMouseDown={handlePress}
-          onMouseUp={handleRelease}
-          onMouseLeave={() => { if (pressed) setPressed(false); }}
-          onTouchStart={handlePress}
-          onTouchEnd={handleRelease}
-          disabled={isLoading || isSuccess}
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 7,
-            paddingLeft: isSuccess ? 16 : 18,
-            paddingRight: isSuccess ? 16 : 18,
-            paddingTop: 10,
-            paddingBottom: 10,
-            borderRadius: 14,
-            border: 'none',
-            cursor: isLoading || isSuccess ? 'default' : 'pointer',
-            outline: 'none',
-            overflow: 'hidden',
-            WebkitTapHighlightColor: 'transparent',
-            userSelect: 'none',
-            transition: 'transform 0.08s ease, box-shadow 0.08s ease, background 0.25s ease',
-            transform: pressed ? 'translateY(4px)' : 'translateY(0)',
-            boxShadow: pressed
-              ? 'none'
-              : isSuccess
-                ? '0 4px 0 0 #15803d, 0 6px 18px rgba(22,163,74,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
-                : '0 4px 0 0 #1a3fa8, 0 6px 20px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
-            background: isSuccess
-              ? 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)'
-              : isLoading
-                ? 'linear-gradient(to bottom, #5b9ff5, #3b82f6 40%, #2563eb)'
-                : 'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #2563eb)',
-          }}>
-          {/* Ripples */}
-          {ripples.map(r => (
-            <span key={r.id} style={{
-              position: 'absolute',
-              left: r.x, top: r.y,
-              width: 10, height: 10,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.35)',
-              transform: 'scale(0)',
-              animation: 'ci-ripple 0.65s ease-out forwards',
-              pointerEvents: 'none',
-              zIndex: 0,
-              marginLeft: -5, marginTop: -5,
-            }} />
-          ))}
-          {/* Content */}
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
-            {isSuccess ? (
-              <>
-                <div style={{ animation: 'ci-tick-pop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards' }}>
-                  <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                    <circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
-                    <path d="M7.5 14.5l4.5 4.5 8.5-9.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-                      strokeDasharray="40" strokeDashoffset="40"
-                      style={{ animation: 'ci-tick-draw 0.4s ease 0.1s forwards' }} />
-                  </svg>
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em', animation: 'ci-success-fade 0.35s ease forwards' }}>
-                  Checked In!
-                </span>
-              </>
-            ) : isLoading ? (
-              <>
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
-                  <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-                  <path d="M8 2a6 6 0 0 1 6 6" stroke="white" strokeWidth="2" strokeLinecap="round" />
+    <div style={{ position: 'relative' }}>
+      {/* 3D floor */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 18,
+        background: isSuccess ? '#15803d' : '#1a3fa8',
+        transform: 'translateY(5px)',
+      }} />
+      {/* Button face */}
+      <button
+        ref={btnRef}
+        onMouseDown={handlePress}
+        onMouseUp={handleRelease}
+        onMouseLeave={() => { if (pressed) setPressed(false); }}
+        onTouchStart={handlePress}
+        onTouchEnd={handleRelease}
+        disabled={isLoading || isSuccess}
+        style={{
+          position: 'relative', zIndex: 1,
+          width: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          padding: '16px 24px',
+          borderRadius: 18, border: 'none',
+          cursor: isLoading || isSuccess ? 'default' : 'pointer',
+          outline: 'none', overflow: 'hidden',
+          WebkitTapHighlightColor: 'transparent', userSelect: 'none',
+          transition: 'transform 0.08s ease, box-shadow 0.08s ease, background 0.25s ease',
+          transform: pressed ? 'translateY(5px)' : 'translateY(0)',
+          boxShadow: pressed ? 'none'
+            : isSuccess
+              ? '0 5px 0 0 #15803d, 0 8px 24px rgba(22,163,74,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+              : '0 5px 0 0 #1a3fa8, 0 8px 28px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+          background: isSuccess
+            ? 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)'
+            : isLoading
+              ? 'linear-gradient(to bottom, #5b9ff5, #3b82f6 40%, #2563eb)'
+              : 'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #2563eb)',
+        }}>
+        {ripples.map(r => (
+          <span key={r.id} style={{
+            position: 'absolute', left: r.x, top: r.y,
+            width: 10, height: 10, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.35)', transform: 'scale(0)',
+            animation: 'ci-ripple 0.65s ease-out forwards',
+            pointerEvents: 'none', zIndex: 0, marginLeft: -5, marginTop: -5,
+          }} />
+        ))}
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+          {isSuccess ? (
+            <>
+              <div style={{ animation: 'ci-tick-pop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards' }}>
+                <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+                  <circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
+                  <path d="M7.5 14.5l4.5 4.5 8.5-9.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                    strokeDasharray="40" strokeDashoffset="40"
+                    style={{ animation: 'ci-tick-draw 0.4s ease 0.1s forwards' }} />
                 </svg>
-                <span style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.01em' }}>
-                  Checking…
-                </span>
-              </>
-            ) : (
-              <>
-                <CheckCircle style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.9)', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em' }}>
-                  Check In
-                </span>
-              </>
-            )}
-          </div>
-        </button>
-      </div>
+              </div>
+              <span style={{ fontSize: 17, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.01em', animation: 'ci-success-fade 0.35s ease forwards' }}>
+                Checked In!
+              </span>
+            </>
+          ) : isLoading ? (
+            <>
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
+                <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
+                <path d="M8 2a6 6 0 0 1 6 6" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span style={{ fontSize: 17, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.01em' }}>
+                Checking In…
+              </span>
+            </>
+          ) : (
+            <span style={{ fontSize: 17, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.01em' }}>
+              Check In
+            </span>
+          )}
+        </div>
+      </button>
     </div>
   );
 }
