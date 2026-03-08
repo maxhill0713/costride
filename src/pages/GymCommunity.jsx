@@ -148,21 +148,20 @@ const MEDALS = [
   },
 ];
 
-// Duolingo 3D row colors — rank 4 (index 0) is most vivid, fades toward rank 10
-const DUO_ROW = [
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.95) 0%,rgba(29,78,216,0.88) 100%)', floor: '#1239a0', accent: '#93c5fd' },
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.82) 0%,rgba(29,78,216,0.75) 100%)', floor: '#1239a0', accent: '#bfdbfe' },
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.70) 0%,rgba(29,78,216,0.62) 100%)', floor: '#1239a0', accent: '#bfdbfe' },
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.58) 0%,rgba(29,78,216,0.50) 100%)', floor: '#1239a0', accent: '#dbeafe' },
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.46) 0%,rgba(29,78,216,0.38) 100%)', floor: '#1239a0', accent: '#dbeafe' },
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.36) 0%,rgba(29,78,216,0.28) 100%)', floor: '#1239a0', accent: '#eff6ff' },
-  { bg: 'linear-gradient(180deg,rgba(37,99,235,0.27) 0%,rgba(29,78,216,0.20) 100%)', floor: '#1239a0', accent: '#eff6ff' },
+// Professional navy row styles — subtle opacity fade from rank 4 → 10
+const NAV_ROW = [
+  { rankOpacity: 1,    nameOpacity: 0.92, barOpacity: 0.55, pillOpacity: 0.9  },
+  { rankOpacity: 0.88, nameOpacity: 0.82, barOpacity: 0.48, pillOpacity: 0.8  },
+  { rankOpacity: 0.76, nameOpacity: 0.72, barOpacity: 0.40, pillOpacity: 0.7  },
+  { rankOpacity: 0.65, nameOpacity: 0.62, barOpacity: 0.34, pillOpacity: 0.6  },
+  { rankOpacity: 0.55, nameOpacity: 0.52, barOpacity: 0.28, pillOpacity: 0.52 },
+  { rankOpacity: 0.46, nameOpacity: 0.44, barOpacity: 0.22, pillOpacity: 0.44 },
+  { rankOpacity: 0.38, nameOpacity: 0.36, barOpacity: 0.18, pillOpacity: 0.38 },
 ];
 
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
-  const [pressedRow, setPressedRow] = React.useState(null);
 
   const tabs = [
     { id:'checkins', label:'Check-ins', icon:CheckCircle, accent:'#10b981', accentRgb:'16,185,129', unit:'check-ins' },
@@ -391,70 +390,57 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                 })}
             </div>
 
-            {/* ── DUOLINGO 3D ROWS 4-10 (no divider label) ── */}
+            {/* ── ROWS 4-10 — Professional navy cards ── */}
             {restList.length > 0 && (
-              <div style={{ display:'flex',flexDirection:'column',gap:5,padding:'4px 12px 20px' }}>
+              <div style={{ display:'flex',flexDirection:'column',gap:4,padding:'4px 12px 20px' }}>
                 {restList.map((m,i) => {
                   const globalRank = i+4;
                   const pct = Math.max(4, Math.round((getVal(m)/maxVal)*100));
-                  const C = DUO_ROW[i] || DUO_ROW[DUO_ROW.length-1];
-                  const isPressed = pressedRow === i;
+                  const R = NAV_ROW[i] || NAV_ROW[NAV_ROW.length-1];
                   return (
                     <div key={m.userId||i}
-                      onTouchStart={() => setPressedRow(i)}
-                      onTouchEnd={() => setPressedRow(null)}
-                      onMouseDown={() => setPressedRow(i)}
-                      onMouseUp={() => setPressedRow(null)}
-                      onMouseLeave={() => setPressedRow(null)}
                       style={{
                         borderRadius:14,
-                        padding:'9px 11px',
+                        padding:'10px 12px',
                         display:'flex',
                         alignItems:'center',
-                        gap:9,
+                        gap:10,
                         animation:`lb-row-in 0.28s ease ${(i+3)*0.04}s both`,
                         position:'relative',
                         overflow:'hidden',
-                        cursor:'default',
-                        background: C.bg,
-                        border: '1px solid rgba(255,255,255,0.14)',
-                        // Duolingo 3D: thick bottom border = the "floor shadow"
-                        borderBottom: isPressed ? `1px solid rgba(0,0,0,0.5)` : `4px solid ${C.floor}`,
-                        boxShadow: isPressed ? 'none' : '0 2px 0 rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
-                        transform: isPressed ? 'translateY(3px)' : 'translateY(0)',
-                        transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
+                        background:'linear-gradient(135deg,rgba(15,24,58,0.82) 0%,rgba(8,14,36,0.92) 100%)',
+                        border:'1px solid rgba(255,255,255,0.06)',
+                        borderTop:'1px solid rgba(255,255,255,0.09)',
+                        boxShadow:'0 2px 12px rgba(0,0,0,0.35)',
+                        backdropFilter:'blur(12px)',
+                        WebkitBackdropFilter:'blur(12px)',
                       }}>
-                      {/* Top sheen */}
-                      <div style={{ position:'absolute',top:0,left:0,right:0,height:1,background:'rgba(255,255,255,0.22)',pointerEvents:'none' }}/>
+                      {/* Subtle left accent line */}
+                      <div style={{ position:'absolute',left:0,top:'18%',bottom:'18%',width:2,borderRadius:99,background:`rgba(${current.accentRgb},${R.rankOpacity * 0.35})`,pointerEvents:'none' }}/>
                       {/* Rank number */}
-                      <div style={{ width:26,height:26,borderRadius:8,flexShrink:0,background:'rgba(0,0,0,0.22)',border:'1px solid rgba(255,255,255,0.18)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'rgba(255,255,255,0.95)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.12)' }}>{globalRank}</div>
+                      <div style={{ width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity * 0.7})`,letterSpacing:'-0.02em' }}>{globalRank}</div>
                       {/* Avatar */}
-                      <div style={{ width:34,height:34,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:C.accent,background:'rgba(0,0,0,0.25)',border:'2px solid rgba(255,255,255,0.22)',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+                      <div style={{ width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:'rgba(255,255,255,0.06)',border:`1px solid rgba(255,255,255,${R.rankOpacity * 0.12})` }}>
                         {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width:'100%',height:'100%',objectFit:'cover' }} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}} /> : null}
-                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:C.accent }}>{initials(m.userName)}</span>
+                        <span style={{ display:m.userAvatar?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankOpacity * 0.6})` }}>{initials(m.userName)}</span>
                       </div>
-                      {/* Name + mini bar */}
+                      {/* Name + progress bar */}
                       <div style={{ flex:1,minWidth:0 }}>
-                        <p style={{ fontSize:13,fontWeight:800,color:'rgba(255,255,255,0.95)',margin:'0 0 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textShadow:'0 1px 4px rgba(0,0,0,0.5)' }}>{m.userName||'—'}</p>
-                        <div style={{ height:3,borderRadius:99,background:'rgba(0,0,0,0.28)',overflow:'hidden' }}>
-                          <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:'rgba(255,255,255,0.5)',transition:'width 0.6s ease' }}/>
+                        <p style={{ fontSize:13,fontWeight:700,color:`rgba(255,255,255,${R.nameOpacity})`,margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',letterSpacing:'-0.01em' }}>{m.userName||'—'}</p>
+                        <div style={{ height:2,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden' }}>
+                          <div style={{ height:'100%',borderRadius:99,width:`${pct}%`,background:`rgba(${current.accentRgb},${R.barOpacity})`,transition:'width 0.6s ease' }}/>
                         </div>
                       </div>
-                      {/* Score pill — also Duolingo 3D */}
+                      {/* Score pill */}
                       <div style={{
                         flexShrink:0,
                         padding:'4px 10px',
-                        borderRadius:9,
-                        background:'rgba(0,0,0,0.28)',
-                        border:'1px solid rgba(255,255,255,0.22)',
-                        borderBottom: isPressed ? '1px solid rgba(0,0,0,0.5)' : '3px solid rgba(0,0,0,0.45)',
+                        borderRadius:8,
+                        background:'rgba(255,255,255,0.05)',
+                        border:`1px solid rgba(255,255,255,${R.pillOpacity * 0.1})`,
                         fontSize:13,
-                        fontWeight:900,
-                        color:'#fff',
-                        textShadow:'0 1px 3px rgba(0,0,0,0.6)',
-                        boxShadow: isPressed ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.28)',
-                        transform: isPressed ? 'translateY(2px)' : 'translateY(0)',
-                        transition:'transform 0.08s, border-bottom 0.08s, box-shadow 0.08s',
+                        fontWeight:800,
+                        color:`rgba(255,255,255,${R.pillOpacity * 0.9})`,
                         letterSpacing:'-0.02em',
                       }}>{fmt(getVal(m))}</div>
                     </div>
