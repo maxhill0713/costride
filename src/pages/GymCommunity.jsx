@@ -358,9 +358,15 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           background:'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(30,58,138,0.15))',
                           border:'1.5px solid rgba(59,130,246,0.25)',
                           backdropFilter:'blur(8px)',
+                          overflow:'hidden',
                           display:'flex', alignItems:'center', justifyContent:'center',
                           fontSize:12, fontWeight:900, color:'rgba(147,197,253,0.85)',
-                        }}>{initials(m.userName)}</div>
+                        }}>
+                          {avatarMap[m.userId]
+                            ? <img src={avatarMap[m.userId]} alt={m.userName} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                            : initials(m.userName)
+                          }
+                        </div>
                         {/* Name + bar */}
                         <div style={{ flex:1, minWidth:0 }}>
                           <p style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.75)', margin:'0 0 6px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
