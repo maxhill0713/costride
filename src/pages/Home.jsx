@@ -724,42 +724,76 @@ export default function Home() {
           }
 
           {memberGym?.id &&
-            <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
-              <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-100 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group active:scale-95 active:translate-y-[3px] animate-[breathe_7s_ease-in-out_infinite]">
-                {memberGym?.image_url
-                  ? <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
-                  : <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-60 group-hover:opacity-70 transition-opacity" />
-                }
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
-                <div className="relative p-6 h-full flex flex-col justify-between animate-[breathe_12s_ease-in-out_infinite] active:scale-95 active:translate-y-[3px] transition-all duration-100 cursor-pointer">
-                  <div>
-                    <p className="text-white font-semibold text-base tracking-tight">Your Community</p>
-                    <p className="text-slate-300 text-sm mt-1 font-medium">{memberGym.name}</p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center -space-x-2">
-                        {(checkInUsers.length > 0 ? checkInUsers : [
-                          { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
-                          { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }
-                        ]).slice(0, 2).map((user) =>
-                          <div key={user.id} className="relative group">
-                            {user.avatar_url
-                              ? <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
-                              : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
-                                  {user.full_name?.[0] || 'U'}
-                                </div>
-                            }
-                          </div>
-                        )}
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+            <motion.div
+              initial={{ opacity: 0, y: 22, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 22, mass: 0.9 }}
+              whileTap={{ scale: 0.97, y: 2 }}
+            >
+              <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
+                <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-200 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
+                  {memberGym?.image_url
+                    ? <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
+                    : <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-60 group-hover:opacity-70 transition-opacity" />
+                  }
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
+                  <div className="relative p-6 h-full flex flex-col justify-between">
+                    <div>
+                      <motion.p
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.08 }}
+                        className="text-white font-semibold text-base tracking-tight">
+                        Your Community
+                      </motion.p>
+                      <motion.p
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.14 }}
+                        className="text-slate-300 text-sm mt-1 font-medium">
+                        {memberGym.name}
+                      </motion.p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <motion.span
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.2 }}
+                        className="text-xs text-slate-300 font-medium">
+                        {getCommunityText()}
+                      </motion.span>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.24 }}
+                        className="flex items-center gap-2">
+                        <div className="flex items-center -space-x-2">
+                          {(checkInUsers.length > 0 ? checkInUsers : [
+                            { id: 'demo1', full_name: 'Alex Johnson', avatar_url: null },
+                            { id: 'demo2', full_name: 'Sam Wilson', avatar_url: null }
+                          ]).slice(0, 2).map((user, idx) =>
+                            <motion.div
+                              key={user.id}
+                              initial={{ opacity: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 340, damping: 18, delay: 0.28 + idx * 0.07 }}
+                              className="relative">
+                              {user.avatar_url
+                                ? <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" />
+                                : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
+                                    {user.full_name?.[0] || 'U'}
+                                  </div>
+                              }
+                            </motion.div>
+                          )}
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400" />
+                      </motion.div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            </Link>
+                </Card>
+              </Link>
+            </motion.div>
           }
 
           {/* ── Duolingo-style weekly workout circles ── */}
