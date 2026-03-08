@@ -127,7 +127,10 @@ export default function Layout({ children, currentPageName }) {
               <Link
                 key={item.page}
                 to={getTabLink(item)}
-                onClick={(e) => handleTabClick(item, e)}
+                onClick={(e) => {
+                  handleTabClick(item, e);
+                  if ('vibrate' in navigator) navigator.vibrate([12, 8, 12]);
+                }}
                 aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl hover:bg-white/5"
                 style={{ transition: 'transform 60ms ease-in-out' }}
                 onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
