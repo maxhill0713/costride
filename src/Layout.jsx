@@ -128,23 +128,22 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl hover:bg-white/5"
-                style={{ transition: 'transform 60ms ease-in-out' }}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
-                onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
-                onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
-                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
+                aria-label={item.name} className={`relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 scale-110' : 'text-slate-400 hover:bg-white/5 hover:scale-105'}`}
+                onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.88) translateY(4px)'; e.currentTarget.style.transition = 'transform 80ms ease-in-out'; }}
+                onMouseUp={e => { e.currentTarget.style.transition = 'transform 400ms cubic-bezier(0.34,1.8,0.64,1)'; e.currentTarget.style.transform = isActive ? 'scale(1.1) translateY(0)' : 'scale(1) translateY(0)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transition = 'transform 300ms cubic-bezier(0.34,1.8,0.64,1)'; e.currentTarget.style.transform = isActive ? 'scale(1.1) translateY(0)' : 'scale(1) translateY(0)'; }}
+                onTouchStart={e => { e.currentTarget.style.transform = 'scale(0.88) translateY(4px)'; e.currentTarget.style.transition = 'transform 80ms ease-in-out'; }}
+                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 400ms cubic-bezier(0.34,1.8,0.64,1)'; e.currentTarget.style.transform = isActive ? 'scale(1.1) translateY(0)' : 'scale(1) translateY(0)'; }}>
 
-                <div className="relative">
-                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                <div className={`relative transition-all duration-300 ${isActive ? 'animate-ios-spring-in' : 'group-hover:rotate-12'}`}>
+                  <item.icon className={`w-6 h-6 transition-all duration-300 ${isActive ? item.color + ' drop-shadow-lg animate-pulse' : 'group-hover:scale-110'}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce shadow-lg scale-110">
                        {item.badge > 9 ? '9+' : item.badge}
                      </div>
                   }
                 </div>
-                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
+                <span className={`text-[10px] font-semibold leading-none transition-all duration-300 ${isActive ? item.color + ' drop-shadow-md' : ''}`}>{item.name}</span>
               </Link>);
 
           })}
