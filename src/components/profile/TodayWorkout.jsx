@@ -291,11 +291,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               View Summary
             </Button>
           )}
-          <button
+          <motion.button
             onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
-            className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1">
+            className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+            animate={{ y: [0, 4, 0] }}
+            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
             <ChevronDown className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
       )}
 
