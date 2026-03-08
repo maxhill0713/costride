@@ -16,7 +16,6 @@ import LeaderboardCard from '../components/leaderboard/LeaderboardCard';
 import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
 import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
-import CheckInButton from '../components/gym/CheckInButton';
 import ManageRewardsModal from '../components/gym/ManageRewardsModal';
 import ManageClassesModal from '../components/gym/ManageClassesModal';
 import ManageCoachesModal from '../components/gym/ManageCoachesModal';
@@ -178,6 +177,64 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
 }
 
 
+// ─── Animated dropdown panel (Duolingo-style) ────────────────────────────────
+function SlidePanel({ open, children }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: open ? '1fr' : '0fr',
+        transition: 'grid-template-rows 0.38s cubic-bezier(0.34,1.4,0.64,1)',
+      }}
+    >
+      <div style={{ overflow: 'hidden' }}>
+        <div
+          style={{
+            opacity: open ? 1 : 0,
+            transform: open ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.97)',
+            transition: open
+              ? 'opacity 0.28s ease 0.08s, transform 0.38s cubic-bezier(0.34,1.4,0.64,1) 0.04s'
+              : 'opacity 0.15s ease, transform 0.18s ease',
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Ripple button ────────────────────────────────────────────────────────────
+function RippleButton({ onClick, children, className, style }) {
+  const [ripples, setRipples] = React.useState([]);
+  const handleClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = Date.now();
+    setRipples(r => [...r, { id, x, y }]);
+    setTimeout(() => setRipples(r => r.filter(r => r.id !== id)), 600);
+    onClick && onClick(e);
+  };
+  return (
+    <button onClick={handleClick} className={className} style={{ ...style, position: 'relative', overflow: 'hidden' }}>
+      {ripples.map(({ id, x, y }) => (
+        <span key={id} style={{
+          position: 'absolute', left: x, top: y,
+          width: 4, height: 4, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.45)',
+          transform: 'translate(-50%,-50%) scale(0)',
+          animation: 'costride-ripple 0.55s ease-out forwards',
+          pointerEvents: 'none',
+        }} />
+      ))}
+      {children}
+      <style>{`@keyframes costride-ripple { to { transform: translate(-50%,-50%) scale(60); opacity: 0; } }`}</style>
+    </button>
+  );
+}
+
+
 export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
@@ -198,6 +255,11 @@ export default function GymCommunity() {
   const [viewAsMember, setViewAsMember] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showJoinGymModal, setShowJoinGymModal] = useState(false);
+  const [joinPanel, setJoinPanel] = useState(null); // 'code' | 'primary' | null
+  const [joinCode, setJoinCode] = useState('');
+  const [joinCodeError, setJoinCodeError] = useState('');
+  const [joinCodeSuccess, setJoinCodeSuccess] = useState(false);
+  const [primaryConfirmed, setPrimaryConfirmed] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [copiedCoachId, setCopiedCoachId] = useState(null);
@@ -396,7 +458,134 @@ export default function GymCommunity() {
                   </div>
                 )}
 
-                {!showOwnerControls && isMember && <CheckInButton gym={gym} />}
+
+                {/* ── JOIN WITH CODE + SET PRIMARY GYM ── */}
+                {!isMember && !isGhostGym && !showOwnerControls && (
+                  <div className="space-y-2">
+                    {/* Buttons row */}
+                    <div className="flex gap-2">
+                      {/* Join with Code */}
+                      <RippleButton
+                        onClick={() => { setJoinPanel(p => p === 'code' ? null : 'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
+                        style={{
+                          background: joinPanel === 'code'
+                            ? 'linear-gradient(135deg,#1d4ed8,#1e40af)'
+                            : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))',
+                          border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`,
+                          boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)',
+                          color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)',
+                          transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)',
+                        }}>
+                        <span style={{ fontSize: 16 }}>🔑</span>
+                        <span>Join with Code</span>
+                        <span style={{
+                          display: 'inline-block',
+                          transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)',
+                          fontSize: 11, opacity: 0.7,
+                        }}>▼</span>
+                      </RippleButton>
+
+                      {/* Set Primary Gym */}
+                      <RippleButton
+                        onClick={() => { setJoinPanel(p => p === 'primary' ? null : 'primary'); setPrimaryConfirmed(false); }}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
+                        style={{
+                          background: joinPanel === 'primary'
+                            ? 'linear-gradient(135deg,#b45309,#92400e)'
+                            : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))',
+                          border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`,
+                          boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)',
+                          color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)',
+                          transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)',
+                        }}>
+                        <span style={{ fontSize: 16 }}>⭐</span>
+                        <span>Set Primary</span>
+                        <span style={{
+                          display: 'inline-block',
+                          transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)',
+                          fontSize: 11, opacity: 0.7,
+                        }}>▼</span>
+                      </RippleButton>
+                    </div>
+
+                    {/* ── JOIN WITH CODE PANEL ── */}
+                    <SlidePanel open={joinPanel === 'code'}>
+                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border: '1px solid rgba(59,130,246,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                        <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
+                        <p className="text-[11px] mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
+                        {joinCodeSuccess ? (
+                          <div className="flex flex-col items-center py-4 gap-2">
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
+                              style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
+                            <p className="text-sm font-black text-emerald-400">You're in!</p>
+                            <p className="text-xs text-slate-400">Welcome to {gym?.name}</p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex gap-2">
+                              <input
+                                value={joinCode}
+                                onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinCodeError(''); }}
+                                placeholder="e.g. GYM-XK29"
+                                maxLength={10}
+                                className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold text-white placeholder-slate-600 outline-none"
+                                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }}
+                              />
+                              <button
+                                onClick={() => {
+                                  if (!joinCode.trim()) { setJoinCodeError('Please enter a code'); return; }
+                                  // Wire to real mutation: joinGymMutation.mutate({ code: joinCode })
+                                  setJoinCodeSuccess(true);
+                                }}
+                                className="px-4 py-2.5 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
+                                style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>
+                                Join
+                              </button>
+                            </div>
+                            {joinCodeError && <p className="text-[11px] text-red-400 mt-1.5 font-semibold">{joinCodeError}</p>}
+                          </>
+                        )}
+                      </div>
+                    </SlidePanel>
+
+                    {/* ── SET PRIMARY GYM PANEL ── */}
+                    <SlidePanel open={joinPanel === 'primary'}>
+                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border: '1px solid rgba(251,191,36,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                        {primaryConfirmed ? (
+                          <div className="flex flex-col items-center py-4 gap-2">
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
+                              style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.4)' }}>⭐</div>
+                            <p className="text-sm font-black text-yellow-400">{gym?.name} is now your primary gym!</p>
+                            <p className="text-xs text-slate-400">Your stats and check-ins will be tracked here</p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+                                style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
+                              <div>
+                                <p className="text-[13px] font-black text-white leading-tight">Set as your home gym</p>
+                                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(148,163,184,0.65)' }}>Your check-ins, leaderboard rank &amp; streak will be tracked at {gym?.name}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setPrimaryConfirmed(true);
+                                // Wire: updatePrimaryGymMutation.mutate({ gymId })
+                              }}
+                              className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
+                              style={{ background: 'linear-gradient(135deg,#d97706,#b45309)', boxShadow: '0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
+                              ⭐ Confirm — Set {gym?.name} as Primary
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </SlidePanel>
+                  </div>
+                )}
 
                 {/* Polls */}
                 {polls.length > 0 && (
