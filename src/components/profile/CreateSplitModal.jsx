@@ -272,9 +272,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 if (step === 'configure') { setStep('pick'); setSelectingActive(false); }
                 else { onClose(); }
               }}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/80 active:scale-90 transition-transform"
+              className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
             >
-              <ChevronLeft className="w-5 h-5 text-slate-300" />
+              <ChevronLeft className="w-6 h-6 text-slate-300" />
             </button>
           </div>
 
@@ -313,70 +313,64 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
             <div className="p-4 space-y-2">
 
               {/* Active saved split — always first, green border */}
-              {activeSaved && (
-                <button
-                  onClick={() => selectingActive ? handlePickActive(activeSaved) : loadSavedSplit(activeSaved)}
-                  disabled={setActiveMutation.isPending}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all disabled:opacity-60"
-                  style={{
-                    background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))',
-                    border: '2px solid rgba(16,185,129,0.55)',
-                    boxShadow: '0 0 16px rgba(16,185,129,0.08)',
-                  }}
-                >
-                  {(() => {
-                    const preset = PRESET_SPLITS.find(p => p.id === activeSaved.preset_id) || PRESET_SPLITS[4];
-                    return (
-                      <>
-                        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${preset.color} flex items-center justify-center text-lg shadow flex-shrink-0`}>
-                          {preset.icon}
+              {activeSaved && (() => {
+                const preset = PRESET_SPLITS.find(p => p.id === activeSaved.preset_id) || PRESET_SPLITS[4];
+                return (
+                  <div
+                    onClick={() => selectingActive ? handlePickActive(activeSaved) : loadSavedSplit(activeSaved)}
+                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all select-none"
+                    style={{
+                      background: 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08))',
+                      border: '2px solid rgba(16,185,129,0.55)',
+                      boxShadow: '0 0 16px rgba(16,185,129,0.08)',
+                    }}
+                  >
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${preset.color} flex items-center justify-center text-lg shadow flex-shrink-0`}>
+                      {preset.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[13px] font-black text-white truncate">{activeSaved.name}</p>
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        {(activeSaved.training_days || []).map(d => (
+                          <span key={d} className="text-[9px] font-bold text-slate-400">{DAY_NAMES[d - 1]}</span>
+                        ))}
+                        <span className="text-[9px] text-slate-500">· {(activeSaved.training_days || []).length} days</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {selectingActive ? (
+                        <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-[13px] font-black text-white truncate">{activeSaved.name}</p>
-                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
+                      ) : (
+                        <>
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25">
+                            <Edit2 className="w-3.5 h-3.5 text-emerald-400" />
                           </div>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            {(activeSaved.training_days || []).map(d => (
-                              <span key={d} className="text-[9px] font-bold text-slate-400">{DAY_NAMES[d - 1]}</span>
-                            ))}
-                            <span className="text-[9px] text-slate-500">· {(activeSaved.training_days || []).length} days</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {selectingActive ? (
-                            <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            </div>
-                          ) : (
-                            <>
-                              <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25">
-                                <Edit2 className="w-3.5 h-3.5 text-emerald-400" />
-                              </div>
-                              <button
-                                onClick={(e) => deleteSavedSplit(activeSaved.id, e)}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </>
-                    );
-                  })()}
-                </button>
-              )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteSavedSplit(activeSaved.id, e); }}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Other saved splits */}
               {otherSaved.map((split) => {
                 const preset = PRESET_SPLITS.find(p => p.id === split.preset_id) || PRESET_SPLITS[4];
                 return (
-                  <button
+                  <div
                     key={split.id}
                     onClick={() => selectingActive ? handlePickActive(split) : loadSavedSplit(split)}
-                    disabled={setActiveMutation.isPending}
-                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all group disabled:opacity-60"
+                    className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all select-none"
                     style={{
                       background: 'rgba(15,20,40,0.7)',
                       border: '1px solid rgba(255,255,255,0.06)',
@@ -399,11 +393,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                         <div className="w-7 h-7 rounded-full border border-slate-600 flex items-center justify-center" />
                       ) : (
                         <>
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 group-hover:bg-slate-700 transition-colors">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60">
                             <Edit2 className="w-3.5 h-3.5 text-slate-400" />
                           </div>
                           <button
-                            onClick={(e) => deleteSavedSplit(split.id, e)}
+                            onClick={(e) => { e.stopPropagation(); deleteSavedSplit(split.id, e); }}
                             className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
@@ -411,7 +405,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                         </>
                       )}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
 
