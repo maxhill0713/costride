@@ -303,26 +303,35 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ opacity: 0, scaleY: 0.92 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            exit={{ opacity: 0, scaleY: 0.92 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             style={{ overflow: 'hidden', transformOrigin: 'top' }}>
             <div className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</div>
 
           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
             <div className="px-2 space-y-2">
               {/* Headers */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05, duration: 0.2 }}
+                className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-2">Sets x Reps</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
                 <div className="w-6"></div>
-              </div>
+              </motion.div>
 
               {/* Exercise Rows */}
               {todayWorkout.exercises.map((exercise, index) =>
-                <div key={index} className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -18, scale: 0.97 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 28, delay: 0.07 + index * 0.055 }}
+                  className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
                   {editingIndex === index ? (
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between mb-2">
