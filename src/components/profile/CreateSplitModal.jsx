@@ -372,7 +372,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                 return (
                   <div
                     key={split.id}
-                    onClick={() => loadSavedSplit(split)}
+                    onClick={() => { if (selectingActive) { handlePickActive(split); setSelectingActive(false); } else { loadSavedSplit(split); } }}
                     className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left cursor-pointer active:scale-[0.98] transition-all "
                     style={{
                       background: 'rgba(15,20,40,0.7)',
