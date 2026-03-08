@@ -495,27 +495,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
               </button>
             )}
-            {step === 'preview' && previewSplit && (
-              <button
-                onClick={() => {
-                  handleSetActive({
-                    id: previewSplit.id,
-                    preset_id: previewSplit.id,
-                    name: previewSplit.name,
-                    training_days: previewSplit.days,
-                    workouts: previewSplit.workouts,
-                  }, previewWeights);
-                  setStep('pick');
-                  setPreviewSplit(null);
-                }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
-                  bg-gradient-to-b from-emerald-400 to-emerald-600
-                  shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
-                  active:shadow-none active:translate-y-[3px] active:scale-90"
-              >
-                <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </button>
-            )}
+
           </div>
         </div>
 
@@ -803,6 +783,52 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         </div>
 
         {/* ── FOOTER ── */}
+        {step === 'preview' && Object.keys(previewWeights).length > 0 && (
+          <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+            <button
+              onClick={() => {
+                // Merge weights into the split workouts and save to user
+                const mergedWorkouts = Object.fromEntries(
+                  Object.entries(previewSplit.workouts).map(([day, wt]) => {
+                    const dayWeights = previewWeights[day] || {};
+                    const mergedExercises = (wt.exercises || []).map((ex, idx) => ({
+                      ...ex,
+                      weight: dayWeights[idx] !== undefined ? dayWeights[idx] : ex.weight,
+                    }));
+                    return [day, { ...wt, exercises: mergedExercises }];
+                  })
+                );
+                const splitEntry = {
+                  id: previewSplit.id,
+                  preset_id: previewSplit.id,
+                  name: previewSplit.name,
+                  training_days: previewSplit.days,
+                  workouts: mergedWorkouts,
+                  created_at: new Date().toISOString(),
+                };
+                const updated = [
+                  ...savedSplits.filter(s => s.id !== previewSplit.id),
+                  splitEntry,
+                ];
+                setSavedSplits(updated);
+                // If this split is currently active, update active workout data too
+                const isActive = activeSplitId === previewSplit.id;
+                setActiveMutation.mutate({
+                  saved_splits: updated,
+                  ...(isActive ? {
+                    custom_workout_types: mergedWorkouts,
+                  } : {}),
+                });
+                toast.success('Weights saved!');
+                setPreviewWeights({});
+              }}
+              disabled={setActiveMutation.isPending}
+              className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {setActiveMutation.isPending ? 'Saving…' : 'Save Weights'}
+            </button>
+          </div>
+        )}
         {step === 'configure' && (
           <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
             <button onClick={handleBack} className={btnSecondary}>Back</button>
