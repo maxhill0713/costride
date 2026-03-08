@@ -292,8 +292,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
             </h2>
           </div>
 
-          {/* Right: spacer to keep title centred */}
-          <div className="w-10 flex-shrink-0" />
+          {/* Right: tick button (pick step only) to enter "select active" mode */}
+          <div className="w-10 flex-shrink-0 flex justify-end">
+            {step === 'pick' && localSavedSplits.length > 0 && (
+              <button
+                onClick={() => setSelectingActive(s => !s)}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
+                  selectingActive
+                    ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                    : 'bg-slate-700/60 text-slate-400'
+                }`}
+              >
+                <Check className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── SCROLLABLE BODY ── */}
