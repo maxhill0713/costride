@@ -506,7 +506,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 onClick={() => setSelectingActive(prev => !prev)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
                   bg-gradient-to-b from-emerald-400 to-emerald-600
-                  shadow-[0_3px_0_0_#065f46,0_6px_16px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  shadow-[0_2px_0_0_#065f46,0_4px_8px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.15)]
                   active:shadow-none active:translate-y-[3px] active:scale-90
                   ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}`}
               >
@@ -562,12 +562,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   >
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${def.color} flex items-center justify-center text-xl shadow-lg flex-shrink-0`}>{def.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-[14px] font-black text-white">{def.name}</p>
-                        {isActive && (
-                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
-                        )}
-                      </div>
+                      <p className="text-[14px] font-black text-white">{def.name}</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">{def.description}</p>
                       <div className="flex gap-1 mt-1.5 flex-wrap">
                         {def.days.map(d => (
@@ -578,6 +573,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     {selectingActive ? (
                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-500/25 border-emerald-400' : 'border-slate-600'}`}>
                         {isActive && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                      </div>
+                    ) : isActive ? (
+                      <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)] flex-shrink-0">
+                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                       </div>
                     ) : (
                       <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
@@ -618,12 +617,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       >
                         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-lg shadow flex-shrink-0">✏️</div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-[13px] font-black text-white truncate">{split.name}</p>
-                            {isActive && (
-                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex-shrink-0">ACTIVE</span>
-                            )}
-                          </div>
+                          <p className="text-[13px] font-black text-white truncate">{split.name}</p>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             {(split.training_days || []).map(d => <span key={d} className="text-[9px] font-bold text-slate-500">{DAY_NAMES[d - 1]}</span>)}
                             <span className="text-[9px] text-slate-600">· {(split.training_days || []).length} days</span>
@@ -635,6 +629,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 flex-shrink-0">
+                            {isActive && (
+                              <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]">
+                                <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                              </div>
+                            )}
                             <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 pointer-events-none">
                               <Edit2 className="w-3.5 h-3.5 text-slate-400" />
                             </div>
