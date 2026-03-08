@@ -116,7 +116,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
   const [workouts, setWorkouts] = useState({});
   // Local copy of saved splits so deletes are reflected immediately
   const [localSavedSplits, setLocalSavedSplits] = useState([]);
-  const [selectingActive, setSelectingActive] = useState(false);
 
   const queryClient = useQueryClient();
 
