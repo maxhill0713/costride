@@ -531,32 +531,23 @@ export default function GymCommunity() {
   const upcomingEvents = events.filter((e) => { const d = new Date(e.event_date); const wk = new Date(now.getTime() + 7 * 86400000); return d >= now && d <= wk; }).slice(0, 2);
 
   // Build a quick userId -> avatar lookup from the members list
-  const memberAvatarMap = React.useMemo(() => {
+  const memberAvatarMap = useMemo(() => {
     const map = {};
-    // Seed from GymMember
     members.forEach(m => {
       const uid = m.user_id;
       if (!uid) return;
       const avatar = m.avatar_url || m.user_avatar || m.profile_picture || m.photo_url || null;
       if (avatar) map[uid] = avatar;
     });
-    // Seed from check-ins
     checkIns.forEach(c => {
       if (c.user_id && c.user_avatar && !map[c.user_id]) map[c.user_id] = c.user_avatar;
     });
-    // Seed from directly-fetched User profiles — most reliable
-    leaderboardUsers.forEach(u => {
-      if (!u?.id) return;
-      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
-      if (avatar) map[u.id] = avatar;
-    });
-    // Always seed current user
     if (currentUser?.id) {
       const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
       if (myAvatar) map[currentUser.id] = myAvatar;
     }
     return map;
-  }, [members, checkIns, leaderboardUsers, currentUser]);
+  }, [members, checkIns, currentUser]);
 
   const checkInLeaderboard = Object.values(weeklyCheckIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || c.user_avatar || null, count: 0 }; acc[id].count++; return acc; }, {})).sort((a, b) => b.count - a.count).slice(0, 10);
   const streakLeaderboard = Object.values(checkIns.reduce((acc, c) => { const id = c.user_id; if (!acc[id]) acc[id] = { userId: id, userName: c.user_name, userAvatar: memberAvatarMap[id] || c.user_avatar || null, streak: Math.floor(Math.random() * 30) + 1 }; return acc; }, {})).sort((a, b) => b.streak - a.streak).slice(0, 10);
