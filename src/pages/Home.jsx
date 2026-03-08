@@ -930,7 +930,13 @@ export default function Home() {
                   const done          = loggedDays.has(day);
                   const bounce        = justLoggedDay === day;
                   const isTodayCircle = day === todayDay;
-                  const isRestDay     = !trainingDays.includes(day);
+
+                  // ── KEY FIX ──
+                  // If the user has already logged this day, it is always treated as a
+                  // training day (never a rest day), regardless of the current active split.
+                  // Only unlogged days respect the current split's training_days.
+                  const isRestDay = done ? false : !trainingDays.includes(day);
+
                   const isMissed      = !isRestDay && !done && day < todayDay;
                   const isFuture      = !isRestDay && !done && day > todayDay;
                   const size          = isTodayCircle ? 49 : 40;
@@ -977,10 +983,13 @@ export default function Home() {
                   const getPopupLabel = () => {
                     if (isRestDay) return 'Rest Day';
                     if (isMissed) return 'No Workout';
+                    // Always use the logged workout name for completed days —
+                    // this is locked to what they actually did, not the current split.
                     if (done && workoutLog) {
                       return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                     }
                     if (done) return 'Workout';
+                    // For unlogged future days, show the current active split's name.
                     const customTypes = currentUser?.custom_workout_types;
                     const splitDay = customTypes
                       ? Array.isArray(customTypes)
