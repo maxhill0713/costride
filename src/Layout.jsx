@@ -119,7 +119,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-start pt-3 h-[90px] px-2">
+          <div className="flex justify-around items-start pt-1.5 h-[90px] px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
 
@@ -128,7 +128,7 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl hover:bg-white/5"
+                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400"
                 style={{ transition: 'transform 60ms ease-in-out' }}
                 onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
                 onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
