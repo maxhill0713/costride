@@ -293,10 +293,28 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           )}
           <motion.button
             onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
-            className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-            animate={{ y: [0, 4, 0] }}
-            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
-            <ChevronDown className="w-5 h-5" />
+            className="relative flex items-center justify-center gap-1.5 px-4 py-2 rounded-full"
+            style={{
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(59,130,246,0.12) 100%)',
+              border: '1px solid rgba(99,102,241,0.35)',
+              boxShadow: '0 0 12px rgba(99,102,241,0.2)',
+            }}
+            whileTap={{ scale: 0.82, y: 3, transition: { duration: 0.06 } }}
+            animate={{ y: [0, 3, 0] }}
+            transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}>
+            {/* Pulsing glow ring */}
+            <motion.span
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{ border: '1px solid rgba(99,102,241,0.5)' }}
+              animate={{ scale: [1, 1.18, 1], opacity: [0.6, 0, 0.6] }}
+              transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+            />
+            <span className="text-[11px] font-black text-indigo-300 tracking-wide uppercase">Open</span>
+            <motion.div
+              animate={{ y: [0, 2, 0] }}
+              transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}>
+              <ChevronDown className="w-4 h-4 text-indigo-400" />
+            </motion.div>
           </motion.button>
         </div>
       )}
