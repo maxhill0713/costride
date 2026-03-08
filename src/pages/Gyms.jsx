@@ -665,16 +665,11 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
-      <AnimatePresence>
-      {showFilterModal &&
+      {showFilterModal && (
         <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
-          <motion.div
+            key="filter-panel"
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
@@ -716,8 +711,7 @@ export default function Gyms() {
             </div>
           </motion.div>
         </>
-      }
-      </AnimatePresence>
+      )}
 
       <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
