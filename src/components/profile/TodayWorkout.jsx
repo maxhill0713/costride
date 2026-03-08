@@ -383,7 +383,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       </div>
                     </>
                   )}
-                </div>
+                </motion.div>
               )}
 
               {/* Log Workout Button */}
