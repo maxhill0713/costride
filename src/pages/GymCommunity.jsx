@@ -88,6 +88,21 @@ const ROW_CARD = {
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
+  const [avatarMap, setAvatarMap] = React.useState({});
+
+  // Fetch avatars for all leaderboard users
+  React.useEffect(() => {
+    const allUsers = [...checkInLeaderboard, ...streakLeaderboard, ...progressLeaderboard];
+    const uniqueIds = [...new Set(allUsers.map(u => u.userId).filter(Boolean))];
+    if (uniqueIds.length === 0) return;
+    Promise.all(
+      uniqueIds.map(id => base44.entities.User.filter({ id }).then(r => r[0]).catch(() => null))
+    ).then(users => {
+      const map = {};
+      users.forEach(u => { if (u) map[u.id] = u.avatar_url || null; });
+      setAvatarMap(map);
+    }).catch(() => {});
+  }, [checkInLeaderboard.length, streakLeaderboard.length, progressLeaderboard.length]);
 
   const tabs = [
     { id: 'checkins', label: 'Check-ins', icon: CheckCircle, accent: '#10b981', unit: 'check-ins' },
@@ -284,8 +299,14 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                        fontSize:isFirst?19:15, fontWeight:900, color:M.color,
                        margin:`${isFirst?18:14}px auto 8px`,
                        backdropFilter:'blur(8px)',
+                       overflow:'hidden',
                        animation: isFirst ? 'lb-gold-pulse 2.5s ease-in-out infinite' : 'none',
-                      }}>{initials(data.userName)}</div>
+                      }}>
+                       {avatarMap[data.userId]
+                         ? <img src={avatarMap[data.userId]} alt={data.userName} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                         : initials(data.userName)
+                       }
+                      </div>
                       {/* Name */}
                       <p style={{
                         color:'#fff', fontWeight:900, textAlign:'center',
@@ -337,9 +358,15 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           background:'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(30,58,138,0.15))',
                           border:'1.5px solid rgba(59,130,246,0.25)',
                           backdropFilter:'blur(8px)',
+                          overflow:'hidden',
                           display:'flex', alignItems:'center', justifyContent:'center',
                           fontSize:12, fontWeight:900, color:'rgba(147,197,253,0.85)',
-                        }}>{initials(m.userName)}</div>
+                        }}>
+                          {avatarMap[m.userId]
+                            ? <img src={avatarMap[m.userId]} alt={m.userName} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                            : initials(m.userName)
+                          }
+                        </div>
                         {/* Name + bar */}
                         <div style={{ flex:1, minWidth:0 }}>
                           <p style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.75)', margin:'0 0 6px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
