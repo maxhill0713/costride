@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import { Dumbbell, Trophy, TrendingUp, Calendar, ChevronRight, MapPin, Clock, Ch
 import { AnimatePresence, motion } from 'framer-motion';
 import StreakIcon from '../components/StreakIcon';
 import FriendsIcon from '../components/FriendsIcon';
-import CheckInButton from '../components/gym/CheckInButton';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
 import TodayWorkout from '../components/profile/TodayWorkout';
@@ -31,6 +30,237 @@ const POSE_1_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/p
 const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/760358372_STREAKICON21.png';
 
 // ─────────────────────────────────────────────
+// CHECK-IN BUTTON STYLES — injected once
+// ─────────────────────────────────────────────
+const CHECK_IN_CSS = `
+  @keyframes ci-ripple {
+    0%   { transform: scale(0); opacity: 0.55; }
+    100% { transform: scale(48); opacity: 0; }
+  }
+  @keyframes ci-tick-draw {
+    from { stroke-dashoffset: 40; }
+    to   { stroke-dashoffset: 0; }
+  }
+  @keyframes ci-tick-pop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    60%  { transform: scale(1.18); opacity: 1; }
+    80%  { transform: scale(0.94); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes ci-success-fade {
+    0%   { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+function injectCheckInStyles() {
+  if (document.getElementById('checkin-btn-styles')) return;
+  const s = document.createElement('style');
+  s.id = 'checkin-btn-styles';
+  s.textContent = CHECK_IN_CSS;
+  document.head.appendChild(s);
+}
+
+// ─────────────────────────────────────────────
+// INLINE CHECK-IN BUTTON COMPONENT
+// ─────────────────────────────────────────────
+function CheckInButton({ gym, onCheckInSuccess }) {
+  const queryClient = useQueryClient();
+  const [pressed, setPressed]   = useState(false);
+  const [success, setSuccess]   = useState(false);
+  const [ripples, setRipples]   = useState([]);
+  const btnRef                  = useRef(null);
+  const rippleId                = useRef(0);
+
+  const checkInMutation = useMutation({
+    mutationFn: async () => {
+      const me = await base44.auth.me();
+      return base44.entities.CheckIn.create({
+        user_id:       me.id,
+        user_name:     me.full_name,
+        gym_id:        gym.id,
+        gym_name:      gym.name,
+        check_in_date: new Date().toISOString().split('T')[0],
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checkIns'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      setSuccess(true);
+      onCheckInSuccess?.();
+    },
+  });
+
+  const spawnRipple = (e) => {
+    const rect = btnRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) - rect.left;
+    const y = (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) - rect.top;
+    const id = ++rippleId.current;
+    setRipples(prev => [...prev, { id, x, y }]);
+    setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 700);
+  };
+
+  const handlePress = (e) => {
+    if (checkInMutation.isPending || success) return;
+    setPressed(true);
+    spawnRipple(e);
+  };
+
+  const handleRelease = () => {
+    if (!pressed) return;
+    setPressed(false);
+    if (!checkInMutation.isPending && !success) {
+      checkInMutation.mutate();
+    }
+  };
+
+  const isLoading = checkInMutation.isPending;
+  const isSuccess = success;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.90) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: 20,
+      padding: '14px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+    }}>
+      {/* Gym info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(99,102,241,0.2))',
+            border: '1px solid rgba(59,130,246,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Dumbbell style={{ width: 14, height: 14, color: '#60a5fa' }} />
+          </div>
+          <p style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
+            {gym?.name || 'Your Gym'}
+          </p>
+        </div>
+        {gym?.city && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 34 }}>
+            <MapPin style={{ width: 10, height: 10, color: 'rgba(148,163,184,0.6)', flexShrink: 0 }} />
+            <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.7)', margin: 0, fontWeight: 500 }}>
+              {gym.city}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 3D Check-in button */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        {/* Bottom shadow layer — the 3D floor */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 14,
+          background: isSuccess ? '#15803d' : '#1a3fa8',
+          transform: 'translateY(4px)',
+        }} />
+        {/* Top face */}
+        <button
+          ref={btnRef}
+          onMouseDown={handlePress}
+          onMouseUp={handleRelease}
+          onMouseLeave={() => { if (pressed) setPressed(false); }}
+          onTouchStart={handlePress}
+          onTouchEnd={handleRelease}
+          disabled={isLoading || isSuccess}
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            paddingLeft: isSuccess ? 16 : 18,
+            paddingRight: isSuccess ? 16 : 18,
+            paddingTop: 10,
+            paddingBottom: 10,
+            borderRadius: 14,
+            border: 'none',
+            cursor: isLoading || isSuccess ? 'default' : 'pointer',
+            outline: 'none',
+            overflow: 'hidden',
+            WebkitTapHighlightColor: 'transparent',
+            userSelect: 'none',
+            transition: 'transform 0.08s ease, box-shadow 0.08s ease, background 0.25s ease',
+            transform: pressed ? 'translateY(4px)' : 'translateY(0)',
+            boxShadow: pressed
+              ? 'none'
+              : isSuccess
+                ? '0 4px 0 0 #15803d, 0 6px 18px rgba(22,163,74,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                : '0 4px 0 0 #1a3fa8, 0 6px 20px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+            background: isSuccess
+              ? 'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)'
+              : isLoading
+                ? 'linear-gradient(to bottom, #5b9ff5, #3b82f6 40%, #2563eb)'
+                : 'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #2563eb)',
+          }}>
+          {/* Ripples */}
+          {ripples.map(r => (
+            <span key={r.id} style={{
+              position: 'absolute',
+              left: r.x, top: r.y,
+              width: 10, height: 10,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.35)',
+              transform: 'scale(0)',
+              animation: 'ci-ripple 0.65s ease-out forwards',
+              pointerEvents: 'none',
+              zIndex: 0,
+              marginLeft: -5, marginTop: -5,
+            }} />
+          ))}
+          {/* Content */}
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+            {isSuccess ? (
+              <>
+                <div style={{ animation: 'ci-tick-pop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards' }}>
+                  <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
+                    <circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
+                    <path d="M7.5 14.5l4.5 4.5 8.5-9.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                      strokeDasharray="40" strokeDashoffset="40"
+                      style={{ animation: 'ci-tick-draw 0.4s ease 0.1s forwards' }} />
+                  </svg>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em', animation: 'ci-success-fade 0.35s ease forwards' }}>
+                  Checked In!
+                </span>
+              </>
+            ) : isLoading ? (
+              <>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
+                  <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
+                  <path d="M8 2a6 6 0 0 1 6 6" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.01em' }}>
+                  Checking…
+                </span>
+              </>
+            ) : (
+              <>
+                <CheckCircle style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.9)', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em' }}>
+                  Check In
+                </span>
+              </>
+            )}
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // WEB AUDIO HELPERS
 // ─────────────────────────────────────────────
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
@@ -46,7 +276,6 @@ function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   osc.start(startTime);
   osc.stop(startTime + duration + 0.05);
 }
-
 function soundBounceIn(ctx) {
   const now = ctx.currentTime;
   const osc  = ctx.createOscillator();
@@ -60,13 +289,11 @@ function soundBounceIn(ctx) {
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
   osc.start(now); osc.stop(now + 0.3);
 }
-
 function soundNumPop(ctx) {
   const now = ctx.currentTime;
   playTone(ctx, 900,  now,        0.08, 0.18);
   playTone(ctx, 1100, now + 0.04, 0.07, 0.12);
 }
-
 function soundPoseSwap(ctx) {
   const now = ctx.currentTime;
   [[659, 0], [784, 0.10], [1047, 0.20]].forEach(([freq, t]) => {
@@ -75,14 +302,12 @@ function soundPoseSwap(ctx) {
   });
   playTone(ctx, 330, now, 0.4, 0.1);
 }
-
 function soundGlowPulse(ctx) {
   const now = ctx.currentTime;
   [523, 659, 784].forEach((freq, i) => {
     playTone(ctx, freq, now + i * 0.03, 0.5, 0.09);
   });
 }
-
 function soundTransition(ctx) {
   const now = ctx.currentTime;
   const osc  = ctx.createOscillator();
@@ -156,7 +381,6 @@ const STREAK_KEYFRAMES = `
     50%       { transform: scale(1.13); opacity: 0.2;  }
   }
 `;
-
 function injectStreakStyles() {
   if (document.getElementById('streak-keyframes')) return;
   const style = document.createElement('style');
@@ -166,7 +390,7 @@ function injectStreakStyles() {
 }
 
 // ─────────────────────────────────────────────
-// STREAK ANIMATION HELPERS (outside component — no hook rules apply)
+// STREAK ANIMATION HELPERS
 // ─────────────────────────────────────────────
 function trigAnim(el, name, dur, easing) {
   if (!el) return;
@@ -174,7 +398,6 @@ function trigAnim(el, name, dur, easing) {
   void el.offsetWidth;
   el.style.animation = `${name} ${dur}ms ${easing} forwards`;
 }
-
 function spawnParticles() {
   const cols = ['#f97316', '#fb923c', '#fbbf24', '#ef4444', '#ffffff', '#fdba74'];
   for (let i = 0; i < 18; i++) {
@@ -197,7 +420,6 @@ function spawnParticles() {
     setTimeout(() => p.remove(), 1200);
   }
 }
-
 function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   const stage = document.getElementById('streak-anim-stage');
   const p1    = document.getElementById('streak-anim-p1');
@@ -205,22 +427,17 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
   const num   = document.getElementById('streak-anim-num');
   const lbl   = document.getElementById('streak-anim-lbl');
   if (!stage || !p1 || !p2 || !num || !lbl) return;
-
   const actx = audioCtxRef.current;
-
   if (actx) soundBounceIn(actx);
   trigAnim(stage, 'streakBounceIn', 750, 'cubic-bezier(0.34,1.3,0.64,1)');
-
   const t1 = setTimeout(() => {
     if (actx) soundNumPop(actx);
     trigAnim(num, 'streakNumPop', 520, 'cubic-bezier(0.34,1.3,0.64,1)');
     trigAnim(lbl, 'streakFadeUp', 400, 'ease');
   }, 700);
-
   const t2 = setTimeout(() => {
     trigAnim(stage, 'streakWindup', 380, 'ease-in-out');
   }, 1600);
-
   const t3 = setTimeout(() => {
     if (actx) soundPoseSwap(actx);
     spawnParticles();
@@ -239,21 +456,17 @@ function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
       trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.25,0.64,1)');
     }, 160);
   }, 1980);
-
   const t4 = setTimeout(() => {
     if (actx) soundGlowPulse(actx);
     stage.style.animation = 'none';
     void stage.offsetWidth;
     stage.style.animation = 'streakGlowPulse 1.2s ease-in-out 2 forwards';
   }, 2800);
-
   const t5 = setTimeout(() => {
     if (actx) soundTransition(actx);
   }, 3200);
-
   celebTimers.current = [t1, t2, t3, t4, t5];
 }
-
 
 export default function Home() {
   const navigate = useNavigate();
@@ -270,18 +483,20 @@ export default function Home() {
   const [celebrationExercises, setCelebrationExercises] = useState([]);
   const [celebrationWorkoutName, setCelebrationWorkoutName] = useState('');
   const [justLoggedDay, setJustLoggedDay] = useState(null);
-  const [activeCircleDay, setActiveCircleDay] = useState(null); // day whose popup is open
-  const [summaryLog, setSummaryLog] = useState(null); // workout log to show in summary modal
+  const [activeCircleDay, setActiveCircleDay] = useState(null);
+  const [summaryLog, setSummaryLog] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
-  useEffect(() => { injectStreakStyles(); }, []);
+  useEffect(() => {
+    injectStreakStyles();
+    injectCheckInStyles();
+  }, []);
 
   useEffect(() => {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
 
-  // Dismiss circle popup when tapping outside any circle button
   useEffect(() => {
     if (activeCircleDay === null) return;
     const dismiss = (e) => {
@@ -300,7 +515,6 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
-
   const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
@@ -309,9 +523,7 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0]?.gym_id : null);
-
   const { data: memberGymData } = useQuery({
     queryKey: ['gym', primaryGymIdForQuery],
     queryFn: () => base44.entities.Gym.filter({ id: primaryGymIdForQuery }).then((r) => r[0] || null),
@@ -320,7 +532,6 @@ export default function Home() {
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns', currentUser?.id],
     queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
@@ -329,7 +540,6 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 10),
@@ -337,7 +547,6 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const { data: lifts = [] } = useQuery({
     queryKey: ['lifts', currentUser?.id],
     queryFn: () => base44.entities.Lift.filter({ member_id: currentUser?.id }, '-created_date', 50),
@@ -346,7 +555,6 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const { data: goals = [] } = useQuery({
     queryKey: ['goals', currentUser?.id],
     queryFn: () => base44.entities.Goal.filter({ user_id: currentUser?.id, status: 'active' }),
@@ -355,7 +563,6 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
@@ -365,7 +572,6 @@ export default function Home() {
     refetchInterval: 10000,
     placeholderData: (prev) => prev
   });
-
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }),
@@ -374,9 +580,7 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const friendIdList = friends.map((f) => f.friend_id);
-
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id],
     queryFn: () => base44.entities.Post.filter({ is_system_generated: false }, '-created_date', 30),
@@ -385,7 +589,6 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const { data: recentChallengeActivity = [] } = useQuery({
     queryKey: ['recentChallengeActivity'],
     queryFn: async () => {
@@ -399,10 +602,8 @@ export default function Home() {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
-
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
     queryFn: async () => {
@@ -421,7 +622,6 @@ export default function Home() {
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000
   });
-
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id],
     queryFn: async () => {
@@ -438,13 +638,11 @@ export default function Home() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
-
   useEffect(() => {
     if (currentUser && currentUser.onboarding_completed === false && !currentUser.account_type) {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser?.onboarding_completed, currentUser?.account_type, navigate]);
-
   useEffect(() => {
     if (!showStreakCelebration) return;
     const init = setTimeout(() => {
@@ -472,16 +670,13 @@ export default function Home() {
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
   const friendIds = friendIdList;
-
   const friendPosts = allPosts.filter((post) =>
     friendIds.includes(post.member_id) &&
     !post.is_system_generated &&
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
   );
-
   const todayCheckIns = todayCheckInsForQuery;
-
   const selectFeaturedChallenge = () => {
     const activeChallenges = challenges.filter((c) => c.status === 'active');
     if (activeChallenges.length === 0) return null;
@@ -492,11 +687,9 @@ export default function Home() {
     });
     return withProgress.sort((a, b) => b.progress - a.progress)[0];
   };
-
   const featuredChallenge = selectFeaturedChallenge();
   const activeChallenges = challenges.filter((c) => c.status === 'active').slice(0, 3);
   const todayLifts = lifts.filter((l) => isToday(new Date(l.created_date))).slice(0, 5);
-
   const calculateStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
     const today = startOfDay(new Date());
@@ -512,10 +705,8 @@ export default function Home() {
     }
     return streak;
   };
-
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
-
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '') => {
     const todayDow = new Date().getDay();
     const todayAdjusted = todayDow === 0 ? 7 : todayDow;
@@ -523,35 +714,25 @@ export default function Home() {
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
-
     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || (userStreak + 1);
     setCelebrationStreakNum(newStreak);
     setCelebrationChallenges(challengesData);
     setCelebrationExercises(exercises);
     setCelebrationWorkoutName(workoutName);
-
-    const showShare = () => {
-      setShowShareWorkout(true);
-    };
-
+    const showShare = () => { setShowShareWorkout(true); };
     setShowStreakCelebration(true);
     setTimeout(() => {
       setShowStreakCelebration(false);
       if (challengesData.length > 0) {
         setShowChallengesCelebration(true);
-        setTimeout(() => {
-          setShowChallengesCelebration(false);
-          showShare();
-        }, 4000);
+        setTimeout(() => { setShowChallengesCelebration(false); showShare(); }, 4000);
       } else {
         showShare();
       }
     }, 3500);
   };
-
   const handleStreakVariantSelect = (variant) => {
     if (currentUser) {
       setShowStreakVariants(false);
@@ -559,11 +740,9 @@ export default function Home() {
       base44.auth.updateMe({ streak_variant: variant });
     }
   };
-
   const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weeklyCheckIns = userCheckIns.filter((c) => new Date(c.check_in_date) >= startOfThisWeek);
   const weeklyTarget = currentUser?.weekly_goal || 3;
-
   const goalsOnTrack = goals.filter((g) => {
     const progress = g.current_value / g.target_value * 100;
     const daysUntilDeadline = g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null;
@@ -573,14 +752,12 @@ export default function Home() {
     const expectedProgress = daysPassed / totalDuration * 100;
     return progress >= expectedProgress * 0.8;
   }).length;
-
   const weeklyComplete = weeklyCheckIns.length >= weeklyTarget;
   const goalsComplete = goals.length === 0 || goalsOnTrack >= goals.length * 0.5;
   const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
   const totalCount = goals.length > 0 ? 2 : 1;
   const isOnTrack = completedCount === totalCount;
   const progressPercentage = goals.length > 0 ? Math.round(goalsOnTrack / goals.length * 100) : weeklyCheckIns.length / weeklyTarget * 100;
-
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const messages = [
@@ -596,11 +773,9 @@ export default function Home() {
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-
         {/* Header */}
         <div className="bg-gradient-to-b from-slate-800/40 to-transparent backdrop-blur-sm border-b border-slate-700/50 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
-
             <button
               onClick={() => setShowStreakVariants(true)}
               className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
@@ -621,11 +796,9 @@ export default function Home() {
                 {userStreak}
               </span>
             </button>
-
             <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent tracking-tight">
               CoStride
             </h1>
-
             <Link
               to={createPageUrl('Friends')}
               onClick={() => {
@@ -648,14 +821,12 @@ export default function Home() {
         </div>
 
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
-
           {memberGym && <>
             {!userCheckIns.some((c) => isToday(new Date(c.check_in_date))) &&
               <CheckInButton
                 gym={memberGym}
                 onCheckInSuccess={() => setWorkoutStartTime(Date.now())} />
             }
-
             <div className="flex flex-col items-center justify-center gap-2">
               <div className="flex items-center -space-x-2">
                 {(() => {
@@ -800,24 +971,18 @@ export default function Home() {
           {memberGym?.id && (() => {
             const trainingDays = (currentUser?.training_days || []).filter(d => d >= 1 && d <= 7);
             if (trainingDays.length === 0) return null;
-
             const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-
-            // Build a map of day number (1-7) → workout log for popup titles
             const logsByDay = {};
             weeklyWorkoutLogs.forEach((l) => {
               const d = new Date(l.completed_date).getDay();
               const dayNum = d === 0 ? 7 : d;
               if (!logsByDay[dayNum]) logsByDay[dayNum] = l;
             });
-
             const loggedDays = new Set(Object.keys(logsByDay).map(Number));
-
             const allDays = [1, 2, 3, 4, 5, 6, 7];
             const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
-
             return (
               <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible' }}>
                 {allDays.map((day, i) => {
@@ -825,13 +990,11 @@ export default function Home() {
                   const bounce        = justLoggedDay === day;
                   const isTodayCircle = day === todayDay;
                   const isRestDay     = !trainingDays.includes(day);
-                  const isMissed      = !isRestDay && !done && day < todayDay; // gym day before today, not logged
-                  const isFuture      = !isRestDay && !done && day > todayDay; // gym day after today
+                  const isMissed      = !isRestDay && !done && day < todayDay;
+                  const isFuture      = !isRestDay && !done && day > todayDay;
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
-
-                  // ── Background ──
                   const getBg = () => {
                     if (isRestDay) {
                       return done
@@ -843,21 +1006,15 @@ export default function Home() {
                     if (isTodayCircle) return 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)';
                     return 'linear-gradient(to bottom, #2d3748 0%, #1e293b 60%, #0f172a 100%)';
                   };
-
-                  // ── Border ──
                   const getBorder = () => {
                     if (isRestDay) {
-                      return done
-                        ? '1px solid rgba(74,222,128,0.5)'
-                        : '1px solid rgba(71,85,105,0.7)';
+                      return done ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(71,85,105,0.7)';
                     }
                     if (done) return '1px solid rgba(147,197,253,0.5)';
                     if (isMissed) return '1px solid rgba(248,113,113,0.5)';
                     if (isTodayCircle) return '1px solid rgba(100,116,139,0.7)';
                     return '1px solid rgba(71,85,105,0.5)';
                   };
-
-                  // ── Box shadow — full 3D on ALL circles ──
                   const getBoxShadow = () => {
                     if (isRestDay && done)
                       return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
@@ -871,24 +1028,16 @@ export default function Home() {
                       return '0 4px 0 0 #1a2332, 0 7px 16px rgba(30,40,60,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
                     return '0 4px 0 0 #1a2030, 0 6px 14px rgba(20,30,50,0.55), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
                   };
-
                   const getAnimation = () => {
                     if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards';
                     if (isRestDay || done) return 'none';
                     return 'dayWiggle 2.4s ease-in-out infinite';
                   };
-
-                  // ── Popup label — workout title for logged days, split name for planned, Rest Day for rest ──
                   const getPopupLabel = () => {
                     if (isRestDay) return 'Rest Day';
                     if (isMissed) return 'No Workout';
                     if (done && workoutLog) {
-                      return workoutLog.workout_name
-                        || workoutLog.title
-                        || workoutLog.workout_type
-                        || workoutLog.name
-                        || workoutLog.split_name
-                        || 'Workout';
+                      return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                     }
                     if (done) return 'Workout';
                     const customTypes = currentUser?.custom_workout_types;
@@ -899,7 +1048,6 @@ export default function Home() {
                       : null;
                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
                   };
-
                   return (
                     <div
                       key={day}
@@ -914,8 +1062,6 @@ export default function Home() {
                         marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0),
                         overflow: 'visible',
                       }}>
-
-                      {/* Pulsing ring behind today */}
                       {isTodayCircle && (
                         <div style={{
                           position: 'absolute',
@@ -928,28 +1074,17 @@ export default function Home() {
                           pointerEvents: 'none',
                         }} />
                       )}
-
-                      {/* Circle — tappable button */}
                       <button
                         data-circle-btn="true"
                         onClick={() => setActiveCircleDay(prev => prev === day ? null : day)}
                         style={{
-                          width: size,
-                          height: size,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: getBg(),
-                          border: getBorder(),
-                          boxShadow: getBoxShadow(),
+                          width: size, height: size, borderRadius: '50%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
                           transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.1s ease',
                           animation: getAnimation(),
                           animationDelay: bounce ? '0s' : `${i * 0.18}s`,
-                          willChange: 'transform',
-                          cursor: 'pointer',
-                          padding: 0,
-                          outline: 'none',
+                          willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent',
                         }}
                         onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'}
@@ -960,27 +1095,18 @@ export default function Home() {
                       >
                         {isRestDay
                           ? done
-                            // Completed rest day — filled green multi-pointed leaf
                             ? <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
-                                {/* Centre stem */}
                                 <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round"/>
-                                {/* Centre top blade */}
                                 <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
-                                {/* Upper-left blade */}
                                 <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
-                                {/* Upper-right blade */}
                                 <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
-                                {/* Lower-left blade */}
                                 <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
-                                {/* Lower-right blade */}
                                 <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1"/>
-                                {/* Vein lines */}
                                 <line x1="50" y1="30" x2="36" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
                                 <line x1="50" y1="30" x2="64" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
                                 <line x1="50" y1="50" x2="32" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
                                 <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round"/>
                               </svg>
-                            // Incomplete rest day — same shape, grey outline only
                             : <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
                                 <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round"/>
                                 <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5"/>
@@ -1001,29 +1127,23 @@ export default function Home() {
                               ? <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none">
                                   <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round"/>
                                 </svg>
-                            : <div style={{
-                                width: isTodayCircle ? 18 : 14,
-                                height: isTodayCircle ? 18 : 14,
-                                borderRadius: '50%',
-                                border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
-                                background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent',
-                                boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
-                              }} />
+                              : <div style={{
+                                  width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14,
+                                  borderRadius: '50%',
+                                  border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
+                                  background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                  boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
+                                }} />
                         }
                       </button>
-
-                      {/* Drop-down tooltip — single unified SVG shape */}
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
-                          // 30% bigger than 210 = 273, round to 274
                           const BUBBLE_W = 274;
-                          // Taller when View Summary shown
                           const BUBBLE_H = done && !isRestDay ? 100 : 64;
                           const ARROW_H = 7;
                           const ARROW_W = 13;
                           const RADIUS = 14;
                           const SVG_H = BUBBLE_H + ARROW_H;
-
                           const SLOT = size + 8;
                           const circleCenterInRow = i * SLOT + size / 2;
                           const rowWidth = 7 * SLOT - 8;
@@ -1034,40 +1154,16 @@ export default function Home() {
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
-
-                          // Exact same colour as the circle top-of-gradient, slightly darkened
-                          const solidColor = isRestDay && done
-                            ? '#16a34a'
-                            : isRestDay
-                              ? '#1e2535'
-                              : done
-                                ? '#3b82f6'
-                                : isMissed
-                                  ? '#dc2626'
-                                  : isTodayCircle
-                                    ? '#263244'
-                                    : '#1e2535';
-
-                          // Day label for subtitle
+                          const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
                           const DAY_NAMES = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                          const daySubtitle = DAY_NAMES[day] || '';
-
                           const path = [
-                            `M ${RADIUS} ${ARROW_H}`,
-                            `L ${arrowL} ${ARROW_H}`,
-                            `L ${arrowTip} 0`,
-                            `L ${arrowR} ${ARROW_H}`,
-                            `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
+                            `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
+                            `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
                             `Q ${BUBBLE_W} ${ARROW_H} ${BUBBLE_W} ${ARROW_H + RADIUS}`,
-                            `L ${BUBBLE_W} ${SVG_H - RADIUS}`,
-                            `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
-                            `L ${RADIUS} ${SVG_H}`,
-                            `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
-                            `L 0 ${ARROW_H + RADIUS}`,
-                            `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`,
-                            `Z`
+                            `L ${BUBBLE_W} ${SVG_H - RADIUS}`, `Q ${BUBBLE_W} ${SVG_H} ${BUBBLE_W - RADIUS} ${SVG_H}`,
+                            `L ${RADIUS} ${SVG_H}`, `Q 0 ${SVG_H} 0 ${SVG_H - RADIUS}`,
+                            `L 0 ${ARROW_H + RADIUS}`, `Q 0 ${ARROW_H} ${RADIUS} ${ARROW_H}`, `Z`
                           ].join(' ');
-
                           return (
                             <motion.div
                               initial={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
@@ -1075,58 +1171,24 @@ export default function Home() {
                               exit={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
                               transition={{ duration: 0.32, ease: [0.34, 1.3, 0.64, 1] }}
                               style={{
-                                position: 'absolute',
-                                top: size + 2,
-                                left: bubbleOffsetFromCircle,
-                                width: BUBBLE_W,
-                                height: SVG_H,
-                                zIndex: 200,
-                                pointerEvents: 'auto',
+                                position: 'absolute', top: size + 2, left: bubbleOffsetFromCircle,
+                                width: BUBBLE_W, height: SVG_H, zIndex: 200, pointerEvents: 'auto',
                                 transformOrigin: `${arrowTip}px top`,
                               }}>
-                              {/* Single unified SVG shape */}
                               <svg width={BUBBLE_W} height={SVG_H} style={{ position: 'absolute', top: 0, left: 0 }}>
                                 <path d={path} fill={solidColor} />
                               </svg>
-
-                              {/* Content inside bubble */}
                               <div style={{
-                                position: 'absolute',
-                                top: ARROW_H + 10,
-                                left: 14,
-                                right: 14,
-                                bottom: 10,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
+                                position: 'absolute', top: ARROW_H + 10, left: 14, right: 14, bottom: 10,
+                                display: 'flex', flexDirection: 'column', gap: 2,
                               }}>
-                                {/* Workout title */}
-                                <span style={{
-                                  fontSize: 18,
-                                  fontWeight: 800,
-                                  color: '#ffffff',
-                                  letterSpacing: '0.01em',
-                                  lineHeight: 1.2,
-                                  textShadow: '0 1px 3px rgba(0,0,0,0.35)',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}>
+                                <span style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em', lineHeight: 1.2, textShadow: '0 1px 3px rgba(0,0,0,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {getPopupLabel()}
                                 </span>
-
-                                {/* Day subtitle */}
-                                <span style={{
-                                  fontSize: 11,
-                                  fontWeight: 600,
-                                  color: 'rgba(255,255,255,0.65)',
-                                  letterSpacing: '0.03em',
-                                  lineHeight: 1,
-                                }}>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1 }}>
                                   {done && workoutLog?.completed_date
                                     ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
                                     : (() => {
-                                        // Calculate the actual date for this day slot this week
                                         const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
                                         const slotDate = new Date(monday);
                                         slotDate.setDate(monday.getDate() + (day - 1));
@@ -1134,8 +1196,6 @@ export default function Home() {
                                       })()
                                   }
                                 </span>
-
-                                {/* View Summary — 3D blue button, full width, only for logged gym days */}
                                 {done && !isRestDay && workoutLog && (
                                   <button
                                     onClick={async (e) => {
@@ -1144,9 +1204,7 @@ export default function Home() {
                                       try {
                                         const logs = await base44.entities.WorkoutLog.filter({ id: workoutLog.id });
                                         setSummaryLog(logs[0] || workoutLog);
-                                      } catch {
-                                        setSummaryLog(workoutLog);
-                                      }
+                                      } catch { setSummaryLog(workoutLog); }
                                     }}
                                     onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
                                     onMouseUp={e => e.currentTarget.style.transform = ''}
@@ -1154,22 +1212,13 @@ export default function Home() {
                                     onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'}
                                     onTouchEnd={e => e.currentTarget.style.transform = ''}
                                     style={{
-                                      marginTop: 8,
-                                      width: '100%',
-                                      padding: '7px 0',
-                                      borderRadius: 9,
+                                      marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 9,
                                       background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-                                      border: 'none',
-                                      borderBottom: '3px solid #1d4ed8',
-                                      color: '#ffffff',
-                                      fontSize: 12,
-                                      fontWeight: 800,
-                                      cursor: 'pointer',
-                                      letterSpacing: '0.03em',
-                                      textAlign: 'center',
+                                      border: 'none', borderBottom: '3px solid #1d4ed8',
+                                      color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                                      letterSpacing: '0.03em', textAlign: 'center',
                                       boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
-                                      transition: 'transform 0.1s ease',
-                                      WebkitTapHighlightColor: 'transparent',
+                                      transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
                                     }}>
                                     View Summary
                                   </button>
@@ -1179,7 +1228,6 @@ export default function Home() {
                           );
                         })()}
                       </AnimatePresence>
-
                     </div>
                   );
                 })}
@@ -1188,7 +1236,6 @@ export default function Home() {
           })()}
 
           {memberGym?.id && <QuoteCarousel />}
-
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' &&
             <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
               <div className="flex items-center justify-between gap-4">
@@ -1205,109 +1252,48 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ─────────────────────────────────────────────
-          STAGE 1 — New streak animation (3.5s)
-          ───────────────────────────────────────────── */}
+      {/* STAGE 1 — Streak animation */}
       <AnimatePresence>
         {showStreakCelebration &&
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.45 }}
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-              <div
-                id="streak-anim-stage"
-                style={{
-                  position: 'relative',
-                  width: 180,
-                  height: 180,
-                  filter: 'drop-shadow(0 0 28px rgba(249,115,22,0.7))',
-                  opacity: 0,
-                  willChange: 'transform, opacity, filter'
-                }}>
-                <img
-                  id="streak-anim-p1"
-                  src={POSE_1_URL}
-                  alt="streak pose 1"
-                  style={{
-                    position: 'absolute', inset: 0,
-                    width: '100%', height: '100%',
-                    objectFit: 'contain', opacity: 1
-                  }}
-                />
-                <img
-                  id="streak-anim-p2"
-                  src={POSE_2_URL}
-                  alt="streak pose 2"
-                  style={{
-                    position: 'absolute', inset: 0,
-                    width: '100%', height: '100%',
-                    objectFit: 'contain',
-                    opacity: 0,
-                    willChange: 'transform, opacity'
-                  }}
-                />
+              <div id="streak-anim-stage" style={{ position: 'relative', width: 180, height: 180, filter: 'drop-shadow(0 0 28px rgba(249,115,22,0.7))', opacity: 0, willChange: 'transform, opacity, filter' }}>
+                <img id="streak-anim-p1" src={POSE_1_URL} alt="streak pose 1" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 1 }} />
+                <img id="streak-anim-p2" src={POSE_2_URL} alt="streak pose 2" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 0, willChange: 'transform, opacity' }} />
               </div>
-
-              <div
-                id="streak-anim-num"
-                style={{
-                  fontSize: 120, fontWeight: 900, color: '#fff',
-                  textShadow: '0 4px 12px rgba(0,0,0,0.8)',
-                  letterSpacing: '-0.04em', lineHeight: 1,
-                  opacity: 0, transform: 'scale(0.5)'
-                }}>
+              <div id="streak-anim-num" style={{ fontSize: 120, fontWeight: 900, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.04em', lineHeight: 1, opacity: 0, transform: 'scale(0.5)' }}>
                 {celebrationStreakNum - 1}
               </div>
-
               <div id="streak-anim-lbl" style={{ display: 'none' }} />
             </div>
           </motion.div>
         }
       </AnimatePresence>
 
-      {/* ─────────────────────────────────────────────
-          STAGE 2 — Fullscreen challenges (4s)
-          ───────────────────────────────────────────── */}
+      {/* STAGE 2 — Challenges */}
       <AnimatePresence>
         {showChallengesCelebration && celebrationChallenges.length > 0 &&
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center px-8">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-sm space-y-8">
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }} className="w-full max-w-sm space-y-8">
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
                 className="text-2xl font-black text-white text-center tracking-tight">
                 Challenge Progress
               </motion.p>
               <div className="space-y-6">
                 {celebrationChallenges.map((challenge, idx) =>
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + idx * 0.15 }}
-                    className="space-y-3">
+                  <motion.div key={challenge.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + idx * 0.15 }} className="space-y-3">
                     <p className="text-base font-bold text-slate-200 truncate">{challenge.title}</p>
                     <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
-                        initial={{ width: '0%' }}
-                        animate={{ width: '100%' }}
-                        transition={{ delay: 0.5 + idx * 0.15, duration: 1.4, ease: 'easeOut' }} />
+                      <motion.div className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
+                        initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ delay: 0.5 + idx * 0.15, duration: 1.4, ease: 'easeOut' }} />
                     </div>
                   </motion.div>
                 )}
@@ -1317,9 +1303,7 @@ export default function Home() {
         }
       </AnimatePresence>
 
-      {/* ─────────────────────────────────────────────
-          STAGE 3 — Share Workout
-          ───────────────────────────────────────────── */}
+      {/* STAGE 3 — Share Workout */}
       <AnimatePresence>
         {showShareWorkout && (
           <ShareWorkoutScreen
@@ -1334,56 +1318,23 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <StreakVariantPicker
-        isOpen={showStreakVariants}
-        onClose={() => setShowStreakVariants(false)}
-        onSelect={handleStreakVariantSelect}
-        selectedVariant={streakVariant}
-        streakFreezes={currentUser?.streak_freezes || 0} />
-
-      <JoinWithCodeModal
-        open={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
-        currentUser={currentUser} />
-
-      <CreateSplitModal
-        isOpen={showSplitModal}
-        onClose={() => setShowSplitModal(false)}
-        currentUser={currentUser} />
+      <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} />
+      <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} />
+      <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
 
       {/* Workout Summary Modal */}
       <AnimatePresence>
         {summaryLog && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setSummaryLog(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 500,
-              background: 'rgba(0,0,0,0.7)',
-              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-              padding: '0 0 32px 0',
-            }}>
+            style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 32px 0' }}>
             <motion.div
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 60 }}
+              initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
               transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
               onClick={e => e.stopPropagation()}
-              style={{
-                background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-                border: '1px solid rgba(147,197,253,0.2)',
-                borderRadius: 20,
-                padding: '24px 20px',
-                width: 'calc(100% - 32px)',
-                maxWidth: 480,
-                maxHeight: '70vh',
-                overflowY: 'auto',
-                boxShadow: '0 -8px 40px rgba(0,0,0,0.6)',
-              }}>
-              {/* Header */}
+              style={{ background: 'linear-gradient(to bottom, #1e293b, #0f172a)', border: '1px solid rgba(147,197,253,0.2)', borderRadius: 20, padding: '24px 20px', width: 'calc(100% - 32px)', maxWidth: 480, maxHeight: '70vh', overflowY: 'auto', boxShadow: '0 -8px 40px rgba(0,0,0,0.6)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
                   <p style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1.2 }}>
@@ -1393,53 +1344,31 @@ export default function Home() {
                     {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}
                   </p>
                 </div>
-                <button
-                  onClick={() => setSummaryLog(null)}
-                  style={{
-                    background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10,
-                    width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: '#94a3b8', fontSize: 18, fontWeight: 700,
-                  }}>✕</button>
+                <button onClick={() => setSummaryLog(null)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8', fontSize: 18, fontWeight: 700 }}>✕</button>
               </div>
-
-              {/* Stats row */}
               <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                 {[
                   { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
                   { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
                   { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
                 ].map(stat => (
-                  <div key={stat.label} style={{
-                    flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 12,
-                    padding: '10px 8px', textAlign: 'center',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                  }}>
+                  <div key={stat.label} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '10px 8px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <p style={{ fontSize: 16, fontWeight: 800, color: '#93c5fd', margin: 0 }}>{stat.value}</p>
                     <p style={{ fontSize: 10, color: '#64748b', margin: '2px 0 0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
                   </div>
                 ))}
               </div>
-
-              {/* Exercises list */}
               {summaryLog.exercises?.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Exercises</p>
                   {summaryLog.exercises.map((ex, idx) => {
                     const exName = ex.name || ex.exercise_name || ex.title || `Exercise ${idx + 1}`;
-                    // Support sets as array of {reps, weight} or flat sets/reps/weight fields
                     const setsArr = Array.isArray(ex.sets) ? ex.sets : null;
                     const flatDetail = !setsArr && (ex.sets || ex.reps || ex.weight_kg || ex.weight)
-                      ? [
-                          ex.sets && `${ex.sets} sets`,
-                          ex.reps && `${ex.reps} reps`,
-                          (ex.weight_kg || ex.weight) && `${ex.weight_kg || ex.weight}kg`
-                        ].filter(Boolean).join(' · ')
+                      ? [ex.sets && `${ex.sets} sets`, ex.reps && `${ex.reps} reps`, (ex.weight_kg || ex.weight) && `${ex.weight_kg || ex.weight}kg`].filter(Boolean).join(' · ')
                       : null;
                     return (
-                      <div key={idx} style={{
-                        background: 'rgba(255,255,255,0.04)', borderRadius: 10,
-                        padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)',
-                      }}>
+                      <div key={idx} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>{exName}</p>
                         {setsArr && setsArr.length > 0 && (
                           <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -1450,24 +1379,18 @@ export default function Home() {
                             ))}
                           </div>
                         )}
-                        {flatDetail && (
-                          <p style={{ fontSize: 11, color: '#94a3b8', margin: '3px 0 0', fontWeight: 500 }}>{flatDetail}</p>
-                        )}
+                        {flatDetail && <p style={{ fontSize: 11, color: '#94a3b8', margin: '3px 0 0', fontWeight: 500 }}>{flatDetail}</p>}
                       </div>
                     );
                   })}
                 </div>
               )}
-
-              {/* Notes */}
               {summaryLog.notes && (
                 <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Notes</p>
                   <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>{summaryLog.notes}</p>
                 </div>
               )}
-
-              {/* Fallback if no detail data */}
               {!summaryLog.exercises?.length && !summaryLog.notes && !summaryLog.duration_minutes && (
                 <p style={{ fontSize: 13, color: '#64748b', textAlign: 'center', marginTop: 8 }}>No additional details recorded for this workout.</p>
               )}
@@ -1475,7 +1398,6 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </PullToRefresh>
   );
 }
