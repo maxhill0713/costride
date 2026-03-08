@@ -332,7 +332,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   key={index}
                   initial={{ opacity: 0, x: -18, scale: 0.97 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 28, delay: 0.07 + index * 0.055 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 24, mass: 0.9, delay: 0.06 + index * 0.045 }}
                   className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
                   {editingIndex === index ? (
                     <div className="space-y-2.5">
