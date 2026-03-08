@@ -330,23 +330,15 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToE
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {selectingActive ? (
-                        <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        </div>
-                      ) : (
-                        <>
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25">
-                            <Edit2 className="w-3.5 h-3.5 text-emerald-400" />
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); deleteSavedSplit(activeSaved.id, e); }}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
-                          </button>
-                        </>
-                      )}
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25">
+                        <Edit2 className="w-3.5 h-3.5 text-emerald-400" />
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteSavedSplit(activeSaved.id, e); }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-700/60 hover:bg-red-500/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-red-400" />
+                      </button>
                     </div>
                   </div>
                 );
