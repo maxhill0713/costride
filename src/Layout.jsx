@@ -118,41 +118,33 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
-      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden pb-[env(safe-area-inset-bottom)]" style={{ boxShadow: '0 -8px 16px rgba(0,0,0,0.08)' }}>
-          <div className="flex justify-around items-center py-2.5 px-2 h-[80px]">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex justify-around items-start pt-3 h-[90px] px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
-            const colorMap = {
-              'text-indigo-500': 'bg-indigo-100 text-indigo-600',
-              'text-blue-500': 'bg-blue-100 text-blue-600',
-              'text-green-500': 'bg-green-100 text-green-600',
-              'text-amber-500': 'bg-amber-100 text-amber-600',
-              'text-pink-500': 'bg-pink-100 text-pink-600',
-              'text-orange-500': 'bg-orange-100 text-orange-600',
-              'text-cyan-500': 'bg-cyan-100 text-cyan-600'
-            };
-            const bgClass = colorMap[item.color] || 'bg-slate-100 text-slate-600';
 
             return (
               <Link
                 key={item.page}
                 to={getTabLink(item)}
                 onClick={(e) => handleTabClick(item, e)}
-                aria-label={item.name}
-                className={`relative flex flex-col items-center justify-center gap-1.5 w-16 h-16 rounded-3xl transition-all duration-0 flex-shrink-0 ${
-                  isActive ? bgClass + ' scale-110' : 'text-slate-400'
-                }`}>
+                aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl hover:bg-white/5"
+                style={{ transition: 'transform 60ms ease-in-out' }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
+                onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
 
                 <div className="relative">
-                  {isActive && <div className="absolute inset-0 bg-current opacity-10 rounded-full blur-md" />}
-                  <item.icon className={`w-7 h-7 drop-shadow-sm ${isActive ? '' : 'text-slate-300'}`} strokeWidth={isActive ? 2.5 : 1} fill={isActive ? 'currentColor' : 'none'} />
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
-                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border border-white">
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
                      </div>
                   }
                 </div>
-                <span className={`text-[9px] font-bold leading-none ${isActive ? '' : 'text-slate-400'}`}>{item.name}</span>
+                <span className={`text-[10px] font-semibold leading-none ${isActive ? item.color : ''}`}>{item.name}</span>
               </Link>);
 
           })}
