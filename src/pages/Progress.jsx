@@ -142,8 +142,7 @@ function SplitPage({ currentUser, checkIns, onBack }) {
   );
 }
 
-// ─── Weekly Check-ins Chart ───────────────────────────────────────────────────
-function WeeklyCheckInsChart({ checkIns }) {
+// ─── Analytics sub-page ───────────────────────────────────────────────────────
   const data = React.useMemo(() => {
     const weeks = [];
     const now = new Date();
