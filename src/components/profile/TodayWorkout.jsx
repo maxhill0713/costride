@@ -308,7 +308,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 26, mass: 1.1 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
             style={{ overflow: 'hidden', transformOrigin: 'top' }}>
             <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Log your lifts to track progress</p>
 

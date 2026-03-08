@@ -122,7 +122,7 @@ export default function QuoteCarousel() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26, mass: 1.1 }}
             style={{ overflow: 'hidden' }}
             className="px-6 z-10 flex-shrink-0">
             <p className="text-slate-400 text-sm text-center leading-relaxed font-light py-3">
@@ -134,17 +134,17 @@ export default function QuoteCarousel() {
 
       {/* Chevron — always pinned below everything */}
       <div className="flex justify-center pb-2 pt-1 flex-shrink-0 z-10 relative" style={{ height: CHEVRON_H }}>
-        <button
+        <motion.button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1">
-          <ChevronDown
-            className="w-5 h-5"
-            style={{
-              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.55s ease',
-            }}
-          />
-        </button>
+          className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+          animate={!expanded ? { y: [0, 4, 0] } : {}}
+          transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+          <motion.div
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+            <ChevronDown className="w-5 h-5" />
+          </motion.div>
+        </motion.button>
       </div>
     </div>
   );
