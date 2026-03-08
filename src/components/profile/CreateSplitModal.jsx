@@ -114,7 +114,7 @@ function SmallInput({ value, onChange, placeholder }) {
   );
 }
 
-export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
+export default function CreateSplitModal({ isOpen, onClose, currentUser, openToEdit = false }) {
   // step: 'pick' | 'configure'
   const [step, setStep] = useState('pick');
   const [selectedPreset, setSelectedPreset] = useState(null);
