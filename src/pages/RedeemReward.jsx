@@ -67,49 +67,29 @@ const TABS = [
 
 // ── 3D Tab Button ─────────────────────────────────────────────────────────────
 function Tab3D({ tab, active, onClick }) {
-  const [pressed, setPressed] = useState(false);
   const Icon = tab.icon;
   return (
     <button
       onClick={onClick}
-      onMouseDown={() => setPressed(true)}
-      onMouseUp={() => setPressed(false)}
-      onMouseLeave={() => setPressed(false)}
-      onTouchStart={() => setPressed(true)}
-      onTouchEnd={() => setPressed(false)}
-      style={{
-        flex: 1,
-        padding: '14px 8px 12px',
-        borderRadius: 18,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 6,
-        position: 'relative',
-        overflow: 'hidden',
-        background: active ? tab.activeGrad : 'linear-gradient(180deg,rgba(20,28,60,0.9) 0%,rgba(10,14,36,0.95) 100%)',
-        border: active ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(255,255,255,0.07)',
-        borderBottom: pressed
-          ? active ? `1px solid ${tab.activeFloor}` : '1px solid rgba(0,0,0,0.6)'
-          : active ? `4px solid ${tab.activeFloor}` : '4px solid rgba(0,0,0,0.5)',
-        boxShadow: pressed
-          ? 'none'
-          : active
-            ? `0 3px 0 rgba(0,0,0,0.4), 0 8px 28px ${tab.activeGlow}, inset 0 1px 0 rgba(255,255,255,0.22)`
-            : '0 3px 0 rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
-        transform: pressed ? 'translateY(4px) scale(0.97)' : 'translateY(0) scale(1)',
-        transition: pressed ? 'transform 0.06s ease, box-shadow 0.06s ease' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1), box-shadow 0.18s ease',
-        cursor: 'pointer',
-      }}
+      className={`
+        inline-flex items-center justify-center gap-2 flex-1
+        whitespace-nowrap font-bold transition-all duration-100
+        focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50
+        py-2 rounded-lg text-xs h-9 px-3
+        active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu
+        ${active
+          ? `text-white border border-transparent`
+          : 'bg-slate-900/80 text-slate-400 border border-slate-700/60 shadow-[0_3px_0_0_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)]'
+        }
+      `}
+      style={active ? {
+        background: tab.activeGrad,
+        boxShadow: `0 3px 0 0 ${tab.activeFloor}, 0 8px 20px ${tab.activeGlow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+        border: '1px solid transparent',
+      } : {}}
     >
-      {/* Shimmer sweep on active */}
-      {active && (
-        <div style={{ position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',borderRadius:'inherit' }}>
-          <div style={{ position:'absolute',top:0,bottom:0,width:'40%',background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',animation:'rr-shimmer 3s ease-in-out infinite' }}/>
-        </div>
-      )}
-      <Icon style={{ width:20,height:20,color:active?'#fff':'rgba(148,163,184,0.55)',filter:active?`drop-shadow(0 0 8px rgba(${tab.accentRgb},0.7))`:'none',position:'relative',zIndex:1 }} strokeWidth={active?2.5:2}/>
-      <span style={{ fontSize:11,fontWeight:800,letterSpacing:'-0.01em',color:active?'#fff':'rgba(100,116,139,0.7)',position:'relative',zIndex:1 }}>{tab.label}</span>
+      <Icon className="w-4 h-4" strokeWidth={active ? 2.5 : 2} />
+      {tab.label}
     </button>
   );
 }
