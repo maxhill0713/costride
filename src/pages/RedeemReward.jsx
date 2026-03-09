@@ -191,7 +191,7 @@ export default function RedeemReward() {
                 ? 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-white border-transparent shadow-[0_5px_0_0_#b45309,0_8px_20px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]'
                 : 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'
             }`}>
-            <Gift className="w-5 h-5" />
+            <Gift className="w-4 h-4" />
             Rewards
           </button>
         </div>
