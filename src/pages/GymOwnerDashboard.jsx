@@ -6,9 +6,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import {
   TrendingUp, TrendingDown, Users, Trophy, Calendar, Star, Target, Activity,
-  Plus, Edit, Image as ImageIcon, Dumbbell, CheckCircle, Download, Pencil,
-  X, Crown, Trash2, Clock, Gift, ChevronRight, Zap, BarChart2, Shield,
-  Eye, Menu, LayoutDashboard, Flame, FileText, BarChart3, Settings,
+  Plus, Image as ImageIcon, Dumbbell, CheckCircle, Download, Pencil,
+  X, Crown, Trash2, Clock, Gift, Zap, BarChart2, Shield,
+  Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
   LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -114,7 +114,6 @@ const Tag = ({ children, color = 'blue' }) => {
   return <span className="text-xs px-2 py-0.5 rounded-md font-medium" style={{ background: bg, color: text, border: `1px solid ${border}` }}>{children}</span>;
 };
 
-const HR = () => <div className="my-5" style={{ borderTop: '1px solid rgba(59,130,246,0.08)' }} />;
 
 const Empty = ({ icon: Icon, label }) => (
   <div className="py-10 text-center">
