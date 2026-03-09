@@ -411,13 +411,19 @@ export default function Progress() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-3">
-        {cards.map((card) => (
-          <TallCard
+        {cards.map((card, index) => (
+          <motion.div
             key={card.id}
-            {...card}
-            as={card.isLink ? 'link' : 'button'}
-            onClick={card.isLink ? undefined : () => setView(card.id)}
-          />
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: index * 0.06 }}
+          >
+            <TallCard
+              {...card}
+              as={card.isLink ? 'link' : 'button'}
+              onClick={card.isLink ? undefined : () => setView(card.id)}
+            />
+          </motion.div>
         ))}
       </div>
     </div>
