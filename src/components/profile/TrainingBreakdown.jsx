@@ -171,12 +171,12 @@ export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes
       {/* Insights */}
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg p-3 bg-cyan-500/8 border border-cyan-500/15">
-          <p className="text-[10px] text-cyan-400/80 font-semibold mb-0.5">Strength Growth</p>
-          <p className="text-xs font-bold text-white">+15% <span className="text-cyan-400">(Chest)</span></p>
+          <p className="text-[10px] text-cyan-400/80 font-semibold mb-0.5">Volume Tracked</p>
+          <p className="text-xs font-bold text-white">{workoutLogs?.length || 0} <span className="text-cyan-400">sessions</span></p>
         </div>
         <div className="rounded-lg p-3 bg-amber-500/8 border border-amber-500/15">
-          <p className="text-[10px] text-amber-400/80 font-semibold mb-0.5">Peak Lift</p>
-          <p className="text-xs font-bold text-white">405 lbs PR <span className="text-amber-400">(DL)</span></p>
+          <p className="text-[10px] text-amber-400/80 font-semibold mb-0.5">Avg Intensity</p>
+          <p className="text-xs font-bold text-white">{chartData[chartData.length - 1]?.rpe || '8.0'} <span className="text-amber-400">RPE</span></p>
         </div>
       </div>
     </div>
