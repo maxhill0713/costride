@@ -307,8 +307,16 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
     </div>
   );
 
-  if (As === 'link') return <Link to={href} className="block" {...events}>{inner}</Link>;
-  return <button className="w-full" onClick={onClick} {...events}>{inner}</button>;
+  if (As === 'link') return (
+    <motion.div whileTap={{ scale: 0.97, y: 2 }} transition={{ duration: 0.1 }}>
+      <Link to={href} className="block" {...events}>{inner}</Link>
+    </motion.div>
+  );
+  return (
+    <motion.button className="w-full" onClick={onClick} whileTap={{ scale: 0.97, y: 2 }} transition={{ duration: 0.1 }} {...events}>
+      {inner}
+    </motion.button>
+  );
 }
 
 // ─── Main Hub ──────────────────────────────────────────────────────────────────
