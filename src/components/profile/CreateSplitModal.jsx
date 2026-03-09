@@ -658,6 +658,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         glowColor={def.glowColor}
                       >
                         <div className="relative flex items-center gap-4 p-4">
+                          {/* Active indicator — top-right corner badge */}
+                          {isActive && !selectingActive && (
+                            <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 flex items-center justify-center rounded-md bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_1px_0_0_#065f46]">
+                              <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                            </div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white">{def.name}</p>
                             <p className="text-[11px] text-slate-400 mt-0.5">{def.description}</p>
@@ -670,10 +676,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           {selectingActive ? (
                             <div className={`w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0 transition-all ${isActive ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]' : 'bg-slate-800/70 border border-slate-600/50'}`}>
                               {isActive && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
-                            </div>
-                          ) : isActive ? (
-                            <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)] flex-shrink-0">
-                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                             </div>
                           ) : (
                             <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
@@ -697,6 +699,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         glowColor="rgba(99,102,241,0.35)"
                       >
                         <div className="relative flex items-center gap-4 p-4">
+                          {/* Active indicator — top-right corner badge */}
+                          {isActive && !selectingActive && (
+                            <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 flex items-center justify-center rounded-md bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_1px_0_0_#065f46]">
+                              <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                            </div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
                             <p className="text-[11px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
@@ -711,14 +719,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               {isActive && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
                             </div>
                           ) : (
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              {isActive && (
-                                <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]">
-                                  <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-                                </div>
-                              )}
-                              <ChevronRight className="w-5 h-5 text-slate-500" />
-                            </div>
+                            <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                           )}
                         </div>
                       </SplitCard>
