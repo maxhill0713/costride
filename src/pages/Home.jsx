@@ -18,15 +18,9 @@ import { isToday, differenceInDays, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
-// ─────────────────────────────────────────────
-// STREAK ICON URLS
-// ─────────────────────────────────────────────
 const POSE_1_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 const POSE_2_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/760358372_STREAKICON21.png';
 
-// ─────────────────────────────────────────────
-// CHECK-IN BUTTON STYLES — injected once
-// ─────────────────────────────────────────────
 const CHECK_IN_CSS = `
   @keyframes ci-ripple {
     0%   { transform: scale(0); opacity: 0.55; }
@@ -56,9 +50,6 @@ function injectCheckInStyles() {
   document.head.appendChild(s);
 }
 
-// ─────────────────────────────────────────────
-// INLINE CHECK-IN BUTTON COMPONENT
-// ─────────────────────────────────────────────
 function CheckInButton({ gym, onCheckInSuccess }) {
   const queryClient = useQueryClient();
   const [pressed, setPressed]   = useState(false);
@@ -115,13 +106,11 @@ function CheckInButton({ gym, onCheckInSuccess }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* 3D floor */}
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 18,
         background: isSuccess ? '#15803d' : '#1a3fa8',
         transform: 'translateY(5px)',
       }} />
-      {/* Button face */}
       <button
         ref={btnRef}
         onMouseDown={handlePress}
@@ -196,9 +185,6 @@ function CheckInButton({ gym, onCheckInSuccess }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// WEB AUDIO HELPERS
-// ─────────────────────────────────────────────
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   const osc  = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -257,9 +243,6 @@ function soundTransition(ctx) {
   osc.start(now); osc.stop(now + 0.35);
 }
 
-// ─────────────────────────────────────────────
-// CSS KEYFRAMES — injected once into the document
-// ─────────────────────────────────────────────
 const STREAK_KEYFRAMES = `
   @keyframes streakBounceIn {
     0%   { transform: scale(0.5) translateY(30px); opacity: 0; }
@@ -325,9 +308,6 @@ function injectStreakStyles() {
   document.head.appendChild(style);
 }
 
-// ─────────────────────────────────────────────
-// STREAK ANIMATION HELPERS
-// ─────────────────────────────────────────────
 function trigAnim(el, name, dur, easing) {
   if (!el) return;
   el.style.animation = 'none';
@@ -843,34 +823,17 @@ export default function Home() {
                   const bounce        = justLoggedDay === day;
                   const isTodayCircle = day === todayDay;
 
-                  // ── CIRCLE STATE RULES ──
-                  // • Logged days                        → blue ✓
-                  // • Past rest days                     → green leaf
-                  // • Past missed training days          → red ✗
-                  // • Days before user joined this week  → grey (shows planned workout on tap)
-                  // • Today / future training days       → grey empty circle
-                  //
-                  // "Before join" days are treated like future days — the user simply
-                  // wasn't on the app yet, so they can't have missed anything.
-
-                  // Work out which day-of-week the user joined (1=Mon…7=Sun), if this week.
                   const joinDate = currentUser?.created_date || currentUser?.created_at || null;
                   const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
                   const joinedThisWeek = joinDate && new Date(joinDate) >= mondayThisWeek;
                   const joinDayNum = joinedThisWeek
                     ? (() => { const d = new Date(joinDate).getDay(); return d === 0 ? 7 : d; })()
-                    : null; // null means joined before this week — all past days are fair game
+                    : null;
 
                   const isPast   = day < todayDay;
-
-                  // Days before the user joined this week: treat as "pre-join" (grey, no red)
                   const isPreJoin = joinDayNum !== null && day < joinDayNum;
-
                   const isInCurrentSplit = trainingDays.includes(day);
-                  // Rest day = not in split. Logged days are never rest days.
                   const isRestDay = done ? false : !isInCurrentSplit;
-
-                  // Only show red ✗ for past training days the user could actually have done
                   const isMissed = !isRestDay && !done && isPast && !isPreJoin;
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
@@ -916,12 +879,10 @@ export default function Home() {
                   const getPopupLabel = () => {
                     if (isRestDay) return 'Rest Day';
                     if (isMissed) return 'No Workout';
-                    // Always use the logged workout name for completed days.
                     if (done && workoutLog) {
                       return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                     }
                     if (done) return 'Workout';
-                    // For unlogged days (future OR pre-join), show the planned workout name.
                     const customTypes = currentUser?.custom_workout_types;
                     const splitDay = customTypes
                       ? Array.isArray(customTypes)
@@ -1063,7 +1024,20 @@ export default function Home() {
                                 position: 'absolute', top: ARROW_H + 10, left: 14, right: 14, bottom: 10,
                                 display: 'flex', flexDirection: 'column', gap: 2,
                               }}>
-                                <span style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', letterSpacing: '0.01em', lineHeight: 1.2, textShadow: '0 1px 3px rgba(0,0,0,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <span style={{
+                                  fontSize: 19.3,
+                                  fontWeight: 800,
+                                  color: '#ffffff',
+                                  letterSpacing: '0.01em',
+                                  lineHeight: 1.2,
+                                  textShadow: '0 1px 3px rgba(0,0,0,0.35)',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  textAlign: 'center',
+                                  width: '100%',
+                                  display: 'block',
+                                }}>
                                   {getPopupLabel()}
                                 </span>
                                 <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1 }}>
