@@ -642,5 +642,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     </AnimatePresence>
     </>
     );
+}
 
 }
