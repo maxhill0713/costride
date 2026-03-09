@@ -148,7 +148,7 @@ function SplitPage({ currentUser, checkIns, onBack }) {
 function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   return (
     <SubPage title="Analytics" onBack={onBack}>
-      <TrainingBreakdown />
+      <TrainingBreakdown workoutLogs={workoutLogs} customWorkoutTypes={currentUser?.custom_workout_types} />
       <div className="mt-6">
         <ExerciseInsights workoutLogs={workoutLogs} workoutSplit={currentUser?.custom_workout_types} trainingDays={currentUser?.training_days} />
       </div>
