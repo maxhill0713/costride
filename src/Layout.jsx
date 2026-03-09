@@ -157,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
 
               {/* Side Navigation for Desktop */}
             {!hideNavigation &&
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 backdrop-blur-xl border-r flex-col items-center py-8 z-50 shadow-xl" style={{background:'rgba(2,4,10,0.97)',borderColor:'rgba(59,130,246,0.18)'}}>
         <Link to={createPageUrl('Gyms')} className="mb-8 hover:animate-ios-spring-in">
           <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
             <span className="text-2xl font-black text-white">G</span>
