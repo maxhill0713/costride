@@ -999,7 +999,7 @@ export default function Home() {
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
                           // CHANGE 1: Slightly darker blue tones for popup backgrounds
-                          const solidColor = isRestDay && done ? '#14532d' : isRestDay ? '#151c2a' : done ? '#2a4d8f' : isMissed ? '#7f1d1d' : isTodayCircle ? '#1f2e45' : '#151c2a';
+                          const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
                             `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
