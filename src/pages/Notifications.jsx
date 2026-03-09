@@ -95,8 +95,8 @@ export default function Notifications() {
       if (currentUser.total_check_ins >= 10 && !achieved.includes('10_visits')) {
         milestones.push({
           id: '10_visits',
-          title: t('notifications.milestone10'),
-          message: t('notifications.milestone10Msg'),
+          title: '10 Visits! 🎯',
+          message: 'You\'ve checked in 10 times. Keep it up!',
           icon: '🎯'
         });
       }
@@ -105,8 +105,8 @@ export default function Notifications() {
       if (currentUser.current_streak >= 30 && !achieved.includes('30_day_streak')) {
         milestones.push({
           id: '30_day_streak',
-          title: t('notifications.streak30'),
-          message: t('notifications.streak30Msg'),
+          title: '30-Day Streak! 🔥',
+          message: 'Incredible! You\'ve maintained a 30-day streak.',
           icon: '🔥'
         });
       }
@@ -117,11 +117,11 @@ export default function Notifications() {
         const years = Math.floor(daysSinceJoined / 365);
         
         if (years >= 1 && !achieved.includes(`anniversary_${years}`)) {
-          const plural = years > 1 ? t('notifications.years') : t('notifications.year');
+          const plural = years > 1 ? 'years' : 'year';
           milestones.push({
             id: `anniversary_${years}`,
-            title: t('notifications.anniversary', { years, plural }),
-            message: t('notifications.anniversaryMsg', { years, plural, gym: currentUser.gym_location || 'your gym' }),
+            title: `${years} ${plural} at the gym! 🎉`,
+            message: `You've been training at ${currentUser.gym_location || 'your gym'} for ${years} ${plural}. Amazing dedication!`,
             icon: '🎉'
           });
         }
