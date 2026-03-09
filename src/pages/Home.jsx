@@ -999,7 +999,7 @@ export default function Home() {
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
                           // CHANGE 1: Slightly darker blue tones for popup backgrounds
-                          const solidColor = isRestDay && done ? '#14532d' : isRestDay ? '#151c2a' : done ? '#1e3a6e' : isMissed ? '#7f1d1d' : isTodayCircle ? '#192236' : '#151c2a';
+                          const solidColor = isRestDay && done ? '#14532d' : isRestDay ? '#151c2a' : done ? '#2a4d8f' : isMissed ? '#7f1d1d' : isTodayCircle ? '#1f2e45' : '#151c2a';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
                             `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
@@ -1074,7 +1074,7 @@ export default function Home() {
                                     style={{
                                       marginTop: 4, width: '100%',
                                       // CHANGE 2: Reduced vertical padding by ~8% (9px -> 8.3px, rounded to 8px top/bottom)
-                                      padding: '8px 0',
+                                      padding: '7px 0',
                                       borderRadius: 9,
                                       background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
                                       border: 'none', borderBottom: '3px solid #1d4ed8',
