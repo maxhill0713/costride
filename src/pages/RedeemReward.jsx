@@ -165,7 +165,9 @@ export default function RedeemReward() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)] pb-24">
       <div className="max-w-6xl mx-auto px-3 md:px-4 py-4">
         <div className="mb-6 grid grid-cols-3 gap-3">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.95, y: 2 }}
+            transition={{ duration: 0.1 }}
             onClick={() => setActiveSection('weekly')}
             className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'weekly'
