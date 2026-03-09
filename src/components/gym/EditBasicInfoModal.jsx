@@ -15,6 +15,19 @@ export default function EditBasicInfoModal({ open, onClose, gym, onSave, isLoadi
     price: gym?.price || ''
   });
 
+  React.useEffect(() => {
+    if (open && gym) {
+      setFormData({
+        name: gym.name || '',
+        type: gym.type || '',
+        address: gym.address || '',
+        city: gym.city || '',
+        postcode: gym.postcode || '',
+        price: gym.price || ''
+      });
+    }
+  }, [open, gym?.id]);
+
   const gymTypes = ['powerlifting', 'bodybuilding', 'crossfit', 'boxing', 'mma', 'general'];
 
   const handleSubmit = () => {

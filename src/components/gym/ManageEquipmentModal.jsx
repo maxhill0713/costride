@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, Plus, Dumbbell, Search, ChevronDown, ChevronUp, CheckCircle, Sparkles } from 'lucide-react';
 

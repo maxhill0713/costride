@@ -30,6 +30,10 @@ const availableAmenities = [
 export default function ManageAmenitiesModal({ open, onClose, amenities = [], onSave, isLoading }) {
   const [selectedAmenities, setSelectedAmenities] = useState(amenities);
 
+  React.useEffect(() => {
+    if (open) setSelectedAmenities(amenities);
+  }, [open, JSON.stringify(amenities)]);
+
   const handleToggle = (amenity) => {
     if (selectedAmenities.includes(amenity)) {
       setSelectedAmenities(selectedAmenities.filter(a => a !== amenity));
