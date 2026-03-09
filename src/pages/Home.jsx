@@ -1089,14 +1089,14 @@ export default function Home() {
                                     View Summary
                                   </button>
                                 )}
-                                {!done && !isRestDay && workoutLog && (
+                                {!done && !isRestDay && plannedWorkoutData && (
                                   <button
                                     data-bubble="true"
                                     onPointerDown={e => e.stopPropagation()}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
-                                      setPlannedWorkout(workoutLog);
+                                      setPlannedWorkout(plannedWorkoutData);
                                     }}
                                     onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
