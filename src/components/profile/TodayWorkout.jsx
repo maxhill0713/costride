@@ -128,9 +128,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const handleEdit = (index, exercise) => {
     setEditingIndex(index);
     const setsRepsStr = exercise.setsReps || '';
-    const parts = setsRepsStr.split('x');
-    setEditSets(parts[0] || '');
-    setEditReps(parts[1] || '');
+    const parts = setsRepsStr.split('x').filter(p => p);
+    setEditSets(parts[0] || exercise.sets || '');
+    setEditReps(parts[1] || exercise.reps || '');
     setEditWeight(exercise.weight || '');
   };
 
