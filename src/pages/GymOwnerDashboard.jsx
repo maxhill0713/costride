@@ -30,11 +30,12 @@ import QRScanner from '../components/gym/QRScanner';
 import CreatePollModal from '../components/polls/CreatePollModal';
 import QRCode from 'react-qr-code';
 
-// ── Design tokens — matched to app's dark #02040a / #0d2360 palette ──────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
+// Sidebar + header now match the deep navy blue of the card/panel palette
 const BG = {
   page:    'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
-  sidebar: 'rgba(2,4,10,0.97)',
-  header:  'rgba(2,4,10,0.97)',
+  sidebar: 'linear-gradient(180deg, #0a1a4a 0%, #060d2e 100%)',
+  header:  'linear-gradient(90deg, #0a1a4a 0%, #060d2e 100%)',
   panel:   'linear-gradient(145deg, rgba(13,35,96,0.35), rgba(2,4,10,0.7))',
   card:    'linear-gradient(135deg, rgba(13,35,96,0.45) 0%, rgba(2,4,10,0.85) 100%)',
   subcard: 'rgba(13,35,96,0.25)',
@@ -46,11 +47,11 @@ const BORDER = {
 };
 
 const NAV = [
-  { id: 'overview',    label: 'Overview',    icon: LayoutDashboard },
-  { id: 'members',     label: 'Members',     icon: Users },
-  { id: 'content',     label: 'Content',     icon: FileText },
-  { id: 'analytics',   label: 'Analytics',   icon: BarChart3 },
-  { id: 'gym',         label: 'Gym Settings',icon: Settings },
+  { id: 'overview',  label: 'Overview',     icon: LayoutDashboard },
+  { id: 'members',   label: 'Members',       icon: Users },
+  { id: 'content',   label: 'Content',       icon: FileText },
+  { id: 'analytics', label: 'Analytics',     icon: BarChart3 },
+  { id: 'gym',       label: 'Gym Settings',  icon: Settings },
 ];
 
 // ── Shared components ─────────────────────────────────────────────────────────
@@ -744,7 +745,7 @@ export default function GymOwnerDashboard() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t"
-        style={{background:'rgba(2,4,10,0.97)',backdropFilter:'blur(16px)',borderColor:BORDER.active,paddingBottom:'env(safe-area-inset-bottom)'}}>
+        style={{background:'linear-gradient(180deg, #0a1a4a 0%, #060d2e 100%)',backdropFilter:'blur(16px)',borderColor:BORDER.active,paddingBottom:'env(safe-area-inset-bottom)'}}>
         <div className="flex items-center justify-around" style={{height:'64px'}}>
           {NAV.map(item=>{
             const active=tab===item.id;
@@ -775,7 +776,7 @@ export default function GymOwnerDashboard() {
                 <span className="truncate">{selectedGym?.name}</span><ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${gymOpen?'rotate-180':''}`}/>
               </button>
               {gymOpen && (
-                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:'rgba(2,4,10,0.98)',border:`1px solid ${BORDER.active}`}}>
+                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:'rgba(6,13,46,0.98)',border:`1px solid ${BORDER.active}`}}>
                   {approvedGyms.map(g=>(<button key={g.id} onClick={()=>{setSelectedGym(g);setGymOpen(false);}} className="w-full text-left px-3 py-2.5 text-xs font-semibold transition-all hover:brightness-125" style={{color:selectedGym?.id===g.id?'#60a5fa':'#93b4e8',background:selectedGym?.id===g.id?'rgba(59,130,246,0.1)':'transparent'}}>{g.name}</button>))}
                 </div>
               )}
@@ -783,11 +784,11 @@ export default function GymOwnerDashboard() {
           )}
         </div>
 
-        <nav className="flex-1 px-2.5 py-4 space-y-0.5 overflow-y-auto" style={{background:BG.sidebar,backdropFilter:'blur(16px)'}}>
+        <nav className="flex-1 px-2.5 py-4 space-y-0.5 overflow-y-auto">
           {NAV.map(item=>{const active=tab===item.id;return(
             <button key={item.id} onClick={()=>setTab(item.id)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
-              style={{background:active?'rgba(59,130,246,0.14)':'transparent',color:active?'#fff':'#6b87b8',border:active?`1px solid ${BORDER.active}`:'1px solid transparent'}}>
+              style={{background:active?'rgba(59,130,246,0.18)':'transparent',color:active?'#fff':'#6b87b8',border:active?`1px solid ${BORDER.active}`:'1px solid transparent'}}>
               <item.icon className="w-4 h-4 flex-shrink-0" style={{color:active?'#60a5fa':'inherit'}}/>
               {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
               {!collapsed && active && <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"/>}
@@ -883,14 +884,14 @@ export default function GymOwnerDashboard() {
       <CreatePollModal       open={modal==='poll'}       onClose={closeModal} onSave={d=>createPollM.mutate(d)} isLoading={createPollM.isPending}/>
 
       <AlertDialog open={modal==='deleteGym'} onOpenChange={v=>!v&&closeModal()}>
-        <AlertDialogContent style={{background:'rgba(2,4,10,0.98)',borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
+        <AlertDialogContent style={{background:'rgba(6,13,46,0.98)',borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
           <AlertDialogHeader><AlertDialogTitle className="text-white flex items-center gap-2"><Trash2 className="w-5 h-5 text-red-400"/>Delete Gym Permanently?</AlertDialogTitle><AlertDialogDescription className="text-sm" style={{color:'#6b87b8'}}>Deletes <span className="font-bold text-white">{selectedGym?.name}</span> and all check-ins, classes, rewards and member data. <span className="text-red-400 font-semibold">Cannot be undone.</span></AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter><AlertDialogCancel style={{background:BG.subcard,color:'#93b4e8',borderColor:BORDER.subtle}}>Cancel</AlertDialogCancel><AlertDialogAction onClick={()=>deleteGymM.mutate()} disabled={deleteGymM.isPending} className="bg-red-600 hover:bg-red-700 text-white">{deleteGymM.isPending?'Deleting…':'Delete Permanently'}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={modal==='deleteAccount'} onOpenChange={v=>!v&&closeModal()}>
-        <AlertDialogContent style={{background:'rgba(2,4,10,0.98)',borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
+        <AlertDialogContent style={{background:'rgba(6,13,46,0.98)',borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
           <AlertDialogHeader><AlertDialogTitle className="text-white flex items-center gap-2"><Trash2 className="w-5 h-5 text-red-400"/>Delete Account?</AlertDialogTitle><AlertDialogDescription className="text-sm" style={{color:'#6b87b8'}}>Deletes your account, all gyms, and personal data. <span className="text-red-400 font-semibold">Cannot be undone.</span></AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter><AlertDialogCancel style={{background:BG.subcard,color:'#93b4e8',borderColor:BORDER.subtle}}>Cancel</AlertDialogCancel><AlertDialogAction onClick={()=>deleteAccountM.mutate()} disabled={deleteAccountM.isPending} className="bg-red-700 hover:bg-red-800 text-white">{deleteAccountM.isPending?'Deleting…':'Delete Account'}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
@@ -898,7 +899,7 @@ export default function GymOwnerDashboard() {
 
       {modal==='qrCode' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:'rgba(2,4,10,0.9)',backdropFilter:'blur(8px)'}}>
-          <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl" style={{background:'rgba(2,4,10,0.98)',border:`1px solid ${BORDER.active}`}}>
+          <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl" style={{background:'rgba(6,13,46,0.98)',border:`1px solid ${BORDER.active}`}}>
             <div className="flex items-center justify-between mb-6"><h3 className="text-lg font-black text-white">Gym Join QR Code</h3><button onClick={closeModal} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:BG.subcard,color:'#94a3b8',border:`1px solid ${BORDER.subtle}`}}><X className="w-4 h-4"/></button></div>
             <div id="qr-fullscreen" className="flex justify-center p-6 rounded-2xl bg-white mb-5"><QRCode value={`${window.location.origin}${createPageUrl('Gyms')}?joinCode=${selectedGym?.join_code}`} size={260} level="H"/></div>
             <p className="text-center text-sm mb-5" style={{color:'#6b87b8'}}>Join code: <span className="font-black text-white tracking-widest">{selectedGym?.join_code}</span></p>
