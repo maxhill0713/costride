@@ -119,11 +119,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     }
   });
 
+  const isDefaultWorkout = () => {
+    const currentWorkoutName = todayWorkout?.name;
+    const defaultNames = ['Chest', 'Back', 'Legs', 'Arms', 'Shoulders', 'Full Body', 'Upper', 'Lower', 'Push', 'Pull'];
+    return defaultNames.some(name => currentWorkoutName?.toLowerCase().includes(name.toLowerCase()));
+  };
+
   const handleEdit = (index, exercise) => {
     setEditingIndex(index);
-    setEditReps(exercise.setsReps || '');
+    const setsRepsStr = exercise.setsReps || '';
+    const parts = setsRepsStr.split('x');
+    setEditSets(parts[0] || '');
+    setEditReps(parts[1] || '');
     setEditWeight(exercise.weight || '');
-    setEditSets([]);
   };
 
   const handleSave = (index) => {
