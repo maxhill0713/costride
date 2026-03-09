@@ -350,32 +350,54 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               animate={{}}
               className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_44px_12px_44px_auto_auto] gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
                   {editingIndex === index ?
-              <div className="space-y-2.5">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-semibold text-white">{exercise.exercise}</div>
-                        {lastWorkout?.exercises?.[index] &&
-                  <div className="text-xs text-slate-400 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
-                  }
-                      </div>
-                      <div className="flex gap-2 items-end">
-                        <div className="flex-1">
-                          <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Sets x Reps</label>
-                          <Input type="text" placeholder="e.g. 3x10" value={editReps} onChange={(e) => setEditReps(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
-                        </div>
-                        <div className="flex-1">
-                          <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Weight</label>
-                          <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50" />
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button onClick={() => handleSave(index)} size="sm" disabled={updateWorkoutMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#c2410c,0_8px_20px_rgba(194,65,12,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
-                          <Check className="w-3 h-3" />
-                        </Button>
-                        <Button onClick={handleCancel} size="sm" variant="ghost" className="flex-1 text-slate-400 hover:text-white h-7">
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div> :
+                  <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                       <div className="flex items-center justify-between mb-3">
+                         <div className="flex items-center gap-2">
+                           <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 transition-colors">
+                             <ChevronLeft className="w-4 h-4" />
+                           </button>
+                           <div className="text-sm font-bold text-white">{exercise.exercise}</div>
+                         </div>
+                         {lastWorkout?.exercises?.[index] &&
+                   <div className="text-xs text-slate-400 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
+                   }
+                       </div>
+
+                       {isDefaultWorkout() ? (
+                         <div className="space-y-2.5">
+                           <div>
+                             <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
+                             <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="space-y-2.5">
+                           <div className="flex gap-2">
+                             <div className="flex-1">
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Sets</label>
+                               <Input type="text" placeholder="e.g. 3" value={editSets} onChange={(e) => setEditSets(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                             </div>
+                             <div className="flex-1">
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Reps</label>
+                               <Input type="text" placeholder="e.g. 10" value={editReps} onChange={(e) => setEditReps(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                             </div>
+                             <div className="flex-1">
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
+                               <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                             </div>
+                           </div>
+                         </div>
+                       )}
+
+                       <div className="flex gap-1 mt-3">
+                         <Button onClick={() => handleSave(index)} size="sm" disabled={updateWorkoutMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#c2410c,0_8px_20px_rgba(194,65,12,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
+                           <Check className="w-3 h-3" />
+                         </Button>
+                         <Button onClick={handleCancel} size="sm" variant="ghost" className="flex-1 text-slate-400 hover:text-white h-7">
+                           <X className="w-3 h-3" />
+                         </Button>
+                       </div>
+                     </div> :
 
               <>
                       <div className="">
