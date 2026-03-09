@@ -755,7 +755,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center gap-2">
               <div className="flex items-center -space-x-2">
                 {(() => {
-                  const friendCheckInUsers = checkInUsers.filter((u) => friendIds.includes(u.id));
+                  const friendCheckInUsers = checkInUsers.filter((u) => friendIdList.includes(u.id));
                   const displayedUsers = friendCheckInUsers.slice(0, 5);
                   const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                   return (
