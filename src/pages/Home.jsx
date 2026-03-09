@@ -1088,6 +1088,35 @@ export default function Home() {
                                     View Summary
                                   </button>
                                 )}
+                                {!done && !isRestDay && workoutLog && (
+                                  <button
+                                    data-bubble="true"
+                                    onPointerDown={e => e.stopPropagation()}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveCircleDay(null);
+                                      setPlannedWorkout(workoutLog);
+                                    }}
+                                    onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
+                                    onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
+                                    onMouseLeave={e => e.currentTarget.style.transform = ''}
+                                    onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
+                                    onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
+                                    style={{
+                                      marginTop: 4, width: '100%',
+                                      padding: '7px 0',
+                                      borderRadius: 9,
+                                      background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                                      border: 'none', borderBottom: '3px solid #1d4ed8',
+                                      color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                                      letterSpacing: '0.03em', textAlign: 'center',
+                                      boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
+                                      transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
+                                      touchAction: 'manipulation',
+                                    }}>
+                                    View Workout
+                                  </button>
+                                )}
                               </div>
                             </motion.div>
                           );
