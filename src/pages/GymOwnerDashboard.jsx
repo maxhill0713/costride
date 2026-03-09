@@ -870,7 +870,7 @@ export default function GymOwnerDashboard() {
 
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
-        style={{width:collapsed?64:224,background:N[900],borderRight:'1px solid rgba(59,130,246,0.1)'}}>
+        style={{width:collapsed?64:224,background:'rgba(2,6,23,0.97)',borderRight:'1px solid rgba(255,255,255,0.07)'}}>
 
         {/* Brand */}
         <div className="px-4 py-5 border-b flex-shrink-0" style={{borderColor:'rgba(59,130,246,0.1)'}}>
@@ -1027,7 +1027,7 @@ export default function GymOwnerDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 pb-24 md:pb-6" style={{background:N[950]}}>
+        <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 pb-24 md:pb-6" style={{background:'transparent'}}>
           <div className="max-w-[1400px] mx-auto">
             {TABS[tab] || TABS.overview}
           </div>
