@@ -78,12 +78,12 @@ import PrivacySettings from './pages/PrivacySettings';
 import Profile from './pages/Profile';
 import ProfileSettings from './pages/ProfileSettings';
 import Progress from './pages/Progress';
-import RedeemReward from './pages/RedeemReward';
 import Routines from './pages/Routines';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import UserProfile from './pages/UserProfile';
+import RedeemReward from './pages/RedeemReward';
 import __Layout from './Layout.jsx';
 
 
@@ -119,12 +119,12 @@ export const PAGES = {
     "Profile": Profile,
     "ProfileSettings": ProfileSettings,
     "Progress": Progress,
-    "RedeemReward": RedeemReward,
     "Routines": Routines,
     "Search": Search,
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
     "UserProfile": UserProfile,
+    "RedeemReward": RedeemReward,
 }
 
 export const pagesConfig = {

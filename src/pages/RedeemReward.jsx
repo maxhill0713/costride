@@ -166,7 +166,7 @@ export default function RedeemReward() {
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveSection('weekly')}
-            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
+            className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'weekly'
                 ? 'bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent shadow-[0_5px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]'
                 : 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'
