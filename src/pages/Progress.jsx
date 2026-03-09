@@ -344,7 +344,6 @@ export default function Progress() {
   const activeGoals    = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
   const primaryGymId   = currentUser?.primary_gym_id;
-  const weeklyGoal     = currentUser?.weekly_goal || 4;
 
   const cards = [
     {
