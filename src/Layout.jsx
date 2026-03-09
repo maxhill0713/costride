@@ -70,9 +70,11 @@ export default function Layout({ children, currentPageName }) {
       }, 1000);
     } else if (restTimer === 0 && isTimerActive) {
       setIsTimerActive(false);
+      // Vibrate and play sound when timer completes
       if ('vibrate' in navigator) {
         navigator.vibrate([200, 100, 200]);
       }
+      // Play beep sound
       const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURU=');
       audio.play().catch(() => {});
     }
@@ -99,6 +101,7 @@ export default function Layout({ children, currentPageName }) {
   { name: 'Challenges', icon: Gift, page: 'RedeemReward', color: 'text-amber-500' },
   { name: 'Profile', icon: Crown, page: 'Profile', color: 'text-pink-500' }];
 
+
   // Get preserved link for tab
   const getTabLink = (item) => {
     return tabHistory[item.page] || createPageUrl(item.page) + (item.params || '');
@@ -113,20 +116,6 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
-
-      {/* Bar chart animation styles */}
-      <style>{`
-        @keyframes barsUp {
-          0%   { transform: scaleY(1);   transform-origin: bottom; }
-          30%  { transform: scaleY(1.35); transform-origin: bottom; }
-          60%  { transform: scaleY(0.9); transform-origin: bottom; }
-          100% { transform: scaleY(1);   transform-origin: bottom; }
-        }
-        .bars-animate {
-          animation: barsUp 0.4s ease-out forwards;
-        }
-      `}</style>
-
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
@@ -144,47 +133,14 @@ export default function Layout({ children, currentPageName }) {
                 }}
                 aria-label={item.name} className="relative flex flex-col items-center justify-start gap-1 px-3 py-1 min-w-0 flex-1 text-slate-400 rounded-xl"
                 style={{ transition: 'transform 60ms ease-in-out' }}
-                onMouseDown={e => {
-                  e.currentTarget.style.transform = 'scale(0.82) translateY(3px)';
-                  if (item.page === 'Progress') {
-                    const icon = e.currentTarget.querySelector('.bar-chart-icon');
-                    if (icon) icon.classList.add('bars-animate');
-                  }
-                }}
-                onMouseUp={e => {
-                  e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)';
-                  e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                  if (item.page === 'Progress') {
-                    const icon = e.currentTarget.querySelector('.bar-chart-icon');
-                    if (icon) setTimeout(() => icon.classList.remove('bars-animate'), 400);
-                  }
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)';
-                  e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                }}
-                onTouchStart={e => {
-                  e.currentTarget.style.transition = 'transform 60ms ease-in-out';
-                  e.currentTarget.style.transform = 'scale(0.82) translateY(3px)';
-                  if (item.page === 'Progress') {
-                    const icon = e.currentTarget.querySelector('.bar-chart-icon');
-                    if (icon) icon.classList.add('bars-animate');
-                  }
-                }}
-                onTouchEnd={e => {
-                  e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)';
-                  e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                  if (item.page === 'Progress') {
-                    const icon = e.currentTarget.querySelector('.bar-chart-icon');
-                    if (icon) setTimeout(() => icon.classList.remove('bars-animate'), 400);
-                  }
-                }}>
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'}
+                onMouseUp={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}
+                onTouchStart={e => { e.currentTarget.style.transition = 'transform 60ms ease-in-out'; e.currentTarget.style.transform = 'scale(0.82) translateY(3px)'; }}
+                onTouchEnd={e => { e.currentTarget.style.transition = 'transform 350ms cubic-bezier(0.34,1.7,0.64,1)'; e.currentTarget.style.transform = 'scale(1) translateY(0)'; }}>
 
                 <div className="relative">
-                  <item.icon
-                    className={`w-6 h-6 ${isActive ? item.color : ''} ${item.page === 'Progress' ? 'bar-chart-icon' : ''}`}
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
+                  <item.icon className={`w-6 h-6 ${isActive ? item.color : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 &&
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-ios-bounce">
                        {item.badge > 9 ? '9+' : item.badge}
