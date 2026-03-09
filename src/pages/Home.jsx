@@ -616,16 +616,6 @@ export default function Home() {
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
   );
-  const selectFeaturedChallenge = () => {
-    const activeChallenges = challenges.filter((c) => c.status === 'active');
-    if (activeChallenges.length === 0) return null;
-    const withProgress = activeChallenges.map((c) => {
-      const participants = lifts.filter((l) => c.participants?.includes(l.member_id) || false);
-      const progress = c.target_value ? Math.min(participants.length / c.target_value * 100, 100) : 0;
-      return { ...c, progress };
-    });
-    return withProgress.sort((a, b) => b.progress - a.progress)[0];
-  };
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '') => {
