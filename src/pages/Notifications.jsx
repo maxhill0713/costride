@@ -70,8 +70,8 @@ export default function Notifications() {
           await base44.entities.Notification.create({
             user_id: currentUser.id,
             type: 'inactivity',
-            title: t('notifications.weMissYou'),
-            message: t('notifications.notCheckedIn', { days: daysSinceCheckIn }),
+            title: 'We miss you! 😢',
+            message: `You haven't checked in for ${daysSinceCheckIn} days. Time to get back to the gym!`,
             icon: '😢',
             action_url: createPageUrl('Gyms')
           });
