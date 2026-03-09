@@ -136,11 +136,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const handleSave = (index) => {
     const weight = editWeight;
-    const setsReps = editReps;
+    const isDefault = isDefaultWorkout();
+    const setsReps = isDefault ? `${editSets}x${editReps}` : `${editSets}x${editReps}`;
+    
     const updatedExercises = [...todayWorkout.exercises];
-    updatedExercises[index] = { ...updatedExercises[index], weight, setsReps };
+    updatedExercises[index] = { ...updatedExercises[index], weight, setsReps, sets: editSets, reps: editReps };
+    
     const updatedWorkoutTypes = { ...currentUser.custom_workout_types };
     const currentWorkoutName = todayWorkout.name;
+    
     Object.keys(updatedWorkoutTypes).forEach((dayKey) => {
       const workout = updatedWorkoutTypes[dayKey];
       if (workout.name === currentWorkoutName && parseInt(dayKey) !== adjustedDay) {
@@ -148,16 +152,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           updatedWorkoutTypes[dayKey] = {
             ...workout,
             exercises: workout.exercises.map((ex, i) =>
-            i === index ? { ...ex, weight, setsReps } : ex
+              i === index ? { ...ex, weight, setsReps, sets: editSets, reps: editReps } : ex
             )
           };
         }
       }
     });
+    
     updatedWorkoutTypes[adjustedDay] = {
       ...currentUser.custom_workout_types[adjustedDay],
       exercises: updatedExercises
     };
+    
     base44.auth.updateMe({ custom_workout_types: updatedWorkoutTypes }).then(() => {
       queryClient.invalidateQueries(['currentUser']);
       setEditingIndex(null);
