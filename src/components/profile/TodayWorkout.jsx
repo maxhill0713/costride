@@ -319,7 +319,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05, duration: 0.2 }}
-                className="grid grid-cols-[1fr_40px_40px_auto_auto] gap-2 mb-1.5 items-end">
+                className="grid grid-cols-[1fr_44px_44px_auto_auto] gap-1 mb-1.5 items-end">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
@@ -333,7 +333,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                  key={index}
                  initial={false}
                  animate={{}}
-                 className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_40px_40px_auto_auto] gap-2 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
+                 className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid grid-cols-[1fr_44px_44px_auto_auto] gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
                   {editingIndex === index ? (
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between mb-2">
