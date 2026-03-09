@@ -138,10 +138,10 @@ export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes
 
       {/* Legend */}
       <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b border-slate-700/50">
-        {Object.entries(colors).map(([key, color]) => (
-          <div key={key} className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-            <span className="text-[10px] text-slate-400 capitalize">{key}</span>
+        {bodyParts.map((part) => (
+          <div key={part} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ background: colors[part] }} />
+            <span className="text-[10px] text-slate-400 capitalize">{part}</span>
           </div>
         ))}
       </div>
