@@ -416,7 +416,6 @@ export default function Home() {
   useEffect(() => {
     if (activeCircleDay === null) return;
     const dismiss = (e) => {
-      // Don't dismiss if clicking inside the bubble or on a circle button
       if (e.target.closest('[data-circle-btn]') || e.target.closest('[data-bubble]')) return;
       setActiveCircleDay(null);
     };
@@ -999,7 +998,8 @@ export default function Home() {
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
-                          const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
+                          // CHANGE 1: Slightly darker blue tones for popup backgrounds
+                          const solidColor = isRestDay && done ? '#14532d' : isRestDay ? '#151c2a' : done ? '#1e3a6e' : isMissed ? '#7f1d1d' : isTodayCircle ? '#192236' : '#151c2a';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
                             `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
@@ -1072,7 +1072,10 @@ export default function Home() {
                                     onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
                                     style={{
-                                      marginTop: 4, width: '100%', padding: '9px 0', borderRadius: 9,
+                                      marginTop: 4, width: '100%',
+                                      // CHANGE 2: Reduced vertical padding by ~8% (9px -> 8.3px, rounded to 8px top/bottom)
+                                      padding: '8px 0',
+                                      borderRadius: 9,
                                       background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
                                       border: 'none', borderBottom: '3px solid #1d4ed8',
                                       color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
