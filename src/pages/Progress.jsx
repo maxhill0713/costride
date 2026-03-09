@@ -111,6 +111,7 @@ function GoalsPage({ currentUser, onBack }) {
               onDelete={(id) => deleteGoalMutation.mutate(id)}
               onToggleReminder={(g) => updateGoalMutation.mutate({ id: g.id, data: { reminder_enabled: !g.reminder_enabled } })}
             />
+            </motion.div>
           ))}
         </div>
       )}
