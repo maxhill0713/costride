@@ -369,7 +369,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         }
                       </div>
                       <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[60px] mr-auto">
-                        {exercise.setsReps || '-'}
+                        {exercise.setsReps || exercise.sets_reps || exercise.sets || '-'}
                       </div>
                       <div className="flex items-center gap- ml-4">
                         <div className="flex items-center gap-2">
