@@ -48,7 +48,6 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AccountSettings from './pages/AccountSettings';
-import Activity from './pages/Activity';
 import AddGym from './pages/AddGym';
 import AdminGyms from './pages/AdminGyms';
 import AppearanceSettings from './pages/AppearanceSettings';
@@ -77,19 +76,16 @@ import Premium from './pages/Premium';
 import PrivacySettings from './pages/PrivacySettings';
 import Profile from './pages/Profile';
 import ProfileSettings from './pages/ProfileSettings';
-import Routines from './pages/Routines';
-import Search from './pages/Search';
+import Progress from './pages/Progress';
+import RedeemReward from './pages/RedeemReward';
 import Settings from './pages/Settings';
 import SubscriptionSettings from './pages/SubscriptionSettings';
 import UserProfile from './pages/UserProfile';
-import Progress from './pages/Progress';
-import RedeemReward from './pages/RedeemReward';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AccountSettings": AccountSettings,
-    "Activity": Activity,
     "AddGym": AddGym,
     "AdminGyms": AdminGyms,
     "AppearanceSettings": AppearanceSettings,
@@ -118,13 +114,11 @@ export const PAGES = {
     "PrivacySettings": PrivacySettings,
     "Profile": Profile,
     "ProfileSettings": ProfileSettings,
-    "Routines": Routines,
-    "Search": Search,
+    "Progress": Progress,
+    "RedeemReward": RedeemReward,
     "Settings": Settings,
     "SubscriptionSettings": SubscriptionSettings,
     "UserProfile": UserProfile,
-    "Progress": Progress,
-    "RedeemReward": RedeemReward,
 }
 
 export const pagesConfig = {
