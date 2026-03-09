@@ -564,18 +564,29 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           <div className="flex-1 flex justify-center">
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
-          <div className="w-10 flex-shrink-0 flex justify-end">
+          <div className="flex-shrink-0 flex items-center justify-end gap-2">
             {step === 'pick' && (
-              <button
-                onClick={() => setSelectingActive(prev => !prev)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
-                  bg-gradient-to-b from-emerald-400 to-emerald-600
-                  shadow-[0_2px_0_0_#065f46,0_4px_8px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.15)]
-                  active:shadow-none active:translate-y-[3px] active:scale-90
-                  ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}`}
-              >
-                <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </button>
+              <>
+                <button
+                  onClick={openCustomConfigure}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
+                    bg-gradient-to-b from-blue-400 to-blue-600
+                    shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)]
+                    active:shadow-none active:translate-y-[3px] active:scale-90"
+                >
+                  <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+                </button>
+                <button
+                  onClick={() => setSelectingActive(prev => !prev)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
+                    bg-gradient-to-b from-emerald-400 to-emerald-600
+                    shadow-[0_2px_0_0_#065f46,0_4px_8px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.15)]
+                    active:shadow-none active:translate-y-[3px] active:scale-90
+                    ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}`}
+                >
+                  <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
+                </button>
+              </>
             )}
             {step === 'configure' && editingSplitId && (
               <div className="relative">
@@ -715,24 +726,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   }
                 });
               })()}
-
-              {/* ── Create Custom ── */}
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-3 px-1">Create a Custom Split</p>
-              <SplitCard
-                onClick={() => { if (!selectingActive) openCustomConfigure(); }}
-                isActive={false}
-                selectingActive={false}
-                accentColor="rgba(99,102,241,0.45)"
-                glowColor="rgba(99,102,241,0.35)"
-              >
-                <div className={`relative flex items-center gap-4 p-4 ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[18.2px] font-black text-white">Create New</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Build your own from scratch</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                </div>
-              </SplitCard>
 
             </div>
           )}
