@@ -13,7 +13,7 @@ import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import QuoteCarousel from '../components/home/QuoteCarousel';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -840,13 +840,6 @@ export default function Home() {
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
-                  const customTypes = currentUser?.custom_workout_types;
-                  const currentSplitDay = customTypes
-                    ? Array.isArray(customTypes)
-                      ? customTypes.find((s) => s.day === day || s.day_of_week === day)
-                      : customTypes[day]
-                    : null;
-                  const plannedWorkoutData = !done && !isRestDay && currentSplitDay ? currentSplitDay : null;
                   const getBg = () => {
                     if (isRestDay) {
                       return done
@@ -1095,14 +1088,14 @@ export default function Home() {
                                     View Summary
                                   </button>
                                 )}
-                                {!done && !isRestDay && plannedWorkoutData && (
+                                {!done && !isRestDay && workoutLog && (
                                   <button
                                     data-bubble="true"
                                     onPointerDown={e => e.stopPropagation()}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
-                                      setPlannedWorkout(plannedWorkoutData);
+                                      setPlannedWorkout(workoutLog);
                                     }}
                                     onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
