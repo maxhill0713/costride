@@ -610,18 +610,6 @@ export default function Home() {
       base44.auth.updateMe({ streak_variant: variant });
     }
   };
-  const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weeklyCheckIns = userCheckIns.filter((c) => new Date(c.check_in_date) >= startOfThisWeek);
-  const weeklyTarget = currentUser?.weekly_goal || 3;
-  const goalsOnTrack = goals.filter((g) => {
-    const progress = g.current_value / g.target_value * 100;
-    const daysUntilDeadline = g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null;
-    if (!daysUntilDeadline || daysUntilDeadline < 0) return progress >= 80;
-    const totalDuration = g.deadline ? differenceInDays(new Date(g.deadline), new Date(g.created_date || new Date())) : 30;
-    const daysPassed = totalDuration - daysUntilDeadline;
-    const expectedProgress = daysPassed / totalDuration * 100;
-    return progress >= expectedProgress * 0.8;
-  }).length;
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const todayCount = todayCheckInsForQuery.length;
