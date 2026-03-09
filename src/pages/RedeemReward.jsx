@@ -226,7 +226,7 @@ export default function RedeemReward() {
                 <p className="text-slate-400">No weekly challenges available</p>
               </Card>
             )}
-          </div>
+          </motion.div>
         )}
 
         {activeSection === 'community' && (
