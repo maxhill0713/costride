@@ -6,8 +6,10 @@ import { toast } from 'sonner';
 const S = `
   .ch-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
   @media(min-width:640px){.ch-overlay{align-items:center;}}
-  .ch-modal{width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
-  @media(min-width:640px){.ch-modal{border-radius:24px;}}
+  .ch-modal{width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
+  @media(min-width:640px){.ch-modal{border-radius:24px;max-height:90vh;}}
+  .ch-grid-2{display:grid;grid-template-columns:1fr;}
+  @media(min-width:480px){.ch-grid-2{grid-template-columns:1fr 1fr;}}
   .ch-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
   .ch-inp:focus{border-color:rgba(59,130,246,0.5);}
   .ch-inp::placeholder{color:rgba(148,163,184,0.4);}
@@ -123,7 +125,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
               ]}/>
             </div>
 
-            <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
+            <div className="ch-grid-2" style={{ gap:10 }}>
               <div>
                 <span className="ch-label">Type *</span>
                 <DarkSelect value={formData.type} placeholder="Select type" onValueChange={v => setFormData({ ...formData, type: v })} options={[
@@ -149,7 +151,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
             </div>
 
             {formData.type === 'gym_vs_gym' && (
-              <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
+              <div className="ch-grid-2" style={{ gap:10 }}>
                 <div>
                   <span className="ch-label">Home Gym *</span>
                   <DarkSelect value={formData.gym_id} placeholder="Select gym" onValueChange={v => { const g = gyms.find(x => x.id === v); setFormData({ ...formData, gym_id: v, gym_name: g?.name || '' }); }} options={gyms.map(g => ({ value: g.id, label: g.name }))}/>
@@ -182,7 +184,7 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
               </div>
             )}
 
-            <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
+            <div className="ch-grid-2" style={{ gap:10 }}>
               <div>
                 <span className="ch-label">Start Date *</span>
                 <input type="date" className="ch-inp" value={formData.start_date} onChange={e => setFormData({ ...formData, start_date: e.target.value })}/>

@@ -6,8 +6,8 @@ import { useMutation } from '@tanstack/react-query';
 const S = `
   .dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
   @media(min-width:640px){.dm-overlay{align-items:center;}}
-  .dm-modal{width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
-  @media(min-width:640px){.dm-modal{border-radius:24px;}}
+  .dm-modal{width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
+  @media(min-width:640px){.dm-modal{border-radius:24px;max-height:90vh;}}
   .dm-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
   .dm-inp:focus{border-color:rgba(59,130,246,0.5);}
   .dm-inp::placeholder{color:rgba(148,163,184,0.4);}
