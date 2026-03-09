@@ -354,7 +354,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                        <div className="flex items-center justify-between mb-3">
                          <div className="flex items-center gap-2">
                            <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 transition-colors">
-                             <ChevronLeft className="w-4 h-4" />
+                             
                            </button>
                            <div className="text-sm font-bold text-white">{exercise.exercise}</div>
                          </div>
@@ -403,7 +403,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                          <Button onClick={() => handleSave(index)} size="sm" disabled={updateWorkoutMutation.isPending} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                            <Check className="w-3 h-3" />
                          </Button>
-                         <Button onClick={handleCancel} size="sm" variant="ghost" className="flex-1 text-slate-400 hover:text-white h-7">
+                         <Button onClick={handleCancel} size="sm" variant="ghost" className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-slate-300 border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_0_20px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
                            <X className="w-3 h-3" />
                          </Button>
                        </div>
