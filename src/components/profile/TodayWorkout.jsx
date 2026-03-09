@@ -596,9 +596,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
                   { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
                 ].map(stat => (
-                  <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
-                    <p className="text-sm font-black text-blue-300">{stat.value}</p>
-                    <p className="text-xs text-slate-500 font-bold mt-1">{stat.label}</p>
+                  <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <p className="text-lg font-black text-blue-300">{stat.value}</p>
+                    <p className="text-xs text-slate-500 font-bold mt-2">{stat.label}</p>
                   </div>
                 ))}
               </div>
