@@ -616,7 +616,6 @@ export default function Home() {
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
   );
-  const todayCheckIns = todayCheckInsForQuery;
   const selectFeaturedChallenge = () => {
     const activeChallenges = challenges.filter((c) => c.status === 'active');
     if (activeChallenges.length === 0) return null;
@@ -630,21 +629,6 @@ export default function Home() {
   const featuredChallenge = selectFeaturedChallenge();
   const activeChallenges = challenges.filter((c) => c.status === 'active').slice(0, 3);
   const todayLifts = lifts.filter((l) => isToday(new Date(l.created_date))).slice(0, 5);
-  const calculateStreak = (checkIns) => {
-    if (checkIns.length === 0) return 0;
-    const today = startOfDay(new Date());
-    const lastCheckInDate = startOfDay(new Date(checkIns[0].check_in_date));
-    const daysSinceLastCheckIn = differenceInDays(today, lastCheckInDate);
-    if (daysSinceLastCheckIn > 1) return 0;
-    let streak = 1;
-    for (let i = 0; i < checkIns.length - 1; i++) {
-      const current = startOfDay(new Date(checkIns[i].check_in_date));
-      const next = startOfDay(new Date(checkIns[i + 1].check_in_date));
-      const daysDiff = differenceInDays(current, next);
-      if (daysDiff === 1 || daysDiff === 2) { streak++; } else { break; }
-    }
-    return streak;
-  };
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '') => {
