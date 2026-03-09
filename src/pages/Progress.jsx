@@ -13,8 +13,8 @@ import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
-  background: 'linear-gradient(135deg, rgba(13,35,96,0.45) 0%, rgba(2,4,10,0.85) 100%)',
-  border: '1px solid rgba(59,130,246,0.14)',
+  background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+  border: '1px solid rgba(255,255,255,0.07)',
   backdropFilter: 'blur(16px)',
   WebkitBackdropFilter: 'blur(16px)',
 };
@@ -253,8 +253,8 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
     <div
       className="relative overflow-hidden rounded-2xl p-4 w-full text-left"
       style={{
-        background: 'linear-gradient(135deg, rgba(13,35,96,0.45) 0%, rgba(2,4,10,0.85) 100%)',
-        border: `1px solid ${pressed ? accentBorder : 'rgba(59,130,246,0.14)'}`,
+        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        border: `1px solid ${pressed ? accentBorder : 'rgba(255,255,255,0.07)'}`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         transform: pressed ? 'scale(0.977) translateY(2px)' : 'scale(1)',
