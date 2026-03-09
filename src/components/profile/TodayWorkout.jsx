@@ -555,7 +555,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         isLoading={logWorkoutMutation.isPending} />
 
     </Card>
-    </>
 
     {/* Workout Summary Modal — full screen like Home */}
     <AnimatePresence>
