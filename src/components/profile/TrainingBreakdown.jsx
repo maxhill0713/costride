@@ -99,7 +99,7 @@ export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes
       {/* Chart */}
       <div className="mb-3 -mx-3">
         <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={mockData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
             <defs>
               {bodyParts.map((part) => (
                 <linearGradient key={`${part}-gradient`} id={`${part}-gradient`} x1="0" y1="0" x2="0" y2="1">
@@ -150,7 +150,7 @@ export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes
       <div className="mb-3">
         <p className="text-[10px] font-semibold text-slate-500 uppercase mb-2">Avg RPE</p>
         <ResponsiveContainer width="100%" height={70}>
-          <LineChart data={mockData} margin={{ top: 0, right: 20, left: -20, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 0, right: 20, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
             <XAxis dataKey="month" stroke="rgba(148,163,184,0.3)" style={{ fontSize: '9px' }} />
             <YAxis stroke="rgba(148,163,184,0.3)" style={{ fontSize: '9px' }} width={30} domain={[7.5, 9.5]} />
