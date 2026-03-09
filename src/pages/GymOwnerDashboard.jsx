@@ -852,20 +852,23 @@ export default function GymOwnerDashboard() {
   return (
     <div className="flex h-screen overflow-hidden" style={{background:'linear-gradient(135deg,#0f172a 0%,#020617 100%)',fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t pb-[env(safe-area-inset-bottom)]"
-        style={{background:'rgba(2,6,23,0.97)',borderColor:'rgba(255,255,255,0.08)'}}>
-        {NAV.map(item=>{
-          const active=tab===item.id;
-          return(
-            <button key={item.id} onClick={()=>setTab(item.id)}
-              className="flex flex-col items-center gap-0.5 px-2 py-2 min-w-0 flex-1"
-              style={{color:active?'#60a5fa':'#4a6492'}}>
-              <item.icon className="w-5 h-5 flex-shrink-0" strokeWidth={active?2.5:2}/>
-              <span className="text-[9px] font-bold leading-none truncate">{item.label==='Gym Settings'?'Settings':item.label}</span>
-            </button>
-          );
-        })}
+      {/* Mobile bottom nav — iOS safe area aware */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t"
+        style={{background:'rgba(2,6,23,0.97)',borderColor:'rgba(255,255,255,0.08)',paddingBottom:'env(safe-area-inset-bottom)'}}>
+        <div className="flex items-center justify-around" style={{height:'64px'}}>
+          {NAV.map(item=>{
+            const active=tab===item.id;
+            return(
+              <button key={item.id} onClick={()=>setTab(item.id)}
+                className="flex flex-col items-center justify-center gap-1 flex-1 h-full relative transition-all active:scale-90"
+                style={{color:active?'#60a5fa':'#4a6492'}}>
+                {active && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-blue-400"/>}
+                <item.icon className="w-6 h-6 flex-shrink-0" strokeWidth={active?2.5:2}/>
+                <span className="text-[10px] font-bold leading-none">{item.label==='Gym Settings'?'Settings':item.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Desktop Sidebar */}
