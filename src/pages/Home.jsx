@@ -401,6 +401,7 @@ export default function Home() {
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
   const [summaryLog, setSummaryLog] = useState(null);
+  const [plannedWorkout, setPlannedWorkout] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
