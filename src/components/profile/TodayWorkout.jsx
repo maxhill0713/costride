@@ -553,91 +553,92 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onCancel={() => setShowSummary(false)}
         isLoading={logWorkoutMutation.isPending} />
 
-      {/* Workout Summary Modal — full screen like Home */}
-      <AnimatePresence>
-        {summaryLog && (
+    </Card>
+
+    {/* Workout Summary Modal — full screen like Home */}
+    <AnimatePresence>
+      {summaryLog && (
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={() => setSummaryLog(null)}
+          className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setSummaryLog(null)}
-            className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
-              onClick={e => e.stopPropagation()}
-              className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
-              
-              <div className="mb-6">
-                <h3 className="text-4xl font-black text-white mb-2">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
-                <p className="text-base text-slate-400 font-medium">
-                  {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+            onClick={e => e.stopPropagation()}
+            className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
+            
+            <div className="mb-6">
+              <h3 className="text-4xl font-black text-white mb-2">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
+              <p className="text-base text-slate-400 font-medium">
+                {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+              </p>
+            </div>
+
+            {summaryLog.check_in_time && summaryLog.completed_date && (
+              <div className="mb-6 p-4 bg-orange-500/20 border border-orange-500/30 rounded-xl">
+                <p className="text-sm text-orange-300/80 font-bold uppercase tracking-wide mb-2">Total Time at Gym</p>
+                <p className="text-3xl font-black text-orange-300">
+                  {(() => {
+                    const checkIn = new Date(summaryLog.check_in_time);
+                    const checkOut = new Date(summaryLog.completed_date);
+                    const diffMs = checkOut - checkIn;
+                    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                  })()}
                 </p>
               </div>
+            )}
 
-              {summaryLog.check_in_time && summaryLog.completed_date && (
-                <div className="mb-6 p-4 bg-orange-500/20 border border-orange-500/30 rounded-xl">
-                  <p className="text-sm text-orange-300/80 font-bold uppercase tracking-wide mb-2">Total Time at Gym</p>
-                  <p className="text-3xl font-black text-orange-300">
-                    {(() => {
-                      const checkIn = new Date(summaryLog.check_in_time);
-                      const checkOut = new Date(summaryLog.completed_date);
-                      const diffMs = checkOut - checkIn;
-                      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-                      const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-                    })()}
-                  </p>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[
+                { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
+                { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
+                { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
+              ].map(stat => (
+                <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                  <p className="text-lg font-black text-blue-300">{stat.value}</p>
+                  <p className="text-xs text-slate-500 font-bold mt-2">{stat.label}</p>
                 </div>
-              )}
+              ))}
+            </div>
 
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                {[
-                  { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
-                  { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
-                  { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
-                ].map(stat => (
-                  <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                    <p className="text-lg font-black text-blue-300">{stat.value}</p>
-                    <p className="text-xs text-slate-500 font-bold mt-2">{stat.label}</p>
-                  </div>
-                ))}
+            {summaryLog.exercises?.length > 0 && (
+              <div className="space-y-3 mb-6">
+                <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
+                <div className="space-y-3">
+                  {summaryLog.exercises.map((ex, idx) => {
+                    const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                    const weight = ex.weight_kg || ex.weight;
+                    const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
+                    const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
+                    return (
+                      <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
+                        <span className="text-white font-semibold text-base">{exName}</span>
+                        <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
+            )}
 
-              {summaryLog.exercises?.length > 0 && (
-                <div className="space-y-3 mb-6">
-                  <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
-                  <div className="space-y-3">
-                    {summaryLog.exercises.map((ex, idx) => {
-                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const weight = ex.weight_kg || ex.weight;
-                      const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
-                      const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
-                      return (
-                        <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
-                          <span className="text-white font-semibold text-base">{exName}</span>
-                          <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+            {summaryLog.notes && (
+              <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <p className="text-sm font-bold text-slate-500 uppercase mb-3">Notes</p>
+                <p className="text-base text-slate-300 leading-relaxed">{summaryLog.notes}</p>
+              </div>
+            )}
 
-              {summaryLog.notes && (
-                <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
-                  <p className="text-sm font-bold text-slate-500 uppercase mb-3">Notes</p>
-                  <p className="text-base text-slate-300 leading-relaxed">{summaryLog.notes}</p>
-                </div>
-              )}
-
-              {!summaryLog.exercises?.length && !summaryLog.notes && (
-                <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
-              )}
-            </motion.div>
+            {!summaryLog.exercises?.length && !summaryLog.notes && (
+              <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
+            )}
           </motion.div>
-        )}
-      </AnimatePresence>
-
-    </Card>);
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>);
 
 }
