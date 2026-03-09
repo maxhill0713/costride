@@ -31,8 +31,8 @@ import QRCode from 'react-qr-code';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const N = {
-  950: '#080f1f', 900: '#0d1628', 850: '#101e38', 800: '#122040',
-  750: '#162849', 700: '#1b3057', 600: '#22396b', 500: '#2b4b85',
+  950: '#060d1f', 900: '#0a1628', 850: '#0d1e35', 800: '#112040',
+  750: '#152649', 700: '#1a2f57', 600: '#213a6b', 500: '#2a4a85',
 };
 
 const NAV = [
@@ -813,7 +813,7 @@ export default function GymOwnerDashboard() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden" style={{background:'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',fontFamily:"'DM Sans','Inter',sans-serif"}}>
+    <div className="flex h-screen overflow-hidden" style={{background:N[950],fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
       {/* Sidebar */}
       <aside className="flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
@@ -969,7 +969,7 @@ export default function GymOwnerDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-6 py-6" style={{background:'transparent'}}>
+        <main className="flex-1 overflow-y-auto px-6 py-6" style={{background:N[950]}}>
           <div className="max-w-[1400px] mx-auto">
             {TABS[tab] || TABS.overview}
           </div>
