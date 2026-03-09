@@ -1,148 +1,242 @@
-import React, { useState, useRef } from 'react';
-import { X, MessageSquarePlus, Image, Send, Smile } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Sparkles, Upload, Tag, Link2, Calendar, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
-const N = {
-  950: '#060d1f', 900: '#0a1628', 850: '#0d1e35', 800: '#112040',
-  750: '#152649', 700: '#1a2f57', 600: '#213a6b',
-};
+const S = `
+  .dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  @media(min-width:640px){.dm-overlay{align-items:center;}}
+  .dm-modal{width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
+  @media(min-width:640px){.dm-modal{border-radius:24px;}}
+  .dm-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
+  .dm-inp:focus{border-color:rgba(99,102,241,0.5);}
+  .dm-inp::placeholder{color:rgba(148,163,184,0.4);}
+  .dm-ta{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;resize:none;}
+  .dm-ta:focus{border-color:rgba(99,102,241,0.5);}
+  .dm-ta::placeholder{color:rgba(148,163,184,0.4);}
+  .dm-sel{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;appearance:none;}
+  .dm-sel option{background:#0a1628;color:#fff;}
+  .dm-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:rgba(165,180,252,0.9);}
+  .dm-label{font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(148,163,184,0.5);margin-bottom:6px;display:block;}
+`;
 
-function SaveBtn({ onClick, disabled, label = 'Post Update' }) {
-  const [pressed, setPressed] = useState(false);
+function DarkButton({ onClick, disabled, children, secondary }) {
+  const [p, setP] = useState(false);
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      onMouseDown={() => !disabled && setPressed(true)}
-      onMouseUp={() => setPressed(false)}
-      onMouseLeave={() => setPressed(false)}
-      onTouchStart={() => !disabled && setPressed(true)}
-      onTouchEnd={() => setPressed(false)}
+      onMouseDown={() => !disabled && setP(true)}
+      onMouseUp={() => setP(false)}
+      onMouseLeave={() => setP(false)}
+      onTouchStart={() => !disabled && setP(true)}
+      onTouchEnd={() => setP(false)}
       style={{
-        padding: '12px 24px', borderRadius: 13, fontSize: 13, fontWeight: 900,
-        letterSpacing: '-0.01em', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-        background: disabled ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#3b82f6 0%,#2563eb 50%,#1d4ed8 100%)',
-        border: disabled ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(255,255,255,0.18)',
-        borderBottom: disabled ? '3px solid rgba(0,0,0,0.3)' : pressed ? '1px solid #1e3a8a' : '4px solid #1e3a8a',
-        boxShadow: disabled ? 'none' : pressed ? 'none' : '0 3px 0 rgba(0,0,0,0.4),0 8px 24px rgba(59,130,246,0.3),inset 0 1px 0 rgba(255,255,255,0.2)',
-        transform: pressed ? 'translateY(4px) scale(0.98)' : 'translateY(0)',
-        transition: pressed ? 'transform 0.06s,box-shadow 0.06s' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1),box-shadow 0.18s',
-        cursor: disabled ? 'default' : 'pointer', minWidth: 140,
+        flex: 1, padding: '12px 0', borderRadius: 13, fontSize: 13, fontWeight: 900,
+        color: secondary ? 'rgba(148,163,184,0.8)' : '#fff',
+        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#6366f1 0%,#4f46e5 50%,#4338ca 100%)',
+        border: secondary ? '1px solid rgba(255,255,255,0.08)' : disabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.18)',
+        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #312e81' : '4px solid #312e81',
+        boxShadow: secondary || disabled ? 'none' : p ? 'none' : '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(99,102,241,0.3),inset 0 1px 0 rgba(255,255,255,0.2)',
+        transform: p ? 'translateY(3px) scale(0.98)' : 'translateY(0) scale(1)',
+        transition: p ? 'transform 0.06s,box-shadow 0.06s' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1),box-shadow 0.18s',
+        cursor: disabled ? 'default' : 'pointer',
       }}
-    >
-      <Send style={{ width: 14, height: 14 }} />{label}
-    </button>
+    >{children}</button>
   );
 }
 
-const EMOJI_QUICK = ['💪', '🔥', '🏋️', '🏆', '⚡', '🎯', '✅', '🚀'];
+const POST_TYPES = [
+  { value: 'update', label: '📢 Update / Announcement' },
+  { value: 'achievement', label: '🏆 Achievement / Success' },
+  { value: 'event', label: '📅 Event Promotion' },
+  { value: 'offer', label: '🎁 Special Offer' },
+  { value: 'tip', label: '💡 Fitness Tip' },
+  { value: 'member_spotlight', label: '⭐ Member Spotlight' },
+];
+
+const PLACEHOLDERS = {
+  achievement: 'Share a gym achievement or milestone...',
+  event: 'Tell members about an upcoming event...',
+  offer: 'Announce a special offer or promotion...',
+  tip: 'Share a helpful fitness tip...',
+  member_spotlight: 'Highlight an amazing member...',
+};
 
 export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess }) {
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [showImg, setShowImg] = useState(false);
-  const queryClient = useQueryClient();
+  const [uploading, setUploading] = useState(false);
+  const [postType, setPostType] = useState('update');
+  const [tags, setTags] = useState([]);
+  const [newTag, setNewTag] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [callToAction, setCallToAction] = useState({ enabled: false, text: '', link: '' });
+  const [submitting, setSubmitting] = useState(false);
 
-  const postMutation = useMutation({
-    mutationFn: () => base44.entities.Post.create({
-      content,
-      image_url: imageUrl || undefined,
-      gym_id: gym?.id,
-      gym_name: gym?.name,
-      member_name: gym?.name,
-      allow_gym_repost: true,
-      likes: 0,
-      comments: [],
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      setContent(''); setImageUrl(''); setShowImg(false);
-      onSuccess?.();
-      onClose();
-    },
+  const uploadMutation = useMutation({
+    mutationFn: async (file) => { const r = await base44.integrations.Core.UploadFile({ file }); return r.file_url; },
+    onSuccess: (url) => { setImageUrl(url); setUploading(false); }
   });
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) { setUploading(true); uploadMutation.mutate(file); }
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); }
+  };
+
+  const handleSubmit = async () => {
+    if (!content.trim() || submitting) return;
+    setSubmitting(true);
+    await base44.entities.Post.create({
+      member_id: gym.id, member_name: gym.name, member_avatar: gym.image_url,
+      content, image_url: imageUrl, likes: 0, comments: [],
+      post_type: postType, tags, is_pinned: isPinned,
+      scheduled_date: scheduledDate || null,
+      call_to_action: callToAction.enabled ? { text: callToAction.text, link: callToAction.link } : null
+    });
+    onSuccess?.();
+    setContent(''); setImageUrl(''); setPostType('update'); setTags([]);
+    setIsPinned(false); setScheduledDate(''); setCallToAction({ enabled: false, text: '', link: '' });
+    setSubmitting(false);
+    onClose();
+  };
 
   if (!open) return null;
 
   return (
-    <div style={{ position:'fixed',inset:0,background:'rgba(6,13,31,0.85)',backdropFilter:'blur(10px)',WebkitBackdropFilter:'blur(10px)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16 }}
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ width:'100%',maxWidth:520,background:`linear-gradient(145deg,${N[900]},${N[950]})`,border:'1px solid rgba(59,130,246,0.18)',borderTop:'1px solid rgba(59,130,246,0.3)',borderRadius:22,overflow:'hidden',boxShadow:'0 24px 64px rgba(0,0,0,0.6)' }}>
+    <>
+      <style>{S}</style>
+      <div className="dm-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="dm-modal">
 
-        {/* Top shimmer */}
-        <div style={{ height:1.5,background:'linear-gradient(90deg,transparent,rgba(59,130,246,0.6),transparent)',margin:'0 10%' }}/>
-
-        {/* Header */}
-        <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 20px 14px',borderBottom:`1px solid rgba(59,130,246,0.1)` }}>
-          <div style={{ display:'flex',alignItems:'center',gap:10 }}>
-            <div style={{ width:36,height:36,borderRadius:11,background:'rgba(59,130,246,0.15)',border:'1px solid rgba(59,130,246,0.28)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-              <MessageSquarePlus style={{ width:17,height:17,color:'#60a5fa' }}/>
-            </div>
-            <div>
-              <h2 style={{ fontSize:15,fontWeight:900,color:'#fff',margin:0,letterSpacing:'-0.02em' }}>New Post</h2>
-              <p style={{ fontSize:11,color:'rgba(59,130,246,0.5)',margin:0,fontWeight:600 }}>{gym?.name}</p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ width:32,height:32,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:N[800],border:`1px solid rgba(59,130,246,0.15)`,cursor:'pointer' }}>
-            <X style={{ width:15,height:15,color:'#6b87b8' }}/>
-          </button>
-        </div>
-
-        {/* Body */}
-        <div style={{ padding:'16px 20px 20px' }}>
-
-          {/* Gym avatar + textarea */}
-          <div style={{ display:'flex',gap:12,marginBottom:14 }}>
-            <div style={{ width:40,height:40,borderRadius:'50%',background:'linear-gradient(135deg,#3b82f6,#06b6d4)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:15,color:'#fff',flexShrink:0 }}>
-              {gym?.name?.charAt(0)?.toUpperCase()}
-            </div>
-            <textarea
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              placeholder={`Share an update with ${gym?.name} members…`}
-              rows={5}
-              style={{ flex:1,padding:'12px 14px',borderRadius:13,background:N[800],border:`1px solid rgba(59,130,246,0.15)`,color:'#fff',fontSize:13,fontWeight:500,lineHeight:1.6,resize:'none',outline:'none',fontFamily:'inherit' }}
-            />
-          </div>
-
-          {/* Quick emojis */}
-          <div style={{ display:'flex',gap:6,marginBottom:14,flexWrap:'wrap' }}>
-            {EMOJI_QUICK.map(e => (
-              <button key={e} onClick={() => setContent(c => c + e)}
-                style={{ padding:'4px 10px',borderRadius:99,fontSize:15,background:N[800],border:`1px solid rgba(59,130,246,0.12)`,cursor:'pointer',transition:'background 0.15s' }}>
-                {e}
+          {/* Header */}
+          <div style={{ flexShrink:0, padding:'20px 20px 16px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:36,height:36,borderRadius:11,background:'linear-gradient(135deg,rgba(139,92,246,0.25),rgba(99,102,241,0.15))',border:'1px solid rgba(139,92,246,0.3)',display:'flex',alignItems:'center',justifyContent:'center' }}>
+                  <Sparkles style={{ width:17,height:17,color:'#c4b5fd' }}/>
+                </div>
+                <div>
+                  <h2 style={{ fontSize:17,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',margin:0 }}>New Gym Post</h2>
+                  <p style={{ fontSize:11,color:'rgba(148,163,184,0.5)',margin:0,fontWeight:600 }}>{gym?.name}</p>
+                </div>
+              </div>
+              <button onClick={onClose} style={{ width:32,height:32,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer' }}>
+                <X style={{ width:15,height:15,color:'rgba(255,255,255,0.6)' }}/>
               </button>
-            ))}
+            </div>
           </div>
 
-          {/* Image URL toggle */}
-          {showImg ? (
-            <div style={{ marginBottom:14 }}>
-              <input
-                value={imageUrl}
-                onChange={e => setImageUrl(e.target.value)}
-                placeholder="Paste image URL…"
-                style={{ width:'100%',padding:'10px 13px',borderRadius:11,background:N[800],border:`1px solid rgba(59,130,246,0.18)`,color:'#fff',fontSize:12,outline:'none',boxSizing:'border-box' }}
-              />
-              {imageUrl && <img src={imageUrl} alt="" style={{ marginTop:8,width:'100%',height:140,objectFit:'cover',borderRadius:10,border:`1px solid rgba(59,130,246,0.15)` }} onError={e => e.target.style.display='none'}/>}
+          {/* Body */}
+          <div style={{ flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',padding:'16px 20px' }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+
+              {/* Post type */}
+              <div>
+                <span className="dm-label">Post Type</span>
+                <select className="dm-sel" value={postType} onChange={e => setPostType(e.target.value)}>
+                  {POST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+
+              {/* Content */}
+              <div>
+                <span className="dm-label">Content *</span>
+                <textarea
+                  className="dm-ta"
+                  rows={5}
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  placeholder={PLACEHOLDERS[postType] || 'Share an update with your members...'}
+                />
+                <p style={{ fontSize:10,color:'rgba(148,163,184,0.35)',marginTop:4,fontWeight:600 }}>{content.length} characters</p>
+              </div>
+
+              {/* Image upload */}
+              <div>
+                <span className="dm-label">Image (Optional)</span>
+                <label style={{ display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:11,background:'rgba(255,255,255,0.04)',border:'1px dashed rgba(255,255,255,0.12)',cursor:'pointer' }}>
+                  <Upload style={{ width:15,height:15,color:'rgba(148,163,184,0.5)',flexShrink:0 }}/>
+                  <span style={{ fontSize:12,color:'rgba(148,163,184,0.5)',fontWeight:600 }}>{uploading ? 'Uploading...' : imageUrl ? 'Image attached ✓' : 'Upload image'}</span>
+                  <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} style={{ display:'none' }}/>
+                </label>
+                {imageUrl && !uploading && (
+                  <div style={{ position:'relative',marginTop:8 }}>
+                    <img src={imageUrl} alt="Preview" style={{ width:'100%',maxHeight:160,objectFit:'cover',borderRadius:11,border:'1px solid rgba(255,255,255,0.08)' }}/>
+                    <button onClick={() => setImageUrl('')} style={{ position:'absolute',top:6,right:6,width:24,height:24,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.6)',border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer' }}>
+                      <X style={{ width:11,height:11,color:'#fff' }}/>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Tags */}
+              <div>
+                <span className="dm-label">Tags</span>
+                <div style={{ display:'flex', gap:8 }}>
+                  <input className="dm-inp" style={{ flex:1 }} value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="e.g. nutrition, event, offer"/>
+                  <button onClick={addTag} style={{ width:40,height:40,borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(99,102,241,0.18)',border:'1px solid rgba(99,102,241,0.3)',cursor:'pointer',flexShrink:0 }}>
+                    <Tag style={{ width:15,height:15,color:'#818cf8' }}/>
+                  </button>
+                </div>
+                {tags.length > 0 && (
+                  <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginTop:8 }}>
+                    {tags.map((t, i) => (
+                      <span key={i} className="dm-tag">
+                        #{t}
+                        <button onClick={() => setTags(tags.filter(x => x !== t))} style={{ background:'none',border:'none',cursor:'pointer',padding:0,display:'flex',alignItems:'center' }}>
+                          <X style={{ width:9,height:9,color:'rgba(165,180,252,0.6)' }}/>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Call to Action */}
+              <div style={{ padding:'12px 14px',borderRadius:12,background:'rgba(99,102,241,0.07)',border:'1px solid rgba(99,102,241,0.15)' }}>
+                <label style={{ display:'flex',alignItems:'center',gap:8,cursor:'pointer',marginBottom: callToAction.enabled ? 10 : 0 }}>
+                  <input type="checkbox" checked={callToAction.enabled} onChange={e => setCallToAction({ ...callToAction, enabled: e.target.checked })} style={{ width:14,height:14,accentColor:'#6366f1' }}/>
+                  <Link2 style={{ width:13,height:13,color:'#818cf8' }}/>
+                  <span style={{ fontSize:12,fontWeight:700,color:'rgba(165,180,252,0.8)' }}>Add Call-to-Action Button</span>
+                </label>
+                {callToAction.enabled && (
+                  <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8 }}>
+                    <input className="dm-inp" value={callToAction.text} onChange={e => setCallToAction({ ...callToAction, text: e.target.value })} placeholder="Button text (e.g. Book Now)"/>
+                    <input className="dm-inp" value={callToAction.link} onChange={e => setCallToAction({ ...callToAction, link: e.target.value })} placeholder="Link URL"/>
+                  </div>
+                )}
+              </div>
+
+              {/* Options row */}
+              <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
+                <label style={{ display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:11,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',cursor:'pointer' }}>
+                  <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} style={{ width:14,height:14,accentColor:'#6366f1' }}/>
+                  <span style={{ fontSize:12,fontWeight:700,color:'rgba(255,255,255,0.65)' }}>📌 Pin to Top</span>
+                </label>
+                <div>
+                  <span className="dm-label" style={{ display:'flex',alignItems:'center',gap:5 }}><Calendar style={{ width:11,height:11 }}/>Schedule</span>
+                  <input type="datetime-local" className="dm-inp" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)}/>
+                </div>
+              </div>
+
             </div>
-          ) : null}
+          </div>
 
           {/* Footer */}
-          <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:8,borderTop:`1px solid rgba(59,130,246,0.08)` }}>
-            <button onClick={() => setShowImg(v => !v)}
-              style={{ display:'flex',alignItems:'center',gap:6,padding:'7px 12px',borderRadius:10,fontSize:12,fontWeight:700,color:showImg?'#60a5fa':'#6b87b8',background:showImg?'rgba(59,130,246,0.12)':'transparent',border:`1px solid ${showImg?'rgba(59,130,246,0.3)':'transparent'}`,cursor:'pointer' }}>
-              <Image style={{ width:14,height:14 }}/>Add Image
-            </button>
-            <SaveBtn
-              onClick={() => postMutation.mutate()}
-              disabled={!content.trim() || postMutation.isPending}
-              label={postMutation.isPending ? 'Posting…' : 'Post Update'}
-            />
+          <div style={{ flexShrink:0,padding:'14px 20px 20px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',gap:10 }}>
+            <DarkButton onClick={onClose} secondary>Cancel</DarkButton>
+            <DarkButton onClick={handleSubmit} disabled={!content.trim() || submitting}>
+              {submitting ? 'Publishing...' : scheduledDate ? '📅 Schedule Post' : '✨ Publish Post'}
+            </DarkButton>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
