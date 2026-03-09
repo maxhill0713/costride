@@ -966,54 +966,59 @@ export default function GymOwnerDashboard() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Topbar */}
-        <header className="flex items-center justify-between px-6 py-3.5 flex-shrink-0 border-b"
+        <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-3.5 flex-shrink-0 border-b"
           style={{background:N[900],borderColor:'rgba(59,130,246,0.1)'}}>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Sidebar toggle — desktop only */}
             <button onClick={()=>setCollapsed(o=>!o)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:brightness-125"
+              className="hidden md:flex w-8 h-8 rounded-lg items-center justify-center transition-all hover:brightness-125"
               style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}>
               <Menu className="w-4 h-4"/>
             </button>
             <div>
-              <h1 className="text-base font-black text-white leading-tight">{NAV.find(n=>n.id===tab)?.label}</h1>
-              <p className="text-xs" style={{color:'#3d5a8a'}}>{format(now,'EEEE, d MMMM yyyy')}</p>
+              <h1 className="text-sm md:text-base font-black text-white leading-tight">{selectedGym?.name || 'Dashboard'}</h1>
+              <p className="text-xs hidden md:block" style={{color:'#3d5a8a'}}>{format(now,'EEEE, d MMMM yyyy')}</p>
+              <p className="text-xs md:hidden" style={{color:'#4a6492'}}>{NAV.find(n=>n.id===tab)?.label}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            {/* At risk — always show if any */}
             {atRisk > 0 && (
               <button onClick={()=>setTab('members')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-125"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold"
                 style={{background:'rgba(249,115,22,0.1)',color:'#fb923c',border:'1px solid rgba(249,115,22,0.25)'}}>
-                <AlertTriangle className="w-3.5 h-3.5"/>{atRisk} at risk
+                <AlertTriangle className="w-3.5 h-3.5"/><span className="hidden sm:inline">{atRisk} at risk</span><span className="sm:hidden">{atRisk}</span>
               </button>
             )}
-            {/* Quick-post button — always visible */}
-            <button onClick={()=>openModal('post')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-125"
-              style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}>
-              <Pencil className="w-3.5 h-3.5"/>New Post
-            </button>
+            {/* Scan QR — always useful on mobile */}
             <button onClick={()=>openModal('qrScanner')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:brightness-125"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold"
               style={{background:'rgba(16,185,129,0.1)',color:'#34d399',border:'1px solid rgba(16,185,129,0.25)'}}>
-              <QrCode className="w-3.5 h-3.5"/>Scan QR
+              <QrCode className="w-3.5 h-3.5"/><span className="hidden sm:inline">Scan QR</span>
             </button>
+            {/* New Post — desktop only label */}
+            <button onClick={()=>openModal('post')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold"
+              style={{background:'rgba(59,130,246,0.15)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.3)'}}>
+              <Pencil className="w-3.5 h-3.5"/><span className="hidden sm:inline">New Post</span>
+            </button>
+            {/* Join code — desktop only */}
             {selectedGym?.join_code ? (
               <button onClick={()=>openModal('qrCode')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold tracking-widest transition-all hover:brightness-125"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold tracking-widest"
                 style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>
                 {selectedGym.join_code}
               </button>
             ) : (
               <button onClick={async()=>{try{const r=await base44.functions.invoke('generateGymJoinCode',{gym_id:selectedGym.id});if(r.data?.success)invGyms();}catch{}}}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold"
                 style={{background:'rgba(16,185,129,0.1)',color:'#34d399',border:'1px solid rgba(16,185,129,0.25)'}}>
                 <Plus className="w-3.5 h-3.5"/>Generate Code
               </button>
             )}
             {selectedGym?.verified && (
-              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold"
+              <div className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold"
                 style={{background:'rgba(59,130,246,0.1)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.25)'}}>
                 <Shield className="w-3.5 h-3.5"/>Verified
               </div>
@@ -1022,8 +1027,8 @@ export default function GymOwnerDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-6 py-6" style={{background:N[950]}}>
-          <div className="max-w-[1400px] mx-auto">
+        <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6" style={{background:N[950],paddingBottom:'calc(env(safe-area-inset-bottom) + 4.5rem)'}}>
+          <div className="max-w-[1400px] mx-auto md:pb-0" style={{}}>
             {TABS[tab] || TABS.overview}
           </div>
         </main>
