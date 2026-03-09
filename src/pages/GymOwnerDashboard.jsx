@@ -969,7 +969,7 @@ export default function GymOwnerDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-6 py-6" style={{background:N[950]}}>
+        <main className="flex-1 overflow-y-auto px-6 py-6" style={{background:'transparent'}}>
           <div className="max-w-[1400px] mx-auto">
             {TABS[tab] || TABS.overview}
           </div>
