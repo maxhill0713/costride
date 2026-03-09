@@ -118,7 +118,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
-      <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-xl border-t z-50 md:hidden pb-[env(safe-area-inset-bottom)]" style={{background:'rgba(2,4,10,0.97)',borderColor:'rgba(59,130,246,0.18)',boxShadow:'0 -4px 24px rgba(0,0,0,0.5)'}}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
           <div className="flex justify-around items-start pt-1 h-[79px] px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
@@ -157,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
 
               {/* Side Navigation for Desktop */}
             {!hideNavigation &&
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 backdrop-blur-xl border-r flex-col items-center py-8 z-50 shadow-xl" style={{background:'rgba(2,4,10,0.97)',borderColor:'rgba(59,130,246,0.18)'}}>
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-slate-900/95 backdrop-blur-xl border-r border-blue-800/50 flex-col items-center py-8 z-50 shadow-xl">
         <Link to={createPageUrl('Gyms')} className="mb-8 hover:animate-ios-spring-in">
           <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center shadow-lg hover:scale-110 hover:rotate-3 transition-all duration-300">
             <span className="text-2xl font-black text-white">G</span>
