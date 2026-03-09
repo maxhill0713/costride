@@ -119,8 +119,10 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
       }
     });
     return Object.entries(dailyVolume).
-      map(([date, volume]) => ({ date, volume: Math.round(volume) })).
-      slice(-14);
+      map(([date, volume]) => ({ date, volume: Math.round(volume), _sortKey: new Date(workoutLogs.find(l => new Date(l.completed_date || l.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) === date)?.completed_date || workoutLogs.find(l => new Date(l.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) === date)?.created_date || 0) })).
+      sort((a, b) => a._sortKey - b._sortKey).
+      slice(-14).
+      map(({ date, volume }) => ({ date, volume }));
   }, [workoutLogs]);
 
   const personalRecords = useMemo(() => {
