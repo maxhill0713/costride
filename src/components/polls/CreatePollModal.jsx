@@ -120,7 +120,7 @@ export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
                   </div>
                 ))}
               </div>
-              <button onClick={() => setOptions([...options, ''])} style={{ marginTop:8,width:'100%',padding:'9px',borderRadius:11,background:'rgba(139,92,246,0.07)',border:'1px dashed rgba(139,92,246,0.25)',color:'rgba(167,139,250,0.7)',fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6 }}>
+              <button onClick={() => setOptions([...options, ''])} style={{ marginTop:8,width:'100%',padding:'9px',borderRadius:11,background:'rgba(59,130,246,0.07)',border:'1px dashed rgba(59,130,246,0.25)',color:'rgba(147,197,253,0.7)',fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6 }}>
                 <Plus style={{ width:13,height:13 }}/>Add Option
               </button>
             </div>
