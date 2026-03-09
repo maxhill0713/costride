@@ -543,23 +543,25 @@ export default function Gyms() {
       <JoinWithCodeModal open={showJoinWithCode} onClose={() => setShowJoinWithCode(false)} currentUser={currentUser} />
 
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto bg-slate-900 border border-slate-700/50 text-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Dumbbell className="w-5 h-5 text-blue-400" />
+              {equipmentGym?.name} — Equipment
+            </DialogTitle>
+          </DialogHeader>
           <div className="space-y-3">
-            {(() => {
-              const isBodystreakGym = equipmentGym?.name?.toLowerCase().includes('bodystreak');
-              const mockEquipment = ['Nautilus Rows', 'Hammer Strength Chest Press', 'Leg Press', 'Smith Machine', 'Cable Crossover', 'Hack Squat', 'Preacher Curl Bench', 'Seated Calf Raise', 'Lat Pulldown', 'Pec Deck', 'Leg Extension', 'Leg Curl', 'Shoulder Press Machine', 'Cable Fly', 'T-Bar Row'];
-              const equipmentList = isBodystreakGym ? mockEquipment : equipmentGym?.equipment;
-              return equipmentList && equipmentList.length > 0 ?
-                <div className="grid grid-cols-2 gap-2">
-                  {equipmentList.map((item, idx) =>
-                    <div key={idx} className="flex items-center gap-2 p-2 bg-slate-700/50 rounded-lg border border-slate-600/50">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                      <span className="text-slate-200 text-sm">{item}</span>
-                    </div>
-                  )}
-                </div> :
-                <div className="text-center py-8 text-slate-400"><Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" /><p>No equipment information available</p></div>;
-            })()}
+            {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ?
+              <div className="grid grid-cols-2 gap-2">
+                {equipmentGym.equipment.map((item, idx) =>
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-slate-800/60 rounded-lg border border-slate-700/50">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                    <span className="text-slate-200 text-sm">{item}</span>
+                  </div>
+                )}
+              </div> :
+              <div className="text-center py-8 text-slate-400"><Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" /><p>No equipment information available</p></div>
+            }
           </div>
         </DialogContent>
       </Dialog>
