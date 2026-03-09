@@ -8,10 +8,10 @@ const S = `
   .ev-modal{width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
   @media(min-width:640px){.ev-modal{border-radius:24px;}}
   .ev-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
-  .ev-inp:focus{border-color:rgba(52,211,153,0.5);}
+  .ev-inp:focus{border-color:rgba(59,130,246,0.5);}
   .ev-inp::placeholder{color:rgba(148,163,184,0.4);}
   .ev-ta{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;resize:none;}
-  .ev-ta:focus{border-color:rgba(52,211,153,0.5);}
+  .ev-ta:focus{border-color:rgba(59,130,246,0.5);}
   .ev-ta::placeholder{color:rgba(148,163,184,0.4);}
   .ev-label{font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(148,163,184,0.5);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
 `;
@@ -26,10 +26,10 @@ function Btn({ onClick, disabled, children, secondary }) {
       style={{
         flex:1,padding:'12px 0',borderRadius:13,fontSize:13,fontWeight:900,
         color: secondary ? 'rgba(148,163,184,0.8)' : '#fff',
-        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#10b981 0%,#059669 50%,#047857 100%)',
+        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#3b82f6 0%,#2563eb 50%,#1d4ed8 100%)',
         border: secondary ? '1px solid rgba(255,255,255,0.08)' : disabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.18)',
-        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #065f46' : '4px solid #065f46',
-        boxShadow: green && !p ? '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(16,185,129,0.3),inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
+        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #1e3a8a' : '4px solid #1e3a8a',
+        boxShadow: green && !p ? '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(59,130,246,0.3),inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
         transform: p ? 'translateY(3px) scale(0.98)' : 'translateY(0) scale(1)',
         transition: p ? 'transform 0.06s' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1)',
         cursor: disabled ? 'default' : 'pointer',

@@ -9,10 +9,10 @@ const S = `
   .dm-modal{width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
   @media(min-width:640px){.dm-modal{border-radius:24px;}}
   .dm-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
-  .dm-inp:focus{border-color:rgba(99,102,241,0.5);}
+  .dm-inp:focus{border-color:rgba(59,130,246,0.5);}
   .dm-inp::placeholder{color:rgba(148,163,184,0.4);}
   .dm-ta{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;resize:none;}
-  .dm-ta:focus{border-color:rgba(99,102,241,0.5);}
+  .dm-ta:focus{border-color:rgba(59,130,246,0.5);}
   .dm-ta::placeholder{color:rgba(148,163,184,0.4);}
   .dm-sel{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;appearance:none;}
   .dm-sel option{background:#0a1628;color:#fff;}
@@ -34,10 +34,10 @@ function DarkButton({ onClick, disabled, children, secondary }) {
       style={{
         flex: 1, padding: '12px 0', borderRadius: 13, fontSize: 13, fontWeight: 900,
         color: secondary ? 'rgba(148,163,184,0.8)' : '#fff',
-        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#6366f1 0%,#4f46e5 50%,#4338ca 100%)',
+        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#3b82f6 0%,#2563eb 50%,#1d4ed8 100%)',
         border: secondary ? '1px solid rgba(255,255,255,0.08)' : disabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.18)',
-        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #312e81' : '4px solid #312e81',
-        boxShadow: secondary || disabled ? 'none' : p ? 'none' : '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(99,102,241,0.3),inset 0 1px 0 rgba(255,255,255,0.2)',
+        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #1e3a8a' : '4px solid #1e3a8a',
+        boxShadow: secondary || disabled ? 'none' : p ? 'none' : '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(59,130,246,0.3),inset 0 1px 0 rgba(255,255,255,0.2)',
         transform: p ? 'translateY(3px) scale(0.98)' : 'translateY(0) scale(1)',
         transition: p ? 'transform 0.06s,box-shadow 0.06s' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1),box-shadow 0.18s',
         cursor: disabled ? 'default' : 'pointer',
