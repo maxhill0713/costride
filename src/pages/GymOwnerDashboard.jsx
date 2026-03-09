@@ -281,7 +281,7 @@ export default function GymOwnerDashboard() {
     <div className="space-y-5">
 
       {/* 6 KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <KpiCard icon={Dumbbell}     iconColor="#60a5fa" label="Today's Check-ins" value={todayCI}           sub="members in today" />
         <KpiCard icon={Users}        iconColor="#34d399" label="Active This Week"  value={activeThisWeek}    sub={`of ${totalMembers} members`} trend={weeklyChangePct} />
         <KpiCard icon={Activity}     iconColor="#a78bfa" label="Monthly Check-ins" value={ci30.length}       sub={`${monthChangePct>=0?'+':''}${monthChangePct}% vs last month`} trend={monthChangePct} />
@@ -364,14 +364,14 @@ export default function GymOwnerDashboard() {
             { label: 'New Poll',      sub: `${polls.length} active`,  icon: BarChart2,         color: '#a78bfa', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)', action: ()=>openModal('poll') },
           ].map((b,i)=>(
             <button key={i} onClick={b.action}
-              className="flex items-center gap-4 p-4 rounded-xl text-left transition-all hover:brightness-125 hover:-translate-y-0.5 active:scale-95"
+              className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 p-4 rounded-xl text-center sm:text-left transition-all hover:brightness-125 hover:-translate-y-0.5 active:scale-95"
               style={{background:b.bg,border:`1px solid ${b.border}`}}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:`${b.color}22`,border:`1px solid ${b.color}33`}}>
                 <b.icon className="w-5 h-5" style={{color:b.color}}/>
               </div>
-              <div>
-                <p className="text-sm font-bold text-white">{b.label}</p>
-                <p className="text-xs mt-0.5" style={{color:'#6b87b8'}}>{b.sub}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white leading-tight">{b.label}</p>
+                <p className="text-xs mt-0.5 hidden sm:block" style={{color:'#6b87b8'}}>{b.sub}</p>
               </div>
             </button>
           ))}
@@ -407,7 +407,7 @@ export default function GymOwnerDashboard() {
     <div className="space-y-5">
 
       {/* 4 member-focused KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard icon={Users}    iconColor="#60a5fa" label="Total Members"    value={totalMembers}    sub="active memberships" />
         <KpiCard icon={Zap}      iconColor="#34d399" label="Active This Week" value={activeThisWeek}   trend={weeklyChangePct} sub="visited gym" />
         <KpiCard icon={Activity} iconColor="#a78bfa" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d" />
