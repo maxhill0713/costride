@@ -204,26 +204,50 @@ export default function Notifications() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {notifications.map((notification) => (
-              <Card
-                key={notification.id}
-                className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20"
-              >
-                <div className="p-3 flex items-start justify-between gap-2">
-                  <p className="text-xs text-white leading-tight flex-1">
-                    {notification.message || notification.title}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                    className="flex-shrink-0 h-8 w-8 hover:bg-slate-700/50 rounded-full"
+            {notifications
+              .filter(n => n.type !== 'gym_claim' && n.type !== 'gym_request' && !String(n.message || n.title || '').toLowerCase().includes('requested') && !String(n.message || n.title || '').toLowerCase().includes('claim'))
+              .map((notification) => {
+                const icon = notification.icon || '🔔';
+                const text = notification.message || notification.title;
+                const timeAgo = notification.created_date ? format(new Date(notification.created_date), 'MMM d, h:mma') : '';
+                return (
+                  <div
+                    key={notification.id}
+                    style={{
+                      background: notification.read ? '#1e293b' : '#1a2540',
+                      border: `1.5px solid ${notification.read ? '#334155' : '#3b5998'}`,
+                      borderBottom: `4px solid ${notification.read ? '#0f172a' : '#1a3fa8'}`,
+                      borderRadius: '16px',
+                    }}
+                    className="relative overflow-hidden"
                   >
-                    <X className="w-4 h-4 text-slate-400" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                    <button
+                      onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                      className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all duration-150 z-10 text-[10px] font-bold"
+                    >
+                      ✕
+                    </button>
+                    <div
+                      className="px-4 py-4 flex items-center gap-4"
+                      onClick={() => !notification.read && markAsReadMutation.mutate(notification.id)}
+                    >
+                      <span className="text-3xl select-none flex-shrink-0 leading-none">{icon}</span>
+                      <div className="flex-1 min-w-0 pr-4">
+                        <p className="font-extrabold text-white text-[14px] leading-tight tracking-tight">
+                          {notification.title}
+                        </p>
+                        {notification.message && notification.title && notification.message !== notification.title && (
+                          <p className="text-[12px] text-slate-400 mt-1 leading-snug font-medium">{notification.message}</p>
+                        )}
+                        {!notification.title && (
+                          <p className="text-[12px] text-slate-400 mt-1 leading-snug font-medium">{text}</p>
+                        )}
+                        <p className="text-[11px] text-slate-600 mt-1">{timeAgo}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
