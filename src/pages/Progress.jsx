@@ -99,8 +99,14 @@ function GoalsPage({ currentUser, onBack }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {activeGoals.map((goal) => (
-            <GoalCard key={goal.id} goal={goal}
+          {activeGoals.map((goal, index) => (
+            <motion.div
+              key={goal.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: index * 0.06 }}
+            >
+            <GoalCard goal={goal}
               onUpdate={(g, v, s, m) => { const d = { current_value: v, status: s || g.status }; if (m) d.milestones = m; updateGoalMutation.mutate({ id: g.id, data: d }); }}
               onDelete={(id) => deleteGoalMutation.mutate(id)}
               onToggleReminder={(g) => updateGoalMutation.mutate({ id: g.id, data: { reminder_enabled: !g.reminder_enabled } })}
