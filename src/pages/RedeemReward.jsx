@@ -230,7 +230,12 @@ export default function RedeemReward() {
         )}
 
         {activeSection === 'community' && (
-          <div>
+          <motion.div
+            key="community"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1] }}
+          >
             <h2 className="text-xl font-black text-white mb-3">Community Challenges</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userChallengeProgress.length === 0 ? (
@@ -238,8 +243,14 @@ export default function RedeemReward() {
                   <p className="text-slate-400">Join gym challenges to get started</p>
                 </Card>
               ) : (
-                userChallengeProgress.map((challenge) => (
-                  <Card key={challenge.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                userChallengeProgress.map((challenge, i) => (
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: i * 0.06 }}
+                  >
+                  <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                     <h4 className="font-bold text-white mb-2">{challenge.title}</h4>
                     <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
 
