@@ -1,15 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-
-const mockData = [
-  { month: 'Jan', chest: 3200, back: 2500, legs: 2800, arms: 1800, rpe: 8.2 },
-  { month: 'Feb', chest: 4100, back: 3200, legs: 3500, arms: 2200, rpe: 8.5 },
-  { month: 'Mar', chest: 5200, back: 4100, legs: 4800, arms: 2800, rpe: 8.8 },
-  { month: 'Apr', chest: 4500, back: 3600, legs: 4200, arms: 2500, rpe: 8.3 },
-  { month: 'May', chest: 5800, back: 4800, legs: 5200, arms: 3200, rpe: 8.9 },
-  { month: 'Jun', chest: 5100, back: 4200, legs: 4700, arms: 2900, rpe: 8.6 },
-];
 
 const CARD = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
@@ -18,15 +9,66 @@ const CARD = {
   WebkitBackdropFilter: 'blur(16px)',
 };
 
-const colors = {
+const defaultColors = {
   chest: '#a855f7',
   back: '#06b6d4',
   legs: '#84cc16',
   arms: '#ec4899',
 };
 
-export default function TrainingBreakdown() {
+export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes = {} }) {
   const [period, setPeriod] = useState('6m');
+
+  const chartData = useMemo(() => {
+    if (!workoutLogs || workoutLogs.length === 0) {
+      return [
+        { month: 'Jan', rpe: 8.0 },
+        { month: 'Feb', rpe: 8.2 },
+        { month: 'Mar', rpe: 8.3 },
+        { month: 'Apr', rpe: 8.1 },
+        { month: 'May', rpe: 8.4 },
+        { month: 'Jun', rpe: 8.2 },
+      ];
+    }
+
+    const grouped = {};
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
+
+    workoutLogs.forEach((log) => {
+      const logDate = new Date(log.created_date);
+      if (logDate < sixMonthsAgo) return;
+
+      const month = logDate.toLocaleDateString('en-US', { month: 'short' });
+      if (!grouped[month]) grouped[month] = { month, exercises: [], totalRPE: 0, count: 0 };
+
+      if (log.exercises) {
+        grouped[month].exercises.push(...log.exercises);
+        grouped[month].totalRPE += log.rpe_score || 8;
+        grouped[month].count++;
+      }
+    });
+
+    return Object.values(grouped)
+      .sort((a, b) => new Date(`01 ${a.month} 2024`) - new Date(`01 ${b.month} 2024`))
+      .map((entry) => ({
+        ...entry,
+        rpe: entry.count > 0 ? (entry.totalRPE / entry.count).toFixed(1) : 8.0,
+      }));
+  }, [workoutLogs]);
+
+  const bodyParts = useMemo(() => {
+    const parts = Object.keys(customWorkoutTypes || {});
+    if (parts.length === 0) {
+      return ['chest', 'back', 'legs', 'arms'];
+    }
+    return parts.slice(0, 4);
+  }, [customWorkoutTypes]);
+
+  const colors = useMemo(() => {
+    const colorArray = Object.values(defaultColors);
+    return Object.fromEntries(bodyParts.map((part, i) => [part, colorArray[i % colorArray.length]]));
+  }, [bodyParts]);
 
   return (
     <div className="rounded-2xl p-4" style={CARD}>
