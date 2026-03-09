@@ -277,12 +277,14 @@ export default function GymOwnerDashboard() {
   const TabOverview = () => (
     <div className="space-y-5">
 
-      {/* 4 KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Dumbbell} iconColor="#60a5fa" label="Today's Check-ins" value={todayCI}        sub="members in today" />
-        <KpiCard icon={Users}    iconColor="#34d399" label="Active This Week"  value={activeThisWeek} sub={`of ${uniqueMembers} members`} trend={weeklyChangePct} />
-        <KpiCard icon={Activity} iconColor="#a78bfa" label="Monthly Check-ins" value={ci30.length}    sub={`${monthChangePct>=0?'+':''}${monthChangePct}% vs last month`} trend={monthChangePct} />
-        <KpiCard icon={Star}     iconColor="#fbbf24" label="Avg Rating"        value={selectedGym?.rating?.toFixed(1)?? '—'} sub="member rating" />
+      {/* 6 KPIs */}
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+        <KpiCard icon={Dumbbell}     iconColor="#60a5fa" label="Today's Check-ins" value={todayCI}           sub="members in today" />
+        <KpiCard icon={Users}        iconColor="#34d399" label="Active This Week"  value={activeThisWeek}    sub={`of ${uniqueMembers} total`} trend={weeklyChangePct} />
+        <KpiCard icon={Activity}     iconColor="#a78bfa" label="Monthly Check-ins" value={ci30.length}       sub={`${monthChangePct>=0?'+':''}${monthChangePct}% vs last month`} trend={monthChangePct} />
+        <KpiCard icon={UserPlus}     iconColor="#34d399" label="New Sign-ups"      value={newSignUps}        sub="joined last 30 days" trend={newSignUpsPct} />
+        <KpiCard icon={DollarSign}   iconColor="#4ade80" label="Est. Monthly Revenue" value={revenueDisplay} sub={membershipPrice>0?`${allMemberships.length} members × £${membershipPrice}`:'Set price in Gym Settings'} />
+        <KpiCard icon={Star}         iconColor="#fbbf24" label="Avg Rating"        value={selectedGym?.rating?.toFixed(1)?? '—'} sub="member rating" />
       </div>
 
       {/* Chart + Alerts side by side */}
