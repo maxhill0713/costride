@@ -292,7 +292,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       
         {/* Description */}
         {description && (
-          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.62)' }}>{description}</p>
+          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>{description}</p>
         )}
       </div>
 
