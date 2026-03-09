@@ -416,7 +416,9 @@ export default function Home() {
   useEffect(() => {
     if (activeCircleDay === null) return;
     const dismiss = (e) => {
-      if (!e.target.closest('[data-circle-btn]')) setActiveCircleDay(null);
+      // Don't dismiss if clicking inside the bubble or on a circle button
+      if (e.target.closest('[data-circle-btn]') || e.target.closest('[data-bubble]')) return;
+      setActiveCircleDay(null);
     };
     document.addEventListener('pointerdown', dismiss);
     return () => document.removeEventListener('pointerdown', dismiss);
@@ -982,7 +984,7 @@ export default function Home() {
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
                           const BUBBLE_W = 274;
-                          const BUBBLE_H = done && !isRestDay ? 100 : 64;
+                          const BUBBLE_H = done && !isRestDay ? 110 : 70;
                           const ARROW_H = 7;
                           const ARROW_W = 13;
                           const RADIUS = 14;
@@ -1008,6 +1010,7 @@ export default function Home() {
                           ].join(' ');
                           return (
                             <motion.div
+                              data-bubble="true"
                               initial={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
                               animate={{ opacity: 1, scaleY: 1, scaleX: 1 }}
                               exit={{ opacity: 0, scaleY: 0, scaleX: 0.75 }}
@@ -1022,7 +1025,7 @@ export default function Home() {
                               </svg>
                               <div style={{
                                 position: 'absolute', top: ARROW_H + 10, left: 14, right: 14, bottom: 10,
-                                display: 'flex', flexDirection: 'column', gap: 2,
+                                display: 'flex', flexDirection: 'column', gap: 6,
                               }}>
                                 <span style={{
                                   fontSize: 19.3,
@@ -1040,7 +1043,7 @@ export default function Home() {
                                 }}>
                                   {getPopupLabel()}
                                 </span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1 }}>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1, textAlign: 'center' }}>
                                   {done && workoutLog?.completed_date
                                     ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
                                     : (() => {
@@ -1053,6 +1056,8 @@ export default function Home() {
                                 </span>
                                 {done && !isRestDay && workoutLog && (
                                   <button
+                                    data-bubble="true"
+                                    onPointerDown={e => e.stopPropagation()}
                                     onClick={async (e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
@@ -1061,19 +1066,20 @@ export default function Home() {
                                         setSummaryLog(logs[0] || workoutLog);
                                       } catch { setSummaryLog(workoutLog); }
                                     }}
-                                    onMouseDown={e => e.currentTarget.style.transform = 'translateY(2px)'}
-                                    onMouseUp={e => e.currentTarget.style.transform = ''}
+                                    onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
+                                    onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
                                     onMouseLeave={e => e.currentTarget.style.transform = ''}
-                                    onTouchStart={e => e.currentTarget.style.transform = 'translateY(2px)'}
-                                    onTouchEnd={e => e.currentTarget.style.transform = ''}
+                                    onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
+                                    onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
                                     style={{
-                                      marginTop: 8, width: '100%', padding: '7px 0', borderRadius: 9,
+                                      marginTop: 4, width: '100%', padding: '9px 0', borderRadius: 9,
                                       background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
                                       border: 'none', borderBottom: '3px solid #1d4ed8',
                                       color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
                                       letterSpacing: '0.03em', textAlign: 'center',
                                       boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
                                       transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
+                                      touchAction: 'manipulation',
                                     }}>
                                     View Summary
                                   </button>
