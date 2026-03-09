@@ -640,6 +640,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         </motion.div>
       )}
     </AnimatePresence>
+    </>
     );
 
 }
