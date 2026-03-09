@@ -101,22 +101,12 @@ export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={mockData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="chest-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#a855f7" stopOpacity={0.02} />
-              </linearGradient>
-              <linearGradient id="back-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
-              </linearGradient>
-              <linearGradient id="legs-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#84cc16" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#84cc16" stopOpacity={0.02} />
-              </linearGradient>
-              <linearGradient id="arms-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ec4899" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#ec4899" stopOpacity={0.02} />
-              </linearGradient>
+              {bodyParts.map((part) => (
+                <linearGradient key={`${part}-gradient`} id={`${part}-gradient`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={colors[part]} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={colors[part]} stopOpacity={0.02} />
+                </linearGradient>
+              ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.1)" />
             <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" style={{ fontSize: '10px' }} />
