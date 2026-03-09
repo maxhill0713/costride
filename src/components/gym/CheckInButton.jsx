@@ -107,7 +107,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           <Button
             onClick={handleCheckIn}
             disabled={isChecking || checkInMutation.isPending}
-            className="w-full h-14 rounded-2xl font-bold text-base bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-green-500/30 border-0">
+            className="w-full h-14 rounded-2xl font-bold text-base bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border border-transparent backdrop-blur-md shadow-[0_5px_0_0_#065f46,0_8px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[5px] active:scale-95 transition-all duration-100 transform-gpu">
             <CheckCircle className="w-5 h-5 mr-2" />
             {isChecking || checkInMutation.isPending ? 'Checking in...' : 'Check In'}
           </Button>
