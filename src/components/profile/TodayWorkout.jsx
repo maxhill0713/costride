@@ -604,18 +604,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               </div>
 
               {summaryLog.exercises?.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
-                  <div className="space-y-2">
+                <div className="space-y-3 mb-6">
+                  <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
+                  <div className="space-y-3">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
                       const weight = ex.weight_kg || ex.weight;
                       const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
                       const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
                       return (
-                        <div key={idx} className="flex items-center justify-between py-2 border-b border-white/8 last:border-0">
-                          <span className="text-white font-semibold text-sm">{exName}</span>
-                          <span className="text-slate-300 text-xs font-medium">{detail || '—'}</span>
+                        <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
+                          <span className="text-white font-semibold text-base">{exName}</span>
+                          <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
                         </div>
                       );
                     })}
@@ -624,9 +624,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               )}
 
               {summaryLog.notes && (
-                <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
-                  <p className="text-xs font-bold text-slate-500 uppercase mb-2">Notes</p>
-                  <p className="text-sm text-slate-300 leading-relaxed">{summaryLog.notes}</p>
+                <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+                  <p className="text-sm font-bold text-slate-500 uppercase mb-3">Notes</p>
+                  <p className="text-base text-slate-300 leading-relaxed">{summaryLog.notes}</p>
                 </div>
               )}
 
