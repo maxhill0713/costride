@@ -292,8 +292,14 @@ export default function RedeemReward() {
                 </Card>
               ) : (
                 <>
-                  {completedChallengeRewards.map((reward) => (
-                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                  {completedChallengeRewards.map((reward, i) => (
+                    <motion.div
+                      key={reward.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: i * 0.06 }}
+                    >
+                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                       <h3 className="font-bold text-white mb-1">{reward.title}</h3>
                       <p className="text-xs text-amber-400 mb-2">{reward.earnedText}</p>
                       <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] mb-3">
