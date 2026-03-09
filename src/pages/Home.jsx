@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dumbbell, Trophy, TrendingUp, Calendar, ChevronRight, MapPin, Clock, CheckCircle, AlertCircle, Target, X, Crown, Bell, Heart, MessageCircle, Edit2, Info, Star } from 'lucide-react';
+import { Dumbbell, TrendingUp, Calendar, ChevronRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import StreakIcon from '../components/StreakIcon';
 import FriendsIcon from '../components/FriendsIcon';
@@ -19,7 +19,7 @@ import PostCard from '../components/feed/PostCard';
 import QuoteCarousel from '../components/home/QuoteCarousel';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
 import { useState } from 'react';
-import { format, isToday, differenceInDays, startOfDay, startOfWeek, formatDistanceToNow } from 'date-fns';
+import { isToday, differenceInDays, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
