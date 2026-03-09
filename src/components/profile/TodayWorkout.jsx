@@ -254,6 +254,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   }
 
   return (
+    <>
     <Card
       onClick={() => !isExpanded && setIsExpanded(true)}
       className={`relative overflow-hidden rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.35)] p-3 ${!isExpanded && 'cursor-pointer'}`}
