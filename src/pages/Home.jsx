@@ -502,19 +502,6 @@ export default function Home() {
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-  const { data: recentChallengeActivity = [] } = useQuery({
-    queryKey: ['recentChallengeActivity'],
-    queryFn: async () => {
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      return base44.entities.ChallengeParticipant.filter({
-        created_date: { $gte: oneDayAgo.toISOString() }
-      }, '-created_date', 5);
-    },
-    enabled: !!currentUser && !!challenges.length,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    placeholderData: (prev) => prev
-  });
   const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
   const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
   const { data: checkInUsers = [] } = useQuery({
