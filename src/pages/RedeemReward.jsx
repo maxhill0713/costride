@@ -176,7 +176,7 @@ export default function RedeemReward() {
           </button>
           <button
             onClick={() => setActiveSection('community')}
-            className={`px-3 md:px-6 py-5 rounded-2xl font-bold text-base md:text-lg transition-all duration-100 flex flex-col items-center gap-2 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
+            className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'community'
                 ? 'bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent shadow-[0_5px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)]'
                 : 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]'
