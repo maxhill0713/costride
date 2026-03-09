@@ -873,7 +873,7 @@ export default function GymOwnerDashboard() {
 
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
-        style={{width:collapsed?64:224,background:'rgba(2,6,23,0.97)',borderRight:'1px solid rgba(255,255,255,0.07)'}}>
+        style={{width:collapsed?64:224,background:'rgba(15,30,70,0.95)',backdropFilter:'blur(16px)',borderRight:'1px solid rgba(59,130,246,0.2)'}}>
 
         {/* Brand */}
         <div className="px-4 py-5 border-b flex-shrink-0" style={{borderColor:'rgba(59,130,246,0.1)'}}>
