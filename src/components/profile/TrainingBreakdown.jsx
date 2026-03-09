@@ -131,10 +131,17 @@ export default function TrainingBreakdown({ workoutLogs = [], customWorkoutTypes
               labelStyle={{ color: '#cbd5e1', fontSize: '10px' }}
               cursor={{ stroke: 'rgba(148,163,184,0.2)' }}
             />
-            <Area type="monotone" dataKey="chest" stackId="1" stroke={colors.chest} strokeWidth={1.5} fill="url(#chest-gradient)" />
-            <Area type="monotone" dataKey="back" stackId="1" stroke={colors.back} strokeWidth={1.5} fill="url(#back-gradient)" />
-            <Area type="monotone" dataKey="legs" stackId="1" stroke={colors.legs} strokeWidth={1.5} fill="url(#legs-gradient)" />
-            <Area type="monotone" dataKey="arms" stackId="1" stroke={colors.arms} strokeWidth={1.5} fill="url(#arms-gradient)" />
+            {bodyParts.map((part, idx) => (
+              <Area
+                key={part}
+                type="monotone"
+                dataKey={part}
+                stackId="1"
+                stroke={colors[part]}
+                strokeWidth={1.5}
+                fill={`url(#${part}-gradient)`}
+              />
+            ))}
           </AreaChart>
         </ResponsiveContainer>
       </div>
