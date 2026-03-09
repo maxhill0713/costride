@@ -321,8 +321,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 transition={{ delay: 0.05, duration: 0.2 }}
                 className="grid grid-cols-[1fr_44px_44px_auto_auto] gap-1 mb-1.5 items-end">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-3">Sets</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center ml-3">Reps</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
                 <div className="w-6"></div>
               </motion.div>
@@ -369,10 +369,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                            <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
                          }
                        </div>
-                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg w-full flex items-center justify-center">
+                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg w-full flex items-center justify-center ml-3">
                          {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                        </div>
-                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg w-full flex items-center justify-center">
+                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg w-full flex items-center justify-center ml-3">
                          {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                        </div>
                       <div className="flex items-center gap- ml-4">
