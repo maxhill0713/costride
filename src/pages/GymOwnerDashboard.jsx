@@ -36,8 +36,8 @@ const BG = {
   page:    'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
   sidebar: 'linear-gradient(180deg, #0a1a4a 0%, #060d2e 100%)',
   header:  'linear-gradient(90deg, #0a1a4a 0%, #060d2e 100%)',
-  panel:   'linear-gradient(145deg, rgba(13,35,96,0.35), rgba(2,4,10,0.7))',
-  card:    'linear-gradient(135deg, rgba(13,35,96,0.45) 0%, rgba(2,4,10,0.85) 100%)',
+  panel:   'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+  card:    'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
   subcard: 'rgba(13,35,96,0.25)',
 };
 const BORDER = {
