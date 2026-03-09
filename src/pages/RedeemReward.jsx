@@ -198,16 +198,27 @@ export default function RedeemReward() {
         </div>
 
         {activeSection === 'weekly' && (
-          <div>
+          <motion.div
+            key="weekly"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1] }}
+          >
             <h2 className="text-xl font-black text-white mb-3">Weekly Challenges</h2>
             {weeklyChallenges.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {weeklyChallenges.map((challenge) => (
-                  <WeeklyChallengeCard
+                {weeklyChallenges.map((challenge, i) => (
+                  <motion.div
                     key={challenge.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: i * 0.06 }}
+                  >
+                  <WeeklyChallengeCard
                     challenge={challenge}
                     currentUser={currentUser}
                   />
+                  </motion.div>
                 ))}
               </div>
             ) : (
