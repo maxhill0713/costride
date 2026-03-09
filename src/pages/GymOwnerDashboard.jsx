@@ -854,7 +854,7 @@ export default function GymOwnerDashboard() {
 
       {/* Mobile bottom nav — iOS safe area aware */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t"
-        style={{background:'rgba(2,6,23,0.97)',borderColor:'rgba(255,255,255,0.08)',paddingBottom:'env(safe-area-inset-bottom)'}}>
+        style={{background:'rgba(15,30,70,0.97)',backdropFilter:'blur(16px)',borderColor:'rgba(59,130,246,0.2)',paddingBottom:'env(safe-area-inset-bottom)'}}>
         <div className="flex items-center justify-around" style={{height:'64px'}}>
           {NAV.map(item=>{
             const active=tab===item.id;
