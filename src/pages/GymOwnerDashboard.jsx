@@ -850,7 +850,7 @@ export default function GymOwnerDashboard() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden" style={{background:'linear-gradient(135deg,#0f172a 0%,#020617 100%)',fontFamily:"'DM Sans','Inter',sans-serif"}}>
+    <div className="flex h-screen overflow-hidden" style={{background:'linear-gradient(to bottom right,#1e3058,#0f1f45,#0a1628)',fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
       {/* Mobile bottom nav — iOS safe area aware */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t"
