@@ -77,10 +77,10 @@ export default function Friends() {
     gcTime: 15 * 60 * 1000
   });
 
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['checkIns', 'recent'],
-    queryFn: () => base44.entities.CheckIn.filter({ check_in_date: { $gte: sevenDaysAgo } }, '-check_in_date', 500),
+    queryKey: ['checkIns', 'recent90'],
+    queryFn: () => base44.entities.CheckIn.filter({ check_in_date: { $gte: ninetyDaysAgo } }, '-check_in_date', 1000),
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
