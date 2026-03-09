@@ -229,6 +229,35 @@ export default function GymOwnerDashboard() {
   const atRisk           = allMemberships.filter(m => { const last = checkIns.filter(c=>c.user_id===m.user_id)[0]; if(!last) return false; const d=Math.floor((now-new Date(last.check_in_date))/86400000); return d>=7&&d<=10; }).length;
   const monthChangePct   = ciPrev30.length > 0 ? Math.round(((ci30.length-ciPrev30.length)/ciPrev30.length)*100) : 0;
 
+  // New sign-ups this month (memberships created in last 30 days)
+  const newSignUps = allMemberships.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now,30), end: now })).length;
+  const newSignUpsPrev = allMemberships.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now,60), end: subDays(now,30) })).length;
+  const newSignUpsPct = newSignUpsPrev > 0 ? Math.round(((newSignUps - newSignUpsPrev) / newSignUpsPrev) * 100) : 0;
+
+  // Estimated monthly revenue from memberships
+  const membershipPrice = parseFloat(selectedGym?.price) || 0;
+  const estimatedRevenue = membershipPrice > 0 ? (allMemberships.length * membershipPrice).toFixed(0) : null;
+  const revenueDisplay = estimatedRevenue ? `£${Number(estimatedRevenue).toLocaleString()}` : '—';
+
+  // Load announcements from gym entity
+  const savedAnnouncements = selectedGym?.announcements || [];
+
+  const saveAnnouncement = async () => {
+    if (!announcement.trim() || announcementSaving) return;
+    setAnnouncementSaving(true);
+    const updated = [{ text: announcement.trim(), date: new Date().toISOString() }, ...savedAnnouncements].slice(0, 10);
+    await base44.entities.Gym.update(selectedGym.id, { announcements: updated });
+    invGyms();
+    setAnnouncement('');
+    setAnnouncementSaving(false);
+  };
+
+  const deleteAnnouncement = async (idx) => {
+    const updated = savedAnnouncements.filter((_, i) => i !== idx);
+    await base44.entities.Gym.update(selectedGym.id, { announcements: updated });
+    invGyms();
+  };
+
   // Chart data
   const ciByDay   = Array.from({length:7},(_,i)=>{const d=subDays(now,6-i);return{day:format(d,'EEE'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
   const weekTrend = Array.from({length:12},(_,i)=>{const s=subDays(now,(11-i)*7),e=subDays(now,(10-i)*7);return{label:format(s,'MMM d'),value:checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).length};});
