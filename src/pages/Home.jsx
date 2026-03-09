@@ -840,6 +840,7 @@ export default function Home() {
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
+                  const plannedWorkoutData = !done && !isRestDay && currentSplit ? (Array.isArray(currentSplit.days) ? currentSplit.days[day - 1] : currentSplit[day]) : null;
                   const getBg = () => {
                     if (isRestDay) {
                       return done
