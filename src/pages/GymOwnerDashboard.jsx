@@ -129,6 +129,9 @@ export default function GymOwnerDashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedGym, setSelectedGym] = useState(null);
   const [gymOpen, setGymOpen]     = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementSaving, setAnnouncementSaving] = useState(false);
 
   // Modals
   const [modal, setModal] = useState(null); // single modal state string
