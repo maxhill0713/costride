@@ -101,7 +101,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const todayDate = new Date().toISOString().split('T')[0];
   const previousWorkoutsExcludingToday = previousWorkouts.filter((log) => log.completed_date !== todayDate);
   const lastWorkout = previousWorkoutsExcludingToday.length > 0 ? previousWorkoutsExcludingToday[previousWorkoutsExcludingToday.length - 1] : null;
-  const todayLog = React.useMemo(() => previousWorkouts.find((log) => log.completed_date === todayDate), [previousWorkouts, todayDate]);
+  const todayLog = previousWorkouts.find((log) => log.completed_date === todayDate);
   const alreadyLoggedToday = !!todayLog;
 
   const updateWorkoutMutation = useMutation({
