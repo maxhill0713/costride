@@ -176,8 +176,10 @@ export default function RedeemReward() {
             }`}>
             <Zap className="w-4 h-4" />
             Weekly
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95, y: 2 }}
+            transition={{ duration: 0.1 }}
             onClick={() => setActiveSection('community')}
             className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'community'
@@ -186,8 +188,10 @@ export default function RedeemReward() {
             }`}>
             <Trophy className="w-4 h-4" />
             Community
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95, y: 2 }}
+            transition={{ duration: 0.1 }}
             onClick={() => setActiveSection('rewards')}
             className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'rewards'
@@ -196,7 +200,7 @@ export default function RedeemReward() {
             }`}>
             <Gift className="w-4 h-4" />
             Rewards
-          </button>
+          </motion.button>
         </div>
 
         {activeSection === 'weekly' && (
