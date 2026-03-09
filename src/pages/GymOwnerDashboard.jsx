@@ -170,13 +170,13 @@ export default function GymOwnerDashboard() {
   const qo = { staleTime: 3 * 60 * 1000, placeholderData: p => p };
   const on  = !!selectedGym;
   const { data: allMemberships = [] } = useQuery({ queryKey: ['memberships', selectedGym?.id], queryFn: () => base44.entities.GymMembership.filter({ gym_id: selectedGym.id, status: 'active' }), enabled: on && !!currentUser, ...qo });
-  const { data: checkIns   = [] }     = useQuery({ queryKey: ['checkIns',   selectedGym?.id], queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }, '-check_in_date', 500), enabled: on, ...qo });
+  const { data: checkIns   = [] }     = useQuery({ queryKey: ['checkIns',   selectedGym?.id], queryFn: () => base44.entities.CheckIn.filter({ gym_id: selectedGym.id }, '-check_in_date', 2000), enabled: on, ...qo });
   const { data: lifts      = [] }     = useQuery({ queryKey: ['lifts',      selectedGym?.id], queryFn: () => base44.entities.Lift.filter({ gym_id: selectedGym.id }, '-lift_date', 200),          enabled: on, ...qo });
   const { data: rewards    = [] }     = useQuery({ queryKey: ['rewards',    selectedGym?.id], queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }),                           enabled: on, ...qo });
   const { data: classes    = [] }     = useQuery({ queryKey: ['classes',    selectedGym?.id], queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }),                         enabled: on, ...qo });
   const { data: coaches    = [] }     = useQuery({ queryKey: ['coaches',    selectedGym?.id], queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }),                            enabled: on, ...qo });
   const { data: events     = [] }     = useQuery({ queryKey: ['events',     selectedGym?.id], queryFn: () => base44.entities.Event.filter({ gym_id: selectedGym.id }, '-event_date'),              enabled: on, ...qo });
-  const { data: posts      = [] }     = useQuery({ queryKey: ['posts',      selectedGym?.id], queryFn: () => base44.entities.Post.filter({ allow_gym_repost: true }, '-created_date', 20),         enabled: on, ...qo });
+  const { data: posts      = [] }     = useQuery({ queryKey: ['posts',      selectedGym?.id], queryFn: () => base44.entities.Post.filter({ member_id: selectedGym.id }, '-created_date', 20),        enabled: on, ...qo });
   const { data: challenges = [] }     = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date'),        enabled: on, ...qo });
   const { data: polls      = [] }     = useQuery({ queryKey: ['polls',      selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
 
@@ -219,14 +219,17 @@ export default function GymOwnerDashboard() {
   const ci30             = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
   const ciPrev30         = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,60), end: subDays(now,30) }));
   const todayCI          = checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(now).getTime()).length;
-  const uniqueMembers    = new Set(checkIns.map(c => c.user_id)).size;
+  const totalMembers     = allMemberships.length;
   const activeThisWeek   = new Set(ci7.map(c => c.user_id)).size;
   const activeLastWeek   = new Set(checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,14), end: subDays(now,7) })).map(c => c.user_id)).size;
   const weeklyChangePct  = activeLastWeek > 0 ? Math.round(((activeThisWeek - activeLastWeek) / activeLastWeek) * 100) : 0;
   const activeThisMonth  = new Set(ci30.map(c => c.user_id)).size;
-  const retentionRate    = uniqueMembers > 0 ? Math.round((activeThisMonth / uniqueMembers) * 100) : 0;
+  const retentionRate    = totalMembers > 0 ? Math.round((activeThisMonth / totalMembers) * 100) : 0;
   const monthCiPer       = (() => { const acc={}; ci30.forEach(c=>{acc[c.user_id]=(acc[c.user_id]||0)+1;}); return Object.values(acc); })();
-  const atRisk           = allMemberships.filter(m => { const last = checkIns.filter(c=>c.user_id===m.user_id)[0]; if(!last) return false; const d=Math.floor((now-new Date(last.check_in_date))/86400000); return d>=7&&d<=10; }).length;
+  // At-risk: members with no check-in in 14+ days (or never checked in)
+  const memberLastCheckIn = {};
+  checkIns.forEach(c => { if (!memberLastCheckIn[c.user_id] || new Date(c.check_in_date) > new Date(memberLastCheckIn[c.user_id])) memberLastCheckIn[c.user_id] = c.check_in_date; });
+  const atRisk           = allMemberships.filter(m => { const last = memberLastCheckIn[m.user_id]; if (!last) return true; const d = Math.floor((now - new Date(last)) / 86400000); return d >= 14; }).length;
   const monthChangePct   = ciPrev30.length > 0 ? Math.round(((ci30.length-ciPrev30.length)/ciPrev30.length)*100) : 0;
 
   // New sign-ups this month (memberships created in last 30 days)
@@ -280,7 +283,7 @@ export default function GymOwnerDashboard() {
       {/* 6 KPIs */}
       <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
         <KpiCard icon={Dumbbell}     iconColor="#60a5fa" label="Today's Check-ins" value={todayCI}           sub="members in today" />
-        <KpiCard icon={Users}        iconColor="#34d399" label="Active This Week"  value={activeThisWeek}    sub={`of ${uniqueMembers} total`} trend={weeklyChangePct} />
+        <KpiCard icon={Users}        iconColor="#34d399" label="Active This Week"  value={activeThisWeek}    sub={`of ${totalMembers} members`} trend={weeklyChangePct} />
         <KpiCard icon={Activity}     iconColor="#a78bfa" label="Monthly Check-ins" value={ci30.length}       sub={`${monthChangePct>=0?'+':''}${monthChangePct}% vs last month`} trend={monthChangePct} />
         <KpiCard icon={UserPlus}     iconColor="#34d399" label="New Sign-ups"      value={newSignUps}        sub="joined last 30 days" trend={newSignUpsPct} />
         <KpiCard icon={DollarSign}   iconColor="#4ade80" label="Est. Monthly Revenue" value={revenueDisplay} sub={membershipPrice>0?`${allMemberships.length} members × £${membershipPrice}`:'Set price in Gym Settings'} />
@@ -405,7 +408,7 @@ export default function GymOwnerDashboard() {
 
       {/* 4 member-focused KPIs */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Users}    iconColor="#60a5fa" label="Total Members"    value={uniqueMembers}    sub="all-time unique" />
+        <KpiCard icon={Users}    iconColor="#60a5fa" label="Total Members"    value={totalMembers}    sub="active memberships" />
         <KpiCard icon={Zap}      iconColor="#34d399" label="Active This Week" value={activeThisWeek}   trend={weeklyChangePct} sub="visited gym" />
         <KpiCard icon={Activity} iconColor="#a78bfa" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d" />
         <KpiCard icon={Trophy}   iconColor="#fbbf24" label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records" />
@@ -683,7 +686,7 @@ export default function GymOwnerDashboard() {
         {[
           {label:'Daily Average',   val:Math.round(ci30.length/30),  sub:'check-ins / day (30d)',  c:'#60a5fa'},
           {label:'Monthly Change',  val:`${monthChangePct>=0?'+':''}${monthChangePct}%`, sub:'vs previous 30 days', c:monthChangePct>=0?'#34d399':'#f87171'},
-          {label:'Avg Visits/Member',val:uniqueMembers>0?(ci30.length/uniqueMembers).toFixed(1):'—', sub:'per member (30d)', c:'#a78bfa'},
+          {label:'Avg Visits/Member',val:totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—', sub:'per member (30d)', c:'#a78bfa'},
           {label:'Return Rate',     val:`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`, sub:'of all check-ins', c:'#fbbf24'},
         ].map((s,i)=>(
           <div key={i} className="p-5 rounded-xl text-center" style={{background:`linear-gradient(135deg,${N[800]},${N[850]})`,border:'1px solid rgba(59,130,246,0.12)'}}>
