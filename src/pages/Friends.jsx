@@ -58,11 +58,10 @@ export default function Friends() {
     gcTime: 10 * 60 * 1000
   });
 
-  // allUsers is only used in the friends modal to show avatars/names for known friend IDs
-  // We scope it to only the IDs we actually need (friends + friend requesters)
   const knownUserIds = [
-  ...friends.map((f) => f.friend_id),
-  ...friendRequests.map((r) => r.user_id)];
+    ...friends.map((f) => f.friend_id),
+    ...friendRequests.map((r) => r.user_id)
+  ];
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
@@ -78,7 +77,6 @@ export default function Friends() {
     gcTime: 15 * 60 * 1000
   });
 
-  // Only fetch check-ins for the last 7 days to reduce data transfer
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['checkIns', 'recent'],
@@ -150,7 +148,7 @@ export default function Friends() {
       await queryClient.cancelQueries(['friendRequests', currentUser?.id]);
       const previous = queryClient.getQueryData(['friendRequests', currentUser?.id]);
       queryClient.setQueryData(['friendRequests', currentUser?.id], (old = []) =>
-      old.filter((r) => r.user_id !== friendId)
+        old.filter((r) => r.user_id !== friendId)
       );
       return { previous };
     },
@@ -173,7 +171,7 @@ export default function Friends() {
       await queryClient.cancelQueries(['friendRequests', currentUser?.id]);
       const previous = queryClient.getQueryData(['friendRequests', currentUser?.id]);
       queryClient.setQueryData(['friendRequests', currentUser?.id], (old = []) =>
-      old.filter((r) => r.user_id !== friendId)
+        old.filter((r) => r.user_id !== friendId)
       );
       return { previous };
     },
@@ -195,7 +193,7 @@ export default function Friends() {
       await queryClient.cancelQueries(['friends', currentUser?.id]);
       const previous = queryClient.getQueryData(['friends', currentUser?.id]);
       queryClient.setQueryData(['friends', currentUser?.id], (old = []) =>
-      old.filter((f) => f.friend_id !== friendId)
+        old.filter((f) => f.friend_id !== friendId)
       );
       return { previous };
     },
@@ -267,41 +265,31 @@ export default function Friends() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   });
 
-  // Only include actual user-created posts (with content, images, or videos)
   const friendPosts = allPosts.filter((post) =>
-  friendIds.includes(post.member_id) && (
-  post.content || post.image_url || post.video_url) &&
-  !post.gym_join
+    friendIds.includes(post.member_id) && (
+      post.content || post.image_url || post.video_url) &&
+    !post.gym_join
   );
 
-  // Gym join posts removed - no longer displayed
-
-  // Create unified activity feed
   const createActivityFeed = () => {
     const activities = [];
 
-    // Add check-ins (last 7 days)
     const recentCheckIns = allCheckIns.filter((checkIn) => {
       const daysSince = differenceInDays(new Date(), new Date(checkIn.check_in_date));
       return daysSince <= 7 && friendIds.includes(checkIn.user_id);
     });
 
-
-    // Add streak milestones
     friendIds.forEach((friendId) => {
       const friendCheckIns = allCheckIns.filter((c) => c.user_id === friendId);
       const streak = calculateStreak(friendCheckIns);
       const friend = friends.find((f) => f.friend_id === friendId);
 
-      // Check if they recently hit a milestone (7, 14, 30, 50, 100 days)
       const milestones = [7, 14, 30, 50, 100];
       milestones.forEach((milestone) => {
         if (streak >= milestone) {
-          // Use the date when they hit this milestone (approximate)
           const milestoneDate = friendCheckIns[Math.min(milestone - 1, friendCheckIns.length - 1)]?.check_in_date;
           if (milestoneDate) {
             const daysSinceMilestone = differenceInDays(new Date(), new Date(milestoneDate));
-            // Only show if milestone was hit in last 7 days
             if (daysSinceMilestone <= 7) {
               activities.push({
                 id: `milestone-${friendId}-${milestone}`,
@@ -320,9 +308,8 @@ export default function Friends() {
       });
     });
 
-    // Add PR lifts
     const friendPRs = allLifts.filter((lift) =>
-    lift.is_pr && friendIds.includes(lift.member_id)
+      lift.is_pr && friendIds.includes(lift.member_id)
     );
 
     friendPRs.forEach((lift) => {
@@ -354,7 +341,6 @@ export default function Friends() {
       }
     });
 
-    // Add notifications
     notifications.forEach((notification) => {
       const daysSince = differenceInDays(new Date(), new Date(notification.created_date));
       if (daysSince <= 7) {
@@ -367,19 +353,14 @@ export default function Friends() {
       }
     });
 
-
-
-    // Sort by most recent first
     return activities.sort((a, b) => b.timestamp - a.timestamp);
   };
 
   const activityFeed = createActivityFeed();
 
-  // Generate activity cards/nudges
   const generateActivityCards = () => {
     const cards = [];
 
-    // Check if current user hasn't checked in recently
     const lastCheckIn = currentUserCheckIns.length > 0 ? currentUserCheckIns[0] : null;
     const daysSinceLastCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn.check_in_date)) : null;
 
@@ -395,7 +376,6 @@ export default function Friends() {
       });
     }
 
-    // Friend milestones
     friendsWithActivity.forEach((friend) => {
       if (friend.activity.streak === 7) {
         cards.push({
@@ -430,7 +410,6 @@ export default function Friends() {
       }
     });
 
-    // Inactive friends warning
     friendsWithActivity.forEach((friend) => {
       if (friend.activity.daysSinceCheckIn >= 7) {
         cards.push({
@@ -445,7 +424,6 @@ export default function Friends() {
       }
     });
 
-    // Streak freeze warning
     if (lastCheckIn && daysSinceLastCheckIn === 1) {
       cards.push({
         id: 'streak-danger',
@@ -463,15 +441,60 @@ export default function Friends() {
 
   const activityCards = generateActivityCards();
 
-  // Filter out dismissed cards (keep activity feed items for 30 minutes)
   const isItemExpired = (timestamp) => {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     return new Date(timestamp) < thirtyMinutesAgo;
   };
 
-  // Filter out dismissed cards, keep posts for 30 minutes
   const filteredActivityFeed = activityFeed.filter((item) => !isItemExpired(item.timestamp));
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
+
+  // Per-card accent config for redesigned notification cards
+  const getCardAccentConfig = (card) => {
+    const configs = {
+      'nudge': {
+        glow: 'rgba(249,115,22,0.18)',
+        border: 'rgba(249,115,22,0.35)',
+        bar: 'from-orange-400 to-red-500',
+        iconBg: 'rgba(249,115,22,0.15)',
+        iconBorder: 'rgba(249,115,22,0.30)',
+        badgeClass: 'bg-orange-500/20 text-orange-300 border border-orange-500/30',
+        badgeLabel: 'REMINDER',
+        shimmer: 'rgba(249,115,22,0.25)',
+      },
+      'friend-milestone': {
+        glow: 'rgba(234,179,8,0.16)',
+        border: 'rgba(234,179,8,0.32)',
+        bar: 'from-yellow-400 to-orange-500',
+        iconBg: 'rgba(234,179,8,0.13)',
+        iconBorder: 'rgba(234,179,8,0.28)',
+        badgeClass: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30',
+        badgeLabel: 'MILESTONE',
+        shimmer: 'rgba(234,179,8,0.22)',
+      },
+      'friend-inactive': {
+        glow: 'rgba(100,116,139,0.14)',
+        border: 'rgba(100,116,139,0.25)',
+        bar: 'from-slate-400 to-slate-500',
+        iconBg: 'rgba(100,116,139,0.12)',
+        iconBorder: 'rgba(100,116,139,0.22)',
+        badgeClass: 'bg-slate-500/20 text-slate-300 border border-slate-500/30',
+        badgeLabel: 'INACTIVE',
+        shimmer: 'rgba(100,116,139,0.18)',
+      },
+      'streak-warning': {
+        glow: 'rgba(239,68,68,0.22)',
+        border: 'rgba(239,68,68,0.42)',
+        bar: 'from-red-500 to-rose-600',
+        iconBg: 'rgba(239,68,68,0.15)',
+        iconBorder: 'rgba(239,68,68,0.35)',
+        badgeClass: 'bg-red-500/20 text-red-300 border border-red-500/30',
+        badgeLabel: 'URGENT',
+        shimmer: 'rgba(239,68,68,0.28)',
+      },
+    };
+    return configs[card.type] || configs['nudge'];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col">
@@ -487,9 +510,9 @@ export default function Friends() {
             Friend Activity
           </h1>
           <button
-            onClick={() => setShowFriendsModal(true)} className="absolute right-0 inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu\n">
-
-
+            onClick={() => setShowFriendsModal(true)}
+            className="absolute right-0 inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu"
+          >
             <span className="text-[11px] font-semibold">{friends.length}</span>
             <span className="text-[11px] font-medium">Friends</span>
           </button>
@@ -497,332 +520,356 @@ export default function Friends() {
       </div>
 
       <div className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full px-4 py-6">
-         {/* Activity Nudge Cards */}
-         {filteredActivityCards.length > 0 &&
-        <div className="space-y-3 mb-6">
-             {filteredActivityCards.map((card) =>
-          <Card
-            key={card.id}
-            data-activity-id={card.id}
-            className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl hover:shadow-lg hover:shadow-blue-500/20 transition-all shadow-2xl shadow-black/20 relative">
 
+        {/* ── Redesigned Activity Nudge Cards ── */}
+        {filteredActivityCards.length > 0 && (
+          <div className="space-y-3 mb-6">
+            {filteredActivityCards.map((card) => {
+              const cfg = getCardAccentConfig(card);
+              return (
+                <div
+                  key={card.id}
+                  data-activity-id={card.id}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.72) 100%)',
+                    boxShadow: `0 0 0 1px ${cfg.border}, 0 8px 32px rgba(0,0,0,0.45), 0 0 28px ${cfg.glow}`,
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                  }}
+                  className="relative overflow-hidden rounded-2xl"
+                >
+                  {/* Left accent bar */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${cfg.bar} rounded-l-2xl`} />
+
+                  {/* Top shimmer line */}
+                  <div
+                    className="absolute top-0 left-0 right-0 h-px"
+                    style={{
+                      background: `linear-gradient(90deg, transparent 0%, ${cfg.shimmer} 40%, ${cfg.shimmer} 60%, transparent 100%)`,
+                      opacity: 0.6,
+                    }}
+                  />
+
+                  {/* Dismiss button */}
                   <button
-              onClick={() => {
-                const updated = new Set(dismissedCardIds).add(card.id);
-                setDismissedCardIds(updated);
-                localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
-              }}
-              className="absolute top-2 right-2 text-slate-400 hover:text-white transition-colors"
-              aria-label="Dismiss">
-
-                    
+                    onClick={() => {
+                      const updated = new Set(dismissedCardIds).add(card.id);
+                      setDismissedCardIds(updated);
+                      localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
+                    }}
+                    className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-slate-500 hover:text-slate-200 transition-all duration-150 z-10 text-[9px] leading-none font-bold"
+                    aria-label="Dismiss"
+                  >
+                    ✕
                   </button>
-                 <div className="p-6">
-                   <div className="flex items-start gap-3">
-                     {/* Icon */}
-                     
 
+                  <div className="pl-5 pr-9 py-4 flex items-center gap-3.5">
+                    {/* Emoji icon bubble */}
+                    <div
+                      className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl select-none"
+                      style={{
+                        background: cfg.iconBg,
+                        border: `1px solid ${cfg.iconBorder}`,
+                      }}
+                    >
+                      {card.emoji}
+                    </div>
 
+                    {/* Text content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Badge row */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-widest ${cfg.badgeClass}`}
+                        >
+                          {cfg.badgeLabel}
+                        </span>
+                      </div>
+                      {/* Title */}
+                      <p className="font-semibold text-white text-[13px] leading-snug">
+                        {card.title}
+                      </p>
+                      {/* Body */}
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                        {card.message}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-                     {/* Content */}
-                     <div className="flex-1 min-w-0">
-                       <h3 className="font-bold text-white text-sm">{card.title}</h3>
-                       <p className="text-xs text-white/90 mt-0.5 leading-snug">{card.message}</p>
-                     </div>
-                   </div>
-                 </div>
-               </Card>
-          )}
-           </div>
-        }
+        {/* Activity Feed */}
+        {filteredActivityFeed.length > 0 && (
+          <div className="space-y-3">
+            {filteredActivityFeed.map((activity) =>
+              activity.type === 'notification' ? (
+                <Card
+                  key={activity.id}
+                  data-activity-id={activity.id}
+                  className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20"
+                >
+                  <div className="p-3">
+                    <p className="text-xs text-white leading-tight">
+                      {activity.message}
+                    </p>
+                  </div>
+                </Card>
+              ) : (
+                <Card
+                  key={activity.id}
+                  data-activity-id={activity.id}
+                  className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20"
+                >
+                  <div className="p-3">
+                    <div className="flex items-center gap-3">
+                      {/* Profile Photo */}
+                      <Link
+                        to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
+                        className="flex-shrink-0"
+                      >
+                        {activity.friendAvatar ? (
+                          <img
+                            src={activity.friendAvatar}
+                            alt={activity.friendName}
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
+                            <span className="text-white font-bold text-sm">
+                              {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                        )}
+                      </Link>
 
-         {/* Activity Feed */}
-         {filteredActivityFeed.length > 0 &&
-        <div className="space-y-3">
-           {filteredActivityFeed.map((activity) =>
-          activity.type === 'notification' ?
-          // Simple notification layout - just text
-          <Card
-            key={activity.id}
-            data-activity-id={activity.id}
-            className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden rounded-xl shadow-2xl shadow-black/20">
+                      {/* Activity Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white leading-tight">
+                          <span className="font-semibold">{activity.friendName}</span>
+                          {' '}
+                          <span className="text-slate-300">{activity.message}</span>
+                          {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
+                        </p>
 
-                 <div className="p-3">
-                   <p className="text-xs text-white leading-tight">
-                     {activity.message}
-                   </p>
-                 </div>
-               </Card> :
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-slate-500">
+                            {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                          </span>
 
-          <Card
-            key={activity.id}
-            data-activity-id={activity.id}
-            className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 rounded-xl shadow-2xl shadow-black/20">
+                          {activity.type === 'milestone' && (
+                            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
+                              🔥 {activity.milestone} days
+                            </Badge>
+                          )}
 
-                 <div className="p-3">
-                   <div className="flex items-center gap-3">
-                     {/* Profile Photo */}
-                     <Link
-                  to={createPageUrl('UserProfile') + `?id=${activity.friendId}`}
-                  className="flex-shrink-0">
+                          {activity.type === 'pr' && (
+                            <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">
+                              🏆 PR
+                            </Badge>
+                          )}
 
-                       {activity.friendAvatar ?
-                  <img
-                    src={activity.friendAvatar}
-                    alt={activity.friendName}
-                    className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all" /> :
+                          {activity.type === 'checkin' && activity.gymName && (
+                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] px-1.5 py-0">
+                              {activity.gymName}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )
+            )}
+          </div>
+        )}
 
-
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center ring-2 ring-blue-500/30 hover:ring-blue-500 transition-all">
-                           <span className="text-white font-bold text-sm">
-                             {activity.friendName?.charAt(0)?.toUpperCase() || 'U'}
-                           </span>
-                         </div>
-                  }
-                     </Link>
-
-                     {/* Activity Content */}
-                     <div className="flex-1 min-w-0">
-                       <p className="text-xs text-white leading-tight">
-                         <span className="font-semibold">{activity.friendName}</span>
-                         {' '}
-                         <span className="text-slate-300">{activity.message}</span>
-                         {activity.emoji && <span className="ml-1">{activity.emoji}</span>}
-                       </p>
-
-                       {/* Timestamp and badges inline */}
-                       <div className="flex items-center gap-2 mt-1">
-                         <span className="text-[10px] text-slate-500">
-                           {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
-                         </span>
-
-                         {/* Milestone Badge */}
-                         {activity.type === 'milestone' &&
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] px-1.5 py-0">
-                             🔥 {activity.milestone} days
-                           </Badge>
-                    }
-
-                         {/* PR Badge */}
-                         {activity.type === 'pr' &&
-                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0">
-                             🏆 PR
-                           </Badge>
-                    }
-
-                         {/* Check-in Badge */}
-                         {activity.type === 'checkin' && activity.gymName &&
-                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] px-1.5 py-0">
-                             {activity.gymName}
-                           </Badge>
-                    }
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               </Card>
-
-          )}
-         </div>
-        }
-
-         {/* Friend Posts */}
-         {friendPosts.length > 0 &&
-        <div className="space-y-3 mt-0">
-             {friendPosts.map((post) =>
-          <PostCard
-            key={post.id}
-            post={post}
-            fullWidth={true}
-            currentUser={currentUser}
-            onLike={() => {}}
-            onComment={() => {}}
-            onSave={() => {}}
-            onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />
-
-          )}
-           </div>
-        }
-
-
+        {/* Friend Posts */}
+        {friendPosts.length > 0 && (
+          <div className="space-y-3 mt-0">
+            {friendPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                fullWidth={true}
+                currentUser={currentUser}
+                onLike={() => {}}
+                onComment={() => {}}
+                onSave={() => {}}
+                onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Friends Modal */}
-        {showFriendsModal &&
-        <>
-            <div className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowFriendsModal(false)} />
+        {showFriendsModal && (
+          <>
+            <div
+              className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300"
+              onClick={() => setShowFriendsModal(false)}
+            />
             <div className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-              <div className="px-3 py-1 flex items-center gap-1 ">
+              <div className="px-3 py-1 flex items-center gap-1">
                 <div className="relative flex-1 w-70">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                   <Input
-                  placeholder="Search friends..."
-                  value={friendsSearchQuery}
-                  onChange={(e) => setFriendsSearchQuery(e.target.value)} className="relative top-0.5 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200" />
-
-
+                    placeholder="Search friends..."
+                    value={friendsSearchQuery}
+                    onChange={(e) => setFriendsSearchQuery(e.target.value)}
+                    className="relative top-0.5 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-sm h-9 transition-all duration-200"
+                  />
                 </div>
                 <Button
-                onClick={() => {
-                  setShowAddModal(true);
-                  setShowFriendsModal(false);
-                }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-
-
+                  onClick={() => {
+                    setShowAddModal(true);
+                    setShowFriendsModal(false);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+                >
                   <UserPlus className="w-4 h-4" />
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
                 {/* Friend Requests */}
-                {friendRequests.filter((req) => {
-                const requesterUser = allUsers.find((u) => u.id === req.user_id);
-                const displayName = requesterUser?.full_name || req.user_name || req.friend_name || '';
-                return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
-              }).map((request) => {
-                const requesterUser = allUsers.find((u) => u.id === request.user_id);
-                const currentName = requesterUser?.full_name || request.user_name || request.friend_name;
-                return (
-                  <div
-                    key={request.id}
-                    className="p-2 rounded-lg bg-blue-700/40 hover:bg-blue-700/60 transition-colors flex items-start justify-between gap-2 border border-blue-500/30">
-
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                         {(() => {
-                          const requesterUser = allUsers.find((u) => u.id === request.user_id);
-                          return requesterUser?.avatar_url ?
-                          <img src={requesterUser.avatar_url} alt={currentName} className="w-full h-full object-cover" /> :
-
-                          <span className="text-xs font-semibold text-white">
-                               {currentName?.charAt(0)?.toUpperCase()}
-                             </span>;
-
-                        })()}
-                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
-                          Request pending
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button
-                        size="icon"
-                        onClick={() => acceptFriendMutation.mutate(request.user_id)}
-                        className="bg-green-600 hover:bg-green-700 text-white h-7 w-7">
-
-                        <CheckCircle className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => rejectFriendMutation.mutate(request.user_id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7">
-
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>);
-
-              })}
-
-                {/* Friends List */}
-                {friends.length === 0 && friendRequests.length === 0 ?
-              <p className="text-center text-slate-400 text-sm py-8">No friends yet</p> :
-
-              friendsWithActivity.filter((friend) => {
-                const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                const displayName = friendUser?.full_name || friend.friend_name;
-                return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
-              }).map((friend) => {
-                const { activity } = friend;
-                const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                const currentName = friendUser?.full_name || friend.friend_name;
-                return (
-                  <div
-                    key={friend.id}
-                    className="p-2 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2">
-
-                        <Link
-                      to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
-                      className="flex items-center gap-2 flex-1 min-w-0"
-                      onClick={() => setShowFriendsModal(false)}>
-
+                {friendRequests
+                  .filter((req) => {
+                    const requesterUser = allUsers.find((u) => u.id === req.user_id);
+                    const displayName = requesterUser?.full_name || req.user_name || req.friend_name || '';
+                    return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
+                  })
+                  .map((request) => {
+                    const requesterUser = allUsers.find((u) => u.id === request.user_id);
+                    const currentName = requesterUser?.full_name || request.user_name || request.friend_name;
+                    return (
+                      <div
+                        key={request.id}
+                        className="p-2 rounded-lg bg-blue-700/40 hover:bg-blue-700/60 transition-colors flex items-start justify-between gap-2 border border-blue-500/30"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                             {(() => {
-                          const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                          return friendUser?.avatar_url ?
-                          <img src={friendUser.avatar_url} alt={currentName} className="w-full h-full object-cover" /> :
-
-                          <span className="text-xs font-semibold text-white">
-                                   {currentName?.charAt(0)?.toUpperCase()}
-                                 </span>;
-
-                        })()}
-                           </div>
+                            {(() => {
+                              const ru = allUsers.find((u) => u.id === request.user_id);
+                              return ru?.avatar_url ? (
+                                <img src={ru.avatar_url} alt={currentName} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-xs font-semibold text-white">
+                                  {currentName?.charAt(0)?.toUpperCase()}
+                                </span>
+                              );
+                            })()}
+                          </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-white text-xs truncate">{currentName}</p>
-                            
-
-
-
-
-                            {activity.streak >= 7 &&
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                                
-                                
-                              </div>
-                        }
+                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] mt-1">
+                              Request pending
+                            </Badge>
                           </div>
-                        </Link>
-                        <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeFriendMutation.mutate(friend.friend_id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0">
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            size="icon"
+                            onClick={() => acceptFriendMutation.mutate(request.user_id)}
+                            className="bg-green-600 hover:bg-green-700 text-white h-7 w-7"
+                          >
+                            <CheckCircle className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => rejectFriendMutation.mutate(request.user_id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
 
-                          <UserMinus className="w-3 h-3" />
-                        </Button>
-                      </div>);
-
-              })
-              }
+                {/* Friends List */}
+                {friends.length === 0 && friendRequests.length === 0 ? (
+                  <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
+                ) : (
+                  friendsWithActivity
+                    .filter((friend) => {
+                      const friendUser = allUsers.find((u) => u.id === friend.friend_id);
+                      const displayName = friendUser?.full_name || friend.friend_name;
+                      return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
+                    })
+                    .map((friend) => {
+                      const { activity } = friend;
+                      const friendUser = allUsers.find((u) => u.id === friend.friend_id);
+                      const currentName = friendUser?.full_name || friend.friend_name;
+                      return (
+                        <div
+                          key={friend.id}
+                          className="p-2 rounded-lg bg-slate-700/40 hover:bg-slate-700/60 transition-colors flex items-start justify-between gap-2"
+                        >
+                          <Link
+                            to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`}
+                            className="flex items-center gap-2 flex-1 min-w-0"
+                            onClick={() => setShowFriendsModal(false)}
+                          >
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {(() => {
+                                const fu = allUsers.find((u) => u.id === friend.friend_id);
+                                return fu?.avatar_url ? (
+                                  <img src={fu.avatar_url} alt={currentName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-xs font-semibold text-white">
+                                    {currentName?.charAt(0)?.toUpperCase()}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-white text-xs truncate">{currentName}</p>
+                              {activity.streak >= 7 && (
+                                <div className="flex items-center gap-0.5 mt-0.5" />
+                              )}
+                            </div>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFriendMutation.mutate(friend.friend_id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-7 w-7 flex-shrink-0"
+                          >
+                            <UserMinus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      );
+                    })
+                )}
               </div>
-
-
             </div>
           </>
-        }
+        )}
 
         {/* Add Friend Modal */}
         {showAddModal && (
           <>
-            {/* Backdrop: Clicking this closes the modal and clears search */}
-            <div 
-              className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            <div
+              className="fixed inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300"
               onClick={() => {
                 setShowAddModal(false);
                 setSearchQuery('');
-              }} 
+              }}
             />
-
             <Card className="fixed left-1/2 -translate-x-1/2 top-12 w-11/12 max-w-2xl h-1/2 z-[9999] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
-              
-              {/* Header: Search Bar and Back/Exit Button */}
               <div className="px-3 py-1 flex items-center gap-1">
                 <div className="relative flex-1 w-70">
-                  {/* Search Icon: Aligned to text baseline */}
                   <Search className="absolute left-2.5 top-1/2 -translate-y-[calc(50%-2.5px)] w-3.5 h-3.5 text-slate-400" />
                   <Input
                     placeholder="Add Friends..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    /* text-base prevents iOS zoom; md:text-sm keeps it tight on desktop */
                     className="relative top-1 shadow-sm focus-visible:ring-1 focus-visible:ring-ring flex w-full px-3 py-1 pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl text-base md:text-sm h-9 transition-all duration-200"
                   />
                 </div>
-
-                {/* Return Button: Points Right, styled like Social Feed nav */}
                 <button
                   onClick={() => {
                     setShowAddModal(false);
@@ -835,13 +882,10 @@ export default function Friends() {
                 </button>
               </div>
 
-              {/* Results Section */}
               <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
                 {searchQuery.length >= 2 && (
                   filteredSearchResults.length === 0 ? (
-                    <p className="text-center text-slate-400 text-sm py-8">
-                      No users found
-                    </p>
+                    <p className="text-center text-slate-400 text-sm py-8">No users found</p>
                   ) : (
                     filteredSearchResults.map((user) => (
                       <div
@@ -880,6 +924,6 @@ export default function Friends() {
           </>
         )}
       </div>
-    </div>);
-
+    </div>
+  );
 }
