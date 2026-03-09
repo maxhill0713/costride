@@ -278,7 +278,12 @@ export default function RedeemReward() {
         )}
 
         {activeSection === 'rewards' && (
-          <div>
+          <motion.div
+            key="rewards"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1] }}
+          >
             <h2 className="text-xl font-black text-white mb-3">Available Rewards</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
