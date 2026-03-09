@@ -373,7 +373,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                        <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-3" style={{width:'80%'}}>
                          {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                        </div>
-                       <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+                       <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-2">×</div>
                        <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-3" style={{width:'80%'}}>
                          {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                        </div>
