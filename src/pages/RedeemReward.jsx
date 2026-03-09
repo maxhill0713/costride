@@ -415,21 +415,7 @@ export default function RedeemReward() {
         <div style={{ position:'absolute',inset:0,backgroundImage:'radial-gradient(rgba(255,255,255,0.012) 1px,transparent 1px)',backgroundSize:'28px 28px' }}/>
       </div>
 
-      <div style={{ position:'relative',zIndex:1,maxWidth:680,margin:'0 auto',padding:'16px 14px 0' }}>
-
-        {/* ── Header ── */}
-        <div style={{ marginBottom:24,animation:'rr-fade-up 0.4s ease both' }}>
-          <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:4 }}>
-            <div style={{ width:32,height:32,borderRadius:10,background:'linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.1))',border:'1px solid rgba(251,191,36,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16 }}>🎯</div>
-            <span style={{ fontSize:11,fontWeight:800,letterSpacing:'0.18em',textTransform:'uppercase',color:'rgba(251,191,36,0.6)' }}>Challenges & Rewards</span>
-          </div>
-          <h1 style={{ fontSize:28,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,margin:'0 0 4px' }}>
-            {currentUser?.full_name?.split(' ')[0] ? `Hey, ${currentUser.full_name.split(' ')[0]} 👋` : 'Your Challenges'}
-          </h1>
-          <p style={{ fontSize:13,color:'rgba(148,163,184,0.55)',fontWeight:500 }}>
-            Complete challenges · Earn rewards · Rise the ranks
-          </p>
-        </div>
+      <div style={{ position:'relative',zIndex:1,maxWidth:680,margin:'0 auto',padding:'12px 14px 0' }}>
 
         {/* ── Tab bar ── */}
         <div style={{ display:'flex',gap:8,marginBottom:24,animation:'rr-fade-up 0.4s ease 0.06s both' }}>
