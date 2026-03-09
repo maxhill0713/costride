@@ -135,12 +135,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   };
 
   const handleSave = (index) => {
-    const weight = editWeight;
-    const isDefault = isDefaultWorkout();
-    const setsReps = isDefault ? `${editSets}x${editReps}` : `${editSets}x${editReps}`;
+    const currentExercise = todayWorkout.exercises[index];
+    const weight = editWeight || currentExercise.weight;
+    const sets = editSets || currentExercise.sets || currentExercise.setsReps?.split('x')?.[0];
+    const reps = editReps || currentExercise.reps || currentExercise.setsReps?.split('x')?.[1];
+    const setsReps = `${sets}x${reps}`;
 
     const updatedExercises = [...todayWorkout.exercises];
-    updatedExercises[index] = { ...updatedExercises[index], weight, setsReps, sets: editSets, reps: editReps };
+    updatedExercises[index] = { ...updatedExercises[index], weight, setsReps, sets, reps };
 
     const updatedWorkoutTypes = { ...currentUser.custom_workout_types };
     const currentWorkoutName = todayWorkout.name;
@@ -152,7 +154,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           updatedWorkoutTypes[dayKey] = {
             ...workout,
             exercises: workout.exercises.map((ex, i) =>
-            i === index ? { ...ex, weight, setsReps, sets: editSets, reps: editReps } : ex
+            i === index ? { ...ex, weight, setsReps, sets, reps } : ex
             )
           };
         }
