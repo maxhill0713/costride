@@ -31,7 +31,7 @@ function SubPage({ title, onBack, action, children }) {
           <div className="flex items-center gap-3">
             <motion.button onClick={onBack} whileTap={{ scale: 0.9, y: 1 }} transition={{ duration: 0.1 }} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center">
               <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
-            </button>
+            </motion.button>
             <h1 className="text-xl font-black text-white tracking-tight">{title}</h1>
           </div>
           {action}
