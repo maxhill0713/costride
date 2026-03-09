@@ -319,9 +319,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05, duration: 0.2 }}
-                className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 items-end">
+                className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 mb-1.5 items-end">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-2">Sets x Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-1">Sets</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-1">Reps</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
                 <div className="w-6"></div>
               </motion.div>
