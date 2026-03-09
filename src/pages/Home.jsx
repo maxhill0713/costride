@@ -663,12 +663,6 @@ export default function Home() {
     const expectedProgress = daysPassed / totalDuration * 100;
     return progress >= expectedProgress * 0.8;
   }).length;
-  const weeklyComplete = weeklyCheckIns.length >= weeklyTarget;
-  const goalsComplete = goals.length === 0 || goalsOnTrack >= goals.length * 0.5;
-  const completedCount = (weeklyComplete ? 1 : 0) + (goalsComplete ? 1 : 0);
-  const totalCount = goals.length > 0 ? 2 : 1;
-  const isOnTrack = completedCount === totalCount;
-  const progressPercentage = goals.length > 0 ? Math.round(goalsOnTrack / goals.length * 100) : weeklyCheckIns.length / weeklyTarget * 100;
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
     const todayCount = todayCheckInsForQuery.length;
