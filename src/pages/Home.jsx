@@ -684,14 +684,15 @@ export default function Home() {
   const progressPercentage = goals.length > 0 ? Math.round(goalsOnTrack / goals.length * 100) : weeklyCheckIns.length / weeklyTarget * 100;
   const getCommunityText = () => {
     const dayOfMonth = new Date().getDate();
+    const todayCount = todayCheckInsForQuery.length;
     const messages = [
-      `Join ${todayCheckIns.length} other${todayCheckIns.length === 1 ? '' : 's'} training today`,
-      `${todayCheckIns.length} members crushing it right now`,
-      `See who's at the gym today—${todayCheckIns.length} members active`,
-      `${todayCheckIns.length} gym warriors training today`,
-      `Join ${todayCheckIns.length} member${todayCheckIns.length === 1 ? '' : 's'} on the floor`
+      `Join ${todayCount} other${todayCount === 1 ? '' : 's'} training today`,
+      `${todayCount} members crushing it right now`,
+      `See who's at the gym today—${todayCount} members active`,
+      `${todayCount} gym warriors training today`,
+      `Join ${todayCount} member${todayCount === 1 ? '' : 's'} on the floor`
     ];
-    return todayCheckIns.length > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
+    return todayCount > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
   };
 
   return (
