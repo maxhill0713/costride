@@ -51,13 +51,11 @@ import AccountSettings from './pages/AccountSettings';
 import AddGym from './pages/AddGym';
 import AdminGyms from './pages/AdminGyms';
 import AppearanceSettings from './pages/AppearanceSettings';
-import BrandDiscounts from './pages/BrandDiscounts';
 import ClaimGym from './pages/ClaimGym';
 import Friends from './pages/Friends';
 import GymCommunity from './pages/GymCommunity';
 import GymOwnerDashboard from './pages/GymOwnerDashboard';
 import GymRequests from './pages/GymRequests';
-import GymRewards from './pages/GymRewards';
 import GymSignup from './pages/GymSignup';
 import GymUnderReview from './pages/GymUnderReview';
 import Gyms from './pages/Gyms';
@@ -66,7 +64,6 @@ import Home from './pages/Home';
 import InviteOwner from './pages/InviteOwner';
 import Leaderboard from './pages/Leaderboard';
 import MemberSignup from './pages/MemberSignup';
-import Members from './pages/Members';
 import Messages from './pages/Messages';
 import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
@@ -89,13 +86,11 @@ export const PAGES = {
     "AddGym": AddGym,
     "AdminGyms": AdminGyms,
     "AppearanceSettings": AppearanceSettings,
-    "BrandDiscounts": BrandDiscounts,
     "ClaimGym": ClaimGym,
     "Friends": Friends,
     "GymCommunity": GymCommunity,
     "GymOwnerDashboard": GymOwnerDashboard,
     "GymRequests": GymRequests,
-    "GymRewards": GymRewards,
     "GymSignup": GymSignup,
     "GymUnderReview": GymUnderReview,
     "Gyms": Gyms,
@@ -104,7 +99,6 @@ export const PAGES = {
     "InviteOwner": InviteOwner,
     "Leaderboard": Leaderboard,
     "MemberSignup": MemberSignup,
-    "Members": Members,
     "Messages": Messages,
     "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
