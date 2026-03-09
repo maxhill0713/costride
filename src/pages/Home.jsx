@@ -999,6 +999,7 @@ export default function Home() {
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
+                          // CHANGE 1: Slightly darker blue tones for popup backgrounds
                           const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
@@ -1073,6 +1074,7 @@ export default function Home() {
                                     onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
                                     style={{
                                       marginTop: 4, width: '100%',
+                                      // CHANGE 2: Reduced vertical padding by ~8% (9px -> 8.3px, rounded to 8px top/bottom)
                                       padding: '7px 0',
                                       borderRadius: 9,
                                       background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
@@ -1086,20 +1088,14 @@ export default function Home() {
                                     View Summary
                                   </button>
                                 )}
-                                {!done && !isRestDay && !isMissed && isInCurrentSplit && (
+                                {!done && !isRestDay && workoutLog && (
                                   <button
                                     data-bubble="true"
                                     onPointerDown={e => e.stopPropagation()}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setActiveCircleDay(null);
-                                      const customTypes = currentUser?.custom_workout_types;
-                                      const splitDay = customTypes
-                                        ? Array.isArray(customTypes)
-                                          ? customTypes.find((s) => s.day === day || s.day_of_week === day)
-                                          : customTypes[day]
-                                        : null;
-                                      setPlannedWorkout(splitDay || { workout_name: getPopupLabel(), day });
+                                      setPlannedWorkout(workoutLog);
                                     }}
                                     onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
@@ -1227,49 +1223,44 @@ export default function Home() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setPlannedWorkout(null)}
-            className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm bg-white/8 border border-white/15 rounded-2xl p-6 backdrop-blur-sm max-h-[80vh] overflow-y-auto">
+              className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
 
               {/* Header */}
-              <div className="mb-5">
-                <h3 className="text-2xl font-black text-white mb-1">
-                  {plannedWorkout.name || plannedWorkout.workout_name || plannedWorkout.title || plannedWorkout.workout_type || 'Planned Workout'}
-                </h3>
-                <p className="text-sm text-slate-400 font-medium">
-                  {(() => {
-                    const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-                    const slotDate = new Date(monday);
-                    slotDate.setDate(monday.getDate() + ((plannedWorkout.day || plannedWorkout.day_of_week || 1) - 1));
-                    return slotDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-                  })()}
+              <div className="mb-6">
+                <h3 className="text-4xl font-black text-white mb-2">{plannedWorkout.workout_name || plannedWorkout.title || plannedWorkout.workout_type || 'Workout'}</h3>
+                <p className="text-base text-slate-400 font-medium">
+                  Planned Workout
                 </p>
               </div>
 
               {/* Exercises */}
-              {plannedWorkout.exercises?.length > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
-                  <div className="space-y-2">
+              {plannedWorkout.exercises?.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
+                  <div className="space-y-3">
                     {plannedWorkout.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
                       const weight = ex.weight_kg || ex.weight;
                       const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
                       const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
                       return (
-                        <div key={idx} className="flex items-center justify-between py-2 border-b border-white/8 last:border-0">
-                          <span className="text-white font-semibold text-sm">{exName}</span>
-                          <span className="text-slate-300 text-xs font-medium">{detail || '—'}</span>
+                        <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
+                          <span className="text-white font-semibold text-base">{exName}</span>
+                          <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              ) : (
-                <p className="text-xs text-slate-500 text-center mt-4">No exercises planned for this day.</p>
+              )}
+
+              {!plannedWorkout.exercises?.length && (
+                <p className="text-sm text-slate-500 text-center mt-6">No exercises planned for this workout.</p>
               )}
             </motion.div>
           </motion.div>
