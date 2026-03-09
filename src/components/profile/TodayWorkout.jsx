@@ -365,9 +365,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                        {isDefaultWorkout() ? (
                          <div className="space-y-2.5">
-                           <div>
-                             <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
-                             <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                           <div className="flex gap-2">
+                             <div className="flex-1">
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Sets</label>
+                               <Input type="text" placeholder="e.g. 3" value={editSets} disabled className="bg-slate-700/30 border border-slate-600/30 text-slate-400 text-xs rounded-lg cursor-not-allowed opacity-60 w-full" />
+                             </div>
+                             <div className="flex-1">
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Reps</label>
+                               <Input type="text" placeholder="e.g. 10" value={editReps} disabled className="bg-slate-700/30 border border-slate-600/30 text-slate-400 text-xs rounded-lg cursor-not-allowed opacity-60 w-full" />
+                             </div>
+                             <div className="flex-1">
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
+                               <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
+                             </div>
                            </div>
                          </div>
                        ) : (
