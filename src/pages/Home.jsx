@@ -840,7 +840,13 @@ export default function Home() {
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
-                  const plannedWorkoutData = !done && !isRestDay && currentSplit ? (Array.isArray(currentSplit.days) ? currentSplit.days[day - 1] : currentSplit[day]) : null;
+                  const customTypes = currentUser?.custom_workout_types;
+                  const currentSplitDay = customTypes
+                    ? Array.isArray(customTypes)
+                      ? customTypes.find((s) => s.day === day || s.day_of_week === day)
+                      : customTypes[day]
+                    : null;
+                  const plannedWorkoutData = !done && !isRestDay && currentSplitDay ? currentSplitDay : null;
                   const getBg = () => {
                     if (isRestDay) {
                       return done
