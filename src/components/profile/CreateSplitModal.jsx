@@ -556,7 +556,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
 
         {/* ── HEADER ── */}
         <div className="flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
-          <div className="w-10 flex-shrink-0">
+          <div className="flex-shrink-0 flex items-center" style={{ minWidth: step === 'pick' ? '76px' : '40px' }}>
             <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
               <ChevronLeft className="w-6 h-6 text-slate-300" />
             </button>
@@ -564,7 +564,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           <div className="flex-1 flex justify-center">
             <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
           </div>
-          <div className="flex-shrink-0 flex items-center justify-end gap-2">
+          <div className="flex-shrink-0 flex items-center justify-end gap-2" style={{ minWidth: step === 'pick' ? '76px' : '40px' }}>
             {step === 'pick' && (
               <>
                 <button
@@ -669,7 +669,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             <p className="text-[11px] text-slate-400 mt-0.5">{def.description}</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {def.days.map(d => (
-                                <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
+                                <span key={d} className={`text-[10.35px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
                               ))}
                             </div>
                           </div>
@@ -710,7 +710,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             <p className="text-[11px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {(split.training_days || []).map(d => (
-                                <span key={d} className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80">{DAY_NAMES[d - 1]}</span>
+                                <span key={d} className="text-[10.35px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80">{DAY_NAMES[d - 1]}</span>
                               ))}
                             </div>
                           </div>
@@ -734,16 +734,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           {/* ════ PREVIEW — read-only default split ════ */}
           {step === 'preview' && previewSplit && (
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span className="text-3xl">{previewSplit.icon}</span>
-                <div className="flex-1 min-w-0">
+              <div className="p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
                   <div className="flex gap-1.5 mt-1.5 flex-wrap">
                     {previewSplit.days.map(d => (
-                      <span key={d} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
+                      <span key={d} className={`text-[10.35px] font-bold px-1.75 py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
                     ))}
                   </div>
-                </div>
               </div>
               {previewSplit.days.map(day => {
                 const wt = previewSplit.workouts[day];
