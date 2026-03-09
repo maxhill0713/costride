@@ -1184,70 +1184,82 @@ export default function Home() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setSummaryLog(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 32px 0' }}>
+            className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
               onClick={e => e.stopPropagation()}
-              style={{ background: 'linear-gradient(to bottom, #1e293b, #0f172a)', border: '1px solid rgba(147,197,253,0.2)', borderRadius: 20, padding: '24px 20px', width: 'calc(100% - 32px)', maxWidth: 480, maxHeight: '70vh', overflowY: 'auto', boxShadow: '0 -8px 40px rgba(0,0,0,0.6)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div>
-                  <p style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1.2 }}>
-                    {summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}
-                  </p>
-                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0', fontWeight: 500 }}>
-                    {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}
+              className="w-full max-w-sm bg-white/8 border border-white/15 rounded-2xl p-6 backdrop-blur-sm max-h-[80vh] overflow-y-auto">
+              
+              {/* Header */}
+              <div className="mb-5">
+                <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
+                <p className="text-sm text-slate-400 font-medium">
+                  {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
+                </p>
+              </div>
+
+              {/* Time from check-in to log */}
+              {summaryLog.check_in_time && summaryLog.completed_date && (
+                <div className="mb-4 p-3 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+                  <p className="text-xs text-orange-300/80 font-bold uppercase tracking-wide mb-1">Total Time at Gym</p>
+                  <p className="text-xl font-black text-orange-300">
+                    {(() => {
+                      const checkIn = new Date(summaryLog.check_in_time);
+                      const checkOut = new Date(summaryLog.completed_date);
+                      const diffMs = checkOut - checkIn;
+                      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                      const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                    })()}
                   </p>
                 </div>
-                <button onClick={() => setSummaryLog(null)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8', fontSize: 18, fontWeight: 700 }}>✕</button>
-              </div>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+              )}
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2 mb-5">
                 {[
                   { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
                   { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
                   { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
                 ].map(stat => (
-                  <div key={stat.label} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '10px 8px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p style={{ fontSize: 16, fontWeight: 800, color: '#93c5fd', margin: 0 }}>{stat.value}</p>
-                    <p style={{ fontSize: 10, color: '#64748b', margin: '2px 0 0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                  <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
+                    <p className="text-sm font-black text-blue-300">{stat.value}</p>
+                    <p className="text-xs text-slate-500 font-bold mt-1">{stat.label}</p>
                   </div>
                 ))}
               </div>
+
+              {/* Exercises */}
               {summaryLog.exercises?.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Exercises</p>
-                  {summaryLog.exercises.map((ex, idx) => {
-                    const exName = ex.name || ex.exercise_name || ex.title || `Exercise ${idx + 1}`;
-                    const setsArr = Array.isArray(ex.sets) ? ex.sets : null;
-                    const flatDetail = !setsArr && (ex.sets || ex.reps || ex.weight_kg || ex.weight)
-                      ? [ex.sets && `${ex.sets} sets`, ex.reps && `${ex.reps} reps`, (ex.weight_kg || ex.weight) && `${ex.weight_kg || ex.weight}kg`].filter(Boolean).join(' · ')
-                      : null;
-                    return (
-                      <div key={idx} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>{exName}</p>
-                        {setsArr && setsArr.length > 0 && (
-                          <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            {setsArr.map((s, si) => (
-                              <p key={si} style={{ fontSize: 11, color: '#94a3b8', margin: 0, fontWeight: 500 }}>
-                                Set {si + 1}: {[s.reps && `${s.reps} reps`, (s.weight_kg || s.weight) && `${s.weight_kg || s.weight}kg`, s.duration_seconds && `${s.duration_seconds}s`].filter(Boolean).join(' · ')}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                        {flatDetail && <p style={{ fontSize: 11, color: '#94a3b8', margin: '3px 0 0', fontWeight: 500 }}>{flatDetail}</p>}
-                      </div>
-                    );
-                  })}
+                <div className="space-y-2">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
+                  <div className="space-y-2">
+                    {summaryLog.exercises.map((ex, idx) => {
+                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                      const weight = ex.weight_kg || ex.weight;
+                      const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
+                      const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
+                      return (
+                        <div key={idx} className="flex items-center justify-between py-2 border-b border-white/8 last:border-0">
+                          <span className="text-white font-semibold text-sm">{exName}</span>
+                          <span className="text-slate-300 text-xs font-medium">{detail || '—'}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
+
               {summaryLog.notes && (
-                <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Notes</p>
-                  <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>{summaryLog.notes}</p>
+                <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-2">Notes</p>
+                  <p className="text-sm text-slate-300 leading-relaxed">{summaryLog.notes}</p>
                 </div>
               )}
-              {!summaryLog.exercises?.length && !summaryLog.notes && !summaryLog.duration_minutes && (
-                <p style={{ fontSize: 13, color: '#64748b', textAlign: 'center', marginTop: 8 }}>No additional details recorded for this workout.</p>
+
+              {!summaryLog.exercises?.length && !summaryLog.notes && (
+                <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
               )}
             </motion.div>
           </motion.div>
