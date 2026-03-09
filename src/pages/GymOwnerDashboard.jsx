@@ -202,7 +202,7 @@ export default function GymOwnerDashboard() {
 
   // ── Splash screens ────────────────────────────────────────────────────────
   const Splash = ({ children }) => (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: N[950] }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right,#1e3058,#0f1f45,#0a1628)' }}>
       <Panel className="max-w-md w-full text-center">{children}</Panel>
     </div>
   );
