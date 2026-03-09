@@ -270,10 +270,11 @@ export default function RedeemReward() {
                       ✓ Joined
                     </Button>
                   </Card>
+                  </motion.div>
                 ))
               )}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {activeSection === 'rewards' && (
