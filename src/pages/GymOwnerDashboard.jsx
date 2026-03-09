@@ -783,7 +783,7 @@ export default function GymOwnerDashboard() {
           )}
         </div>
 
-        <nav className="flex-1 px-2.5 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-2.5 py-4 space-y-0.5 overflow-y-auto" style={{background:BG.sidebar,backdropFilter:'blur(16px)'}}>
           {NAV.map(item=>{const active=tab===item.id;return(
             <button key={item.id} onClick={()=>setTab(item.id)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
