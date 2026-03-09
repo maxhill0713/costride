@@ -555,7 +555,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
       <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
 
         {/* ── HEADER ── */}
-        <div className="flex items-center px-4 py-4 border-b border-slate-700/40 flex-shrink-0">
+        <div className="flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
           <div className="w-10 flex-shrink-0">
             <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
               <ChevronLeft className="w-6 h-6 text-slate-300" />
@@ -647,9 +647,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         glowColor={def.glowColor}
                       >
                         <div className="relative flex items-center gap-4 p-4">
-                          <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${def.color} flex items-center justify-center text-xl shadow-lg flex-shrink-0`}>{def.icon}</div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-black text-white">{def.name}</p>
+                            <p className="text-[18.2px] font-black text-white">{def.name}</p>
                             <p className="text-[11px] text-slate-400 mt-0.5">{def.description}</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {def.days.map(d => (
@@ -666,10 +665,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                              style={{ background: 'rgba(168,85,247,0.12)', border: `1px solid ${def.accentColor}` }}>
-                              <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-                            </div>
+                            <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                           )}
                         </div>
                       </SplitCard>
@@ -690,9 +686,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         glowColor="rgba(99,102,241,0.35)"
                       >
                         <div className="relative flex items-center gap-4 p-4">
-                          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xl shadow-lg flex-shrink-0">✏️</div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-black text-white truncate">{split.name}</p>
+                            <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
                             <p className="text-[11px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {(split.training_days || []).map(d => (
@@ -711,10 +706,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                                   <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                                 </div>
                               )}
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center"
-                                style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.45)' }}>
-                                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-                              </div>
+                              <ChevronRight className="w-5 h-5 text-slate-500" />
                             </div>
                           )}
                         </div>
@@ -734,15 +726,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 glowColor="rgba(99,102,241,0.35)"
               >
                 <div className={`relative flex items-center gap-4 p-4 ${selectingActive ? 'opacity-30 pointer-events-none' : ''}`}>
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xl shadow-lg flex-shrink-0">✏️</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-black text-white">Create New</p>
+                    <p className="text-[18.2px] font-black text-white">Create New</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">Build your own from scratch</p>
                   </div>
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.45)' }}>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                 </div>
               </SplitCard>
 
