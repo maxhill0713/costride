@@ -9,7 +9,8 @@ import {
   Plus, Image as ImageIcon, Dumbbell, CheckCircle, Download, Pencil,
   X, Crown, Trash2, Clock, Gift, Zap, BarChart2, Shield,
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
-  LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus
+  LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
+  DollarSign, UserPlus, Megaphone, Pin
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
