@@ -850,11 +850,11 @@ export default function GymOwnerDashboard() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden" style={{background:N[950],fontFamily:"'DM Sans','Inter',sans-serif"}}>
+    <div className="flex h-screen overflow-hidden" style={{background:'linear-gradient(135deg,#0f172a 0%,#020617 100%)',fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t pb-[env(safe-area-inset-bottom)]"
-        style={{background:N[900],borderColor:'rgba(59,130,246,0.15)'}}>
+        style={{background:'rgba(2,6,23,0.97)',borderColor:'rgba(255,255,255,0.08)'}}>
         {NAV.map(item=>{
           const active=tab===item.id;
           return(
@@ -891,12 +891,12 @@ export default function GymOwnerDashboard() {
             <div className="mt-3 relative">
               <button onClick={()=>setGymOpen(o=>!o)}
                 className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold"
-                style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>
+                style={{background:'rgba(255,255,255,0.05)',color:'#93b4e8',border:'1px solid rgba(255,255,255,0.1)'}}>
                 <span className="truncate">{selectedGym?.name}</span>
                 <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${gymOpen?'rotate-180':''}`}/>
               </button>
               {gymOpen && (
-                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:N[800],border:`1px solid ${N[600]}`}}>
+                <div className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-2xl z-20" style={{background:'rgba(15,23,42,0.98)',border:'1px solid rgba(255,255,255,0.1)'}}>
                   {approvedGyms.map(g=>(
                     <button key={g.id} onClick={()=>{setSelectedGym(g);setGymOpen(false);}}
                       className="w-full text-left px-3 py-2.5 text-xs font-semibold transition-all hover:brightness-125"
@@ -967,12 +967,12 @@ export default function GymOwnerDashboard() {
 
         {/* Topbar */}
         <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-3.5 flex-shrink-0 border-b"
-          style={{background:N[900],borderColor:'rgba(59,130,246,0.1)'}}>
+          style={{background:'rgba(2,6,23,0.97)',borderColor:'rgba(255,255,255,0.07)'}}>
           <div className="flex items-center gap-3">
             {/* Sidebar toggle — desktop only */}
             <button onClick={()=>setCollapsed(o=>!o)}
               className="hidden md:flex w-8 h-8 rounded-lg items-center justify-center transition-all hover:brightness-125"
-              style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}>
+              style={{background:'rgba(255,255,255,0.06)',color:'#94a3b8',border:'1px solid rgba(255,255,255,0.1)'}}>
               <Menu className="w-4 h-4"/>
             </button>
             <div>
@@ -1007,7 +1007,7 @@ export default function GymOwnerDashboard() {
             {selectedGym?.join_code ? (
               <button onClick={()=>openModal('qrCode')}
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold tracking-widest"
-                style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>
+                style={{background:'rgba(255,255,255,0.06)',color:'#93b4e8',border:'1px solid rgba(255,255,255,0.1)'}}>
                 {selectedGym.join_code}
               </button>
             ) : (
@@ -1051,7 +1051,7 @@ export default function GymOwnerDashboard() {
 
       {/* Delete Gym */}
       <AlertDialog open={modal==='deleteGym'} onOpenChange={v=>!v&&closeModal()}>
-        <AlertDialogContent style={{background:N[900],borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
+        <AlertDialogContent style={{background:'rgba(2,6,23,0.98)',borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white flex items-center gap-2"><Trash2 className="w-5 h-5 text-red-400"/>Delete Gym Permanently?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm" style={{color:'#6b87b8'}}>
@@ -1059,7 +1059,7 @@ export default function GymOwnerDashboard() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{background:N[700],color:'#93b4e8',borderColor:N[600]}}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel style={{background:'rgba(255,255,255,0.06)',color:'#93b4e8',borderColor:'rgba(255,255,255,0.1)'}}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={()=>deleteGymM.mutate()} disabled={deleteGymM.isPending} className="bg-red-600 hover:bg-red-700 text-white">{deleteGymM.isPending?'Deleting…':'Delete Permanently'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1067,7 +1067,7 @@ export default function GymOwnerDashboard() {
 
       {/* Delete Account */}
       <AlertDialog open={modal==='deleteAccount'} onOpenChange={v=>!v&&closeModal()}>
-        <AlertDialogContent style={{background:N[900],borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
+        <AlertDialogContent style={{background:'rgba(2,6,23,0.98)',borderColor:'rgba(239,68,68,0.3)'}} className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white flex items-center gap-2"><Trash2 className="w-5 h-5 text-red-400"/>Delete Account?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm" style={{color:'#6b87b8'}}>
@@ -1075,7 +1075,7 @@ export default function GymOwnerDashboard() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{background:N[700],color:'#93b4e8',borderColor:N[600]}}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel style={{background:'rgba(255,255,255,0.06)',color:'#93b4e8',borderColor:'rgba(255,255,255,0.1)'}}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={()=>deleteAccountM.mutate()} disabled={deleteAccountM.isPending} className="bg-red-700 hover:bg-red-800 text-white">{deleteAccountM.isPending?'Deleting…':'Delete Account'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1084,10 +1084,10 @@ export default function GymOwnerDashboard() {
       {/* QR Code Modal */}
       {modal==='qrCode' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:'rgba(6,13,31,0.88)',backdropFilter:'blur(8px)'}}>
-          <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl" style={{background:N[900],border:`1px solid ${N[600]}`}}>
+          <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl" style={{background:'rgba(15,23,42,0.98)',border:'1px solid rgba(255,255,255,0.1)'}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-black text-white">Gym Join QR Code</h3>
-              <button onClick={closeModal} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:N[800],color:'#6b87b8',border:`1px solid ${N[700]}`}}>
+              <button onClick={closeModal} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'rgba(255,255,255,0.06)',color:'#94a3b8',border:'1px solid rgba(255,255,255,0.1)'}}>
                 <X className="w-4 h-4"/>
               </button>
             </div>
@@ -1101,7 +1101,7 @@ export default function GymOwnerDashboard() {
                 <Download className="w-4 h-4"/>Download QR Code
               </button>
               <button onClick={closeModal} className="w-full py-3 rounded-xl font-semibold text-sm"
-                style={{background:N[800],color:'#93b4e8',border:`1px solid ${N[700]}`}}>
+                style={{background:'rgba(255,255,255,0.06)',color:'#93b4e8',border:'1px solid rgba(255,255,255,0.1)'}}>
                 Close
               </button>
             </div>
