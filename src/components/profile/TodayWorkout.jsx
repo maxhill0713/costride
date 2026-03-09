@@ -567,9 +567,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               onClick={e => e.stopPropagation()}
               className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
               
-              <div className="mb-5">
-                <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
-                <p className="text-sm text-slate-400 font-medium">
+              <div className="mb-6">
+                <h3 className="text-4xl font-black text-white mb-2">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
+                <p className="text-base text-slate-400 font-medium">
                   {summaryLog.completed_date ? new Date(summaryLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}
                 </p>
               </div>
