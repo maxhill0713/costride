@@ -610,9 +610,8 @@ export default function Home() {
   const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
-  const friendIds = friendIdList;
   const friendPosts = allPosts.filter((post) =>
-    friendIds.includes(post.member_id) &&
+    friendIdList.includes(post.member_id) &&
     !post.is_system_generated &&
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
