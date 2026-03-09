@@ -364,14 +364,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   ) : (
                     <>
                       <div className="flex flex-col gap-1 ml-2">
-                        <div className="text-sm font-bold text-white leading-tight -ml-1">{exercise.exercise || '-'}</div>
-                        {lastWorkout?.exercises?.[index] &&
-                          <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
-                        }
-                      </div>
-                      <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[60px] mr-auto">
-                        {exercise.setsReps || exercise.sets_reps || exercise.sets || '-'}
-                      </div>
+                         <div className="text-sm font-bold text-white leading-tight -ml-1">{exercise.exercise || '-'}</div>
+                         {lastWorkout?.exercises?.[index] &&
+                           <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
+                         }
+                       </div>
+                       <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[36px]">
+                         {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
+                       </div>
+                       <div className="bg-white/10 text-slate-300 pt-1 pr-1 pb-1 text-sm font-semibold text-center rounded-lg min-w-[36px]">
+                         {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
+                       </div>
                       <div className="flex items-center gap- ml-4">
                         <div className="flex items-center gap-2">
                           <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
