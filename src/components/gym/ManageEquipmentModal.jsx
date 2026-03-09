@@ -92,6 +92,15 @@ export default function ManageEquipmentModal({ open, onClose, equipment = [], on
   const [custom, setCustom] = useState('');
   const [expandedCat, setExpandedCat] = useState('Strength Machines');
 
+  // Sync state when modal opens with fresh data
+  React.useEffect(() => {
+    if (open) {
+      setEquipmentList(equipment);
+      setSearch('');
+      setCustom('');
+    }
+  }, [open, JSON.stringify(equipment)]);
+
   const filteredDB = useMemo(() => {
     if (!search.trim()) return null;
     const q = search.toLowerCase();
