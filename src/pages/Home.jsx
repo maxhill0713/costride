@@ -934,7 +934,6 @@ export default function Home() {
                     : null; // null means joined before this week — all past days are fair game
 
                   const isPast   = day < todayDay;
-                  const isFuture = day > todayDay;
 
                   // Days before the user joined this week: treat as "pre-join" (grey, no red)
                   const isPreJoin = joinDayNum !== null && day < joinDayNum;
