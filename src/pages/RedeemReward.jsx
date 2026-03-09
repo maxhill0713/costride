@@ -351,11 +351,12 @@ export default function RedeemReward() {
                         {claimMutation.isPending ? 'Claiming...' : reward.premium_only && !isPremium ? 'Pro Only' : 'Claim'}
                       </Button>
                     </Card>
+                    </motion.div>
                   ))}
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
