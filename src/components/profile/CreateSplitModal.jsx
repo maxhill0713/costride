@@ -670,7 +670,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white">{def.name}</p>
-                            <p className="text-[11px] text-slate-400 mt-0.5">{def.description}</p>
+                            <p className="text-[11.55px] text-slate-400 mt-0.5"><span className="text-slate-500">Default - </span>{def.description}</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {def.days.map(d => (
                                 <span key={d} className={`text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>
@@ -711,7 +711,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
-                            <p className="text-[11px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
+                            <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {(split.training_days || []).map(d => (
                                 <span key={d} className="text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80 text-center inline-block">{DAY_NAMES[d - 1]}</span>
