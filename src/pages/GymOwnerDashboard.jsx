@@ -852,8 +852,24 @@ export default function GymOwnerDashboard() {
   return (
     <div className="flex h-screen overflow-hidden" style={{background:N[950],fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
-      {/* Sidebar */}
-      <aside className="flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t pb-[env(safe-area-inset-bottom)]"
+        style={{background:N[900],borderColor:'rgba(59,130,246,0.15)'}}>
+        {NAV.map(item=>{
+          const active=tab===item.id;
+          return(
+            <button key={item.id} onClick={()=>setTab(item.id)}
+              className="flex flex-col items-center gap-0.5 px-2 py-2 min-w-0 flex-1"
+              style={{color:active?'#60a5fa':'#4a6492'}}>
+              <item.icon className="w-5 h-5 flex-shrink-0" strokeWidth={active?2.5:2}/>
+              <span className="text-[9px] font-bold leading-none truncate">{item.label==='Gym Settings'?'Settings':item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
         style={{width:collapsed?64:224,background:N[900],borderRight:'1px solid rgba(59,130,246,0.1)'}}>
 
         {/* Brand */}
