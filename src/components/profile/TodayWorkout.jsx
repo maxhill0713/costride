@@ -365,16 +365,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
               <>
                       <div className="flex flex-col gap-1 ml-2">
-                         <div className="text-sm font-bold text-white leading-tight -ml-1 pr-">{exercise.exercise || '-'}</div>
+                         <div className="text-sm font-bold text-white leading-tight -ml-1">{exercise.exercise || '-'}</div>
                          {lastWorkout?.exercises?.[index] &&
                   <div className="text-[10px] text-slate-500 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
                   }
                        </div>
-                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center w-full">
+                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center w-full ml-5">
                          {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                        </div>
                        <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-6">×</div>
-                       <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-5">
+                       <div className="bg-white/10 text-slate-300 py-1  text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-5">
                          {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                        </div>
                       <div className="flex items-center gap- ml-4">
