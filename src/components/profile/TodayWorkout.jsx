@@ -575,9 +575,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               </div>
 
               {summaryLog.check_in_time && summaryLog.completed_date && (
-                <div className="mb-4 p-3 bg-orange-500/20 border border-orange-500/30 rounded-lg">
-                  <p className="text-xs text-orange-300/80 font-bold uppercase tracking-wide mb-1">Total Time at Gym</p>
-                  <p className="text-xl font-black text-orange-300">
+                <div className="mb-6 p-4 bg-orange-500/20 border border-orange-500/30 rounded-xl">
+                  <p className="text-sm text-orange-300/80 font-bold uppercase tracking-wide mb-2">Total Time at Gym</p>
+                  <p className="text-3xl font-black text-orange-300">
                     {(() => {
                       const checkIn = new Date(summaryLog.check_in_time);
                       const checkOut = new Date(summaryLog.completed_date);
@@ -590,7 +590,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2 mb-5">
+              <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
                   { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
                   { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
