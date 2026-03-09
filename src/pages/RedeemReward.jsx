@@ -316,9 +316,16 @@ export default function RedeemReward() {
                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
                       </Button>
                     </Card>
+                    </motion.div>
                   ))}
-                  {unclaimedRewards.map((reward) => (
-                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                  {unclaimedRewards.map((reward, i) => (
+                    <motion.div
+                      key={reward.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: (completedChallengeRewards.length + i) * 0.06 }}
+                    >
+                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h3 className="font-bold text-white">{reward.title}</h3>
