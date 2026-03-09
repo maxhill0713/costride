@@ -47,30 +47,30 @@ const NAV = [
 // ── Shared components ─────────────────────────────────────────────────────────
 
 const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend }) => (
-  <div className="relative overflow-hidden rounded-xl p-5 border transition-all duration-200 hover:-translate-y-0.5"
-    style={{ background: `linear-gradient(135deg,${N[800]},${N[850]})`, borderColor: 'rgba(59,130,246,0.14)' }}>
-    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.04]" style={{ background: iconColor }} />
+  <div className="relative overflow-hidden rounded-2xl p-5 border transition-all duration-200 hover:-translate-y-0.5"
+    style={{ background: 'linear-gradient(135deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))', borderColor: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
+    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.06]" style={{ background: iconColor }} />
     <div className="flex items-start justify-between mb-4">
       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}28` }}>
         <Icon className="w-5 h-5" style={{ color: iconColor }} />
       </div>
       {trend !== undefined && (
-        <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg`}
-          style={{ background: trend >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(248,113,113,0.1)', color: trend >= 0 ? '#34d399' : '#f87171' }}>
+        <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg"
+          style={{ background: trend >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(248,113,113,0.12)', color: trend >= 0 ? '#34d399' : '#f87171' }}>
           {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
           {Math.abs(trend)}%
         </span>
       )}
     </div>
     <div className="text-3xl font-black text-white tracking-tight mb-1">{value}</div>
-    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#6b87b8' }}>{label}</div>
-    {sub && <div className="text-xs" style={{ color: '#3d5a8a' }}>{sub}</div>}
+    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#94a3b8' }}>{label}</div>
+    {sub && <div className="text-xs" style={{ color: '#64748b' }}>{sub}</div>}
   </div>
 );
 
 const Panel = ({ children, className = '' }) => (
   <div className={`rounded-2xl border p-6 ${className}`}
-    style={{ background: `linear-gradient(145deg,${N[800]},${N[850]})`, borderColor: 'rgba(59,130,246,0.12)' }}>
+    style={{ background: 'linear-gradient(145deg,rgba(15,23,42,0.85),rgba(2,6,23,0.9))', borderColor: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
     {children}
   </div>
 );
@@ -79,13 +79,13 @@ const PH = ({ title, subtitle, action, actionLabel, badge }) => (
   <div className="flex items-center justify-between mb-5">
     <div>
       <h3 className="text-sm font-bold text-white">{title}</h3>
-      {subtitle && <p className="text-xs mt-0.5" style={{ color: '#4a6492' }}>{subtitle}</p>}
+      {subtitle && <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>{subtitle}</p>}
     </div>
     <div className="flex items-center gap-2">
-      {badge !== undefined && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: N[700], color: '#6b87b8' }}>{badge}</span>}
+      {badge !== undefined && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: '#94a3b8' }}>{badge}</span>}
       {action && (
         <button onClick={action} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:brightness-125"
-          style={{ background: N[700], color: '#93b4e8', border: `1px solid ${N[600]}` }}>
+          style={{ background: 'rgba(255,255,255,0.06)', color: '#93c5fd', border: '1px solid rgba(255,255,255,0.1)' }}>
           <Plus className="w-3.5 h-3.5" />{actionLabel || 'Add'}
         </button>
       )}
