@@ -12,6 +12,7 @@ const DEFAULT_SPLITS = [
     id: 'bro',
     name: 'Bro Split',
     description: '5 days · one muscle group per day',
+    blurb: 'You train one muscle group per day — for example chest on Monday, back on Tuesday — giving each muscle a full week to recover before hitting it again. The upside is that you can really focus on and exhaust one area each session, which many people find satisfying. The downside is that if you miss a day, that muscle only gets trained once that week, and beginners may not need a full 7 days of rest between sessions.',
     icon: '💪',
     color: 'from-purple-500 to-indigo-600',
     accentColor: 'rgba(168,85,247,0.45)',
@@ -64,6 +65,7 @@ const DEFAULT_SPLITS = [
     id: 'upper_lower',
     name: 'Upper / Lower',
     description: '4 days · upper & lower alternating',
+    blurb: 'You split your body into upper (chest, back, shoulders, arms) and lower (legs, glutes) sessions, training each twice per week. This is a great step up from full-body training and works well for building both strength and size because each muscle gets hit more frequently. The main drawback is that upper-body days can feel long since you are covering a lot of muscles in one session.',
     icon: '⚡',
     color: 'from-blue-500 to-cyan-500',
     accentColor: 'rgba(59,130,246,0.45)',
@@ -108,6 +110,7 @@ const DEFAULT_SPLITS = [
     id: 'ppl',
     name: 'Push / Pull / Legs',
     description: '6 days · PPL ×2',
+    blurb: 'Push Pull Legs groups muscles by how they move — push days cover chest, shoulders and triceps; pull days cover back and biceps; leg days cover everything below the waist. Running the cycle twice a week means each muscle gets trained twice, which is ideal for maximising growth. The downside is the 6-day commitment, which can be tough to maintain and leaves little room for rest if life gets busy.',
     icon: '🔄',
     color: 'from-cyan-500 to-teal-500',
     accentColor: 'rgba(20,184,166,0.45)',
@@ -168,6 +171,7 @@ const DEFAULT_SPLITS = [
     id: 'full_body',
     name: 'Full Body',
     description: '3 days · total body each session',
+    blurb: 'Every session trains your whole body — squats, pressing, pulling and more all in one workout, three times a week. This is widely considered the best option for beginners because you practice every movement pattern frequently, which speeds up learning and early strength gains. The trade-off is that sessions can feel tiring, and as you get stronger the workouts become harder to complete in a reasonable time.',
     icon: '🏋️',
     color: 'from-emerald-500 to-green-600',
     accentColor: 'rgba(16,185,129,0.45)',
@@ -669,7 +673,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             <p className="text-[11px] text-slate-400 mt-0.5">{def.description}</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {def.days.map(d => (
-                                <span key={d} className={`text-[10.35px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
+                                <span key={d} className={`text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>
                               ))}
                             </div>
                           </div>
@@ -710,7 +714,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                             <p className="text-[11px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
                             <div className="flex gap-1 mt-1.5 flex-wrap">
                               {(split.training_days || []).map(d => (
-                                <span key={d} className="text-[10.35px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80">{DAY_NAMES[d - 1]}</span>
+                                <span key={d} className="text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r from-slate-600 to-slate-700 text-white opacity-80 text-center inline-block">{DAY_NAMES[d - 1]}</span>
                               ))}
                             </div>
                           </div>
@@ -738,9 +742,12 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                   <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
                   <div className="flex gap-1.5 mt-1.5 flex-wrap">
                     {previewSplit.days.map(d => (
-                      <span key={d} className={`text-[10.35px] font-bold px-1.75 py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80`}>{DAY_NAMES[d - 1]}</span>
+                      <span key={d} className={`text-[10.35px] font-bold w-[38px] py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>
                     ))}
                   </div>
+                  {previewSplit.blurb && (
+                    <p className="text-[11px] text-slate-400 leading-relaxed mt-3">{previewSplit.blurb}</p>
+                  )}
               </div>
               {previewSplit.days.map(day => {
                 const wt = previewSplit.workouts[day];
