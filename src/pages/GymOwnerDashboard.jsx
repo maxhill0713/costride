@@ -813,7 +813,7 @@ export default function GymOwnerDashboard() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden" style={{background:N[950],fontFamily:"'DM Sans','Inter',sans-serif"}}>
+    <div className="flex h-screen overflow-hidden" style={{background:'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',fontFamily:"'DM Sans','Inter',sans-serif"}}>
 
       {/* Sidebar */}
       <aside className="flex flex-col h-full flex-shrink-0 transition-all duration-300 overflow-hidden"
