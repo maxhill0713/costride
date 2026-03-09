@@ -626,9 +626,6 @@ export default function Home() {
     });
     return withProgress.sort((a, b) => b.progress - a.progress)[0];
   };
-  const featuredChallenge = selectFeaturedChallenge();
-  const activeChallenges = challenges.filter((c) => c.status === 'active').slice(0, 3);
-  const todayLifts = lifts.filter((l) => isToday(new Date(l.created_date))).slice(0, 5);
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
   const handleWorkoutLogged = async (challengesData = [], exercises = [], workoutName = '') => {
