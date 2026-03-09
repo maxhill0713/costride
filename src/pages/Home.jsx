@@ -401,7 +401,6 @@ export default function Home() {
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
   const [summaryLog, setSummaryLog] = useState(null);
-  const [plannedWorkout, setPlannedWorkout] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -1088,35 +1087,6 @@ export default function Home() {
                                     View Summary
                                   </button>
                                 )}
-                                {!done && !isRestDay && workoutLog && (
-                                  <button
-                                    data-bubble="true"
-                                    onPointerDown={e => e.stopPropagation()}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveCircleDay(null);
-                                      setPlannedWorkout(workoutLog);
-                                    }}
-                                    onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
-                                    onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
-                                    onMouseLeave={e => e.currentTarget.style.transform = ''}
-                                    onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
-                                    onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
-                                    style={{
-                                      marginTop: 4, width: '100%',
-                                      padding: '7px 0',
-                                      borderRadius: 9,
-                                      background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-                                      border: 'none', borderBottom: '3px solid #1d4ed8',
-                                      color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
-                                      letterSpacing: '0.03em', textAlign: 'center',
-                                      boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
-                                      transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
-                                      touchAction: 'manipulation',
-                                    }}>
-                                    View Workout
-                                  </button>
-                                )}
                               </div>
                             </motion.div>
                           );
@@ -1215,57 +1185,6 @@ export default function Home() {
       <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} />
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
-
-      {/* Planned Workout Modal */}
-      <AnimatePresence>
-        {plannedWorkout && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setPlannedWorkout(null)}
-            className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
-              onClick={e => e.stopPropagation()}
-              className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
-
-              {/* Header */}
-              <div className="mb-6">
-                <h3 className="text-4xl font-black text-white mb-2">{plannedWorkout.workout_name || plannedWorkout.title || plannedWorkout.workout_type || 'Workout'}</h3>
-                <p className="text-base text-slate-400 font-medium">
-                  Planned Workout
-                </p>
-              </div>
-
-              {/* Exercises */}
-              {plannedWorkout.exercises?.length > 0 && (
-                <div className="space-y-3">
-                  <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
-                  <div className="space-y-3">
-                    {plannedWorkout.exercises.map((ex, idx) => {
-                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const weight = ex.weight_kg || ex.weight;
-                      const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
-                      const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
-                      return (
-                        <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
-                          <span className="text-white font-semibold text-base">{exName}</span>
-                          <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {!plannedWorkout.exercises?.length && (
-                <p className="text-sm text-slate-500 text-center mt-6">No exercises planned for this workout.</p>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Workout Summary Modal */}
       <AnimatePresence>
