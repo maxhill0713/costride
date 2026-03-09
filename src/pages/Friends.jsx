@@ -441,12 +441,7 @@ export default function Friends() {
 
   const activityCards = generateActivityCards();
 
-  const isItemExpired = (timestamp) => {
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    return new Date(timestamp) < thirtyMinutesAgo;
-  };
-
-  const filteredActivityFeed = activityFeed.filter((item) => !isItemExpired(item.timestamp));
+  const filteredActivityFeed = activityFeed;
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
   // Duolingo-style card config: bold, solid, chunky
