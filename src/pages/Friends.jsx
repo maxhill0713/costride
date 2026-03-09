@@ -449,15 +449,15 @@ export default function Friends() {
   const filteredActivityFeed = activityFeed.filter((item) => !isItemExpired(item.timestamp));
   const filteredActivityCards = activityCards.filter((card) => !dismissedCardIds.has(card.id));
 
-  // Per-card accent config — minimal, professional
+  // Duolingo-style card config: bold, solid, chunky
   const getCardAccentConfig = (card) => {
-    const urgent = card.type === 'streak-warning';
-    return {
-      border: urgent ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)',
-      bar: urgent ? 'bg-red-500/70' : 'bg-white/20',
-      badgeLabel: { nudge: 'REMINDER', 'friend-milestone': 'MILESTONE', 'friend-inactive': 'INACTIVE', 'streak-warning': 'URGENT' }[card.type] || 'INFO',
-      badgeClass: urgent ? 'text-red-400 border-red-500/30' : 'text-slate-400 border-white/10',
+    const configs = {
+      'nudge':           { bg: '#1e293b', border: '#334155', bottomBorder: '#0f172a', icon: '⏰', dot: '#f97316' },
+      'friend-milestone':{ bg: '#1e293b', border: '#334155', bottomBorder: '#0f172a', icon: card.emoji || '🔥', dot: '#facc15' },
+      'friend-inactive': { bg: '#1e293b', border: '#334155', bottomBorder: '#0f172a', icon: '👋',  dot: '#94a3b8' },
+      'streak-warning':  { bg: '#2d1515', border: '#7f1d1d', bottomBorder: '#450a0a', icon: '⚠️', dot: '#ef4444' },
     };
+    return configs[card.type] || configs['nudge'];
   };
 
   return (
@@ -495,16 +495,13 @@ export default function Friends() {
                   key={card.id}
                   data-activity-id={card.id}
                   style={{
-                    background: 'rgba(15,23,42,0.75)',
-                    boxShadow: `0 0 0 1px ${cfg.border}, 0 4px 20px rgba(0,0,0,0.30)`,
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
+                    background: cfg.bg,
+                    border: `1.5px solid ${cfg.border}`,
+                    borderBottom: `4px solid ${cfg.bottomBorder}`,
+                    borderRadius: '16px',
                   }}
-                  className="relative overflow-hidden rounded-2xl"
+                  className="relative overflow-hidden"
                 >
-                  {/* Left accent bar */}
-                  <div className={`absolute left-0 top-3 bottom-3 w-[2px] ${cfg.bar} rounded-full`} />
-
                   {/* Dismiss button */}
                   <button
                     onClick={() => {
@@ -512,25 +509,24 @@ export default function Friends() {
                       setDismissedCardIds(updated);
                       localStorage.setItem('friendsFeedDismissedCards', JSON.stringify(Array.from(updated)));
                     }}
-                    className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-slate-600 hover:text-slate-300 transition-all duration-150 z-10 text-[9px] font-bold"
+                    className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all duration-150 z-10 text-[10px] font-bold"
                     aria-label="Dismiss"
                   >
                     ✕
                   </button>
 
-                  <div className="pl-5 pr-9 py-3.5 flex items-center gap-3">
-                    {/* Emoji */}
-                    <span className="text-lg select-none flex-shrink-0">{card.emoji}</span>
+                  <div className="px-4 py-4 flex items-center gap-4">
+                    {/* Large emoji */}
+                    <span className="text-3xl select-none flex-shrink-0 leading-none">{cfg.icon}</span>
 
-                    {/* Text content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`text-[9px] font-bold tracking-widest border px-1.5 py-0.5 rounded ${cfg.badgeClass}`}>
-                          {cfg.badgeLabel}
-                        </span>
-                      </div>
-                      <p className="font-semibold text-white text-[13px] leading-snug">{card.title}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{card.message}</p>
+                    {/* Text */}
+                    <div className="flex-1 min-w-0 pr-4">
+                      <p className="font-extrabold text-white text-[14px] leading-tight tracking-tight">
+                        {card.title}
+                      </p>
+                      <p className="text-[12px] text-slate-400 mt-1 leading-snug font-medium">
+                        {card.message}
+                      </p>
                     </div>
                   </div>
                 </div>
