@@ -9,7 +9,6 @@ import confetti from 'canvas-confetti';
 import WeeklyChallengeCard from '../components/challenges/WeeklyChallengeCard';
 
 export default function RedeemReward() {
-  const [showQRModal, setShowQRModal] = useState(false);
   const [activeSection, setActiveSection] = useState('weekly');
   const queryClient = useQueryClient();
 
@@ -44,14 +43,6 @@ export default function RedeemReward() {
   });
 
   const gymIds = gymMemberships.map((m) => m.gym_id);
-
-  const getWeekNumber = (date = new Date()) => {
-    const firstDay = new Date(date.getFullYear(), 0, 1);
-    const pastDaysOfYear = (date - firstDay) / 86400000;
-    return Math.ceil((pastDaysOfYear + firstDay.getDay() + 1) / 7);
-  };
-
-  const weekNumber = getWeekNumber();
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
@@ -123,7 +114,7 @@ export default function RedeemReward() {
     onSuccess: () => {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       queryClient.invalidateQueries({ queryKey: ['claimedBonuses'] });
-      setShowQRModal(true);
+
     }
   });
 
