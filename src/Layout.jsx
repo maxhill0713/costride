@@ -203,9 +203,11 @@ export default function Layout({ children, currentPageName }) {
             <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))' }}>
               <ErrorBoundary>
                 <TimerProvider value={{ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }}>
-                  <PageTransition key={currentPageName}>
-                    {children}
-                  </PageTransition>
+                  <AnimatePresence mode="wait">
+                    <PageTransition key={currentPageName}>
+                      {children}
+                    </PageTransition>
+                  </AnimatePresence>
                 </TimerProvider>
               </ErrorBoundary>
             </main>
