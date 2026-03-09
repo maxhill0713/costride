@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,7 +30,7 @@ const availableAmenities = [
 export default function ManageAmenitiesModal({ open, onClose, amenities = [], onSave, isLoading }) {
   const [selectedAmenities, setSelectedAmenities] = useState(amenities);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) setSelectedAmenities(amenities);
   }, [open, JSON.stringify(amenities)]);
 
