@@ -5,7 +5,6 @@ import { Trophy, Dumbbell, Crown, MessageCircle, Users, Bell, Building2, Home, F
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
 import ErrorBoundary from './components/ErrorBoundary';
 import PersistentRestTimer from './components/PersistentRestTimer';
@@ -203,11 +202,9 @@ export default function Layout({ children, currentPageName }) {
             <main className={hideNavigation ? "" : "md:pb-0 md:pl-20"} style={hideNavigation ? {} : { paddingBottom: 'calc(4.9375rem + env(safe-area-inset-bottom))' }}>
               <ErrorBoundary>
                 <TimerProvider value={{ restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime }}>
-                  <AnimatePresence mode="wait">
-                    <PageTransition key={currentPageName}>
-                      {children}
-                    </PageTransition>
-                  </AnimatePresence>
+                  <PageTransition key={currentPageName}>
+                    {children}
+                  </PageTransition>
                 </TimerProvider>
               </ErrorBoundary>
             </main>

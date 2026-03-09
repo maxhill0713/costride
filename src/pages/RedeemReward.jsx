@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -165,9 +164,7 @@ export default function RedeemReward() {
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)] pb-24">
       <div className="max-w-6xl mx-auto px-3 md:px-4 py-4">
         <div className="mb-6 grid grid-cols-3 gap-3">
-          <motion.button
-            whileTap={{ scale: 0.95, y: 2 }}
-            transition={{ duration: 0.1 }}
+          <button
             onClick={() => setActiveSection('weekly')}
             className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'weekly'
@@ -176,10 +173,8 @@ export default function RedeemReward() {
             }`}>
             <Zap className="w-4 h-4" />
             Weekly
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95, y: 2 }}
-            transition={{ duration: 0.1 }}
+          </button>
+          <button
             onClick={() => setActiveSection('community')}
             className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'community'
@@ -188,10 +183,8 @@ export default function RedeemReward() {
             }`}>
             <Trophy className="w-4 h-4" />
             Community
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95, y: 2 }}
-            transition={{ duration: 0.1 }}
+          </button>
+          <button
             onClick={() => setActiveSection('rewards')}
             className={`px-2 md:px-4 py-3 rounded-2xl font-bold text-sm md:text-base transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${
               activeSection === 'rewards'
@@ -200,31 +193,20 @@ export default function RedeemReward() {
             }`}>
             <Gift className="w-4 h-4" />
             Rewards
-          </motion.button>
+          </button>
         </div>
 
         {activeSection === 'weekly' && (
-          <motion.div
-            key="weekly"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1] }}
-          >
+          <div>
             <h2 className="text-xl font-black text-white mb-3">Weekly Challenges</h2>
             {weeklyChallenges.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {weeklyChallenges.map((challenge, i) => (
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: i * 0.06 }}
-                  >
+                {weeklyChallenges.map((challenge) => (
                   <WeeklyChallengeCard
+                    key={challenge.id}
                     challenge={challenge}
                     currentUser={currentUser}
                   />
-                  </motion.div>
                 ))}
               </div>
             ) : (
@@ -232,16 +214,11 @@ export default function RedeemReward() {
                 <p className="text-slate-400">No weekly challenges available</p>
               </Card>
             )}
-          </motion.div>
+          </div>
         )}
 
         {activeSection === 'community' && (
-          <motion.div
-            key="community"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1] }}
-          >
+          <div>
             <h2 className="text-xl font-black text-white mb-3">Community Challenges</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userChallengeProgress.length === 0 ? (
@@ -249,14 +226,8 @@ export default function RedeemReward() {
                   <p className="text-slate-400">Join gym challenges to get started</p>
                 </Card>
               ) : (
-                userChallengeProgress.map((challenge, i) => (
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: i * 0.06 }}
-                  >
-                  <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                userChallengeProgress.map((challenge) => (
+                  <Card key={challenge.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                     <h4 className="font-bold text-white mb-2">{challenge.title}</h4>
                     <p className="text-xs text-slate-400 mb-3">{challenge.description}</p>
 
@@ -276,20 +247,14 @@ export default function RedeemReward() {
                       ✓ Joined
                     </Button>
                   </Card>
-                  </motion.div>
                 ))
               )}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {activeSection === 'rewards' && (
-          <motion.div
-            key="rewards"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1] }}
-          >
+          <div>
             <h2 className="text-xl font-black text-white mb-3">Available Rewards</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {unclaimedRewards.length === 0 && completedChallengeRewards.length === 0 ? (
@@ -298,14 +263,8 @@ export default function RedeemReward() {
                 </Card>
               ) : (
                 <>
-                  {completedChallengeRewards.map((reward, i) => (
-                    <motion.div
-                      key={reward.id}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: i * 0.06 }}
-                    >
-                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                  {completedChallengeRewards.map((reward) => (
+                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                       <h3 className="font-bold text-white mb-1">{reward.title}</h3>
                       <p className="text-xs text-amber-400 mb-2">{reward.earnedText}</p>
                       <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] mb-3">
@@ -322,16 +281,9 @@ export default function RedeemReward() {
                         {claimMutation.isPending ? 'Claiming...' : 'Claim'}
                       </Button>
                     </Card>
-                    </motion.div>
                   ))}
-                  {unclaimedRewards.map((reward, i) => (
-                    <motion.div
-                      key={reward.id}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: (completedChallengeRewards.length + i) * 0.06 }}
-                    >
-                    <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+                  {unclaimedRewards.map((reward) => (
+                    <Card key={reward.id} className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h3 className="font-bold text-white">{reward.title}</h3>
@@ -357,12 +309,11 @@ export default function RedeemReward() {
                         {claimMutation.isPending ? 'Claiming...' : reward.premium_only && !isPremium ? 'Pro Only' : 'Claim'}
                       </Button>
                     </Card>
-                    </motion.div>
                   ))}
                 </>
               )}
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

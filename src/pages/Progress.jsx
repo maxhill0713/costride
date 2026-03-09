@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Target, CheckCircle, BarChart3, ChevronRight, Dumbbell, Users, Flame, Calendar, Zap, TrendingUp, Award } from 'lucide-react';
@@ -29,9 +28,9 @@ function SubPage({ title, onBack, action, children }) {
       <div className="max-w-4xl mx-auto px-4 pt-5 pb-32">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <motion.button onClick={onBack} whileTap={{ scale: 0.9, y: 1 }} transition={{ duration: 0.1 }} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center">
+            <button onClick={onBack} className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center active:scale-90 transition-transform">
               <ChevronRight className="w-5 h-5 text-slate-300 rotate-180" />
-            </motion.button>
+            </button>
             <h1 className="text-xl font-black text-white tracking-tight">{title}</h1>
           </div>
           {action}
@@ -99,19 +98,12 @@ function GoalsPage({ currentUser, onBack }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {activeGoals.map((goal, index) => (
-            <motion.div
-              key={goal.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: index * 0.06 }}
-            >
-            <GoalCard goal={goal}
+          {activeGoals.map((goal) => (
+            <GoalCard key={goal.id} goal={goal}
               onUpdate={(g, v, s, m) => { const d = { current_value: v, status: s || g.status }; if (m) d.milestones = m; updateGoalMutation.mutate({ id: g.id, data: d }); }}
               onDelete={(id) => deleteGoalMutation.mutate(id)}
               onToggleReminder={(g) => updateGoalMutation.mutate({ id: g.id, data: { reminder_enabled: !g.reminder_enabled } })}
             />
-            </motion.div>
           ))}
         </div>
       )}
@@ -314,16 +306,8 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
     </div>
   );
 
-  if (As === 'link') return (
-    <motion.div whileTap={{ scale: 0.97, y: 2 }} transition={{ duration: 0.1 }}>
-      <Link to={href} className="block" {...events}>{inner}</Link>
-    </motion.div>
-  );
-  return (
-    <motion.button className="w-full" onClick={onClick} whileTap={{ scale: 0.97, y: 2 }} transition={{ duration: 0.1 }} {...events}>
-      {inner}
-    </motion.button>
-  );
+  if (As === 'link') return <Link to={href} className="block" {...events}>{inner}</Link>;
+  return <button className="w-full" onClick={onClick} {...events}>{inner}</button>;
 }
 
 // ─── Main Hub ──────────────────────────────────────────────────────────────────
@@ -426,19 +410,13 @@ export default function Progress() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-3">
-        {cards.map((card, index) => (
-          <motion.div
+        {cards.map((card) => (
+          <TallCard
             key={card.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.2, 0.64, 1], delay: index * 0.06 }}
-          >
-            <TallCard
-              {...card}
-              as={card.isLink ? 'link' : 'button'}
-              onClick={card.isLink ? undefined : () => setView(card.id)}
-            />
-          </motion.div>
+            {...card}
+            as={card.isLink ? 'link' : 'button'}
+            onClick={card.isLink ? undefined : () => setView(card.id)}
+          />
         ))}
       </div>
     </div>
