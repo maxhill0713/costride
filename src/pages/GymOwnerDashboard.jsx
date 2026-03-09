@@ -482,7 +482,7 @@ export default function GymOwnerDashboard() {
           {rewards.length > 0 ? (
             <div className="space-y-2.5">
               {rewards.slice(0,6).map(reward=>(
-                <div key={reward.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                <div key={reward.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
                   <span className="text-2xl flex-shrink-0">{reward.icon||'🎁'}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-white truncate">{reward.title}</p>
@@ -528,7 +528,7 @@ export default function GymOwnerDashboard() {
           {posts.length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
               {posts.slice(0,10).map(post=>(
-                <div key={post.id} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                <div key={post.id} className="p-3.5 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div className="flex items-center gap-2.5 mb-2">
                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
                       {post.member_name?.charAt(0)?.toUpperCase()}
@@ -551,7 +551,7 @@ export default function GymOwnerDashboard() {
           {events.filter(e=>new Date(e.event_date)>=now).length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
               {events.filter(e=>new Date(e.event_date)>=now).map(ev=>(
-                <div key={ev.id} className="p-4 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                <div key={ev.id} className="p-4 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
                   {ev.image_url && <img src={ev.image_url} alt={ev.title} className="w-full h-24 object-cover rounded-lg mb-3"/>}
                   <p className="text-sm font-bold text-white mb-1 truncate">{ev.title}</p>
                   <p className="text-xs line-clamp-2 mb-2" style={{color:'#6b87b8'}}>{ev.description}</p>
@@ -716,7 +716,7 @@ export default function GymOwnerDashboard() {
             {l:'Address',   v:selectedGym?.address},
             {l:'Postcode',  v:selectedGym?.postcode},
           ].map((f,i)=>(
-            <div key={i} className="p-3 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+            <div key={i} className="p-3 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
               <p className="text-xs uppercase tracking-wide mb-1" style={{color:'#3d5a8a'}}>{f.l}</p>
               <p className="text-sm font-semibold text-white truncate">{f.v||'—'}</p>
             </div>
@@ -731,7 +731,7 @@ export default function GymOwnerDashboard() {
           {classes.length > 0 ? (
             <div className="space-y-2">
               {classes.slice(0,6).map(cls=>(
-                <div key={cls.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                <div key={cls.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background:'rgba(52,211,153,0.12)',border:'1px solid rgba(52,211,153,0.22)'}}>
                     <Calendar className="w-4 h-4 text-emerald-400"/>
                   </div>
@@ -751,7 +751,7 @@ export default function GymOwnerDashboard() {
           {coaches.length > 0 ? (
             <div className="space-y-2">
               {coaches.slice(0,6).map(coach=>(
-                <div key={coach.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+                <div key={coach.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
                     {coach.name?.charAt(0)?.toUpperCase()}
                   </div>
@@ -793,7 +793,7 @@ export default function GymOwnerDashboard() {
             ))}
           </div>
         ) : (
-          <div className="flex items-center gap-4 p-4 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+          <div className="flex items-center gap-4 p-4 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
             <ImageIcon className="w-6 h-6 flex-shrink-0" style={{color:'#3d5a8a'}}/>
             <p className="text-sm" style={{color:'#6b87b8'}}>No photos yet. Add photos to attract more members.</p>
             <button onClick={()=>openModal('photos')} className="ml-auto text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0"
@@ -813,7 +813,7 @@ export default function GymOwnerDashboard() {
             {l:'Gym ID',      v:selectedGym?.id, mono:true},
             {l:'Status',      v:selectedGym?.verified?'✓ Verified':'Not Verified', c:selectedGym?.verified?'#34d399':'#f87171'},
           ].map((f,i)=>(
-            <div key={i} className="p-3.5 rounded-xl" style={{background:N[750],border:'1px solid rgba(59,130,246,0.1)'}}>
+            <div key={i} className="p-3.5 rounded-xl" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
               <p className="text-xs uppercase tracking-wide mb-1.5" style={{color:'#3d5a8a'}}>{f.l}</p>
               <p className={`text-sm font-semibold ${f.mono?'font-mono text-xs break-all':''}`} style={{color:f.c||'white'}}>{f.v||'—'}</p>
             </div>
