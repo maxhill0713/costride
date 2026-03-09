@@ -1,15 +1,67 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { X, Sparkles, Upload, Tag, Link2, Calendar, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { Loader2, Upload, X, Sparkles, Tag, Link2, Calendar, Users } from 'lucide-react';
+
+const S = `
+  .dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  @media(min-width:640px){.dm-overlay{align-items:center;}}
+  .dm-modal{width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
+  @media(min-width:640px){.dm-modal{border-radius:24px;}}
+  .dm-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
+  .dm-inp:focus{border-color:rgba(99,102,241,0.5);}
+  .dm-inp::placeholder{color:rgba(148,163,184,0.4);}
+  .dm-ta{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;resize:none;}
+  .dm-ta:focus{border-color:rgba(99,102,241,0.5);}
+  .dm-ta::placeholder{color:rgba(148,163,184,0.4);}
+  .dm-sel{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;appearance:none;}
+  .dm-sel option{background:#0a1628;color:#fff;}
+  .dm-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:rgba(165,180,252,0.9);}
+  .dm-label{font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(148,163,184,0.5);margin-bottom:6px;display:block;}
+`;
+
+function DarkButton({ onClick, disabled, children, secondary }) {
+  const [p, setP] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseDown={() => !disabled && setP(true)}
+      onMouseUp={() => setP(false)}
+      onMouseLeave={() => setP(false)}
+      onTouchStart={() => !disabled && setP(true)}
+      onTouchEnd={() => setP(false)}
+      style={{
+        flex: 1, padding: '12px 0', borderRadius: 13, fontSize: 13, fontWeight: 900,
+        color: secondary ? 'rgba(148,163,184,0.8)' : '#fff',
+        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#6366f1 0%,#4f46e5 50%,#4338ca 100%)',
+        border: secondary ? '1px solid rgba(255,255,255,0.08)' : disabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.18)',
+        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #312e81' : '4px solid #312e81',
+        boxShadow: secondary || disabled ? 'none' : p ? 'none' : '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(99,102,241,0.3),inset 0 1px 0 rgba(255,255,255,0.2)',
+        transform: p ? 'translateY(3px) scale(0.98)' : 'translateY(0) scale(1)',
+        transition: p ? 'transform 0.06s,box-shadow 0.06s' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1),box-shadow 0.18s',
+        cursor: disabled ? 'default' : 'pointer',
+      }}
+    >{children}</button>
+  );
+}
+
+const POST_TYPES = [
+  { value: 'update', label: '📢 Update / Announcement' },
+  { value: 'achievement', label: '🏆 Achievement / Success' },
+  { value: 'event', label: '📅 Event Promotion' },
+  { value: 'offer', label: '🎁 Special Offer' },
+  { value: 'tip', label: '💡 Fitness Tip' },
+  { value: 'member_spotlight', label: '⭐ Member Spotlight' },
+];
+
+const PLACEHOLDERS = {
+  achievement: 'Share a gym achievement or milestone...',
+  event: 'Tell members about an upcoming event...',
+  offer: 'Announce a special offer or promotion...',
+  tip: 'Share a helpful fitness tip...',
+  member_spotlight: 'Highlight an amazing member...',
+};
 
 export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess }) {
   const [content, setContent] = useState('');
@@ -20,306 +72,171 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const [newTag, setNewTag] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
-  const [mentionUsers, setMentionUsers] = useState([]);
   const [callToAction, setCallToAction] = useState({ enabled: false, text: '', link: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const uploadMutation = useMutation({
-    mutationFn: async (file) => {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      return result.file_url;
-    },
-    onSuccess: (url) => {
-      setImageUrl(url);
-      setUploading(false);
-    }
+    mutationFn: async (file) => { const r = await base44.integrations.Core.UploadFile({ file }); return r.file_url; },
+    onSuccess: (url) => { setImageUrl(url); setUploading(false); }
   });
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setUploading(true);
-      uploadMutation.mutate(file);
-    }
+    if (file) { setUploading(true); uploadMutation.mutate(file); }
   };
 
   const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove) => {
-    setTags(tags.filter(t => t !== tagToRemove));
+    if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag(''); }
   };
 
   const handleSubmit = async () => {
-    if (!content.trim()) return;
-
+    if (!content.trim() || submitting) return;
+    setSubmitting(true);
     await base44.entities.Post.create({
-      member_id: gym.id,
-      member_name: gym.name,
-      member_avatar: gym.image_url,
-      content,
-      image_url: imageUrl,
-      likes: 0,
-      comments: [],
-      post_type: postType,
-      tags,
-      is_pinned: isPinned,
+      member_id: gym.id, member_name: gym.name, member_avatar: gym.image_url,
+      content, image_url: imageUrl, likes: 0, comments: [],
+      post_type: postType, tags, is_pinned: isPinned,
       scheduled_date: scheduledDate || null,
-      mentioned_users: mentionUsers,
       call_to_action: callToAction.enabled ? { text: callToAction.text, link: callToAction.link } : null
     });
-
     onSuccess?.();
-    setContent('');
-    setImageUrl('');
-    setPostType('update');
-    setTags([]);
-    setIsPinned(false);
-    setScheduledDate('');
-    setMentionUsers([]);
-    setCallToAction({ enabled: false, text: '', link: '' });
+    setContent(''); setImageUrl(''); setPostType('update'); setTags([]);
+    setIsPinned(false); setScheduledDate(''); setCallToAction({ enabled: false, text: '', link: '' });
+    setSubmitting(false);
     onClose();
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Sparkles className="w-6 h-6 text-purple-500" />
-            Create Gym Post
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <style>{S}</style>
+      <div className="dm-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="dm-modal">
 
-        <div className="space-y-5">
-          {/* Post Type */}
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <Tag className="w-4 h-4" />
-              Post Type
-            </Label>
-            <Select value={postType} onValueChange={setPostType}>
-              <SelectTrigger className="rounded-2xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="update">📢 Update/Announcement</SelectItem>
-                <SelectItem value="achievement">🏆 Achievement/Success</SelectItem>
-                <SelectItem value="event">📅 Event Promotion</SelectItem>
-                <SelectItem value="offer">🎁 Special Offer</SelectItem>
-                <SelectItem value="tip">💡 Fitness Tip</SelectItem>
-                <SelectItem value="member_spotlight">⭐ Member Spotlight</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Post Content */}
-          <div>
-            <Label>Post Content *</Label>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={`${
-                postType === 'achievement' ? 'Share a gym achievement or milestone...' :
-                postType === 'event' ? 'Tell members about an upcoming event...' :
-                postType === 'offer' ? 'Announce a special offer or promotion...' :
-                postType === 'tip' ? 'Share a helpful fitness tip...' :
-                postType === 'member_spotlight' ? 'Highlight an amazing member...' :
-                'Share an update, announcement, or achievement...'
-              }`}
-              rows={6}
-              className="mt-2 rounded-2xl"
-            />
-            <p className="text-xs text-gray-500 mt-1">{content.length} characters</p>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <Tag className="w-4 h-4" />
-              Tags
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                placeholder="Add tag (e.g., nutrition, workout, event)"
-                className="rounded-2xl"
-              />
-              <Button type="button" onClick={addTag} variant="outline" className="rounded-2xl">
-                Add
-              </Button>
-            </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {tags.map((tag, idx) => (
-                  <Badge key={idx} variant="secondary" className="pr-1 text-sm">
-                    #{tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="ml-2 hover:text-red-500"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <Upload className="w-4 h-4" />
-              Image (Optional)
-            </Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              className="rounded-2xl"
-            />
-            {uploading && (
-              <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Uploading image...
-              </div>
-            )}
-            {imageUrl && !uploading && (
-              <div className="mt-3 relative">
-                <img src={imageUrl} alt="Preview" className="w-full max-h-64 object-cover rounded-2xl" />
-                <Button
-                  type="button"
-                  onClick={() => setImageUrl('')}
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Call to Action */}
-          <div className="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Checkbox
-                id="cta"
-                checked={callToAction.enabled}
-                onCheckedChange={(checked) => setCallToAction({ ...callToAction, enabled: checked })}
-              />
-              <Label htmlFor="cta" className="font-bold cursor-pointer flex items-center gap-2">
-                <Link2 className="w-4 h-4" />
-                Add Call-to-Action Button
-              </Label>
-            </div>
-            {callToAction.enabled && (
-              <div className="grid grid-cols-2 gap-3 ml-6">
-                <Input
-                  value={callToAction.text}
-                  onChange={(e) => setCallToAction({ ...callToAction, text: e.target.value })}
-                  placeholder="Button text (e.g., Book Now)"
-                  className="rounded-2xl"
-                />
-                <Input
-                  value={callToAction.link}
-                  onChange={(e) => setCallToAction({ ...callToAction, link: e.target.value })}
-                  placeholder="Link URL"
-                  className="rounded-2xl"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Advanced Options */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-purple-50 rounded-2xl border-2 border-purple-200">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id="pinned"
-                  checked={isPinned}
-                  onCheckedChange={setIsPinned}
-                />
-                <Label htmlFor="pinned" className="font-bold cursor-pointer">
-                  📌 Pin to Top
-                </Label>
-              </div>
-              <p className="text-xs text-gray-600 mt-1 ml-6">Keep this post at the top of the feed</p>
-            </div>
-
-            <div>
-              <Label className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4" />
-                Schedule Post (Optional)
-              </Label>
-              <Input
-                type="datetime-local"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                className="rounded-2xl"
-              />
-            </div>
-          </div>
-
-          {/* Preview */}
-          {content && (
-            <div className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-200">
-              <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Preview
-              </h4>
-              <div className="bg-white p-4 rounded-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                    {gym.name?.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{gym.name}</p>
-                    <p className="text-xs text-gray-500">Just now • {postType.replace('_', ' ')}</p>
-                  </div>
+          {/* Header */}
+          <div style={{ flexShrink:0, padding:'20px 20px 16px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:36,height:36,borderRadius:11,background:'linear-gradient(135deg,rgba(139,92,246,0.25),rgba(99,102,241,0.15))',border:'1px solid rgba(139,92,246,0.3)',display:'flex',alignItems:'center',justifyContent:'center' }}>
+                  <Sparkles style={{ width:17,height:17,color:'#c4b5fd' }}/>
                 </div>
-                <p className="text-gray-900 whitespace-pre-wrap mb-2">{content}</p>
+                <div>
+                  <h2 style={{ fontSize:17,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',margin:0 }}>New Gym Post</h2>
+                  <p style={{ fontSize:11,color:'rgba(148,163,184,0.5)',margin:0,fontWeight:600 }}>{gym?.name}</p>
+                </div>
+              </div>
+              <button onClick={onClose} style={{ width:32,height:32,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer' }}>
+                <X style={{ width:15,height:15,color:'rgba(255,255,255,0.6)' }}/>
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',padding:'16px 20px' }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+
+              {/* Post type */}
+              <div>
+                <span className="dm-label">Post Type</span>
+                <select className="dm-sel" value={postType} onChange={e => setPostType(e.target.value)}>
+                  {POST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+
+              {/* Content */}
+              <div>
+                <span className="dm-label">Content *</span>
+                <textarea
+                  className="dm-ta"
+                  rows={5}
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  placeholder={PLACEHOLDERS[postType] || 'Share an update with your members...'}
+                />
+                <p style={{ fontSize:10,color:'rgba(148,163,184,0.35)',marginTop:4,fontWeight:600 }}>{content.length} characters</p>
+              </div>
+
+              {/* Image upload */}
+              <div>
+                <span className="dm-label">Image (Optional)</span>
+                <label style={{ display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:11,background:'rgba(255,255,255,0.04)',border:'1px dashed rgba(255,255,255,0.12)',cursor:'pointer' }}>
+                  <Upload style={{ width:15,height:15,color:'rgba(148,163,184,0.5)',flexShrink:0 }}/>
+                  <span style={{ fontSize:12,color:'rgba(148,163,184,0.5)',fontWeight:600 }}>{uploading ? 'Uploading...' : imageUrl ? 'Image attached ✓' : 'Upload image'}</span>
+                  <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} style={{ display:'none' }}/>
+                </label>
+                {imageUrl && !uploading && (
+                  <div style={{ position:'relative',marginTop:8 }}>
+                    <img src={imageUrl} alt="Preview" style={{ width:'100%',maxHeight:160,objectFit:'cover',borderRadius:11,border:'1px solid rgba(255,255,255,0.08)' }}/>
+                    <button onClick={() => setImageUrl('')} style={{ position:'absolute',top:6,right:6,width:24,height:24,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.6)',border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer' }}>
+                      <X style={{ width:11,height:11,color:'#fff' }}/>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Tags */}
+              <div>
+                <span className="dm-label">Tags</span>
+                <div style={{ display:'flex', gap:8 }}>
+                  <input className="dm-inp" style={{ flex:1 }} value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="e.g. nutrition, event, offer"/>
+                  <button onClick={addTag} style={{ width:40,height:40,borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(99,102,241,0.18)',border:'1px solid rgba(99,102,241,0.3)',cursor:'pointer',flexShrink:0 }}>
+                    <Tag style={{ width:15,height:15,color:'#818cf8' }}/>
+                  </button>
+                </div>
                 {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {tags.map((tag, idx) => (
-                      <span key={idx} className="text-xs text-blue-600">#{tag}</span>
+                  <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginTop:8 }}>
+                    {tags.map((t, i) => (
+                      <span key={i} className="dm-tag">
+                        #{t}
+                        <button onClick={() => setTags(tags.filter(x => x !== t))} style={{ background:'none',border:'none',cursor:'pointer',padding:0,display:'flex',alignItems:'center' }}>
+                          <X style={{ width:9,height:9,color:'rgba(165,180,252,0.6)' }}/>
+                        </button>
+                      </span>
                     ))}
                   </div>
                 )}
-                {imageUrl && (
-                  <img src={imageUrl} alt="Preview" className="w-full rounded-xl mb-2" />
-                )}
-                {callToAction.enabled && callToAction.text && (
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mt-3">
-                    {callToAction.text}
-                  </Button>
+              </div>
+
+              {/* Call to Action */}
+              <div style={{ padding:'12px 14px',borderRadius:12,background:'rgba(99,102,241,0.07)',border:'1px solid rgba(99,102,241,0.15)' }}>
+                <label style={{ display:'flex',alignItems:'center',gap:8,cursor:'pointer',marginBottom: callToAction.enabled ? 10 : 0 }}>
+                  <input type="checkbox" checked={callToAction.enabled} onChange={e => setCallToAction({ ...callToAction, enabled: e.target.checked })} style={{ width:14,height:14,accentColor:'#6366f1' }}/>
+                  <Link2 style={{ width:13,height:13,color:'#818cf8' }}/>
+                  <span style={{ fontSize:12,fontWeight:700,color:'rgba(165,180,252,0.8)' }}>Add Call-to-Action Button</span>
+                </label>
+                {callToAction.enabled && (
+                  <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8 }}>
+                    <input className="dm-inp" value={callToAction.text} onChange={e => setCallToAction({ ...callToAction, text: e.target.value })} placeholder="Button text (e.g. Book Now)"/>
+                    <input className="dm-inp" value={callToAction.link} onChange={e => setCallToAction({ ...callToAction, link: e.target.value })} placeholder="Link URL"/>
+                  </div>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={onClose} className="rounded-2xl">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={!content.trim()}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-2xl"
-            >
-              {scheduledDate ? '📅 Schedule Post' : '✨ Publish Post'}
-            </Button>
+              {/* Options row */}
+              <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10 }}>
+                <label style={{ display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:11,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',cursor:'pointer' }}>
+                  <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} style={{ width:14,height:14,accentColor:'#6366f1' }}/>
+                  <span style={{ fontSize:12,fontWeight:700,color:'rgba(255,255,255,0.65)' }}>📌 Pin to Top</span>
+                </label>
+                <div>
+                  <span className="dm-label" style={{ display:'flex',alignItems:'center',gap:5 }}><Calendar style={{ width:11,height:11 }}/>Schedule</span>
+                  <input type="datetime-local" className="dm-inp" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)}/>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ flexShrink:0,padding:'14px 20px 20px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',gap:10 }}>
+            <DarkButton onClick={onClose} secondary>Cancel</DarkButton>
+            <DarkButton onClick={handleSubmit} disabled={!content.trim() || submitting}>
+              {submitting ? 'Publishing...' : scheduledDate ? '📅 Schedule Post' : '✨ Publish Post'}
+            </DarkButton>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   );
 }
