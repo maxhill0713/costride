@@ -1026,6 +1026,26 @@ export default function GymOwnerDashboard() {
           </div>
         </header>
 
+        {/* Mobile quick-tab strip — Overview / Members / Content */}
+        <div className="md:hidden flex gap-2 px-3 pt-2 pb-1 overflow-x-auto no-scrollbar" style={{background:'rgba(2,6,23,0.97)',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+          {[
+            {id:'overview', label:'Overview', icon:LayoutDashboard},
+            {id:'members',  label:'Members',  icon:Users},
+            {id:'content',  label:'Content',  icon:FileText},
+            {id:'analytics',label:'Analytics',icon:BarChart3},
+            {id:'gym',      label:'Settings', icon:Settings},
+          ].map(item=>{
+            const active=tab===item.id;
+            return(
+              <button key={item.id} onClick={()=>setTab(item.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0 transition-all"
+                style={{background:active?'rgba(59,130,246,0.18)':'rgba(255,255,255,0.04)',color:active?'#93c5fd':'#64748b',border:active?'1px solid rgba(59,130,246,0.3)':'1px solid rgba(255,255,255,0.06)'}}>
+                <item.icon className="w-3.5 h-3.5"/>{item.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Content */}
         <main className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 pb-24 md:pb-6" style={{background:'transparent'}}>
           <div className="max-w-[1400px] mx-auto">
