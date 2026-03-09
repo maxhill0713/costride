@@ -291,6 +291,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
 
         {/* Subtitle */}
         {subtitle && (
+          <p className="text-[11px] font-bold" style={{ color: accentColor }}>{subtitle}</p>
         )}
 
         {/* Description */}
