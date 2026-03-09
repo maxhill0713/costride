@@ -970,7 +970,7 @@ export default function GymOwnerDashboard() {
 
         {/* Topbar */}
         <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-3.5 flex-shrink-0 border-b"
-          style={{background:'rgba(2,6,23,0.97)',borderColor:'rgba(255,255,255,0.07)'}}>
+          style={{background:'rgba(15,30,70,0.95)',backdropFilter:'blur(16px)',borderColor:'rgba(59,130,246,0.2)'}}>
           <div className="flex items-center gap-3">
             {/* Sidebar toggle — desktop only */}
             <button onClick={()=>setCollapsed(o=>!o)}
