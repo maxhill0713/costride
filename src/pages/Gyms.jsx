@@ -13,7 +13,6 @@ import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-// DialogHeader and DialogTitle already imported above
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function Gyms() {
