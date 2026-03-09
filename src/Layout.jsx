@@ -118,7 +118,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950">
       {/* Bottom Navigation for Mobile */}
       {!hideNavigation &&
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-blue-800/50 z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+      <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-xl border-t z-50 md:hidden pb-[env(safe-area-inset-bottom)]" style={{background:'rgba(2,4,10,0.97)',borderColor:'rgba(59,130,246,0.18)',boxShadow:'0 -4px 24px rgba(0,0,0,0.5)'}}>
           <div className="flex justify-around items-start pt-1 h-[79px] px-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
