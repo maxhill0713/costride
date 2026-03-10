@@ -875,6 +875,8 @@ export default function GymOwnerDashboard() {
       </Panel>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <Panel>
+          <PH title="Classes" badge={classes.length} action={()=>openModal('classes')} actionLabel="Manage"/>
           {classes.length > 0 ? (
             <div className="space-y-2">
               {classes.slice(0,6).map(cls=>(
