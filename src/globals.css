@@ -212,6 +212,43 @@
   }
 }
 
+/* Keyframe animations (must be at top level, not inside @layer) */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes iosSpringIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes iosSlideUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes iosSlideDown {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes iosBounce {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes iosHaptic {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+}
+
+@keyframes tapRipple {
+  from { opacity: 1; transform: scale(0.5); }
+  to { opacity: 0; transform: scale(1); }
+}
+
 @layer components {
   /* Touch Target Optimization - Minimum 44px for mobile (Android/iOS standard) */
   .touch-target {
