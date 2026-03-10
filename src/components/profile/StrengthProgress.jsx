@@ -1,55 +1,123 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Star, Dumbbell } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Star, Dumbbell, Zap, Award } from 'lucide-react';
 import { format, subMonths } from 'date-fns';
 
+// ─── Config ──────────────────────────────────────────────────────────────────
 const EXERCISES = [
-  { key: 'bench_press',     label: 'Bench Press',     color: '#a78bfa' },
-  { key: 'squat',           label: 'Squat',            color: '#34d399' },
-  { key: 'deadlift',        label: 'Deadlift',         color: '#f97316' },
-  { key: 'overhead_press',  label: 'OHP',              color: '#60a5fa' },
-  { key: 'barbell_row',     label: 'Barbell Row',      color: '#f472b6' },
-  { key: 'power_clean',     label: 'Power Clean',      color: '#fbbf24' },
+  { key: 'bench_press',    label: 'Bench Press',   short: 'BP',  color: '#a78bfa', glow: 'rgba(167,139,250,0.35)' },
+  { key: 'squat',          label: 'Squat',          short: 'SQ',  color: '#34d399', glow: 'rgba(52,211,153,0.35)'  },
+  { key: 'deadlift',       label: 'Deadlift',       short: 'DL',  color: '#f97316', glow: 'rgba(249,115,22,0.35)'  },
+  { key: 'overhead_press', label: 'OHP',            short: 'OHP', color: '#60a5fa', glow: 'rgba(96,165,250,0.35)'  },
+  { key: 'barbell_row',    label: 'Barbell Row',    short: 'BR',  color: '#f472b6', glow: 'rgba(244,114,182,0.35)' },
+  { key: 'power_clean',    label: 'Power Clean',    short: 'PC',  color: '#fbbf24', glow: 'rgba(251,191,36,0.35)'  },
 ];
 
 const PERIODS = [
-  { key: '3m', label: '3M', months: 3 },
-  { key: '6m', label: '6M', months: 6 },
-  { key: '1y', label: '1Y', months: 12 },
+  { key: '3m',  label: '3M',  months: 3  },
+  { key: '6m',  label: '6M',  months: 6  },
+  { key: '1y',  label: '1Y',  months: 12 },
   { key: 'all', label: 'All', months: null },
 ];
 
-const CARD = {
-  background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-  border: '1px solid rgba(255,255,255,0.07)',
-  backdropFilter: 'blur(16px)',
-  WebkitBackdropFilter: 'blur(16px)',
-};
-
-function CustomTooltip({ active, payload, label }) {
+// ─── Custom Tooltip ───────────────────────────────────────────────────────────
+function CustomTooltip({ active, payload, color }) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
     <div style={{
-      background: 'rgba(10,14,30,0.95)',
-      border: '1px solid rgba(148,163,184,0.2)',
-      borderRadius: 8, padding: '8px 12px', fontSize: 12,
+      background: 'rgba(8,12,28,0.96)',
+      border: `1px solid ${color}44`,
+      borderRadius: 10,
+      padding: '10px 14px',
+      backdropFilter: 'blur(12px)',
+      boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${color}22`,
+      minWidth: 130,
     }}>
-      <p style={{ color: '#94a3b8', marginBottom: 2 }}>{label}</p>
-      <p style={{ color: '#fff', fontWeight: 700 }}>{d.weight} lbs × {d.reps} reps</p>
-      {d.is_pr && <p style={{ color: '#fbbf24', fontWeight: 700, marginTop: 2 }}>⭐ Personal Record</p>}
+      <p style={{ color: '#64748b', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>{d.date}</p>
+      <p style={{ color: '#fff', fontSize: 16, fontWeight: 800, lineHeight: 1, marginBottom: 2 }}>
+        {d.weight}<span style={{ color, fontSize: 11, fontWeight: 600, marginLeft: 3 }}>lbs</span>
+      </p>
+      <p style={{ color: '#64748b', fontSize: 11 }}>{d.reps} rep{d.reps !== 1 ? 's' : ''}</p>
+      {d.is_pr && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, padding: '3px 6px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6 }}>
+          <span style={{ fontSize: 10 }}>⭐</span>
+          <span style={{ color: '#fbbf24', fontSize: 10, fontWeight: 700 }}>Personal Record</span>
+        </div>
+      )}
     </div>
   );
 }
 
+// ─── PR Dot renderer ─────────────────────────────────────────────────────────
+function renderDot(props, color) {
+  const { cx, cy, payload } = props;
+  if (!cx || !cy) return null;
+  if (payload?.is_pr) {
+    return (
+      <g key={`pr-${cx}-${cy}`}>
+        <circle cx={cx} cy={cy} r={9} fill={color} opacity={0.12} />
+        <circle cx={cx} cy={cy} r={6} fill={color} opacity={0.22} />
+        <circle cx={cx} cy={cy} r={3.5} fill={color} />
+        <circle cx={cx} cy={cy} r={3.5} fill="none" stroke={color} strokeWidth={1.5} opacity={0.7} />
+      </g>
+    );
+  }
+  return <circle key={`dot-${cx}-${cy}`} cx={cx} cy={cy} r={2.5} fill={color} opacity={0.6} />;
+}
+
+// ─── Sparkline (mini inline chart) ───────────────────────────────────────────
+function Sparkline({ data, color, width = 44, height = 18 }) {
+  if (!data || data.length < 2) return <div style={{ width, height }} />;
+  const vals = data.map(d => d.weight);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const range = max - min || 1;
+  const pts = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * width;
+    const y = height - ((v - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" opacity={0.7} />
+    </svg>
+  );
+}
+
+// ─── Animated count-up number ────────────────────────────────────────────────
+function AnimatedNumber({ value, decimals = 0 }) {
+  const [display, setDisplay] = useState(value);
+  const prev = useRef(value);
+  useEffect(() => {
+    if (value === prev.current) return;
+    const start = prev.current;
+    const end = value;
+    const duration = 400;
+    const startTime = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(+(start + (end - start) * eased).toFixed(decimals));
+      if (t < 1) requestAnimationFrame(tick);
+      else prev.current = end;
+    };
+    requestAnimationFrame(tick);
+  }, [value]);
+  return <>{display}</>;
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function StrengthProgress({ currentUser }) {
-  const [exercise, setExercise] = useState(null);
-  const [period, setPeriod]     = useState('6m');
+  const [exercise, setExercise]   = useState(null);
+  const [period, setPeriod]       = useState('6m');
   const [selectedDay, setSelectedDay] = useState(null);
+  const [chartKey, setChartKey]   = useState(0); // force remount on exercise change for animation
   const queryClient = useQueryClient();
 
   const { data: lifts = [], isLoading } = useQuery({
@@ -60,7 +128,6 @@ export default function StrengthProgress({ currentUser }) {
     placeholderData: (prev) => prev,
   });
 
-  // Subscribe to WorkoutLog updates to refresh lifts in real-time
   useEffect(() => {
     if (!currentUser?.id) return;
     const unsubscribe = base44.entities.WorkoutLog.subscribe((event) => {
@@ -71,263 +138,396 @@ export default function StrengthProgress({ currentUser }) {
     return unsubscribe;
   }, [currentUser?.id, queryClient]);
 
-  // Parse split data
   const split = useMemo(() => {
     const s = currentUser?.custom_workout_types || currentUser?.workout_split;
     if (!s || typeof s !== 'object') return {};
     return s;
   }, [currentUser?.custom_workout_types, currentUser?.workout_split]);
 
-  const splitDays = useMemo(() => Object.keys(split).filter((k) => split[k]), [split]);
+  const splitDays = useMemo(() => Object.keys(split).filter(k => split[k]), [split]);
 
-  // Get exercises for selected day
   const availableExercises = useMemo(() => {
     if (!selectedDay || !split[selectedDay]) return [];
     const dayExercises = split[selectedDay];
-    if (Array.isArray(dayExercises)) {
-      return dayExercises.map((ex) => EXERCISES.find((e) => e.key === ex)).filter(Boolean);
-    }
-    if (typeof dayExercises === 'string') {
-      return EXERCISES.filter((e) => e.key === dayExercises);
-    }
+    if (Array.isArray(dayExercises)) return dayExercises.map(ex => EXERCISES.find(e => e.key === ex)).filter(Boolean);
+    if (typeof dayExercises === 'string') return EXERCISES.filter(e => e.key === dayExercises);
     return [];
   }, [selectedDay, split]);
 
-  // Initialize first exercise when day changes
   React.useEffect(() => {
     if (availableExercises.length > 0) {
       setExercise(availableExercises[0].key);
-    } else {
-      setExercise(null);
-    }
+      setChartKey(k => k + 1);
+    } else setExercise(null);
   }, [availableExercises]);
 
-  // Auto-select first day if not selected
   React.useEffect(() => {
-    if (!selectedDay && splitDays.length > 0) {
-      setSelectedDay(splitDays[0]);
-    }
+    if (!selectedDay && splitDays.length > 0) setSelectedDay(splitDays[0]);
   }, [splitDays, selectedDay]);
 
-  const selectedExercise = EXERCISES.find((e) => e.key === exercise);
+  const handleExerciseChange = (key) => {
+    setExercise(key);
+    setChartKey(k => k + 1);
+  };
 
-  // Which exercises actually have data from split
-  const exercisesWithData = useMemo(() => {
-    const set = new Set(lifts.map((l) => l.exercise));
-    return availableExercises.filter((e) => set.has(e.key));
+  const selectedExercise = EXERCISES.find(e => e.key === exercise);
+  const color = selectedExercise?.color ?? '#a78bfa';
+  const glow  = selectedExercise?.glow  ?? 'rgba(167,139,250,0.35)';
+
+  // All-time data per exercise (for sparklines)
+  const allTimeByExercise = useMemo(() => {
+    const map = {};
+    for (const ex of availableExercises) {
+      map[ex.key] = lifts
+        .filter(l => l.exercise === ex.key)
+        .sort((a, b) => new Date(a.lift_date || a.created_date) - new Date(b.lift_date || b.created_date))
+        .map(l => ({ weight: l.weight_lbs }));
+    }
+    return map;
   }, [lifts, availableExercises]);
 
   const chartData = useMemo(() => {
     const cutoff = period !== 'all'
-      ? subMonths(new Date(), PERIODS.find((p) => p.key === period).months)
+      ? subMonths(new Date(), PERIODS.find(p => p.key === period).months)
       : null;
-
     return lifts
-      .filter((l) => l.exercise === exercise)
-      .filter((l) => !cutoff || new Date(l.lift_date || l.created_date) >= cutoff)
+      .filter(l => l.exercise === exercise)
+      .filter(l => !cutoff || new Date(l.lift_date || l.created_date) >= cutoff)
       .sort((a, b) => new Date(a.lift_date || a.created_date) - new Date(b.lift_date || b.created_date))
-      .map((l) => ({
-        date: format(new Date(l.lift_date || l.created_date), 'MMM d'),
+      .map(l => ({
+        date:   format(new Date(l.lift_date || l.created_date), 'MMM d'),
         weight: l.weight_lbs,
-        reps: l.reps || 1,
-        is_pr: l.is_pr,
+        reps:   l.reps || 1,
+        is_pr:  l.is_pr,
       }));
   }, [lifts, exercise, period]);
 
-  // Stats
   const stats = useMemo(() => {
     if (chartData.length === 0) return null;
-    const max = Math.max(...chartData.map((d) => d.weight));
-    const recent = chartData[chartData.length - 1]?.weight;
-    const first = chartData[0]?.weight;
-    const change = first ? ((recent - first) / first * 100).toFixed(1) : 0;
-    const prs = chartData.filter((d) => d.is_pr).length;
-    return { max, recent, change, prs };
+    const weights = chartData.map(d => d.weight);
+    const max     = Math.max(...weights);
+    const min     = Math.min(...weights);
+    const recent  = chartData[chartData.length - 1]?.weight;
+    const first   = chartData[0]?.weight;
+    const change  = first ? +((recent - first) / first * 100).toFixed(1) : 0;
+    const avg     = +(weights.reduce((s, v) => s + v, 0) / weights.length).toFixed(1);
+    const prs     = chartData.filter(d => d.is_pr).length;
+    const prEntry = chartData.filter(d => d.is_pr).at(-1);
+    return { max, min, recent, change, avg, prs, prEntry };
   }, [chartData]);
 
-  const color = selectedExercise?.color ?? '#a78bfa';
   const yDomain = chartData.length > 0
-    ? [Math.floor(Math.min(...chartData.map((d) => d.weight)) * 0.92 / 5) * 5,
-       Math.ceil(Math.max(...chartData.map((d) => d.weight)) * 1.06 / 5) * 5]
+    ? [Math.floor(Math.min(...chartData.map(d => d.weight)) * 0.90 / 5) * 5,
+       Math.ceil(Math.max(...chartData.map(d => d.weight)) * 1.08 / 5) * 5]
     : ['auto', 'auto'];
 
+  // Progress % toward PR
+  const prPct = stats && stats.max > 0
+    ? Math.round((stats.recent / stats.max) * 100)
+    : 0;
+  const isAtPR = prPct === 100;
+
+  const gradId = `sg-${exercise ?? 'default'}`;
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="rounded-2xl p-4 space-y-4" style={CARD}>
-      {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center border"
-          style={{ background: `${color}22`, borderColor: `${color}55` }}>
-          <TrendingUp className="w-4 h-4" style={{ color }} />
-        </div>
-        <h2 className="text-[15px] font-bold text-white">Strength Progress</h2>
-      </div>
+    <div className="rounded-2xl overflow-hidden" style={{
+      background: 'linear-gradient(160deg, rgba(15,20,45,0.82) 0%, rgba(8,11,26,0.94) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      boxShadow: `0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)`,
+    }}>
 
-      {/* Split day selector */}
-      {splitDays.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          {splitDays.map((day) => (
-            <button
-              key={day}
-              onClick={() => setSelectedDay(day)}
-              className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all capitalize"
-              style={{
-                background: selectedDay === day ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)',
-                color: selectedDay === day ? '#d8b4fe' : '#94a3b8',
-                border: `1px solid ${selectedDay === day ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.08)'}`,
-              }}
-            >
-              {day}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* ── Top accent bar (exercise color) */}
+      <div style={{ height: 3, background: `linear-gradient(90deg, ${color}, ${color}00)`, transition: 'background 0.4s ease' }} />
 
-      {/* Exercise pills */}
-      {availableExercises.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          {availableExercises.map((ex) => {
-            const hasData = exercisesWithData.some((e) => e.key === ex.key);
-            return (
-              <button
-                key={ex.key}
-                onClick={() => setExercise(ex.key)}
-                className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all"
+      <div className="p-5 space-y-4">
+
+        {/* ── Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}18`, border: `1px solid ${color}30`, boxShadow: `0 0 12px ${glow}` }}>
+              <TrendingUp className="w-4 h-4" style={{ color }} />
+            </div>
+            <div>
+              <h2 className="text-[14px] font-bold text-white leading-none">Strength Progress</h2>
+              <p className="text-[10px] mt-0.5 font-medium" style={{ color: '#475569' }}>
+                {selectedExercise ? selectedExercise.label : 'Select an exercise'}
+              </p>
+            </div>
+          </div>
+
+          {/* Period selector */}
+          <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {PERIODS.map(p => (
+              <button key={p.key} onClick={() => setPeriod(p.key)}
+                className="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all"
                 style={{
-                  background: exercise === ex.key ? ex.color : 'rgba(255,255,255,0.06)',
-                  color: exercise === ex.key ? '#000' : hasData ? ex.color : 'rgba(148,163,184,0.5)',
-                  border: `1px solid ${exercise === ex.key ? ex.color : hasData ? `${ex.color}44` : 'rgba(255,255,255,0.08)'}`,
-                }}
-              >
-                {ex.label}
+                  background: period === p.key ? 'rgba(255,255,255,0.10)' : 'transparent',
+                  color: period === p.key ? '#fff' : '#475569',
+                }}>
+                {p.label}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      )}
 
-      {/* Period selector */}
-      <div className="flex gap-1 bg-slate-800/40 rounded-lg p-1 w-fit">
-        {PERIODS.map((p) => (
-          <button
-            key={p.key}
-            onClick={() => setPeriod(p.key)}
-            className="px-3 py-1 text-[11px] font-semibold rounded-md transition-all"
-            style={{
-              background: period === p.key ? 'rgba(255,255,255,0.12)' : 'transparent',
-              color: period === p.key ? '#fff' : '#94a3b8',
-              border: period === p.key ? '1px solid rgba(255,255,255,0.15)' : '1px solid transparent',
-            }}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+        {/* ── Workout day tabs */}
+        {splitDays.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap">
+            {splitDays.map(day => (
+              <button key={day} onClick={() => setSelectedDay(day)}
+                className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all capitalize"
+                style={{
+                  background: selectedDay === day ? `${color}22` : 'rgba(255,255,255,0.04)',
+                  color: selectedDay === day ? color : '#475569',
+                  border: `1px solid ${selectedDay === day ? `${color}44` : 'rgba(255,255,255,0.06)'}`,
+                }}>
+                {day}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* Chart */}
-      {isLoading ? (
-        <div className="h-48 flex items-center justify-center">
-          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: color, borderTopColor: 'transparent' }} />
-        </div>
-      ) : !selectedDay ? (
-        <div className="h-48 flex flex-col items-center justify-center gap-2">
-          <Dumbbell className="w-8 h-8 text-slate-600" />
-          <p className="text-slate-500 text-sm font-semibold">No workout split configured</p>
-          <p className="text-slate-600 text-xs">Set up a split to see your progress</p>
-        </div>
-      ) : !exercise ? (
-        <div className="h-48 flex flex-col items-center justify-center gap-2">
-          <TrendingUp className="w-8 h-8 text-slate-600" />
-          <p className="text-slate-500 text-sm font-semibold">No exercises for this day</p>
-          <p className="text-slate-600 text-xs">Add exercises to {selectedDay} in your split</p>
-        </div>
-      ) : chartData.length === 0 ? (
-        <div className="h-48 flex flex-col items-center justify-center gap-2">
-          <TrendingUp className="w-8 h-8 text-slate-600" />
-          <p className="text-slate-500 text-sm font-semibold">No {selectedExercise?.label} lifts logged yet</p>
-          <p className="text-slate-600 text-xs">Log a lift to see your progress here</p>
-        </div>
-      ) : (
-        <>
-          {/* Stat pills */}
-          {stats && (
+        {/* ── Exercise selector — card style with sparkline */}
+        {availableExercises.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+            {availableExercises.map(ex => {
+              const exData = allTimeByExercise[ex.key] || [];
+              const exMax  = exData.length > 0 ? Math.max(...exData.map(d => d.weight)) : null;
+              const active = exercise === ex.key;
+              return (
+                <button key={ex.key} onClick={() => handleExerciseChange(ex.key)}
+                  className="flex-shrink-0 flex flex-col gap-1.5 px-3 py-2.5 rounded-xl transition-all"
+                  style={{
+                    background: active ? `${ex.color}14` : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${active ? `${ex.color}35` : 'rgba(255,255,255,0.06)'}`,
+                    boxShadow: active ? `0 0 16px ${ex.glow}` : 'none',
+                    minWidth: 88,
+                  }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold" style={{ color: active ? ex.color : '#64748b' }}>{ex.label}</span>
+                    {active && <div className="w-1.5 h-1.5 rounded-full" style={{ background: ex.color, boxShadow: `0 0 6px ${ex.color}` }} />}
+                  </div>
+                  <Sparkline data={exData} color={ex.color} />
+                  {exMax && (
+                    <span className="text-[10px] font-semibold" style={{ color: active ? ex.color : '#334155' }}>{exMax} lbs</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Empty states */}
+        {!selectedDay ? (
+          <div className="h-52 flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <Dumbbell className="w-6 h-6" style={{ color: '#334155' }} />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold" style={{ color: '#475569' }}>No workout split configured</p>
+              <p className="text-xs mt-0.5" style={{ color: '#334155' }}>Set up a split to track your progress</p>
+            </div>
+          </div>
+        ) : !exercise || chartData.length === 0 ? (
+          <div className="h-52 flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${color}0f`, border: `1px solid ${color}20` }}>
+              <TrendingUp className="w-6 h-6" style={{ color: `${color}60` }} />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold" style={{ color: '#475569' }}>
+                {!exercise ? 'No exercises for this day' : `No ${selectedExercise?.label} logs yet`}
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: '#334155' }}>Log a lift to start tracking progress</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* ── Hero stats */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-xl p-3 text-center" style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
-                <p className="text-[10px] font-semibold mb-0.5" style={{ color: `${color}bb` }}>Max</p>
-                <p className="text-sm font-black text-white">{stats.max}<span className="text-[10px] font-semibold ml-0.5" style={{ color }}>lbs</span></p>
+              {/* Current weight — large hero */}
+              <div className="col-span-1 rounded-xl p-3.5 flex flex-col justify-between"
+                style={{ background: `${color}0e`, border: `1px solid ${color}22` }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: `${color}88` }}>Latest</p>
+                <div>
+                  <p className="text-2xl font-black text-white leading-none">
+                    <AnimatedNumber value={stats.recent} />
+                  </p>
+                  <p className="text-[11px] font-semibold mt-0.5" style={{ color }}>lbs</p>
+                </div>
               </div>
-              <div className="rounded-xl p-3 text-center" style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
-                <p className="text-[10px] font-semibold mb-0.5" style={{ color: `${color}bb` }}>Latest</p>
-                <p className="text-sm font-black text-white">{stats.recent}<span className="text-[10px] font-semibold ml-0.5" style={{ color }}>lbs</span></p>
+
+              {/* PR */}
+              <div className="col-span-1 rounded-xl p-3.5 flex flex-col justify-between"
+                style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.18)' }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(251,191,36,0.6)' }}>PR</p>
+                  <Star className="w-3 h-3 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-white leading-none">
+                    <AnimatedNumber value={stats.max} />
+                  </p>
+                  <p className="text-[11px] font-semibold mt-0.5 text-amber-400">lbs</p>
+                </div>
               </div>
-              <div className="rounded-xl p-3 text-center" style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
-                <p className="text-[10px] font-semibold mb-0.5" style={{ color: `${color}bb` }}>Change</p>
-                <p className="text-sm font-black flex items-center justify-center gap-0.5"
-                  style={{ color: parseFloat(stats.change) > 0 ? '#34d399' : parseFloat(stats.change) < 0 ? '#f87171' : '#94a3b8' }}>
-                  {parseFloat(stats.change) > 0 ? <TrendingUp className="w-3 h-3" /> : parseFloat(stats.change) < 0 ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                  {Math.abs(stats.change)}%
+
+              {/* Change */}
+              <div className="col-span-1 rounded-xl p-3.5 flex flex-col justify-between"
+                style={{
+                  background: stats.change > 0 ? 'rgba(52,211,153,0.07)' : stats.change < 0 ? 'rgba(248,113,113,0.07)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${stats.change > 0 ? 'rgba(52,211,153,0.20)' : stats.change < 0 ? 'rgba(248,113,113,0.20)' : 'rgba(255,255,255,0.08)'}`,
+                }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: stats.change > 0 ? 'rgba(52,211,153,0.6)' : stats.change < 0 ? 'rgba(248,113,113,0.6)' : '#475569' }}>
+                    Change
+                  </p>
+                  {stats.change > 0
+                    ? <TrendingUp className="w-3 h-3 text-emerald-400" />
+                    : stats.change < 0
+                      ? <TrendingDown className="w-3 h-3 text-red-400" />
+                      : <Minus className="w-3 h-3 text-slate-500" />}
+                </div>
+                <div>
+                  <p className="text-2xl font-black leading-none"
+                    style={{ color: stats.change > 0 ? '#34d399' : stats.change < 0 ? '#f87171' : '#64748b' }}>
+                    <AnimatedNumber value={Math.abs(stats.change)} decimals={1} />%
+                  </p>
+                  <p className="text-[10px] font-medium mt-0.5" style={{ color: '#334155' }}>
+                    {period === 'all' ? 'all time' : `last ${PERIODS.find(p => p.key === period)?.label}`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── PR progress bar */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#334155' }}>
+                  Progress to PR
+                </p>
+                <p className="text-[11px] font-bold" style={{ color: isAtPR ? '#fbbf24' : color }}>
+                  {isAtPR ? '⭐ At PR' : `${prPct}%`}
+                </p>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${prPct}%`,
+                    background: isAtPR
+                      ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                      : `linear-gradient(90deg, ${color}88, ${color})`,
+                    boxShadow: isAtPR ? '0 0 8px rgba(251,191,36,0.6)' : `0 0 8px ${glow}`,
+                  }} />
+              </div>
+            </div>
+
+            {/* ── Chart */}
+            <div className="-mx-1" key={chartKey} style={{ animation: 'fadeInUp 0.4s ease both' }}>
+              <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={chartData} margin={{ top: 12, right: 8, left: -22, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stopColor={color} stopOpacity={0.30} />
+                      <stop offset="60%"  stopColor={color} stopOpacity={0.08} />
+                      <stop offset="100%" stopColor={color} stopOpacity={0.00} />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2" result="blur" />
+                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                  </defs>
+
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+
+                  {/* PR reference line */}
+                  {stats?.prEntry && (
+                    <ReferenceLine
+                      y={stats.max}
+                      stroke="rgba(251,191,36,0.25)"
+                      strokeDasharray="4 4"
+                      strokeWidth={1}
+                      label={{ value: `PR ${stats.max}`, position: 'insideTopRight', fontSize: 9, fill: 'rgba(251,191,36,0.5)', fontWeight: 700 }}
+                    />
+                  )}
+
+                  <XAxis
+                    dataKey="date"
+                    stroke="rgba(255,255,255,0.06)"
+                    tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    stroke="rgba(255,255,255,0.06)"
+                    tick={{ fill: '#334155', fontSize: 9, fontWeight: 600 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={42}
+                    domain={yDomain}
+                    tickFormatter={v => `${v}`}
+                  />
+
+                  <Tooltip
+                    content={<CustomTooltip color={color} />}
+                    cursor={{ stroke: `${color}30`, strokeWidth: 1, strokeDasharray: '3 3' }}
+                  />
+
+                  <Area
+                    type="monotone"
+                    dataKey="weight"
+                    stroke={color}
+                    strokeWidth={2.5}
+                    fill={`url(#${gradId})`}
+                    filter="url(#glow)"
+                    activeDot={{ r: 5, fill: color, stroke: '#0a0e1e', strokeWidth: 2, filter: `drop-shadow(0 0 4px ${color})` }}
+                    dot={(props) => renderDot(props, color)}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* ── Bottom stat row */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#334155' }}>Sessions</p>
+                <p className="text-sm font-bold text-white">{chartData.length}</p>
+              </div>
+              <div className="text-center border-x" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#334155' }}>Avg Weight</p>
+                <p className="text-sm font-bold text-white">{stats.avg} <span style={{ color: '#334155', fontSize: 10 }}>lbs</span></p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#334155' }}>PRs Set</p>
+                <p className="text-sm font-bold" style={{ color: stats.prs > 0 ? '#fbbf24' : '#334155' }}>
+                  {stats.prs > 0 ? `⭐ ${stats.prs}` : '—'}
                 </p>
               </div>
             </div>
-          )}
 
-          <div className="-mx-2">
-            <ResponsiveContainer width="100%" height={180}>
-              <LineChart data={chartData} margin={{ top: 8, right: 16, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id={`sg-${exercise}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity={0.5} />
-                    <stop offset="100%" stopColor={color} stopOpacity={0.03} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
-                <XAxis
-                  dataKey="date"
-                  stroke="rgba(148,163,184,0.4)"
-                  style={{ fontSize: 9 }}
-                  tick={{ fill: '#94a3b8' }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  stroke="rgba(148,163,184,0.4)"
-                  style={{ fontSize: 9 }}
-                  tick={{ fill: '#94a3b8' }}
-                  width={38}
-                  domain={yDomain}
-                  tickFormatter={(v) => `${v}`}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: `${color}44`, strokeWidth: 1 }} />
-                <Line
-                  type="monotone"
-                  dataKey="weight"
-                  stroke={color}
-                  strokeWidth={2.5}
-                  dot={(props) => {
-                    const { cx, cy, payload } = props;
-                    if (payload.is_pr) {
-                      return (
-                        <g key={`pr-${cx}-${cy}`}>
-                          <circle cx={cx} cy={cy} r={6} fill={color} opacity={0.2} />
-                          <circle cx={cx} cy={cy} r={3.5} fill={color} />
-                          <text x={cx} y={cy - 10} textAnchor="middle" fontSize={10}>⭐</text>
-                        </g>
-                      );
-                    }
-                    return <circle key={`dot-${cx}-${cy}`} cx={cx} cy={cy} r={2.5} fill={color} opacity={0.7} />;
-                  }}
-                  activeDot={{ r: 5, fill: color, stroke: '#0a0e1e', strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {stats?.prs > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <Star className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-              <p className="text-[11px] text-amber-300 font-semibold">{stats.prs} personal record{stats.prs > 1 ? 's' : ''} set in this period</p>
-            </div>
-          )}
-        </>
-      )}
+            {/* ── PR banner */}
+            {stats.prs > 0 && (
+              <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl"
+                style={{ background: 'linear-gradient(90deg, rgba(251,191,36,0.10), rgba(251,191,36,0.04))', border: '1px solid rgba(251,191,36,0.20)' }}>
+                <Award className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <div>
+                  <p className="text-[12px] font-bold text-amber-200">
+                    {stats.prs} personal record{stats.prs > 1 ? 's' : ''} in this period
+                  </p>
+                  {stats.prEntry && (
+                    <p className="text-[10px]" style={{ color: '#78716c' }}>Last PR: {stats.max} lbs on {stats.prEntry.date}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
