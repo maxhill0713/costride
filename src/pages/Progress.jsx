@@ -157,20 +157,30 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
 
 // ─── Rank sub-page ─────────────────────────────────────────────────────────────
 function RankPage({ currentUser, onBack }) {
-  const badges = [
-    { id: 1, name: 'First Rep', description: 'Logged your first workout', icon: '🏋️', earned: true, color: 'from-yellow-500/20 to-orange-500/10', border: 'border-yellow-500/30' },
-    { id: 2, name: 'Week Warrior', description: '7-day training streak', icon: '🔥', earned: true, color: 'from-orange-500/20 to-red-500/10', border: 'border-orange-500/30' },
-    { id: 3, name: 'PR Hunter', description: 'Set a new personal record', icon: '🎯', earned: true, color: 'from-purple-500/20 to-pink-500/10', border: 'border-purple-500/30' },
-    { id: 4, name: 'Iron Will', description: '30-day consistency badge', icon: '⚡', earned: false, color: 'from-slate-700/20 to-slate-800/10', border: 'border-slate-700/30' },
-    { id: 5, name: 'Goal Crusher', description: 'Complete your first goal', icon: '🏆', earned: false, color: 'from-slate-700/20 to-slate-800/10', border: 'border-slate-700/30' },
-    { id: 6, name: 'Community Star', description: 'Check in with 5 gym friends', icon: '⭐', earned: false, color: 'from-slate-700/20 to-slate-800/10', border: 'border-slate-700/30' },
-  ];
-  const earnedCount = badges.filter(b => b.earned).length;
-  const totalCount = badges.length;
-  const progressPct = Math.round((earnedCount / totalCount) * 100);
+  const { data: achievements = [] } = useQuery({
+    queryKey: ['achievements', currentUser?.id],
+    queryFn: () => base44.entities.Achievement.filter({ user_id: currentUser.id }),
+    enabled: !!currentUser,
+  });
+  const [equippedBadges, setEquippedBadges] = useState(currentUser?.equipped_badges || []);
+
+  const handleEquipBadge = async (badgeId) => {
+    let newEquipped = [...equippedBadges];
+    if (newEquipped.includes(badgeId)) {
+      newEquipped = newEquipped.filter(id => id !== badgeId);
+    } else {
+      if (newEquipped.length >= 3) newEquipped.shift();
+      newEquipped.push(badgeId);
+    }
+    setEquippedBadges(newEquipped);
+    await base44.auth.updateMe({ equipped_badges: newEquipped });
+  };
+
+  const progressPct = achievements.length > 0 ? Math.round((equippedBadges.length / 3) * 100) : 0;
+
   return (
     <SubPage title="Rank" onBack={onBack}>
-      {/* Rank summary card */}
+      {/* Summary card */}
       <div className="rounded-2xl p-5 mb-4 relative overflow-hidden" style={CARD}>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-500/40 to-transparent" />
         <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: 'radial-gradient(ellipse at 20% 30%, rgba(245,158,11,0.12) 0%, transparent 60%)' }} />
@@ -179,49 +189,55 @@ function RankPage({ currentUser, onBack }) {
             <Award className="w-8 h-8 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-yellow-400/80 uppercase tracking-widest mb-0.5">Current Rank</p>
-            <p className="text-xl font-black text-white">Rising Athlete</p>
+            <p className="text-xs font-bold text-yellow-400/80 uppercase tracking-widest mb-0.5">Badges Equipped</p>
+            <p className="text-xl font-black text-white">{equippedBadges.length}/3</p>
             <div className="flex items-center gap-2 mt-2">
               <div className="flex-1 h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
                 <div className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500" style={{ width: `${progressPct}%`, transition: 'width 0.6s ease' }} />
               </div>
-              <span className="text-[10px] font-bold text-slate-400 flex-shrink-0">{earnedCount}/{totalCount} badges</span>
+              <span className="text-[10px] font-bold text-slate-400 flex-shrink-0">{achievements.length} earned</span>
             </div>
           </div>
         </div>
       </div>
-      {/* Badges header */}
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Badges</p>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">{earnedCount} Earned</span>
-      </div>
-      {/* Badges grid */}
-      <div className="grid grid-cols-2 gap-2.5">
-        {badges.map((badge) => (
-          <div key={badge.id} className={`relative p-3.5 rounded-2xl border bg-gradient-to-br ${badge.color} ${badge.border} ${!badge.earned ? 'opacity-50' : ''}`}>
-            {badge.earned && (
-              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center">
-                <CheckCircle className="w-2.5 h-2.5 text-green-400" />
-              </div>
-            )}
-            <div className="text-2xl mb-2 leading-none">{badge.icon}</div>
-            <p className={`text-xs font-black ${badge.earned ? 'text-white' : 'text-slate-500'} leading-tight`}>{badge.name}</p>
-            <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">{badge.description}</p>
-          </div>
-        ))}
-      </div>
-      {/* Next rank teaser */}
-      <div className="mt-4 rounded-2xl p-4 relative overflow-hidden" style={CARD}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-700/60 border border-slate-600/40 flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="w-5 h-5 text-slate-400" />
-          </div>
-          <div>
-            <p className="text-xs font-black text-white">Next: Dedicated Lifter</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">Earn {totalCount - earnedCount} more badges to rank up</p>
-          </div>
+
+      {achievements.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-slate-400 text-sm">No badges earned yet. Keep training!</p>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">All Badges (Click to Equip)</p>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">{achievements.length} Total</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {achievements.map((badge) => {
+              const isEquipped = equippedBadges.includes(badge.id);
+              return (
+                <button
+                  key={badge.id}
+                  onClick={() => handleEquipBadge(badge.id)}
+                  className={`relative p-3.5 rounded-2xl border bg-gradient-to-br transition-all ${
+                    isEquipped 
+                      ? 'from-yellow-500/30 to-orange-500/20 border-yellow-500/60 ring-2 ring-yellow-500/40' 
+                      : 'from-slate-700/30 to-slate-800/20 border-slate-700/40 hover:border-slate-600/60'
+                  }`}
+                >
+                  {isEquipped && (
+                    <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center shadow-md">
+                      <CheckCircle className="w-2.5 h-2.5 text-yellow-900" strokeWidth={3} />
+                    </div>
+                  )}
+                  <div className="text-2xl mb-2 leading-none">{badge.icon || '⭐'}</div>
+                  <p className="text-xs font-black text-white leading-tight line-clamp-2">{badge.title}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">{badge.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
     </SubPage>
   );
 }
