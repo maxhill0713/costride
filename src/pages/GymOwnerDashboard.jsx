@@ -330,30 +330,6 @@ export default function GymOwnerDashboard() {
       </div>
 
       <Panel>
-        <PH title="Quick Actions" subtitle="Most common tasks in one tap" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: 'New Post',      sub: 'Share with members',     icon: MessageSquarePlus, color: '#60a5fa', bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.25)',  action: ()=>openModal('post') },
-            { label: 'New Event',     sub: `${events.filter(e=>new Date(e.event_date)>=now).length} upcoming`, icon: Calendar, color: '#34d399', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)', action: ()=>openModal('event') },
-            { label: 'New Challenge', sub: `${challenges.filter(c=>c.status==='active').length} active`, icon: Trophy, color: '#fb923c', bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.25)', action: ()=>openModal('challenge') },
-            { label: 'New Poll',      sub: `${polls.length} active`,  icon: BarChart2, color: '#a78bfa', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)', action: ()=>openModal('poll') },
-          ].map((b,i)=>(
-            <button key={i} onClick={b.action}
-              className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 p-4 rounded-xl text-center sm:text-left transition-all hover:brightness-125 hover:-translate-y-0.5 active:scale-95"
-              style={{background:b.bg,border:`1px solid ${b.border}`}}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:`${b.color}22`,border:`1px solid ${b.color}33`}}>
-                <b.icon className="w-5 h-5" style={{color:b.color}}/>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-white leading-tight">{b.label}</p>
-                <p className="text-xs mt-0.5 hidden sm:block" style={{color:'#6b87b8'}}>{b.sub}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel>
         <PH title="Recent Activity" subtitle="Latest check-ins" />
         <div className="divide-y" style={{borderColor:'rgba(59,130,246,0.07)'}}>
           {ci7.slice(0,10).map((c,i)=>(
