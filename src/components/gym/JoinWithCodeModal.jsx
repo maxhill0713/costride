@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -6,62 +6,127 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
 const createPageUrl = (pageName) => `/${pageName}`;
 
+// ─── Keyframe styles injected once ────────────────────────────────────────────
+const ANIMATION_STYLES = `
+  @keyframes bubblePop {
+    0%   { transform: scale(0.3);    opacity: 0; }
+    50%  { transform: scale(1.08);   opacity: 1; }
+    70%  { transform: scale(0.96);   opacity: 1; }
+    85%  { transform: scale(1.02);   opacity: 1; }
+    100% { transform: scale(1.0);    opacity: 1; }
+  }
+
+  @keyframes bubbleDismiss {
+    0%   { transform: scale(1.0);  opacity: 1; }
+    25%  { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.3);  opacity: 0; }
+  }
+
+  @keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes backdropFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  .bubble-pop {
+    animation: bubblePop 400ms cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+  }
+
+  .bubble-dismiss {
+    animation: bubbleDismiss 250ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  }
+
+  .backdrop-in {
+    animation: backdropFadeIn 250ms ease forwards;
+  }
+
+  .backdrop-out {
+    animation: backdropFadeOut 250ms ease forwards;
+  }
+`;
+
+function useAnimationStyles() {
+  useEffect(() => {
+    const id = 'join-modal-styles';
+    if (!document.getElementById(id)) {
+      const tag = document.createElement('style');
+      tag.id = id;
+      tag.textContent = ANIMATION_STYLES;
+      document.head.appendChild(tag);
+    }
+  }, []);
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [animating, setAnimating] = useState(false); // true = dismissing
   const queryClient = useQueryClient();
 
+  useAnimationStyles();
+
+  // Handle open → show with bubble pop
+  useEffect(() => {
+    if (open) {
+      setVisible(true);
+      setAnimating(false);
+    }
+  }, [open]);
+
+  // Handle close → play dismiss then hide
+  const handleClose = () => {
+    setAnimating(true);
+    setTimeout(() => {
+      setVisible(false);
+      setAnimating(false);
+      onClose();
+    }, 250);
+  };
+
   // Pre-fill code from URL if present
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       const urlParams = new URLSearchParams(window.location.search);
       const joinCode = urlParams.get('joinCode');
-      if (joinCode) {
-        setCode(joinCode.toUpperCase());
-      }
+      if (joinCode) setCode(joinCode.toUpperCase());
     }
   }, [open]);
 
   const joinMutation = useMutation({
     mutationFn: async (joinCode) => {
-      // Find gym by join code
       const gyms = await base44.entities.Gym.filter({ join_code: joinCode.toUpperCase() });
-
-      if (gyms.length === 0) {
-        throw new Error('Invalid gym code');
-      }
+      if (gyms.length === 0) throw new Error('Invalid gym code');
 
       const gym = gyms[0];
 
-      // Check if user already has 3 gym memberships
       const userMemberships = await base44.entities.GymMembership.filter({
         user_id: currentUser.id,
         status: 'active'
       });
-
       if (userMemberships.length >= 3) {
         throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
       }
 
-      // Check if banned
       if (gym.banned_members?.includes(currentUser.id)) {
         throw new Error('You are banned from this gym');
       }
 
-      // Check if already a member
       const existing = await base44.entities.GymMembership.filter({
         user_id: currentUser.id,
         gym_id: gym.id,
         status: 'active'
       });
+      if (existing.length > 0) throw new Error('Already a member of this gym');
 
-      if (existing.length > 0) {
-        throw new Error('Already a member of this gym');
-      }
-
-      // Create membership
       await base44.entities.GymMembership.create({
         user_id: currentUser.id,
         user_name: currentUser.full_name,
@@ -73,7 +138,6 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
         membership_type: 'monthly'
       });
 
-      // Increment members count
       await base44.entities.Gym.update(gym.id, {
         members_count: (gym.members_count || 0) + 1
       });
@@ -86,8 +150,10 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
     onSuccess: (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
       toast.success(`Joined ${gym.name}! 🎉`);
-      onClose();
-      window.location.href = createPageUrl('GymCommunity') + '?id=' + gym.id;
+      handleClose();
+      setTimeout(() => {
+        window.location.href = createPageUrl('GymCommunity') + '?id=' + gym.id;
+      }, 260);
     },
     onError: (error) => {
       setError(error.message);
@@ -97,25 +163,29 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-
     if (code.length !== 6) {
       setError('Code must be 6 characters');
       return;
     }
-
     joinMutation.mutate(code);
   };
 
-  if (!open) return null;
+  if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-4 md:p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${animating ? 'backdrop-out' : 'backdrop-in'}`}
+      onClick={handleClose}
+    >
+      {/* Modal card — bubble animation lives here only */}
+      <Card
+        className={`bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-4 md:p-6 shadow-2xl ${animating ? 'bubble-dismiss' : 'bubble-pop'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="text-lg md:text-2xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">
             Join with Code
           </h2>
-
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
@@ -132,36 +202,36 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
               placeholder="FIT123"
               maxLength={6}
               className="text-center text-lg md:text-2xl font-bold tracking-widest bg-slate-700/50 border-slate-600 text-white rounded-xl h-10 md:h-14"
-              autoFocus />
-
+              autoFocus
+            />
             <p className="text-[10px] md:text-xs text-slate-400 mt-2">
               Ask your gym for their unique join code
             </p>
           </div>
 
-          {error &&
-          <div className="flex items-center gap-2 p-2 md:p-3 bg-red-900/30 border border-red-600/50 rounded-xl">
+          {error && (
+            <div className="flex items-center gap-2 p-2 md:p-3 bg-red-900/30 border border-red-600/50 rounded-xl">
               <AlertCircle className="w-4 md:w-5 h-4 md:h-5 text-red-400 flex-shrink-0" />
               <p className="text-xs md:text-sm text-red-300">{error}</p>
             </div>
-          }
+          )}
 
           <Button
             type="submit"
-            disabled={code.length !== 6 || joinMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 px-4 py-2 w-full bg-gradient-to-r from-cyan-500 to-blue-500 backdrop-blur-md text-white font-bold h-10 md:h-12 rounded-xl text-sm md:text-base border border-transparent shadow-[0_3px_0_0_rgba(6,100,180,0.8),0_8px_20px_rgba(6,182,212,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu\n">
-
-
-            {joinMutation.isPending ?
-            <>
+            disabled={code.length !== 6 || joinMutation.isPending}
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 px-4 py-2 w-full bg-gradient-to-r from-cyan-500 to-blue-500 backdrop-blur-md text-white font-bold h-10 md:h-12 rounded-xl text-sm md:text-base border border-transparent shadow-[0_3px_0_0_rgba(6,100,180,0.8),0_8px_20px_rgba(6,182,212,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+          >
+            {joinMutation.isPending ? (
+              <>
                 <Loader2 className="w-4 md:w-5 h-4 md:h-5 mr-2 animate-spin" />
                 Joining...
-              </> :
-
-            <>
+              </>
+            ) : (
+              <>
                 <CheckCircle className="w-4 md:w-5 h-4 md:h-5 mr-2" />
                 Join Gym
               </>
-            }
+            )}
           </Button>
         </form>
 
@@ -174,6 +244,6 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
           </ul>
         </div>
       </Card>
-    </div>);
-
+    </div>
+  );
 }
