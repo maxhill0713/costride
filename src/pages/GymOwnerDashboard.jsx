@@ -547,86 +547,130 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: ANALYTICS
   // ══════════════════════════════════════════════════════════════════════════
-  const TabAnalytics = () => (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Weekly Check-in Trend" subtitle="Last 12 weeks"/>
-          <ResponsiveContainer width="100%" height={210}>
-            <AreaChart data={weekTrend}>
-              <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
-              <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} interval={2}/>
-              <YAxis tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} width={24}/>
-              <Tooltip content={<DT/>}/>
-              <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#g1)" name="Check-ins"/>
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel>
-          <PH title="Active Members Growth" subtitle="Last 6 months"/>
-          <ResponsiveContainer width="100%" height={210}>
-            <AreaChart data={monthGrowth}>
-              <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient></defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
-              <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:11}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:'#6b87b8',fontSize:11}} axisLine={false} tickLine={false} width={24}/>
-              <Tooltip content={<DT/>}/>
-              <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fill="url(#g2)" name="Members"/>
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel>
-          <PH title="Rewards Redeemed" subtitle="Top 5 most claimed"/>
-          <ResponsiveContainer width="100%" height={210}>
-            <BarChart barSize={28} data={rewards.filter(r=>(r.claimed_by?.length||0)>0).sort((a,b)=>(b.claimed_by?.length||0)-(a.claimed_by?.length||0)).slice(0,5).map(r=>({label:r.title.length>14?r.title.slice(0,14)+'…':r.title,value:r.claimed_by?.length||0}))}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
-              <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} width={24}/>
-              <Tooltip content={<DT/>} cursor={{fill:'rgba(139,92,246,0.06)'}}/>
-              <Bar dataKey="value" fill="#8b5cf6" radius={[5,5,0,0]} name="Claims"/>
-            </BarChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel>
-          <PH title="Peak Hours" subtitle="Most popular visit times"/>
-          <div className="space-y-2.5">
-            {(()=>{
-              const acc={}; checkIns.forEach(c=>{const h=new Date(c.check_in_date).getHours();acc[h]=(acc[h]||0)+1;});
-              const max=Math.max(...Object.values(acc),1);
-              return Object.entries(acc).sort(([,a],[,b])=>b-a).slice(0,8).map(([hour,count],i)=>{
-                const h=parseInt(hour); const label=h===0?'12am':h<12?`${h}am`:h===12?'12pm':`${h-12}pm`;
-                return(
-                  <div key={hour} className="flex items-center gap-3">
-                    <span className="text-xs font-bold w-4 text-right flex-shrink-0" style={{color:'#3d5a8a'}}>#{i+1}</span>
-                    <span className="text-sm text-white w-12 flex-shrink-0">{label}</span>
-                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:'rgba(13,35,96,0.5)'}}>
-                      <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500" style={{width:`${(count/max)*100}%`}}/>
+  const TabAnalytics = () => {
+    const dailyAvg = Math.round(ci30.length / 30);
+    const avgVisits = totalMembers > 0 ? (ci30.length / totalMembers).toFixed(1) : '—';
+    const returnRate = checkIns.length > 0 ? Math.round((checkIns.filter(c => !c.first_visit).length / checkIns.length) * 100) : 0;
+
+    const peakHours = (() => {
+      const acc = {}; checkIns.forEach(c => { const h = new Date(c.check_in_date).getHours(); acc[h] = (acc[h] || 0) + 1; });
+      const max = Math.max(...Object.values(acc), 1);
+      return Object.entries(acc).sort(([, a], [, b]) => b - a).slice(0, 8).map(([hour, count]) => {
+        const h = parseInt(hour); const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+        return { label, count, pct: (count / max) * 100 };
+      });
+    })();
+
+    return (
+      <div className="space-y-5">
+        {/* Top KPI row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Daily Avg Check-ins', val: dailyAvg, sub: 'last 30 days', c: '#60a5fa', ic: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+            { label: 'Monthly Change', val: `${monthChangePct >= 0 ? '+' : ''}${monthChangePct}%`, sub: 'vs previous 30 days', c: monthChangePct >= 0 ? '#34d399' : '#f87171', ic: monthChangePct >= 0 ? '#10b981' : '#ef4444', bg: monthChangePct >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)' },
+            { label: 'Avg Visits / Member', val: avgVisits, sub: 'per member (30d)', c: '#a78bfa', ic: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+            { label: 'Return Rate', val: `${returnRate}%`, sub: 'repeat check-ins', c: '#fbbf24', ic: '#d97706', bg: 'rgba(251,191,36,0.12)' },
+          ].map((s, i) => (
+            <div key={i} className="relative overflow-hidden rounded-2xl p-5"
+              style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 24px rgba(0,0,0,0.4)' }}>
+              <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+              <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: `radial-gradient(ellipse at 20% 30%, ${s.bg} 0%, transparent 70%)` }} />
+              <div className="relative">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#6b87b8' }}>{s.label}</p>
+                <p className="text-4xl font-black tracking-tight mb-1" style={{ color: s.c }}>{s.val}</p>
+                <p className="text-xs" style={{ color: '#4a6492' }}>{s.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts row */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <Panel>
+            <PH title="Weekly Check-in Trend" subtitle="Last 12 weeks" />
+            <ResponsiveContainer width="100%" height={230}>
+              <AreaChart data={weekTrend} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fill: '#4a6492', fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
+                <YAxis tick={{ fill: '#4a6492', fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
+                <Tooltip content={<DT />} />
+                <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2.5} fill="url(#g1)" dot={false} activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }} name="Check-ins" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel>
+            <PH title="Active Members Growth" subtitle="Last 6 months" />
+            <ResponsiveContainer width="100%" height={230}>
+              <AreaChart data={monthGrowth} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fill: '#4a6492', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#4a6492', fontSize: 11 }} axisLine={false} tickLine={false} width={28} />
+                <Tooltip content={<DT />} />
+                <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2.5} fill="url(#g2)" dot={false} activeDot={{ r: 5, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} name="Members" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Bottom row */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <Panel>
+            <PH title="Peak Hours" subtitle="Most popular visit times" />
+            <div className="space-y-3 mt-1">
+              {peakHours.length === 0
+                ? <Empty icon={Clock} label="Not enough check-in data yet" />
+                : peakHours.map(({ label, count, pct }, i) => (
+                  <div key={label} className="flex items-center gap-3">
+                    <span className="text-xs font-mono w-10 flex-shrink-0 text-right" style={{ color: '#4a6492' }}>{label}</span>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(13,35,96,0.5)' }}>
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%`, background: i === 0 ? 'linear-gradient(90deg,#8b5cf6,#ec4899)' : i < 3 ? 'linear-gradient(90deg,#6366f1,#a78bfa)' : 'linear-gradient(90deg,#3b82f6,#6366f1)' }} />
                     </div>
-                    <span className="text-sm font-bold text-white w-7 text-right">{count}</span>
+                    <span className="text-xs font-bold w-10 text-right flex-shrink-0 tabular-nums" style={{ color: i === 0 ? '#c4b5fd' : '#6b87b8' }}>{count}</span>
                   </div>
-                );
-              });
-            })()}
-          </div>
-        </Panel>
+                ))}
+            </div>
+          </Panel>
+          <Panel>
+            <PH title="Rewards Redeemed" subtitle="Top claims by reward" />
+            {rewards.filter(r => (r.claimed_by?.length || 0) > 0).length > 0 ? (
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart
+                  barSize={28}
+                  data={rewards.filter(r => (r.claimed_by?.length || 0) > 0).sort((a, b) => (b.claimed_by?.length || 0) - (a.claimed_by?.length || 0)).slice(0, 5).map(r => ({ label: r.title.length > 14 ? r.title.slice(0, 14) + '…' : r.title, value: r.claimed_by?.length || 0 }))}
+                  margin={{ top: 8, right: 8, left: -10, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a78bfa" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.7} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fill: '#4a6492', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#4a6492', fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
+                  <Tooltip content={<DT />} cursor={{ fill: 'rgba(139,92,246,0.06)' }} />
+                  <Bar dataKey="value" fill="url(#g3)" radius={[6, 6, 0, 0]} name="Claims" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <Empty icon={Gift} label="No rewards have been claimed yet" />}
+          </Panel>
+        </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {label:'Daily Average',    val:Math.round(ci30.length/30), sub:'check-ins / day (30d)', c:'#60a5fa'},
-          {label:'Monthly Change',   val:`${monthChangePct>=0?'+':''}${monthChangePct}%`, sub:'vs previous 30 days', c:monthChangePct>=0?'#34d399':'#f87171'},
-          {label:'Avg Visits/Member',val:totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—', sub:'per member (30d)', c:'#a78bfa'},
-          {label:'Return Rate',      val:`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`, sub:'of all check-ins', c:'#fbbf24'},
-        ].map((s,i)=>(
-          <div key={i} className="p-5 rounded-xl text-center border" style={{background:BG.card,borderColor:BORDER.panel}}>
-            <p className="text-3xl font-black mb-1" style={{color:s.c}}>{s.val}</p>
-            <p className="text-xs font-bold text-white">{s.label}</p>
-            <p className="text-xs mt-0.5" style={{color:'#3d5a8a'}}>{s.sub}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    );
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: GYM SETTINGS
