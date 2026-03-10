@@ -972,11 +972,11 @@ export default function Home() {
                           willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent',
                         }}
-                        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'}
-                        onMouseUp={e => e.currentTarget.style.transform = ''}
-                        onMouseLeave={e => e.currentTarget.style.transform = ''}
-                        onTouchStart={e => e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'}
-                        onTouchEnd={e => e.currentTarget.style.transform = ''}
+                        onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
+                        onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
+                        onTouchStart={e => { e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
+                        onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
                       >
                         {isRestDay
                           ? done
