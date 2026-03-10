@@ -53,8 +53,22 @@ const NAV = [
 ];
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
-const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub, trend }) => {
+const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub, trend, compact }) => {
   const [hov,setHov]=React.useState(false);
+  if (compact) return (
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{position:'relative',overflow:'hidden',borderRadius:14,background:'linear-gradient(145deg,#0d1e35 0%,#060d1f 100%)',border:`1px solid ${hov?`rgba(${iconRgb},0.25)`:'rgba(255,255,255,0.07)'}`,transform:hov?'translateY(-1px)':'translateY(0)',transition:'all 0.2s'}}>
+      <div style={{position:'absolute',left:0,top:0,bottom:0,width:2,background:`linear-gradient(180deg,rgba(${iconRgb},0.7) 0%,transparent 100%)`}}/>
+      <div style={{position:'relative',padding:'10px 10px 9px 12px'}}>
+        <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,marginBottom:6,flexShrink:0}}>
+          <Icon style={{width:13,height:13,color:iconColor}}/>
+        </div>
+        <div style={{fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:3}}>{value}</div>
+        <div style={{fontSize:8,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(148,163,184,0.55)',marginBottom:2,lineHeight:1.2}}>{label}</div>
+        {trend!==undefined&&<span style={{display:'inline-flex',alignItems:'center',gap:2,fontSize:9,fontWeight:800,padding:'2px 5px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171'}}>{trend>=0?'↑':'↓'}{Math.abs(trend)}%</span>}
+      </div>
+    </div>
+  );
   return (
     <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{position:'relative',overflow:'hidden',borderRadius:20,background:'linear-gradient(145deg,#0d1e35 0%,#060d1f 100%)',border:`1px solid ${hov?`rgba(${iconRgb},0.25)`:'rgba(255,255,255,0.07)'}`,boxShadow:hov?`0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(${iconRgb},0.12)`:'0 8px 32px rgba(0,0,0,0.45)',transition:'border-color 0.2s,box-shadow 0.2s,transform 0.2s',transform:hov?'translateY(-2px)':'translateY(0)'}}>
