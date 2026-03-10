@@ -11,11 +11,8 @@ const createPageUrl = (pageName) => `/${pageName}`;
 
 const ANIMATION_STYLES = `
   @keyframes modalIn {
-    0%   { transform: translateY(28px) scale(0.91); opacity: 0; }
-    55%  { transform: translateY(-7px) scale(1.025); opacity: 1; }
-    75%  { transform: translateY(3px)  scale(0.99);  opacity: 1; }
-    90%  { transform: translateY(-2px) scale(1.005); opacity: 1; }
-    100% { transform: translateY(0px)  scale(1.0);   opacity: 1; }
+    0%   { transform: translateY(24px) scale(0.93); opacity: 0; }
+    100% { transform: translateY(0px)  scale(1.0);  opacity: 1; }
   }
   @keyframes modalOut {
     0%   { transform: translateY(0px)  scale(1.0);  opacity: 1; }
@@ -65,7 +62,7 @@ const ANIMATION_STYLES = `
     100% { transform: translateY(0);    opacity: 1; }
   }
 
-  .modal-enter    { animation: modalIn    500ms cubic-bezier(0.22,1,0.36,1) forwards; }
+  .modal-enter    { animation: modalIn    280ms cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
   .modal-exit     { animation: modalOut   200ms cubic-bezier(0.4,0,1,1)     forwards; }
   .backdrop-enter { animation: backdropIn  280ms ease forwards; }
   .backdrop-exit  { animation: backdropOut 200ms ease forwards; }
@@ -241,7 +238,10 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
               Enter your gym's 6-character code
             </label>
 
-            
+            {/* Animated slot display */}
+            <div className={shakeInput ? 'error-shake' : ''}>
+              <CodeDisplay code={code} />
+            </div>
 
             {/* Actual input (smaller, secondary) */}
             <Input
@@ -291,3 +291,4 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
     </div>
   );
 }
+
