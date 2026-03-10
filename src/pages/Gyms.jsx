@@ -381,7 +381,24 @@ return (
                   {userGyms.map((gym) =>
                     <div key={gym.id} className="group relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                      <div className="relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300 shadow-2xl shadow-black/20">
+                      {/* ── Card box: Progress page TallCard style ── */}
+                      <div
+                        className="relative rounded-2xl overflow-hidden transition-all duration-300"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                        }}
+                      >
+                        {/* Top shine line */}
+                        <div
+                          className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                          style={{
+                            background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)',
+                          }}
+                        />
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                           {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -523,7 +540,24 @@ return (
                 {filteredGyms.map((gym) =>
                   <div key={gym.id} className="group relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                    <div className="relative bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300 shadow-2xl shadow-black/20">
+                    {/* ── Card box: Progress page TallCard style ── */}
+                    <div
+                      className="relative rounded-2xl overflow-hidden transition-all duration-300"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                      }}
+                    >
+                      {/* Top shine line */}
+                      <div
+                        className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)',
+                        }}
+                      />
                       <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                         {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="eager" fetchpriority="high" />}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
