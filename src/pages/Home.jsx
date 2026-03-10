@@ -832,7 +832,7 @@ export default function Home() {
               </div>
               }
 
-          {/* ── Duolingo-style weekly workout circles ── */}
+              {/* ── Duolingo-style weekly workout circles ── */}
           {memberGym?.id && (() => {
             const trainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
             if (trainingDays.length === 0) return null;
