@@ -32,7 +32,7 @@ const DialogContent = React.forwardRef(({ className, children, hideClose = false
     ref={ref}
     className={cn(
       "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg",
-      "data-[state=open]:animate-[bubblePop_400ms_cubic-bezier(0.34,1.3,0.64,1)] data-[state=closed]:animate-[bubbleExit_250ms_cubic-bezier(0.34,1.3,0.64,1)]",
+      "data-[state=open]:animate-modal-enter data-[state=closed]:animate-modal-exit",
       "sm:rounded-lg",
       className
     )}
