@@ -210,6 +210,14 @@ const ActionBtn = ({ icon:Icon, label, sub, color, rgb, floor, onClick }) => {
   );
 };
 
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+const Avatar = ({ src, name, size=8 }) => {
+  const cls = `w-${size} h-${size} rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-white font-black`;
+  const style = { background:'linear-gradient(135deg,#3b82f6,#06b6d4)', fontSize:size<=7?10:12 };
+  if (src) return <img src={src} alt={name} className={cls} style={{objectFit:'cover'}}/>;
+  return <div className={cls} style={style}>{name?.charAt(0)?.toUpperCase()}</div>;
+};
+
 // ═════════════════════════════════════════════════════════════════════════════
 // MAIN
 // ═════════════════════════════════════════════════════════════════════════════
