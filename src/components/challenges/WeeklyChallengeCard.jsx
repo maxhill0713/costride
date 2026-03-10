@@ -49,11 +49,13 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
       {/* ── Only this wrapper changed: matches Progress page TallCard box style ── */}
       <div
+        className="group cursor-pointer"
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         className="rounded-2xl p-5 overflow-hidden relative"
         style={{
           background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
