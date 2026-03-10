@@ -620,16 +620,18 @@ export default function Home() {
     touchAction: 'manipulation',
   };
 
-  // View Workout button style — dark grey, no glow
+  // View Workout button style — matches inactive SplitCard aesthetic
   const viewWorkoutBtnStyle = {
-    marginTop: 4, width: '100%',
+    marginTop: 10, width: '100%',
     padding: '7px 0',
     borderRadius: 9,
-    background: 'linear-gradient(to bottom, #374151 0%, #1f2937 40%, #111827 100%)',
-    border: 'none', borderBottom: '3px solid #030712',
-    color: '#cbd5e1', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+    background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 800, cursor: 'pointer',
     letterSpacing: '0.03em', textAlign: 'center',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
     transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
     touchAction: 'manipulation',
   };
@@ -887,7 +889,7 @@ export default function Home() {
                     if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
                     if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
                     if (isTodayCircle) return 'linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%)';
-                    return 'linear-gradient(to bottom, #2d3748 0%, #1e293b 60%, #0f172a 100%)';
+                    return 'linear-gradient(135deg, rgba(30,35,60,0.9) 0%, rgba(8,10,20,0.98) 100%)';
                   };
                   const getBorder = () => {
                     if (isRestDay) {
@@ -896,7 +898,7 @@ export default function Home() {
                     if (done) return '1px solid rgba(147,197,253,0.5)';
                     if (isMissed) return '1px solid rgba(248,113,113,0.5)';
                     if (isTodayCircle) return '1px solid rgba(100,116,139,0.7)';
-                    return '1px solid rgba(71,85,105,0.5)';
+                    return '1px solid rgba(255,255,255,0.07)';
                   };
                   const getBoxShadow = () => {
                     if (isRestDay && done)
@@ -909,7 +911,7 @@ export default function Home() {
                       return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2), inset 0 0 18px rgba(255,255,255,0.06)';
                     if (isTodayCircle)
                       return '0 4px 0 0 #1a2332, 0 7px 16px rgba(30,40,60,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 0 14px rgba(255,255,255,0.03)';
-                    return '0 4px 0 0 #1a2030, 0 6px 14px rgba(20,30,50,0.55), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.28), inset 0 0 12px rgba(255,255,255,0.03)';
+                    return '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)';
                   };
                   const getAnimation = () => {
                     if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) forwards';
@@ -1035,7 +1037,7 @@ export default function Home() {
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
-                          const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
+                          const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#0d1020';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
                             `L ${arrowR} ${ARROW_H}`, `L ${BUBBLE_W - RADIUS} ${ARROW_H}`,
