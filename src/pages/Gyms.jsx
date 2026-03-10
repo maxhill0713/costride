@@ -657,7 +657,7 @@ return (
       </Dialog>
 
       <Dialog open={showConfirmJoin} onOpenChange={() => { setShowConfirmJoin(false); setPendingGymData(null); }}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">{gymMemberships.length > 0 ? 'Replace Primary Gym?' : 'Join This Community?'}</DialogTitle>
           </DialogHeader>
@@ -675,6 +675,7 @@ return (
           </div>
         </DialogContent>
       </Dialog>
+
       <Dialog open={!!confirmLeaveGym} onOpenChange={() => setConfirmLeaveGym(null)}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
           <DialogHeader>
