@@ -1084,24 +1084,8 @@ export default function GymOwnerDashboard() {
             })()}
           </div>
         </Panel>
-        <Panel>
-          <PH title="Rewards Program" badge={rewards.length} action={()=>openModal('rewards')} actionLabel="Manage" />
-          {rewards.length > 0 ? (
-            <div className="space-y-2.5">
-              {rewards.slice(0,6).map(reward=>(
-                <div key={reward.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{background:BG.subcard,border:`1px solid ${BORDER.subtle}`}}>
-                  <span className="text-2xl flex-shrink-0">{reward.icon||'🎁'}</span>
-                  <div className="flex-1 min-w-0"><p className="text-sm font-bold text-white truncate">{reward.title}</p><p className="text-xs" style={{color:'#6b87b8'}}>{reward.claimed_by?.length||0} claimed · {reward.value}</p></div>
-                  <Tag color={reward.active?'green':'blue'}>{reward.active?'Active':'Off'}</Tag>
-                </div>
-              ))}
-            </div>
-          ) : <Empty icon={Gift} label="No rewards yet — create some to boost retention"/>}
-        </Panel>
+        <PushNotifPanel/>
       </div>
-
-      {/* Push Notifications — full width */}
-      <PushNotifPanel/>
 
     </div>
     </div>{/* end desktop */}
