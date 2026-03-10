@@ -47,8 +47,9 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function StrengthProgress({ currentUser }) {
-  const [exercise, setExercise] = useState('bench_press');
+  const [exercise, setExercise] = useState(null);
   const [period, setPeriod]     = useState('6m');
+  const [selectedDay, setSelectedDay] = useState(null);
 
   const { data: lifts = [], isLoading } = useQuery({
     queryKey: ['lifts', currentUser?.id],
@@ -58,13 +59,51 @@ export default function StrengthProgress({ currentUser }) {
     placeholderData: (prev) => prev,
   });
 
+  // Parse split data
+  const split = useMemo(() => {
+    const s = currentUser?.custom_workout_types || currentUser?.workout_split;
+    if (!s || typeof s !== 'object') return {};
+    return s;
+  }, [currentUser?.custom_workout_types, currentUser?.workout_split]);
+
+  const splitDays = useMemo(() => Object.keys(split).filter((k) => split[k]), [split]);
+
+  // Get exercises for selected day
+  const availableExercises = useMemo(() => {
+    if (!selectedDay || !split[selectedDay]) return [];
+    const dayExercises = split[selectedDay];
+    if (Array.isArray(dayExercises)) {
+      return dayExercises.map((ex) => EXERCISES.find((e) => e.key === ex)).filter(Boolean);
+    }
+    if (typeof dayExercises === 'string') {
+      return EXERCISES.filter((e) => e.key === dayExercises);
+    }
+    return [];
+  }, [selectedDay, split]);
+
+  // Initialize first exercise when day changes
+  React.useEffect(() => {
+    if (availableExercises.length > 0) {
+      setExercise(availableExercises[0].key);
+    } else {
+      setExercise(null);
+    }
+  }, [availableExercises]);
+
+  // Auto-select first day if not selected
+  React.useEffect(() => {
+    if (!selectedDay && splitDays.length > 0) {
+      setSelectedDay(splitDays[0]);
+    }
+  }, [splitDays, selectedDay]);
+
   const selectedExercise = EXERCISES.find((e) => e.key === exercise);
 
-  // Which exercises actually have data
+  // Which exercises actually have data from split
   const exercisesWithData = useMemo(() => {
     const set = new Set(lifts.map((l) => l.exercise));
-    return EXERCISES.filter((e) => set.has(e.key));
-  }, [lifts]);
+    return availableExercises.filter((e) => set.has(e.key));
+  }, [lifts, availableExercises]);
 
   const chartData = useMemo(() => {
     const cutoff = period !== 'all'
