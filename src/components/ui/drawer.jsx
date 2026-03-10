@@ -34,6 +34,7 @@ const DrawerContent = React.forwardRef(({ className, children, ...props }, ref) 
       ref={ref}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+        "animate-[bubblePop_400ms_cubic-bezier(0.34,1.3,0.64,1)]",
         className
       )}
       {...props}>
