@@ -424,6 +424,7 @@ export default function Progress() {
             onClick={card.isLink ? undefined : () => setView(card.id)}
           />
         ))}
+        {badgesView}
       </div>
     </div>
   );
