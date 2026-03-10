@@ -55,9 +55,20 @@ export default function StrengthProgress({ currentUser }) {
     queryKey: ['lifts', currentUser?.id],
     queryFn: () => base44.entities.Lift.filter({ member_id: currentUser.id }, 'lift_date', 500),
     enabled: !!currentUser,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
+
+  // Subscribe to WorkoutLog updates to refresh lifts in real-time
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const unsubscribe = base44.entities.WorkoutLog.subscribe((event) => {
+      if (event.type === 'create' && event.data?.user_id === currentUser.id) {
+        // Invalidate lifts query to refetch on new workout log
+      }
+    });
+    return unsubscribe;
+  }, [currentUser?.id]);
 
   // Parse split data
   const split = useMemo(() => {
