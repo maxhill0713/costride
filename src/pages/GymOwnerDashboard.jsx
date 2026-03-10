@@ -123,6 +123,22 @@ const Tag = ({ children, color = 'blue' }) => {
   return <span className="text-xs px-2 py-0.5 rounded-md font-medium" style={{ background: bg, color: text, border: `1px solid ${border}` }}>{children}</span>;
 };
 
+const AlertCard = ({ icon: Icon, iconColor, iconRgb, title, message, action, actionLabel }) => (
+  <div className="p-3.5 rounded-xl relative overflow-hidden" style={{background:`rgba(${iconRgb},0.07)`,border:`1px solid rgba(${iconRgb},0.22)`}}>
+    <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${iconRgb},0.7),transparent)`}}/>
+    <div className="flex gap-3 pl-1">
+      <div style={{width:30,height:30,borderRadius:9,background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+        <Icon style={{width:14,height:14,color:iconColor}}/>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-white mb-0.5">{title}</p>
+        <p className="text-xs" style={{color:'rgba(107,135,184,0.75)',lineHeight:1.4}}>{message}</p>
+        {action && <button onClick={action} className="mt-2 text-xs font-bold flex items-center gap-1" style={{color:iconColor,background:'none',border:'none',cursor:'pointer',padding:0}}>{actionLabel} →</button>}
+      </div>
+    </div>
+  </div>
+);
+
 const Empty = ({ icon: Icon, label }) => (
   <div className="py-10 text-center">
     <Icon className="w-10 h-10 mx-auto mb-2 opacity-30 text-blue-400" />
