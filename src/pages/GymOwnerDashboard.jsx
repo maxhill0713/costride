@@ -324,13 +324,11 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   const TabOverview=()=>(
     <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard icon={Dumbbell}   iconColor="#60a5fa" iconRgb="96,165,250"   label="Today's Check-ins"    value={todayCI}        sub="members in today"/>
         <KpiCard icon={Users}      iconColor="#34d399" iconRgb="52,211,153"   label="Active This Week"     value={activeThisWeek} sub={`of ${totalMembers} members`} trend={weeklyChangePct}/>
         <KpiCard icon={Activity}   iconColor="#a78bfa" iconRgb="167,139,250"  label="Monthly Check-ins"    value={ci30.length}    sub={`${monthChangePct>=0?"+":""}${monthChangePct}% vs last month`} trend={monthChangePct}/>
         <KpiCard icon={UserPlus}   iconColor="#34d399" iconRgb="52,211,153"   label="New Sign-ups"         value={newSignUps}     sub="joined last 30 days" trend={newSignUpsPct}/>
-        <KpiCard icon={DollarSign} iconColor="#4ade80" iconRgb="74,222,128"   label="Est. Monthly Revenue" value={revenueDisplay} sub={membershipPrice>0?`${allMemberships.length} members × £${membershipPrice}`:'Set price in Gym Settings'}/>
-        <KpiCard icon={Star}       iconColor="#fbbf24" iconRgb="251,191,36"   label="Avg Rating"           value={selectedGym?.rating?.toFixed(1)??"—"} sub="member rating"/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
