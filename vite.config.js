@@ -16,12 +16,4 @@ export default defineConfig({
     }),
     react(),
   ]
-});export default defineConfig({
-  logLevel: 'error',
-  server: {
-    allowedHosts: 'all'
-  },
-  plugins: [
-    // ... rest of plugins
-  ]
 });
