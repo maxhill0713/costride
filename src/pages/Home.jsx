@@ -1308,10 +1308,18 @@ export default function Home() {
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const rawWeight = ex.weight_kg || ex.weight;
-                      const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
-                      const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '-';
-                      const weight = rawWeight || '-';
+                      const rawWeight = ex.weight_kg || ex.weight_lbs || ex.weight;
+                      // setsReps may be "3x10", "3 x 10", "3X10" etc — normalise then split
+                      const srRaw = ex.setsReps || ex.sets_reps || ex.set_reps || '';
+                      const srParts = String(srRaw).toLowerCase().split(/\s*x\s*/);
+                      // Also handle logged_sets: [{reps, weight}, ...] array format
+                      const loggedSets = ex.logged_sets || ex.sets_data || ex.set_data || null;
+                      const derivedSets = loggedSets?.length ?? null;
+                      const derivedReps = loggedSets?.[0]?.reps ?? loggedSets?.[0]?.rep_count ?? null;
+                      const derivedWeight = loggedSets?.[0]?.weight ?? loggedSets?.[0]?.weight_kg ?? null;
+                      const sets = ex.sets ?? ex.set_count ?? ex.num_sets ?? derivedSets ?? (srParts[0] && srParts[0] !== 'undefined' ? srParts[0] : null) ?? '-';
+                      const reps = ex.reps ?? ex.rep_count ?? ex.num_reps ?? derivedReps ?? (srParts[1] && srParts[1] !== 'undefined' ? srParts[1] : null) ?? '-';
+                      const weight = rawWeight ?? derivedWeight ?? '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
