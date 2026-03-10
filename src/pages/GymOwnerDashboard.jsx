@@ -474,7 +474,7 @@ export default function GymOwnerDashboard() {
                 </div>
                 <span className="text-sm font-black w-7 text-right flex-shrink-0" style={{color:rank===0?'#a78bfa':rank<3?'#60a5fa':'#6b87b8'}}>{count}</span>
               </div>
-            );}})()}
+            );})})()}
           </div>
         </Panel>
         <Panel>
