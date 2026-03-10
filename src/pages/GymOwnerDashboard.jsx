@@ -759,30 +759,9 @@ export default function GymOwnerDashboard() {
         </Link>
       </Panel>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        {[
-          {title:'Delete Gym',    desc:'Permanently delete this gym and all its data. All members, check-ins and content will be lost.',  label:'Delete Gym',    fn:()=>openModal("deleteGym")},
-          {title:'Delete Account',desc:'Permanently delete your account and all associated gyms and data.',   label:'Delete Account',fn:()=>openModal("deleteAccount")},
-        ].map((d,i)=>(
-          <div key={i} className="relative overflow-hidden rounded-2xl" style={{background:'linear-gradient(135deg,rgba(239,68,68,0.08) 0%,rgba(8,14,36,0.95) 100%)',border:'1px solid rgba(239,68,68,0.2)',boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
-            <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(239,68,68,0.7),rgba(239,68,68,0.1))'}}/>
-            <div style={{position:'absolute',top:0,left:'5%',right:'30%',height:1,background:'linear-gradient(90deg,rgba(239,68,68,0.35),transparent)'}}/>
-            <div style={{position:'absolute',bottom:-30,right:-20,width:120,height:120,borderRadius:'50%',background:'radial-gradient(circle,rgba(239,68,68,0.07) 0%,transparent 70%)',pointerEvents:'none'}}/>
-            <div style={{padding:'18px 18px 18px 22px',position:'relative'}}>
-              <div className="flex items-center gap-2.5 mb-3">
-                <div style={{width:34,height:34,borderRadius:10,background:'rgba(239,68,68,0.13)',border:'1px solid rgba(239,68,68,0.28)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 10px rgba(239,68,68,0.1)'}}>
-                  <Trash2 style={{width:15,height:15,color:'#f87171'}}/>
-                </div>
-                <h4 style={{fontWeight:900,color:'#fff',fontSize:14}}>{d.title}</h4>
-              </div>
-              <p style={{fontSize:12,color:'rgba(148,163,184,0.6)',marginBottom:16,lineHeight:1.5}}>{d.desc}</p>
-              <button onClick={d.fn} className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:brightness-110 relative overflow-hidden" style={{background:'rgba(239,68,68,0.12)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.28)',cursor:'pointer'}}>
-                <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)'}}/>
-                {d.label}
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <button onClick={()=>openModal("deleteGym")} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:brightness-110" style={{background:'rgba(239,68,68,0.1)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.25)',cursor:'pointer'}}><Trash2 className="w-4 h-4"/>Delete Gym</button>
+        <button onClick={()=>openModal("deleteAccount")} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:brightness-110" style={{background:'rgba(239,68,68,0.07)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.18)',cursor:'pointer'}}><Trash2 className="w-4 h-4"/>Delete Account</button>
       </div>
     </div>
   );
