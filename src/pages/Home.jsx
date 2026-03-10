@@ -1307,19 +1307,41 @@ export default function Home() {
                   </div>
                   <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
-                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const rawWeight = ex.weight_kg || ex.weight_lbs || ex.weight;
-                      // setsReps may be "3x10", "3 x 10", "3X10" etc — normalise then split
-                      const srRaw = ex.setsReps || ex.sets_reps || ex.set_reps || '';
-                      const srParts = String(srRaw).toLowerCase().split(/\s*x\s*/);
-                      // Also handle logged_sets: [{reps, weight}, ...] array format
-                      const loggedSets = ex.logged_sets || ex.sets_data || ex.set_data || null;
-                      const derivedSets = loggedSets?.length ?? null;
-                      const derivedReps = loggedSets?.[0]?.reps ?? loggedSets?.[0]?.rep_count ?? null;
-                      const derivedWeight = loggedSets?.[0]?.weight ?? loggedSets?.[0]?.weight_kg ?? null;
-                      const sets = ex.sets ?? ex.set_count ?? ex.num_sets ?? derivedSets ?? (srParts[0] && srParts[0] !== 'undefined' ? srParts[0] : null) ?? '-';
-                      const reps = ex.reps ?? ex.rep_count ?? ex.num_reps ?? derivedReps ?? (srParts[1] && srParts[1] !== 'undefined' ? srParts[1] : null) ?? '-';
-                      const weight = rawWeight ?? derivedWeight ?? '-';
+                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                       const rawWeight = ex.weight_kg || ex.weight_lbs || ex.weight;
+
+                       // Extract sets/reps with fallbacks
+                       let sets = '-', reps = '-';
+
+                       // Try direct properties first
+                       if (ex.sets) sets = ex.sets;
+                       else if (ex.set_count) sets = ex.set_count;
+                       else if (ex.num_sets) sets = ex.num_sets;
+                       // Try setsReps string format
+                       else if (ex.setsReps || ex.sets_reps || ex.set_reps) {
+                         const srRaw = ex.setsReps || ex.sets_reps || ex.set_reps || '';
+                         const srParts = String(srRaw).toLowerCase().split(/\s*x\s*/);
+                         sets = srParts[0] || '-';
+                       }
+                       // Try logged_sets array
+                       else if (ex.logged_sets?.length) sets = ex.logged_sets.length;
+                       else if (ex.sets_data?.length) sets = ex.sets_data.length;
+
+                       if (ex.reps) reps = ex.reps;
+                       else if (ex.rep_count) reps = ex.rep_count;
+                       else if (ex.num_reps) reps = ex.num_reps;
+                       // Try setsReps string format
+                       else if (ex.setsReps || ex.sets_reps || ex.set_reps) {
+                         const srRaw = ex.setsReps || ex.sets_reps || ex.set_reps || '';
+                         const srParts = String(srRaw).toLowerCase().split(/\s*x\s*/);
+                         reps = srParts[1] || '-';
+                       }
+                       // Try logged_sets first element
+                       else if (ex.logged_sets?.[0]?.reps) reps = ex.logged_sets[0].reps;
+                       else if (ex.logged_sets?.[0]?.rep_count) reps = ex.logged_sets[0].rep_count;
+                       else if (ex.sets_data?.[0]?.reps) reps = ex.sets_data[0].reps;
+
+                       const weight = rawWeight ?? ex.logged_sets?.[0]?.weight ?? ex.sets_data?.[0]?.weight ?? '-';
                       return (
                         <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
                           <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
