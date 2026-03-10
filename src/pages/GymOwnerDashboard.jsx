@@ -11,7 +11,7 @@ import {
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
   LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
   DollarSign, UserPlus, ChevronRight, Megaphone, Pin,
-  MapPin as MapPin2, Tag as Tag2
+  MapPin as MapPin2, Tag as Tag2, Send, Bell, BellRing, Sparkles, Check
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -196,6 +196,11 @@ export default function GymOwnerDashboard() {
   const [announcementSaving, setAnnouncementSaving] = useState(false);
   const [modal, setModal] = useState(null);
   const [chartRange, setChartRange] = useState(7);
+  const [notifMsg, setNotifMsg]           = useState('');
+  const [notifTarget, setNotifTarget]     = useState('atRisk');
+  const [notifSending, setNotifSending]   = useState(false);
+  const [notifSent, setNotifSent]         = useState(null); // { count, target }
+  const [notifTemplate, setNotifTemplate] = useState(null);
   const openModal  = (name) => setModal(name);
   const closeModal = ()     => setModal(null);
 
@@ -260,6 +265,40 @@ export default function GymOwnerDashboard() {
   const deleteGymM       = useMutation({ mutationFn: () => base44.entities.Gym.delete(selectedGym.id), onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); } });
   const deleteAccountM   = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => { closeModal(); base44.auth.logout(); } });
   const createPollM      = useMutation({ mutationFn: d  => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => { inv('polls'); closeModal(); } });
+
+  // ── Push notifications ───────────────────────────────────────────────────
+  const NOTIF_TEMPLATES = [
+    { label: 'We miss you! 💪',   body: `Hey! We haven't seen you at ${selectedGym?.name||'the gym'} in a while. Come back and keep your streak going — your goals are waiting!` },
+    { label: 'Special offer 🎁',  body: `Great news from ${selectedGym?.name||'us'}! Come in this week and show this message at the desk for a free smoothie/guest pass. We want to see you back!` },
+    { label: 'New class alert 📣', body: `A new class has been added at ${selectedGym?.name||'the gym'}! Check the schedule and book your spot — limited spaces available.` },
+    { label: 'Challenge starts 🏆',body: `A new fitness challenge is kicking off at ${selectedGym?.name||'the gym'}! Join now, compete with fellow members and win rewards. Don't miss out!` },
+    { label: 'Check-in nudge 🔔',  body: `Just a friendly nudge from ${selectedGym?.name||'your gym'} — it's been a while! Pop in this week, even for 20 minutes. Your body will thank you.` },
+  ];
+
+  const sendNotification = async () => {
+    if (!notifMsg.trim() || notifSending) return;
+    setNotifSending(true);
+    try {
+      const targetMembers = notifTarget === 'atRisk'
+        ? allMemberships.filter(m => { const last = memberLastCheckIn[m.user_id]; return !last || Math.floor((now - new Date(last)) / 86400000) >= 14; })
+        : allMemberships;
+      const memberIds = targetMembers.map(m => m.user_id);
+      await base44.functions.invoke('sendPushNotification', {
+        gym_id: selectedGym.id,
+        gym_name: selectedGym.name,
+        target: notifTarget,
+        message: notifMsg.trim(),
+        member_ids: memberIds,
+      });
+      setNotifSent({ count: memberIds.length, target: notifTarget });
+      setNotifMsg('');
+      setNotifTemplate(null);
+      setTimeout(() => setNotifSent(null), 5000);
+    } catch(e) {
+      console.error('Notification send failed:', e);
+    }
+    setNotifSending(false);
+  };
 
   // ── Splash screens ────────────────────────────────────────────────────────
   const Splash = ({ children }) => (
@@ -726,6 +765,144 @@ export default function GymOwnerDashboard() {
   };
 
   // ══════════════════════════════════════════════════════════════════════════
+  // PUSH NOTIFICATION PANEL (shared, used in Members tab mobile + desktop)
+  // ══════════════════════════════════════════════════════════════════════════
+  const PushNotifPanel = ({ compact = false }) => {
+    const atRiskCount = allMemberships.filter(m => {
+      const last = memberLastCheckIn[m.user_id];
+      return !last || Math.floor((now - new Date(last)) / 86400000) >= 14;
+    }).length;
+
+    const applyTemplate = (t) => {
+      setNotifTemplate(t.label);
+      setNotifMsg(t.body);
+    };
+
+    const containerStyle = compact
+      ? { padding: '14px 16px 16px', borderRadius: 18, background: 'linear-gradient(145deg,rgba(18,28,72,0.95),rgba(6,8,22,0.98))', border: '1px solid rgba(251,191,36,0.22)', position: 'relative', overflow: 'hidden' }
+      : {};
+
+    const inner = (
+      <div style={compact ? {} : {}}>
+        {/* Header */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 14 }}>
+          <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
+            <div style={{ width:34, height:34, borderRadius:11, background:'rgba(251,191,36,0.14)', border:'1px solid rgba(251,191,36,0.28)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <BellRing style={{ width:16, height:16, color:'#fbbf24' }}/>
+            </div>
+            <div>
+              <p style={{ fontSize:13, fontWeight:900, color:'#fff', margin:0, lineHeight:1.2 }}>Push Notifications</p>
+              <p style={{ fontSize:10, color:'rgba(107,135,184,0.6)', margin:0, marginTop:2 }}>Reach members directly on their phone</p>
+            </div>
+          </div>
+          {atRiskCount > 0 && (
+            <span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:800, padding:'4px 9px', borderRadius:99, background:'rgba(248,113,113,0.12)', color:'#f87171', border:'1px solid rgba(248,113,113,0.25)', flexShrink:0 }}>
+              ⚠️ {atRiskCount} at risk
+            </span>
+          )}
+        </div>
+
+        {/* One-tap auto-send at-risk */}
+        {atRiskCount > 0 && (
+          <button
+            onClick={() => { setNotifTarget('atRisk'); setNotifMsg(NOTIF_TEMPLATES[4].body); }}
+            style={{ width:'100%', padding:'12px 14px', borderRadius:14, background:'rgba(248,113,113,0.09)', border:'1px solid rgba(248,113,113,0.25)', display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12, textAlign:'left', position:'relative', overflow:'hidden', WebkitTapHighlightColor:'transparent' }}>
+            <div style={{ position:'absolute', top:0, left:'10%', right:'10%', height:1, background:'linear-gradient(90deg,transparent,rgba(248,113,113,0.3),transparent)' }}/>
+            <div style={{ width:36, height:36, borderRadius:11, background:'rgba(248,113,113,0.15)', border:'1px solid rgba(248,113,113,0.3)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <Zap style={{ width:16, height:16, color:'#f87171' }}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <p style={{ fontSize:13, fontWeight:800, color:'#fff', margin:'0 0 2px' }}>Auto-notify at-risk members</p>
+              <p style={{ fontSize:11, color:'rgba(248,113,113,0.65)', margin:0 }}>Loads a re-engagement message for {atRiskCount} member{atRiskCount!==1?'s':''}</p>
+            </div>
+            <Sparkles style={{ width:14, height:14, color:'#f87171', flexShrink:0 }}/>
+          </button>
+        )}
+
+        {/* Target selector */}
+        <div style={{ display:'flex', gap:6, marginBottom:12 }}>
+          {[
+            { id:'atRisk', label:`At-Risk (${atRiskCount})`, rgb:'248,113,113', c:'#f87171' },
+            { id:'all',    label:`All Members (${allMemberships.length})`, rgb:'96,165,250', c:'#60a5fa' },
+          ].map(t => (
+            <button key={t.id} onClick={() => setNotifTarget(t.id)}
+              style={{ flex:1, padding:'8px 10px', borderRadius:10, background: notifTarget===t.id ? `rgba(${t.rgb},0.15)` : 'rgba(13,35,96,0.3)', border:`1px solid ${notifTarget===t.id?`rgba(${t.rgb},0.4)`:'rgba(255,255,255,0.06)'}`, color: notifTarget===t.id ? t.c : 'rgba(107,135,184,0.6)', fontSize:11, fontWeight:800, cursor:'pointer', transition:'all 0.15s' }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Template chips */}
+        <div style={{ marginBottom:10 }}>
+          <p style={{ fontSize:10, fontWeight:800, letterSpacing:'0.07em', textTransform:'uppercase', color:'rgba(107,135,184,0.4)', marginBottom:7 }}>Quick Templates</p>
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+            {NOTIF_TEMPLATES.map((t, i) => (
+              <button key={i} onClick={() => applyTemplate(t)}
+                style={{ padding:'5px 10px', borderRadius:99, fontSize:11, fontWeight:700, cursor:'pointer', background: notifTemplate===t.label ? 'rgba(251,191,36,0.18)' : 'rgba(13,35,96,0.4)', color: notifTemplate===t.label ? '#fbbf24' : 'rgba(107,135,184,0.7)', border:`1px solid ${notifTemplate===t.label?'rgba(251,191,36,0.35)':'rgba(255,255,255,0.06)'}`, transition:'all 0.15s', whiteSpace:'nowrap' }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Message textarea */}
+        <div style={{ position:'relative', marginBottom:10 }}>
+          <textarea
+            value={notifMsg}
+            onChange={e => { setNotifMsg(e.target.value); setNotifTemplate(null); }}
+            placeholder="Type a personalised message to your members…"
+            rows={3}
+            style={{ width:'100%', padding:'12px 14px', borderRadius:12, background:'rgba(6,10,30,0.7)', border:`1px solid ${notifMsg ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.08)'}`, color:'#fff', fontSize:13, fontFamily:'inherit', resize:'vertical', outline:'none', transition:'border-color 0.2s', lineHeight:1.5, boxSizing:'border-box' }}
+          />
+          <p style={{ position:'absolute', bottom:10, right:12, fontSize:10, color: notifMsg.length > 160 ? '#f87171' : 'rgba(107,135,184,0.35)', margin:0 }}>{notifMsg.length}/160</p>
+        </div>
+
+        {/* Send button + success state */}
+        {notifSent ? (
+          <div style={{ width:'100%', padding:'12px 16px', borderRadius:12, background:'rgba(52,211,153,0.12)', border:'1px solid rgba(52,211,153,0.3)', display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(52,211,153,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <Check style={{ width:14, height:14, color:'#34d399' }}/>
+            </div>
+            <p style={{ fontSize:13, fontWeight:700, color:'#34d399', margin:0 }}>
+              Sent to {notifSent.count} {notifSent.target === 'atRisk' ? 'at-risk' : ''} member{notifSent.count!==1?'s':''}!
+            </p>
+          </div>
+        ) : (
+          <button
+            onClick={sendNotification}
+            disabled={!notifMsg.trim() || notifSending}
+            style={{ width:'100%', padding:'12px 16px', borderRadius:12, background: notifMsg.trim() ? 'linear-gradient(135deg,rgba(59,130,246,0.9),rgba(37,99,235,0.9))' : 'rgba(13,35,96,0.4)', border:`1px solid ${notifMsg.trim()?'rgba(59,130,246,0.6)':'rgba(255,255,255,0.06)'}`, color: notifMsg.trim() ? '#fff' : 'rgba(107,135,184,0.35)', fontSize:13, fontWeight:800, cursor: notifMsg.trim() ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all 0.2s', boxShadow: notifMsg.trim() ? '0 4px 16px rgba(59,130,246,0.25)' : 'none' }}>
+            {notifSending
+              ? <><div style={{ width:14, height:14, border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/> Sending…</>
+              : <><Send style={{ width:14, height:14 }}/> Send to {notifTarget === 'atRisk' ? `${atRiskCount} at-risk` : `all ${allMemberships.length}`} members</>
+            }
+          </button>
+        )}
+
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+
+    if (compact) return (
+      <div style={containerStyle}>
+        <div style={{ position:'absolute', top:0, left:0, right:0, height:1, background:'linear-gradient(90deg,transparent,rgba(251,191,36,0.35),transparent)' }}/>
+        <div style={{ position:'absolute', left:0, top:0, bottom:0, width:3, background:'linear-gradient(180deg,rgba(251,191,36,0.7),transparent)' }}/>
+        <div style={{ paddingLeft:4 }}>{inner}</div>
+      </div>
+    );
+
+    return (
+      <div className="relative overflow-hidden rounded-2xl"
+        style={{ background:'linear-gradient(135deg,rgba(30,35,60,0.82) 0%,rgba(8,10,20,0.96) 100%)', border:'1px solid rgba(251,191,36,0.18)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:'0 4px 24px rgba(0,0,0,0.4)' }}>
+        <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background:'linear-gradient(90deg,transparent 10%,rgba(251,191,36,0.35) 50%,transparent 90%)' }}/>
+        <div style={{ position:'absolute', left:0, top:0, bottom:0, width:3, background:'linear-gradient(180deg,rgba(251,191,36,0.7),transparent)' }}/>
+        <div style={{ position:'absolute', top:-40, right:-30, width:160, height:160, borderRadius:'50%', background:'radial-gradient(circle,rgba(251,191,36,0.06) 0%,transparent 70%)', pointerEvents:'none' }}/>
+        <div className="relative p-5">{inner}</div>
+      </div>
+    );
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════
   // TAB: MEMBERS
   // ══════════════════════════════════════════════════════════════════════════
   const TabMembers = () => (
@@ -805,6 +982,12 @@ export default function GymOwnerDashboard() {
             {ci7.length===0&&<Empty icon={Users} label="No check-ins this week yet"/>}
           </div>
         </div>
+      </div>
+
+      {/* Push Notifications */}
+      <div>
+        <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:8,paddingLeft:2}}>Push Notifications</p>
+        <PushNotifPanel compact/>
       </div>
 
       {/* Rewards */}
@@ -916,6 +1099,10 @@ export default function GymOwnerDashboard() {
           ) : <Empty icon={Gift} label="No rewards yet — create some to boost retention"/>}
         </Panel>
       </div>
+
+      {/* Push Notifications — full width */}
+      <PushNotifPanel/>
+
     </div>
     </div>{/* end desktop */}
     </>
