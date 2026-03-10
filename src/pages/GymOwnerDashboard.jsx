@@ -213,6 +213,7 @@ const ActionBtn = ({ icon:Icon, label, sub, color, rgb, floor, onClick }) => {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function GymOwnerDashboard() {
   const [tab,setTab]=useState('overview');
+  const [ciChartRange,setCiChartRange]=useState('7d');
   const [collapsed,setCollapsed]=useState(false);
   const [selectedGym,setSelectedGym]=useState(null);
   const [gymOpen,setGymOpen]=useState(false);
