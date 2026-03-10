@@ -89,9 +89,20 @@ const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend }) => (
 );
 
 const Panel = ({ children, className = '' }) => (
-  <div className={`rounded-2xl border p-6 ${className}`}
-    style={{ background: BG.panel, borderColor: BORDER.panel, backdropFilter: 'blur(16px)' }}>
-    {children}
+  <div className={`relative overflow-hidden rounded-2xl p-6 ${className}`}
+    style={{
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+    }}>
+    {/* Top shine */}
+    <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+      style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+    <div className="relative">
+      {children}
+    </div>
   </div>
 );
 
