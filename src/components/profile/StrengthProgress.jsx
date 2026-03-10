@@ -214,12 +214,14 @@ export default function StrengthProgress({ currentUser }) {
     const max     = Math.max(...weights);
     const min     = Math.min(...weights);
     const recent  = chartData[chartData.length - 1]?.weight;
+    const previous = chartData.length > 1 ? chartData[chartData.length - 2]?.weight : recent;
     const first   = chartData[0]?.weight;
     const change  = first ? +((recent - first) / first * 100).toFixed(1) : 0;
+    const sessionIncrease = previous ? +(recent - previous).toFixed(1) : 0;
     const avg     = +(weights.reduce((s, v) => s + v, 0) / weights.length).toFixed(1);
     const prs     = chartData.filter(d => d.is_pr).length;
     const prEntry = chartData.filter(d => d.is_pr).at(-1);
-    return { max, min, recent, change, avg, prs, prEntry };
+    return { max, min, recent, change, sessionIncrease, avg, prs, prEntry };
   }, [chartData]);
 
   const yDomain = chartData.length > 0
@@ -361,7 +363,14 @@ export default function StrengthProgress({ currentUser }) {
                   <p className="text-2xl font-black text-white leading-none">
                     <AnimatedNumber value={stats.recent} />
                   </p>
-                  <p className="text-[11px] font-semibold mt-0.5" style={{ color }}>lbs</p>
+                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                    <p className="text-[11px] font-semibold" style={{ color }}>lbs</p>
+                    {stats.sessionIncrease !== 0 && (
+                      <span className={`text-[10px] font-bold ${stats.sessionIncrease > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {stats.sessionIncrease > 0 ? '+' : ''}<AnimatedNumber value={stats.sessionIncrease} decimals={1} />kg
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
