@@ -381,7 +381,7 @@ export default function GymOwnerDashboard() {
               {[
                 {label:'Attendance',val:attendanceScore,tip:`${activeThisWeek} of ${totalMembers} active this week`},
                 {label:'Retention',val:atRiskScore,tip:`${atRisk} at-risk member${atRisk!==1?'s':''}`,warn:atRisk>0},
-                {label:'Activity Rate',val:growthScore,tip:`${retentionRate}% active last 30 days`},
+                {label:'Growth Trend',val:growthScore,tip:`${monthChangePct>=0?'+':''}${monthChangePct}% check-ins vs last month`},
               ].map(({label,val,tip,warn})=>{
                 const fc=val>=80?'#34d399':val>=60?'#60a5fa':val>=40?'#fbbf24':'#f87171';
                 const fr=val>=80?'52,211,153':val>=60?'96,165,250':val>=40?'251,191,36':'248,113,113';
