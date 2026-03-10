@@ -503,7 +503,7 @@ export default function GymOwnerDashboard() {
               {posts.slice(0,10).map(p=>(
                 <div key={p.id} className="p-3 rounded-xl" style={{background:BG.subcard,border:`1px solid ${BORDER.subtle}`}}>
                   <div className="flex items-center gap-2.5 mb-2">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0" style={{background:'linear-gradient(135deg,#3b82f6,#06b6d4)'}}>{p.member_name?.charAt(0)?.toUpperCase()}</div>
+                    <Avatar userId={p.member_id} name={p.member_name} size={7}/>
                     <p className="text-sm font-semibold text-white flex-1">{p.member_name}</p>
                     <p className="text-xs" style={{color:'#3d5a8a'}}>{format(new Date(p.created_date),'MMM d')}</p>
                   </div>
