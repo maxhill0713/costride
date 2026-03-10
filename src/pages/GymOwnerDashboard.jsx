@@ -261,7 +261,7 @@ export default function GymOwnerDashboard() {
   const {data:polls=[]}=useQuery({queryKey:['polls',selectedGym?.id],queryFn:()=>base44.entities.Poll.filter({gym_id:selectedGym.id,status:'active'},'-created_date'),enabled:on,...qo});
 
   const inv=(...keys)=>keys.forEach(k=>queryClient.invalidateQueries({queryKey:[k,selectedGym?.id]}));
-  const invGyms=()=>queryClient.invalidateQueries({queryKey:['gyms']});
+  const invGyms=()=>queryClient.invalidateQueries({queryKey:['ownerGyms',currentUser?.email]});
 
   const createRewardM=useMutation({mutationFn:d=>base44.entities.Reward.create(d),onSuccess:()=>inv('rewards')});
   const deleteRewardM=useMutation({mutationFn:id=>base44.entities.Reward.delete(id),onSuccess:()=>inv('rewards')});
