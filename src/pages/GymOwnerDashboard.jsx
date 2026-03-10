@@ -401,19 +401,7 @@ export default function GymOwnerDashboard() {
             ))}
           </div>
         </Panel>
-        <Panel>
-          <PH title="Weekly Leaderboard" subtitle="Most check-ins this week" action={()=>openModal("members")} actionLabel="All Members"/>
-          <div className="space-y-2">
-            {Object.entries(ci7.reduce((acc,c)=>{acc[c.user_name]=(acc[c.user_name]||0)+1;return acc;},{})).sort(([,a],[,b])=>b-a).slice(0,8).map(([name,count],idx)=>(
-              <div key={name} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{background:idx<3?'rgba(59,130,246,0.08)':BG.subcard,border:`1px solid ${idx<3?'rgba(59,130,246,0.2)':BORDER.subtle}`}}>
-                <span className="text-base w-6 text-center flex-shrink-0">{['🥇','🥈','🥉'][idx]||<span className="text-xs" style={{color:'#3d5a8a'}}>{idx+1}</span>}</span>
-                <span className="flex-1 text-sm font-semibold text-white truncate">{name}</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-lg" style={{background:'rgba(13,35,96,0.6)',color:'#93b4e8'}}>{count} visits</span>
-              </div>
-            ))}
-            {ci7.length===0&&<Empty icon={Users} label="No check-ins this week yet"/>}
-          </div>
-        </Panel>
+        <LeaderboardSection checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboard={progressLeaderboard}/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
