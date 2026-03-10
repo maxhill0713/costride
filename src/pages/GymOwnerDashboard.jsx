@@ -714,42 +714,6 @@ export default function GymOwnerDashboard() {
         </div>
       </Panel>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Amenities" badge={selectedGym?.amenities?.length||0} action={()=>openModal("amenities")} actionLabel="Edit"/>
-          {selectedGym?.amenities?.length>0?(
-            <div className="relative rounded-xl p-3 overflow-hidden" style={{background:'rgba(59,130,246,0.04)',border:'1px solid rgba(59,130,246,0.1)'}}>
-              <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle,rgba(255,255,255,0.018) 1px,transparent 1px)',backgroundSize:'20px 20px',pointerEvents:'none'}}/>
-              <div className="relative flex flex-wrap gap-1.5">
-                {selectedGym.amenities.map((a,i)=><Tag key={i} color="blue">{a}</Tag>)}
-              </div>
-            </div>
-          ):(
-            <div className="flex items-center gap-3 p-4 rounded-xl" style={{background:'rgba(59,130,246,0.04)',border:'1px solid rgba(59,130,246,0.1)'}}>
-              <div style={{width:32,height:32,borderRadius:9,background:'rgba(59,130,246,0.1)',border:'1px solid rgba(59,130,246,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Star style={{width:14,height:14,color:'#60a5fa'}}/></div>
-              <p className="text-sm" style={{color:'#4a6492'}}>No amenities listed yet</p>
-            </div>
-          )}
-        </Panel>
-        <Panel>
-          <PH title="Equipment" badge={selectedGym?.equipment?.length||0} action={()=>openModal("equipment")} actionLabel="Edit"/>
-          {selectedGym?.equipment?.length>0?(
-            <div className="relative rounded-xl p-3 overflow-hidden" style={{background:'rgba(139,92,246,0.04)',border:'1px solid rgba(139,92,246,0.1)'}}>
-              <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle,rgba(255,255,255,0.018) 1px,transparent 1px)',backgroundSize:'20px 20px',pointerEvents:'none'}}/>
-              <div className="relative flex flex-wrap gap-1.5">
-                {selectedGym.equipment.slice(0,18).map((e,i)=><Tag key={i} color="purple">{e}</Tag>)}
-                {selectedGym.equipment.length>18&&<Tag color="blue">+{selectedGym.equipment.length-18} more</Tag>}
-              </div>
-            </div>
-          ):(
-            <div className="flex items-center gap-3 p-4 rounded-xl" style={{background:'rgba(139,92,246,0.04)',border:'1px solid rgba(139,92,246,0.1)'}}>
-              <div style={{width:32,height:32,borderRadius:9,background:'rgba(139,92,246,0.1)',border:'1px solid rgba(139,92,246,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Dumbbell style={{width:14,height:14,color:'#a78bfa'}}/></div>
-              <p className="text-sm" style={{color:'#4a6492'}}>No equipment listed yet</p>
-            </div>
-          )}
-        </Panel>
-      </div>
-
       <Panel>
         <PH title="Photo Gallery" badge={selectedGym?.gallery?.length||0} action={()=>openModal("photos")} actionLabel="Manage Photos"/>
         {selectedGym?.gallery?.length>0?(
