@@ -56,11 +56,22 @@ const NAV = [
 
 // ── Shared components ─────────────────────────────────────────────────────────
 const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend }) => (
-  <div className="relative overflow-hidden rounded-2xl p-5 border transition-all duration-200 hover:-translate-y-0.5"
-    style={{ background: BG.card, borderColor: BORDER.panel, backdropFilter: 'blur(16px)' }}>
-    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.07]" style={{ background: iconColor }} />
-    <div className="flex items-start justify-between mb-4">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}28` }}>
+  <div className="relative overflow-hidden rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+    style={{
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+    }}>
+    {/* Top shine */}
+    <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+      style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+    {/* Background glow */}
+    <div className="absolute inset-0 pointer-events-none rounded-2xl"
+      style={{ background: `radial-gradient(ellipse at 25% 35%, ${iconColor}44 0%, transparent 60%)`, opacity: 0.09 }} />
+    <div className="relative flex items-start justify-between mb-4">
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${iconColor}22`, border: `1px solid ${iconColor}33` }}>
         <Icon className="w-5 h-5" style={{ color: iconColor }} />
       </div>
       {trend !== undefined && (
@@ -71,9 +82,9 @@ const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend }) => (
         </span>
       )}
     </div>
-    <div className="text-3xl font-black text-white tracking-tight mb-1">{value}</div>
-    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#94a3b8' }}>{label}</div>
-    {sub && <div className="text-xs" style={{ color: '#4a6492' }}>{sub}</div>}
+    <div className="relative text-3xl font-black text-white tracking-tight mb-1">{value}</div>
+    <div className="relative text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#94a3b8' }}>{label}</div>
+    {sub && <div className="relative text-xs" style={{ color: '#4a6492' }}>{sub}</div>}
   </div>
 );
 
