@@ -190,17 +190,23 @@ export default function StrengthProgress({ currentUser }) {
     const cutoff = period !== 'all'
       ? subMonths(new Date(), PERIODS.find(p => p.key === period).months)
       : null;
-    return lifts
-      .filter(l => l.exercise === exercise)
-      .filter(l => !cutoff || new Date(l.lift_date || l.created_date) >= cutoff)
-      .sort((a, b) => new Date(a.lift_date || a.created_date) - new Date(b.lift_date || b.created_date))
-      .map(l => ({
-        date:   format(new Date(l.lift_date || l.created_date), 'MMM d'),
-        weight: l.weight_lbs,
-        reps:   l.reps || 1,
-        is_pr:  l.is_pr,
-      }));
-  }, [lifts, exercise, period]);
+    const data = [];
+    workoutLogs.forEach(log => {
+      const logDate = new Date(log.created_date);
+      if (cutoff && logDate < cutoff) return;
+      log.exercises?.forEach(ex => {
+        if ((ex.name || ex.exercise) === exercise) {
+          data.push({
+            date: format(logDate, 'MMM d'),
+            weight: parseFloat(ex.weight) || 0,
+            reps: parseInt(ex.setsReps?.split('x')[1]) || 1,
+            is_pr: ex.is_pr || false,
+          });
+        }
+      });
+    });
+    return data.sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [workoutLogs, exercise, period]);
 
   const stats = useMemo(() => {
     if (chartData.length === 0) return null;
