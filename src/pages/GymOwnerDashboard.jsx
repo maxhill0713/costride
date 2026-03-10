@@ -362,16 +362,6 @@ export default function GymOwnerDashboard() {
       </div>
 
       <Panel>
-        <PH title="Quick Actions" subtitle="Create content for your gym"/>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <ActionBtn icon={MessageSquarePlus} label="New Post"      sub="Share with members"   color="#60a5fa" rgb="96,165,250"   floor="#1e3a8a" onClick={()=>openModal("post")}/>
-          <ActionBtn icon={Calendar}          label="New Event"     sub={`${events.filter(e=>new Date(e.event_date)>=now).length} upcoming`} color="#34d399" rgb="52,211,153" floor="#064e3b" onClick={()=>openModal("event")}/>
-          <ActionBtn icon={Trophy}            label="New Challenge" sub={`${challenges.filter(c=>c.status==="active").length} active`} color="#fb923c" rgb="251,146,60" floor="#7c2d12" onClick={()=>openModal("challenge")}/>
-          <ActionBtn icon={BarChart2}         label="New Poll"      sub={`${polls.length} active`} color="#a78bfa" rgb="167,139,250" floor="#4c1d95" onClick={()=>openModal("poll")}/>
-        </div>
-      </Panel>
-
-      <Panel>
         <PH title="Recent Activity" subtitle="Latest check-ins"/>
         <div className="space-y-1.5">
           {ci7.slice(0,10).map((c,i)=>(
