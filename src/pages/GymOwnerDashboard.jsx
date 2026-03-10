@@ -89,8 +89,15 @@ const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub
           </span>
         )}
       </div>
-      {/* Row 2: big value */}
-      <div style={{fontSize:34,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:5}}>{value}</div>
+      {/* Row 2: big value + trend inline */}
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+        <div style={{fontSize:34,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1}}>{value}</div>
+        {trend!==undefined&&(
+          <span style={{display:'flex',alignItems:'center',gap:3,fontSize:12,fontWeight:800,padding:'3px 8px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171',border:`1px solid ${trend>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
+            {trend>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(trend)}%
+          </span>
+        )}
+      </div>
       {/* Row 3: sub */}
       {sub&&<div style={{fontSize:11,color:'rgba(100,130,170,0.7)',fontWeight:500}}>{sub}</div>}
       </div>
