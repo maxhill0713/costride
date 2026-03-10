@@ -120,11 +120,11 @@ export default function StrengthProgress({ currentUser }) {
   const [chartKey, setChartKey]   = useState(0); // force remount on exercise change for animation
   const queryClient = useQueryClient();
 
-  const { data: lifts = [], isLoading } = useQuery({
-    queryKey: ['lifts', currentUser?.id],
-    queryFn: () => base44.entities.Lift.filter({ member_id: currentUser.id }, 'lift_date', 500),
+  const { data: workoutLogs = [], isLoading } = useQuery({
+    queryKey: ['workoutLogs', currentUser?.id],
+    queryFn: () => base44.entities.WorkoutLog.filter({ user_id: currentUser.id }, '-created_date', 500),
     enabled: !!currentUser,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
 
@@ -132,7 +132,7 @@ export default function StrengthProgress({ currentUser }) {
     if (!currentUser?.id) return;
     const unsubscribe = base44.entities.WorkoutLog.subscribe((event) => {
       if (event.type === 'create' && event.data?.user_id === currentUser.id) {
-        queryClient.invalidateQueries({ queryKey: ['lifts', currentUser.id] });
+        queryClient.invalidateQueries({ queryKey: ['workoutLogs', currentUser.id] });
       }
     });
     return unsubscribe;
