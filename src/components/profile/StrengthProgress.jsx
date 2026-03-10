@@ -363,7 +363,14 @@ export default function StrengthProgress({ currentUser }) {
                   <p className="text-2xl font-black text-white leading-none">
                     <AnimatedNumber value={stats.recent} />
                   </p>
-                  <p className="text-[11px] font-semibold mt-0.5" style={{ color }}>lbs</p>
+                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                    <p className="text-[11px] font-semibold" style={{ color }}>lbs</p>
+                    {stats.sessionIncrease !== 0 && (
+                      <span className={`text-[10px] font-bold ${stats.sessionIncrease > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {stats.sessionIncrease > 0 ? '+' : ''}<AnimatedNumber value={stats.sessionIncrease} decimals={1} />kg
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
