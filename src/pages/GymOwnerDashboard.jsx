@@ -311,6 +311,38 @@ export default function GymOwnerDashboard() {
   const revenueDisplay=membershipPrice>0?`£${(allMemberships.length*membershipPrice).toLocaleString()}`:'—';
   const savedAnnouncements=selectedGym?.announcements||[];
 
+  // ── Churn Prediction ────────────────────────────────────────────────────────
+  // For each member, compute: daysSinceLastVisit, visits last 30d vs prior 30d, churn reasons
+  const churnPredictions = React.useMemo(() => {
+    return allMemberships.map(m => {
+      const userCIs = checkIns.filter(c => c.user_id === m.user_id).sort((a,b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+      const last = userCIs[0] ? new Date(userCIs[0].check_in_date) : null;
+      const daysSince = last ? Math.floor((now - last) / 86400000) : 999;
+      const visits30 = userCIs.filter(c => isWithinInterval(new Date(c.check_in_date), {start:subDays(now,30), end:now})).length;
+      const visitsPrev30 = userCIs.filter(c => isWithinInterval(new Date(c.check_in_date), {start:subDays(now,60), end:subDays(now,30)})).length;
+      const declining = visitsPrev30 > 0 && visits30 < visitsPrev30 * 0.6; // >40% drop
+      const neverVisited = userCIs.length === 0;
+
+      const reasons = [];
+      if (neverVisited) reasons.push({ text: 'Never visited', icon: '🚫' });
+      else if (daysSince >= 14) reasons.push({ text: `No visit in ${daysSince} days`, icon: '📅' });
+      if (declining) reasons.push({ text: `Visits dropped ${Math.round((1 - visits30/visitsPrev30)*100)}% this month`, icon: '📉' });
+      if (visits30 === 0 && !neverVisited) reasons.push({ text: 'Zero visits this month', icon: '⚠️' });
+      if (visits30 === 1) reasons.push({ text: 'Only 1 visit this month', icon: '🔻' });
+
+      // Risk score 0-100
+      const dayScore = Math.min(60, daysSince * 2);
+      const dropScore = declining ? Math.round((1 - visits30/(visitsPrev30||1)) * 30) : 0;
+      const noVisitScore = visits30 === 0 ? 20 : 0;
+      const riskScore = Math.min(100, dayScore + dropScore + noVisitScore);
+
+      return { ...m, daysSince, visits30, visitsPrev30, declining, reasons, riskScore, lastVisit: last, neverVisited };
+    })
+    .filter(m => m.riskScore >= 40) // only show meaningful risk
+    .sort((a,b) => b.riskScore - a.riskScore)
+    .slice(0, 15);
+  }, [allMemberships, checkIns]);
+
   const saveAnnouncement=async()=>{if(!announcement.trim()||announcementSaving)return;setAnnouncementSaving(true);const updated=[{text:announcement.trim(),date:new Date().toISOString()},...savedAnnouncements].slice(0,10);await base44.entities.Gym.update(selectedGym.id,{announcements:updated});invGyms();setAnnouncement('');setAnnouncementSaving(false);};
 
   const ciByDay=Array.from({length:7},(_,i)=>{const d=subDays(now,6-i);return{day:format(d,'EEE'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
