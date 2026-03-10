@@ -1,5 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// In-memory rate limiter: max 10 requests per user per minute
+const rateLimitMap = new Map(); // userId -> { count, resetAt }
+
+function checkRateLimit(userId) {
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 10;
+
+  const entry = rateLimitMap.get(userId);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (entry.count >= maxRequests) return false;
+  entry.count++;
+  return true;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -7,6 +25,11 @@ Deno.serve(async (req) => {
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!checkRateLimit(user.id)) {
+      console.warn(`Rate limit exceeded for user ${user.id}`);
+      return Response.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
     }
 
     const { query, input } = await req.json();
