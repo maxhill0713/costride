@@ -296,6 +296,15 @@ export default function GymOwnerDashboard() {
 
   const saveAnnouncement=async()=>{if(!announcement.trim()||announcementSaving)return;setAnnouncementSaving(true);const updated=[{text:announcement.trim(),date:new Date().toISOString()},...savedAnnouncements].slice(0,10);await base44.entities.Gym.update(selectedGym.id,{announcements:updated});invGyms();setAnnouncement('');setAnnouncementSaving(false);};
 
+  // Leaderboard data
+  const checkInLeaderboard = Object.values(
+    ci7.reduce((acc,c)=>{const id=c.user_id;if(!acc[id])acc[id]={userId:id,userName:c.user_name,count:0};acc[id].count++;return acc;},{})
+  ).sort((a,b)=>b.count-a.count).slice(0,10);
+
+  const calcStreak=(userId)=>{const uci=checkIns.filter(c=>c.user_id===userId).sort((a,b)=>new Date(b.check_in_date)-new Date(a.check_in_date));if(!uci.length)return 0;let s=1,cur=new Date(uci[0].check_in_date);cur.setHours(0,0,0,0);for(let i=1;i<uci.length;i++){const d=new Date(uci[i].check_in_date);d.setHours(0,0,0,0);const diff=Math.floor((cur-d)/86400000);if(diff===1){s++;cur=d;}else if(diff>1)break;}return s;};
+  const streakLeaderboard = Object.values(ci7.reduce((acc,c)=>{const id=c.user_id;if(!acc[id])acc[id]={userId:id,userName:c.user_name};return acc;},{})).map(m=>({...m,streak:calcStreak(m.userId)})).sort((a,b)=>b.streak-a.streak).slice(0,10);
+  const progressLeaderboard = [];
+
   const ciByDay=Array.from({length:7},(_,i)=>{const d=subDays(now,6-i);return{day:format(d,'EEE'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
   const weekTrend=Array.from({length:12},(_,i)=>{const s=subDays(now,(11-i)*7),e=subDays(now,(10-i)*7);return{label:format(s,'MMM d'),value:checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).length};});
   const monthGrowth=Array.from({length:6},(_,i)=>{const e=subDays(now,i*30),s=subDays(e,30);return{label:format(e,'MMM'),value:new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size};}).reverse();
