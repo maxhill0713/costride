@@ -317,6 +317,20 @@ export default function GymOwnerDashboard() {
   const weekTrend=Array.from({length:12},(_,i)=>{const s=subDays(now,(11-i)*7),e=subDays(now,(10-i)*7);return{label:format(s,'MMM d'),value:checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).length};});
   const monthGrowth=Array.from({length:6},(_,i)=>{const e=subDays(now,i*30),s=subDays(e,30);return{label:format(e,'MMM'),value:new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size};}).reverse();
 
+  // ── Health Score ────────────────────────────────────────────────────────────
+  // Three factors (0–100 each), equally weighted:
+  // 1. Attendance rate  = activeThisWeek / totalMembers  (capped at 100)
+  // 2. At-risk penalty  = 100 - (atRisk / totalMembers) * 100
+  // 3. Growth trend     = retentionRate (active last 30d / total)
+  const attendanceScore = totalMembers > 0 ? Math.min(100, Math.round((activeThisWeek / totalMembers) * 100)) : 0;
+  const atRiskScore     = totalMembers > 0 ? Math.max(0, Math.round(100 - (atRisk / totalMembers) * 100)) : 100;
+  const growthScore     = retentionRate; // already 0-100
+  const healthScore     = Math.round((attendanceScore + atRiskScore + growthScore) / 3);
+  const healthGrade     = healthScore >= 85 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention';
+  const healthColor     = healthScore >= 85 ? '#34d399' : healthScore >= 70 ? '#60a5fa' : healthScore >= 50 ? '#fbbf24' : '#f87171';
+  const healthRgb       = healthScore >= 85 ? '52,211,153' : healthScore >= 70 ? '96,165,250' : healthScore >= 50 ? '251,191,36' : '248,113,113';
+  const healthEmoji     = healthScore >= 85 ? '🏆' : healthScore >= 70 ? '💪' : healthScore >= 50 ? '⚡' : '⚠️';
+
   const dlQR=(id)=>{const svg=document.getElementById(id)?.querySelector('svg');if(!svg)return;const d=new XMLSerializer().serializeToString(svg);const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const img=new Image();img.onload=()=>{canvas.width=img.width;canvas.height=img.height;ctx.drawImage(img,0,0);const a=document.createElement('a');a.download=`${selectedGym?.name}-QR.png`;a.href=canvas.toDataURL('image/png');a.click();};img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(d)));};
 
   // ══════════════════════════════════════════════════════════════════════════
