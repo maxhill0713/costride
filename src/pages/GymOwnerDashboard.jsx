@@ -424,7 +424,9 @@ export default function GymOwnerDashboard() {
             ))}
           </div>
         </Panel>
-        <LeaderboardSection checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboard={progressLeaderboard}/>
+        <div style={{maxHeight:420,overflow:'hidden',borderRadius:16}}>
+          <LeaderboardSection checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboard={progressLeaderboard}/>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
