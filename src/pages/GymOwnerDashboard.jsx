@@ -501,7 +501,7 @@ export default function GymOwnerDashboard() {
               {posts.slice(0,10).map(p=>(
                 <div key={p.id} className="p-3 rounded-xl" style={{background:BG.subcard,border:`1px solid ${BORDER.subtle}`}}>
                   <div className="flex items-center gap-2.5 mb-2">
-                    <Avatar userId={p.member_id} name={p.member_name} size={7}/>
+                    <Avatar src={memberAvatarMap[p.member_id]} name={p.member_name} size={7}/>
                     <p className="text-sm font-semibold text-white flex-1">{p.member_name}</p>
                     <p className="text-xs" style={{color:'#3d5a8a'}}>{format(new Date(p.created_date),'MMM d')}</p>
                   </div>
