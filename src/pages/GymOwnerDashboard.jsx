@@ -588,13 +588,30 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: MEMBERS
   // ══════════════════════════════════════════════════════════════════════════
-  const TabMembers = () => (
+  const TabMembers = () => {
+    const [memberRange, setMemberRange] = React.useState(30);
+    const ciRange = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, memberRange), end: now }));
+    const activeInRange = new Set(ciRange.map(c => c.user_id)).size;
+    const retentionInRange = totalMembers > 0 ? Math.round((activeInRange / totalMembers) * 100) : 0;
+    return (
     <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-sm font-bold text-white">Members Overview</h3>
+        <div className="flex gap-1.5">
+          {[7, 30, 90].map(r => (
+            <button key={r} onClick={() => setMemberRange(r)}
+              className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+              style={{ background: memberRange === r ? 'rgba(59,130,246,0.22)' : BG.subcard, color: memberRange === r ? '#93c5fd' : '#4a6492', border: `1px solid ${memberRange === r ? BORDER.active : BORDER.subtle}`, cursor: 'pointer' }}>
+              Last {r}d
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Users}    iconColor="#60a5fa" label="Total Members"    value={totalMembers}        sub="active memberships" />
-        <KpiCard icon={Zap}      iconColor="#34d399" label="Active This Week" value={activeThisWeek}      trend={weeklyChangePct} sub="visited gym" />
-        <KpiCard icon={Activity} iconColor="#a78bfa" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d" />
-        <KpiCard icon={Trophy}   iconColor="#fbbf24" label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records" />
+        <KpiCard icon={Users}    iconColor="#60a5fa" label="Total Members"    value={totalMembers}        sub="active memberships" tooltip="Total number of active gym memberships"/>
+        <KpiCard icon={Zap}      iconColor="#34d399" label="Active This Period" value={activeInRange}    trend={weeklyChangePct} sub={`visited in last ${memberRange}d`} tooltip={`Members who checked in at least once in the last ${memberRange} days`} statusColor={weeklyChangePct>=0?'green':'red'}/>
+        <KpiCard icon={Activity} iconColor="#a78bfa" label="Retention Rate"   value={`${retentionInRange}%`} sub={`last ${memberRange} days`} tooltip="Percentage of total members who visited in the selected period" statusColor={retentionInRange>=60?'green':retentionInRange>=30?'yellow':'red'}/>
+        <KpiCard icon={Trophy}   iconColor="#fbbf24" label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records" tooltip="Total personal records set by your members — a strong engagement signal"/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
