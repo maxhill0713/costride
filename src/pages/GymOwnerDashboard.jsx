@@ -688,7 +688,8 @@ export default function GymOwnerDashboard() {
         </Panel>
       </div>
     </div>
-  );
+    );
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: CONTENT
