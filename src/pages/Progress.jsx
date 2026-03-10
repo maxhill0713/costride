@@ -10,7 +10,7 @@ import GoalCard from '../components/goals/GoalCard';
 import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
-import TrainingBreakdown from '../components/profile/TrainingBreakdown';
+import StrengthProgress from '../components/profile/StrengthProgress';
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
