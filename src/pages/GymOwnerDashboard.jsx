@@ -398,10 +398,10 @@ export default function GymOwnerDashboard() {
   const TabMembers=()=>(
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Users}    iconColor="#60a5fa" iconRgb="96,165,250"  label="Total Members"    value={totalMembers}        sub="active memberships"/>
+        <KpiCard icon={Users}    iconColor="#60a5fa" iconRgb="96,165,250"  label="Total Members"    value={totalMembers}        sub="active memberships" trend={newSignUpsPct}/>
         <KpiCard icon={Zap}      iconColor="#34d399" iconRgb="52,211,153"  label="Active This Week" value={activeThisWeek}      trend={weeklyChangePct} sub="visited gym"/>
-        <KpiCard icon={Activity} iconColor="#a78bfa" iconRgb="167,139,250" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d"/>
-        <KpiCard icon={Trophy}   iconColor="#fbbf24" iconRgb="251,191,36"  label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records"/>
+        <KpiCard icon={Activity} iconColor="#a78bfa" iconRgb="167,139,250" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d" trend={(()=>{const prevActive=new Set(ciPrev30.map(c=>c.user_id)).size;const prevTotal=totalMembers>0?totalMembers:1;const prevRate=Math.round((prevActive/prevTotal)*100);return prevRate>0?retentionRate-prevRate:undefined;})()}/>
+        <KpiCard icon={Trophy}   iconColor="#fbbf24" iconRgb="251,191,36"  label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records" trend={(()=>{const prev=lifts.filter(l=>l.is_pr&&isWithinInterval(new Date(l.lift_date||l.created_date||now),{start:subDays(now,60),end:subDays(now,30)})).length;const cur=lifts.filter(l=>l.is_pr&&isWithinInterval(new Date(l.lift_date||l.created_date||now),{start:subDays(now,30),end:now})).length;return prev>0?Math.round(((cur-prev)/prev)*100):undefined;})()}/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
