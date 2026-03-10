@@ -597,7 +597,7 @@ return (
       <EditHeroImageModal open={!!editingGym} onClose={() => setEditingGym(null)} currentImageUrl={editingGym?.image_url} onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })} isLoading={updateGymImageMutation.isPending} />
       <JoinWithCodeModal open={showJoinWithCode} onClose={() => setShowJoinWithCode(false)} currentUser={currentUser} />
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto bg-slate-900 border border-slate-700/50 text-white rounded-2xl">
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               <Dumbbell className="w-5 h-5 text-blue-400" />
