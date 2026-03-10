@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Star, Dumbbell } from 'lucide-react';
 import { format, subMonths } from 'date-fns';
 
 const EXERCISES = [
