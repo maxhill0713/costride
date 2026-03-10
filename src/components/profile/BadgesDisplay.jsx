@@ -77,6 +77,9 @@ const BADGE_LIBRARY = [
 ];
 
 export default function BadgesDisplay({ user, checkIns = [] }) {
+  const { data: achievements = [] } = React.useMemo(() => {
+    return { data: [] };
+  }, []);
   const [equippedBadges, setEquippedBadges] = React.useState(user?.equipped_badges || []);
   
   // Calculate stats from actual data
@@ -88,25 +91,6 @@ export default function BadgesDisplay({ user, checkIns = [] }) {
   };
 
   const earnedBadges = BADGE_LIBRARY.filter(badge => badge.requirement(userStats));
-  const lockedBadges = BADGE_LIBRARY.filter(badge => !badge.requirement(userStats));
-
-  const handleEquipBadge = async (badgeId) => {
-    let newEquipped = [...equippedBadges];
-    
-    if (newEquipped.includes(badgeId)) {
-      // Unequip
-      newEquipped = newEquipped.filter(id => id !== badgeId);
-    } else {
-      // Equip (max 3)
-      if (newEquipped.length >= 3) {
-        newEquipped.shift(); // Remove oldest
-      }
-      newEquipped.push(badgeId);
-    }
-    
-    setEquippedBadges(newEquipped);
-    await base44.auth.updateMe({ equipped_badges: newEquipped });
-  };
 
   const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
 
