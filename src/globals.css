@@ -122,95 +122,30 @@
   }
 
   /* Shimmer animation for gamification */
-    @keyframes shimmer {
-      0% {
-        transform: translateX(-100%);
-      }
-      100% {
-        transform: translateX(100%);
-      }
-    }
+  .animate-shimmer {
+    animation: shimmer 3s infinite;
+  }
 
-    .animate-shimmer {
-      animation: shimmer 3s infinite;
-    }
+  /* iOS Spring Animation classes */
+  .animate-ios-spring-in {
+    animation: iosSpringIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-    /* iOS Spring Animations */
-    @keyframes iosSpringIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
+  .animate-ios-slide-up {
+    animation: iosSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-    @keyframes iosSlideUp {
-      0% {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+  .animate-ios-slide-down {
+    animation: iosSlideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-    @keyframes iosSlideDown {
-      0% {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+  .animate-ios-bounce {
+    animation: iosBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 
-    @keyframes iosBounce {
-      0% {
-        transform: scale(0.8);
-        opacity: 0;
-      }
-      50% {
-        transform: scale(1.05);
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    @keyframes iosHaptic {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(0.98);
-      }
-    }
-
-    .animate-ios-spring-in {
-      animation: iosSpringIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .animate-ios-slide-up {
-      animation: iosSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .animate-ios-slide-down {
-      animation: iosSlideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .animate-ios-bounce {
-      animation: iosBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .animate-ios-haptic {
-      animation: iosHaptic 0.1s ease-in-out;
-    }
+  .animate-ios-haptic {
+    animation: iosHaptic 0.1s ease-in-out;
+  }
 
   /* Dark Mode Styles */
   .dark body {
