@@ -64,54 +64,75 @@ export default function ExerciseInsights({ workoutLogs = [], workoutSplit, train
 
       {/* Personal Records */}
       {personalRecords.length > 0 && (
-        <div className="rounded-2xl p-4 relative overflow-hidden" style={CARD_STYLE}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-400" />
-              <h4 className="text-sm font-black text-white">Personal Records</h4>
+<div className="rounded-2xl p-5 relative overflow-hidden" style={CARD_STYLE}>
+  {/* Subtle ambient glow at top */}
+  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-500/40 to-transparent" />
+  
+  {/* Header */}
+  <div className="flex items-center justify-between mb-5">
+    <div className="flex items-center gap-2.5">
+      <div className="w-8 h-8 rounded-lg bg-yellow-500/15 border border-yellow-500/25 flex items-center justify-center">
+        <Trophy className="w-4 h-4 text-yellow-400" />
+      </div>
+      <h4 className="text-sm font-black text-white tracking-wide">Personal Records</h4>
+    </div>
+    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 tracking-wider uppercase">
+      Top 5
+    </span>
+  </div>
+
+  {/* Records List */}
+  <div className="space-y-2">
+    {personalRecords.map((pr, idx) => {
+      const rankConfig = [
+        { bg: 'from-yellow-500/[0.08] to-orange-500/[0.06]', border: 'border-yellow-500/25', badge: 'from-yellow-400 to-orange-500', text: 'text-yellow-400', label: '🥇' },
+        { bg: 'from-slate-400/[0.06] to-slate-600/[0.04]', border: 'border-slate-500/25', badge: 'from-slate-300 to-slate-500', text: 'text-slate-300', label: '🥈' },
+        { bg: 'from-orange-600/[0.07] to-amber-700/[0.05]', border: 'border-orange-600/25', badge: 'from-orange-400 to-amber-600', text: 'text-orange-400', label: '🥉' },
+        { bg: 'from-slate-700/40 to-slate-800/30', border: 'border-slate-700/40', badge: 'from-slate-600 to-slate-700', text: 'text-slate-400', label: null },
+        { bg: 'from-slate-700/40 to-slate-800/30', border: 'border-slate-700/40', badge: 'from-slate-600 to-slate-700', text: 'text-slate-400', label: null },
+      ][idx] ?? { bg: 'from-slate-700/40 to-slate-800/30', border: 'border-slate-700/40', badge: 'from-slate-600 to-slate-700', text: 'text-slate-400', label: null };
+
+      return (
+        <div
+          key={idx}
+          className={`relative flex items-center gap-3 p-3.5 rounded-xl border bg-gradient-to-r ${rankConfig.bg} ${rankConfig.border} transition-all duration-200 hover:scale-[1.01] hover:brightness-110`}
+        >
+          {/* Rank Badge */}
+          <div className={`shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br ${rankConfig.badge} flex items-center justify-center shadow-md`}>
+            <span className="text-xs font-black text-white">#{idx + 1}</span>
+          </div>
+
+          {/* Exercise Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-sm truncate leading-tight">{pr.exercise}</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Clock className="w-2.5 h-2.5 text-slate-600" />
+              <p className="text-[10px] text-slate-500 font-medium">
+                {pr.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 border border-yellow-500/25">Top 5</span>
           </div>
-          <div className="space-y-3">
-            {personalRecords.map((pr, idx) => (
-              <div key={idx} className={`relative p-4 rounded-xl border ${
-                idx === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30' :
-                idx === 1 ? 'bg-gradient-to-r from-slate-400/10 to-slate-500/10 border-slate-400/30' :
-                idx === 2 ? 'bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30' :
-                'bg-slate-800/40 border-slate-700/40'}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-lg ${
-                      idx === 0 ? 'bg-gradient-to-br from-yellow-500 to-orange-500 text-white' :
-                      idx === 1 ? 'bg-gradient-to-br from-slate-400 to-slate-600 text-white' :
-                      idx === 2 ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white' :
-                      'bg-slate-700 text-slate-300'}`}>
-                      #{idx + 1}
-                    </div>
-                    <div>
-                      <p className="text-white font-black text-sm truncate max-w-[180px]">{pr.exercise}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <Clock className="w-3 h-3 text-slate-500" />
-                        <p className="text-[10px] text-slate-500">{pr.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-black text-white">{pr.weight}</p>
-                    <p className="text-xs text-slate-500 font-semibold">kg</p>
-                  </div>
-                </div>
-                {idx === 0 && (
-                  <div className="absolute -top-2 -right-2">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                      <Trophy className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+
+          {/* Weight */}
+          <div className="shrink-0 text-right">
+            <div className="flex items-baseline gap-0.5 justify-end">
+              <span className={`text-xl font-black ${rankConfig.text}`}>{pr.weight}</span>
+              <span className="text-[10px] text-slate-500 font-bold mb-0.5">kg</span>
+            </div>
+            {idx === 0 && (
+              <p className="text-[9px] text-yellow-500/70 font-bold uppercase tracking-wider">All Time</p>
+            )}
           </div>
+
+          {/* Top separator line for gold record */}
+          {idx === 0 && (
+            <div className="absolute bottom-0 left-3.5 right-3.5 h-px bg-gradient-to-r from-transparent via-yellow-500/20 to-transparent" />
+          )}
         </div>
+      );
+    })}
+  </div>
+</div>
       )}
 
       {/* Volume by Split Day */}
