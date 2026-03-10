@@ -319,23 +319,6 @@ export default function GymOwnerDashboard() {
 
   const saveAnnouncement=async()=>{if(!announcement.trim()||announcementSaving)return;setAnnouncementSaving(true);const updated=[{text:announcement.trim(),date:new Date().toISOString()},...savedAnnouncements].slice(0,10);await base44.entities.Gym.update(selectedGym.id,{announcements:updated});invGyms();setAnnouncement('');setAnnouncementSaving(false);};
 
-  // Avatar map: user_id → avatar_url (from memberships)
-  const memberAvatarMap = React.useMemo(()=>{
-    const map={};
-    allMemberships.forEach(m=>{ if(m.user_id&&m.avatar_url) map[m.user_id]=m.avatar_url; });
-    return map;
-  },[allMemberships]);
-
-  // Reusable avatar component
-  const Avatar=({userId,name,size=8})=>{
-    const src=memberAvatarMap[userId];
-    const cls=`w-${size} h-${size} rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-white font-black flex-shrink-0`;
-    const style={background:'linear-gradient(135deg,#3b82f6,#06b6d4)',fontSize:size<=7?10:12};
-    return src
-      ?<img src={src} alt={name} className={cls} style={{objectFit:'cover'}} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>
-      :<div className={cls} style={style}>{name?.charAt(0)?.toUpperCase()}</div>;
-  };
-
   // Leaderboard data
   const checkInLeaderboard = Object.values(
     ci7.reduce((acc,c)=>{const id=c.user_id;if(!acc[id])acc[id]={userId:id,userName:c.user_name,count:0};acc[id].count++;return acc;},{})
