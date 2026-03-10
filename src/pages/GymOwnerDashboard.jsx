@@ -376,15 +376,6 @@ export default function GymOwnerDashboard() {
       });
     }, [chartRange, checkIns]);
 
-    // Activity heatmap — 10 weeks × 7 days
-    const heatRows = React.useMemo(() => Array.from({length:10}, (_, w) =>
-      Array.from({length:7}, (_, d) => {
-        const date = subDays(now, (9-w)*7 + (6-d));
-        return { date, count: checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(date).getTime()).length };
-      })
-    ), [checkIns]);
-    const maxH = Math.max(...heatRows.flat().map(c => c.count), 1);
-
     // Engagement counts
     const highlyActive     = monthCiPer.filter(v => v >= 12).length;
     const moderatelyActive = monthCiPer.filter(v => v >= 4 && v < 12).length;
