@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import LeaderboardSection from '@/components/dashboard/LeaderboardSection';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -11,7 +10,8 @@ import {
   X, Crown, Trash2, Clock, Gift, Zap, BarChart2, Shield,
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
   LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
-  DollarSign, UserPlus, ChevronRight, Megaphone, Pin, Flame
+  DollarSign, UserPlus, ChevronRight, Megaphone, Pin, Flame,
+  MapPin as MapPin2, Tag as Tag2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -74,27 +74,20 @@ const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub
       <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${iconRgb},0.45),transparent)`,pointerEvents:'none'}}/>
       {/* left accent */}
       <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${iconRgb},0.75) 0%,transparent 100%)`}}/>
-      <div style={{position:'relative',padding:'18px 20px 16px 22px'}}>
-      {/* Row 1: icon + label + trend */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <div style={{width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,boxShadow:'0 4px 12px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.08)',flexShrink:0}}>
-            <Icon style={{width:16,height:16,color:iconColor}}/>
+      <div style={{position:'relative',padding:'20px 20px 18px 22px'}}>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16}}>
+          <div style={{width:42,height:42,borderRadius:13,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,boxShadow:'0 4px 12px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.08)',flexShrink:0}}>
+            <Icon style={{width:19,height:19,color:iconColor}}/>
           </div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(148,163,184,0.65)'}}>{label}</div>
+          {trend!==undefined&&(
+            <span style={{display:'flex',alignItems:'center',gap:4,fontSize:11,fontWeight:800,padding:'4px 9px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171',border:`1px solid ${trend>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
+              {trend>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(trend)}%
+            </span>
+          )}
         </div>
-        </div>
-        {/* Row 2: big value + trend inline */}
-      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
-        <div style={{fontSize:34,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1}}>{value}</div>
-        {trend!==undefined&&(
-          <span style={{display:'flex',alignItems:'center',gap:3,fontSize:12,fontWeight:800,padding:'3px 8px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171',border:`1px solid ${trend>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
-            {trend>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(trend)}%
-          </span>
-        )}
-      </div>
-      {/* Row 3: sub */}
-      {sub&&<div style={{fontSize:11,color:'rgba(100,130,170,0.7)',fontWeight:500}}>{sub}</div>}
+        <div style={{fontSize:32,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:6}}>{value}</div>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(148,163,184,0.6)',marginBottom:4}}>{label}</div>
+        {sub&&<div style={{fontSize:11,color:'rgba(100,130,170,0.7)',fontWeight:500}}>{sub}</div>}
       </div>
     </div>
   );
@@ -148,18 +141,35 @@ const DT = ({ active, payload, label }) => {
 
 // ─── Tag ─────────────────────────────────────────────────────────────────────
 const Tag = ({ children, color='blue' }) => {
-  const m={blue:['rgba(59,130,246,0.15)','#93c5fd','rgba(59,130,246,0.25)'],green:['rgba(16,185,129,0.15)','#6ee7b7','rgba(16,185,129,0.25)'],orange:['rgba(249,115,22,0.15)','#fdba74','rgba(249,115,22,0.25)'],red:['rgba(239,68,68,0.15)','#fca5a5','rgba(239,68,68,0.25)'],purple:['rgba(139,92,246,0.15)','#c4b5fd','rgba(139,92,246,0.25)']};
-  const [bg,text,border]=m[color]||m.blue;
-  return <span className="text-xs px-2 py-0.5 rounded-md font-bold" style={{background:bg,color:text,border:`1px solid ${border}`}}>{children}</span>;
+  const m={
+    blue:  ['rgba(59,130,246,0.13)','#93c5fd','rgba(59,130,246,0.28)','rgba(59,130,246,0.4)'],
+    green: ['rgba(16,185,129,0.13)','#6ee7b7','rgba(16,185,129,0.28)','rgba(16,185,129,0.4)'],
+    orange:['rgba(249,115,22,0.13)','#fdba74','rgba(249,115,22,0.28)','rgba(249,115,22,0.4)'],
+    red:   ['rgba(239,68,68,0.13)', '#fca5a5','rgba(239,68,68,0.28)', 'rgba(239,68,68,0.4)'],
+    purple:['rgba(139,92,246,0.13)','#c4b5fd','rgba(139,92,246,0.28)','rgba(139,92,246,0.4)'],
+  };
+  const [bg,text,border,sheen]=m[color]||m.blue;
+  return (
+    <span style={{
+      display:'inline-flex',alignItems:'center',
+      fontSize:11,fontWeight:800,padding:'3px 9px',borderRadius:99,
+      background:bg,color:text,border:`1px solid ${border}`,
+      boxShadow:`0 1px 4px rgba(0,0,0,0.2),inset 0 1px 0 ${sheen.replace('0.4','0.15')}`,
+      letterSpacing:'0.01em',
+    }}>{children}</span>
+  );
 };
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 const Empty = ({ icon:Icon, label }) => (
   <div className="py-10 text-center">
-    <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{background:'rgba(59,130,246,0.07)',border:'1px solid rgba(59,130,246,0.14)'}}>
-      <Icon className="w-5 h-5" style={{color:'rgba(59,130,246,0.4)'}}/>
+    <div className="relative w-14 h-14 mx-auto mb-3">
+      <div style={{position:'absolute',inset:-4,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%)'}}/>
+      <div className="w-full h-full rounded-full flex items-center justify-center relative" style={{background:'linear-gradient(135deg,rgba(59,130,246,0.1),rgba(8,14,36,0.8))',border:'1px solid rgba(59,130,246,0.18)',boxShadow:'0 0 20px rgba(59,130,246,0.08)'}}>
+        <Icon style={{width:20,height:20,color:'rgba(59,130,246,0.45)'}}/>
+      </div>
     </div>
-    <p className="text-xs" style={{color:'#3d5a8a'}}>{label}</p>
+    <p className="text-xs font-medium" style={{color:'rgba(75,107,168,0.7)'}}>{label}</p>
   </div>
 );
 
@@ -210,20 +220,11 @@ const ActionBtn = ({ icon:Icon, label, sub, color, rgb, floor, onClick }) => {
   );
 };
 
-// ─── Avatar ───────────────────────────────────────────────────────────────────
-const Avatar = ({ src, name, size=8 }) => {
-  const cls = `w-${size} h-${size} rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-white font-black`;
-  const style = { background:'linear-gradient(135deg,#3b82f6,#06b6d4)', fontSize:size<=7?10:12 };
-  if (src) return <img src={src} alt={name} className={cls} style={{objectFit:'cover'}}/>;
-  return <div className={cls} style={style}>{name?.charAt(0)?.toUpperCase()}</div>;
-};
-
 // ═════════════════════════════════════════════════════════════════════════════
 // MAIN
 // ═════════════════════════════════════════════════════════════════════════════
 export default function GymOwnerDashboard() {
   const [tab,setTab]=useState('overview');
-  const [ciChartRange,setCiChartRange]=useState('7d');
   const [collapsed,setCollapsed]=useState(false);
   const [selectedGym,setSelectedGym]=useState(null);
   const [gymOpen,setGymOpen]=useState(false);
@@ -256,12 +257,12 @@ export default function GymOwnerDashboard() {
   const {data:classes=[]}=useQuery({queryKey:['classes',selectedGym?.id],queryFn:()=>base44.entities.GymClass.filter({gym_id:selectedGym.id}),enabled:on,...qo});
   const {data:coaches=[]}=useQuery({queryKey:['coaches',selectedGym?.id],queryFn:()=>base44.entities.Coach.filter({gym_id:selectedGym.id}),enabled:on,...qo});
   const {data:events=[]}=useQuery({queryKey:['events',selectedGym?.id],queryFn:()=>base44.entities.Event.filter({gym_id:selectedGym.id},'-event_date'),enabled:on,...qo});
-  const {data:posts=[]}=useQuery({queryKey:['posts',selectedGym?.id],queryFn:()=>base44.entities.Post.filter({gym_id:selectedGym.id},'-created_date',20),enabled:on,...qo});
+  const {data:posts=[]}=useQuery({queryKey:['posts',selectedGym?.id],queryFn:()=>base44.entities.Post.filter({member_id:selectedGym.id},'-created_date',20),enabled:on,...qo});
   const {data:challenges=[]}=useQuery({queryKey:['challenges',selectedGym?.id],queryFn:()=>base44.entities.Challenge.filter({gym_id:selectedGym.id},'-created_date'),enabled:on,...qo});
   const {data:polls=[]}=useQuery({queryKey:['polls',selectedGym?.id],queryFn:()=>base44.entities.Poll.filter({gym_id:selectedGym.id,status:'active'},'-created_date'),enabled:on,...qo});
 
   const inv=(...keys)=>keys.forEach(k=>queryClient.invalidateQueries({queryKey:[k,selectedGym?.id]}));
-  const invGyms=()=>queryClient.invalidateQueries({queryKey:['ownerGyms',currentUser?.email]});
+  const invGyms=()=>queryClient.invalidateQueries({queryKey:['gyms']});
 
   const createRewardM=useMutation({mutationFn:d=>base44.entities.Reward.create(d),onSuccess:()=>inv('rewards')});
   const deleteRewardM=useMutation({mutationFn:id=>base44.entities.Reward.delete(id),onSuccess:()=>inv('rewards')});
@@ -279,13 +280,6 @@ export default function GymOwnerDashboard() {
   const deleteGymM=useMutation({mutationFn:()=>base44.entities.Gym.delete(selectedGym.id),onSuccess:()=>{invGyms();closeModal();window.location.href=createPageUrl('Gyms');}});
   const deleteAccountM=useMutation({mutationFn:()=>base44.functions.invoke('deleteUserAccount'),onSuccess:()=>{closeModal();base44.auth.logout();}});
   const createPollM=useMutation({mutationFn:d=>base44.entities.Poll.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,created_by:currentUser.id,voters:[]}),onSuccess:()=>{inv('polls');closeModal();}});
-
-  // Avatar map
-  const memberAvatarMap = useMemo(()=>{
-    const map={};
-    allMemberships.forEach(m=>{ if(m.user_id&&m.avatar_url) map[m.user_id]=m.avatar_url; });
-    return map;
-  },[allMemberships]);
 
   // ── Splashes ───────────────────────────────────────────────────────────────
   const Splash=({children})=>(<div className="min-h-screen flex items-center justify-center p-4" style={{background:BG.page}}><Panel className="max-w-md w-full text-center">{children}</Panel></div>);
@@ -319,17 +313,7 @@ export default function GymOwnerDashboard() {
 
   const saveAnnouncement=async()=>{if(!announcement.trim()||announcementSaving)return;setAnnouncementSaving(true);const updated=[{text:announcement.trim(),date:new Date().toISOString()},...savedAnnouncements].slice(0,10);await base44.entities.Gym.update(selectedGym.id,{announcements:updated});invGyms();setAnnouncement('');setAnnouncementSaving(false);};
 
-  // Leaderboard data
-  const checkInLeaderboard = Object.values(
-    ci7.reduce((acc,c)=>{const id=c.user_id;if(!acc[id])acc[id]={userId:id,userName:c.user_name,count:0};acc[id].count++;return acc;},{})
-  ).sort((a,b)=>b.count-a.count).slice(0,10);
-
-  const calcStreak=(userId)=>{const uci=checkIns.filter(c=>c.user_id===userId).sort((a,b)=>new Date(b.check_in_date)-new Date(a.check_in_date));if(!uci.length)return 0;let s=1,cur=new Date(uci[0].check_in_date);cur.setHours(0,0,0,0);for(let i=1;i<uci.length;i++){const d=new Date(uci[i].check_in_date);d.setHours(0,0,0,0);const diff=Math.floor((cur-d)/86400000);if(diff===1){s++;cur=d;}else if(diff>1)break;}return s;};
-  const streakLeaderboard = Object.values(ci7.reduce((acc,c)=>{const id=c.user_id;if(!acc[id])acc[id]={userId:id,userName:c.user_name};return acc;},{})).map(m=>({...m,streak:calcStreak(m.userId)})).sort((a,b)=>b.streak-a.streak).slice(0,10);
-  const progressLeaderboard = [];
-
   const ciByDay=Array.from({length:7},(_,i)=>{const d=subDays(now,6-i);return{day:format(d,'EEE'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
-  const ciByDay30=Array.from({length:30},(_,i)=>{const d=subDays(now,29-i);return{day:format(d,'d MMM'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
   const weekTrend=Array.from({length:12},(_,i)=>{const s=subDays(now,(11-i)*7),e=subDays(now,(10-i)*7);return{label:format(s,'MMM d'),value:checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).length};});
   const monthGrowth=Array.from({length:6},(_,i)=>{const e=subDays(now,i*30),s=subDays(e,30);return{label:format(e,'MMM'),value:new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size};}).reverse();
 
@@ -340,35 +324,23 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   const TabOverview=()=>(
     <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Dumbbell}   iconColor="#60a5fa" iconRgb="96,165,250"   label="Today's Check-ins"    value={todayCI}        sub="members in today" trend={(()=>{const yest=checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(subDays(now,1)).getTime()).length;return yest>0?Math.round(((todayCI-yest)/yest)*100):undefined;})()}/>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <KpiCard icon={Dumbbell}   iconColor="#60a5fa" iconRgb="96,165,250"   label="Today's Check-ins"    value={todayCI}        sub="members in today"/>
         <KpiCard icon={Users}      iconColor="#34d399" iconRgb="52,211,153"   label="Active This Week"     value={activeThisWeek} sub={`of ${totalMembers} members`} trend={weeklyChangePct}/>
         <KpiCard icon={Activity}   iconColor="#a78bfa" iconRgb="167,139,250"  label="Monthly Check-ins"    value={ci30.length}    sub={`${monthChangePct>=0?"+":""}${monthChangePct}% vs last month`} trend={monthChangePct}/>
         <KpiCard icon={UserPlus}   iconColor="#34d399" iconRgb="52,211,153"   label="New Sign-ups"         value={newSignUps}     sub="joined last 30 days" trend={newSignUpsPct}/>
+        <KpiCard icon={DollarSign} iconColor="#4ade80" iconRgb="74,222,128"   label="Est. Monthly Revenue" value={revenueDisplay} sub={membershipPrice>0?`${allMemberships.length} members × £${membershipPrice}`:'Set price in Gym Settings'}/>
+        <KpiCard icon={Star}       iconColor="#fbbf24" iconRgb="251,191,36"   label="Avg Rating"           value={selectedGym?.rating?.toFixed(1)??"—"} sub="member rating"/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Panel className="xl:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-white">Check-ins — {ciChartRange==='7d'?'Last 7 Days':'Last 30 Days'}</h3>
-              <p className="text-xs mt-0.5" style={{color:'#4a6492'}}>Daily attendance</p>
-            </div>
-            <div className="flex rounded-lg overflow-hidden border" style={{borderColor:'rgba(59,130,246,0.2)'}}>
-              {[['7d','Last 7 Days'],['30d','Last 30 Days']].map(([val,lbl])=>(
-                <button key={val} onClick={()=>setCiChartRange(val)}
-                  className="px-3 py-1.5 text-xs font-bold transition-all"
-                  style={{background:ciChartRange===val?'rgba(59,130,246,0.25)':'rgba(13,35,96,0.3)',color:ciChartRange===val?'#93c5fd':'#4a6492',border:'none',cursor:'pointer'}}>
-                  {lbl}
-                </button>
-              ))}
-            </div>
-          </div>
+          <PH title="Check-ins — Last 7 Days" subtitle="Daily attendance"/>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={ciChartRange==='7d'?ciByDay:ciByDay30} barSize={ciChartRange==='7d'?34:16}>
+            <BarChart data={ciByDay} barSize={34}>
               <defs><linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/><stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/></linearGradient></defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
-              <XAxis dataKey="day" tick={{fill:"#6b87b8",fontSize:11}} axisLine={false} tickLine={false} interval={ciChartRange==='30d'?3:0}/>
+              <XAxis dataKey="day" tick={{fill:"#6b87b8",fontSize:11}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:"#6b87b8",fontSize:11}} axisLine={false} tickLine={false} width={24}/>
               <Tooltip content={<DT/>} cursor={{fill:"rgba(59,130,246,0.06)"}}/>
               <Bar dataKey="value" fill="url(#barFill)" radius={[6,6,0,0]} name="Check-ins"/>
@@ -392,13 +364,31 @@ export default function GymOwnerDashboard() {
       </div>
 
       <Panel>
+        <PH title="Quick Actions" subtitle="Create content for your gym"/>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <ActionBtn icon={MessageSquarePlus} label="New Post"      sub="Share with members"   color="#60a5fa" rgb="96,165,250"   floor="#1e3a8a" onClick={()=>openModal("post")}/>
+          <ActionBtn icon={Calendar}          label="New Event"     sub={`${events.filter(e=>new Date(e.event_date)>=now).length} upcoming`} color="#34d399" rgb="52,211,153" floor="#064e3b" onClick={()=>openModal("event")}/>
+          <ActionBtn icon={Trophy}            label="New Challenge" sub={`${challenges.filter(c=>c.status==="active").length} active`} color="#fb923c" rgb="251,146,60" floor="#7c2d12" onClick={()=>openModal("challenge")}/>
+          <ActionBtn icon={BarChart2}         label="New Poll"      sub={`${polls.length} active`} color="#a78bfa" rgb="167,139,250" floor="#4c1d95" onClick={()=>openModal("poll")}/>
+        </div>
+      </Panel>
+
+      <Panel>
         <PH title="Recent Activity" subtitle="Latest check-ins"/>
-        <div className="divide-y" style={{borderColor:'rgba(59,130,246,0.07)'}}>
+        <div className="space-y-1.5">
           {ci7.slice(0,10).map((c,i)=>(
-            <div key={i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-              <Avatar src={memberAvatarMap[c.user_id]} name={c.user_name}/>
-              <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white truncate">{c.user_name}</p><p className="text-xs" style={{color:'#3d5a8a'}}>checked in</p></div>
-              <p className="text-xs flex-shrink-0" style={{color:'#3d5a8a'}}>{format(new Date(c.check_in_date),'MMM d, h:mma')}</p>
+            <div key={i} className="relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl group transition-all duration-150"
+              style={{background:'rgba(13,35,96,0.2)',border:'1px solid rgba(59,130,246,0.08)'}}>
+              <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:'linear-gradient(90deg,transparent,rgba(96,165,250,0.12),transparent)',pointerEvents:'none'}}/>
+              <div className="relative flex-shrink-0">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black" style={{background:'linear-gradient(135deg,#3b82f6,#06b6d4)',boxShadow:'0 0 8px rgba(59,130,246,0.35)'}}>{c.user_name?.charAt(0)?.toUpperCase()}</div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 flex items-center justify-center" style={{background:'#10b981',borderColor:'#0a1628'}}/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate leading-tight">{c.user_name}</p>
+                <p className="text-xs leading-tight" style={{color:'rgba(52,211,153,0.7)'}}>✓ checked in</p>
+              </div>
+              <p className="text-xs flex-shrink-0 font-mono" style={{color:'rgba(61,90,138,0.7)'}}>{format(new Date(c.check_in_date),'MMM d, h:mma')}</p>
             </div>
           ))}
           {ci7.length===0&&<Empty icon={Activity} label="No check-ins in the last 7 days"/>}
@@ -413,10 +403,10 @@ export default function GymOwnerDashboard() {
   const TabMembers=()=>(
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Users}    iconColor="#60a5fa" iconRgb="96,165,250"  label="Total Members"    value={totalMembers}        sub="active memberships" trend={newSignUpsPct}/>
+        <KpiCard icon={Users}    iconColor="#60a5fa" iconRgb="96,165,250"  label="Total Members"    value={totalMembers}        sub="active memberships"/>
         <KpiCard icon={Zap}      iconColor="#34d399" iconRgb="52,211,153"  label="Active This Week" value={activeThisWeek}      trend={weeklyChangePct} sub="visited gym"/>
-        <KpiCard icon={Activity} iconColor="#a78bfa" iconRgb="167,139,250" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d" trend={(()=>{const prevActive=new Set(ciPrev30.map(c=>c.user_id)).size;const prevTotal=totalMembers>0?totalMembers:1;const prevRate=Math.round((prevActive/prevTotal)*100);return prevRate>0?retentionRate-prevRate:undefined;})()}/>
-        <KpiCard icon={Trophy}   iconColor="#fbbf24" iconRgb="251,191,36"  label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records" trend={(()=>{const prev=lifts.filter(l=>l.is_pr&&isWithinInterval(new Date(l.lift_date||l.created_date||now),{start:subDays(now,60),end:subDays(now,30)})).length;const cur=lifts.filter(l=>l.is_pr&&isWithinInterval(new Date(l.lift_date||l.created_date||now),{start:subDays(now,30),end:now})).length;return prev>0?Math.round(((cur-prev)/prev)*100):undefined;})()}/>
+        <KpiCard icon={Activity} iconColor="#a78bfa" iconRgb="167,139,250" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d"/>
+        <KpiCard icon={Trophy}   iconColor="#fbbf24" iconRgb="251,191,36"  label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records"/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
@@ -429,35 +419,62 @@ export default function GymOwnerDashboard() {
               {label:'Casual',sub:'1–7 visits/mo',val:monthCiPer.filter(v=>v>=1&&v<8).length,c:'#fbbf24',rgb:'251,191,36',e:'🚶'},
               {label:'At Risk',sub:'14d+ inactive',val:atRisk,c:'#f87171',rgb:'248,113,113',e:'⚠️'},
             ].map((t,i)=>(
-              <div key={i} className="p-4 rounded-xl relative overflow-hidden" style={{background:`rgba(${t.rgb},0.07)`,border:`1px solid rgba(${t.rgb},0.2)`}}>
-                <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${t.rgb},0.4),transparent)`}}/>
-                <p className="text-xl mb-2">{t.e}</p>
-                <p className="text-3xl font-black mb-0.5" style={{color:t.c,letterSpacing:'-0.04em'}}>{t.val}</p>
-                <p className="text-sm font-bold text-white">{t.label}</p>
-                <p className="text-xs mt-0.5" style={{color:'#6b87b8'}}>{t.sub}</p>
+              <div key={i} className="rounded-xl relative overflow-hidden" style={{background:`linear-gradient(145deg,rgba(${t.rgb},0.1) 0%,rgba(${t.rgb},0.04) 100%)`,border:`1px solid rgba(${t.rgb},0.22)`,boxShadow:`0 4px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(${t.rgb},0.05)`}}>
+                {/* left accent bar */}
+                <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${t.rgb},0.9) 0%,rgba(${t.rgb},0.2) 100%)`}}/>
+                {/* top shimmer */}
+                <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${t.rgb},0.5),transparent)`}}/>
+                {/* atmosphere orb */}
+                <div style={{position:'absolute',bottom:-30,right:-20,width:120,height:120,borderRadius:'50%',background:`radial-gradient(circle,rgba(${t.rgb},0.12) 0%,transparent 70%)`,pointerEvents:'none'}}/>
+                <div style={{padding:'16px 16px 16px 20px',position:'relative'}}>
+                  <div style={{width:36,height:36,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${t.rgb},0.15)`,border:`1px solid rgba(${t.rgb},0.3)`,fontSize:18,marginBottom:12}}>{t.e}</div>
+                  <p style={{fontSize:30,fontWeight:900,color:t.c,letterSpacing:'-0.04em',lineHeight:1,marginBottom:4}}>{t.val}</p>
+                  <p style={{fontSize:13,fontWeight:800,color:'#fff',marginBottom:2}}>{t.label}</p>
+                  <p style={{fontSize:11,color:'rgba(107,135,184,0.7)'}}>{t.sub}</p>
+                </div>
               </div>
             ))}
           </div>
         </Panel>
-        <div style={{maxHeight:420,overflow:'hidden',borderRadius:16}}>
-          <LeaderboardSection checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboard={progressLeaderboard}/>
-        </div>
+        <Panel>
+          <PH title="Weekly Leaderboard" subtitle="Most check-ins this week" action={()=>openModal("members")} actionLabel="All Members"/>
+          <div className="space-y-2">
+            {Object.entries(ci7.reduce((acc,c)=>{acc[c.user_name]=(acc[c.user_name]||0)+1;return acc;},{})).sort(([,a],[,b])=>b-a).slice(0,8).map(([name,count],idx)=>{
+              const isTop3=idx<3;
+              const accentRgb=idx===0?'255,215,0':idx===1?'200,216,236':idx===2?'232,144,74':'59,130,246';
+              return(
+              <div key={name} className="flex items-center gap-3 px-3 py-2.5 rounded-xl relative overflow-hidden" style={{background:isTop3?`linear-gradient(135deg,rgba(${accentRgb},0.08) 0%,rgba(8,14,36,0.9) 100%)`:'rgba(13,22,50,0.5)',border:`1px solid ${isTop3?`rgba(${accentRgb},0.22)`:'rgba(255,255,255,0.05)'}`,boxShadow:isTop3?`0 2px 12px rgba(0,0,0,0.3),inset 0 1px 0 rgba(${accentRgb},0.08)`:'none'}}>
+                {isTop3&&<div style={{position:'absolute',left:0,top:0,bottom:0,width:2,background:`linear-gradient(180deg,rgba(${accentRgb},0.9),rgba(${accentRgb},0.1))`}}/>}
+                {isTop3&&<div style={{position:'absolute',top:0,left:'5%',right:'40%',height:'1px',background:`linear-gradient(90deg,rgba(${accentRgb},0.4),transparent)`}}/>}
+                <span className="text-base w-7 text-center flex-shrink-0 pl-1">{idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':<span className="text-xs font-bold" style={{color:'#3d5a8a'}}>{idx+1}</span>}</span>
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0" style={{background:isTop3?`linear-gradient(135deg,rgba(${accentRgb},0.4),rgba(${accentRgb},0.15))`:'rgba(30,50,90,0.8)',border:`1px solid rgba(${accentRgb},${isTop3?'0.35':'0.1'})`,color:isTop3?'#fff':'#93b4e8'}}>{name?.charAt(0)?.toUpperCase()}</div>
+                <span className="flex-1 text-sm font-semibold text-white truncate">{name}</span>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{background:isTop3?`rgba(${accentRgb},0.12)`:'rgba(13,35,96,0.6)',color:isTop3?`rgb(${accentRgb})`:'#93b4e8',border:`1px solid rgba(${accentRgb},${isTop3?'0.25':'0.12'})`}}>{count} visits</span>
+              </div>
+              );
+            })}
+            {ci7.length===0&&<Empty icon={Users} label="No check-ins this week yet"/>}
+          </div>
+        </Panel>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <Panel>
           <PH title="Busiest Days of the Week" subtitle="All-time check-in distribution"/>
           <div className="space-y-2.5">
-            {(()=>{const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];const acc={};checkIns.forEach(c=>{const d=new Date(c.check_in_date).getDay();acc[d]=(acc[d]||0)+1;});const max=Math.max(...Object.values(acc),1);return days.map((name,idx)=>({name,count:acc[idx]||0})).sort((a,b)=>b.count-a.count).map(({name,count},rank)=>(
-              <div key={name} className="flex items-center gap-3">
-                <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{color:'#3d5a8a'}}>#{rank+1}</span>
-                <span className="text-sm text-white w-24 flex-shrink-0">{name}</span>
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:'rgba(13,35,96,0.5)'}}>
-                  <div className="h-full rounded-full" style={{background:'linear-gradient(90deg,#3b82f6,#22d3ee)',width:`${(count/max)*100}%`,boxShadow:'0 0 8px rgba(59,130,246,0.4)'}}/>
+            {(()=>{const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];const acc={};checkIns.forEach(c=>{const d=new Date(c.check_in_date).getDay();acc[d]=(acc[d]||0)+1;});const max=Math.max(...Object.values(acc),1);return days.map((name,idx)=>({name,count:acc[idx]||0})).sort((a,b)=>b.count-a.count).map(({name,count},rank)=>{
+              const barColor=rank===0?'linear-gradient(90deg,#8b5cf6,#ec4899)':rank<3?'linear-gradient(90deg,#3b82f6,#6366f1)':'linear-gradient(90deg,#1e40af,#3b82f6)';
+              const glowColor=rank===0?'rgba(139,92,246,0.5)':rank<3?'rgba(59,130,246,0.4)':'rgba(59,130,246,0.2)';
+              return (
+              <div key={name} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{background:rank===0?'rgba(139,92,246,0.06)':rank<3?'rgba(59,130,246,0.04)':'transparent',border:rank===0?'1px solid rgba(139,92,246,0.14)':rank<3?'1px solid rgba(59,130,246,0.08)':'1px solid transparent'}}>
+                <span className="text-xs font-black w-5 text-right flex-shrink-0" style={{color:rank===0?'#a78bfa':rank<3?'#60a5fa':'#3d5a8a'}}>#{rank+1}</span>
+                <span className="text-sm font-semibold w-24 flex-shrink-0" style={{color:rank===0?'#fff':rank<3?'rgba(255,255,255,0.85)':'rgba(255,255,255,0.55)'}}>{name}</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:'rgba(13,35,96,0.5)'}}>
+                  <div className="h-full rounded-full" style={{background:barColor,width:`${(count/max)*100}%`,boxShadow:`0 0 8px ${glowColor}`}}/>
                 </div>
-                <span className="text-sm font-bold text-white w-7 text-right">{count}</span>
+                <span className="text-sm font-black w-7 text-right flex-shrink-0" style={{color:rank===0?'#a78bfa':rank<3?'#60a5fa':'#6b87b8'}}>{count}</span>
               </div>
-            ));})()}
+            );}})()}
           </div>
         </Panel>
         <Panel>
@@ -465,9 +482,19 @@ export default function GymOwnerDashboard() {
           {rewards.length>0?(
             <div className="space-y-2">
               {rewards.slice(0,6).map(r=>(
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{background:BG.subcard,border:`1px solid ${BORDER.subtle}`}}>
-                  <span className="text-2xl flex-shrink-0">{r.icon||'🎁'}</span>
-                  <div className="flex-1 min-w-0"><p className="text-sm font-bold text-white truncate">{r.title}</p><p className="text-xs" style={{color:'#6b87b8'}}>{r.claimed_by?.length||0} claimed · {r.value}</p></div>
+                <div key={r.id} className="relative overflow-hidden flex items-center gap-3 p-3 rounded-xl" style={{background:'linear-gradient(135deg,rgba(251,191,36,0.07),rgba(6,13,31,0.9))',border:'1px solid rgba(251,191,36,0.18)'}}>
+                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(251,191,36,0.75),transparent)'}}/>
+                  <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:'linear-gradient(90deg,transparent,rgba(251,191,36,0.3),transparent)'}}/>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{background:'rgba(251,191,36,0.1)',border:'1px solid rgba(251,191,36,0.2)'}}>{r.icon||'🎁'}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white truncate">{r.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <div className="h-1 rounded-full flex-1 overflow-hidden" style={{background:'rgba(13,35,96,0.5)',maxWidth:60}}>
+                        <div className="h-full rounded-full" style={{width:`${Math.min((r.claimed_by?.length||0)*10,100)}%`,background:'linear-gradient(90deg,#f59e0b,#fbbf24)'}}/>
+                      </div>
+                      <p className="text-xs" style={{color:'rgba(251,191,36,0.7)'}}>{r.claimed_by?.length||0} claimed · {r.value}</p>
+                    </div>
+                  </div>
                   <Tag color={r.active?'green':'blue'}>{r.active?'Active':'Off'}</Tag>
                 </div>
               ))}
@@ -499,14 +526,21 @@ export default function GymOwnerDashboard() {
           {posts.length>0?(
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
               {posts.slice(0,10).map(p=>(
-                <div key={p.id} className="p-3 rounded-xl" style={{background:BG.subcard,border:`1px solid ${BORDER.subtle}`}}>
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <Avatar src={memberAvatarMap[p.member_id]} name={p.member_name} size={7}/>
-                    <p className="text-sm font-semibold text-white flex-1">{p.member_name}</p>
-                    <p className="text-xs" style={{color:'#3d5a8a'}}>{format(new Date(p.created_date),'MMM d')}</p>
+                <div key={p.id} className="rounded-xl relative overflow-hidden" style={{background:'linear-gradient(135deg,rgba(96,165,250,0.07) 0%,rgba(8,14,36,0.95) 100%)',border:'1px solid rgba(96,165,250,0.15)',boxShadow:'0 2px 12px rgba(0,0,0,0.25)'}}>
+                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(96,165,250,0.8),rgba(96,165,250,0.1))'}}/>
+                  <div style={{position:'absolute',top:0,left:'5%',right:'30%',height:1,background:'linear-gradient(90deg,rgba(96,165,250,0.35),transparent)'}}/>
+                  <div style={{padding:'12px 14px 12px 18px'}}>
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0" style={{background:'linear-gradient(135deg,#3b82f6,#06b6d4)',boxShadow:'0 0 10px rgba(59,130,246,0.35)',border:'2px solid rgba(96,165,250,0.3)'}}>{p.member_name?.charAt(0)?.toUpperCase()}</div>
+                      <p className="text-sm font-bold text-white flex-1">{p.member_name}</p>
+                      <p className="text-xs px-2 py-0.5 rounded-md" style={{background:'rgba(13,35,96,0.6)',color:'#4a6492',border:'1px solid rgba(255,255,255,0.05)'}}>{format(new Date(p.created_date),'MMM d')}</p>
+                    </div>
+                    <p className="text-xs line-clamp-2 mb-2.5" style={{color:'rgba(148,163,184,0.75)',lineHeight:1.5}}>{p.content}</p>
+                    <div className="flex gap-2 text-xs">
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(239,68,68,0.1)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.15)'}}>❤️ {p.likes||0}</span>
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(96,165,250,0.1)',color:'#93c5fd',border:'1px solid rgba(96,165,250,0.15)'}}>💬 {p.comments?.length||0}</span>
+                    </div>
                   </div>
-                  <p className="text-xs line-clamp-2 mb-2" style={{color:'#6b87b8'}}>{p.content}</p>
-                  <div className="flex gap-4 text-xs" style={{color:'#3d5a8a'}}><span>❤️ {p.likes||0}</span><span>💬 {p.comments?.length||0}</span></div>
                 </div>
               ))}
             </div>
@@ -517,11 +551,23 @@ export default function GymOwnerDashboard() {
           {events.filter(e=>new Date(e.event_date)>=now).length>0?(
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
               {events.filter(e=>new Date(e.event_date)>=now).map(ev=>(
-                <div key={ev.id} className="p-3 rounded-xl" style={{background:BG.subcard,border:`1px solid ${BORDER.subtle}`}}>
-                  {ev.image_url&&<img src={ev.image_url} alt={ev.title} className="w-full h-20 object-cover rounded-lg mb-2"/>}
-                  <p className="text-sm font-bold text-white mb-1 truncate">{ev.title}</p>
-                  <p className="text-xs line-clamp-2 mb-2" style={{color:'#6b87b8'}}>{ev.description}</p>
-                  <div className="flex gap-3 text-xs" style={{color:'#3d5a8a'}}><span>📅 {format(new Date(ev.event_date),'MMM d, h:mma')}</span><span>👥 {ev.attendees||0}</span></div>
+                <div key={ev.id} className="rounded-xl relative overflow-hidden" style={{background:'linear-gradient(135deg,rgba(52,211,153,0.07) 0%,rgba(8,14,36,0.95) 100%)',border:'1px solid rgba(52,211,153,0.15)',boxShadow:'0 2px 12px rgba(0,0,0,0.25)'}}>
+                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(52,211,153,0.8),rgba(52,211,153,0.1))'}}/>
+                  {ev.image_url&&(
+                    <div style={{position:'relative',overflow:'hidden',height:72,marginBottom:0}}>
+                      <img src={ev.image_url} alt={ev.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                      <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,transparent 40%,rgba(8,14,36,0.95) 100%)'}}/>
+                    </div>
+                  )}
+                  <div style={{padding:ev.image_url?'10px 14px 12px 18px':'12px 14px 12px 18px'}}>
+                    <div style={{position:'absolute',top:0,left:'5%',right:'30%',height:1,background:'linear-gradient(90deg,rgba(52,211,153,0.35),transparent)'}}/>
+                    <p className="text-sm font-bold text-white mb-1.5 truncate">{ev.title}</p>
+                    <p className="text-xs line-clamp-1 mb-2.5" style={{color:'rgba(148,163,184,0.7)',lineHeight:1.5}}>{ev.description}</p>
+                    <div className="flex gap-2 text-xs flex-wrap">
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(52,211,153,0.1)',color:'#6ee7b7',border:'1px solid rgba(52,211,153,0.2)'}}>📅 {format(new Date(ev.event_date),'MMM d, h:mma')}</span>
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(96,165,250,0.1)',color:'#93c5fd',border:'1px solid rgba(96,165,250,0.15)'}}>👥 {ev.attendees||0}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -535,10 +581,23 @@ export default function GymOwnerDashboard() {
           {challenges.filter(c=>c.status==="active").length>0?(
             <div className="space-y-2">
               {challenges.filter(c=>c.status==="active").map(ch=>(
-                <div key={ch.id} className="p-3.5 rounded-xl" style={{background:'rgba(249,115,22,0.06)',border:'1px solid rgba(249,115,22,0.18)'}}>
-                  <div className="flex items-start justify-between gap-2 mb-1.5"><p className="text-sm font-bold text-white">🏆 {ch.title}</p><Tag color="orange">{ch.type?.replace('_',' ')}</Tag></div>
-                  <p className="text-xs mb-2 line-clamp-1" style={{color:'#6b87b8'}}>{ch.description}</p>
-                  <div className="flex gap-4 text-xs" style={{color:'#3d5a8a'}}><span>👥 {ch.participants?.length||0} joined</span><span>📅 {format(new Date(ch.start_date),'MMM d')} – {format(new Date(ch.end_date),'MMM d')}</span></div>
+                <div key={ch.id} className="rounded-xl relative overflow-hidden" style={{background:'linear-gradient(135deg,rgba(249,115,22,0.09) 0%,rgba(8,14,36,0.95) 100%)',border:'1px solid rgba(249,115,22,0.2)',boxShadow:'0 2px 14px rgba(0,0,0,0.3)'}}>
+                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(249,115,22,0.85),rgba(249,115,22,0.1))'}}/>
+                  <div style={{position:'absolute',top:0,left:'5%',right:'20%',height:1,background:'linear-gradient(90deg,rgba(249,115,22,0.4),transparent)'}}/>
+                  <div style={{padding:'13px 14px 13px 18px'}}>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <div style={{width:28,height:28,borderRadius:8,background:'rgba(249,115,22,0.15)',border:'1px solid rgba(249,115,22,0.28)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>🏆</div>
+                        <p className="text-sm font-bold text-white">{ch.title}</p>
+                      </div>
+                      <Tag color="orange">{ch.type?.replace('_',' ')}</Tag>
+                    </div>
+                    <p className="text-xs mb-2.5 line-clamp-1" style={{color:'rgba(148,163,184,0.7)',lineHeight:1.5}}>{ch.description}</p>
+                    <div className="flex gap-2 text-xs flex-wrap">
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(249,115,22,0.1)',color:'#fdba74',border:'1px solid rgba(249,115,22,0.2)'}}>👥 {ch.participants?.length||0} joined</span>
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(96,165,250,0.08)',color:'#93c5fd',border:'1px solid rgba(96,165,250,0.12)'}}>📅 {format(new Date(ch.start_date),'MMM d')} – {format(new Date(ch.end_date),'MMM d')}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -549,10 +608,20 @@ export default function GymOwnerDashboard() {
           {polls.length>0?(
             <div className="space-y-2">
               {polls.map(poll=>(
-                <div key={poll.id} className="p-3.5 rounded-xl" style={{background:'rgba(139,92,246,0.06)',border:'1px solid rgba(139,92,246,0.18)'}}>
-                  <p className="text-sm font-bold text-white mb-1 truncate">{poll.title}</p>
-                  <p className="text-xs mb-2 line-clamp-1" style={{color:'#6b87b8'}}>{poll.description}</p>
-                  <div className="flex items-center gap-3 text-xs" style={{color:'#3d5a8a'}}><span>📊 {poll.voters?.length||0} votes</span><Tag color="purple">{poll.status}</Tag></div>
+                <div key={poll.id} className="rounded-xl relative overflow-hidden" style={{background:'linear-gradient(135deg,rgba(139,92,246,0.09) 0%,rgba(8,14,36,0.95) 100%)',border:'1px solid rgba(139,92,246,0.2)',boxShadow:'0 2px 14px rgba(0,0,0,0.3)'}}>
+                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(139,92,246,0.85),rgba(139,92,246,0.1))'}}/>
+                  <div style={{position:'absolute',top:0,left:'5%',right:'20%',height:1,background:'linear-gradient(90deg,rgba(139,92,246,0.4),transparent)'}}/>
+                  <div style={{padding:'13px 14px 13px 18px'}}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div style={{width:28,height:28,borderRadius:8,background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.28)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><BarChart2 style={{width:13,height:13,color:'#c4b5fd'}}/></div>
+                      <p className="text-sm font-bold text-white flex-1 truncate">{poll.title}</p>
+                    </div>
+                    <p className="text-xs mb-2.5 line-clamp-1" style={{color:'rgba(148,163,184,0.7)',lineHeight:1.5}}>{poll.description}</p>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="px-2 py-0.5 rounded-md font-semibold" style={{background:'rgba(139,92,246,0.12)',color:'#c4b5fd',border:'1px solid rgba(139,92,246,0.22)'}}>📊 {poll.voters?.length||0} votes</span>
+                      <Tag color="purple">{poll.status}</Tag>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -649,10 +718,23 @@ export default function GymOwnerDashboard() {
       <Panel>
         <PH title="Gym Information" subtitle={selectedGym?.name} action={()=>openModal("editInfo")} actionLabel="Edit"/>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[{l:'Gym Name',v:selectedGym?.name},{l:'Type',v:selectedGym?.type},{l:'City',v:selectedGym?.city},{l:'Price',v:`£${selectedGym?.price}/mo`},{l:'Address',v:selectedGym?.address},{l:'Postcode',v:selectedGym?.postcode}].map((f,i)=>(
-            <div key={i} className="p-3 rounded-xl border" style={{background:BG.subcard,borderColor:BORDER.subtle}}>
-              <p className="text-xs uppercase tracking-wide mb-1" style={{color:'#3d5a8a'}}>{f.l}</p>
-              <p className="text-sm font-semibold text-white truncate">{f.v||'—'}</p>
+          {[
+            {l:'Gym Name',v:selectedGym?.name,icon:Dumbbell,rgb:'96,165,250',c:'#60a5fa'},
+            {l:'Type',v:selectedGym?.type,icon:Tag2,rgb:'167,139,250',c:'#a78bfa'},
+            {l:'City',v:selectedGym?.city,icon:MapPin2,rgb:'52,211,153',c:'#34d399'},
+            {l:'Monthly Price',v:selectedGym?.price?`£${selectedGym.price}/mo`:'Not set',icon:DollarSign,rgb:'251,191,36',c:'#fbbf24'},
+            {l:'Address',v:selectedGym?.address,icon:MapPin2,rgb:'96,165,250',c:'#60a5fa'},
+            {l:'Postcode',v:selectedGym?.postcode,icon:Pin,rgb:'248,113,113',c:'#f87171'},
+          ].map((f,i)=>(
+            <div key={i} className="relative overflow-hidden p-3.5 rounded-xl" style={{background:`rgba(${f.rgb},0.06)`,border:`1px solid rgba(${f.rgb},0.18)`}}>
+              <div style={{position:'absolute',left:0,top:0,bottom:0,width:2,background:`linear-gradient(180deg,rgba(${f.rgb},0.6),transparent)`}}/>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{background:`rgba(${f.rgb},0.14)`,border:`1px solid rgba(${f.rgb},0.25)`}}>
+                  <f.icon style={{width:11,height:11,color:f.c}}/>
+                </div>
+                <p className="text-xs uppercase tracking-wide font-bold" style={{color:`rgba(${f.rgb},0.55)`}}>{f.l}</p>
+              </div>
+              <p className="text-sm font-semibold text-white truncate pl-0.5">{f.v||'—'}</p>
             </div>
           ))}
         </div>
@@ -671,18 +753,36 @@ export default function GymOwnerDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <Panel>
           <PH title="Amenities" badge={selectedGym?.amenities?.length||0} action={()=>openModal("amenities")} actionLabel="Edit"/>
-          <div className="flex flex-wrap gap-1.5">
-            {selectedGym?.amenities?.map((a,i)=><Tag key={i} color="blue">{a}</Tag>)}
-            {!selectedGym?.amenities?.length&&<p className="text-sm" style={{color:'#3d5a8a'}}>No amenities listed</p>}
-          </div>
+          {selectedGym?.amenities?.length>0?(
+            <div className="relative rounded-xl p-3 overflow-hidden" style={{background:'rgba(59,130,246,0.04)',border:'1px solid rgba(59,130,246,0.1)'}}>
+              <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle,rgba(255,255,255,0.018) 1px,transparent 1px)',backgroundSize:'20px 20px',pointerEvents:'none'}}/>
+              <div className="relative flex flex-wrap gap-1.5">
+                {selectedGym.amenities.map((a,i)=><Tag key={i} color="blue">{a}</Tag>)}
+              </div>
+            </div>
+          ):(
+            <div className="flex items-center gap-3 p-4 rounded-xl" style={{background:'rgba(59,130,246,0.04)',border:'1px solid rgba(59,130,246,0.1)'}}>
+              <div style={{width:32,height:32,borderRadius:9,background:'rgba(59,130,246,0.1)',border:'1px solid rgba(59,130,246,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Star style={{width:14,height:14,color:'#60a5fa'}}/></div>
+              <p className="text-sm" style={{color:'#4a6492'}}>No amenities listed yet</p>
+            </div>
+          )}
         </Panel>
         <Panel>
           <PH title="Equipment" badge={selectedGym?.equipment?.length||0} action={()=>openModal("equipment")} actionLabel="Edit"/>
-          <div className="flex flex-wrap gap-1.5">
-            {selectedGym?.equipment?.slice(0,18).map((e,i)=><Tag key={i} color="purple">{e}</Tag>)}
-            {selectedGym?.equipment?.length>18&&<Tag color="blue">+{selectedGym.equipment.length-18} more</Tag>}
-            {!selectedGym?.equipment?.length&&<p className="text-sm" style={{color:'#3d5a8a'}}>No equipment listed</p>}
-          </div>
+          {selectedGym?.equipment?.length>0?(
+            <div className="relative rounded-xl p-3 overflow-hidden" style={{background:'rgba(139,92,246,0.04)',border:'1px solid rgba(139,92,246,0.1)'}}>
+              <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle,rgba(255,255,255,0.018) 1px,transparent 1px)',backgroundSize:'20px 20px',pointerEvents:'none'}}/>
+              <div className="relative flex flex-wrap gap-1.5">
+                {selectedGym.equipment.slice(0,18).map((e,i)=><Tag key={i} color="purple">{e}</Tag>)}
+                {selectedGym.equipment.length>18&&<Tag color="blue">+{selectedGym.equipment.length-18} more</Tag>}
+              </div>
+            </div>
+          ):(
+            <div className="flex items-center gap-3 p-4 rounded-xl" style={{background:'rgba(139,92,246,0.04)',border:'1px solid rgba(139,92,246,0.1)'}}>
+              <div style={{width:32,height:32,borderRadius:9,background:'rgba(139,92,246,0.1)',border:'1px solid rgba(139,92,246,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Dumbbell style={{width:14,height:14,color:'#a78bfa'}}/></div>
+              <p className="text-sm" style={{color:'#4a6492'}}>No equipment listed yet</p>
+            </div>
+          )}
         </Panel>
       </div>
 
@@ -690,7 +790,12 @@ export default function GymOwnerDashboard() {
         <PH title="Photo Gallery" badge={selectedGym?.gallery?.length||0} action={()=>openModal("photos")} actionLabel="Manage Photos"/>
         {selectedGym?.gallery?.length>0?(
           <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-            {selectedGym.gallery.map((url,i)=><img key={i} src={url} alt="" className="w-full h-16 object-cover rounded-lg border" style={{borderColor:BORDER.subtle}}/>)}
+            {selectedGym.gallery.map((url,i)=>(
+              <div key={i} className="relative rounded-xl overflow-hidden group" style={{aspectRatio:'1',border:'1px solid rgba(59,130,246,0.12)'}}>
+                <img src={url} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"/>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{background:'rgba(59,130,246,0.2)'}}/>
+              </div>
+            ))}
           </div>
         ):(
           <div className="flex items-center gap-4 p-4 rounded-xl border" style={{background:BG.subcard,borderColor:BORDER.subtle}}>
@@ -704,10 +809,20 @@ export default function GymOwnerDashboard() {
       <Panel>
         <PH title="Admin"/>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          {[{l:'Owner Email',v:selectedGym?.owner_email},{l:'Gym ID',v:selectedGym?.id,mono:true},{l:'Status',v:selectedGym?.verified?'✓ Verified':'Not Verified',c:selectedGym?.verified?'#34d399':'#f87171'}].map((f,i)=>(
-            <div key={i} className="p-3.5 rounded-xl border" style={{background:BG.subcard,borderColor:BORDER.subtle}}>
-              <p className="text-xs uppercase tracking-wide mb-1.5" style={{color:'#3d5a8a'}}>{f.l}</p>
-              <p className={`text-sm font-semibold ${f.mono?'font-mono text-xs break-all':''}`} style={{color:f.c||'white'}}>{f.v||'—'}</p>
+          {[
+            {l:'Owner Email',v:selectedGym?.owner_email,icon:Users,rgb:'96,165,250',c:'#60a5fa'},
+            {l:'Gym ID',v:selectedGym?.id,mono:true,icon:Shield,rgb:'167,139,250',c:'#a78bfa'},
+            {l:'Status',v:selectedGym?.verified?'✓ Verified':'Not Verified',fc:selectedGym?.verified?'#34d399':'#f87171',icon:CheckCircle,rgb:selectedGym?.verified?'52,211,153':'248,113,113',c:selectedGym?.verified?'#34d399':'#f87171'},
+          ].map((f,i)=>(
+            <div key={i} className="relative overflow-hidden p-3.5 rounded-xl" style={{background:`rgba(${f.rgb},0.06)`,border:`1px solid rgba(${f.rgb},0.18)`}}>
+              <div style={{position:'absolute',left:0,top:0,bottom:0,width:2,background:`linear-gradient(180deg,rgba(${f.rgb},0.6),transparent)`}}/>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{background:`rgba(${f.rgb},0.14)`,border:`1px solid rgba(${f.rgb},0.25)`}}>
+                  <f.icon style={{width:11,height:11,color:f.c}}/>
+                </div>
+                <p className="text-xs uppercase tracking-wide font-bold" style={{color:`rgba(${f.rgb},0.55)`}}>{f.l}</p>
+              </div>
+              <p className={`text-sm font-semibold pl-0.5 ${f.mono?'font-mono text-xs break-all':''}`} style={{color:f.fc||'white'}}>{f.v||'—'}</p>
             </div>
           ))}
         </div>
@@ -718,13 +833,26 @@ export default function GymOwnerDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {[
-          {title:'Delete Gym',    desc:'Permanently delete this gym and all its data.',  label:'Delete Gym',    fn:()=>openModal("deleteGym")},
-          {title:'Delete Account',desc:'Permanently delete your account and all gyms.',   label:'Delete Account',fn:()=>openModal("deleteAccount")},
+          {title:'Delete Gym',    desc:'Permanently delete this gym and all its data. All members, check-ins and content will be lost.',  label:'Delete Gym',    fn:()=>openModal("deleteGym")},
+          {title:'Delete Account',desc:'Permanently delete your account and all associated gyms and data.',   label:'Delete Account',fn:()=>openModal("deleteAccount")},
         ].map((d,i)=>(
-          <div key={i} className="p-5 rounded-2xl" style={{background:'rgba(239,68,68,0.05)',border:'1px solid rgba(239,68,68,0.18)'}}>
-            <div className="flex items-center gap-2 mb-2"><Trash2 className="w-4 h-4 text-red-400"/><h4 className="font-bold text-white text-sm">{d.title}</h4></div>
-            <p className="text-xs mb-4" style={{color:'#6b87b8'}}>{d.desc}</p>
-            <button onClick={d.fn} className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:brightness-110" style={{background:'rgba(239,68,68,0.12)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.3)'}}>{d.label}</button>
+          <div key={i} className="relative overflow-hidden rounded-2xl" style={{background:'linear-gradient(135deg,rgba(239,68,68,0.08) 0%,rgba(8,14,36,0.95) 100%)',border:'1px solid rgba(239,68,68,0.2)',boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
+            <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(239,68,68,0.7),rgba(239,68,68,0.1))'}}/>
+            <div style={{position:'absolute',top:0,left:'5%',right:'30%',height:1,background:'linear-gradient(90deg,rgba(239,68,68,0.35),transparent)'}}/>
+            <div style={{position:'absolute',bottom:-30,right:-20,width:120,height:120,borderRadius:'50%',background:'radial-gradient(circle,rgba(239,68,68,0.07) 0%,transparent 70%)',pointerEvents:'none'}}/>
+            <div style={{padding:'18px 18px 18px 22px',position:'relative'}}>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div style={{width:34,height:34,borderRadius:10,background:'rgba(239,68,68,0.13)',border:'1px solid rgba(239,68,68,0.28)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 10px rgba(239,68,68,0.1)'}}>
+                  <Trash2 style={{width:15,height:15,color:'#f87171'}}/>
+                </div>
+                <h4 style={{fontWeight:900,color:'#fff',fontSize:14}}>{d.title}</h4>
+              </div>
+              <p style={{fontSize:12,color:'rgba(148,163,184,0.6)',marginBottom:16,lineHeight:1.5}}>{d.desc}</p>
+              <button onClick={d.fn} className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:brightness-110 relative overflow-hidden" style={{background:'rgba(239,68,68,0.12)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.28)',cursor:'pointer'}}>
+                <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)'}}/>
+                {d.label}
+              </button>
+            </div>
           </div>
         ))}
       </div>
