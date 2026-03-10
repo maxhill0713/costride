@@ -465,30 +465,6 @@ export default function GymOwnerDashboard() {
             );})})()}
           </div>
         </Panel>
-        <Panel>
-          <PH title="Rewards Program" badge={rewards.length} action={()=>openModal("rewards")} actionLabel="Manage"/>
-          {rewards.length>0?(
-            <div className="space-y-2">
-              {rewards.slice(0,6).map(r=>(
-                <div key={r.id} className="relative overflow-hidden flex items-center gap-3 p-3 rounded-xl" style={{background:'linear-gradient(135deg,rgba(251,191,36,0.07),rgba(6,13,31,0.9))',border:'1px solid rgba(251,191,36,0.18)'}}>
-                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:'linear-gradient(180deg,rgba(251,191,36,0.75),transparent)'}}/>
-                  <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:'linear-gradient(90deg,transparent,rgba(251,191,36,0.3),transparent)'}}/>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{background:'rgba(251,191,36,0.1)',border:'1px solid rgba(251,191,36,0.2)'}}>{r.icon||'🎁'}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate">{r.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <div className="h-1 rounded-full flex-1 overflow-hidden" style={{background:'rgba(13,35,96,0.5)',maxWidth:60}}>
-                        <div className="h-full rounded-full" style={{width:`${Math.min((r.claimed_by?.length||0)*10,100)}%`,background:'linear-gradient(90deg,#f59e0b,#fbbf24)'}}/>
-                      </div>
-                      <p className="text-xs" style={{color:'rgba(251,191,36,0.7)'}}>{r.claimed_by?.length||0} claimed · {r.value}</p>
-                    </div>
-                  </div>
-                  <Tag color={r.active?'green':'blue'}>{r.active?'Active':'Off'}</Tag>
-                </div>
-              ))}
-            </div>
-          ):<Empty icon={Gift} label="No rewards yet — create some to boost retention"/>}
-        </Panel>
       </div>
     </div>
   );
