@@ -272,21 +272,6 @@ export default function GymOwnerDashboard() {
   const deleteAccountM=useMutation({mutationFn:()=>base44.functions.invoke('deleteUserAccount'),onSuccess:()=>{closeModal();base44.auth.logout();}});
   const createPollM=useMutation({mutationFn:d=>base44.entities.Poll.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,created_by:currentUser.id,voters:[]}),onSuccess:()=>{inv('polls');closeModal();}});
 
-  // Avatar map: user_id → avatar_url (from memberships)
-  const memberAvatarMap = useMemo(()=>{
-    const map={};
-    allMemberships.forEach(m=>{ if(m.user_id&&m.avatar_url) map[m.user_id]=m.avatar_url; });
-    return map;
-  },[allMemberships]);
-
-  const Avatar=({userId,name,size=8})=>{
-    const src=memberAvatarMap[userId];
-    const cls=`w-${size} h-${size} rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-white font-black`;
-    const style={background:'linear-gradient(135deg,#3b82f6,#06b6d4)',fontSize:size<=7?10:12};
-    if(src) return <img src={src} alt={name} className={cls} style={{objectFit:'cover'}}/>;
-    return <div className={cls} style={style}>{name?.charAt(0)?.toUpperCase()}</div>;
-  };
-
   // ── Splashes ───────────────────────────────────────────────────────────────
   const Splash=({children})=>(<div className="min-h-screen flex items-center justify-center p-4" style={{background:BG.page}}><Panel className="max-w-md w-full text-center">{children}</Panel></div>);
   if(gymsError)return <Splash><div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.25)'}}><X className="w-7 h-7 text-red-400"/></div><h2 className="text-xl font-black text-white mb-2">Error</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>{gymsError.message}</p><Button onClick={()=>window.location.reload()} className="bg-blue-600 hover:bg-blue-500 text-white">Retry</Button></Splash>;
