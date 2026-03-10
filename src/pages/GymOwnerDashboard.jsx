@@ -322,9 +322,12 @@ export default function GymOwnerDashboard() {
   // 1. Attendance rate  = activeThisWeek / totalMembers  (capped at 100)
   // 2. At-risk penalty  = 100 - (atRisk / totalMembers) * 100
   // 3. Growth trend     = retentionRate (active last 30d / total)
+  // Attendance: % of members who checked in this week
   const attendanceScore = totalMembers > 0 ? Math.min(100, Math.round((activeThisWeek / totalMembers) * 100)) : 0;
+  // At-risk: penalise by proportion of at-risk members
   const atRiskScore     = totalMembers > 0 ? Math.max(0, Math.round(100 - (atRisk / totalMembers) * 100)) : 100;
-  const growthScore     = retentionRate; // already 0-100
+  // Growth: positive monthly check-in trend → bonus, negative → penalty, capped 0-100
+  const growthScore     = Math.min(100, Math.max(0, 50 + Math.round(monthChangePct / 2)));
   const healthScore     = Math.round((attendanceScore + atRiskScore + growthScore) / 3);
   const healthGrade     = healthScore >= 85 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention';
   const healthColor     = healthScore >= 85 ? '#34d399' : healthScore >= 70 ? '#60a5fa' : healthScore >= 50 ? '#fbbf24' : '#f87171';
