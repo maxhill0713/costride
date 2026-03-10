@@ -11,6 +11,7 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 import StrengthProgress from '../components/profile/StrengthProgress';
+import BadgesCard from '../components/profile/BadgesCard';
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
