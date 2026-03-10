@@ -557,6 +557,52 @@ export default function GymOwnerDashboard() {
         </Panel>
       </div>
 
+      {/* ── CHURN PREDICTION ── */}
+      <Panel>
+        <PH title="Churn Prediction" subtitle={`${churnPredictions.length} members at risk of leaving`}/>
+        {churnPredictions.length === 0 ? (
+          <Empty icon={CheckCircle} label="No churn risk detected — members are staying active 🎉"/>
+        ) : (
+          <div className="space-y-2.5">
+            {churnPredictions.map((m, i) => {
+              const riskColor = m.riskScore >= 80 ? '#f87171' : m.riskScore >= 60 ? '#fb923c' : '#fbbf24';
+              const riskRgb   = m.riskScore >= 80 ? '248,113,113' : m.riskScore >= 60 ? '251,146,60' : '251,191,36';
+              const riskLabel = m.riskScore >= 80 ? 'High Risk' : m.riskScore >= 60 ? 'Medium' : 'Watch';
+              return (
+                <div key={m.id||i} className="relative overflow-hidden rounded-xl"
+                  style={{background:`linear-gradient(135deg,rgba(${riskRgb},0.07) 0%,rgba(8,14,36,0.95) 100%)`,border:`1px solid rgba(${riskRgb},0.2)`}}>
+                  <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,${riskColor},transparent)`}}/>
+                  <div className="flex items-center gap-3 px-4 py-3 pl-5">
+                    {/* Avatar */}
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
+                      style={{background:`rgba(${riskRgb},0.15)`,border:`1px solid rgba(${riskRgb},0.3)`,color:riskColor}}>
+                      {(m.user_name||'?').charAt(0).toUpperCase()}
+                    </div>
+                    {/* Name + reasons */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{m.user_name||'Unknown'}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {m.reasons.map((r,j) => (
+                          <span key={j} className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                            style={{background:`rgba(${riskRgb},0.1)`,color:riskColor,border:`1px solid rgba(${riskRgb},0.2)`}}>
+                            {r.icon} {r.text}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Risk score + label */}
+                    <div className="flex-shrink-0 text-right">
+                      <p className="text-lg font-black leading-none" style={{color:riskColor}}>{m.riskScore}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-wide mt-0.5" style={{color:`rgba(${riskRgb},0.6)`}}>{riskLabel}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Panel>
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <Panel>
           <PH title="Busiest Days of the Week" subtitle="All-time check-in distribution"/>
