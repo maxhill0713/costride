@@ -331,12 +331,26 @@ export default function GymOwnerDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Panel className="xl:col-span-2">
-          <PH title="Check-ins — Last 7 Days" subtitle="Daily attendance"/>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-white">Check-ins — {ciChartRange==='7d'?'Last 7 Days':'Last 30 Days'}</h3>
+              <p className="text-xs mt-0.5" style={{color:'#4a6492'}}>Daily attendance</p>
+            </div>
+            <div className="flex rounded-lg overflow-hidden border" style={{borderColor:'rgba(59,130,246,0.2)'}}>
+              {[['7d','Last 7 Days'],['30d','Last 30 Days']].map(([val,lbl])=>(
+                <button key={val} onClick={()=>setCiChartRange(val)}
+                  className="px-3 py-1.5 text-xs font-bold transition-all"
+                  style={{background:ciChartRange===val?'rgba(59,130,246,0.25)':'rgba(13,35,96,0.3)',color:ciChartRange===val?'#93c5fd':'#4a6492',border:'none',cursor:'pointer'}}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={ciByDay} barSize={34}>
+            <BarChart data={ciChartRange==='7d'?ciByDay:ciByDay30} barSize={ciChartRange==='7d'?34:16}>
               <defs><linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/><stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/></linearGradient></defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
-              <XAxis dataKey="day" tick={{fill:"#6b87b8",fontSize:11}} axisLine={false} tickLine={false}/>
+              <XAxis dataKey="day" tick={{fill:"#6b87b8",fontSize:11}} axisLine={false} tickLine={false} interval={ciChartRange==='30d'?3:0}/>
               <YAxis tick={{fill:"#6b87b8",fontSize:11}} axisLine={false} tickLine={false} width={24}/>
               <Tooltip content={<DT/>} cursor={{fill:"rgba(59,130,246,0.06)"}}/>
               <Bar dataKey="value" fill="url(#barFill)" radius={[6,6,0,0]} name="Check-ins"/>
