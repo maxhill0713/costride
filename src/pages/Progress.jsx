@@ -515,7 +515,7 @@ export default function Progress() {
   if (view === 'goals')     return <GoalsPage currentUser={currentUser} onBack={() => setView('hub')} />;
   if (view === 'analytics') return <AnalyticsPage currentUser={currentUser} workoutLogs={workoutLogs} onBack={() => setView('hub')} />;
   if (view === 'split')     return <SplitPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
-  if (view === 'rank')      return <RankPage currentUser={currentUser} onBack={() => setView('hub')} />;
+  if (view === 'rank')      return <RankPage currentUser={currentUser} checkIns={checkIns} onBack={() => setView('hub')} />;
 
   const activeGoals    = goals.filter((g) => g.status === 'active');
   const completedGoals = goals.filter((g) => g.status === 'completed');
