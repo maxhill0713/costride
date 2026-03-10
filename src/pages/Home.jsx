@@ -829,8 +829,8 @@ export default function Home() {
                   </div>
                 </Card>
               </Link>
-            </motion.div>
-          }
+              </div>
+              }
 
           {/* ── Duolingo-style weekly workout circles ── */}
           {memberGym?.id && (() => {
