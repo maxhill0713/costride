@@ -401,19 +401,19 @@ export default function GymOwnerDashboard() {
       {/* ═══════════════════════════════ MOBILE LAYOUT ═══════════════════════════════ */}
       <div className="md:hidden space-y-3 pb-2">
 
-        {/* Hero: Today's Check-ins */}
-        <div style={{borderRadius:22,background:'linear-gradient(145deg,rgba(14,42,100,0.95),rgba(4,8,24,0.98))',border:'1px solid rgba(59,130,246,0.28)',padding:'24px 20px 20px',position:'relative',overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.6)'}}>
-          <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(96,165,250,0.5),transparent)'}}/>
-          <div style={{position:'absolute',top:-60,right:-40,width:200,height:200,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.13) 0%,transparent 70%)',pointerEvents:'none'}}/>
-          <div style={{position:'absolute',bottom:-40,left:-20,width:150,height:150,borderRadius:'50%',background:'radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        {/* Hero: Today's Check-ins with brighter accent */}
+        <div style={{borderRadius:22,background:'linear-gradient(135deg,rgba(14,42,100,0.95),rgba(4,8,24,0.98))',border:'1px solid rgba(6,182,212,0.4)',padding:'24px 20px 20px',position:'relative',overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(6,182,212,0.15)'}}>
+          <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(6,182,212,0.6),transparent)'}}/>
+          <div style={{position:'absolute',top:-60,right:-40,width:200,height:200,borderRadius:'50%',background:'radial-gradient(circle,rgba(6,182,212,0.15) 0%,transparent 70%)',pointerEvents:'none',animation:'pulse 3s ease-in-out infinite'}}/>
+          <div style={{position:'absolute',bottom:-40,left:-20,width:150,height:150,borderRadius:'50%',background:'radial-gradient(circle,rgba(6,182,212,0.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
           <div className="flex items-start justify-between">
             <div>
-              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(96,165,250,0.65)',marginBottom:10}}>Today's Check-ins</p>
+              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(6,182,212,0.8)',marginBottom:10}}>Today's Check-ins</p>
               <p style={{fontSize:72,fontWeight:900,color:'#fff',letterSpacing:'-0.05em',lineHeight:1,marginBottom:8}}>{todayCI}</p>
               <p style={{fontSize:12,color:'rgba(107,135,184,0.6)'}}>members visited today</p>
             </div>
-            <div style={{width:48,height:48,borderRadius:15,background:'rgba(59,130,246,0.15)',border:'1px solid rgba(59,130,246,0.3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 4px 12px rgba(0,0,0,0.3)'}}>
-              <Dumbbell style={{width:22,height:22,color:'#60a5fa'}}/>
+            <div style={{width:52,height:52,borderRadius:16,background:'linear-gradient(135deg,rgba(6,182,212,0.2),rgba(59,130,246,0.15))',border:'1.5px solid rgba(6,182,212,0.5)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 8px 16px rgba(6,182,212,0.2)'}}>
+              <Dumbbell style={{width:24,height:24,color:'#06b6d4'}}/>
             </div>
           </div>
           <div className="flex items-center gap-3 mt-4 pt-4" style={{borderTop:'1px solid rgba(59,130,246,0.12)'}}>
@@ -424,7 +424,7 @@ export default function GymOwnerDashboard() {
             <div style={{width:1,height:36,background:'rgba(59,130,246,0.15)'}}/>
             <div style={{flex:1}}>
               <p style={{fontSize:10,color:'rgba(107,135,184,0.5)',marginBottom:2}}>Engagement</p>
-              <p style={{fontSize:18,fontWeight:900,color:'#a78bfa',letterSpacing:'-0.03em'}}>{retentionRate}%</p>
+              <p style={{fontSize:18,fontWeight:900,color:'#34d399',letterSpacing:'-0.03em'}}>{retentionRate}%</p>
             </div>
             <div style={{width:1,height:36,background:'rgba(59,130,246,0.15)'}}/>
             <div style={{flex:1}}>
