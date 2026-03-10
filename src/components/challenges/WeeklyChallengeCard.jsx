@@ -53,17 +53,17 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
     >
       {/* ── Only this wrapper changed: matches Progress page TallCard box style ── */}
       <div
-        className="group cursor-pointer"
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        className="rounded-2xl p-5 overflow-hidden relative"
+        className="rounded-2xl p-5 overflow-hidden relative transition-transform duration-200"
         style={{
           background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
           border: '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          cursor: 'pointer'
         }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
       >
         {/* Top shine line — same as TallCard */}
         <div
