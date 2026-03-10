@@ -11,7 +11,6 @@ import ExerciseInsights from '../components/profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../components/profile/WorkoutSplitHeatmap';
 import WorkoutProgressTracker from '../components/profile/WorkoutProgressTracker';
 import StrengthProgress from '../components/profile/StrengthProgress';
-import BadgesCard from '../components/profile/BadgesCard';
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 const CARD = {
@@ -411,8 +410,6 @@ export default function Progress() {
     },
   ];
 
-  const badgesView = <BadgesCard currentUser={currentUser} />;
-
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-32 space-y-3">
@@ -424,7 +421,6 @@ export default function Progress() {
             onClick={card.isLink ? undefined : () => setView(card.id)}
           />
         ))}
-        {badgesView}
       </div>
     </div>
   );
