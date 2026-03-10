@@ -961,27 +961,28 @@ export default function Home() {
                         }} />
                       )}
                       <button
-                        data-circle-btn="true"
-                        onClick={() => setActiveCircleDay(prev => prev === day ? null : day)}
-                        style={{
-                          width: size, height: size, borderRadius: '50%',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
-                          transition: pressedDay === day
-                            ? 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease'
-                            : 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.18s cubic-bezier(0.34,1.5,0.64,1)',
-                          animation: getAnimation(),
-                          animationPlayState: pressedDay === day ? 'paused' : 'running',
-                          animationDelay: bounce ? '0s' : `${i * 0.18}s`,
-                          transform: pressedDay === day ? 'scale(0.84) translateY(4px)' : 'scale(1) translateY(0px)',
-                          willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
-                          WebkitTapHighlightColor: 'transparent',
-                        }}
-                        onMouseDown={() => setPressedDay(day)}
-                        onMouseUp={() => setPressedDay(null)}
-                        onMouseLeave={() => setPressedDay(null)}
-                        onTouchStart={() => setPressedDay(day)}
-                        onTouchEnd={() => setPressedDay(null)}
+                       data-circle-btn="true"
+                       onClick={() => setActiveCircleDay(prev => prev === day ? null : day)}
+                       style={{
+                         width: size, height: size, borderRadius: '50%',
+                         display: 'flex', alignItems: 'center', justifyContent: 'center',
+                         background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
+                         transition: pressedDay === day
+                           ? 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease'
+                           : 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.18s cubic-bezier(0.34,1.5,0.64,1)',
+                         animation: getAnimation(),
+                         animationPlayState: pressedDay === day ? 'paused' : 'running',
+                         animationDelay: bounce ? '0s' : `${i * 0.18}s`,
+                         transform: pressedDay === day ? 'scale(0.84) translateY(4px)' : 'scale(1) translateY(0px)',
+                         willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
+                         WebkitTapHighlightColor: 'transparent',
+                         userSelect: 'none',
+                       }}
+                       onMouseDown={(e) => { e.preventDefault(); setPressedDay(day); }}
+                       onMouseUp={() => setPressedDay(null)}
+                       onMouseLeave={() => setPressedDay(null)}
+                       onTouchStart={(e) => { e.preventDefault(); setPressedDay(day); }}
+                       onTouchEnd={() => setPressedDay(null)}
                       >
                         {isRestDay
                           ? done
