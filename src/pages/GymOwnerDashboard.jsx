@@ -338,6 +338,68 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   const TabOverview=()=>(
     <div className="space-y-5">
+
+      {/* ── GYM HEALTH SCORE ── */}
+      <div className="relative overflow-hidden rounded-2xl" style={{background:`linear-gradient(135deg, rgba(${healthRgb},0.12) 0%, rgba(8,10,20,0.96) 100%)`,border:`1px solid rgba(${healthRgb},0.28)`,boxShadow:`0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(${healthRgb},0.08)`}}>
+        {/* accent bar */}
+        <div style={{position:'absolute',left:0,top:0,bottom:0,width:4,background:`linear-gradient(180deg,${healthColor},transparent)`}}/>
+        {/* top shimmer */}
+        <div style={{position:'absolute',top:0,left:'5%',right:'5%',height:1,background:`linear-gradient(90deg,transparent,rgba(${healthRgb},0.5),transparent)`}}/>
+        {/* atmosphere orb */}
+        <div style={{position:'absolute',top:-60,right:-40,width:220,height:220,borderRadius:'50%',background:`radial-gradient(circle,rgba(${healthRgb},0.1) 0%,transparent 70%)`,pointerEvents:'none'}}/>
+        <div className="relative p-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              {/* Score circle */}
+              <div className="relative flex-shrink-0" style={{width:80,height:80}}>
+                <svg width="80" height="80" style={{transform:'rotate(-90deg)'}}>
+                  <circle cx="40" cy="40" r="34" fill="none" stroke={`rgba(${healthRgb},0.12)`} strokeWidth="7"/>
+                  <circle cx="40" cy="40" r="34" fill="none" stroke={healthColor} strokeWidth="7"
+                    strokeDasharray={`${2*Math.PI*34}`}
+                    strokeDashoffset={`${2*Math.PI*34*(1-healthScore/100)}`}
+                    strokeLinecap="round"
+                    style={{filter:`drop-shadow(0 0 6px ${healthColor})`,transition:'stroke-dashoffset 0.8s ease'}}/>
+                </svg>
+                <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                  <span style={{fontSize:20,fontWeight:900,color:healthColor,lineHeight:1,letterSpacing:'-0.04em'}}>{healthScore}</span>
+                  <span style={{fontSize:8,fontWeight:800,color:`rgba(${healthRgb},0.6)`,letterSpacing:'0.05em',textTransform:'uppercase'}}>/ 100</span>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span style={{fontSize:18}}>{healthEmoji}</span>
+                  <h3 style={{fontSize:18,fontWeight:900,color:'#fff',letterSpacing:'-0.02em',lineHeight:1}}>Gym Health Score</h3>
+                </div>
+                <span style={{display:'inline-block',fontSize:12,fontWeight:900,padding:'3px 10px',borderRadius:99,background:`rgba(${healthRgb},0.15)`,color:healthColor,border:`1px solid rgba(${healthRgb},0.3)`}}>{healthGrade}</span>
+              </div>
+            </div>
+            {/* Factor breakdown */}
+            <div className="flex gap-4 flex-wrap">
+              {[
+                {label:'Attendance',val:attendanceScore,tip:`${activeThisWeek} of ${totalMembers} active this week`},
+                {label:'Retention',val:atRiskScore,tip:`${atRisk} at-risk member${atRisk!==1?'s':''}`,warn:atRisk>0},
+                {label:'Activity Rate',val:growthScore,tip:`${retentionRate}% active last 30 days`},
+              ].map(({label,val,tip,warn})=>{
+                const fc=val>=80?'#34d399':val>=60?'#60a5fa':val>=40?'#fbbf24':'#f87171';
+                const fr=val>=80?'52,211,153':val>=60?'96,165,250':val>=40?'251,191,36':'248,113,113';
+                return (
+                  <div key={label} style={{minWidth:90}}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span style={{fontSize:10,fontWeight:800,color:'rgba(148,163,184,0.6)',textTransform:'uppercase',letterSpacing:'0.08em'}}>{label}</span>
+                      <span style={{fontSize:12,fontWeight:900,color:fc}}>{val}</span>
+                    </div>
+                    <div style={{height:5,borderRadius:99,background:'rgba(255,255,255,0.06)',overflow:'hidden',marginBottom:4}}>
+                      <div style={{height:'100%',borderRadius:99,width:`${val}%`,background:`linear-gradient(90deg,rgba(${fr},0.6),${fc})`,boxShadow:`0 0 6px rgba(${fr},0.4)`,transition:'width 0.8s ease'}}/>
+                    </div>
+                    <p style={{fontSize:9,color:'rgba(107,135,184,0.55)',lineHeight:1.3}}>{tip}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard icon={Dumbbell}   iconColor="#60a5fa" iconRgb="96,165,250"   label="Today's Check-ins"    value={todayCI}        sub="members in today"/>
         <KpiCard icon={Users}      iconColor="#34d399" iconRgb="52,211,153"   label="Active This Week"     value={activeThisWeek} sub={`of ${totalMembers} members`} trend={weeklyChangePct}/>
