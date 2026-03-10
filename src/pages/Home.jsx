@@ -403,6 +403,7 @@ export default function Home() {
   const [summaryLog, setSummaryLog] = useState(null);
   // NEW: controls the View Workout modal
   const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
+  const [pressedDay, setPressedDay] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -966,17 +967,21 @@ export default function Home() {
                           width: size, height: size, borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
-                          transition: 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.1s ease',
+                          transition: pressedDay === day
+                            ? 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease'
+                            : 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.18s cubic-bezier(0.34,1.5,0.64,1)',
                           animation: getAnimation(),
+                          animationPlayState: pressedDay === day ? 'paused' : 'running',
                           animationDelay: bounce ? '0s' : `${i * 0.18}s`,
+                          transform: pressedDay === day ? 'scale(0.84) translateY(4px)' : 'scale(1) translateY(0px)',
                           willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent',
                         }}
-                        onMouseDown={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease'; e.currentTarget.style.transform = 'scale(0.88) translateY(3px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
-                        onMouseUp={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.15s ease'; e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.15s ease'; e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
-                        onTouchStart={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease'; e.currentTarget.style.transform = 'scale(0.88) translateY(3px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
-                        onTouchEnd={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.15s ease'; e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
+                        onMouseDown={() => setPressedDay(day)}
+                        onMouseUp={() => setPressedDay(null)}
+                        onMouseLeave={() => setPressedDay(null)}
+                        onTouchStart={() => setPressedDay(day)}
+                        onTouchEnd={() => setPressedDay(null)}
                       >
                         {isRestDay
                           ? done
