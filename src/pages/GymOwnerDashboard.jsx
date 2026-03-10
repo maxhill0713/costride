@@ -369,9 +369,9 @@ export default function GymOwnerDashboard() {
 
           {/* ── 3 KPI Cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" iconRgb="96,165,250"  label="Today's Check-ins" value={todayCI}     sub="members in today"/>
-            <KpiCard icon={Users}         iconColor="#34d399" iconRgb="52,211,153"  label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct}/>
-            <KpiCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="251,146,60"  label="At-Risk Members"   value={atRisk}     sub="No visits in 10+ days"/>
+            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" label="Today's Check-ins" value={todayCI}     sub="members in today" tooltip="Number of unique members who checked in today"/>
+            <KpiCard icon={Users}         iconColor="#34d399" label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct} tooltip="Members who visited at least once this week vs total" statusColor={retentionRate>=60?'green':retentionRate>=30?'yellow':'red'}/>
+            <KpiCard icon={AlertTriangle} iconColor="#fb923c" label="At-Risk Members"   value={atRisk}     sub="No visits in 14+ days" tooltip="Members with no check-in for 14+ days — high churn risk" statusColor={atRisk===0?'green':atRisk<=3?'yellow':'red'}/>
           </div>
 
           {/* ── Check-ins Over Time with range toggle ── */}
