@@ -281,6 +281,73 @@ export default function GymOwnerDashboard() {
   const deleteAccountM=useMutation({mutationFn:()=>base44.functions.invoke('deleteUserAccount'),onSuccess:()=>{closeModal();base44.auth.logout();}});
   const createPollM=useMutation({mutationFn:d=>base44.entities.Poll.create({...d,gym_id:selectedGym.id,gym_name:selectedGym.name,created_by:currentUser.id,voters:[]}),onSuccess:()=>{inv('polls');closeModal();}});
 
+  // ── Stats (must be above early returns to satisfy Rules of Hooks) ──────────
+  const now=new Date();
+  const ci7=checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,7),end:now}));
+  const ci30=checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,30),end:now}));
+  const ciPrev30=checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,60),end:subDays(now,30)}));
+  const todayCI=checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(now).getTime()).length;
+  const totalMembers=allMemberships.length;
+  const activeThisWeek=new Set(ci7.map(c=>c.user_id)).size;
+  const activeLastWeek=new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:subDays(now,14),end:subDays(now,7)})).map(c=>c.user_id)).size;
+  const weeklyChangePct=activeLastWeek>0?Math.round(((activeThisWeek-activeLastWeek)/activeLastWeek)*100):0;
+  const activeThisMonth=new Set(ci30.map(c=>c.user_id)).size;
+  const retentionRate=totalMembers>0?Math.round((activeThisMonth/totalMembers)*100):0;
+  const monthCiPer=(()=>{const acc={};ci30.forEach(c=>{acc[c.user_id]=(acc[c.user_id]||0)+1;});return Object.values(acc);})();
+  const memberLastCheckIn={};
+  checkIns.forEach(c=>{if(!memberLastCheckIn[c.user_id]||new Date(c.check_in_date)>new Date(memberLastCheckIn[c.user_id]))memberLastCheckIn[c.user_id]=c.check_in_date;});
+  const atRisk=allMemberships.filter(m=>{const last=memberLastCheckIn[m.user_id];if(!last)return true;return Math.floor((now-new Date(last))/86400000)>=14;}).length;
+  const monthChangePct=ciPrev30.length>0?Math.round(((ci30.length-ciPrev30.length)/ciPrev30.length)*100):0;
+  const newSignUps=allMemberships.filter(m=>isWithinInterval(new Date(m.join_date||m.created_date||now),{start:subDays(now,30),end:now})).length;
+  const newSignUpsPrev=allMemberships.filter(m=>isWithinInterval(new Date(m.join_date||m.created_date||now),{start:subDays(now,60),end:subDays(now,30)})).length;
+  const newSignUpsPct=newSignUpsPrev>0?Math.round(((newSignUps-newSignUpsPrev)/newSignUpsPrev)*100):0;
+  const membershipPrice=parseFloat(selectedGym?.price)||0;
+  const revenueDisplay=membershipPrice>0?`£${(allMemberships.length*membershipPrice).toLocaleString()}`:'—';
+  const savedAnnouncements=selectedGym?.announcements||[];
+
+  // ── Churn Prediction ────────────────────────────────────────────────────────
+  const churnPredictions = React.useMemo(() => {
+    return allMemberships.map(m => {
+      const userCIs = checkIns.filter(c => c.user_id === m.user_id).sort((a,b) => new Date(b.check_in_date) - new Date(a.check_in_date));
+      const last = userCIs[0] ? new Date(userCIs[0].check_in_date) : null;
+      const daysSince = last ? Math.floor((now - last) / 86400000) : 999;
+      const visits30 = userCIs.filter(c => isWithinInterval(new Date(c.check_in_date), {start:subDays(now,30), end:now})).length;
+      const visitsPrev30 = userCIs.filter(c => isWithinInterval(new Date(c.check_in_date), {start:subDays(now,60), end:subDays(now,30)})).length;
+      const declining = visitsPrev30 > 0 && visits30 < visitsPrev30 * 0.6;
+      const neverVisited = userCIs.length === 0;
+      const reasons = [];
+      if (neverVisited) reasons.push({ text: 'Never visited', icon: '🚫' });
+      else if (daysSince >= 14) reasons.push({ text: `No visit in ${daysSince} days`, icon: '📅' });
+      if (declining) reasons.push({ text: `Visits dropped ${Math.round((1 - visits30/visitsPrev30)*100)}% this month`, icon: '📉' });
+      if (visits30 === 0 && !neverVisited) reasons.push({ text: 'Zero visits this month', icon: '⚠️' });
+      if (visits30 === 1) reasons.push({ text: 'Only 1 visit this month', icon: '🔻' });
+      const dayScore = Math.min(60, daysSince * 2);
+      const dropScore = declining ? Math.round((1 - visits30/(visitsPrev30||1)) * 30) : 0;
+      const noVisitScore = visits30 === 0 ? 20 : 0;
+      const riskScore = Math.min(100, dayScore + dropScore + noVisitScore);
+      return { ...m, daysSince, visits30, visitsPrev30, declining, reasons, riskScore, lastVisit: last, neverVisited };
+    })
+    .filter(m => m.riskScore >= 40)
+    .sort((a,b) => b.riskScore - a.riskScore)
+    .slice(0, 15);
+  }, [allMemberships, checkIns]);
+
+  // ── Health Score ────────────────────────────────────────────────────────────
+  const attendanceScore = totalMembers > 0 ? Math.min(100, Math.round((activeThisWeek / totalMembers) * 100)) : 0;
+  const atRiskScore     = totalMembers > 0 ? Math.max(0, Math.round(100 - (atRisk / totalMembers) * 100)) : 100;
+  const growthScore     = Math.min(100, Math.max(0, 50 + Math.round(monthChangePct / 2)));
+  const healthScore     = Math.round((attendanceScore + atRiskScore + growthScore) / 3);
+  const healthGrade     = healthScore >= 85 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention';
+  const healthColor     = healthScore >= 85 ? '#34d399' : healthScore >= 70 ? '#60a5fa' : healthScore >= 50 ? '#fbbf24' : '#f87171';
+  const healthRgb       = healthScore >= 85 ? '52,211,153' : healthScore >= 70 ? '96,165,250' : healthScore >= 50 ? '251,191,36' : '248,113,113';
+  const healthEmoji     = healthScore >= 85 ? '🏆' : healthScore >= 70 ? '💪' : healthScore >= 50 ? '⚡' : '⚠️';
+
+  const ciByDay=Array.from({length:7},(_,i)=>{const d=subDays(now,6-i);return{day:format(d,'EEE'),value:checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(d).getTime()).length};});
+  const weekTrend=Array.from({length:12},(_,i)=>{const s=subDays(now,(11-i)*7),e=subDays(now,(10-i)*7);return{label:format(s,'MMM d'),value:checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).length};});
+  const monthGrowth=Array.from({length:6},(_,i)=>{const e=subDays(now,i*30),s=subDays(e,30);return{label:format(e,'MMM'),value:new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size};}).reverse();
+
+  const dlQR=(id)=>{const svg=document.getElementById(id)?.querySelector('svg');if(!svg)return;const d=new XMLSerializer().serializeToString(svg);const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const img=new Image();img.onload=()=>{canvas.width=img.width;canvas.height=img.height;ctx.drawImage(img,0,0);const a=document.createElement('a');a.download=`${selectedGym?.name}-QR.png`;a.href=canvas.toDataURL('image/png');a.click();};img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(d)));};
+
   // ── Splashes ───────────────────────────────────────────────────────────────
   const Splash=({children})=>(<div className="min-h-screen flex items-center justify-center p-4" style={{background:BG.page}}><Panel className="max-w-md w-full text-center">{children}</Panel></div>);
   if(gymsError)return <Splash><div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.25)'}}><X className="w-7 h-7 text-red-400"/></div><h2 className="text-xl font-black text-white mb-2">Error</h2><p className="text-sm mb-6" style={{color:'#6b87b8'}}>{gymsError.message}</p><Button onClick={()=>window.location.reload()} className="bg-blue-600 hover:bg-blue-500 text-white">Retry</Button></Splash>;
