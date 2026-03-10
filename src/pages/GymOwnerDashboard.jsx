@@ -53,28 +53,62 @@ const NAV = [
   { id: 'gym',         label: 'Gym Settings',icon: Settings },
 ];
 
-// ── Shared components ─────────────────────────────────────────────────────────
-const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend }) => (
-  <div className="relative overflow-hidden rounded-2xl p-5 border transition-all duration-200 hover:-translate-y-0.5"
-    style={{ background: BG.card, borderColor: BORDER.panel, backdropFilter: 'blur(16px)' }}>
-    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.07]" style={{ background: iconColor }} />
-    <div className="flex items-start justify-between mb-4">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}28` }}>
-        <Icon className="w-5 h-5" style={{ color: iconColor }} />
-      </div>
-      {trend !== undefined && (
-        <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg"
-          style={{ background: trend >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(248,113,113,0.12)', color: trend >= 0 ? '#34d399' : '#f87171' }}>
-          {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-          {Math.abs(trend)}%
+// ── Tooltip component ─────────────────────────────────────────────────────────
+const MetricTooltip = ({ text, children }) => {
+  const [show, setShow] = React.useState(false);
+  return (
+    <span className="relative inline-flex items-center" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      {children}
+      {show && (
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap pointer-events-none"
+          style={{ background: '#02040a', border: `1px solid ${BORDER.active}`, color: '#93c5fd', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+          {text}
+          <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent" style={{ borderTopColor: BORDER.active }} />
         </span>
       )}
+    </span>
+  );
+};
+
+// ── Shared components ─────────────────────────────────────────────────────────
+const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend, tooltip, statusColor }) => {
+  const [hovered, setHovered] = React.useState(false);
+  // Derive border/bg color: green if good, yellow if warn, red if bad
+  const sc = statusColor || (trend !== undefined ? (trend >= 5 ? 'green' : trend >= 0 ? 'neutral' : 'red') : 'neutral');
+  const borderCol = sc === 'green' ? 'rgba(52,211,153,0.3)' : sc === 'red' ? 'rgba(248,113,113,0.25)' : sc === 'yellow' ? 'rgba(251,191,36,0.25)' : BORDER.panel;
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      className="relative overflow-hidden rounded-2xl p-5 border transition-all duration-200"
+      style={{ background: BG.card, borderColor: hovered ? borderCol : BORDER.panel, backdropFilter: 'blur(16px)', transform: hovered ? 'translateY(-2px)' : 'none', boxShadow: hovered ? `0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px ${borderCol}` : 'none' }}>
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.07]" style={{ background: iconColor }} />
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}28` }}>
+          <Icon className="w-5 h-5" style={{ color: iconColor }} />
+        </div>
+        {trend !== undefined && (
+          <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg"
+            style={{ background: trend >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(248,113,113,0.12)', color: trend >= 0 ? '#34d399' : '#f87171' }}>
+            {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {trend > 0 ? '+' : ''}{Math.abs(trend)}%
+          </span>
+        )}
+      </div>
+      <div className="text-3xl font-black text-white tracking-tight mb-1">{value}</div>
+      <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#94a3b8' }}>
+        {tooltip ? (
+          <MetricTooltip text={tooltip}>
+            <span className="cursor-help border-b border-dotted" style={{ borderColor: '#4a6492' }}>{label}</span>
+          </MetricTooltip>
+        ) : label}
+        {statusColor === 'green' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block ml-1"/>}
+        {statusColor === 'yellow' && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block ml-1"/>}
+        {statusColor === 'red' && <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block ml-1"/>}
+      </div>
+      {sub && <div className="text-xs" style={{ color: '#4a6492' }}>{sub}</div>}
     </div>
-    <div className="text-3xl font-black text-white tracking-tight mb-1">{value}</div>
-    <div className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#94a3b8' }}>{label}</div>
-    {sub && <div className="text-xs" style={{ color: '#4a6492' }}>{sub}</div>}
-  </div>
-);
+  );
+};
 
 const Panel = ({ children, className = '' }) => (
   <div className={`rounded-2xl border p-6 ${className}`}
