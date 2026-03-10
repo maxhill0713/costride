@@ -1,66 +1,23 @@
 import React from 'react';
-import { Trophy, Users, ChevronRight, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Trophy, Clock, Users, Target, CheckCircle, Zap, Gift, Award, Sparkles } from 'lucide-react';
 import UniqueBadge from './UniqueBadge';
 import { motion } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-// ─── Challenge illustration (top-right corner, matching Progress page style) ──
-function ChallengeIllustration({ progress }) {
-  const pct = Math.min(100, progress);
-  const r = 22;
-  const circ = 2 * Math.PI * r;
-  const dash = (pct / 100) * circ;
-
-  return (
-    <svg width="90" height="72" viewBox="0 0 120 96" fill="none">
-      {/* Outer glow rings */}
-      <circle cx="80" cy="28" r="36" stroke="rgba(6,182,212,0.08)" strokeWidth="1.5" fill="none" />
-      <circle cx="80" cy="28" r="27" stroke="rgba(6,182,212,0.12)" strokeWidth="1.5" fill="none" />
-      {/* Track ring */}
-      <circle cx="80" cy="28" r={r} stroke="rgba(6,182,212,0.18)" strokeWidth="4" fill="none" />
-      {/* Progress arc */}
-      <circle
-        cx="80" cy="28" r={r}
-        stroke="url(#cg1)"
-        strokeWidth="4"
-        fill="none"
-        strokeDasharray={`${dash} ${circ - dash}`}
-        strokeDashoffset={circ * 0.25}
-        strokeLinecap="round"
-      />
-      {/* Trophy icon center */}
-      <text x="80" y="34" textAnchor="middle" fontSize="16" fill="rgba(251,191,36,0.9)">🏆</text>
-      {/* Sparkle dots */}
-      <circle cx="40" cy="14" r="2.5" fill="rgba(6,182,212,0.6)" />
-      <circle cx="32" cy="30" r="1.5" fill="rgba(6,182,212,0.4)" />
-      <circle cx="50" cy="52" r="2"   fill="rgba(6,182,212,0.3)" />
-      <defs>
-        <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stopColor="#22d3ee" />
-          <stop offset="100%" stopColor="#0ea5e9" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-// ─── Shared styles (mirrors Progress page) ────────────────────────────────────
-const btnCyan =
-  'bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 text-white font-bold rounded-full px-4 py-1.5 flex items-center gap-1.5 justify-center shadow-[0_3px_0_0_#0369a1,0_6px_16px_rgba(6,100,200,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-xs transform-gpu';
-
 export default function WeeklyChallengeCard({ challenge, currentUser }) {
   const [showStats, setShowStats] = React.useState(false);
-  const [pressed, setPressed] = React.useState(false);
   const queryClient = useQueryClient();
-
-  const isParticipant    = challenge.participants?.includes(currentUser?.id);
+  const isParticipant = challenge.participants?.includes(currentUser?.id);
   const participantCount = challenge.participants?.length || 0;
-  const targetValue      = challenge.target_value || 50;
-  const progress         = Math.min(100, Math.floor((participantCount / targetValue) * 100));
-  const remaining        = Math.max(0, targetValue - participantCount);
-  const daysLeft         = Math.ceil((new Date(challenge.end_date) - new Date()) / (1000 * 60 * 60 * 24));
-  const isExpired        = daysLeft <= 0;
+  const targetValue = challenge.target_value || 50;
+  const progress = Math.min(100, Math.floor((participantCount / targetValue) * 100));
+  const remaining = Math.max(0, targetValue - participantCount);
+  
+  const daysLeft = Math.ceil((new Date(challenge.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+  const isExpired = daysLeft <= 0;
 
   const joinMutation = useMutation({
     mutationFn: async () => {
@@ -71,10 +28,9 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
       await queryClient.cancelQueries({ queryKey: ['weeklyChallenges'] });
       const previous = queryClient.getQueryData(['weeklyChallenges']);
       queryClient.setQueryData(['weeklyChallenges'], (old = []) =>
-        old.map(c =>
-          c.id === challenge.id
-            ? { ...c, participants: [...(c.participants || []), currentUser.id] }
-            : c
+        old.map(c => c.id === challenge.id
+          ? { ...c, participants: [...(c.participants || []), currentUser.id] }
+          : c
         )
       );
       return { previous };
@@ -84,211 +40,120 @@ export default function WeeklyChallengeCard({ challenge, currentUser }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['weeklyChallenges'] });
-    },
+    }
   });
 
-  const pressEvents = {
-    onMouseDown:   () => setPressed(true),
-    onMouseUp:     () => setPressed(false),
-    onMouseLeave:  () => setPressed(false),
-    onTouchStart:  () => setPressed(true),
-    onTouchEnd:    () => setPressed(false),
-    onTouchCancel: () => setPressed(false),
-  };
+  const isBadgeReward = challenge.reward && challenge.reward.toLowerCase().includes('badge');
 
   return (
-    <div
-      className="relative overflow-hidden rounded-2xl p-4 w-full text-left"
-      style={{
-        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
-        border: `1px solid ${pressed ? 'rgba(6,182,212,0.45)' : 'rgba(255,255,255,0.07)'}`,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: pressed
-          ? '0 2px 8px rgba(0,0,0,0.5), 0 0 22px 2px rgba(6,182,212,0.25)'
-          : '0 4px 24px rgba(0,0,0,0.4)',
-        transition: 'box-shadow 0.22s ease, border-color 0.22s ease',
-      }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
     >
-      {/* Top shine */}
+      {/* ── Only this wrapper changed: matches Progress page TallCard box style ── */}
       <div
-        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        className="rounded-2xl p-5 overflow-hidden relative"
         style={{
-          background:
-            'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)',
+          background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
         }}
-      />
-
-      {/* Background glow blob */}
-      <div
-        className="absolute inset-0 pointer-events-none rounded-2xl"
-        style={{
-          background: 'radial-gradient(ellipse at 25% 35%, rgba(6,182,212,0.25) 0%, transparent 60%)',
-          opacity: 0.09,
-        }}
-      />
-
-      {/* Illustration — top right */}
-      <div className="absolute top-0 right-0 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
-        <ChallengeIllustration progress={progress} />
-      </div>
-
-      {/* ── Content (max 62% width so it doesn't overlap illustration) ── */}
-      <div className="relative flex flex-col gap-3" style={{ maxWidth: '62%' }}>
-
-        {/* Header row: icon + title */}
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(6,182,212,0.18)' }}
-          >
-            <Trophy className="w-4 h-4" style={{ color: '#22d3ee' }} />
-          </div>
-          <span className="text-[15px] font-black text-white tracking-tight leading-tight">
-            {challenge.title}
-          </span>
-        </div>
-
-        {/* Description */}
-        {challenge.description && (
-          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
-            {challenge.description}
-          </p>
-        )}
-
-        {/* Progress bar — tap to reveal stats */}
-        <div>
-          <button
-            onClick={() => setShowStats(s => !s)}
-            className="w-full"
-            {...pressEvents}
-          >
-            <div className="relative h-3 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-                className="h-full rounded-full"
-                style={{
-                  background: 'linear-gradient(90deg, #22d3ee, #0ea5e9)',
-                  boxShadow: '0 0 8px rgba(6,182,212,0.5)',
-                }}
-              />
-            </div>
-          </button>
-
-          {showStats && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-2 rounded-xl px-3 py-2 border text-center"
-              style={{
-                background: 'rgba(6,182,212,0.07)',
-                borderColor: 'rgba(6,182,212,0.25)',
-              }}
-            >
-              {challenge.goal_type === 'longest_streak' ? (
-                <>
-                  <p className="text-sm font-bold text-cyan-300">
-                    {currentUser?.streak || 0}/{targetValue}
-                  </p>
-                  <p className="text-[10px] text-slate-400">days in streak</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-bold text-cyan-300">
-                    {participantCount}/{targetValue}
-                  </p>
-                  <p className="text-[10px] text-slate-400">{remaining} more needed</p>
-                </>
-              )}
-            </motion.div>
-          )}
-        </div>
-
-        {/* Meta chips: days left + participants */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {!isExpired && (
-            <span
-              className="text-[10px] font-bold rounded-full px-2.5 py-0.5 border"
-              style={{
-                color: daysLeft <= 2 ? '#f87171' : '#22d3ee',
-                background: daysLeft <= 2 ? 'rgba(239,68,68,0.1)' : 'rgba(6,182,212,0.1)',
-                borderColor: daysLeft <= 2 ? 'rgba(239,68,68,0.25)' : 'rgba(6,182,212,0.25)',
-              }}
-            >
-              {daysLeft}d left
-            </span>
-          )}
-          {isExpired && (
-            <span className="text-[10px] font-bold rounded-full px-2.5 py-0.5 border border-slate-600/40 text-slate-500 bg-slate-800/40">
-              Ended
-            </span>
-          )}
-          <span
-            className="text-[10px] font-bold rounded-full px-2.5 py-0.5 border"
-            style={{
-              color: 'rgba(255,255,255,0.6)',
-              background: 'rgba(255,255,255,0.05)',
-              borderColor: 'rgba(255,255,255,0.1)',
-            }}
-          >
-            <Users className="w-2.5 h-2.5 inline-block mr-1 -mt-px" />
-            {participantCount}
-          </span>
-        </div>
-
-        {/* Reward pill */}
+      >
+        {/* Top shine line — same as TallCard */}
         <div
-          className="flex items-center gap-2.5 rounded-xl px-3 py-2 border"
+          className="absolute inset-x-0 top-0 h-px pointer-events-none"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            borderColor: 'rgba(6,182,212,0.2)',
+            background:
+              'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)',
           }}
-        >
-          <div className="flex-shrink-0">
-            <UniqueBadge reward={challenge.reward} size="sm" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[9px] text-slate-500 uppercase tracking-wider">Reward</p>
-            <p className="text-xs font-black text-cyan-200 truncate">
-              {challenge.reward || 'Weekly Challenge Badge'}
-            </p>
-          </div>
-        </div>
+        />
 
-        {/* Join button */}
-        {!isExpired && (
-          isParticipant ? (
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-              <span className="text-xs font-bold text-green-400">Joined</span>
+        <div className="relative z-10">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-white mb-1 text-base">{challenge.title}</h4>
+              <p className="text-xs text-slate-400 mb-2">{challenge.description}</p>
             </div>
-          ) : (
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 shadow-lg overflow-hidden">
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg" alt="Challenge" className="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-3">
             <button
-              onClick={() => joinMutation.mutate()}
-              disabled={joinMutation.isPending}
-              className={btnCyan}
-              style={{ width: 'fit-content' }}
+              onClick={() => setShowStats(!showStats)}
+              className="w-full hover:opacity-80 transition-opacity cursor-pointer active:scale-95"
             >
-              Join Challenge
+              <div className="relative h-4 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/50"
+                />
+              </div>
             </button>
-          )
-        )}
-      </div>
+            {showStats && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 bg-slate-800/60 rounded-lg p-2 text-center border border-cyan-500/30"
+              >
+                {challenge.goal_type === 'longest_streak' ? (
+                  <>
+                    <p className="text-sm font-bold text-cyan-300">{currentUser?.streak || 0}/{targetValue}</p>
+                    <p className="text-xs text-slate-400">days in streak</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold text-cyan-300">{participantCount}/{targetValue}</p>
+                    <p className="text-xs text-slate-400">{remaining} more needed</p>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </div>
 
-      {/* Arrow chip — bottom right (mirrors TallCard) */}
-      <div className="absolute bottom-3 right-3">
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center"
-          style={{
-            background: 'rgba(6,182,212,0.18)',
-            border: '1px solid rgba(6,182,212,0.45)',
-          }}
-        >
-          <ChevronRight className="w-3.5 h-3.5" style={{ color: '#22d3ee' }} />
+          {/* Reward Section */}
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-cyan-500/30 rounded-xl px-3 py-2.5 mt-4 flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <UniqueBadge reward={challenge.reward} size="sm" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Challenge Reward</p>
+              <p className="text-base font-black text-cyan-200">{challenge.reward || 'Weekly Challenge Badge'}</p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="mt-3 flex gap-2">
+            <motion.div 
+              whileHover={!isParticipant && !isExpired ? { scale: 1.02 } : {}}
+              whileTap={!isParticipant && !isExpired ? { scale: 0.98 } : {}}
+              className="flex-1"
+            >
+              <Button
+                onClick={() => joinMutation.mutate()}
+                disabled={joinMutation.isPending || isExpired || isParticipant}
+                className={`w-full font-bold text-sm h-10 transition-all rounded-lg ${
+                  isParticipant 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border border-green-400/50 shadow-lg shadow-green-500/30' 
+                    : isExpired
+                    ? 'hidden'
+                    : 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white border border-cyan-400/50 shadow-lg shadow-cyan-500/30'
+                }`}
+              >
+                {isParticipant ? '✓ Joined' : 'Join Challenge'}
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
