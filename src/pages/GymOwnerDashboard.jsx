@@ -398,7 +398,7 @@ export default function GymOwnerDashboard() {
         <div className="divide-y" style={{borderColor:'rgba(59,130,246,0.07)'}}>
           {ci7.slice(0,10).map((c,i)=>(
             <div key={i} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0" style={{background:'linear-gradient(135deg,#3b82f6,#06b6d4)'}}>{c.user_name?.charAt(0)?.toUpperCase()}</div>
+              <Avatar userId={c.user_id} name={c.user_name}/>
               <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white truncate">{c.user_name}</p><p className="text-xs" style={{color:'#3d5a8a'}}>checked in</p></div>
               <p className="text-xs flex-shrink-0" style={{color:'#3d5a8a'}}>{format(new Date(c.check_in_date),'MMM d, h:mma')}</p>
             </div>
