@@ -50,6 +50,7 @@ export default function StrengthProgress({ currentUser }) {
   const [exercise, setExercise] = useState(null);
   const [period, setPeriod]     = useState('6m');
   const [selectedDay, setSelectedDay] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: lifts = [], isLoading } = useQuery({
     queryKey: ['lifts', currentUser?.id],
@@ -64,11 +65,11 @@ export default function StrengthProgress({ currentUser }) {
     if (!currentUser?.id) return;
     const unsubscribe = base44.entities.WorkoutLog.subscribe((event) => {
       if (event.type === 'create' && event.data?.user_id === currentUser.id) {
-        // Invalidate lifts query to refetch on new workout log
+        queryClient.invalidateQueries({ queryKey: ['lifts', currentUser.id] });
       }
     });
     return unsubscribe;
-  }, [currentUser?.id]);
+  }, [currentUser?.id, queryClient]);
 
   // Parse split data
   const split = useMemo(() => {
