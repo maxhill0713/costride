@@ -87,7 +87,6 @@ function useAnimationStyles() {
 // Individual animated slot
 function CodeSlot({ char, index, prevLength, currentLength }) {
   const filled = !!char;
-  // Key changes when char appears so charPop re-triggers
   const charKey = filled ? `${char}-${index}-${currentLength}` : `empty-${index}`;
 
   return (
@@ -222,12 +221,24 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
       onClick={handleClose}
     >
       <Card
-        className={`bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-4 md:p-6 shadow-2xl ${exiting ? 'modal-exit' : 'modal-enter'}`}
+        className={`max-w-md w-full p-4 md:p-6 shadow-2xl shadow-black/20 rounded-3xl border ${exiting ? 'modal-exit' : 'modal-enter'}`}
+        style={{
+          background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Top shine line */}
+        <div
+          className="absolute inset-x-0 top-0 h-px pointer-events-none rounded-t-3xl"
+          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between mb-4 md:mb-6 item-in" style={{ animationDelay: '80ms' }}>
-          <h2 className="text-lg md:text-2xl font-black bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">
+          <h2 className="text-lg md:text-2xl font-black text-white">
             Join with Code
           </h2>
         </div>
@@ -279,8 +290,8 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
           </div>
         </form>
 
-        <div className="mt-4 md:mt-6 p-3 md:p-4 bg-cyan-900/20 border border-cyan-600/30 rounded-xl item-in" style={{ animationDelay: '260ms' }}>
-          <h3 className="text-xs md:text-sm font-bold text-cyan-300 mb-2">How it works</h3>
+        <div className="mt-4 md:mt-6 p-3 md:p-4 bg-white/5 border border-white/8 rounded-xl item-in" style={{ animationDelay: '260ms' }}>
+          <h3 className="text-xs md:text-sm font-bold text-slate-300 mb-2">How it works</h3>
           <ul className="text-[10px] md:text-xs text-slate-300 space-y-1">
             <li>• Get your gym's unique code</li>
             <li>• Enter it above</li>
@@ -291,4 +302,3 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
     </div>
   );
 }
-
