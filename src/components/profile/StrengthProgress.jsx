@@ -150,26 +150,48 @@ export default function StrengthProgress({ currentUser }) {
         <h2 className="text-[15px] font-bold text-white">Strength Progress</h2>
       </div>
 
-      {/* Exercise pills */}
-      <div className="flex gap-2 flex-wrap">
-        {EXERCISES.map((ex) => {
-          const hasData = exercisesWithData.some((e) => e.key === ex.key);
-          return (
+      {/* Split day selector */}
+      {splitDays.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {splitDays.map((day) => (
             <button
-              key={ex.key}
-              onClick={() => setExercise(ex.key)}
-              className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all"
+              key={day}
+              onClick={() => setSelectedDay(day)}
+              className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all capitalize"
               style={{
-                background: exercise === ex.key ? ex.color : 'rgba(255,255,255,0.06)',
-                color: exercise === ex.key ? '#000' : hasData ? ex.color : 'rgba(148,163,184,0.5)',
-                border: `1px solid ${exercise === ex.key ? ex.color : hasData ? `${ex.color}44` : 'rgba(255,255,255,0.08)'}`,
+                background: selectedDay === day ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)',
+                color: selectedDay === day ? '#d8b4fe' : '#94a3b8',
+                border: `1px solid ${selectedDay === day ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.08)'}`,
               }}
             >
-              {ex.label}
+              {day}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Exercise pills */}
+      {availableExercises.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {availableExercises.map((ex) => {
+            const hasData = exercisesWithData.some((e) => e.key === ex.key);
+            return (
+              <button
+                key={ex.key}
+                onClick={() => setExercise(ex.key)}
+                className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all"
+                style={{
+                  background: exercise === ex.key ? ex.color : 'rgba(255,255,255,0.06)',
+                  color: exercise === ex.key ? '#000' : hasData ? ex.color : 'rgba(148,163,184,0.5)',
+                  border: `1px solid ${exercise === ex.key ? ex.color : hasData ? `${ex.color}44` : 'rgba(255,255,255,0.08)'}`,
+                }}
+              >
+                {ex.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Period selector */}
       <div className="flex gap-1 bg-slate-800/40 rounded-lg p-1 w-fit">
