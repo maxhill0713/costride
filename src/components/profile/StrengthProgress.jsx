@@ -214,12 +214,14 @@ export default function StrengthProgress({ currentUser }) {
     const max     = Math.max(...weights);
     const min     = Math.min(...weights);
     const recent  = chartData[chartData.length - 1]?.weight;
+    const previous = chartData.length > 1 ? chartData[chartData.length - 2]?.weight : recent;
     const first   = chartData[0]?.weight;
     const change  = first ? +((recent - first) / first * 100).toFixed(1) : 0;
+    const sessionIncrease = previous ? +(recent - previous).toFixed(1) : 0;
     const avg     = +(weights.reduce((s, v) => s + v, 0) / weights.length).toFixed(1);
     const prs     = chartData.filter(d => d.is_pr).length;
     const prEntry = chartData.filter(d => d.is_pr).at(-1);
-    return { max, min, recent, change, avg, prs, prEntry };
+    return { max, min, recent, change, sessionIncrease, avg, prs, prEntry };
   }, [chartData]);
 
   const yDomain = chartData.length > 0
