@@ -15,51 +15,95 @@ import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-export default function Gyms() {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [maxDistance, setMaxDistance] = useState('all');
-  const [selectedEquipment, setSelectedEquipment] = useState('all');
-  const [editingGym, setEditingGym] = useState(null);
-  const [showJoinWithCode, setShowJoinWithCode] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [savedGyms, setSavedGyms] = useState([]);
-  const [equipmentGym, setEquipmentGym] = useState(null);
-  const [galleryGym, setGalleryGym] = useState(null);
-  const [placesResults, setPlacesResults] = useState([]);
-  const [searchingPlaces, setSearchingPlaces] = useState(false);
-  const [showAddGymModal, setShowAddGymModal] = useState(false);
-  const [selectedPlaceGym, setSelectedPlaceGym] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [gymType, setGymType] = useState('general');
-  const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
-  const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
-  const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
-  const queryClient = useQueryClient();
+// ─── Dialog animation override ────────────────────────────────────────────────
+const PRIMARY_GYM_DIALOG_STYLES = `
+  @keyframes pgDialogIn {
+    0%   { transform: translate(-50%, calc(-50% + 20px)) scale(0.95); opacity: 0; }
+    65%  { transform: translate(-50%, calc(-50% - 3px))  scale(1.01); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.0);               opacity: 1; }
+  }
+  @keyframes pgDialogOut {
+    0%   { transform: translate(-50%, -50%) scale(1.0);  opacity: 1; }
+    100% { transform: translate(-50%, calc(-50% + 14px)) scale(0.95); opacity: 0; }
+  }
+  @keyframes pgOverlayIn  { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pgOverlayOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes pgItemIn {
+    0%   { transform: translateY(10px); opacity: 0; }
+    65%  { transform: translateY(-2px); opacity: 1; }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
 
-  const { data: currentUser } = useQuery({
+  /* Target the primary gym dialog specifically via a data attribute we'll add */
+  [data-primary-gym-dialog][data-state="open"] {
+    animation: pgDialogIn 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+  }
+  [data-primary-gym-dialog][data-state="closed"] {
+    animation: pgDialogOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
+  }
+
+  .pg-item-in {
+    opacity: 0;
+    animation: pgItemIn 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+`;
+
+function usePrimaryGymDialogStyles() {
+  useEffect(() => {
+    const id = 'primary-gym-dialog-anim';
+    if (!document.getElementById(id)) {
+      const tag = document.createElement('style');
+      tag.id = id;
+      tag.textContent = PRIMARY_GYM_DIALOG_STYLES;
+      document.head.appendChild(tag);
+    }
+  }, []);
+}
+
+export default function Gyms() {
+const navigate = useNavigate();
+const [searchQuery, setSearchQuery] = useState('');
+const [selectedType, setSelectedType] = useState('all');
+const [maxDistance, setMaxDistance] = useState('all');
+const [selectedEquipment, setSelectedEquipment] = useState('all');
+const [editingGym, setEditingGym] = useState(null);
+const [showJoinWithCode, setShowJoinWithCode] = useState(false);
+const [showFilterModal, setShowFilterModal] = useState(false);
+const [savedGyms, setSavedGyms] = useState([]);
+const [equipmentGym, setEquipmentGym] = useState(null);
+const [galleryGym, setGalleryGym] = useState(null);
+const [placesResults, setPlacesResults] = useState([]);
+const [searchingPlaces, setSearchingPlaces] = useState(false);
+const [showAddGymModal, setShowAddGymModal] = useState(false);
+const [selectedPlaceGym, setSelectedPlaceGym] = useState(null);
+const [isOwner, setIsOwner] = useState(false);
+const [gymType, setGymType] = useState('general');
+const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
+const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
+const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
+const queryClient = useQueryClient();
+
+usePrimaryGymDialogStyles();
+
+const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => null),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   });
-
   useEffect(() => {
-    if (currentUser && !currentUser.onboarding_completed) {
+if (currentUser && !currentUser.onboarding_completed) {
       navigate(createPageUrl('Onboarding'));
     }
   }, [currentUser, navigate]);
-
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const joinCode = urlParams.get('joinCode');
-    if (joinCode && currentUser) {
+React.useEffect(() => {
+const urlParams = new URLSearchParams(window.location.search);
+const joinCode = urlParams.get('joinCode');
+if (joinCode && currentUser) {
       setShowJoinWithCode(true);
     }
   }, [currentUser]);
-
-  const { data: gymMemberships = [] } = useQuery({
+const { data: gymMemberships = [] } = useQuery({
     queryKey: ['gymMemberships', currentUser?.id],
     queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
     enabled: !!currentUser,
@@ -67,45 +111,41 @@ export default function Gyms() {
     gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
-  const { data: gyms = [] } = useQuery({
+const { data: gyms = [] } = useQuery({
     queryKey: ['gyms'],
     queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 100),
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
-  const memberGymIds = gymMemberships.map((m) => m.gym_id);
-  const { data: userGymsData = [] } = useQuery({
+const memberGymIds = gymMemberships.map((m) => m.gym_id);
+const { data: userGymsData = [] } = useQuery({
     queryKey: ['memberGyms', currentUser?.id],
     queryFn: async () => {
-      if (memberGymIds.length === 0) return [];
-      const results = await Promise.all(
+if (memberGymIds.length === 0) return [];
+const results = await Promise.all(
         memberGymIds.map((id) => base44.entities.Gym.filter({ id }).then((r) => r[0]).catch(() => null))
       );
-      return results.filter(Boolean);
+return results.filter(Boolean);
     },
     enabled: !!currentUser && gymMemberships.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev
   });
-
-  const updateGymImageMutation = useMutation({
+const updateGymImageMutation = useMutation({
     mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       setEditingGym(null);
     }
   });
-
-  const updatePrimaryGymMutation = useMutation({
+const updatePrimaryGymMutation = useMutation({
     mutationFn: (gymId) => base44.auth.updateMe({ primary_gym_id: gymId }),
     onMutate: async (gymId) => {
-      const previous = queryClient.getQueryData(['currentUser']);
+const previous = queryClient.getQueryData(['currentUser']);
       queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, primary_gym_id: gymId } : old);
-      return { previous };
+return { previous };
     },
     onError: (err, gymId, context) => {
       queryClient.setQueryData(['currentUser'], context.previous);
@@ -115,21 +155,20 @@ export default function Gyms() {
       setSelectedPrimaryGym(null);
     }
   });
-
-  const leaveGymMutation = useMutation({
+const leaveGymMutation = useMutation({
     mutationFn: async (gymId) => {
-      const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: currentUser?.id });
-      if (memberships.length > 0) {
-        await base44.entities.GymMembership.delete(memberships[0].id);
+const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: currentUser?.id });
+if (memberships.length > 0) {
+await base44.entities.GymMembership.delete(memberships[0].id);
       }
     },
     onMutate: async (gymId) => {
-      await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      const previous = queryClient.getQueryData(['gymMemberships', currentUser?.id]);
+await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
+const previous = queryClient.getQueryData(['gymMemberships', currentUser?.id]);
       queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) =>
         old.filter((m) => m.gym_id !== gymId)
       );
-      return { previous };
+return { previous };
     },
     onError: (err, gymId, context) => {
       queryClient.setQueryData(['gymMemberships', currentUser?.id], context.previous);
@@ -140,41 +179,37 @@ export default function Gyms() {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
   });
-
-  const userGyms = [...userGymsData].sort((a, b) => {
-    if (a.id === currentUser?.primary_gym_id) return -1;
-    if (b.id === currentUser?.primary_gym_id) return 1;
-    return 0;
+const userGyms = [...userGymsData].sort((a, b) => {
+if (a.id === currentUser?.primary_gym_id) return -1;
+if (b.id === currentUser?.primary_gym_id) return 1;
+return 0;
   });
-
-  const filteredGyms = gyms.filter((gym) => {
-    const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+const filteredGyms = gyms.filter((gym) => {
+const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'all' || gym.type === selectedType;
-    const matchesDistance = maxDistance === 'all' || gym.distance_km && gym.distance_km <= parseFloat(maxDistance);
-    const matchesEquipment = selectedEquipment === 'all' ||
+const matchesType = selectedType === 'all' || gym.type === selectedType;
+const matchesDistance = maxDistance === 'all' || gym.distance_km && gym.distance_km <= parseFloat(maxDistance);
+const matchesEquipment = selectedEquipment === 'all' ||
       gym.equipment && gym.equipment.includes(selectedEquipment);
-    const isGhostOrApproved = gym.status === 'approved' || !gym.admin_id && !gym.owner_email;
-    return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
+const isGhostOrApproved = gym.status === 'approved' || !gym.admin_id && !gym.owner_email;
+return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
   });
-
-  const toggleSave = (gymId) => {
+const toggleSave = (gymId) => {
     setSavedGyms((prev) =>
       prev.includes(gymId) ? prev.filter((id) => id !== gymId) : [...prev, gymId]
     );
   };
-
-  const searchPlaces = async (query) => {
-    if (!query.trim() || query.length < 2) {
+const searchPlaces = async (query) => {
+if (!query.trim() || query.length < 2) {
       setPlacesResults([]);
-      return;
+return;
     }
     setSearchingPlaces(true);
-    try {
-      const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
-      const results = response.data.results || [];
-      const existingPlaceIds = gyms.map((g) => g.google_place_id).filter(Boolean);
-      const newPlaces = results.filter((place) => !existingPlaceIds.includes(place.place_id));
+try {
+const response = await base44.functions.invoke('searchGymsPlaces', { input: query });
+const results = response.data.results || [];
+const existingPlaceIds = gyms.map((g) => g.google_place_id).filter(Boolean);
+const newPlaces = results.filter((place) => !existingPlaceIds.includes(place.place_id));
       setPlacesResults(newPlaces);
     } catch (error) {
       console.error('Places search failed:', error);
@@ -183,23 +218,20 @@ export default function Gyms() {
       setSearchingPlaces(false);
     }
   };
-
-  const handleSelectPlace = (place) => {
+const handleSelectPlace = (place) => {
     setSelectedPlaceGym(place);
     setShowAddGymModal(true);
   };
-
-  const [showConfirmJoin, setShowConfirmJoin] = useState(false);
-  const [pendingGymData, setPendingGymData] = useState(null);
-
-  const createGymMutation = useMutation({
+const [showConfirmJoin, setShowConfirmJoin] = useState(false);
+const [pendingGymData, setPendingGymData] = useState(null);
+const createGymMutation = useMutation({
     mutationFn: async (gymData) => {
-      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      if (existingGyms.length > 0) {
-        return { exists: true, gym: existingGyms[0] };
+const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
+if (existingGyms.length > 0) {
+return { exists: true, gym: existingGyms[0] };
       }
-      const newGym = await base44.entities.Gym.create(gymData);
-      return { exists: false, gym: newGym };
+const newGym = await base44.entities.Gym.create(gymData);
+return { exists: false, gym: newGym };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
@@ -212,25 +244,24 @@ export default function Gyms() {
       setSearchQuery('');
     }
   });
-
-  const handleCreateGym = async () => {
-    if (!selectedPlaceGym) return;
-    if (gymMemberships.length >= 3 && !isOwner) {
+const handleCreateGym = async () => {
+if (!selectedPlaceGym) return;
+if (gymMemberships.length >= 3 && !isOwner) {
       alert('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
-      return;
+return;
     }
-    if (!isOwner) {
-      const userCreatedGhostGyms = gyms.filter((g) =>
+if (!isOwner) {
+const userCreatedGhostGyms = gyms.filter((g) =>
         g.created_by === currentUser?.email && !g.admin_id && !g.owner_email
       );
-      if (userCreatedGhostGyms.length >= 3) {
+if (userCreatedGhostGyms.length >= 3) {
         alert('You have reached the limit of 3 ghost gyms you can create. Please claim ownership if you manage this gym.');
-        return;
+return;
       }
     }
-    const addressParts = selectedPlaceGym.address.split(',');
-    const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedPlaceGym.address;
-    const gymData = {
+const addressParts = selectedPlaceGym.address.split(',');
+const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedPlaceGym.address;
+const gymData = {
       name: selectedPlaceGym.name,
       address: selectedPlaceGym.address,
       city: city,
@@ -246,30 +277,27 @@ export default function Gyms() {
       members_count: 0,
       image_url: selectedPlaceGym.photo_url || null
     };
-    if (isOwner && gymMemberships.length > 0) {
+if (isOwner && gymMemberships.length > 0) {
       setPendingGymData(gymData);
       setShowConfirmJoin(true);
     } else {
       createGymMutation.mutate(gymData);
     }
   };
-
-  const handleConfirmJoin = () => {
-    if (pendingGymData) {
+const handleConfirmJoin = () => {
+if (pendingGymData) {
       createGymMutation.mutate(pendingGymData);
     }
   };
-
   useEffect(() => {
-    const timer = setTimeout(() => {
+const timer = setTimeout(() => {
       searchPlaces(searchQuery);
     }, 500);
-    return () => clearTimeout(timer);
+return () => clearTimeout(timer);
   }, [searchQuery, gyms]);
-
-  const GymCard = ({ gym }) => {
-    const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
-    return (
+const GymCard = ({ gym }) => {
+const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
+return (
       <div className="group cursor-pointer">
         <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl">
           {gym.image_url &&
@@ -316,8 +344,7 @@ export default function Gyms() {
       </div>
     );
   };
-
-  return (
+return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
       <Tabs defaultValue={gymMemberships.length > 0 ? "my-gyms" : "explore"} className="w-full">
         <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pt-6 pb-4">
@@ -345,7 +372,6 @@ export default function Gyms() {
             </div>
           </div>
         </div>
-
         {userGyms.length > 0 &&
           <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
             <div className="max-w-6xl mx-auto">
@@ -428,7 +454,6 @@ export default function Gyms() {
             </div>
           </TabsContent>
         }
-
         <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-4">
           <div className="max-w-6xl mx-auto">
             <div className="space-y-2 mb-4">
@@ -443,7 +468,6 @@ export default function Gyms() {
                   {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />}
                 </button>
               </div>
-
               {searchingPlaces && searchQuery.length >= 2 &&
                 <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
                   <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
@@ -461,7 +485,6 @@ export default function Gyms() {
                   </div>
                 </div>
               }
-
               {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
                 <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
                   <p className="text-xs font-semibold flex items-center gap-2">
@@ -490,7 +513,6 @@ export default function Gyms() {
                 </div>
               }
             </div>
-
             {filteredGyms.length === 0 ?
               <div className="text-center py-12">
                 <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
@@ -538,10 +560,8 @@ export default function Gyms() {
           </div>
         </TabsContent>
       </Tabs>
-
       <EditHeroImageModal open={!!editingGym} onClose={() => setEditingGym(null)} currentImageUrl={editingGym?.image_url} onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })} isLoading={updateGymImageMutation.isPending} />
       <JoinWithCodeModal open={showJoinWithCode} onClose={() => setShowJoinWithCode(false)} currentUser={currentUser} />
-
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto bg-slate-900 border border-slate-700/50 text-white rounded-2xl">
           <DialogHeader>
@@ -565,7 +585,6 @@ export default function Gyms() {
           </div>
         </DialogContent>
       </Dialog>
-
       <Dialog open={!!galleryGym} onOpenChange={() => setGalleryGym(null)}>
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <div>
@@ -583,20 +602,31 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
+      {/* ── Set Primary Gym modal ── */}
       <Dialog open={showPrimaryGymModal} onOpenChange={setShowPrimaryGymModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg [&>button]:hidden">
+        <DialogContent
+          data-primary-gym-dialog
+          className="bg-slate-900 border-slate-700 text-white max-w-lg [&>button]:hidden"
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2"><Star className="w-5 h-5 text-purple-400" />Set Primary Gym</DialogTitle>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 pg-item-in" style={{ animationDelay: '60ms' }}>
+              <Star className="w-5 h-5 text-purple-400" />Set Primary Gym
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
+            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3 pg-item-in" style={{ animationDelay: '100ms' }}>
               <p className="text-purple-200 text-sm">Your primary gym is the default community shown on the Home page and accessed via the Community navigation button.</p>
             </div>
             <div className="space-y-2">
-              {userGyms.map((gym) => {
+              {userGyms.map((gym, i) => {
                 const isPrimary = selectedPrimaryGym === gym.id || !selectedPrimaryGym && currentUser?.primary_gym_id === gym.id;
                 return (
-                  <button key={gym.id} onClick={() => setSelectedPrimaryGym(gym.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}>
+                  <button
+                    key={gym.id}
+                    onClick={() => setSelectedPrimaryGym(gym.id)}
+                    className={`pg-item-in w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}
+                    style={{ animationDelay: `${140 + i * 55}ms` }}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isPrimary ? 'bg-purple-500' : 'bg-slate-700'}`}>
@@ -613,7 +643,10 @@ export default function Gyms() {
                 );
               })}
             </div>
-            <div className="flex gap-3">
+            <div
+              className="flex gap-3 pg-item-in"
+              style={{ animationDelay: `${140 + userGyms.length * 55}ms` }}
+            >
               <Button onClick={() => { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); }} variant="outline" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-black backdrop-blur-md text-white border border-slate-700 h-9 px-4 flex-1 shadow-[0_3px_0_0_rgba(0,0,0,0.5),0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">Cancel</Button>
               <Button onClick={() => { if (selectedPrimaryGym) { updatePrimaryGymMutation.mutate(selectedPrimaryGym); } else { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); } }} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
                 {updatePrimaryGymMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
@@ -642,7 +675,6 @@ export default function Gyms() {
           </div>
         </DialogContent>
       </Dialog>
-
       <Dialog open={!!confirmLeaveGym} onOpenChange={() => setConfirmLeaveGym(null)}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
           <DialogHeader>
@@ -657,7 +689,6 @@ export default function Gyms() {
           </div>
         </DialogContent>
       </Dialog>
-
       {showFilterModal &&
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
@@ -699,7 +730,6 @@ export default function Gyms() {
           </div>
         </>
       }
-
       <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
           <DialogHeader>
