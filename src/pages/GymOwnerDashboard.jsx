@@ -53,22 +53,8 @@ const NAV = [
 ];
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
-const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub, trend, compact }) => {
+const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub, trend }) => {
   const [hov,setHov]=React.useState(false);
-  if (compact) return (
-    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{position:'relative',overflow:'hidden',borderRadius:14,background:'linear-gradient(145deg,#0d1e35 0%,#060d1f 100%)',border:`1px solid ${hov?`rgba(${iconRgb},0.25)`:'rgba(255,255,255,0.07)'}`,transform:hov?'translateY(-1px)':'translateY(0)',transition:'all 0.2s'}}>
-      <div style={{position:'absolute',left:0,top:0,bottom:0,width:2,background:`linear-gradient(180deg,rgba(${iconRgb},0.7) 0%,transparent 100%)`}}/>
-      <div style={{position:'relative',padding:'10px 10px 9px 12px'}}>
-        <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,marginBottom:6,flexShrink:0}}>
-          <Icon style={{width:13,height:13,color:iconColor}}/>
-        </div>
-        <div style={{fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:3}}>{value}</div>
-        <div style={{fontSize:8,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(148,163,184,0.55)',marginBottom:2,lineHeight:1.2}}>{label}</div>
-        {trend!==undefined&&<span style={{display:'inline-flex',alignItems:'center',gap:2,fontSize:9,fontWeight:800,padding:'2px 5px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171'}}>{trend>=0?'↑':'↓'}{Math.abs(trend)}%</span>}
-      </div>
-    </div>
-  );
   return (
     <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{position:'relative',overflow:'hidden',borderRadius:20,background:'linear-gradient(145deg,#0d1e35 0%,#060d1f 100%)',border:`1px solid ${hov?`rgba(${iconRgb},0.25)`:'rgba(255,255,255,0.07)'}`,boxShadow:hov?`0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(${iconRgb},0.12)`:'0 8px 32px rgba(0,0,0,0.45)',transition:'border-color 0.2s,box-shadow 0.2s,transform 0.2s',transform:hov?'translateY(-2px)':'translateY(0)'}}>
@@ -381,16 +367,150 @@ export default function GymOwnerDashboard() {
     ].filter(Boolean).slice(0,3);
 
     return (
+      <>
+      {/* ═══════════════════════════════ MOBILE LAYOUT ═══════════════════════════════ */}
+      <div className="md:hidden space-y-3 pb-2">
+
+        {/* Hero: Today's Check-ins */}
+        <div style={{borderRadius:22,background:'linear-gradient(145deg,rgba(14,42,100,0.95),rgba(4,8,24,0.98))',border:'1px solid rgba(59,130,246,0.28)',padding:'24px 20px 20px',position:'relative',overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.6)'}}>
+          <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(96,165,250,0.5),transparent)'}}/>
+          <div style={{position:'absolute',top:-60,right:-40,width:200,height:200,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.13) 0%,transparent 70%)',pointerEvents:'none'}}/>
+          <div style={{position:'absolute',bottom:-40,left:-20,width:150,height:150,borderRadius:'50%',background:'radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%)',pointerEvents:'none'}}/>
+          <div className="flex items-start justify-between">
+            <div>
+              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(96,165,250,0.65)',marginBottom:10}}>Today's Check-ins</p>
+              <p style={{fontSize:72,fontWeight:900,color:'#fff',letterSpacing:'-0.05em',lineHeight:1,marginBottom:8}}>{todayCI}</p>
+              <p style={{fontSize:12,color:'rgba(107,135,184,0.6)'}}>members visited today</p>
+            </div>
+            <div style={{width:48,height:48,borderRadius:15,background:'rgba(59,130,246,0.15)',border:'1px solid rgba(59,130,246,0.3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 4px 12px rgba(0,0,0,0.3)'}}>
+              <Dumbbell style={{width:22,height:22,color:'#60a5fa'}}/>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 mt-4 pt-4" style={{borderTop:'1px solid rgba(59,130,246,0.12)'}}>
+            <div style={{flex:1}}>
+              <p style={{fontSize:10,color:'rgba(107,135,184,0.5)',marginBottom:2}}>Active this week</p>
+              <p style={{fontSize:18,fontWeight:900,color:'#34d399',letterSpacing:'-0.03em'}}>{activeThisWeek}<span style={{fontSize:12,color:'rgba(107,135,184,0.45)',fontWeight:600}}>/{totalMembers}</span></p>
+            </div>
+            <div style={{width:1,height:36,background:'rgba(59,130,246,0.15)'}}/>
+            <div style={{flex:1}}>
+              <p style={{fontSize:10,color:'rgba(107,135,184,0.5)',marginBottom:2}}>Engagement</p>
+              <p style={{fontSize:18,fontWeight:900,color:'#a78bfa',letterSpacing:'-0.03em'}}>{retentionRate}%</p>
+            </div>
+            <div style={{width:1,height:36,background:'rgba(59,130,246,0.15)'}}/>
+            <div style={{flex:1}}>
+              <p style={{fontSize:10,color:'rgba(107,135,184,0.5)',marginBottom:2}}>At risk</p>
+              <p style={{fontSize:18,fontWeight:900,color:atRisk>0?'#fb923c':'#34d399',letterSpacing:'-0.03em'}}>{atRisk}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:8,paddingLeft:2}}>Quick Actions</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {[
+              {icon:UserPlus,          label:'Add Member',    sub:'Manage members', color:'#60a5fa',rgb:'96,165,250',  floor:'rgba(14,40,120,0.8)', onClick:()=>openModal('members')},
+              {icon:QrCode,            label:'Scan Check-In', sub:'QR scanner',     color:'#34d399',rgb:'52,211,153',  floor:'rgba(4,60,40,0.8)',   onClick:()=>openModal('qrScanner')},
+              {icon:Trophy,            label:'Challenge',     sub:'Create one',     color:'#fb923c',rgb:'251,146,60',  floor:'rgba(80,20,4,0.8)',   onClick:()=>openModal('challenge')},
+              {icon:MessageSquarePlus, label:'Post Update',   sub:'Share news',     color:'#a78bfa',rgb:'167,139,250', floor:'rgba(40,10,90,0.8)', onClick:()=>openModal('post')},
+            ].map(({icon:Icon,label,sub,color,rgb,floor,onClick},i)=>(
+              <button key={i} onClick={onClick} style={{display:'flex',alignItems:'center',gap:12,padding:'14px 14px',borderRadius:16,background:`linear-gradient(145deg,rgba(${rgb},0.12),rgba(${rgb},0.05))`,border:`1px solid rgba(${rgb},0.28)`,borderBottom:`3px solid ${floor}`,cursor:'pointer',width:'100%',textAlign:'left',position:'relative',overflow:'hidden',transition:'transform 0.1s',WebkitTapHighlightColor:'transparent'}}
+                onTouchStart={e=>e.currentTarget.style.transform='scale(0.97)'}
+                onTouchEnd={e=>e.currentTarget.style.transform='scale(1)'}>
+                <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${rgb},0.4),transparent)`}}/>
+                <div style={{width:36,height:36,borderRadius:11,background:`rgba(${rgb},0.18)`,border:`1px solid rgba(${rgb},0.3)`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <Icon style={{width:17,height:17,color}}/>
+                </div>
+                <div>
+                  <p style={{fontSize:13,fontWeight:900,color:'#fff',letterSpacing:'-0.01em',marginBottom:1}}>{label}</p>
+                  <p style={{fontSize:10,color:`rgba(${rgb},0.65)`,fontWeight:600}}>{sub}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Alerts */}
+        {(atRisk > 0 || !challenges.some(c=>c.status==='active')) && (
+          <div>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:8,paddingLeft:2}}>Alerts</p>
+            <div className="space-y-2">
+              {atRisk>0&&<AlertCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="249,115,22" title={`${atRisk} members at risk`} message="No check-in for 14+ days" action={()=>setTab('members')} actionLabel="View Members"/>}
+              {!challenges.some(c=>c.status==='active')&&<AlertCard icon={Trophy} iconColor="#60a5fa" iconRgb="96,165,250" title="No active challenges" message="Challenges boost retention" action={()=>openModal('challenge')} actionLabel="Create one"/>}
+              {polls.length===0&&<AlertCard icon={BarChart2} iconColor="#a78bfa" iconRgb="167,139,250" title="No active polls" message="Engage members with a poll" action={()=>openModal('poll')} actionLabel="Create one"/>}
+            </div>
+          </div>
+        )}
+
+        {/* Check-ins chart */}
+        <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',backdropFilter:'blur(20px)',padding:'16px',position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',inset:'0',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p style={{fontSize:13,fontWeight:800,color:'#fff'}}>Check-ins</p>
+              <p style={{fontSize:11,color:'#4a6492'}}>Last 7 days</p>
+            </div>
+            <span style={{fontSize:13,fontWeight:900,color:monthChangePct>=0?'#34d399':'#f87171'}}>{monthChangePct>=0?'+':''}{monthChangePct}% this month</span>
+          </div>
+          <ResponsiveContainer width="100%" height={140}>
+            <BarChart data={ciByDay} barSize={28}>
+              <defs><linearGradient id="mBarFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/><stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/></linearGradient></defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
+              <XAxis dataKey="day" tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} width={20}/>
+              <Tooltip content={<DT/>} cursor={{fill:'rgba(59,130,246,0.06)'}}/>
+              <Bar dataKey="value" fill="url(#mBarFill)" radius={[5,5,0,0]} name="Check-ins"/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Engagement tiers */}
+        <div>
+          <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:8,paddingLeft:2}}>Member Engagement</p>
+          <div className="space-y-2">
+            {[
+              {label:'Highly Active',   count:monthCiPer.filter(v=>v>=12).length,     emoji:'🔥',color:'#34d399',rgb:'52,211,153',  sub:'12+ visits/month'},
+              {label:'Moderately Active',count:monthCiPer.filter(v=>v>=4&&v<12).length,emoji:'💪',color:'#60a5fa',rgb:'96,165,250',  sub:'4–11 visits'},
+              {label:'Inactive',        count:allMemberships.filter(m=>{const l=memberLastCheckIn[m.user_id];return !l||Math.floor((now-new Date(l))/86400000)>=30;}).length, emoji:'😴',color:'#f87171',rgb:'248,113,113',sub:'30+ days away'},
+            ].map((tier,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:14,background:`rgba(${tier.rgb},0.07)`,border:`1px solid rgba(${tier.rgb},0.18)`,position:'relative',overflow:'hidden'}}>
+                <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${tier.rgb},0.7),transparent)`}}/>
+                <span style={{fontSize:20,flexShrink:0}}>{tier.emoji}</span>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:12,fontWeight:700,color:'rgba(148,163,184,0.8)',marginBottom:1}}>{tier.label}</p>
+                  <p style={{fontSize:10,color:'rgba(107,135,184,0.5)'}}>{tier.sub}</p>
+                </div>
+                <p style={{fontSize:28,fontWeight:900,color:tier.color,letterSpacing:'-0.04em',lineHeight:1}}>{tier.count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Insights */}
+        {insightsList.length > 0 && (
+          <div>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:8,paddingLeft:2}}>Insights</p>
+            <div className="space-y-2">
+              {insightsList.map((ins,i)=>(
+                <AlertCard key={i} icon={ins.icon} iconColor={ins.color} iconRgb={ins.rgb} title={ins.title} message={ins.message} action={ins.action} actionLabel={ins.actionLabel}/>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════ DESKTOP LAYOUT ═══════════════════════════════ */}
+      <div className="hidden md:block">
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_272px] gap-5 items-start">
 
         {/* ════ MAIN COLUMN ════ */}
         <div className="space-y-5">
 
           {/* ── 3 KPI Cards ── */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" iconRgb="96,165,250"  label="Today's Check-ins" value={todayCI}     sub="members in today" compact/>
-            <KpiCard icon={Users}         iconColor="#34d399" iconRgb="52,211,153"  label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct} compact/>
-            <KpiCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="251,146,60"  label="At-Risk Members"   value={atRisk}     sub="No visits in 10+ days" compact/>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" iconRgb="96,165,250"  label="Today's Check-ins" value={todayCI}     sub="members in today"/>
+            <KpiCard icon={Users}         iconColor="#34d399" iconRgb="52,211,153"  label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct}/>
+            <KpiCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="251,146,60"  label="At-Risk Members"   value={atRisk}     sub="No visits in 10+ days"/>
           </div>
           {/* ── Check-ins Over Time with range toggle ── */}
           <Panel>
@@ -600,6 +720,8 @@ export default function GymOwnerDashboard() {
           </Panel>
         </div>
       </div>
+      </div>{/* end desktop wrapper */}
+      </>
     );
   };
 
@@ -607,6 +729,112 @@ export default function GymOwnerDashboard() {
   // TAB: MEMBERS
   // ══════════════════════════════════════════════════════════════════════════
   const TabMembers = () => (
+    <>
+    {/* ═══ MOBILE ═══ */}
+    <div className="md:hidden space-y-3 pb-2">
+
+      {/* Hero: Total Members */}
+      <div style={{borderRadius:22,background:'linear-gradient(145deg,rgba(10,40,100,0.95),rgba(4,8,24,0.98))',border:'1px solid rgba(52,211,153,0.25)',padding:'22px 20px',position:'relative',overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.6)'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(52,211,153,0.45),transparent)'}}/>
+        <div style={{position:'absolute',top:-50,right:-30,width:180,height:180,borderRadius:'50%',background:'radial-gradient(circle,rgba(52,211,153,0.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(52,211,153,0.6)',marginBottom:8}}>Total Members</p>
+            <p style={{fontSize:68,fontWeight:900,color:'#fff',letterSpacing:'-0.05em',lineHeight:1}}>{totalMembers}</p>
+            <p style={{fontSize:12,color:'rgba(107,135,184,0.6)',marginTop:6}}>active memberships</p>
+          </div>
+          <div style={{textAlign:'right'}}>
+            <p style={{fontSize:10,color:'rgba(107,135,184,0.45)',marginBottom:4}}>This week</p>
+            <span style={{display:'inline-flex',alignItems:'center',gap:4,fontSize:13,fontWeight:800,padding:'5px 10px',borderRadius:99,background:weeklyChangePct>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:weeklyChangePct>=0?'#34d399':'#f87171',border:`1px solid ${weeklyChangePct>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
+              {weeklyChangePct>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(weeklyChangePct)}%
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            {label:'Active',val:activeThisWeek,color:'#34d399',sub:'this week'},
+            {label:'Retention',val:`${retentionRate}%`,color:'#a78bfa',sub:'30-day rate'},
+            {label:'PRs Logged',val:lifts.filter(l=>l.is_pr).length,color:'#fbbf24',sub:'all time'},
+          ].map((s,i)=>(
+            <div key={i} style={{background:'rgba(255,255,255,0.04)',borderRadius:12,padding:'10px 12px',border:'1px solid rgba(255,255,255,0.06)'}}>
+              <p style={{fontSize:20,fontWeight:900,color:s.color,letterSpacing:'-0.03em',lineHeight:1,marginBottom:3}}>{s.val}</p>
+              <p style={{fontSize:9,fontWeight:700,color:'rgba(148,163,184,0.5)',textTransform:'uppercase',letterSpacing:'0.05em'}}>{s.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Engagement tiers 2x2 */}
+      <div>
+        <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:8,paddingLeft:2}}>Engagement Tiers — Last 30 days</p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {[
+            {label:'Super Active',sub:'15+ visits/mo',val:monthCiPer.filter(v=>v>=15).length,c:'#34d399',bg:'rgba(16,185,129,0.09)',b:'rgba(16,185,129,0.22)',e:'🔥'},
+            {label:'Active',      sub:'8–14 visits/mo',val:monthCiPer.filter(v=>v>=8&&v<15).length,c:'#60a5fa',bg:'rgba(59,130,246,0.09)',b:'rgba(59,130,246,0.22)',e:'💪'},
+            {label:'Casual',      sub:'1–7 visits/mo', val:monthCiPer.filter(v=>v>=1&&v<8).length,c:'#fbbf24',bg:'rgba(251,191,36,0.09)',b:'rgba(251,191,36,0.22)',e:'🚶'},
+            {label:'At Risk',     sub:'14d+ inactive',  val:atRisk,c:'#f87171',bg:'rgba(248,113,113,0.09)',b:'rgba(248,113,113,0.22)',e:'⚠️'},
+          ].map((t,i)=>(
+            <div key={i} style={{padding:'16px 14px',borderRadius:16,background:t.bg,border:`1px solid ${t.b}`,position:'relative',overflow:'hidden'}}>
+              <p style={{fontSize:20,marginBottom:8}}>{t.e}</p>
+              <p style={{fontSize:34,fontWeight:900,color:t.c,letterSpacing:'-0.04em',lineHeight:1,marginBottom:4}}>{t.val}</p>
+              <p style={{fontSize:12,fontWeight:800,color:'#fff',marginBottom:2}}>{t.label}</p>
+              <p style={{fontSize:10,color:'rgba(107,135,184,0.55)'}}>{t.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Leaderboard */}
+      <div>
+        <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+          <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>This Week's Leaderboard</p>
+          <button onClick={()=>openModal('members')} style={{fontSize:11,fontWeight:700,color:'#60a5fa',background:'none',border:'none',cursor:'pointer',padding:0}}>All Members</button>
+        </div>
+        <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',backdropFilter:'blur(20px)',padding:'12px',position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+          <div className="space-y-1.5">
+            {Object.entries(ci7.reduce((acc,c)=>{acc[c.user_name]=(acc[c.user_name]||0)+1;return acc;},{}))
+              .sort(([,a],[,b])=>b-a).slice(0,6)
+              .map(([name,count],idx)=>(
+                <div key={name} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,background:idx<3?'rgba(59,130,246,0.08)':'rgba(13,35,96,0.25)',border:`1px solid ${idx<3?'rgba(59,130,246,0.18)':'rgba(255,255,255,0.05)'}`}}>
+                  <span style={{fontSize:16,width:22,textAlign:'center',flexShrink:0}}>{['🥇','🥈','🥉'][idx]||<span style={{fontSize:11,color:'#3d5a8a',fontWeight:800}}>{idx+1}</span>}</span>
+                  <span style={{flex:1,fontSize:14,fontWeight:700,color:'#fff'}}>{name}</span>
+                  <span style={{fontSize:12,fontWeight:800,padding:'3px 8px',borderRadius:8,background:'rgba(13,35,96,0.6)',color:'#93b4e8'}}>{count} visits</span>
+                </div>
+              ))}
+            {ci7.length===0&&<Empty icon={Users} label="No check-ins this week yet"/>}
+          </div>
+        </div>
+      </div>
+
+      {/* Rewards */}
+      <div>
+        <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+          <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Rewards Program</p>
+          <button onClick={()=>openModal('rewards')} style={{fontSize:11,fontWeight:700,color:'#60a5fa',background:'none',border:'none',cursor:'pointer',padding:0}}>Manage</button>
+        </div>
+        {rewards.length>0?(
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',backdropFilter:'blur(20px)',padding:'12px',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+            <div className="space-y-2">
+              {rewards.slice(0,4).map(r=>(
+                <div key={r.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,background:'rgba(13,35,96,0.25)',border:'1px solid rgba(255,255,255,0.05)'}}>
+                  <span style={{fontSize:22,flexShrink:0}}>{r.icon||'🎁'}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontSize:13,fontWeight:700,color:'#fff',marginBottom:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.title}</p>
+                    <p style={{fontSize:10,color:'#4a6492'}}>{r.claimed_by?.length||0} claimed</p>
+                  </div>
+                  <Tag color={r.active?'green':'blue'}>{r.active?'Active':'Off'}</Tag>
+                </div>
+              ))}
+            </div>
+          </div>
+        ):<div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px'}}><Empty icon={Gift} label="No rewards yet — create some to boost retention"/></div>}
+      </div>
+    </div>
+
+    {/* ═══ DESKTOP ═══ */}
+    <div className="hidden md:block">
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard icon={Users}    iconColor="#60a5fa" iconRgb="96,165,250"  label="Total Members"    value={totalMembers}        sub="active memberships"/>
@@ -689,12 +917,138 @@ export default function GymOwnerDashboard() {
         </Panel>
       </div>
     </div>
+    </div>{/* end desktop */}
+    </>
   );
 
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: CONTENT
   // ══════════════════════════════════════════════════════════════════════════
   const TabContent = () => (
+    <>
+    {/* ═══ MOBILE ═══ */}
+    <div className="md:hidden space-y-3 pb-2">
+
+      {/* 4 big create buttons */}
+      <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',paddingLeft:2}}>Create Content</p>
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          {icon:MessageSquarePlus,label:'New Post',     sub:'Share with members',         color:'#60a5fa',rgb:'96,165,250',  floor:'rgba(14,40,120,0.9)', onClick:()=>openModal('post')},
+          {icon:Calendar,         label:'New Event',    sub:`${events.filter(e=>new Date(e.event_date)>=now).length} upcoming`, color:'#34d399',rgb:'52,211,153',floor:'rgba(4,60,40,0.9)',   onClick:()=>openModal('event')},
+          {icon:Trophy,           label:'Challenge',    sub:`${challenges.filter(c=>c.status==='active').length} active`,       color:'#fb923c',rgb:'251,146,60',floor:'rgba(80,20,4,0.9)',   onClick:()=>openModal('challenge')},
+          {icon:BarChart2,        label:'New Poll',     sub:`${polls.length} active`,     color:'#a78bfa',rgb:'167,139,250',floor:'rgba(40,10,90,0.9)', onClick:()=>openModal('poll')},
+        ].map(({icon:Icon,label,sub,color,rgb,floor,onClick},i)=>(
+          <button key={i} onClick={onClick} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:10,padding:'18px 16px 16px',borderRadius:18,background:`linear-gradient(145deg,rgba(${rgb},0.14),rgba(${rgb},0.06))`,border:`1px solid rgba(${rgb},0.3)`,borderBottom:`4px solid ${floor}`,cursor:'pointer',width:'100%',textAlign:'left',position:'relative',overflow:'hidden',WebkitTapHighlightColor:'transparent'}}
+            onTouchStart={e=>{e.currentTarget.style.transform='translateY(3px) scale(0.98)';e.currentTarget.style.borderBottomWidth='1px';}}
+            onTouchEnd={e=>{e.currentTarget.style.transform='translateY(0) scale(1)';e.currentTarget.style.borderBottomWidth='4px';}}>
+            <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${rgb},0.4),transparent)`}}/>
+            <div style={{width:40,height:40,borderRadius:13,background:`rgba(${rgb},0.18)`,border:`1px solid rgba(${rgb},0.3)`,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:`0 4px 12px rgba(0,0,0,0.2),0 0 8px rgba(${rgb},0.15)`}}>
+              <Icon style={{width:20,height:20,color}}/>
+            </div>
+            <div>
+              <p style={{fontSize:14,fontWeight:900,color:'#fff',letterSpacing:'-0.01em',marginBottom:3}}>{label}</p>
+              <p style={{fontSize:11,fontWeight:600,color:`rgba(${rgb},0.65)`}}>{sub}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Recent Posts */}
+      {posts.length>0&&(
+        <div>
+          <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Recent Posts</p>
+            <button onClick={()=>openModal('post')} style={{fontSize:11,fontWeight:700,color:'#60a5fa',background:'none',border:'none',cursor:'pointer',padding:0}}>+ New</button>
+          </div>
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+            <div className="space-y-2">
+              {posts.slice(0,4).map(post=>(
+                <div key={post.id} style={{padding:'11px 12px',borderRadius:12,background:'rgba(13,35,96,0.25)',border:'1px solid rgba(255,255,255,0.05)'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                    <div style={{width:26,height:26,borderRadius:'50%',background:'linear-gradient(135deg,#3b82f6,#06b6d4)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:900,flexShrink:0}}>{post.member_name?.charAt(0)?.toUpperCase()}</div>
+                    <p style={{fontSize:13,fontWeight:700,color:'#fff',flex:1}}>{post.member_name}</p>
+                    <p style={{fontSize:11,color:'#3d5a8a'}}>{format(new Date(post.created_date),'MMM d')}</p>
+                  </div>
+                  <p style={{fontSize:12,color:'#6b87b8',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',marginBottom:6}}>{post.content}</p>
+                  <div style={{display:'flex',gap:12,fontSize:11,color:'#3d5a8a'}}><span>❤️ {post.likes||0}</span><span>💬 {post.comments?.length||0}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Events */}
+      {events.filter(e=>new Date(e.event_date)>=now).length>0&&(
+        <div>
+          <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Upcoming Events</p>
+            <button onClick={()=>openModal('event')} style={{fontSize:11,fontWeight:700,color:'#34d399',background:'none',border:'none',cursor:'pointer',padding:0}}>+ New</button>
+          </div>
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px'}}>
+            <div className="space-y-2">
+              {events.filter(e=>new Date(e.event_date)>=now).slice(0,3).map(ev=>(
+                <div key={ev.id} style={{padding:'11px 12px',borderRadius:12,background:'rgba(16,185,129,0.07)',border:'1px solid rgba(16,185,129,0.15)'}}>
+                  <p style={{fontSize:13,fontWeight:800,color:'#fff',marginBottom:3}}>{ev.title}</p>
+                  <p style={{fontSize:11,color:'#6b87b8',marginBottom:5,display:'-webkit-box',WebkitLineClamp:1,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{ev.description}</p>
+                  <div style={{display:'flex',gap:10,fontSize:11,color:'#3d5a8a'}}><span>📅 {format(new Date(ev.event_date),'MMM d, h:mma')}</span><span>👥 {ev.attendees||0}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Challenges */}
+      {challenges.filter(c=>c.status==='active').length>0&&(
+        <div>
+          <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Active Challenges</p>
+            <button onClick={()=>openModal('challenge')} style={{fontSize:11,fontWeight:700,color:'#fb923c',background:'none',border:'none',cursor:'pointer',padding:0}}>+ New</button>
+          </div>
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px'}}>
+            {challenges.filter(c=>c.status==='active').slice(0,3).map(ch=>(
+              <div key={ch.id} style={{padding:'11px 12px',borderRadius:12,background:'rgba(249,115,22,0.07)',border:'1px solid rgba(249,115,22,0.18)',marginBottom:8}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+                  <p style={{fontSize:13,fontWeight:800,color:'#fff'}}>🏆 {ch.title}</p>
+                  <Tag color="orange">{ch.type?.replace('_',' ')}</Tag>
+                </div>
+                <div style={{display:'flex',gap:10,fontSize:11,color:'#3d5a8a'}}><span>👥 {ch.participants?.length||0} joined</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Active Polls */}
+      {polls.length>0&&(
+        <div>
+          <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Active Polls</p>
+            <button onClick={()=>openModal('poll')} style={{fontSize:11,fontWeight:700,color:'#a78bfa',background:'none',border:'none',cursor:'pointer',padding:0}}>+ New</button>
+          </div>
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px'}}>
+            {polls.slice(0,3).map(poll=>(
+              <div key={poll.id} style={{padding:'11px 12px',borderRadius:12,background:'rgba(139,92,246,0.07)',border:'1px solid rgba(139,92,246,0.18)',marginBottom:8}}>
+                <p style={{fontSize:13,fontWeight:800,color:'#fff',marginBottom:4}}>{poll.title}</p>
+                <div style={{display:'flex',alignItems:'center',gap:8,fontSize:11,color:'#3d5a8a'}}><span>📊 {poll.voters?.length||0} votes</span><Tag color="purple">{poll.status}</Tag></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty states */}
+      {posts.length===0&&events.length===0&&challenges.length===0&&polls.length===0&&(
+        <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'20px'}}>
+          <Empty icon={FileText} label="No content yet — use the buttons above to get started"/>
+        </div>
+      )}
+    </div>
+
+    {/* ═══ DESKTOP ═══ */}
+    <div className="hidden md:block">
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <ActionBtn icon={MessageSquarePlus} label="New Post"      sub="Share with members"   color="#60a5fa" rgb="96,165,250"   floor="#1e3a8a" onClick={()=>openModal('post')}/>
@@ -770,12 +1124,102 @@ export default function GymOwnerDashboard() {
         </Panel>
       </div>
     </div>
+    </div>{/* end desktop */}
+    </>
   );
 
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: ANALYTICS
   // ══════════════════════════════════════════════════════════════════════════
   const TabAnalytics = () => (
+    <>
+    {/* ═══ MOBILE ═══ */}
+    <div className="md:hidden space-y-3 pb-2">
+
+      {/* 4 KPI stats in 2x2 grid */}
+      <div className="grid grid-cols-2 gap-2.5">
+        {[
+          {icon:Activity,   color:'#60a5fa',rgb:'96,165,250',  label:'Daily Avg',      value:Math.round(ci30.length/30),sub:'check-ins / day'},
+          {icon:TrendingUp, color:monthChangePct>=0?'#34d399':'#f87171',rgb:monthChangePct>=0?'52,211,153':'248,113,113',label:'Monthly Δ',value:`${monthChangePct>=0?'+':''}${monthChangePct}%`,sub:'vs prev 30 days'},
+          {icon:Users,      color:'#a78bfa',rgb:'167,139,250', label:'Avg Visits',     value:totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—',sub:'per member (30d)'},
+          {icon:Zap,        color:'#fbbf24',rgb:'251,191,36',  label:'Return Rate',    value:`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`,sub:'of all check-ins'},
+        ].map((s,i)=>(
+          <div key={i} style={{borderRadius:18,background:'linear-gradient(145deg,#0d1e35,#060d1f)',border:`1px solid rgba(${s.rgb},0.2)`,padding:'16px 14px',position:'relative',overflow:'hidden',boxShadow:'0 4px 20px rgba(0,0,0,0.4)'}}>
+            <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${s.rgb},0.75),transparent)`}}/>
+            <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${s.rgb},0.4),transparent)`}}/>
+            <div style={{width:34,height:34,borderRadius:10,background:`rgba(${s.rgb},0.14)`,border:`1px solid rgba(${s.rgb},0.25)`,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10}}>
+              <s.icon style={{width:16,height:16,color:s.color}}/>
+            </div>
+            <p style={{fontSize:28,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:5}}>{s.value}</p>
+            <p style={{fontSize:9,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(148,163,184,0.55)',marginBottom:2}}>{s.label}</p>
+            <p style={{fontSize:10,color:'rgba(107,135,184,0.5)'}}>{s.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Weekly trend chart */}
+      <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'16px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+        <p style={{fontSize:13,fontWeight:800,color:'#fff',marginBottom:3}}>Weekly Check-in Trend</p>
+        <p style={{fontSize:11,color:'#4a6492',marginBottom:12}}>Last 12 weeks</p>
+        <ResponsiveContainer width="100%" height={160}>
+          <AreaChart data={weekTrend}>
+            <defs><linearGradient id="mg1" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
+            <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:9}} axisLine={false} tickLine={false} interval={3}/>
+            <YAxis tick={{fill:'#6b87b8',fontSize:9}} axisLine={false} tickLine={false} width={20}/>
+            <Tooltip content={<DT/>}/>
+            <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#mg1)" name="Check-ins"/>
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Monthly growth chart */}
+      <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'16px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+        <p style={{fontSize:13,fontWeight:800,color:'#fff',marginBottom:3}}>Active Members Growth</p>
+        <p style={{fontSize:11,color:'#4a6492',marginBottom:12}}>Last 6 months</p>
+        <ResponsiveContainer width="100%" height={140}>
+          <AreaChart data={monthGrowth}>
+            <defs><linearGradient id="mg2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient></defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.08)" vertical={false}/>
+            <XAxis dataKey="label" tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false}/>
+            <YAxis tick={{fill:'#6b87b8',fontSize:10}} axisLine={false} tickLine={false} width={20}/>
+            <Tooltip content={<DT/>}/>
+            <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fill="url(#mg2)" name="Members"/>
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Peak hours */}
+      <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'16px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+        <p style={{fontSize:13,fontWeight:800,color:'#fff',marginBottom:3}}>Peak Visit Times</p>
+        <p style={{fontSize:11,color:'#4a6492',marginBottom:12}}>Most popular hours</p>
+        <div className="space-y-2">
+          {(()=>{
+            const acc={}; checkIns.forEach(c=>{const h=new Date(c.check_in_date).getHours();acc[h]=(acc[h]||0)+1;});
+            const max=Math.max(...Object.values(acc),1);
+            return Object.entries(acc).sort(([,a],[,b])=>b-a).slice(0,6).map(([hour,count],i)=>{
+              const h=parseInt(hour);const label=h===0?'12am':h<12?`${h}am`:h===12?'12pm':`${h-12}pm`;
+              return (
+                <div key={hour} style={{display:'flex',alignItems:'center',gap:10}}>
+                  <span style={{fontSize:11,fontWeight:700,color:'#3d5a8a',width:14,textAlign:'right',flexShrink:0}}>#{i+1}</span>
+                  <span style={{fontSize:13,color:'#fff',width:36,flexShrink:0}}>{label}</span>
+                  <div style={{flex:1,height:6,borderRadius:99,overflow:'hidden',background:'rgba(13,35,96,0.5)'}}>
+                    <div style={{height:'100%',borderRadius:99,background:'linear-gradient(90deg,#8b5cf6,#ec4899)',width:`${(count/max)*100}%`}}/>
+                  </div>
+                  <span style={{fontSize:12,fontWeight:800,color:'#fff',width:24,textAlign:'right'}}>{count}</span>
+                </div>
+              );
+            });
+          })()}
+        </div>
+      </div>
+    </div>
+
+    {/* ═══ DESKTOP ═══ */}
+    <div className="hidden md:block">
     <div className="space-y-5">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <Panel>
@@ -846,12 +1290,177 @@ export default function GymOwnerDashboard() {
         <KpiCard icon={Zap}        iconColor="#fbbf24" iconRgb="251,191,36"  label="Return Rate"       value={`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`} sub="of all check-ins"/>
       </div>
     </div>
+    </div>{/* end desktop */}
+    </>
   );
 
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: GYM SETTINGS
   // ══════════════════════════════════════════════════════════════════════════
   const TabGym = () => (
+    <>
+    {/* ═══ MOBILE ═══ */}
+    <div className="md:hidden space-y-3 pb-2">
+
+      {/* Gym identity hero card */}
+      <div style={{borderRadius:22,background:'linear-gradient(145deg,rgba(10,30,90,0.95),rgba(4,8,24,0.98))',border:'1px solid rgba(59,130,246,0.22)',padding:'20px',position:'relative',overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.6)'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(96,165,250,0.4),transparent)'}}/>
+        <div style={{position:'absolute',top:-50,right:-30,width:160,height:160,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16}}>
+          <div>
+            <div style={{width:48,height:48,borderRadius:15,background:'linear-gradient(135deg,#3b82f6,#06b6d4)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12,boxShadow:'0 4px 16px rgba(59,130,246,0.3)'}}>
+              <Dumbbell style={{width:22,height:22,color:'#fff'}}/>
+            </div>
+            <p style={{fontSize:22,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',marginBottom:4}}>{selectedGym?.name}</p>
+            <p style={{fontSize:12,color:'rgba(107,135,184,0.65)'}}>{selectedGym?.type} · {selectedGym?.city}</p>
+          </div>
+          <button onClick={()=>openModal('editInfo')} style={{padding:'8px 14px',borderRadius:10,background:'rgba(59,130,246,0.12)',color:'#93c5fd',border:'1px solid rgba(59,130,246,0.25)',fontSize:12,fontWeight:700,cursor:'pointer',flexShrink:0}}>Edit</button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            {l:'Monthly Price',v:selectedGym?.price?`£${selectedGym.price}/mo`:'Not set',c:'#fbbf24'},
+            {l:'Address',v:selectedGym?.address,c:'#94a3b8'},
+            {l:'Postcode',v:selectedGym?.postcode,c:'#94a3b8'},
+            {l:'Status',v:selectedGym?.verified?'✓ Verified':'Pending',c:selectedGym?.verified?'#34d399':'#fbbf24'},
+          ].map((f,i)=>(
+            <div key={i} style={{background:'rgba(255,255,255,0.04)',borderRadius:10,padding:'10px 12px',border:'1px solid rgba(255,255,255,0.05)'}}>
+              <p style={{fontSize:9,fontWeight:700,color:'rgba(148,163,184,0.45)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>{f.l}</p>
+              <p style={{fontSize:12,fontWeight:700,color:f.c,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.v||'—'}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Manage Gym 2x2 */}
+      <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',paddingLeft:2}}>Manage Gym</p>
+      <div className="grid grid-cols-2 gap-2.5">
+        {[
+          {icon:Calendar,label:'Classes',  sub:`${classes.length} total`,                  color:'#34d399',rgb:'52,211,153',  floor:'rgba(4,60,40,0.9)',  onClick:()=>openModal('classes')},
+          {icon:Users,   label:'Coaches',  sub:`${coaches.length} total`,                  color:'#60a5fa',rgb:'96,165,250',  floor:'rgba(14,40,120,0.9)',onClick:()=>openModal('coaches')},
+          {icon:Dumbbell,label:'Equipment',sub:`${selectedGym?.equipment?.length||0} items`,color:'#a78bfa',rgb:'167,139,250',floor:'rgba(40,10,90,0.9)', onClick:()=>openModal('equipment')},
+          {icon:Star,    label:'Amenities',sub:`${selectedGym?.amenities?.length||0} listed`,color:'#fbbf24',rgb:'251,191,36',floor:'rgba(80,50,4,0.9)',  onClick:()=>openModal('amenities')},
+        ].map(({icon:Icon,label,sub,color,rgb,floor,onClick},i)=>(
+          <button key={i} onClick={onClick} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:10,padding:'16px 14px',borderRadius:18,background:`linear-gradient(145deg,rgba(${rgb},0.12),rgba(${rgb},0.05))`,border:`1px solid rgba(${rgb},0.28)`,borderBottom:`4px solid ${floor}`,cursor:'pointer',width:'100%',textAlign:'left',position:'relative',overflow:'hidden',WebkitTapHighlightColor:'transparent'}}
+            onTouchStart={e=>{e.currentTarget.style.transform='translateY(3px)';e.currentTarget.style.borderBottomWidth='1px';}}
+            onTouchEnd={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.borderBottomWidth='4px';}}>
+            <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${rgb},0.4),transparent)`}}/>
+            <div style={{width:38,height:38,borderRadius:12,background:`rgba(${rgb},0.18)`,border:`1px solid rgba(${rgb},0.3)`,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <Icon style={{width:18,height:18,color}}/>
+            </div>
+            <div>
+              <p style={{fontSize:14,fontWeight:900,color:'#fff',marginBottom:2}}>{label}</p>
+              <p style={{fontSize:11,color:`rgba(${rgb},0.65)`,fontWeight:600}}>{sub}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Classes */}
+      {classes.length>0&&(
+        <div>
+          <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Classes</p>
+            <button onClick={()=>openModal('classes')} style={{fontSize:11,fontWeight:700,color:'#34d399',background:'none',border:'none',cursor:'pointer',padding:0}}>Manage</button>
+          </div>
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px'}}>
+            {classes.slice(0,4).map(cls=>(
+              <div key={cls.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,background:'rgba(13,35,96,0.25)',border:'1px solid rgba(255,255,255,0.05)',marginBottom:8}}>
+                <div style={{width:32,height:32,borderRadius:10,background:'rgba(52,211,153,0.12)',border:'1px solid rgba(52,211,153,0.22)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Calendar style={{width:15,height:15,color:'#34d399'}}/></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontSize:13,fontWeight:700,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{cls.name}</p>
+                  <p style={{fontSize:11,color:'#3d5a8a'}}>{cls.schedule||cls.time||'—'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Coaches */}
+      {coaches.length>0&&(
+        <div>
+          <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Coaches</p>
+            <button onClick={()=>openModal('coaches')} style={{fontSize:11,fontWeight:700,color:'#60a5fa',background:'none',border:'none',cursor:'pointer',padding:0}}>Manage</button>
+          </div>
+          <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'12px'}}>
+            {coaches.slice(0,4).map(coach=>(
+              <div key={coach.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,background:'rgba(13,35,96,0.25)',border:'1px solid rgba(255,255,255,0.05)',marginBottom:8}}>
+                <div style={{width:34,height:34,borderRadius:'50%',background:'linear-gradient(135deg,#f97316,#ec4899)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13,fontWeight:900,flexShrink:0}}>{coach.name?.charAt(0)?.toUpperCase()}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontSize:13,fontWeight:700,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{coach.name}</p>
+                  <p style={{fontSize:11,color:'#3d5a8a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{coach.speciality||coach.bio||'Coach'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Amenities + Equipment tags */}
+      {(selectedGym?.amenities?.length>0||selectedGym?.equipment?.length>0)&&(
+        <div>
+          {selectedGym?.amenities?.length>0&&(
+            <>
+              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',paddingLeft:2,marginBottom:8}}>Amenities</p>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>{selectedGym.amenities.map((a,i)=><Tag key={i} color="blue">{a}</Tag>)}</div>
+            </>
+          )}
+          {selectedGym?.equipment?.length>0&&(
+            <>
+              <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',paddingLeft:2,marginBottom:8}}>Equipment</p>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>{selectedGym.equipment.slice(0,12).map((e,i)=><Tag key={i} color="purple">{e}</Tag>)}{selectedGym.equipment.length>12&&<Tag color="blue">+{selectedGym.equipment.length-12} more</Tag>}</div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Photo gallery */}
+      <div>
+        <div className="flex items-center justify-between mb-2" style={{paddingLeft:2}}>
+          <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)'}}>Photos</p>
+          <button onClick={()=>openModal('photos')} style={{fontSize:11,fontWeight:700,color:'#60a5fa',background:'none',border:'none',cursor:'pointer',padding:0}}>Manage</button>
+        </div>
+        {selectedGym?.gallery?.length>0?(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6}}>
+            {selectedGym.gallery.slice(0,8).map((url,i)=><img key={i} src={url} alt="" style={{width:'100%',aspectRatio:'1',objectFit:'cover',borderRadius:10,border:'1px solid rgba(255,255,255,0.06)'}}/>)}
+          </div>
+        ):(
+          <button onClick={()=>openModal('photos')} style={{width:'100%',padding:'20px',borderRadius:16,background:'rgba(13,35,96,0.2)',border:'2px dashed rgba(59,130,246,0.2)',color:'#4a6492',fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}><ImageIcon style={{width:16,height:16}}/>Add Photos</button>
+        )}
+      </div>
+
+      {/* Admin info */}
+      <div style={{borderRadius:20,background:'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))',border:'1px solid rgba(255,255,255,0.07)',padding:'14px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+        <p style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(107,135,184,0.45)',marginBottom:10}}>Admin</p>
+        {[{l:'Owner',v:selectedGym?.owner_email},{l:'Gym ID',v:selectedGym?.id,mono:true}].map((f,i)=>(
+          <div key={i} style={{marginBottom:8}}>
+            <p style={{fontSize:10,color:'#3d5a8a',marginBottom:2}}>{f.l}</p>
+            <p style={{fontSize:f.mono?10:12,fontWeight:600,color:'#94a3b8',fontFamily:f.mono?'monospace':'inherit',wordBreak:'break-all'}}>{f.v||'—'}</p>
+          </div>
+        ))}
+        <Link to={createPageUrl('GymCommunity')+'?id='+selectedGym?.id}>
+          <button style={{width:'100%',padding:'10px',borderRadius:10,background:'rgba(13,35,96,0.4)',color:'#93b4e8',border:'1px solid rgba(59,130,246,0.14)',fontSize:12,fontWeight:700,cursor:'pointer',marginTop:4}}>View Public Gym Page →</button>
+        </Link>
+      </div>
+
+      {/* Danger zone */}
+      <div className="grid grid-cols-2 gap-2.5">
+        {[
+          {title:'Delete Gym',label:'Delete',fn:()=>openModal('deleteGym')},
+          {title:'Delete Account',label:'Delete',fn:()=>openModal('deleteAccount')},
+        ].map((d,i)=>(
+          <div key={i} style={{padding:'14px',borderRadius:16,background:'rgba(239,68,68,0.05)',border:'1px solid rgba(239,68,68,0.18)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}><Trash2 style={{width:13,height:13,color:'#f87171'}}/><p style={{fontSize:12,fontWeight:800,color:'#fff'}}>{d.title}</p></div>
+            <button onClick={d.fn} style={{width:'100%',padding:'8px',borderRadius:8,background:'rgba(239,68,68,0.12)',color:'#fca5a5',border:'1px solid rgba(239,68,68,0.3)',fontSize:11,fontWeight:800,cursor:'pointer'}}>{d.label}</button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* ═══ DESKTOP ═══ */}
+    <div className="hidden md:block">
     <div className="space-y-5">
       <Panel>
         <PH title="Gym Information" subtitle={selectedGym?.name} action={()=>openModal('editInfo')} actionLabel="Edit"/>
@@ -976,6 +1585,8 @@ export default function GymOwnerDashboard() {
         ))}
       </div>
     </div>
+    </div>{/* end desktop */}
+    </>
   );
 
   const TABS = { overview: <TabOverview/>, members: <TabMembers/>, content: <TabContent/>, analytics: <TabAnalytics/>, gym: <TabGym/> };
