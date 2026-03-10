@@ -401,6 +401,8 @@ export default function Home() {
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
   const [summaryLog, setSummaryLog] = useState(null);
+  // NEW: controls the View Workout modal
+  const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -602,6 +604,20 @@ export default function Home() {
       `Join ${todayCount} member${todayCount === 1 ? '' : 's'} on the floor`
     ];
     return todayCount > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
+  };
+
+  // Shared style for both bubble action buttons (View Summary / View Workout)
+  const bubbleBtnStyle = {
+    marginTop: 4, width: '100%',
+    padding: '7px 0',
+    borderRadius: 9,
+    background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+    border: 'none', borderBottom: '3px solid #1d4ed8',
+    color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+    letterSpacing: '0.03em', textAlign: 'center',
+    boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
+    transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
+    touchAction: 'manipulation',
   };
 
   return (
@@ -839,6 +855,15 @@ export default function Home() {
                   const size          = isTodayCircle ? 49 : 40;
                   const verticalOffset = Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
                   const workoutLog    = logsByDay[day];
+
+                  // Show "View Workout": future unlogged training days OR today if training day and not yet logged
+                  const showViewWorkout = !done && !isRestDay && !isMissed && (day > todayDay || isTodayCircle);
+
+                  // Bubble is taller when it has a button
+                  const hasBubbleBtn = (done && !isRestDay && workoutLog) || showViewWorkout;
+                  const BUBBLE_W = 274;
+                  const BUBBLE_H = hasBubbleBtn ? 110 : 70;
+
                   const getBg = () => {
                     if (isRestDay) {
                       return done
@@ -982,8 +1007,6 @@ export default function Home() {
                       </button>
                       <AnimatePresence>
                         {activeCircleDay === day && (() => {
-                          const BUBBLE_W = 274;
-                          const BUBBLE_H = done && !isRestDay ? 110 : 70;
                           const ARROW_H = 7;
                           const ARROW_W = 13;
                           const RADIUS = 14;
@@ -998,7 +1021,6 @@ export default function Home() {
                           const arrowTip = Math.max(RADIUS + ARROW_W / 2 + 2, Math.min(arrowInBubble, BUBBLE_W - RADIUS - ARROW_W / 2 - 2));
                           const arrowL = arrowTip - ARROW_W / 2;
                           const arrowR = arrowTip + ARROW_W / 2;
-                          // CHANGE 1: Slightly darker blue tones for popup backgrounds
                           const solidColor = isRestDay && done ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535';
                           const path = [
                             `M ${RADIUS} ${ARROW_H}`, `L ${arrowL} ${ARROW_H}`, `L ${arrowTip} 0`,
@@ -1054,6 +1076,8 @@ export default function Home() {
                                       })()
                                   }
                                 </span>
+
+                                {/* View Summary — only for logged training days */}
                                 {done && !isRestDay && workoutLog && (
                                   <button
                                     data-bubble="true"
@@ -1071,20 +1095,28 @@ export default function Home() {
                                     onMouseLeave={e => e.currentTarget.style.transform = ''}
                                     onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
-                                    style={{
-                                      marginTop: 4, width: '100%',
-                                      // CHANGE 2: Reduced vertical padding by ~8% (9px -> 8.3px, rounded to 8px top/bottom)
-                                      padding: '7px 0',
-                                      borderRadius: 9,
-                                      background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-                                      border: 'none', borderBottom: '3px solid #1d4ed8',
-                                      color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
-                                      letterSpacing: '0.03em', textAlign: 'center',
-                                      boxShadow: '0 4px 12px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
-                                      transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
-                                      touchAction: 'manipulation',
-                                    }}>
+                                    style={bubbleBtnStyle}>
                                     View Summary
+                                  </button>
+                                )}
+
+                                {/* View Workout — today (unlogged) + future training days */}
+                                {showViewWorkout && (
+                                  <button
+                                    data-bubble="true"
+                                    onPointerDown={e => e.stopPropagation()}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveCircleDay(null);
+                                      setViewWorkoutDay(day);
+                                    }}
+                                    onMouseDown={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
+                                    onMouseUp={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
+                                    onMouseLeave={e => e.currentTarget.style.transform = ''}
+                                    onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
+                                    onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
+                                    style={bubbleBtnStyle}>
+                                    View Workout
                                   </button>
                                 )}
                               </div>
@@ -1274,6 +1306,77 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* View Workout Modal — planned exercises for today (unlogged) and future training days */}
+      <AnimatePresence>
+        {viewWorkoutDay !== null && (() => {
+          const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
+          if (!workout) return null;
+          const workoutName = workout.name || 'Training Day';
+          const exercises = workout.exercises || [];
+          const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+          const slotDate = new Date(monday);
+          slotDate.setDate(monday.getDate() + (viewWorkoutDay - 1));
+          const formattedDate = slotDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+          return (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setViewWorkoutDay(null)}
+              className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-sm bg-white/8 border border-white/15 rounded-2xl p-6 backdrop-blur-sm max-h-[80vh] overflow-y-auto">
+
+                {/* Header */}
+                <div className="mb-5">
+                  <h3 className="text-2xl font-black text-white mb-1">{workoutName}</h3>
+                  <p className="text-sm text-slate-400 font-medium">{formattedDate}</p>
+                </div>
+
+                {/* Exercises */}
+                {exercises.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
+                    <div className="flex items-center justify-between px-1 mb-1">
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Exercise</span>
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Sets · Reps · Weight</span>
+                    </div>
+                    <div className="space-y-2">
+                      {exercises.map((ex, idx) => {
+                        const exName = ex.exercise || ex.name || ex.title || `Exercise ${idx + 1}`;
+                        const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '—';
+                        const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '—';
+                        const weight = ex.weight ? `${ex.weight}kg` : '—';
+                        const setsReps = (sets !== '—' && reps !== '—') ? `${sets}×${reps}` : '—';
+                        return (
+                          <div key={idx} className="flex items-center justify-between py-2 px-3 bg-white/5 border border-white/8 rounded-xl">
+                            <span className="text-white font-semibold text-sm">{exName}</span>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className="text-slate-300 text-xs font-medium tabular-nums">{setsReps}</span>
+                              {weight !== '—' && (
+                                <>
+                                  <span className="text-slate-600 text-xs">·</span>
+                                  <span className="text-blue-300 text-xs font-bold tabular-nums">{weight}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 text-center mt-4">No exercises configured for this day.</p>
+                )}
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
+
     </PullToRefresh>
   );
 }
