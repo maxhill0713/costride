@@ -216,6 +216,18 @@ export default function StrengthProgress({ currentUser }) {
         <div className="h-48 flex items-center justify-center">
           <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: color, borderTopColor: 'transparent' }} />
         </div>
+      ) : !selectedDay ? (
+        <div className="h-48 flex flex-col items-center justify-center gap-2">
+          <Dumbbell className="w-8 h-8 text-slate-600" />
+          <p className="text-slate-500 text-sm font-semibold">No workout split configured</p>
+          <p className="text-slate-600 text-xs">Set up a split to see your progress</p>
+        </div>
+      ) : !exercise ? (
+        <div className="h-48 flex flex-col items-center justify-center gap-2">
+          <TrendingUp className="w-8 h-8 text-slate-600" />
+          <p className="text-slate-500 text-sm font-semibold">No exercises for this day</p>
+          <p className="text-slate-600 text-xs">Add exercises to {selectedDay} in your split</p>
+        </div>
       ) : chartData.length === 0 ? (
         <div className="h-48 flex flex-col items-center justify-center gap-2">
           <TrendingUp className="w-8 h-8 text-slate-600" />
