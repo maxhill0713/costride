@@ -1354,14 +1354,14 @@ export default function Home() {
                 {exercises.length > 0 ? (
                   <div className="space-y-2">
                     {/* Column headers — matching TodayWorkout card */}
-                    <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2">
+                    <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets</div>
                       <div />
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 -mx-2">
                       {exercises.map((ex, idx) => {
                         const exName = ex.exercise || ex.name || ex.title || `Exercise ${idx + 1}`;
                         const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
