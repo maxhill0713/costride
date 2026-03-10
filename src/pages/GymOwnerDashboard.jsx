@@ -849,14 +849,22 @@ export default function GymOwnerDashboard() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          {label:'Daily Average',    val:Math.round(ci30.length/30), sub:'check-ins / day (30d)', c:'#60a5fa'},
-          {label:'Monthly Change',   val:`${monthChangePct>=0?'+':''}${monthChangePct}%`, sub:'vs previous 30 days', c:monthChangePct>=0?'#34d399':'#f87171'},
-          {label:'Avg Visits/Member',val:totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—', sub:'per member (30d)', c:'#a78bfa'},
-          {label:'Return Rate',      val:`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`, sub:'of all check-ins', c:'#fbbf24'},
+          {label:'Daily Average',    val:Math.round(ci30.length/30),  sub:'check-ins / day (30d)', c:'#60a5fa', tip:'Average daily check-ins over the last 30 days'},
+          {label:'Monthly Change',   val:`${monthChangePct>=0?'+':''}${monthChangePct}%`, sub:'vs previous 30 days', c:monthChangePct>=0?'#34d399':'#f87171', tip:'Change in total check-ins compared to the prior 30-day period', arrow:monthChangePct},
+          {label:'Avg Visits/Member',val:totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—', sub:'per member (30d)', c:'#a78bfa', tip:'Average number of gym visits per member in the last 30 days'},
+          {label:'Return Rate',      val:`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`, sub:'of all check-ins', c:'#fbbf24', tip:'Percentage of check-ins by returning members (not first-time visits)'},
         ].map((s,i)=>(
-          <div key={i} className="p-5 rounded-xl text-center border" style={{background:BG.card,borderColor:BORDER.panel}}>
-            <p className="text-3xl font-black mb-1" style={{color:s.c}}>{s.val}</p>
-            <p className="text-xs font-bold text-white">{s.label}</p>
+          <div key={i} className="p-5 rounded-xl text-center border transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{background:BG.card,borderColor:BORDER.panel,cursor:'default'}}>
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <p className="text-3xl font-black" style={{color:s.c}}>{s.val}</p>
+              {s.arrow !== undefined && (s.arrow >= 0
+                ? <TrendingUp className="w-4 h-4" style={{color:'#34d399'}}/>
+                : <TrendingDown className="w-4 h-4" style={{color:'#f87171'}}/>
+              )}
+            </div>
+            <MetricTooltip text={s.tip}>
+              <p className="text-xs font-bold text-white cursor-help border-b border-dotted inline-block" style={{borderColor:'#3d5a8a'}}>{s.label}</p>
+            </MetricTooltip>
             <p className="text-xs mt-0.5" style={{color:'#3d5a8a'}}>{s.sub}</p>
           </div>
         ))}
