@@ -13,6 +13,7 @@ import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import QuoteCarousel from '../components/home/QuoteCarousel';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
+import StreakPose2 from '../components/StreakPose2';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
