@@ -516,7 +516,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     <BookOpen className="w-3.5 h-3.5" />
                   </Button>
                   <motion.button
-                  onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                  onClick={(e) => {e.stopPropagation();setIsExpanded(false);window.scrollTo({ top: 0, behavior: 'smooth' });}}
                   className="flex items-center justify-center w-10 h-6 text-slate-500 hover:text-slate-300 transition-colors duration-200"
                   whileTap={{ scale: 0.8 }}>
                     <motion.div
