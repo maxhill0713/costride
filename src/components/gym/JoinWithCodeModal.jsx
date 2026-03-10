@@ -241,10 +241,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
               Enter your gym's 6-character code
             </label>
 
-            {/* Animated slot display */}
-            <div className={shakeInput ? 'error-shake' : ''}>
-              <CodeDisplay code={code} />
-            </div>
+            
 
             {/* Actual input (smaller, secondary) */}
             <Input
