@@ -606,30 +606,30 @@ export default function Home() {
     return todayCount > 0 ? messages[dayOfMonth % messages.length] : 'Members training together daily';
   };
 
-  // View Summary button style — blue, no glow
+  // View Summary button style — slightly darker blue, no glow
   const viewSummaryBtnStyle = {
     marginTop: 4, width: '100%',
     padding: '7px 0',
     borderRadius: 9,
-    background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-    border: 'none', borderBottom: '3px solid #1d4ed8',
+    background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
+    border: 'none', borderBottom: '3px solid #1e40af',
     color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
     letterSpacing: '0.03em', textAlign: 'center',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
     transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
     touchAction: 'manipulation',
   };
 
-  // View Workout button style — grey, no glow
+  // View Workout button style — dark grey, no glow
   const viewWorkoutBtnStyle = {
     marginTop: 4, width: '100%',
     padding: '7px 0',
     borderRadius: 9,
-    background: 'linear-gradient(to bottom, #64748b 0%, #475569 40%, #334155 100%)',
-    border: 'none', borderBottom: '3px solid #1e293b',
-    color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+    background: 'linear-gradient(to bottom, #374151 0%, #1f2937 40%, #111827 100%)',
+    border: 'none', borderBottom: '3px solid #030712',
+    color: '#cbd5e1', fontSize: 12, fontWeight: 800, cursor: 'pointer',
     letterSpacing: '0.03em', textAlign: 'center',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
     transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
     touchAction: 'manipulation',
   };
@@ -1079,7 +1079,7 @@ export default function Home() {
                                 }}>
                                   {getPopupLabel()}
                                 </span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1, textAlign: 'center' }}>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.03em', lineHeight: 1, textAlign: 'center', marginTop: 5 }}>
                                   {done && workoutLog?.completed_date
                                     ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
                                     : (() => {
@@ -1109,7 +1109,7 @@ export default function Home() {
                                     onMouseLeave={e => e.currentTarget.style.transform = ''}
                                     onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
-                                    style={viewSummaryBtnStyle}>
+                                    style={{ ...viewSummaryBtnStyle, marginTop: 10 }}>
                                     View Summary
                                   </button>
                                 )}
@@ -1129,7 +1129,7 @@ export default function Home() {
                                     onMouseLeave={e => e.currentTarget.style.transform = ''}
                                     onTouchStart={e => { e.stopPropagation(); e.currentTarget.style.transform = 'translateY(2px)'; }}
                                     onTouchEnd={e => { e.stopPropagation(); e.currentTarget.style.transform = ''; }}
-                                    style={viewWorkoutBtnStyle}>
+                                    style={{ ...viewWorkoutBtnStyle, marginTop: 10 }}>
                                     View Workout
                                   </button>
                                 )}
@@ -1346,8 +1346,8 @@ export default function Home() {
 
                 {/* Header */}
                 <div className="mb-5">
-                  <h3 className="text-2xl font-black text-white mb-1">{workoutName}</h3>
-                  <p className="text-sm text-slate-400 font-medium">{formattedDate}</p>
+                  <h3 className="text-2xl font-black text-white mb-2">{workoutName}</h3>
+                  <p className="text-sm text-slate-400 font-medium mt-2">{formattedDate}</p>
                 </div>
 
                 {/* Exercises */}
@@ -1377,7 +1377,7 @@ export default function Home() {
                             <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                               {reps}
                             </div>
-                            <div className="ml-3">
+                            <div className="ml-3 pr-3">
                               <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                 {weight}<span className="text-[10px] font-bold">kg</span>
                               </div>
