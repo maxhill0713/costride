@@ -10,7 +10,8 @@ import {
   X, Crown, Trash2, Clock, Gift, Zap, BarChart2, Shield,
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
   LogOut, ChevronDown, AlertTriangle, QrCode, MessageSquarePlus,
-  DollarSign, UserPlus, Megaphone, Pin
+  DollarSign, UserPlus, ChevronRight, Megaphone, Pin,
+  MapPin as MapPin2, Tag as Tag2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -30,19 +31,17 @@ import QRScanner from '../components/gym/QRScanner';
 import CreatePollModal from '../components/polls/CreatePollModal';
 import QRCode from 'react-qr-code';
 
-// ── Design tokens — matched to app's dark #02040a / #0d2360 palette ──────────
+// ─── Design tokens ────────────────────────────────────────────────────────────
 const BG = {
   page:    'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
-  sidebar: 'rgba(2,4,10,0.97)',
-  header:  'rgba(2,4,10,0.97)',
-  panel:   'linear-gradient(145deg, rgba(13,35,96,0.35), rgba(2,4,10,0.7))',
-  card:    'linear-gradient(135deg, rgba(13,35,96,0.45) 0%, rgba(2,4,10,0.85) 100%)',
+  sidebar: 'linear-gradient(180deg, #0a1a4a 0%, #060d2e 100%)',
+  header:  'linear-gradient(90deg, #0a1a4a 0%, #060d2e 100%)',
   subcard: 'rgba(13,35,96,0.25)',
 };
 const BORDER = {
-  subtle:  'rgba(255,255,255,0.06)',
-  panel:   'rgba(59,130,246,0.14)',
-  active:  'rgba(59,130,246,0.3)',
+  subtle: 'rgba(255,255,255,0.06)',
+  panel:  'rgba(59,130,246,0.14)',
+  active: 'rgba(59,130,246,0.3)',
 };
 
 const NAV = [
@@ -53,82 +52,60 @@ const NAV = [
   { id: 'gym',         label: 'Gym Settings',icon: Settings },
 ];
 
-// ── Tooltip component ─────────────────────────────────────────────────────────
-const MetricTooltip = ({ text, children }) => {
-  const [show, setShow] = React.useState(false);
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
+const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub, trend }) => {
+  const [hov,setHov]=React.useState(false);
   return (
-    <span className="relative inline-flex items-center" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      {children}
-      {show && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap pointer-events-none"
-          style={{ background: '#02040a', border: `1px solid ${BORDER.active}`, color: '#93c5fd', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-          {text}
-          <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent" style={{ borderTopColor: BORDER.active }} />
-        </span>
-      )}
-    </span>
-  );
-};
-
-// ── Shared components ─────────────────────────────────────────────────────────
-const KpiCard = ({ icon: Icon, iconColor, label, value, sub, trend, tooltip, statusColor }) => {
-  const [hovered, setHovered] = React.useState(false);
-  // Derive border/bg color: green if good, yellow if warn, red if bad
-  const sc = statusColor || (trend !== undefined ? (trend >= 5 ? 'green' : trend >= 0 ? 'neutral' : 'red') : 'neutral');
-  const borderCol = sc === 'green' ? 'rgba(52,211,153,0.3)' : sc === 'red' ? 'rgba(248,113,113,0.25)' : sc === 'yellow' ? 'rgba(251,191,36,0.25)' : BORDER.panel;
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      className="relative overflow-hidden rounded-2xl p-5 border transition-all duration-200"
-      style={{ background: BG.card, borderColor: hovered ? borderCol : BORDER.panel, backdropFilter: 'blur(16px)', transform: hovered ? 'translateY(-2px)' : 'none', boxShadow: hovered ? `0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px ${borderCol}` : 'none' }}>
-      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.07]" style={{ background: iconColor }} />
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}28` }}>
-          <Icon className="w-5 h-5" style={{ color: iconColor }} />
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{position:'relative',overflow:'hidden',borderRadius:20,background:'linear-gradient(145deg,#0d1e35 0%,#060d1f 100%)',border:`1px solid ${hov?`rgba(${iconRgb},0.25)`:'rgba(255,255,255,0.07)'}`,boxShadow:hov?`0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(${iconRgb},0.12)`:'0 8px 32px rgba(0,0,0,0.45)',transition:'border-color 0.2s,box-shadow 0.2s,transform 0.2s',transform:hov?'translateY(-2px)':'translateY(0)'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',overflow:'hidden',borderRadius:20}}>
+        <div style={{position:'absolute',top:-40,left:-30,width:180,height:180,borderRadius:'50%',background:`radial-gradient(circle,rgba(${iconRgb},0.14) 0%,transparent 70%)`}}/>
+        <div style={{position:'absolute',bottom:-50,right:-30,width:160,height:160,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.06) 0%,transparent 70%)'}}/>
+        <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle,rgba(255,255,255,0.025) 1px,transparent 1px)',backgroundSize:'22px 22px'}}/>
+      </div>
+      <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${iconRgb},0.45),transparent)`,pointerEvents:'none'}}/>
+      <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${iconRgb},0.75) 0%,transparent 100%)`}}/>
+      <div style={{position:'relative',padding:'20px 20px 18px 22px'}}>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16}}>
+          <div style={{width:42,height:42,borderRadius:13,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,boxShadow:'0 4px 12px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.08)',flexShrink:0}}>
+            <Icon style={{width:19,height:19,color:iconColor}}/>
+          </div>
+          {trend!==undefined&&(
+            <span style={{display:'flex',alignItems:'center',gap:4,fontSize:11,fontWeight:800,padding:'4px 9px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171',border:`1px solid ${trend>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
+              {trend>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(trend)}%
+            </span>
+          )}
         </div>
-        {trend !== undefined && (
-          <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg"
-            style={{ background: trend >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(248,113,113,0.12)', color: trend >= 0 ? '#34d399' : '#f87171' }}>
-            {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-            {trend > 0 ? '+' : ''}{Math.abs(trend)}%
-          </span>
-        )}
+        <div style={{fontSize:32,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:6}}>{value}</div>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(148,163,184,0.6)',marginBottom:4}}>{label}</div>
+        {sub&&<div style={{fontSize:11,color:'rgba(100,130,170,0.7)',fontWeight:500}}>{sub}</div>}
       </div>
-      <div className="text-3xl font-black text-white tracking-tight mb-1">{value}</div>
-      <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#94a3b8' }}>
-        {tooltip ? (
-          <MetricTooltip text={tooltip}>
-            <span className="cursor-help border-b border-dotted" style={{ borderColor: '#4a6492' }}>{label}</span>
-          </MetricTooltip>
-        ) : label}
-        {statusColor === 'green' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block ml-1"/>}
-        {statusColor === 'yellow' && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block ml-1"/>}
-        {statusColor === 'red' && <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block ml-1"/>}
-      </div>
-      {sub && <div className="text-xs" style={{ color: '#4a6492' }}>{sub}</div>}
     </div>
   );
 };
 
-const Panel = ({ children, className = '' }) => (
-  <div className={`rounded-2xl border p-6 ${className}`}
-    style={{ background: BG.panel, borderColor: BORDER.panel, backdropFilter: 'blur(16px)' }}>
-    {children}
+// ─── Panel ────────────────────────────────────────────────────────────────────
+const Panel = ({ children, className='' }) => (
+  <div className={`relative overflow-hidden rounded-2xl ${className}`}
+    style={{background:'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',border:'1px solid rgba(255,255,255,0.07)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',boxShadow:'0 4px 24px rgba(0,0,0,0.4)'}}>
+    <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{background:'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.1) 50%,transparent 90%)'}}/>
+    <div className="relative p-5">{children}</div>
   </div>
 );
 
+// ─── Panel Header ─────────────────────────────────────────────────────────────
 const PH = ({ title, subtitle, action, actionLabel, badge }) => (
-  <div className="flex items-center justify-between mb-5">
+  <div className="flex items-center justify-between mb-4">
     <div>
       <h3 className="text-sm font-bold text-white">{title}</h3>
-      {subtitle && <p className="text-xs mt-0.5" style={{ color: '#4a6492' }}>{subtitle}</p>}
+      {subtitle&&<p className="text-xs mt-0.5" style={{color:'#4a6492'}}>{subtitle}</p>}
     </div>
     <div className="flex items-center gap-2">
-      {badge !== undefined && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: BORDER.subcard, color: '#94a3b8' }}>{badge}</span>}
-      {action && (
+      {badge!==undefined&&<span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{background:BG.subcard,color:'#94a3b8',border:`1px solid ${BORDER.subtle}`}}>{badge}</span>}
+      {action&&(
         <button onClick={action} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:brightness-125"
-          style={{ background: BG.subcard, color: '#93c5fd', border: `1px solid ${BORDER.subtle}` }}>
-          <Plus className="w-3.5 h-3.5" />{actionLabel || 'Add'}
+          style={{background:BG.subcard,color:'#93c5fd',border:`1px solid ${BORDER.subtle}`}}>
+          <Plus className="w-3.5 h-3.5"/>{actionLabel||'Add'}
         </button>
       )}
     </div>
@@ -145,40 +122,68 @@ const DT = ({ active, payload, label }) => {
   );
 };
 
-const Tag = ({ children, color = 'blue' }) => {
-  const m = {
-    blue:   ['rgba(59,130,246,0.15)',  '#93c5fd',  'rgba(59,130,246,0.25)'],
-    green:  ['rgba(16,185,129,0.15)',  '#6ee7b7',  'rgba(16,185,129,0.25)'],
-    orange: ['rgba(249,115,22,0.15)',  '#fdba74',  'rgba(249,115,22,0.25)'],
-    red:    ['rgba(239,68,68,0.15)',   '#fca5a5',  'rgba(239,68,68,0.25)'],
-    purple: ['rgba(139,92,246,0.15)',  '#c4b5fd',  'rgba(139,92,246,0.25)'],
+// ─── Tag ─────────────────────────────────────────────────────────────────────
+const Tag = ({ children, color='blue' }) => {
+  const m={
+    blue:  ['rgba(59,130,246,0.13)','#93c5fd','rgba(59,130,246,0.28)'],
+    green: ['rgba(16,185,129,0.13)','#6ee7b7','rgba(16,185,129,0.28)'],
+    orange:['rgba(249,115,22,0.13)','#fdba74','rgba(249,115,22,0.28)'],
+    red:   ['rgba(239,68,68,0.13)', '#fca5a5','rgba(239,68,68,0.28)'],
+    purple:['rgba(139,92,246,0.13)','#c4b5fd','rgba(139,92,246,0.28)'],
   };
-  const [bg, text, border] = m[color] || m.blue;
-  return <span className="text-xs px-2 py-0.5 rounded-md font-medium" style={{ background: bg, color: text, border: `1px solid ${border}` }}>{children}</span>;
+  const [bg,text,border]=m[color]||m.blue;
+  return (
+    <span style={{display:'inline-flex',alignItems:'center',fontSize:11,fontWeight:800,padding:'3px 9px',borderRadius:99,background:bg,color:text,border:`1px solid ${border}`,letterSpacing:'0.01em'}}>{children}</span>
+  );
 };
 
-const AlertCard = ({ icon: Icon, iconColor, iconRgb, title, message, action, actionLabel }) => (
-  <div className="p-3.5 rounded-xl relative overflow-hidden" style={{background:`rgba(${iconRgb},0.07)`,border:`1px solid rgba(${iconRgb},0.22)`}}>
-    <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${iconRgb},0.7),transparent)`}}/>
-    <div className="flex gap-3 pl-1">
-      <div style={{width:30,height:30,borderRadius:9,background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-        <Icon style={{width:14,height:14,color:iconColor}}/>
+// ─── Empty state ──────────────────────────────────────────────────────────────
+const Empty = ({ icon:Icon, label }) => (
+  <div className="py-10 text-center">
+    <div className="relative w-14 h-14 mx-auto mb-3">
+      <div style={{position:'absolute',inset:-4,borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%)'}}/>
+      <div className="w-full h-full rounded-full flex items-center justify-center relative" style={{background:'linear-gradient(135deg,rgba(59,130,246,0.1),rgba(8,14,36,0.8))',border:'1px solid rgba(59,130,246,0.18)',boxShadow:'0 0 20px rgba(59,130,246,0.08)'}}>
+        <Icon style={{width:20,height:20,color:'rgba(59,130,246,0.45)'}}/>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-white mb-0.5">{title}</p>
-        <p className="text-xs" style={{color:'rgba(107,135,184,0.75)',lineHeight:1.4}}>{message}</p>
-        {action && <button onClick={action} className="mt-2 text-xs font-bold flex items-center gap-1" style={{color:iconColor,background:'none',border:'none',cursor:'pointer',padding:0}}>{actionLabel} →</button>}
+    </div>
+    <p className="text-xs font-medium" style={{color:'rgba(75,107,168,0.7)'}}>{label}</p>
+  </div>
+);
+// ─── Alert Card ───────────────────────────────────────────────────────────────
+const AlertCard = ({ icon:Icon, iconColor, iconRgb, title, message, action, actionLabel }) => (
+  <div style={{padding:'14px 16px',borderRadius:14,background:`rgba(${iconRgb},0.07)`,border:`1px solid rgba(${iconRgb},0.2)`,position:'relative',overflow:'hidden'}}>
+    <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${iconRgb},0.7),transparent)`}}/>
+    <div className="flex gap-3" style={{paddingLeft:4}}>
+      <div style={{width:32,height:32,borderRadius:10,background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+        <Icon style={{width:15,height:15,color:iconColor}}/>
+      </div>
+      <div className="flex-1">
+        <p style={{fontSize:13,fontWeight:800,color:'#fff',margin:'0 0 3px'}}>{title}</p>
+        <p style={{fontSize:11,color:'rgba(107,135,184,0.75)',margin:0,lineHeight:1.4}}>{message}</p>
+        {action&&<button onClick={action} style={{marginTop:8,fontSize:11,fontWeight:800,color:iconColor,background:'none',border:'none',cursor:'pointer',padding:0,display:'flex',alignItems:'center',gap:4}}>{actionLabel} <ChevronRight style={{width:11,height:11}}/></button>}
       </div>
     </div>
   </div>
 );
-
-const Empty = ({ icon: Icon, label }) => (
-  <div className="py-10 text-center">
-    <Icon className="w-10 h-10 mx-auto mb-2 opacity-30 text-blue-400" />
-    <p className="text-sm" style={{ color: '#3d5a8a' }}>{label}</p>
-  </div>
-);
+// ─── Action Button ────────────────────────────────────────────────────────────
+const ActionBtn = ({ icon:Icon, label, sub, color, rgb, floor, onClick }) => {
+  const [pressed,setPressed]=React.useState(false);
+  return (
+    <button onClick={onClick}
+      onMouseDown={()=>setPressed(true)} onMouseUp={()=>setPressed(false)}
+      onMouseLeave={()=>setPressed(false)} onTouchStart={()=>setPressed(true)} onTouchEnd={()=>setPressed(false)}
+      style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:10,padding:'16px 16px 14px',borderRadius:16,background:`linear-gradient(145deg,rgba(${rgb},0.14),rgba(${rgb},0.07))`,border:`1px solid rgba(${rgb},0.3)`,borderBottom:pressed?`1px solid rgba(${rgb},0.15)`:`4px solid ${floor}`,boxShadow:pressed?'0 1px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.05)':`0 6px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(${rgb},0.08),inset 0 1px 0 rgba(255,255,255,0.08)`,transform:pressed?'translateY(3px) scale(0.99)':'translateY(0) scale(1)',transition:'transform 0.1s,box-shadow 0.1s,border-bottom 0.1s',cursor:'pointer',width:'100%',textAlign:'left',position:'relative',overflow:'hidden'}}>
+      <div style={{width:38,height:38,borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${rgb},0.18)`,border:`1px solid rgba(${rgb},0.3)`,boxShadow:`0 4px 12px rgba(0,0,0,0.2),0 0 8px rgba(${rgb},0.15)`}}>
+        <Icon style={{width:18,height:18,color}}/>
+      </div>
+      <div>
+        <div style={{fontSize:13,fontWeight:900,color:'#fff',letterSpacing:'-0.01em',marginBottom:2}}>{label}</div>
+        {sub&&<div style={{fontSize:10,fontWeight:600,color:`rgba(${rgb},0.7)`}}>{sub}</div>}
+      </div>
+      <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${rgb},0.4),transparent)`,pointerEvents:'none'}}/>
+    </button>
+  );
+};
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function GymOwnerDashboard() {
@@ -369,11 +374,10 @@ export default function GymOwnerDashboard() {
 
           {/* ── 3 KPI Cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" label="Today's Check-ins" value={todayCI}     sub="members in today" tooltip="Number of unique members who checked in today"/>
-            <KpiCard icon={Users}         iconColor="#34d399" label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct} tooltip="Members who visited at least once this week vs total" statusColor={retentionRate>=60?'green':retentionRate>=30?'yellow':'red'}/>
-            <KpiCard icon={AlertTriangle} iconColor="#fb923c" label="At-Risk Members"   value={atRisk}     sub="No visits in 14+ days" tooltip="Members with no check-in for 14+ days — high churn risk" statusColor={atRisk===0?'green':atRisk<=3?'yellow':'red'}/>
+            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" iconRgb="96,165,250"  label="Today's Check-ins" value={todayCI}     sub="members in today"/>
+            <KpiCard icon={Users}         iconColor="#34d399" iconRgb="52,211,153"  label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct}/>
+            <KpiCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="251,146,60"  label="At-Risk Members"   value={atRisk}     sub="No visits in 10+ days"/>
           </div>
-
           {/* ── Check-ins Over Time with range toggle ── */}
           <Panel>
             <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
@@ -588,30 +592,13 @@ export default function GymOwnerDashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: MEMBERS
   // ══════════════════════════════════════════════════════════════════════════
-  const TabMembers = () => {
-    const [memberRange, setMemberRange] = React.useState(30);
-    const ciRange = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now, memberRange), end: now }));
-    const activeInRange = new Set(ciRange.map(c => c.user_id)).size;
-    const retentionInRange = totalMembers > 0 ? Math.round((activeInRange / totalMembers) * 100) : 0;
-    return (
+  const TabMembers = () => (
     <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-sm font-bold text-white">Members Overview</h3>
-        <div className="flex gap-1.5">
-          {[7, 30, 90].map(r => (
-            <button key={r} onClick={() => setMemberRange(r)}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
-              style={{ background: memberRange === r ? 'rgba(59,130,246,0.22)' : BG.subcard, color: memberRange === r ? '#93c5fd' : '#4a6492', border: `1px solid ${memberRange === r ? BORDER.active : BORDER.subtle}`, cursor: 'pointer' }}>
-              Last {r}d
-            </button>
-          ))}
-        </div>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Users}    iconColor="#60a5fa" label="Total Members"    value={totalMembers}        sub="active memberships" tooltip="Total number of active gym memberships"/>
-        <KpiCard icon={Zap}      iconColor="#34d399" label="Active This Period" value={activeInRange}    trend={weeklyChangePct} sub={`visited in last ${memberRange}d`} tooltip={`Members who checked in at least once in the last ${memberRange} days`} statusColor={weeklyChangePct>=0?'green':'red'}/>
-        <KpiCard icon={Activity} iconColor="#a78bfa" label="Retention Rate"   value={`${retentionInRange}%`} sub={`last ${memberRange} days`} tooltip="Percentage of total members who visited in the selected period" statusColor={retentionInRange>=60?'green':retentionInRange>=30?'yellow':'red'}/>
-        <KpiCard icon={Trophy}   iconColor="#fbbf24" label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records" tooltip="Total personal records set by your members — a strong engagement signal"/>
+        <KpiCard icon={Users}    iconColor="#60a5fa" iconRgb="96,165,250"  label="Total Members"    value={totalMembers}        sub="active memberships"/>
+        <KpiCard icon={Zap}      iconColor="#34d399" iconRgb="52,211,153"  label="Active This Week" value={activeThisWeek}      trend={weeklyChangePct} sub="visited gym"/>
+        <KpiCard icon={Activity} iconColor="#a78bfa" iconRgb="167,139,250" label="Retention Rate"   value={`${retentionRate}%`} sub="active last 30d"/>
+        <KpiCard icon={Trophy}   iconColor="#fbbf24" iconRgb="251,191,36"  label="PRs Logged"       value={lifts.filter(l=>l.is_pr).length} sub="personal records"/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
@@ -689,7 +676,6 @@ export default function GymOwnerDashboard() {
       </div>
     </div>
   );
-  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // TAB: CONTENT
@@ -697,18 +683,10 @@ export default function GymOwnerDashboard() {
   const TabContent = () => (
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          {label:'Post',      icon:MessageSquarePlus, c:'#60a5fa', bg:'rgba(59,130,246,0.12)', b:'rgba(59,130,246,0.25)', action:()=>openModal('post')},
-          {label:'Event',     icon:Calendar,          c:'#34d399', bg:'rgba(16,185,129,0.12)', b:'rgba(16,185,129,0.25)', action:()=>openModal('event')},
-          {label:'Challenge', icon:Trophy,            c:'#fb923c', bg:'rgba(249,115,22,0.12)',  b:'rgba(249,115,22,0.25)', action:()=>openModal('challenge')},
-          {label:'Poll',      icon:BarChart2,         c:'#a78bfa', bg:'rgba(139,92,246,0.12)', b:'rgba(139,92,246,0.25)', action:()=>openModal('poll')},
-        ].map((b,i)=>(
-          <button key={i} onClick={b.action}
-            className="flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-sm text-white transition-all hover:brightness-125 active:scale-95"
-            style={{background:b.bg,border:`1px solid ${b.b}`}}>
-            <b.icon className="w-5 h-5" style={{color:b.c}}/> New {b.label}
-          </button>
-        ))}
+        <ActionBtn icon={MessageSquarePlus} label="New Post"      sub="Share with members"   color="#60a5fa" rgb="96,165,250"   floor="#1e3a8a" onClick={()=>openModal('post')}/>
+        <ActionBtn icon={Calendar}          label="New Event"     sub={`${events.filter(e=>new Date(e.event_date)>=now).length} upcoming`} color="#34d399" rgb="52,211,153" floor="#064e3b" onClick={()=>openModal('event')}/>
+        <ActionBtn icon={Trophy}            label="New Challenge" sub={`${challenges.filter(c=>c.status==='active').length} active`} color="#fb923c" rgb="251,146,60" floor="#7c2d12" onClick={()=>openModal('challenge')}/>
+        <ActionBtn icon={BarChart2}         label="New Poll"      sub={`${polls.length} active`} color="#a78bfa" rgb="167,139,250" floor="#4c1d95" onClick={()=>openModal('poll')}/>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
@@ -848,26 +826,10 @@ export default function GymOwnerDashboard() {
         </Panel>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {label:'Daily Average',    val:Math.round(ci30.length/30),  sub:'check-ins / day (30d)', c:'#60a5fa', tip:'Average daily check-ins over the last 30 days'},
-          {label:'Monthly Change',   val:`${monthChangePct>=0?'+':''}${monthChangePct}%`, sub:'vs previous 30 days', c:monthChangePct>=0?'#34d399':'#f87171', tip:'Change in total check-ins compared to the prior 30-day period', arrow:monthChangePct},
-          {label:'Avg Visits/Member',val:totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—', sub:'per member (30d)', c:'#a78bfa', tip:'Average number of gym visits per member in the last 30 days'},
-          {label:'Return Rate',      val:`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`, sub:'of all check-ins', c:'#fbbf24', tip:'Percentage of check-ins by returning members (not first-time visits)'},
-        ].map((s,i)=>(
-          <div key={i} className="p-5 rounded-xl text-center border transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{background:BG.card,borderColor:BORDER.panel,cursor:'default'}}>
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <p className="text-3xl font-black" style={{color:s.c}}>{s.val}</p>
-              {s.arrow !== undefined && (s.arrow >= 0
-                ? <TrendingUp className="w-4 h-4" style={{color:'#34d399'}}/>
-                : <TrendingDown className="w-4 h-4" style={{color:'#f87171'}}/>
-              )}
-            </div>
-            <MetricTooltip text={s.tip}>
-              <p className="text-xs font-bold text-white cursor-help border-b border-dotted inline-block" style={{borderColor:'#3d5a8a'}}>{s.label}</p>
-            </MetricTooltip>
-            <p className="text-xs mt-0.5" style={{color:'#3d5a8a'}}>{s.sub}</p>
-          </div>
-        ))}
+        <KpiCard icon={Activity}   iconColor="#60a5fa" iconRgb="96,165,250"  label="Daily Average"     value={Math.round(ci30.length/30)} sub="check-ins / day (30d)"/>
+        <KpiCard icon={TrendingUp} iconColor={monthChangePct>=0?'#34d399':'#f87171'} iconRgb={monthChangePct>=0?'52,211,153':'248,113,113'} label="Monthly Change" value={`${monthChangePct>=0?'+':''}${monthChangePct}%`} sub="vs previous 30 days"/>
+        <KpiCard icon={Users}      iconColor="#a78bfa" iconRgb="167,139,250" label="Avg Visits/Member" value={totalMembers>0?(ci30.length/totalMembers).toFixed(1):'—'} sub="per member (30d)"/>
+        <KpiCard icon={Zap}        iconColor="#fbbf24" iconRgb="251,191,36"  label="Return Rate"       value={`${checkIns.length>0?Math.round((checkIns.filter(c=>!c.first_visit).length/checkIns.length)*100):0}%`} sub="of all check-ins"/>
       </div>
     </div>
   );
@@ -880,18 +842,39 @@ export default function GymOwnerDashboard() {
       <Panel>
         <PH title="Gym Information" subtitle={selectedGym?.name} action={()=>openModal('editInfo')} actionLabel="Edit"/>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[{l:'Gym Name',v:selectedGym?.name},{l:'Type',v:selectedGym?.type},{l:'City',v:selectedGym?.city},{l:'Price',v:`£${selectedGym?.price}/mo`},{l:'Address',v:selectedGym?.address},{l:'Postcode',v:selectedGym?.postcode}].map((f,i)=>(
-            <div key={i} className="p-3 rounded-xl border" style={{background:BG.subcard,borderColor:BORDER.subtle}}>
-              <p className="text-xs uppercase tracking-wide mb-1" style={{color:'#3d5a8a'}}>{f.l}</p>
-              <p className="text-sm font-semibold text-white truncate">{f.v||'—'}</p>
+          {[
+            {l:'Gym Name',v:selectedGym?.name,icon:Dumbbell,rgb:'96,165,250',c:'#60a5fa'},
+            {l:'Type',v:selectedGym?.type,icon:Tag2,rgb:'167,139,250',c:'#a78bfa'},
+            {l:'City',v:selectedGym?.city,icon:MapPin2,rgb:'52,211,153',c:'#34d399'},
+            {l:'Monthly Price',v:selectedGym?.price?`£${selectedGym.price}/mo`:'Not set',icon:DollarSign,rgb:'251,191,36',c:'#fbbf24'},
+            {l:'Address',v:selectedGym?.address,icon:MapPin2,rgb:'96,165,250',c:'#60a5fa'},
+            {l:'Postcode',v:selectedGym?.postcode,icon:Pin,rgb:'248,113,113',c:'#f87171'},
+          ].map((f,i)=>(
+            <div key={i} className="relative overflow-hidden p-3.5 rounded-xl" style={{background:`rgba(${f.rgb},0.06)`,border:`1px solid rgba(${f.rgb},0.18)`}}>
+              <div style={{position:'absolute',left:0,top:0,bottom:0,width:2,background:`linear-gradient(180deg,rgba(${f.rgb},0.6),transparent)`}}/>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{background:`rgba(${f.rgb},0.14)`,border:`1px solid rgba(${f.rgb},0.25)`}}>
+                  <f.icon style={{width:11,height:11,color:f.c}}/>
+                </div>
+                <p className="text-xs uppercase tracking-wide font-bold" style={{color:`rgba(${f.rgb},0.55)`}}>{f.l}</p>
+              </div>
+              <p className="text-sm font-semibold text-white truncate pl-0.5">{f.v||'—'}</p>
             </div>
           ))}
         </div>
       </Panel>
 
+      <Panel>
+        <PH title="Manage Gym" subtitle="Update facilities, staff and settings"/>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <ActionBtn icon={Calendar} label="Classes"   sub={`${classes.length} total`}                  color="#34d399" rgb="52,211,153"   floor="#064e3b" onClick={()=>openModal('classes')}/>
+          <ActionBtn icon={Users}    label="Coaches"   sub={`${coaches.length} total`}                  color="#60a5fa" rgb="96,165,250"   floor="#1e3a8a" onClick={()=>openModal('coaches')}/>
+          <ActionBtn icon={Dumbbell} label="Equipment" sub={`${selectedGym?.equipment?.length||0} items`}   color="#a78bfa" rgb="167,139,250" floor="#4c1d95" onClick={()=>openModal('equipment')}/>
+          <ActionBtn icon={Star}     label="Amenities" sub={`${selectedGym?.amenities?.length||0} listed`}  color="#fbbf24" rgb="251,191,36"  floor="#78350f" onClick={()=>openModal('amenities')}/>
+        </div>
+      </Panel>
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <Panel>
-          <PH title="Classes" badge={classes.length} action={()=>openModal('classes')} actionLabel="Manage"/>
           {classes.length > 0 ? (
             <div className="space-y-2">
               {classes.slice(0,6).map(cls=>(
@@ -987,7 +970,7 @@ export default function GymOwnerDashboard() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t"
-        style={{background:'rgba(2,4,10,0.97)',backdropFilter:'blur(16px)',borderColor:BORDER.active,paddingBottom:'env(safe-area-inset-bottom)'}}>
+        style={{background:BG.sidebar,backdropFilter:'blur(16px)',borderColor:BORDER.active,paddingBottom:'env(safe-area-inset-bottom)'}}>
         <div className="flex items-center justify-around" style={{height:'64px'}}>
           {NAV.map(item=>{
             const active=tab===item.id;
