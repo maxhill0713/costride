@@ -647,7 +647,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto flex items-center justify-center relative px-4">
             <button
               onClick={() => setShowStreakVariants(true)}
-              className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2">
+              className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2 p-2 -ml-2">
               <img
                 src={POSE_1_URL}
                 alt="streak"
