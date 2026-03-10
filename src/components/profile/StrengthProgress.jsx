@@ -178,13 +178,13 @@ export default function StrengthProgress({ currentUser }) {
   const allTimeByExercise = useMemo(() => {
     const map = {};
     for (const ex of availableExercises) {
-      map[ex.key] = lifts
-        .filter(l => l.exercise === ex.key)
-        .sort((a, b) => new Date(a.lift_date || a.created_date) - new Date(b.lift_date || b.created_date))
-        .map(l => ({ weight: l.weight_lbs }));
+      map[ex.key] = workoutLogs
+        .flatMap(log => log.exercises?.filter(e => (e.name || e.exercise) === ex.key) || [])
+        .map(e => ({ weight: parseFloat(e.weight) || 0 }))
+        .sort((a, b) => a.weight - b.weight);
     }
     return map;
-  }, [lifts, availableExercises]);
+  }, [workoutLogs, availableExercises]);
 
   const chartData = useMemo(() => {
     const cutoff = period !== 'all'
