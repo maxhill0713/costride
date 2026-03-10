@@ -74,20 +74,25 @@ const KpiCard = ({ icon:Icon, iconColor, iconRgb='59,130,246', label, value, sub
       <div style={{position:'absolute',top:0,left:'10%',right:'10%',height:1,background:`linear-gradient(90deg,transparent,rgba(${iconRgb},0.45),transparent)`,pointerEvents:'none'}}/>
       {/* left accent */}
       <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:`linear-gradient(180deg,rgba(${iconRgb},0.75) 0%,transparent 100%)`}}/>
-      <div style={{position:'relative',padding:'20px 20px 18px 22px'}}>
-        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16}}>
-          <div style={{width:42,height:42,borderRadius:13,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,boxShadow:'0 4px 12px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.08)',flexShrink:0}}>
-            <Icon style={{width:19,height:19,color:iconColor}}/>
+      <div style={{position:'relative',padding:'18px 20px 16px 22px'}}>
+      {/* Row 1: icon + label + trend */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`rgba(${iconRgb},0.14)`,border:`1px solid rgba(${iconRgb},0.25)`,boxShadow:'0 4px 12px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.08)',flexShrink:0}}>
+            <Icon style={{width:16,height:16,color:iconColor}}/>
           </div>
-          {trend!==undefined&&(
-            <span style={{display:'flex',alignItems:'center',gap:4,fontSize:11,fontWeight:800,padding:'4px 9px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171',border:`1px solid ${trend>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
-              {trend>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(trend)}%
-            </span>
-          )}
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:'0.08em',textTransform:'uppercase',color:'rgba(148,163,184,0.65)'}}>{label}</div>
         </div>
-        <div style={{fontSize:32,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:6}}>{value}</div>
-        <div style={{fontSize:10,fontWeight:800,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(148,163,184,0.6)',marginBottom:4}}>{label}</div>
-        {sub&&<div style={{fontSize:11,color:'rgba(100,130,170,0.7)',fontWeight:500}}>{sub}</div>}
+        {trend!==undefined&&(
+          <span style={{display:'flex',alignItems:'center',gap:4,fontSize:11,fontWeight:800,padding:'3px 8px',borderRadius:99,background:trend>=0?'rgba(16,185,129,0.12)':'rgba(248,113,113,0.12)',color:trend>=0?'#34d399':'#f87171',border:`1px solid ${trend>=0?'rgba(16,185,129,0.25)':'rgba(248,113,113,0.25)'}`}}>
+            {trend>=0?<TrendingUp style={{width:10,height:10}}/>:<TrendingDown style={{width:10,height:10}}/>}{Math.abs(trend)}%
+          </span>
+        )}
+      </div>
+      {/* Row 2: big value */}
+      <div style={{fontSize:34,fontWeight:900,color:'#fff',letterSpacing:'-0.04em',lineHeight:1,marginBottom:5}}>{value}</div>
+      {/* Row 3: sub */}
+      {sub&&<div style={{fontSize:11,color:'rgba(100,130,170,0.7)',fontWeight:500}}>{sub}</div>}
       </div>
     </div>
   );
