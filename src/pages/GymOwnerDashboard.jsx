@@ -326,7 +326,7 @@ export default function GymOwnerDashboard() {
   const TabOverview=()=>(
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard icon={Dumbbell}   iconColor="#60a5fa" iconRgb="96,165,250"   label="Today's Check-ins"    value={todayCI}        sub="members in today"/>
+        <KpiCard icon={Dumbbell}   iconColor="#60a5fa" iconRgb="96,165,250"   label="Today's Check-ins"    value={todayCI}        sub="members in today" trend={(()=>{const yest=checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(subDays(now,1)).getTime()).length;return yest>0?Math.round(((todayCI-yest)/yest)*100):undefined;})()}/>
         <KpiCard icon={Users}      iconColor="#34d399" iconRgb="52,211,153"   label="Active This Week"     value={activeThisWeek} sub={`of ${totalMembers} members`} trend={weeklyChangePct}/>
         <KpiCard icon={Activity}   iconColor="#a78bfa" iconRgb="167,139,250"  label="Monthly Check-ins"    value={ci30.length}    sub={`${monthChangePct>=0?"+":""}${monthChangePct}% vs last month`} trend={monthChangePct}/>
         <KpiCard icon={UserPlus}   iconColor="#34d399" iconRgb="52,211,153"   label="New Sign-ups"         value={newSignUps}     sub="joined last 30 days" trend={newSignUpsPct}/>
