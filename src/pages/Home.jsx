@@ -972,11 +972,11 @@ export default function Home() {
                           willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent',
                         }}
-                        onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
-                        onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
-                        onTouchStart={e => { e.currentTarget.style.transform = 'scale(0.92) translateY(2px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
-                        onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
+                        onMouseDown={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease'; e.currentTarget.style.transform = 'scale(0.88) translateY(3px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
+                        onMouseUp={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.15s ease'; e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.15s ease'; e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
+                        onTouchStart={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease'; e.currentTarget.style.transform = 'scale(0.88) translateY(3px)'; e.currentTarget.style.animationPlayState = 'paused'; }}
+                        onTouchEnd={e => { e.currentTarget.style.transition = 'background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease, transform 0.15s ease'; e.currentTarget.style.transform = ''; e.currentTarget.style.animationPlayState = 'running'; }}
                       >
                         {isRestDay
                           ? done
@@ -1292,16 +1292,36 @@ export default function Home() {
               {summaryLog.exercises?.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
-                  <div className="space-y-2">
+                  {/* Column headers */}
+                  <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets</div>
+                    <div />
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+                  </div>
+                  <div className="space-y-2 -mx-2">
                     {summaryLog.exercises.map((ex, idx) => {
                       const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const weight = ex.weight_kg || ex.weight;
-                      const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
-                      const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
+                      const rawWeight = ex.weight_kg || ex.weight;
+                      const sets = ex.sets || ex.setsReps?.split('x')?.[0] || '-';
+                      const reps = ex.reps || ex.setsReps?.split('x')?.[1] || '-';
+                      const weight = rawWeight || '-';
                       return (
-                        <div key={idx} className="flex items-center justify-between py-2 border-b border-white/8 last:border-0">
-                          <span className="text-white font-semibold text-sm">{exName}</span>
-                          <span className="text-slate-300 text-xs font-medium">{detail || '—'}</span>
+                        <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
+                          <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>
+                            {sets}
+                          </div>
+                          <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+                          <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                            {reps}
+                          </div>
+                          <div className="ml-3 pr-3">
+                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                              {weight}<span className="text-[10px] font-bold">kg</span>
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
