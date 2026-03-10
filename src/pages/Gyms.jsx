@@ -639,7 +639,7 @@ return (
       <Dialog open={showPrimaryGymModal} onOpenChange={setShowPrimaryGymModal}>
         <DialogContent
           data-primary-gym-dialog
-          className="bg-slate-900 border-slate-700 text-white max-w-lg [&>button]:hidden"
+          className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white"
         >
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2 pg-item-in" style={{ animationDelay: '60ms' }}>
@@ -716,7 +716,7 @@ return (
           </DialogHeader>
           <p className="text-slate-300 text-sm">Are you sure you want to leave this gym? You'll lose access to its community.</p>
           <div className="flex gap-3 pt-2">
-            <Button onClick={() => setConfirmLeaveGym(null)} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
+            <Button onClick={() => setConfirmLeaveGym(null)} className="flex-1 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 text-slate-200 border border-slate-600/50 font-bold rounded-lg shadow-[0_3px_0_0_rgba(0,0,0,0.5),0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu hover:from-slate-600 hover:via-slate-700 hover:to-slate-800">Cancel</Button>
             <Button onClick={() => { leaveGymMutation.mutate(confirmLeaveGym.id); setConfirmLeaveGym(null); }} disabled={leaveGymMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
               {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Leave Gym'}
             </Button>
@@ -765,7 +765,7 @@ return (
         </>
       }
       <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle>
           </DialogHeader>
