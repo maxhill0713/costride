@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+javascript
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -9,52 +10,48 @@ import { toast } from 'sonner';
 
 const createPageUrl = (pageName) => `/${pageName}`;
 
-// ─── Keyframe styles injected once ────────────────────────────────────────────
+// ─── Keyframe styles ───────────────────────────────────────────────────────────
 const ANIMATION_STYLES = `
-  @keyframes bubblePop {
-    0%   { transform: scale(0.3);    opacity: 0; }
-    50%  { transform: scale(1.08);   opacity: 1; }
-    70%  { transform: scale(0.96);   opacity: 1; }
-    85%  { transform: scale(1.02);   opacity: 1; }
-    100% { transform: scale(1.0);    opacity: 1; }
+  @keyframes modalIn {
+    0%   { transform: translateY(18px) scale(0.97); opacity: 0; }
+    100% { transform: translateY(0px)  scale(1.0);  opacity: 1; }
   }
 
-  @keyframes bubbleDismiss {
-    0%   { transform: scale(1.0);  opacity: 1; }
-    25%  { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(0.3);  opacity: 0; }
+  @keyframes modalOut {
+    0%   { transform: translateY(0px)  scale(1.0);  opacity: 1; }
+    100% { transform: translateY(14px) scale(0.97); opacity: 0; }
   }
 
-  @keyframes backdropFadeIn {
+  @keyframes backdropIn {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
 
-  @keyframes backdropFadeOut {
+  @keyframes backdropOut {
     from { opacity: 1; }
     to   { opacity: 0; }
   }
 
-  .bubble-pop {
-    animation: bubblePop 400ms cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+  .modal-enter {
+    animation: modalIn 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  .bubble-dismiss {
-    animation: bubbleDismiss 250ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  .modal-exit {
+    animation: modalOut 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   }
 
-  .backdrop-in {
-    animation: backdropFadeIn 250ms ease forwards;
+  .backdrop-enter {
+    animation: backdropIn 280ms ease forwards;
   }
 
-  .backdrop-out {
-    animation: backdropFadeOut 250ms ease forwards;
+  .backdrop-exit {
+    animation: backdropOut 220ms ease forwards;
   }
 `;
 
 function useAnimationStyles() {
   useEffect(() => {
-    const id = 'join-modal-styles';
+    const id = 'join-modal-anim-styles';
     if (!document.getElementById(id)) {
       const tag = document.createElement('style');
       tag.id = id;
@@ -69,27 +66,27 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [visible, setVisible] = useState(false);
-  const [animating, setAnimating] = useState(false); // true = dismissing
+  const [exiting, setExiting] = useState(false);
   const queryClient = useQueryClient();
 
   useAnimationStyles();
 
-  // Handle open → show with bubble pop
+  // Open — show immediately, play enter animation
   useEffect(() => {
     if (open) {
+      setExiting(false);
       setVisible(true);
-      setAnimating(false);
     }
   }, [open]);
 
-  // Handle close → play dismiss then hide
+  // Close — play exit animation, then unmount
   const handleClose = () => {
-    setAnimating(true);
+    setExiting(true);
     setTimeout(() => {
       setVisible(false);
-      setAnimating(false);
+      setExiting(false);
       onClose();
-    }, 250);
+    }, 220);
   };
 
   // Pre-fill code from URL if present
@@ -153,7 +150,7 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
       handleClose();
       setTimeout(() => {
         window.location.href = createPageUrl('GymCommunity') + '?id=' + gym.id;
-      }, 260);
+      }, 230);
     },
     onError: (error) => {
       setError(error.message);
@@ -174,12 +171,11 @@ export default function JoinWithCodeModal({ open, onClose, currentUser }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${animating ? 'backdrop-out' : 'backdrop-in'}`}
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${exiting ? 'backdrop-exit' : 'backdrop-enter'}`}
       onClick={handleClose}
     >
-      {/* Modal card — bubble animation lives here only */}
       <Card
-        className={`bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-4 md:p-6 shadow-2xl ${animating ? 'bubble-dismiss' : 'bubble-pop'}`}
+        className={`bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-cyan-600/30 max-w-md w-full p-4 md:p-6 shadow-2xl ${exiting ? 'modal-exit' : 'modal-enter'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4 md:mb-6">
