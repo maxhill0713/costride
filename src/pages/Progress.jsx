@@ -155,14 +155,46 @@ function AnalyticsPage({ currentUser, workoutLogs, onBack }) {
   );
 }
 
+// ─── Badge definitions & logic ───────────────────────────────────────────────
+const BADGE_LIBRARY = [
+  { id: '10_visits', title: 'Getting Started', description: '10 gym check-ins', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+  { id: '50_visits', title: 'Regular', description: '50 gym check-ins', icon: '🔥', color: 'from-orange-400 to-red-500' },
+  { id: '100_visits', title: 'Dedicated', description: '100 gym check-ins', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+  { id: '7_day_streak', title: 'Week Warrior', description: '7-day streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+  { id: '30_day_streak', title: 'Month Master', description: '30-day streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+  { id: '90_day_streak', title: 'Consistency King', description: '90-day streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+  { id: '1_year', title: 'One Year Strong', description: '1 year membership', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+  { id: 'community_leader', title: 'Community Leader', description: 'Active community member', icon: '👥', color: 'from-cyan-400 to-blue-500' }
+];
+
 // ─── Rank sub-page ─────────────────────────────────────────────────────────────
-function RankPage({ currentUser, onBack }) {
-  const { data: achievements = [] } = useQuery({
-    queryKey: ['achievements', currentUser?.id],
-    queryFn: () => base44.entities.Achievement.filter({ user_id: currentUser.id }),
-    enabled: !!currentUser,
-  });
+function RankPage({ currentUser, onBack, checkIns = [] }) {
   const [equippedBadges, setEquippedBadges] = useState(currentUser?.equipped_badges || []);
+
+  const userStats = {
+    total_check_ins: checkIns.length,
+    longest_streak: currentUser?.longest_streak || 0,
+    current_streak: currentUser?.current_streak || 0,
+    gym_join_date: currentUser?.created_date
+  };
+
+  const isBadgeEarned = (badgeId) => {
+    switch(badgeId) {
+      case '10_visits': return userStats.total_check_ins >= 10;
+      case '50_visits': return userStats.total_check_ins >= 50;
+      case '100_visits': return userStats.total_check_ins >= 100;
+      case '7_day_streak': return userStats.longest_streak >= 7;
+      case '30_day_streak': return userStats.longest_streak >= 30;
+      case '90_day_streak': return userStats.longest_streak >= 90;
+      case '1_year': return userStats.gym_join_date && Math.floor((new Date() - new Date(userStats.gym_join_date)) / (1000*60*60*24)) >= 365;
+      case 'community_leader': return userStats.total_check_ins >= 20;
+      default: return false;
+    }
+  };
+
+  const earnedBadges = BADGE_LIBRARY.filter(b => isBadgeEarned(b.id));
+  const lockedBadges = BADGE_LIBRARY.filter(b => !isBadgeEarned(b.id));
+  const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
 
   const handleEquipBadge = async (badgeId) => {
     let newEquipped = [...equippedBadges];
@@ -176,67 +208,90 @@ function RankPage({ currentUser, onBack }) {
     await base44.auth.updateMe({ equipped_badges: newEquipped });
   };
 
-  const progressPct = achievements.length > 0 ? Math.round((equippedBadges.length / 3) * 100) : 0;
-
   return (
     <SubPage title="Rank" onBack={onBack}>
-      {/* Summary card */}
-      <div className="rounded-2xl p-5 mb-4 relative overflow-hidden" style={CARD}>
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-500/40 to-transparent" />
-        <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: 'radial-gradient(ellipse at 20% 30%, rgba(245,158,11,0.12) 0%, transparent 60%)' }} />
-        <div className="relative flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/25 flex-shrink-0">
-            <Award className="w-8 h-8 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-yellow-400/80 uppercase tracking-widest mb-0.5">Badges Equipped</p>
-            <p className="text-xl font-black text-white">{equippedBadges.length}/3</p>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex-1 h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500" style={{ width: `${progressPct}%`, transition: 'width 0.6s ease' }} />
+      {/* Showcase */}
+      {equippedBadgeDetails.length > 0 && (
+        <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-600/20 via-yellow-600/20 to-orange-600/20 backdrop-blur-xl border border-amber-400/40 shadow-lg mb-4">
+          <h3 className="text-xs font-bold text-amber-300 mb-2 flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            Showcase
+          </h3>
+          <div className="grid grid-cols-3 gap-1.5">
+            {equippedBadgeDetails.map((badge) => (
+              <div key={badge.id} className={`relative p-2 rounded-lg bg-gradient-to-br ${badge.color} border border-white/30 shadow-md`}>
+                <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                  <CheckCircle className="w-2 h-2 text-amber-900" strokeWidth={3} />
+                </div>
+                <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                  <span className="text-lg">{badge.icon}</span>
+                </div>
+                <h4 className="font-bold text-white text-[9px] text-center drop-shadow line-clamp-1">{badge.title}</h4>
               </div>
-              <span className="text-[10px] font-bold text-slate-400 flex-shrink-0">{achievements.length} earned</span>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {achievements.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-slate-400 text-sm">No badges earned yet. Keep training!</p>
-        </div>
-      ) : (
-        <>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">All Badges (Click to Equip)</p>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">{achievements.length} Total</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            {achievements.map((badge) => {
+      {/* Earned Badges */}
+      {earnedBadges.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+            <Award className="w-4 h-4 text-yellow-400" />
+            Earned ({earnedBadges.length})
+          </h3>
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+            {earnedBadges.map((badge, index) => {
               const isEquipped = equippedBadges.includes(badge.id);
               return (
                 <button
                   key={badge.id}
                   onClick={() => handleEquipBadge(badge.id)}
-                  className={`relative p-3.5 rounded-2xl border bg-gradient-to-br transition-all ${
-                    isEquipped 
-                      ? 'from-yellow-500/30 to-orange-500/20 border-yellow-500/60 ring-2 ring-yellow-500/40' 
-                      : 'from-slate-700/30 to-slate-800/20 border-slate-700/40 hover:border-slate-600/60'
+                  className={`p-3 text-center bg-gradient-to-br ${badge.color} border rounded-lg shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden group cursor-pointer ${
+                    isEquipped ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-white/20 hover:border-white/40'
                   }`}
                 >
                   {isEquipped && (
-                    <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center shadow-md">
-                      <CheckCircle className="w-2.5 h-2.5 text-yellow-900" strokeWidth={3} />
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm z-10">
+                      <CheckCircle className="w-2.5 h-2.5 text-amber-900" strokeWidth={3} />
                     </div>
                   )}
-                  <div className="text-2xl mb-2 leading-none">{badge.icon || '⭐'}</div>
-                  <p className="text-xs font-black text-white leading-tight line-clamp-2">{badge.title}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">{badge.description}</p>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                  <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg ring-2 ring-white/30 relative">
+                    <span className="text-xl drop-shadow-lg z-10">{badge.icon}</span>
+                  </div>
+                  <h4 className="font-bold text-white text-[10px] mb-0.5 drop-shadow line-clamp-1">{badge.title}</h4>
+                  <p className="text-[8px] text-white/80 font-medium drop-shadow line-clamp-1">{badge.description}</p>
                 </button>
               );
             })}
           </div>
-        </>
+        </div>
+      )}
+
+      {/* Locked Badges */}
+      {lockedBadges.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
+            <Flame className="w-4 h-4 text-slate-400" />
+            Locked ({lockedBadges.length})
+          </h3>
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+            {lockedBadges.map((badge) => (
+              <div key={badge.id} className="p-3 text-center bg-slate-900/70 backdrop-blur-sm border border-dashed border-slate-700/50 rounded-lg relative overflow-hidden cursor-not-allowed">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50" />
+                <div className="w-10 h-10 mx-auto mb-1.5 rounded-full bg-slate-800/50 flex items-center justify-center shadow-sm relative opacity-40">
+                  <span className="text-xl">{badge.icon}</span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm">🔒</span>
+                  </div>
+                </div>
+                <h4 className="font-bold text-slate-500 text-[10px] mb-0.5 relative z-10 line-clamp-1">{badge.title}</h4>
+                <p className="text-[8px] text-slate-600 font-medium relative z-10 line-clamp-1">{badge.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </SubPage>
   );
