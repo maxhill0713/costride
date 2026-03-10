@@ -538,9 +538,9 @@ export default function GymOwnerDashboard() {
 
           {/* ── 3 KPI Cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <KpiCard icon={Dumbbell}      iconColor="#60a5fa" iconRgb="96,165,250"  label="Today's Check-ins" value={todayCI}     sub="members in today"/>
+            <KpiCard icon={Dumbbell}      iconColor="#06b6d4" iconRgb="6,182,212"   label="Today's Check-ins" value={todayCI}     sub="members in today"/>
             <KpiCard icon={Users}         iconColor="#34d399" iconRgb="52,211,153"  label="Active Members"    value={`${activeThisWeek}/${totalMembers}`} sub={`${retentionRate}% engagement`} trend={weeklyChangePct}/>
-            <KpiCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="251,146,60"  label="At-Risk Members"   value={atRisk}     sub="No visits in 10+ days"/>
+            <KpiCard icon={AlertTriangle} iconColor="#fb923c" iconRgb="251,146,60"  label="At-Risk Members"   value={atRisk}     sub="No visits in 14+ days"/>
           </div>
           {/* ── Check-ins Over Time with range toggle ── */}
           <Panel>
