@@ -1,24 +1,80 @@
 import React, { useMemo } from 'react';
-import { subDays, format, isWithinInterval, startOfDay } from 'date-fns';
-import { Activity, TrendingUp, Users, Zap, ArrowUpRight, TrendingDown, Calendar } from 'lucide-react';
+import { subDays, format, isWithinInterval } from 'date-fns';
+import { Activity, TrendingUp, Users, Zap, ArrowUpRight, TrendingDown, Calendar, Clock } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
-import AttendanceHeatmap from './AttendanceHeatmap';
-import ChartTip from './ChartTip';
-import Empty from './Empty';
 
-const Card = ({ children, style = {}, className = '', onClick }) => (
-  <div className={`card-hover ${className}`} onClick={onClick}
-    style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, ...style }}>
-    {children}
+const Card = ({ children, style = {} }) => (
+  <div className="card-hover" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, ...style }}>{children}</div>
+);
+
+const Empty = ({ icon: Icon, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', gap: 8 }}>
+    <Icon style={{ width: 28, height: 28, color: 'var(--text3)', opacity: 0.4 }}/>
+    <span style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 500 }}>{label}</span>
   </div>
 );
 
-// Clock icon inline since we can't import from lucide in this split
-const ClockIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-  </svg>
-);
+const ChartTip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="custom-tooltip">
+      <p style={{color:'var(--text3)',marginBottom:2,fontSize:10}}>{label}</p>
+      <p style={{color:'var(--cyan)',fontWeight:700,fontSize:13}}>{payload[0].value}</p>
+    </div>
+  );
+};
+
+const AttendanceHeatmap = ({ checkIns }) => {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const slots = ['6AM','12PM','6PM','9PM'];
+  const slotHours = [[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22]];
+  const grid = useMemo(() => {
+    const acc = {};
+    checkIns.forEach(c => {
+      const d = new Date(c.check_in_date);
+      const dow = (d.getDay() + 6) % 7;
+      const h = d.getHours();
+      const slot = slotHours.findIndex(s => s.includes(h));
+      if (slot === -1) return;
+      const key = `${dow}-${slot}`;
+      acc[key] = (acc[key] || 0) + 1;
+    });
+    return acc;
+  }, [checkIns]);
+  const max = Math.max(...Object.values(grid), 1);
+  const getColor = (v) => {
+    if (!v) return 'rgba(255,255,255,0.04)';
+    const t = v / max;
+    if (t < 0.2) return 'rgba(6,182,212,0.15)';
+    if (t < 0.4) return 'rgba(6,182,212,0.3)';
+    if (t < 0.6) return 'rgba(6,182,212,0.5)';
+    if (t < 0.8) return 'rgba(6,182,212,0.75)';
+    return 'rgba(6,182,212,0.95)';
+  };
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '36px repeat(7,1fr)', gap: 4, marginBottom: 6 }}>
+        <div/>{days.map(d => <div key={d} style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', textAlign: 'center' }}>{d}</div>)}
+      </div>
+      {slots.map((slot, si) => (
+        <div key={slot} style={{ display: 'grid', gridTemplateColumns: '36px repeat(7,1fr)', gap: 4, marginBottom: 4 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', display: 'flex', alignItems: 'center' }}>{slot}</div>
+          {days.map((_, di) => {
+            const v = grid[`${di}-${si}`] || 0;
+            return <div key={di} className="hm-cell" title={`${days[di]} ${slot}: ${v} check-ins`} style={{ height: 20, borderRadius: 4, background: getColor(v) }}/>;
+          })}
+        </div>
+      ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+        <span style={{ fontSize: 10, color: 'var(--text3)' }}>Low</span>
+        {[0.04, 0.2, 0.4, 0.6, 0.8, 1.0].map((t, i) => (
+          <div key={i} style={{ width: 14, height: 14, borderRadius: 3, background: t < 0.1 ? 'rgba(255,255,255,0.04)' : `rgba(6,182,212,${t})` }}/>
+        ))}
+        <span style={{ fontSize: 10, color: 'var(--text3)' }}>High</span>
+      </div>
+    </div>
+  );
+};
 
 export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer, monthChangePct, monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk }) {
   const now = new Date();
@@ -76,32 +132,28 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
         </div>
 
         <Card style={{ padding: '20px 20px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Weekly Check-in Trend</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>12-week rolling view</div>
-            </div>
-          </div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em', marginBottom: 4 }}>Weekly Check-in Trend</div>
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 16 }}>12-week rolling view</div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={weekTrend} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
-              <defs><linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
+              <defs><linearGradient id="wtGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false}/>
               <XAxis dataKey="label" tick={{fill:'#475569',fontSize:9,fontFamily:'Outfit'}} axisLine={false} tickLine={false} interval={2}/>
               <YAxis tick={{fill:'#475569',fontSize:9,fontFamily:'Outfit'}} axisLine={false} tickLine={false} width={24}/>
               <Tooltip content={<ChartTip/>} cursor={{stroke:'rgba(59,130,246,0.2)',strokeWidth:1,strokeDasharray:'4 4'}}/>
-              <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2.5} fill="url(#wtGrad)" dot={false} activeDot={{r:5,fill:'#3b82f6',stroke:'#fff',strokeWidth:2}}/>
+              <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2.5} fill="url(#wtGrad2)" dot={false} activeDot={{r:5,fill:'#3b82f6',stroke:'#fff',strokeWidth:2}}/>
             </AreaChart>
           </ResponsiveContainer>
         </Card>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Card style={{ padding: 20 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14, letterSpacing: '-0.02em' }}>Attendance Heatmap</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>Attendance Heatmap</div>
             <AttendanceHeatmap checkIns={checkIns}/>
           </Card>
           <Card style={{ padding: 20 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14, letterSpacing: '-0.02em' }}>Peak Hours</div>
-            {peakHours.length === 0 ? <Empty icon={ClockIcon} label="No check-in data yet"/> : (
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', marginBottom: 14 }}>Peak Hours</div>
+            {peakHours.length === 0 ? <Empty icon={Clock} label="No check-in data yet"/> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                 {peakHours.map((h, i) => (
                   <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -121,7 +173,7 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>30-Day Snapshot</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12 }}>30-Day Snapshot</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
               { label: 'Total check-ins', value: ci30.length,         color: '#0ea5e9' },
@@ -139,7 +191,7 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
         </Card>
 
         <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Busiest Days</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12 }}>Busiest Days</div>
           {busiestDays.every(d=>d.count===0) ? <Empty icon={Calendar} label="No data yet"/> : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {busiestDays.map(({name,count},rank) => {
@@ -161,20 +213,17 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
         </Card>
 
         <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Engagement Breakdown</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12 }}>Engagement Breakdown</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
-              { label: 'Super Active', sub: '15+ visits', val: monthCiPer.filter(v=>v>=15).length, color: '#10b981', pct: totalMembers>0?(monthCiPer.filter(v=>v>=15).length/totalMembers)*100:0 },
-              { label: 'Active',       sub: '8–14 visits', val: monthCiPer.filter(v=>v>=8&&v<15).length, color: '#0ea5e9', pct: totalMembers>0?(monthCiPer.filter(v=>v>=8&&v<15).length/totalMembers)*100:0 },
-              { label: 'Casual',       sub: '1–7 visits',  val: monthCiPer.filter(v=>v>=1&&v<8).length,  color: '#a78bfa', pct: totalMembers>0?(monthCiPer.filter(v=>v>=1&&v<8).length/totalMembers)*100:0 },
-              { label: 'Inactive',     sub: '0 visits',    val: totalMembers - monthCiPer.length,         color: '#f59e0b', pct: totalMembers>0?((totalMembers-monthCiPer.length)/totalMembers)*100:0 },
+              { label: 'Super Active', sub: '15+', val: monthCiPer.filter(v=>v>=15).length, color: '#10b981', pct: totalMembers>0?(monthCiPer.filter(v=>v>=15).length/totalMembers)*100:0 },
+              { label: 'Active',       sub: '8–14', val: monthCiPer.filter(v=>v>=8&&v<15).length, color: '#0ea5e9', pct: totalMembers>0?(monthCiPer.filter(v=>v>=8&&v<15).length/totalMembers)*100:0 },
+              { label: 'Casual',       sub: '1–7',  val: monthCiPer.filter(v=>v>=1&&v<8).length,  color: '#a78bfa', pct: totalMembers>0?(monthCiPer.filter(v=>v>=1&&v<8).length/totalMembers)*100:0 },
+              { label: 'Inactive',     sub: '0',    val: totalMembers - monthCiPer.length,         color: '#f59e0b', pct: totalMembers>0?((totalMembers-monthCiPer.length)/totalMembers)*100:0 },
             ].map((s,i) => (
               <div key={i}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                  <div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text2)' }}>{s.label}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text3)', marginLeft: 5 }}>{s.sub}</span>
-                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text2)' }}>{s.label} <span style={{fontSize:10,color:'var(--text3)'}}>{s.sub}</span></span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: s.color }}>{s.val}</span>
                 </div>
                 <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
@@ -186,22 +235,18 @@ export default function TabAnalytics({ checkIns, ci30, totalMembers, monthCiPer,
         </Card>
 
         <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 4, letterSpacing: '-0.01em' }}>Member Growth</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 4 }}>Member Growth</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 12 }}>
             <span style={{ fontSize: 24, fontWeight: 900, color: '#10b981', letterSpacing: '-0.04em' }}>+{newSignUps}</span>
             <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500 }}>this month</span>
           </div>
           <ResponsiveContainer width="100%" height={90}>
             <BarChart data={monthGrowthData} barSize={14} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
-              <defs>
-                <linearGradient id="mgBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.35}/>
-                </linearGradient>
-              </defs>
+              <defs><linearGradient id="mgBar2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/><stop offset="100%" stopColor="#10b981" stopOpacity={0.35}/></linearGradient></defs>
               <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 9, fontFamily: 'Outfit' }} axisLine={false} tickLine={false}/>
               <YAxis hide/>
-              <Tooltip content={({ active, payload, label }) => active && payload?.length ? <div className="custom-tooltip"><p style={{color:'var(--text2)',marginBottom:2,fontSize:10}}>{label}</p><p style={{color:'var(--green)',fontWeight:700}}>{payload[0].value} active</p></div> : null} cursor={{ fill: 'rgba(255,255,255,0.04)' }}/>
-              <Bar dataKey="value" fill="url(#mgBar)" radius={[4,4,0,0]}/>
+              <Tooltip content={({ active, payload, label }) => active && payload?.length ? <div className="custom-tooltip"><p style={{color:'var(--text2)',marginBottom:2,fontSize:10}}>{label}</p><p style={{color:'#10b981',fontWeight:700}}>{payload[0].value} active</p></div> : null} cursor={{ fill: 'rgba(255,255,255,0.04)' }}/>
+              <Bar dataKey="value" fill="url(#mgBar2)" radius={[4,4,0,0]}/>
             </BarChart>
           </ResponsiveContainer>
         </Card>
