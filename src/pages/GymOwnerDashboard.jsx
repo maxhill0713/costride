@@ -38,6 +38,7 @@ import QRScanner from '../components/gym/QRScanner';
 import CreatePollModal from '../components/polls/CreatePollModal';
 import QRCode from 'react-qr-code';
 import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
+import GymJoinPoster from '../components/dashboard/GymJoinPoster';
 
 // ─── Injected global styles ──────────────────────────────────────────────────
 const STYLE = `
