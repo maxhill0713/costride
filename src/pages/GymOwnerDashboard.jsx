@@ -449,7 +449,6 @@ export default function GymOwnerDashboard() {
   if (myGyms.length===0) return <Splash><Dumbbell style={{width:28,height:28,color:'var(--cyan)',margin:'0 auto 12px'}}/><h2 style={{color:'var(--text1)',fontWeight:800,marginBottom:8}}>No Gyms</h2><p style={{color:'var(--text2)',fontSize:13,marginBottom:20}}>Register your gym to get started.</p><Link to={createPageUrl('GymSignup')}><button style={{background:'linear-gradient(135deg,#0ea5e9,#06b6d4)',color:'#fff',border:'none',borderRadius:10,padding:'9px 20px',fontWeight:700,cursor:'pointer'}}>Register Your Gym</button></Link></Splash>;
 
   // ── Stats ─────────────────────────────────────────────────────────────────
-  const now              = new Date();
   const ci7              = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,7),  end: now }));
   const ci30             = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,30), end: now }));
   const ciPrev30         = checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: subDays(now,60), end: subDays(now,30) }));
