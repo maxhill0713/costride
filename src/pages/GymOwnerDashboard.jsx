@@ -470,18 +470,6 @@ export default function GymOwnerDashboard() {
   const newSignUpsPrev   = allMemberships.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now,60), end: subDays(now,30) })).length;
   const cancelledEst     = Math.max(0, newSignUpsPrev - newSignUps);
 
-  // Chart data
-  const chartDays = useMemo(() => {
-    const days = chartRange <= 7 ? 7 : chartRange <= 30 ? 30 : 90;
-    return Array.from({length: days}, (_, i) => {
-      const d = subDays(now, days - 1 - i);
-      return {
-        day: format(d, days <= 7 ? 'EEE' : days <= 30 ? 'MMM d' : 'MMM d'),
-        value: checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length
-      };
-    });
-  }, [chartRange, checkIns]);
-
   const sparkData = Array.from({length:7},(_,i)=>checkIns.filter(c=>startOfDay(new Date(c.check_in_date)).getTime()===startOfDay(subDays(now,6-i)).getTime()).length);
 
   const monthGrowthData = Array.from({length:6},(_,i)=>{
