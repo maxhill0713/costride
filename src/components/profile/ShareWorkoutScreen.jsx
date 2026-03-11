@@ -29,16 +29,33 @@ export default function ShareWorkoutScreen({ workoutName, exercises, currentUser
   const handleShare = async () => {
     setSharing(true);
     try {
-      const exerciseSummary = exercises
-        ?.map(ex => `${ex.exercise || ex.name}  ${ex.setsReps || ''}  ${ex.weight ? ex.weight + 'kg' : ''}`.trim())
-        .filter(Boolean)
-        .join('\n') || '';
+      // Build structured exercise list
+      const structuredExercises = (exercises || []).map(ex => {
+        const exName = ex.exercise || ex.name || ex.title || 'Exercise';
+        let sets = ex.sets || ex.set_count || '-';
+        let reps = ex.reps || ex.rep_count || '-';
+        if ((sets === '-' || reps === '-') && (ex.setsReps || ex.sets_reps)) {
+          const parts = String(ex.setsReps || ex.sets_reps).toLowerCase().split(/\s*x\s*/);
+          if (sets === '-') sets = parts[0] || '-';
+          if (reps === '-') reps = parts[1] || '-';
+        }
+        if (sets === '-' && ex.logged_sets?.length) sets = String(ex.logged_sets.length);
+        if (reps === '-' && ex.logged_sets?.[0]?.reps) reps = String(ex.logged_sets[0].reps);
+        const weight = String(ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? '-');
+        return { name: exName, sets: String(sets), reps: String(reps), weight };
+      });
 
-      const content = [
-        `💪 Just finished ${workoutName}!`,
-        comment ? `\n${comment}` : '',
-        exerciseSummary ? `\n\n${exerciseSummary}` : ''
-      ].join('').trim();
+      // Compute total volume
+      let totalVolumeKg = 0;
+      structuredExercises.forEach(ex => {
+        const s = parseFloat(ex.sets) || 0;
+        const r = parseFloat(ex.reps) || 0;
+        const w = parseFloat(ex.weight) || 0;
+        totalVolumeKg += s * r * w;
+      });
+      const volumeStr = totalVolumeKg > 0 ? `${Math.round(totalVolumeKg).toLocaleString()} kg` : null;
+
+      const content = comment?.trim() || `💪 Just finished ${workoutName}!`;
 
       await base44.entities.Post.create({
         member_id: currentUser.id,
@@ -47,11 +64,14 @@ export default function ShareWorkoutScreen({ workoutName, exercises, currentUser
         content,
         image_url: photoUrl || null,
         video_url: null,
+        workout_name: workoutName,
+        workout_exercises: structuredExercises,
+        workout_volume: volumeStr,
+        workout_duration: null,
         likes: 0,
         comments: [],
         reactions: {},
         is_system_generated: false,
-        allow_gym_repost: false
       });
 
       toast.success('Workout shared with your friends! 🔥');
