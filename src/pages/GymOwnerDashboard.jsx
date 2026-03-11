@@ -1755,6 +1755,8 @@ export default function GymOwnerDashboard() {
     </div>
   );
 
+  const TabAnalytics = () => <TabAnalyticsComponent checkIns={checkIns} ci30={ci30} totalMembers={totalMembers} monthCiPer={monthCiPer} monthChangePct={monthChangePct} monthGrowthData={monthGrowthData} retentionRate={retentionRate} activeThisMonth={activeThisMonth} newSignUps={newSignUps} atRisk={atRisk}/>;
+
   const TABS = { overview: <TabOverview/>, members: <TabMembers/>, content: <TabContent/>, analytics: <TabAnalytics/>, gym: <TabGym/> };
 
   // ── RENDER ─────────────────────────────────────────────────────────────────
