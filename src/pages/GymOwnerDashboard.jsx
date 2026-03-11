@@ -1870,6 +1870,18 @@ export default function GymOwnerDashboard() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {selectedGym?.join_code && (
+              <button onClick={() => setShowPoster(true)} style={{
+                display: 'flex', alignItems: 'center', gap: 7, padding: '6px 14px', borderRadius: 10,
+                background: 'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(6,182,212,0.15))',
+                border: '1px solid rgba(16,185,129,0.4)', color: '#34d399', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                letterSpacing: '0.05em',
+              }}>
+                <QrCode style={{ width: 13, height: 13 }}/>
+                <span style={{ fontFamily: 'monospace', letterSpacing: '0.15em', fontSize: 13 }}>{selectedGym.join_code}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, opacity: 0.7 }}>· Flyer</span>
+              </button>
+            )}
             {atRisk > 0 && (
               <button onClick={() => setTab('members')}
                 style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 99, fontSize: 11, fontWeight: 700, padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
