@@ -1152,6 +1152,8 @@ export default function Home() {
 
           })()}
 
+          {memberGym?.id && <GymChallengesSection gymId={memberGym.id} />}
+
           {memberGym?.id && <QuoteCarousel />}
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' &&
           <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 border-0 p-6 rounded-2xl shadow-lg">
