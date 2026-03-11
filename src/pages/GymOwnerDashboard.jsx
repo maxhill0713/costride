@@ -1948,6 +1948,8 @@ export default function GymOwnerDashboard() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)}/>
+
       {modal==='qrCode' && (
         <div style={{position:'fixed',inset:0,zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16,background:'rgba(0,0,0,0.85)',backdropFilter:'blur(8px)'}}>
           <div style={{borderRadius:24,padding:36,maxWidth:360,width:'100%',background:'#0d1121',border:'1px solid rgba(0,212,255,0.3)',boxShadow:'0 24px 64px rgba(0,0,0,0.7)'}}>
