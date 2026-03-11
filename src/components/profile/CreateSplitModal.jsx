@@ -751,12 +751,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                         accentColor={def.accentColor}
                         glowColor={def.glowColor}
                       >
-                        <div className="relative flex items-center gap-4 p-4">
-                          {isActive && (
-                            <div className="absolute top-3 right-3 w-7 h-7 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
-                              <Star className="w-4 h-4 text-white" />
-                            </div>
-                          )}
+                        <div className="flex items-center gap-4 p-4">
                           <div className="flex-1 min-w-0">
                             <p className="text-[18.2px] font-black text-white">{def.name}</p>
                             <p className="text-[11.55px] text-slate-400 mt-0.5"><span className="text-slate-500">Default - </span>{def.description}</p>
@@ -766,6 +761,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               ))}
                             </div>
                           </div>
+                          {isActive && (
+                            <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0">
+                              <Star className="w-[19px] h-[19px] text-white" />
+                            </div>
+                          )}
                           <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                         </div>
                       </SplitCard>
