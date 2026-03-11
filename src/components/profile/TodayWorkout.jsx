@@ -530,10 +530,26 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               </div>
             </div> :
 
-          <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-8">
+          /* REST DAY */
+          <div className="px-2">
+            <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-4">
               <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
               <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
             </div>
+            <div className="flex justify-center mb-4">
+              <motion.button
+                onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                className="flex items-center justify-center w-10 h-6 text-slate-500 hover:text-slate-300 transition-colors duration-200"
+                whileTap={{ scale: 0.8 }}>
+                <motion.div
+                  animate={{ rotate: 180 }}
+                  initial={{ rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+                  <ChevronDown className="w-5 h-5" />
+                </motion.div>
+              </motion.button>
+            </div>
+          </div>
           }
           </motion.div>
         }
