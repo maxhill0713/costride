@@ -84,6 +84,23 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const todayWorkout = getTodayWorkout();
 
+  // Returns true if the currently active split is a built-in default/preset (not custom).
+  // Default splits have a preset_id matching their id e.g. 'bro', 'ppl', 'upper_lower', 'full_body'.
+  // Custom splits have preset_id === 'custom' or are absent from saved_splits entirely.
+  const isDefaultSplit = () => {
+    const activeSplitId = currentUser?.active_split_id || '';
+    const savedSplits = currentUser?.saved_splits || [];
+    if (activeSplitId) {
+      const activeSplit = savedSplits.find((s) => s.id === activeSplitId);
+      if (activeSplit) {
+        return activeSplit.preset_id && activeSplit.preset_id !== 'custom';
+      }
+    }
+    // Fallback: check workout_split field (set to 'custom' when a custom split is active)
+    const workoutSplit = currentUser?.workout_split || '';
+    return workoutSplit !== 'custom' && workoutSplit !== '';
+  };
+
   const { data: previousWorkouts = [] } = useQuery({
     queryKey: ['workoutLog', currentUser?.id, adjustedDay],
     queryFn: async () => {
@@ -120,12 +137,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       setEditingIndex(null);
     }
   });
-
-  const isDefaultWorkout = () => {
-    const currentWorkoutName = todayWorkout?.name;
-    const defaultNames = ['Chest', 'Back', 'Legs', 'Arms', 'Shoulders', 'Full Body', 'Upper', 'Lower', 'Push', 'Pull'];
-    return defaultNames.some((name) => currentWorkoutName?.toLowerCase().includes(name.toLowerCase()));
-  };
 
   const handleEdit = (index, exercise) => {
     setEditingIndex(index);
@@ -244,6 +255,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return null;
   };
 
+  // Shared collapse chevron — bounces upward (mirror of the expand bounce), rotated 180°
+  const CollapseChevron = ({ onClick, className = '' }) => (
+    <motion.button
+      onClick={onClick}
+      className={`flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1 ${className}`}
+      animate={{ y: [0, -4, 0] }}
+      transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+      <ChevronDown className="w-5 h-5 rotate-180" />
+    </motion.button>
+  );
+
   if (!todayWorkout) {
     return (
       <Card className="bg-slate-900/70 backdrop-blur-sm border border-indigo-500/30 rounded-2xl p-4 text-center">
@@ -309,6 +331,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               View Summary
             </Button>
         }
+          {/* Expand chevron — bounces downward */}
           <motion.button
           onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
           className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
@@ -367,7 +390,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   }
                        </div>
 
-                       {isDefaultWorkout() ?
+                       {/* Default split — sets & reps locked, only weight editable */}
+                       {isDefaultSplit() ?
                 <div className="space-y-2.5">
                            <div className="flex gap-2">
                              <div className="flex-1">
@@ -385,6 +409,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                            </div>
                          </div> :
 
+                /* Custom split — all three fields fully editable */
                 <div className="space-y-2.5">
                            <div className="flex gap-2">
                              <div className="flex-1">
@@ -507,7 +532,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     {isTimerActive ? 'Stop' : 'Go'}
                   </button>
                 </div>
-                {/* Tools — calculator & notes shifted left, chevron wider hit area */}
+                {/* Tools — calculator, notes, collapse chevron */}
                 <div className="flex items-center gap-2.5 mr-1">
                   <Button onClick={() => setShowCalculator(true)} size="icon" variant="ghost" className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all" title="Plate Calculator">
                     <Calculator className="w-3.5 h-3.5" />
@@ -515,17 +540,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   <Button onClick={() => setShowNotes(true)} size="icon" variant="ghost" className="w-6 h-6 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all" title="Notes">
                     <BookOpen className="w-3.5 h-3.5" />
                   </Button>
-                  <motion.button
-                  onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-                  className="flex items-center justify-center w-10 h-6 text-slate-500 hover:text-slate-300 transition-colors duration-200"
-                  whileTap={{ scale: 0.8 }}>
-                    <motion.div
-                    animate={{ rotate: 180 }}
-                    initial={{ rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-                      <ChevronDown className="w-5 h-5" />
-                    </motion.div>
-                  </motion.button>
+                  {/* Collapse chevron — bounces upward */}
+                  <CollapseChevron
+                    onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                    className="w-10 h-6"
+                  />
                 </div>
               </div>
             </div> :
@@ -536,18 +555,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
               <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
             </div>
+            {/* Collapse chevron — centred, bounces upward */}
             <div className="flex justify-center mb-4">
-              <motion.button
+              <CollapseChevron
                 onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-                className="flex items-center justify-center w-10 h-6 text-slate-500 hover:text-slate-300 transition-colors duration-200"
-                whileTap={{ scale: 0.8 }}>
-                <motion.div
-                  animate={{ rotate: 180 }}
-                  initial={{ rotate: 0 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-                  <ChevronDown className="w-5 h-5" />
-                </motion.div>
-              </motion.button>
+              />
             </div>
           </div>
           }
