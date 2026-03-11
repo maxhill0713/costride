@@ -137,7 +137,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const handleEdit = (index, exercise) => {
     setEditingIndex(index);
     const setsRepsStr = exercise.setsReps || '';
-    const parts = setsRepsStr.split('x').filter(p => p);
+    const parts = setsRepsStr.split('x').filter((p) => p);
     setEditSets(parts[0] || exercise.sets || '');
     setEditReps(parts[1] || exercise.reps || '');
     setEditWeight(exercise.weight || '');
@@ -251,15 +251,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return null;
   };
 
-  const CollapseChevron = ({ onClick, className = '' }) => (
-    <motion.button
-      onClick={onClick}
-      className={`flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1 ${className}`}
-      animate={{ y: [0, -4, 0] }}
-      transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+  const CollapseChevron = ({ onClick, className = '' }) =>
+  <motion.button
+    onClick={onClick}
+    className={`flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1 ${className}`}
+    animate={{ y: [0, -4, 0] }}
+    transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
       <ChevronDown className="w-5 h-5 rotate-180" />
-    </motion.button>
-  );
+    </motion.button>;
+
 
   if (!todayWorkout) {
     return (
@@ -361,7 +361,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Sets</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center"></div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reps</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5">Weight</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-left pl-2.5 text-xxs">Weight</div>
                 <div className="w-6"></div>
               </motion.div>
 
@@ -379,7 +379,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                            <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 transition-colors">
                              
                            </button>
-                           <div className="text-sm font-bold text-white">{exercise.exercise}</div>
+                           <div className="text-l font-bold text-white -ml-2">{exercise.exercise}</div>
                          </div>
                          {lastWorkout?.exercises?.[index] &&
                   <div className="text-xs text-slate-400 font-medium">Last: {lastWorkout.exercises[index].weight}kg</div>
@@ -390,15 +390,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 <div className="space-y-2.5">
                            <div className="flex gap-2">
                              <div className="flex-1">
-                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Sets</label>
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">SETS</label>
                                <Input type="text" placeholder="3" value={editSets} disabled className="bg-slate-700/30 border border-slate-600/30 text-slate-400 text-xs rounded-lg cursor-not-allowed opacity-60 w-full" />
                              </div>
                              <div className="flex-1">
-                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Reps</label>
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">REPS</label>
                                <Input type="text" placeholder="10" value={editReps} disabled className="bg-slate-700/30 border border-slate-600/30 text-slate-400 text-xs rounded-lg cursor-not-allowed opacity-60 w-full" />
                              </div>
                              <div className="flex-1">
-                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Weight</label>
+                               <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">WEIGHT</label>
                                <Input type="text" placeholder="kg" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="bg-slate-700/60 border border-slate-600/60 text-white text-xs rounded-lg focus:ring-1 focus:ring-orange-500/50 w-full" />
                              </div>
                            </div>
@@ -455,11 +455,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         </div>
                         {/* ── Edit button with press animation matching the Info button ── */}
                         <motion.button
-                          onClick={() => handleEdit(index, exercise)}
-                          whileTap={{ scale: 0.78, y: 1 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                          className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]"
-                        >
+                    onClick={() => handleEdit(index, exercise)}
+                    whileTap={{ scale: 0.78, y: 1 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                    className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
+
                           <Edit2 className="w-3.5 h-3.5" />
                         </motion.button>
                       </div>
@@ -541,9 +541,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     <BookOpen className="w-3.5 h-3.5" />
                   </Button>
                   <CollapseChevron
-                    onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-                    className="w-10 h-6"
-                  />
+                  onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                  className="w-10 h-6" />
+
                 </div>
               </div>
             </div> :
@@ -556,8 +556,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             </div>
             <div className="flex justify-center mb-4">
               <CollapseChevron
-                onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-              />
+                onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}} />
+
             </div>
           </div>
           }
@@ -581,17 +581,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
       {/* Workout Summary Modal */}
       <AnimatePresence>
-        {summaryLog && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setSummaryLog(null)}
-            className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
+        {summaryLog &&
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={() => setSummaryLog(null)}
+          className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 py-8">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
-              onClick={e => e.stopPropagation()}
-              className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 border border-white/10 rounded-2xl p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50">
               
               <div className="mb-6">
                 <h3 className="text-4xl font-black text-white mb-2">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
@@ -600,68 +600,68 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 </p>
               </div>
 
-              {summaryLog.check_in_time && summaryLog.completed_date && (
-                <div className="mb-6 p-4 bg-orange-500/20 border border-orange-500/30 rounded-xl">
+              {summaryLog.check_in_time && summaryLog.completed_date &&
+            <div className="mb-6 p-4 bg-orange-500/20 border border-orange-500/30 rounded-xl">
                   <p className="text-sm text-orange-300/80 font-bold uppercase tracking-wide mb-2">Total Time at Gym</p>
                   <p className="text-3xl font-black text-orange-300">
                     {(() => {
-                      const checkIn = new Date(summaryLog.check_in_time);
-                      const checkOut = new Date(summaryLog.completed_date);
-                      const diffMs = checkOut - checkIn;
-                      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-                      const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-                    })()}
+                  const checkIn = new Date(summaryLog.check_in_time);
+                  const checkOut = new Date(summaryLog.completed_date);
+                  const diffMs = checkOut - checkIn;
+                  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                  const mins = Math.floor(diffMs % (1000 * 60 * 60) / (1000 * 60));
+                  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                })()}
                   </p>
                 </div>
-              )}
+            }
 
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
-                  { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
-                  { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
-                  { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' },
-                ].map(stat => (
-                  <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+              { label: 'Duration', value: summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—' },
+              { label: 'Exercises', value: summaryLog.exercises?.length || summaryLog.exercise_count || '—' },
+              { label: 'Volume', value: summaryLog.total_volume ? `${summaryLog.total_volume}kg` : '—' }].
+              map((stat) =>
+              <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
                     <p className="text-lg font-black text-blue-300">{stat.value}</p>
                     <p className="text-xs text-slate-500 font-bold mt-2">{stat.label}</p>
                   </div>
-                ))}
+              )}
               </div>
 
-              {summaryLog.exercises?.length > 0 && (
-                <div className="space-y-3 mb-6">
+              {summaryLog.exercises?.length > 0 &&
+            <div className="space-y-3 mb-6">
                   <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Exercises</p>
                   <div className="space-y-3">
                     {summaryLog.exercises.map((ex, idx) => {
-                      const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
-                      const weight = ex.weight_kg || ex.weight;
-                      const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
-                      const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
-                      return (
-                        <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
+                  const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || `Exercise ${idx + 1}`;
+                  const weight = ex.weight_kg || ex.weight;
+                  const setsReps = ex.setsReps || (ex.sets && ex.reps ? `${ex.sets}x${ex.reps}` : null);
+                  const detail = [setsReps, weight ? `${weight}kg` : null].filter(Boolean).join('  ·  ');
+                  return (
+                    <div key={idx} className="flex items-center justify-between py-3 px-3 border-b border-white/8 last:border-0">
                           <span className="text-white font-semibold text-base">{exName}</span>
                           <span className="text-slate-300 text-sm font-medium">{detail || '—'}</span>
-                        </div>
-                      );
-                    })}
+                        </div>);
+
+                })}
                   </div>
                 </div>
-              )}
+            }
 
-              {summaryLog.notes && (
-                <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+              {summaryLog.notes &&
+            <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
                   <p className="text-sm font-bold text-slate-500 uppercase mb-3">Notes</p>
                   <p className="text-base text-slate-300 leading-relaxed">{summaryLog.notes}</p>
                 </div>
-              )}
+            }
 
-              {!summaryLog.exercises?.length && !summaryLog.notes && (
-                <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
-              )}
+              {!summaryLog.exercises?.length && !summaryLog.notes &&
+            <p className="text-xs text-slate-500 text-center mt-4">No additional details recorded.</p>
+            }
             </motion.div>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
 
     </Card>);
