@@ -589,9 +589,13 @@ export default function GymOwnerDashboard() {
               <div>
                 <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text1)', lineHeight: 1, letterSpacing: '-0.04em' }} className="anim-pop">{todayCI}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
-                  {todayVsYest >= 0
-                    ? <><ArrowUpRight style={{width:13,height:13,color:'var(--green)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--green)'}}>{todayVsYest}% vs yesterday</span></>
-                    : <><TrendingDown style={{width:13,height:13,color:'var(--red)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--red)'}}>{Math.abs(todayVsYest)}% vs yesterday</span></>
+                  {yesterdayCI === 0
+                    ? <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>{todayCI > 0 ? 'No data yesterday' : 'No check-ins yet'}</span>
+                    : todayVsYest > 0
+                      ? <><ArrowUpRight style={{width:13,height:13,color:'var(--green)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--green)'}}>+{todayVsYest}% vs yesterday</span></>
+                      : todayVsYest < 0
+                        ? <><TrendingDown style={{width:13,height:13,color:'var(--red)'}}/><span style={{fontSize:12,fontWeight:700,color:'var(--red)'}}>{todayVsYest}% vs yesterday</span></>
+                        : <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>Same as yesterday</span>
                   }
                 </div>
               </div>
