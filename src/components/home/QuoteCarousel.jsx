@@ -132,18 +132,14 @@ export default function QuoteCarousel() {
         )}
       </AnimatePresence>
 
-      {/* Chevron — always pinned below everything */}
+      {/* Chevron — bounces down when collapsed, bounces up when expanded */}
       <div className="flex justify-center pb-2 pt-1 flex-shrink-0 z-10 relative" style={{ height: CHEVRON_H }}>
         <motion.button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-          animate={!expanded ? { y: [0, 4, 0] } : {}}
+          animate={{ y: expanded ? [0, -4, 0] : [0, 4, 0] }}
           transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
-          <motion.div
-            animate={{ rotate: expanded ? 180 : 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-            <ChevronDown className="w-5 h-5" />
-          </motion.div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
         </motion.button>
       </div>
     </div>
