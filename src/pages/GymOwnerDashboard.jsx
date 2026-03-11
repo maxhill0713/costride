@@ -478,13 +478,7 @@ export default function GymOwnerDashboard() {
   const deleteAccountM   = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => { closeModal(); base44.auth.logout(); } });
   const createPollM      = useMutation({ mutationFn: d  => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => { inv('polls'); closeModal(); } });
 
-  const NOTIF_TEMPLATES = [
-    { label: 'We miss you! 💪',    body: `Hey! We haven't seen you at ${selectedGym?.name||'the gym'} in a while.` },
-    { label: 'Special offer 🎁',   body: `Great news from ${selectedGym?.name||'us'}! Come in this week for a free guest pass.` },
-    { label: 'New class alert 📣', body: `A new class has been added at ${selectedGym?.name||'the gym'}!` },
-    { label: 'Challenge starts 🏆',body: `A new fitness challenge is kicking off at ${selectedGym?.name||'the gym'}!` },
-    { label: 'Check-in nudge 🔔',  body: `Just a friendly nudge from ${selectedGym?.name||'your gym'} — it's been a while!` },
-  ];
+  const NOTIF_TEMPLATES = [{ label: 'We miss you! 💪', body: `Hey! We haven't seen you at ${selectedGym?.name||'the gym'} in a while.` },{ label: 'Special offer 🎁', body: `Great news from ${selectedGym?.name||'us'}! Come in this week for a free guest pass.` },{ label: 'New class alert 📣', body: `A new class has been added at ${selectedGym?.name||'the gym'}!` },{ label: 'Challenge starts 🏆', body: `A new fitness challenge is kicking off at ${selectedGym?.name||'the gym'}!` },{ label: 'Check-in nudge 🔔', body: `Just a friendly nudge from ${selectedGym?.name||'your gym'} — it's been a while!` }];
 
   const now = new Date();
 
