@@ -311,20 +311,14 @@ function SplitCard({ onClick, isActive, selectingActive, accentColor, glowColor,
       onTouchCancel={() => setPressed(false)}
       className="relative overflow-hidden rounded-2xl cursor-pointer"
       style={{
-        background: isActive
-          ? 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(8,10,20,0.96) 100%)'
-          : 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
-        border: isActive
-          ? '2px solid rgba(16,185,129,0.55)'
-          : '1px solid rgba(255,255,255,0.07)',
+        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        border: '1px solid rgba(255,255,255,0.07)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         transform: pressed ? 'scale(0.977) translateY(2px)' : 'scale(1)',
-        boxShadow: isActive
-          ? `0 0 16px rgba(16,185,129,0.10), 0 4px 24px rgba(0,0,0,0.4)`
-          : pressed
-            ? `0 2px 8px rgba(0,0,0,0.5), 0 0 22px 2px ${glowColor || 'rgba(99,102,241,0.35)'}`
-            : `0 4px 24px rgba(0,0,0,0.4)`,
+        boxShadow: pressed
+          ? `0 2px 8px rgba(0,0,0,0.5), 0 0 22px 2px ${glowColor || 'rgba(99,102,241,0.35)'}`
+          : `0 4px 24px rgba(0,0,0,0.4)`,
         transition: pressed
           ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease'
           : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease',
@@ -759,8 +753,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       >
                         <div className="relative flex items-center gap-4 p-4">
                           {isActive && (
-                            <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 flex items-center justify-center rounded-md bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_1px_0_0_#065f46]">
-                              <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                            <div className="absolute top-3 right-3 w-7 h-7 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
+                              <Star className="w-4 h-4 text-white" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -789,8 +783,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                       >
                         <div className="relative flex items-center gap-4 p-4">
                           {isActive && (
-                            <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 flex items-center justify-center rounded-md bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_1px_0_0_#065f46]">
-                              <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                            <div className="absolute top-3 right-3 w-7 h-7 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
+                              <Star className="w-4 h-4 text-white" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
