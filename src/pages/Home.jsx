@@ -639,6 +639,9 @@ export default function Home() {
     touchAction: 'manipulation'
   };
 
+  // ── Shared modal panel style matching the target DialogContent style ──
+  const modalPanelClass = "w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto";
+
   return (
     <PullToRefresh onRefresh={async () => {await queryClient.invalidateQueries();}}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -1241,20 +1244,20 @@ export default function Home() {
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} />
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
 
-      {/* Workout Summary Modal */}
+      {/* ── Workout Summary Modal ── */}
       <AnimatePresence>
         {summaryLog &&
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={() => setSummaryLog(null)}
-          className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm bg-white/8 border border-white/15 rounded-2xl p-6 backdrop-blur-sm max-h-[80vh] overflow-y-auto">
-              
+            className={modalPanelClass}>
+
               {/* Header */}
               <div className="mb-5">
                 <h3 className="text-2xl font-black text-white mb-1">{summaryLog.workout_name || summaryLog.title || summaryLog.workout_type || 'Workout'}</h3>
@@ -1373,7 +1376,7 @@ export default function Home() {
         }
       </AnimatePresence>
 
-      {/* View Workout Modal */}
+      {/* ── View Workout Modal ── */}
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
           const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
@@ -1389,12 +1392,12 @@ export default function Home() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setViewWorkoutDay(null)}
-              className="fixed inset-0 z-[500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+              className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-sm bg-white/8 border border-white/15 rounded-2xl p-6 backdrop-blur-sm max-h-[80vh] overflow-y-auto">
+                className={modalPanelClass}>
 
                 {/* Header */}
                 <div className="mb-5">
