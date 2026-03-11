@@ -12,7 +12,6 @@ import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
 import QuoteCarousel from '../components/home/QuoteCarousel';
-import GymChallengesSection from '../components/home/GymChallengesSection';
 import ShareWorkoutScreen from '../components/profile/ShareWorkoutScreen';
 import StreakPose2 from '../components/StreakPose2';
 import { useState } from 'react';
@@ -1152,8 +1151,6 @@ export default function Home() {
               </div>);
 
           })()}
-
-          {memberGym?.id && <GymChallengesSection gymId={memberGym.id} />}
 
           {memberGym?.id && <QuoteCarousel />}
           {gymMemberships.length === 0 && currentUser?.account_type !== 'gym_owner' &&
