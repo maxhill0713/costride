@@ -678,6 +678,11 @@ export default function GymCommunity() {
                   <div className="flex items-center gap-2 mb-1">
                     <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length > 28 ? 'text-base' : gym.name.length > 18 ? 'text-lg' : 'text-xl'}`}>{gym.name}</h1>
                     {gym.verified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow" />}
+                    {!isGhostGym && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black text-green-300" style={{ background: 'rgba(16,185,129,0.18)', border: '1px solid rgba(16,185,129,0.4)' }}>
+                        <BadgeCheck className="w-3 h-3" />Official
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym.city}</p>
