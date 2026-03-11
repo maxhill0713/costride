@@ -37,6 +37,7 @@ import CreateChallengeModal from '../components/challenges/CreateChallengeModal'
 import QRScanner from '../components/gym/QRScanner';
 import CreatePollModal from '../components/polls/CreatePollModal';
 import QRCode from 'react-qr-code';
+import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
 
 // ─── Injected global styles ──────────────────────────────────────────────────
 const STYLE = `
