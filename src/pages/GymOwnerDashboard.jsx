@@ -409,6 +409,35 @@ export default function GymOwnerDashboard() {
     setNotifSending(false);
   };
 
+  // ── Must be before early returns (hooks must be called unconditionally) ──
+  const now = new Date();
+
+  const chartDays = useMemo(() => {
+    const days = chartRange <= 7 ? 7 : chartRange <= 30 ? 30 : 90;
+    return Array.from({length: days}, (_, i) => {
+      const d = subDays(now, days - 1 - i);
+      return {
+        day: format(d, days <= 7 ? 'EEE' : 'MMM d'),
+        value: checkIns.filter(c => startOfDay(new Date(c.check_in_date)).getTime() === startOfDay(d).getTime()).length
+      };
+    });
+  }, [chartRange, checkIns]);
+
+  const streaks = useMemo(() => {
+    const acc = {};
+    checkIns.forEach(c => { acc[c.user_name] = (acc[c.user_name] || new Set()); acc[c.user_name].add(startOfDay(new Date(c.check_in_date)).getTime()); });
+    return Object.entries(acc).map(([name, days]) => ({ name, streak: days.size })).sort((a,b)=>b.streak-a.streak).slice(0,5);
+  }, [checkIns]);
+
+  const recentActivity = useMemo(() => {
+    return [...checkIns].slice(0, 8).map(c => ({
+      name: c.user_name || 'Member',
+      action: 'checked in',
+      time: c.check_in_date,
+      color: '#10b981',
+    }));
+  }, [checkIns]);
+
   // Splash
   const Splash = ({ children }) => (
     <div className="dash-root" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
