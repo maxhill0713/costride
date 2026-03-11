@@ -894,7 +894,7 @@ export default function GymOwnerDashboard() {
       if (lastVisit) { if (daysSince === 0) lastVisitDisplay = 'Today'; else if (daysSince === 1) lastVisitDisplay = '1 day ago'; else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`; else if (daysSince < 14) lastVisitDisplay = '1 week ago'; else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince/7)} weeks ago`; else lastVisitDisplay = format(new Date(lastVisit), 'd MMM'); }
       const plan = m.plan || m.membership_type || m.type || 'Standard';
       return { ...m, name, visits30, visitsTotal: userCheckIns.length, lastVisit, daysSince, tier, risk, statusTag, lastVisitDisplay, plan, isBanned, avatar_url: avatarMap[m.user_id] || null };
-    }), [allMemberships, checkIns, memberLastCheckIn, selectedGym?.banned_members]);
+    }), [allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym?.banned_members, avatarMap]);
 
     const filtered = useMemo(() => memberRows.filter(m => {
       if (memberFilter === 'active')   return m.daysSince < 7;
