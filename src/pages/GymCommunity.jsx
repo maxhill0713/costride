@@ -733,12 +733,6 @@ export default function GymCommunity() {
                 {!isMember && !isGhostGym && !showOwnerControls && (
                   <div className="space-y-2">
                     <div className="flex gap-2">
-                      <RippleButton onClick={() => { setJoinPanel(p => p === 'code' ? null : 'code'); setJoinCodeError(''); setJoinCodeSuccess(false); }}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                        style={{ background: joinPanel === 'code' ? 'linear-gradient(135deg,#1d4ed8,#1e40af)' : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))', border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`, boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)', transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)' }}>
-                        <span style={{ fontSize: 16 }}>🔑</span><span>Join with Code</span>
-                        <span style={{ display: 'inline-block', transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
-                      </RippleButton>
                       <RippleButton onClick={() => { setJoinPanel(p => p === 'primary' ? null : 'primary'); setPrimaryConfirmed(false); }}
                         className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
                         style={{ background: joinPanel === 'primary' ? 'linear-gradient(135deg,#b45309,#92400e)' : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))', border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`, boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)', transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)' }}>
