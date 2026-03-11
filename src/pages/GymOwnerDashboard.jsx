@@ -872,103 +872,49 @@ export default function GymOwnerDashboard() {
   // MEMBERS TAB — Full data table layout
   // ═══════════════════════════════════════════════════════════════════════════
   const TabMembers = () => {
-    // Build enriched member rows from live data
-    const memberRows = useMemo(() => {
-      return allMemberships.map(m => {
-        const userCheckIns = checkIns.filter(c => c.user_id === m.user_id);
-        const visits30 = ci30.filter(c => c.user_id === m.user_id).length;
-        const lastVisit = memberLastCheckIn[m.user_id];
-        const daysSince = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
-        const isBanned = (selectedGym?.banned_members || []).includes(m.user_id);
+    const memberRows = useMemo(() => allMemberships.map(m => {
+      const userCheckIns = checkIns.filter(c => c.user_id === m.user_id);
+      const visits30 = ci30.filter(c => c.user_id === m.user_id).length;
+      const lastVisit = memberLastCheckIn[m.user_id];
+      const daysSince = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
+      const isBanned = (selectedGym?.banned_members || []).includes(m.user_id);
+      const name = userCheckIns[0]?.user_name || m.user_name || 'Member';
+      let tier = 'New';
+      if (visits30 >= 15) tier = 'Super Active'; else if (visits30 >= 8) tier = 'Active'; else if (visits30 >= 1) tier = 'Casual';
+      let risk = 'Low';
+      if (daysSince >= 21) risk = 'High'; else if (daysSince >= 14) risk = 'Medium';
+      let statusTag = tier === 'Super Active' || tier === 'Active' ? 'Engaged' : tier === 'New' ? 'New' : 'Casual';
+      if (daysSince >= 14) statusTag = 'At Risk';
+      if (isBanned) statusTag = 'Banned';
+      let lastVisitDisplay = 'Never';
+      if (lastVisit) { if (daysSince === 0) lastVisitDisplay = 'Today'; else if (daysSince === 1) lastVisitDisplay = '1 day ago'; else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`; else if (daysSince < 14) lastVisitDisplay = '1 week ago'; else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince/7)} weeks ago`; else lastVisitDisplay = format(new Date(lastVisit), 'd MMM'); }
+      const plan = m.plan || m.membership_type || m.type || 'Standard';
+      return { ...m, name, visits30, visitsTotal: userCheckIns.length, lastVisit, daysSince, tier, risk, statusTag, lastVisitDisplay, plan, isBanned, avatar_url: avatarMap[m.user_id] || null };
+    }), [allMemberships, checkIns, memberLastCheckIn, selectedGym?.banned_members]);
 
-        // Name from check-in history or membership
-        const name = userCheckIns[0]?.user_name || m.user_name || 'Member';
+    const filtered = useMemo(() => memberRows.filter(m => {
+      if (memberFilter === 'active')   return m.daysSince < 7;
+      if (memberFilter === 'inactive') return m.daysSince >= 14;
+      if (memberFilter === 'atRisk')   return m.risk !== 'Low';
+      if (memberFilter === 'new')      return isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now });
+      return true;
+    }).filter(m => !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase())), [memberRows, memberFilter, memberSearch]);
 
-        // Engagement tier
-        let tier = 'New';
-        if (visits30 >= 15) tier = 'Super Active';
-        else if (visits30 >= 8) tier = 'Active';
-        else if (visits30 >= 1) tier = 'Casual';
-
-        // Risk level
-        let risk = 'Low';
-        if (daysSince >= 21) risk = 'High';
-        else if (daysSince >= 14) risk = 'Medium';
-
-        // Status tag
-        let statusTag = tier === 'Super Active' || tier === 'Active' ? 'Engaged' : tier === 'New' ? 'New' : 'Casual';
-        if (daysSince >= 14) statusTag = 'At Risk';
-        if (isBanned) statusTag = 'Banned';
-
-        // Last visit display
-        let lastVisitDisplay = 'Never';
-        if (lastVisit) {
-          if (daysSince === 0) lastVisitDisplay = 'Today';
-          else if (daysSince === 1) lastVisitDisplay = '1 day ago';
-          else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`;
-          else if (daysSince < 14) lastVisitDisplay = '1 week ago';
-          else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince/7)} weeks ago`;
-          else lastVisitDisplay = format(new Date(lastVisit), 'd MMM');
-        }
-
-        // Membership plan display
-        const plan = m.plan || m.membership_type || m.type || 'Standard';
-
-        return { ...m, name, visits30, visitsTotal: userCheckIns.length, lastVisit, daysSince, tier, risk, statusTag, lastVisitDisplay, plan, isBanned };
-      });
-    }, [allMemberships, checkIns, memberLastCheckIn, selectedGym?.banned_members]);
-
-    // Filter
-    const filtered = useMemo(() => {
-      return memberRows.filter(m => {
-        if (memberFilter === 'active')   return m.daysSince < 7;
-        if (memberFilter === 'inactive') return m.daysSince >= 14;
-        if (memberFilter === 'atRisk')   return m.risk !== 'Low';
-        if (memberFilter === 'new')      return isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now });
-        return true;
-      }).filter(m => {
-        if (!memberSearch) return true;
-        return m.name.toLowerCase().includes(memberSearch.toLowerCase());
-      });
-    }, [memberRows, memberFilter, memberSearch]);
-
-    // Sort
-    const sorted = useMemo(() => {
-      return [...filtered].sort((a, b) => {
-        if (memberSort === 'recentlyActive') return a.daysSince - b.daysSince;
-        if (memberSort === 'mostVisits')     return b.visits30 - a.visits30;
-        if (memberSort === 'newest')         return new Date(b.join_date || b.created_date || 0) - new Date(a.join_date || a.created_date || 0);
-        if (memberSort === 'highRisk')       { const r = { High: 0, Medium: 1, Low: 2 }; return r[a.risk] - r[b.risk]; }
-        if (memberSort === 'name')           return a.name.localeCompare(b.name);
-        return 0;
-      });
-    }, [filtered, memberSort]);
+    const sorted = useMemo(() => [...filtered].sort((a, b) => {
+      if (memberSort === 'recentlyActive') return a.daysSince - b.daysSince;
+      if (memberSort === 'mostVisits')     return b.visits30 - a.visits30;
+      if (memberSort === 'newest')         return new Date(b.join_date || b.created_date || 0) - new Date(a.join_date || a.created_date || 0);
+      if (memberSort === 'highRisk')       { const r = { High: 0, Medium: 1, Low: 2 }; return r[a.risk] - r[b.risk]; }
+      if (memberSort === 'name')           return a.name.localeCompare(b.name);
+      return 0;
+    }), [filtered, memberSort]);
 
     const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
     const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
-
-    const atRiskMembers  = memberRows.filter(m => m.risk !== 'Low');
     const gymHealthScore = Math.min(100, Math.max(0, Math.round(retentionRate * 0.6 + (100 - Math.min(100, (atRisk / Math.max(totalMembers, 1)) * 100)) * 0.4)));
-
-    const filterCounts = {
-      all:      memberRows.length,
-      active:   memberRows.filter(m => m.daysSince < 7).length,
-      inactive: memberRows.filter(m => m.daysSince >= 14).length,
-      atRisk:   memberRows.filter(m => m.risk !== 'Low').length,
-      new:      memberRows.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now })).length,
-    };
-
-    const toggleRow = (id) => {
-      const s = new Set(selectedRows);
-      s.has(id) ? s.delete(id) : s.add(id);
-      setSelectedRows(s);
-    };
-
-    const toggleAll = () => {
-      if (selectedRows.size === paginated.length) setSelectedRows(new Set());
-      else setSelectedRows(new Set(paginated.map(m => m.id)));
-    };
-
+    const filterCounts = { all: memberRows.length, active: memberRows.filter(m => m.daysSince < 7).length, inactive: memberRows.filter(m => m.daysSince >= 14).length, atRisk: memberRows.filter(m => m.risk !== 'Low').length, new: memberRows.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now })).length };
+    const toggleRow = (id) => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); };
+    const toggleAll = () => { if (selectedRows.size === paginated.length) setSelectedRows(new Set()); else setSelectedRows(new Set(paginated.map(m => m.id))); };
     const handleFilterChange = (f) => { setMemberFilter(f); setMemberPage(1); };
     const handleSearch       = (v) => { setMemberSearch(v);  setMemberPage(1); };
 
