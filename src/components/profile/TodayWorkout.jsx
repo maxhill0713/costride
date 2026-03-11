@@ -291,11 +291,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
             <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
-            <button
+            <motion.button
               onClick={(e) => {e.stopPropagation();setShowInfo(!showInfo);}}
-              className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0">
+              className="relative text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
+              whileTap={{ scale: 0.78, y: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 22 }}>
               <Info className="w-3.5 h-3.5" />
-            </button>
+            </motion.button>
           </div>
           <h2 className="flex-1 text-center font-black bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent tracking-tight" style={{ fontSize: '16.5px' }}>
             {todayWorkout.name.length > 30 ? todayWorkout.name.substring(0, 30) : todayWorkout.name}
