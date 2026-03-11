@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEFAULT SPLITS — fully populated, read-only, 6 exercises per day
@@ -345,6 +348,88 @@ function SplitCard({ onClick, isActive, selectingActive, accentColor, glowColor,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SET ACTIVE SPLIT MODAL — mirrors Set Primary Gym dialog from Gyms page
+// ─────────────────────────────────────────────────────────────────────────────
+function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, isSaving }) {
+  const [selected, setSelected] = useState(null);
+
+  // Reset selection when modal opens
+  useEffect(() => {
+    if (open) setSelected(null);
+  }, [open]);
+
+  const effectiveActive = selected ?? activeSplitId;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="fixed left-[50%] top-[50%] z-[60] grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold flex items-center gap-2">
+            <Star className="w-5 h-5 text-purple-400" />
+            Set Active Split
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Info banner — mirrors the purple info box on the Gyms modal */}
+          <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3">
+            <p className="text-purple-200 text-sm">Your active split is the workout plan shown on your Home page and used when you log training sessions.</p>
+          </div>
+
+          {/* Split list */}
+          <div className="space-y-2">
+            {allSplits.map((entry, i) => {
+              const isPrimary = effectiveActive === entry.id;
+              return (
+                <button
+                  key={entry.id}
+                  onClick={() => setSelected(entry.id)}
+                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                    isPrimary
+                      ? 'bg-purple-500/20 border-purple-400/50'
+                      : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'
+                  }`}
+                  style={{ animationDelay: `${140 + i * 55}ms` }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-white">{entry.name}</h4>
+                      <p className="text-xs text-slate-400 mt-0.5">{entry.description || `${(entry.training_days || []).length} days · custom`}</p>
+                    </div>
+                    {isPrimary && (
+                      <Badge className="bg-purple-500 text-white flex-shrink-0">
+                        <Star className="w-3 h-3 mr-1" />Active
+                      </Badge>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Cancel / Save row — exact same layout as Gyms modal */}
+          <div className="flex gap-3">
+            <Button
+              onClick={onClose}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu hover:from-slate-500 hover:via-slate-600 hover:to-slate-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => { if (selected) onSave(selected); else onClose(); }}
+              disabled={isSaving}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
+            >
+              {isSaving ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
@@ -353,7 +438,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [splitName, setSplitName] = useState('');
   const [selectedDays, setSelectedDays] = useState([]);
   const [workouts, setWorkouts] = useState({});
-  const [selectingActive, setSelectingActive] = useState(false);
   const [previewWeights, setPreviewWeights] = useState({});
   const [weightsDirty, setWeightsDirty] = useState(false);
   const [dotsMenuOpen, setDotsMenuOpen] = useState(false);
@@ -361,6 +445,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
   const [editingSplitId, setEditingSplitId] = useState(null);
   const [savedSplits, setSavedSplits] = useState([]);
   const [activeSplitId, setActiveSplitId] = useState('');
+
+  // ── NEW: controls the Set Active Split modal ──
+  const [showSetActiveModal, setShowSetActiveModal] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -383,9 +470,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     setSplitName('');
     setSelectedDays([]);
     setWorkouts({});
-    setSelectingActive(false);
     setEditingSplitId(null);
     setDotsMenuOpen(false);
+    setShowSetActiveModal(false);
   }, [isOpen]);
 
   const saveMutation = useMutation({
@@ -419,6 +506,52 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     }
   };
 
+  // Build the combined list shown in the Set Active modal
+  const allSplitsForModal = [
+    ...DEFAULT_SPLITS.map((def) => ({
+      id: def.id,
+      name: def.name,
+      description: def.description,
+      preset_id: def.id,
+      training_days: def.days,
+      workouts: def.workouts,
+    })),
+    ...savedSplits
+      .filter((s) => !s.preset_id || s.preset_id === 'custom')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        description: null,
+        preset_id: 'custom',
+        training_days: s.training_days,
+        workouts: s.workouts,
+      })),
+  ];
+
+  // Called when the user picks a split inside the Set Active modal and taps Save
+  const handleSetActiveFromModal = (splitId) => {
+    const entry = allSplitsForModal.find((s) => s.id === splitId);
+    if (!entry) return;
+
+    setActiveSplitId(entry.id);
+    toast.success(`"${entry.name}" set as active!`);
+
+    const updated = [
+      ...savedSplits.filter((s) => s.id !== entry.id),
+      { ...entry, created_at: new Date().toISOString() },
+    ];
+    setSavedSplits(updated);
+    setActiveMutation.mutate({
+      active_split_id: entry.id,
+      workout_split: entry.preset_id || 'custom',
+      custom_split_name: entry.name,
+      training_days: entry.training_days,
+      custom_workout_types: entry.workouts,
+      saved_splits: updated,
+    });
+    setShowSetActiveModal(false);
+  };
+
   const handleSetActive = (splitEntry, weightsMap = {}) => {
     const mergedWorkouts = Object.fromEntries(
       Object.entries(splitEntry.workouts).map(([day, wt]) => {
@@ -432,7 +565,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
     );
     const mergedEntry = { ...splitEntry, workouts: mergedWorkouts };
     setActiveSplitId(splitEntry.id);
-    setSelectingActive(false);
     toast.success(`"${splitEntry.name}" set as active!`);
     const updated = [
       ...savedSplits.filter((s) => s.id !== splitEntry.id),
@@ -545,6 +677,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           <div className="flex-shrink-0 flex items-center justify-end gap-2" style={{ minWidth: step === 'pick' ? '76px' : '40px' }}>
             {step === 'pick' && (
               <>
+                {/* Plus button — unchanged */}
                 <button
                   onClick={openCustomConfigure}
                   className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
@@ -554,15 +687,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                 >
                   <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
                 </button>
+
+                {/* ── SET ACTIVE button — now purple Star, matching the Gyms page Set Home Gym button ── */}
                 <button
-                  onClick={() => setSelectingActive((prev) => !prev)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu
-                    bg-gradient-to-b from-emerald-400 to-emerald-600
-                    shadow-[0_2px_0_0_#065f46,0_4px_8px_rgba(16,185,129,0.2),inset_0_1px_0_rgba(255,255,255,0.15)]
-                    active:shadow-none active:translate-y-[3px] active:scale-90
-                    ${selectingActive ? 'ring-2 ring-emerald-300/60' : ''}`}
+                  onClick={() => setShowSetActiveModal(true)}
+                  className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent gap-2 rounded-lg text-xs h-8 w-8 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu"
                 >
-                  <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
+                  <Star className="w-4 h-4" />
                 </button>
               </>
             )}
@@ -592,14 +723,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
           </div>
         </div>
 
-        {/* Selecting-active hint */}
-        {step === 'pick' && selectingActive && (
-          <div className="mx-4 mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-            <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-            <p className="text-[11px] font-bold text-emerald-400">Tap any split to make it your active one</p>
-          </div>
-        )}
-
         {/* ── SCROLLABLE BODY ── */}
         <div className="overflow-y-auto flex-1 pb-4">
 
@@ -628,14 +751,14 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                     return (
                       <SplitCard
                         key={def.id}
-                        onClick={() => selectingActive ? handleSetActive(splitEntry) : openDefaultPreview(def)}
+                        onClick={() => openDefaultPreview(def)}
                         isActive={isActive}
-                        selectingActive={selectingActive}
+                        selectingActive={false}
                         accentColor={def.accentColor}
                         glowColor={def.glowColor}
                       >
                         <div className="relative flex items-center gap-4 p-4">
-                          {isActive && !selectingActive && (
+                          {isActive && (
                             <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 flex items-center justify-center rounded-md bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_1px_0_0_#065f46]">
                               <Check className="w-2 h-2 text-white" strokeWidth={3} />
                             </div>
@@ -649,33 +772,23 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               ))}
                             </div>
                           </div>
-                          {selectingActive ? (
-                            <div className={`w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0 transition-all ${isActive ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]' : 'bg-slate-800/70 border border-slate-600/50'}`}>
-                              {isActive && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
-                            </div>
-                          ) : (
-                            <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                          )}
+                          <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                         </div>
                       </SplitCard>
                     );
                   } else {
                     const split = item.split;
-                    const splitEntry = {
-                      id: split.id, preset_id: 'custom', name: split.name,
-                      training_days: split.training_days, workouts: split.workouts,
-                    };
                     return (
                       <SplitCard
                         key={split.id}
-                        onClick={() => selectingActive ? handleSetActive(splitEntry) : openEditCustom(split)}
+                        onClick={() => openEditCustom(split)}
                         isActive={isActive}
-                        selectingActive={selectingActive}
+                        selectingActive={false}
                         accentColor="rgba(99,102,241,0.45)"
                         glowColor="rgba(99,102,241,0.35)"
                       >
                         <div className="relative flex items-center gap-4 p-4">
-                          {isActive && !selectingActive && (
+                          {isActive && (
                             <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 flex items-center justify-center rounded-md bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_1px_0_0_#065f46]">
                               <Check className="w-2 h-2 text-white" strokeWidth={3} />
                             </div>
@@ -689,13 +802,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
                               ))}
                             </div>
                           </div>
-                          {selectingActive ? (
-                            <div className={`w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0 transition-all ${isActive ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_2px_0_0_#065f46,0_3px_6px_rgba(16,185,129,0.2)]' : 'bg-slate-800/70 border border-slate-600/50'}`}>
-                              {isActive && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
-                            </div>
-                          ) : (
-                            <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
-                          )}
+                          <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                         </div>
                       </SplitCard>
                     );
@@ -878,6 +985,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser }) {
         )}
 
       </div>
+
+      {/* ── SET ACTIVE SPLIT MODAL ── */}
+      <SetActiveSplitModal
+        open={showSetActiveModal}
+        onClose={() => setShowSetActiveModal(false)}
+        allSplits={allSplitsForModal}
+        activeSplitId={activeSplitId}
+        onSave={handleSetActiveFromModal}
+        isSaving={setActiveMutation.isPending}
+      />
 
       {/* ── CONFIRM DELETE MODAL ── */}
       {confirmDeleteSplitId && (
