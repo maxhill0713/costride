@@ -415,17 +415,14 @@ export default function GymOwnerDashboard() {
   const [notifSent, setNotifSent] = useState(null);
   const [notifTemplate, setNotifTemplate] = useState(null);
 
-  // ── Member table state ────────────────────────────────────────────────────
-  const [memberFilter, setMemberFilter]   = useState('all');
-  const [memberSearch, setMemberSearch]   = useState('');
-  const [memberSort, setMemberSort]       = useState('recentlyActive');
-  const [memberPage, setMemberPage]       = useState(1);
-  const [memberPageSize]                  = useState(10);
-  const [selectedRows, setSelectedRows]   = useState(new Set());
-
+  const [memberFilter, setMemberFilter] = useState('all');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberSort, setMemberSort]     = useState('recentlyActive');
+  const [memberPage, setMemberPage]     = useState(1);
+  const [memberPageSize]                = useState(10);
+  const [selectedRows, setSelectedRows] = useState(new Set());
   const openModal  = (name) => setModal(name);
   const closeModal = ()     => setModal(null);
-
   const queryClient = useQueryClient();
   const navigate    = useNavigate();
 
