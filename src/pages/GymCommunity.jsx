@@ -740,31 +740,6 @@ export default function GymCommunity() {
                         <span style={{ display: 'inline-block', transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
                       </RippleButton>
                     </div>
-                    <SlidePanel open={joinPanel === 'code'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(17,34,80,0.95),rgba(10,20,50,0.98))', border: '1px solid rgba(59,130,246,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                        <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
-                        <p className="text-[11px] mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
-                        {joinCodeSuccess ? (
-                          <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
-                            <p className="text-sm font-black text-emerald-400">You're in!</p>
-                            <p className="text-xs text-slate-400">Welcome to {gym?.name}</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex gap-2">
-                              <input value={joinCode} onChange={e => { setJoinCode(e.target.value.toUpperCase()); setJoinCodeError(''); }} placeholder="e.g. GYM-XK29" maxLength={10}
-                                className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold text-white placeholder-slate-600 outline-none"
-                                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }} />
-                              <button onClick={() => { if (!joinCode.trim()) { setJoinCodeError('Please enter a code'); return; } setJoinCodeSuccess(true); }}
-                                className="px-4 py-2.5 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                                style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>Join</button>
-                            </div>
-                            {joinCodeError && <p className="text-[11px] text-red-400 mt-1.5 font-semibold">{joinCodeError}</p>}
-                          </>
-                        )}
-                      </div>
-                    </SlidePanel>
                     <SlidePanel open={joinPanel === 'primary'}>
                       <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg,rgba(40,24,8,0.95),rgba(25,15,5,0.98))', border: '1px solid rgba(251,191,36,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
                         {primaryConfirmed ? (
