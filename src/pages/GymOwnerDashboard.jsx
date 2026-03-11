@@ -326,16 +326,12 @@ const AttendanceHeatmap = ({ checkIns }) => {
 };
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
-const Avatar = ({ name = '?', size = 32 }) => {
-  const colors = [
-    ['#3b82f6','#06b6d4'], ['#8b5cf6','#ec4899'], ['#10b981','#0ea5e9'],
-    ['#f59e0b','#ef4444'], ['#6366f1','#8b5cf6'], ['#14b8a6','#3b82f6'],
-  ];
-  const idx = name.charCodeAt(0) % colors.length;
-  const [c1, c2] = colors[idx];
+const Avatar = ({ name = '?', size = 32, src = null }) => {
+  const colors = [['#3b82f6','#06b6d4'],['#8b5cf6','#ec4899'],['#10b981','#0ea5e9'],['#f59e0b','#ef4444'],['#6366f1','#8b5cf6'],['#14b8a6','#3b82f6']];
+  const [c1, c2] = colors[name.charCodeAt(0) % colors.length];
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: `linear-gradient(135deg,${c1},${c2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 800, flexShrink: 0, letterSpacing: '-0.02em' }}>
-      {name.charAt(0).toUpperCase()}
+    <div style={{ width: size, height: size, borderRadius: '50%', background: `linear-gradient(135deg,${c1},${c2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 800, flexShrink: 0, letterSpacing: '-0.02em', overflow: 'hidden' }}>
+      {src ? <img src={src} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display='none'}/> : name.charAt(0).toUpperCase()}
     </div>
   );
 };
