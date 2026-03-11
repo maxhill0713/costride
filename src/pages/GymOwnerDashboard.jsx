@@ -477,23 +477,6 @@ export default function GymOwnerDashboard() {
     return { label: format(e,'MMM'), value: new Set(checkIns.filter(c=>isWithinInterval(new Date(c.check_in_date),{start:s,end:e})).map(c=>c.user_id)).size };
   }).reverse();
 
-  // Top streaks (simulate from check-in frequency)
-  const streaks = useMemo(() => {
-    const acc = {};
-    checkIns.forEach(c => { acc[c.user_name] = (acc[c.user_name] || new Set()); acc[c.user_name].add(startOfDay(new Date(c.check_in_date)).getTime()); });
-    return Object.entries(acc).map(([name, days]) => ({ name, streak: days.size })).sort((a,b)=>b.streak-a.streak).slice(0,5);
-  }, [checkIns]);
-
-  // Recent activity
-  const recentActivity = useMemo(() => {
-    return [...checkIns].slice(0, 8).map(c => ({
-      name: c.user_name || 'Member',
-      action: 'checked in',
-      time: c.check_in_date,
-      color: '#10b981',
-    }));
-  }, [checkIns]);
-
   // Insights
   const hourAcc = {};
   checkIns.forEach(c => { const h = new Date(c.check_in_date).getHours(); hourAcc[h] = (hourAcc[h]||0)+1; });
