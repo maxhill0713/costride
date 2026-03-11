@@ -410,6 +410,7 @@ export default function GymOwnerDashboard() {
   const [selectedGym, setSelectedGym] = useState(null);
   const [gymOpen, setGymOpen]     = useState(false);
   const [modal, setModal]         = useState(null);
+  const [showPoster, setShowPoster] = useState(false);
   const [chartRange, setChartRange] = useState(7);
   const [notifMsg, setNotifMsg]   = useState('');
   const [notifTarget, setNotifTarget] = useState('atRisk');
