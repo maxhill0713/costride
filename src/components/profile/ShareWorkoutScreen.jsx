@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Camera, X, Share2, ChevronRight } from 'lucide-react';
+import { Camera, X, Share2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -29,7 +29,6 @@ export default function ShareWorkoutScreen({ workoutName, exercises, currentUser
   const handleShare = async () => {
     setSharing(true);
     try {
-      // Build exercise summary for post content
       const exerciseSummary = exercises
         ?.map(ex => `${ex.exercise || ex.name}  ${ex.setsReps || ''}  ${ex.weight ? ex.weight + 'kg' : ''}`.trim())
         .filter(Boolean)
@@ -74,29 +73,21 @@ export default function ShareWorkoutScreen({ workoutName, exercises, currentUser
     >
       <div className="flex-1 overflow-y-auto flex flex-col items-center justify-start pt-10 px-6 pb-4">
 
-        {/* Title */}
+        {/* ── Workout summary card — matches Home page View Summary modal style ── */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="text-center mb-6"
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 22 }}
+          className="w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 p-6 mb-5"
         >
-          <p className="text-3xl font-black text-white mb-1">Share Workout</p>
-          <p className="text-slate-400 text-sm font-medium">Let your friends see how you crushed it</p>
-        </motion.div>
-
-        {/* Workout card preview */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.25, type: 'spring' }}
-          className="w-full max-w-sm bg-white/8 border border-white/15 rounded-2xl p-4 mb-5 backdrop-blur-sm"
-        >
-          <p className="text-orange-300 font-black text-base mb-3 tracking-tight">{workoutName}</p>
+          {/* Workout name */}
+          <div className="mb-5">
+            <h3 className="text-2xl font-black text-white mb-1">{workoutName}</h3>
+          </div>
 
           {/* Photo preview */}
           {photoUrl && (
-            <div className="relative mb-3 rounded-xl overflow-hidden">
+            <div className="relative mb-4 rounded-xl overflow-hidden">
               <img src={photoUrl} alt="workout" className="w-full h-40 object-cover" />
               <button
                 onClick={() => setPhotoUrl(null)}
@@ -107,17 +98,61 @@ export default function ShareWorkoutScreen({ workoutName, exercises, currentUser
             </div>
           )}
 
-          {/* Exercises */}
+          {/* Exercises table — same as View Summary modal */}
           {exercises && exercises.length > 0 && (
-            <div className="space-y-1.5">
-              {exercises.map((ex, idx) => (
-                <div key={idx} className="flex items-center justify-between py-1.5 border-b border-white/8 last:border-0">
-                  <span className="text-white font-semibold text-sm">{ex.exercise || ex.name || '-'}</span>
-                  <span className="text-slate-300 text-xs font-medium">
-                    {[ex.setsReps, ex.weight ? ex.weight + 'kg' : null].filter(Boolean).join('  ·  ')}
-                  </span>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Exercises</p>
+
+              {/* Column headers */}
+              <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-7">Sets</div>
+                <div />
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2.5">Weight</div>
+              </div>
+
+              <div className="space-y-2 -mx-2">
+                {exercises.map((ex, idx) => {
+                  const exName = ex.exercise || ex.name || ex.title || `Exercise ${idx + 1}`;
+
+                  // Parse sets/reps — support both separate fields and combined setsReps
+                  let sets = '-', reps = '-';
+                  if (ex.sets) sets = ex.sets;
+                  else if (ex.set_count) sets = ex.set_count;
+                  else if (ex.setsReps || ex.sets_reps) {
+                    const parts = String(ex.setsReps || ex.sets_reps).toLowerCase().split(/\s*x\s*/);
+                    sets = parts[0] || '-';
+                  } else if (ex.logged_sets?.length) sets = ex.logged_sets.length;
+
+                  if (ex.reps) reps = ex.reps;
+                  else if (ex.rep_count) reps = ex.rep_count;
+                  else if (ex.setsReps || ex.sets_reps) {
+                    const parts = String(ex.setsReps || ex.sets_reps).toLowerCase().split(/\s*x\s*/);
+                    reps = parts[1] || '-';
+                  } else if (ex.logged_sets?.[0]?.reps) reps = ex.logged_sets[0].reps;
+
+                  const weight = ex.weight_kg ?? ex.weight_lbs ?? ex.weight ?? ex.logged_sets?.[0]?.weight ?? '-';
+
+                  return (
+                    <div key={idx} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center">
+                      <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
+                      <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center ml-1" style={{ width: '36px' }}>
+                        {sets}
+                      </div>
+                      <div className="text-slate-400 text-xs font-bold flex items-center justify-center">×</div>
+                      <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                        {reps}
+                      </div>
+                      <div className="ml-3 pr-3">
+                        <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                          {weight}<span className="text-[10px] font-bold">kg</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </motion.div>
@@ -177,22 +212,22 @@ export default function ShareWorkoutScreen({ workoutName, exercises, currentUser
         transition={{ delay: 0.45 }}
         className="px-6 pb-10 pt-3 flex flex-col gap-3 max-w-sm mx-auto w-full"
       >
+        {/* Share button — icon removed */}
         <Button
           onClick={handleShare}
           disabled={sharing}
-          className="w-full h-13 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white font-black text-base rounded-2xl shadow-[0_4px_0_0_#c2410c,0_8px_20px_rgba(234,88,12,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95 transition-all duration-100 border border-transparent flex items-center justify-center gap-2"
+          className="w-full h-13 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white font-black text-base rounded-2xl shadow-[0_4px_0_0_#c2410c,0_8px_20px_rgba(234,88,12,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95 transition-all duration-100 border border-transparent flex items-center justify-center"
         >
-          <Share2 className="w-5 h-5" />
           {sharing ? 'Sharing...' : 'Share Workout'}
         </Button>
 
+        {/* Continue button — chevron removed */}
         <Button
           onClick={onContinue}
           variant="ghost"
-          className="w-full h-12 text-slate-400 hover:text-white font-semibold text-base rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
+          className="w-full h-12 text-slate-400 hover:text-white font-semibold text-base rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center"
         >
           Continue
-          <ChevronRight className="w-4 h-4" />
         </Button>
       </motion.div>
     </motion.div>
