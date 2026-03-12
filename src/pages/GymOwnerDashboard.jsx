@@ -1311,12 +1311,13 @@ export default function GymOwnerDashboard() {
     // Milestones — members near round-number visit counts
     const milestones = useMemo(() => {
       const acc = {};
-      checkIns.forEach(c => { if (!acc[c.user_name]) acc[c.user_name] = 0; acc[c.user_name]++; });
+      const userIdByName = {};
+      checkIns.forEach(c => { if (!acc[c.user_name]) acc[c.user_name] = 0; acc[c.user_name]++; if (c.user_id) userIdByName[c.user_name] = c.user_id; });
       return Object.entries(acc)
         .map(([name, total]) => {
           const next = [10,25,50,100,200,500].find(n => n > total) || null;
           const recent = ci30.filter(c => c.user_name === name).length;
-          return { name, total, next, toNext: next ? next - total : 0, recent };
+          return { name, total, next, toNext: next ? next - total : 0, recent, user_id: userIdByName[name] };
         })
         .filter(m => m.next && m.toNext <= 5)
         .sort((a, b) => a.toNext - b.toNext)
