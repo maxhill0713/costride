@@ -9,13 +9,15 @@ import { TrendingUp, TrendingDown, Minus, Star, Dumbbell, Zap, Award } from 'luc
 import { format, subMonths } from 'date-fns';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const EXERCISES = [
-  { key: 'bench_press',    label: 'Bench Press',   short: 'BP',  color: '#a78bfa', glow: 'rgba(167,139,250,0.35)' },
-  { key: 'squat',          label: 'Squat',          short: 'SQ',  color: '#34d399', glow: 'rgba(52,211,153,0.35)'  },
-  { key: 'deadlift',       label: 'Deadlift',       short: 'DL',  color: '#f97316', glow: 'rgba(249,115,22,0.35)'  },
-  { key: 'overhead_press', label: 'OHP',            short: 'OHP', color: '#60a5fa', glow: 'rgba(96,165,250,0.35)'  },
-  { key: 'barbell_row',    label: 'Barbell Row',    short: 'BR',  color: '#f472b6', glow: 'rgba(244,114,182,0.35)' },
-  { key: 'power_clean',    label: 'Power Clean',    short: 'PC',  color: '#fbbf24', glow: 'rgba(251,191,36,0.35)'  },
+const EXERCISE_COLORS = [
+  '#a78bfa', '#34d399', '#f97316', '#60a5fa', '#f472b6', '#fbbf24',
+  '#38bdf8', '#fb7185', '#4ade80', '#facc15', '#c084fc', '#f87171',
+];
+const EXERCISE_GLOWS = [
+  'rgba(167,139,250,0.35)', 'rgba(52,211,153,0.35)', 'rgba(249,115,22,0.35)',
+  'rgba(96,165,250,0.35)', 'rgba(244,114,182,0.35)', 'rgba(251,191,36,0.35)',
+  'rgba(56,189,248,0.35)', 'rgba(251,113,133,0.35)', 'rgba(74,222,128,0.35)',
+  'rgba(250,204,21,0.35)', 'rgba(192,132,252,0.35)', 'rgba(248,113,113,0.35)',
 ];
 
 const PERIODS = [
