@@ -334,6 +334,47 @@ export default function StrengthProgress({ currentUser }) {
           </div>
         )}
 
+        {/* ── Split day dropdown */}
+        {splitDays.length > 0 && (
+          <div className="relative">
+            <button
+              onClick={() => setDayDropdownOpen(o => !o)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl w-full text-left transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: `1px solid ${selectedDay ? `${color}35` : 'rgba(255,255,255,0.08)'}`,
+              }}
+            >
+              <Dumbbell className="w-3.5 h-3.5 flex-shrink-0" style={{ color: selectedDay ? color : '#475569' }} />
+              <span className="flex-1 text-[12px] font-semibold capitalize" style={{ color: selectedDay ? '#e2e8f0' : '#475569' }}>
+                {selectedDay || 'All Days'}
+              </span>
+              <ChevronDown className="w-3.5 h-3.5 flex-shrink-0 transition-transform" style={{ color: '#475569', transform: dayDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+            </button>
+            {dayDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-xl overflow-hidden"
+                style={{ background: 'rgba(12,16,32,0.98)', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(20px)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}>
+                <button
+                  onClick={() => { setSelectedDay(null); setDayDropdownOpen(false); }}
+                  className="w-full text-left px-4 py-2.5 text-[12px] font-semibold transition-colors"
+                  style={{ color: !selectedDay ? color : '#64748b', background: !selectedDay ? `${color}12` : 'transparent' }}
+                >
+                  All Days
+                </button>
+                {splitDays.map(day => (
+                  <button key={day}
+                    onClick={() => { setSelectedDay(day); setDayDropdownOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-[12px] font-semibold capitalize transition-colors"
+                    style={{ color: selectedDay === day ? color : '#64748b', background: selectedDay === day ? `${color}12` : 'transparent' }}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Exercise selector — card style with sparkline */}
         {availableExercises.length > 0 && (
           <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
