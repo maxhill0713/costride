@@ -373,6 +373,7 @@ export default function StrengthProgress({ currentUser }) {
                   </button>
                 ))}
               </div>
+              </>
             )}
           </div>
         )}
