@@ -1303,7 +1303,9 @@ export default function GymOwnerDashboard() {
     const leaderboard = useMemo(() => {
       const acc = {};
       ci30.forEach(c => { if (!acc[c.user_name]) acc[c.user_name] = 0; acc[c.user_name]++; });
-      return Object.entries(acc).sort(([,a],[,b]) => b - a).slice(0, 5).map(([name, visits]) => ({ name, visits }));
+      const userIdByName = {};
+      ci30.forEach(c => { if (c.user_name && c.user_id) userIdByName[c.user_name] = c.user_id; });
+      return Object.entries(acc).sort(([,a],[,b]) => b - a).slice(0, 5).map(([name, visits]) => ({ name, visits, user_id: userIdByName[name] }));
     }, [ci30]);
 
     // Milestones — members near round-number visit counts
