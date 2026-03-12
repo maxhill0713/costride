@@ -78,6 +78,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     setIsChecking(true);
     try {
       await checkInMutation.mutateAsync({ gym_id: gym.id });
+      await new Promise(resolve => setTimeout(resolve, 2500));
     } finally {
       setIsChecking(false);
     }
