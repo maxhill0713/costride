@@ -1555,7 +1555,7 @@ export default function GymOwnerDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {leaderboard.map((m, i) => (
                   <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                    <Avatar name={m.name} size={34} src={m.avatar_url || m.member_avatar}/>
+                    <Avatar name={m.name} size={34} src={avatarMap[m.user_id] || null}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
                       <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.visits} visits this month</div>
