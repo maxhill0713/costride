@@ -845,7 +845,7 @@ export default function GymCommunity() {
                     {upcomingEvents.map((event) => (<WeeklyEventCard key={event.id} event={event} onRSVP={!showOwnerControls ? (eventId) => { const e = events.find((e) => e.id === eventId); rsvpMutation.mutate({ eventId, currentAttendees: e.attendees || 0 }); } : null} disabled={showOwnerControls} />))}
                   </div>
                 )}
-                {showOwnerControls && <CreateGymPostButton gym={gym} currentUser={currentUser} onPostCreated={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />}
+                {showOwnerControls && <CreateGymPostButton gym={gym} currentUser={currentUser} onPostCreated={() => { queryClient.invalidateQueries({ queryKey: ['gymPosts', gymId] }); queryClient.invalidateQueries({ queryKey: ['memberPosts', gymId] }); }} />}
                 {posts.length === 0
                   ? (<div className="rounded-2xl p-10 text-center" style={CARD_STYLE}><MessageCircle className="w-10 h-10 mx-auto mb-3 text-slate-700" /><p className="text-white font-bold mb-1 text-sm">No community posts yet</p><p className="text-xs text-slate-500">Be the first to share your workout! 💪</p></div>)
                   : (<div className="space-y-3">{posts.slice(0, 10).map((post) => (<PostCard key={post.id} post={post} fullWidth currentUser={currentUser} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} />))}</div>)
