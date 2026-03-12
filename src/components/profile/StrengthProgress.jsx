@@ -286,20 +286,10 @@ export default function StrengthProgress({ currentUser }) {
           </div>
         </div>
 
-        {/* ── Workout day tabs */}
-        {splitDays.length > 0 && (
-          <div className="flex gap-1.5 flex-wrap">
-            {splitDays.map(day => (
-              <button key={day} onClick={() => setSelectedDay(day)}
-                className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all capitalize"
-                style={{
-                  background: selectedDay === day ? `${color}22` : 'rgba(255,255,255,0.04)',
-                  color: selectedDay === day ? color : '#475569',
-                  border: `1px solid ${selectedDay === day ? `${color}44` : 'rgba(255,255,255,0.06)'}`,
-                }}>
-                {day}
-              </button>
-            ))}
+        {isLoading && (
+          <div className="h-8 flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
+            <span className="text-[11px] text-slate-500">Loading workout data…</span>
           </div>
         )}
 
