@@ -118,6 +118,8 @@ function AnimatedNumber({ value, decimals = 0 }) {
 export default function StrengthProgress({ currentUser }) {
   const [exercise, setExercise]   = useState(null);
   const [period, setPeriod]       = useState('6m');
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [dayDropdownOpen, setDayDropdownOpen] = useState(false);
   const [chartKey, setChartKey]   = useState(0);
   const queryClient = useQueryClient();
 
