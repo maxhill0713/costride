@@ -415,6 +415,7 @@ export default function GymOwnerDashboard() {
   const [chartRange, setChartRange] = useState(7);
   const [notifMsg, setNotifMsg]   = useState('');
   const [notifTarget, setNotifTarget] = useState('atRisk');
+  const [leaderboardView, setLeaderboardView] = useState('checkins');
   const [notifSending, setNotifSending] = useState(false);
   const [notifSent, setNotifSent] = useState(null);
   const [notifTemplate, setNotifTemplate] = useState(null);
