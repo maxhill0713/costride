@@ -126,7 +126,7 @@ function CodeDisplay({ code }) {
   );
 }
 
-export default function JoinWithCodeModal({ open, onClose, currentUser }) {
+export default function JoinWithCodeModal({ open, onClose, currentUser, gymCount = 0 }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [visible, setVisible] = useState(false);
