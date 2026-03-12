@@ -1549,30 +1549,13 @@ export default function GymOwnerDashboard() {
           </Card>
 
           {/* Leaderboard */}
-          <Card style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Leaderboard</div>
-              <ChevronRight style={{ width: 13, height: 13, color: 'var(--text3)', cursor: 'pointer' }}/>
-            </div>
-            {leaderboard.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {leaderboard.map((m, i) => (
-                  <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                    <Avatar name={m.name} size={34} src={avatarMap[m.user_id] || null}/>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.visits} visits this month</div>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : 'var(--text3)' }}>
-                      {['🥇','🥈','🥉'][i] || `#${i+1}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <Empty icon={Trophy} label="No check-in data yet"/>
-            )}
-          </Card>
+          <LeaderboardSection
+            view={leaderboardView}
+            setView={setLeaderboardView}
+            checkInLeaderboard={checkInLeaderboard}
+            streakLeaderboard={streakLeaderboard}
+            progressLeaderboard={[]}
+          />
 
           {/* Active Challenges */}
           <Card style={{ padding: 0, overflow: 'hidden' }}>
