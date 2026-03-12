@@ -40,7 +40,7 @@ export default function PollCard({ poll, onVote, userVoted, isLoading }) {
               {showResults && (
                 <div
                   className={`absolute inset-y-0 left-0 rounded-xl transition-all duration-700
-                  ${voted ? "bg-blue-500/40" : "bg-white/10"}`}
+                  ${voted ? "bg-gradient-to-r from-blue-500/60 to-cyan-500/40" : "bg-gradient-to-r from-indigo-500/25 to-blue-500/20"}`}
                   style={{ width: `${percentage}%` }}
                 />
               )}
