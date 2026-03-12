@@ -797,6 +797,11 @@ export default function GymOwnerDashboard() {
               )}
             </div>
           </Card>
+          <InviteToClasses classes={classes} openModal={openModal}/>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
+          <CultureRadar checkIns={checkIns} allMemberships={allMemberships} challenges={challenges} posts={posts} polls={polls} now={now}/>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
