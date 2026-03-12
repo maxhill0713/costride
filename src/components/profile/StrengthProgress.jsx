@@ -131,6 +131,34 @@ export default function StrengthProgress({ currentUser }) {
     placeholderData: (prev) => prev,
   });
 
+  // Fetch primary gym membership to know which gym community to compare against
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' }),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const primaryGymId = currentUser?.primary_gym_id || gymMemberships[0]?.gym_id;
+
+  // Fetch all gym members' workout logs for the same gym (to compute community ranking)
+  const { data: gymMemberIds = [] } = useQuery({
+    queryKey: ['gymMemberIds', primaryGymId],
+    queryFn: async () => {
+      const memberships = await base44.entities.GymMembership.filter({ gym_id: primaryGymId, status: 'active' });
+      return memberships.map(m => m.user_id).filter(id => id !== currentUser.id);
+    },
+    enabled: !!primaryGymId,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: communityLogs = [] } = useQuery({
+    queryKey: ['communityLogs', primaryGymId],
+    queryFn: () => base44.entities.WorkoutLog.list('-created_date', 2000),
+    enabled: !!primaryGymId && gymMemberIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (!currentUser?.id) return;
     const unsubscribe = base44.entities.WorkoutLog.subscribe((event) => {
