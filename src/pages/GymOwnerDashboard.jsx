@@ -851,6 +851,9 @@ export default function GymOwnerDashboard() {
             ))}
           </div>
         </Card>
+        <SmartNudges atRisk={atRisk} challenges={challenges} polls={polls} monthChangePct={monthChangePct} openModal={openModal} setTab={setTab} checkIns={checkIns} allMemberships={allMemberships} now={now}/>
+        <GymSetupChecklist selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal}/>
+        <StreakCelebrations checkIns={checkIns} openModal={openModal} now={now}/>
         <Card style={{ padding: 18 }}>
           <SectionTitle action={() => setTab('members')} actionLabel="All">Engagement</SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
