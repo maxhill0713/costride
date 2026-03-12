@@ -1,74 +1,73 @@
 import React, { useState } from 'react';
-import { X, Trophy, Gift } from 'lucide-react';
-import { MobileSelect } from "@/components/ui/mobile-select";
 import { toast } from 'sonner';
 
 const S = `
-  .ch-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+  .ch-overlay{position:fixed;inset:0;background:rgba(2,4,18,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:chFadeIn 0.18s ease;}
   @media(min-width:640px){.ch-overlay{align-items:center;}}
-  .ch-modal{width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(145deg,rgba(10,16,44,0.98),rgba(5,8,24,0.99));border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);border-radius:24px 24px 0 0;overflow:hidden;}
-  @media(min-width:640px){.ch-modal{border-radius:24px;max-height:90vh;}}
-  .ch-grid-2{display:grid;grid-template-columns:1fr;}
-  @media(min-width:480px){.ch-grid-2{grid-template-columns:1fr 1fr;}}
-  .ch-inp{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;}
-  .ch-inp:focus{border-color:rgba(59,130,246,0.5);}
-  .ch-inp::placeholder{color:rgba(148,163,184,0.4);}
-  .ch-ta{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#fff;font-size:13px;font-weight:600;outline:none;box-sizing:border-box;resize:none;}
-  .ch-ta:focus{border-color:rgba(59,130,246,0.5);}
-  .ch-ta::placeholder{color:rgba(148,163,184,0.4);}
-  .ch-label{font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(148,163,184,0.5);margin-bottom:6px;display:block;}
+  @keyframes chFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes chSlideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .ch-modal{width:100%;max-width:540px;max-height:92vh;display:flex;flex-direction:column;font-family:'DM Sans',sans-serif;background:linear-gradient(160deg,rgba(14,21,56,0.97) 0%,rgba(7,11,30,0.99) 100%);border:1px solid rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.13);box-shadow:0 -8px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.02) inset,0 1px 0 rgba(255,255,255,0.06) inset;border-radius:28px 28px 0 0;overflow:hidden;animation:chSlideUp 0.22s cubic-bezier(0.34,1.3,0.64,1);}
+  @media(min-width:640px){.ch-modal{border-radius:22px;max-height:88vh;}}
+  .ch-header{flex-shrink:0;padding:20px 22px 17px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;}
+  .ch-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 22px;display:flex;flex-direction:column;gap:15px;}
+  .ch-body::-webkit-scrollbar{width:3px}.ch-body::-webkit-scrollbar-track{background:transparent}.ch-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+  .ch-footer{flex-shrink:0;padding:14px 22px 22px;border-top:1px solid rgba(255,255,255,0.05);display:flex;gap:10px;}
+  .ch-inp,.ch-ta,.ch-sel{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#e2e8f0;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s,background 0.15s,box-shadow 0.15s;}
+  .ch-ta{resize:none}
+  .ch-sel{appearance:none;cursor:pointer}
+  .ch-sel option{background:#0e1538;color:#e2e8f0}
+  .ch-inp:focus,.ch-ta:focus,.ch-sel:focus{border-color:rgba(251,146,60,0.45);background:rgba(251,146,60,0.05);box-shadow:0 0 0 3px rgba(251,146,60,0.08);}
+  .ch-inp::placeholder,.ch-ta::placeholder{color:rgba(148,163,184,0.3);font-weight:500}
+  .ch-label{font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(148,163,184,0.4);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+  .ch-g2{display:grid;grid-template-columns:1fr;gap:12px;}
+  @media(min-width:460px){.ch-g2{grid-template-columns:1fr 1fr;}}
+  .ch-hint{font-size:10.5px;color:rgba(148,163,184,0.35);font-weight:500;margin-top:4px;}
 `;
 
-function Btn({ onClick, disabled, children, secondary, type }) {
+function CloseBtn({ onClick }) {
+  return (
+    <button onClick={onClick} style={{width:30,height:30,borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.09)',cursor:'pointer',flexShrink:0}}>
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1L12 12M12 1L1 12" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round"/></svg>
+    </button>
+  );
+}
+
+function PrimaryBtn({ onClick, disabled, children, type = 'button' }) {
   const [p, setP] = useState(false);
   return (
-    <button type={type || 'button'} onClick={onClick} disabled={disabled}
+    <button type={type} onClick={onClick} disabled={disabled}
       onMouseDown={() => !disabled && setP(true)} onMouseUp={() => setP(false)}
       onMouseLeave={() => setP(false)} onTouchStart={() => !disabled && setP(true)} onTouchEnd={() => setP(false)}
-      style={{
-        flex:1,padding:'12px 0',borderRadius:13,fontSize:13,fontWeight:900,
-        color: secondary ? 'rgba(148,163,184,0.8)' : '#fff',
-        background: disabled ? 'rgba(255,255,255,0.05)' : secondary ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,#3b82f6 0%,#2563eb 50%,#1d4ed8 100%)',
-        border: secondary ? '1px solid rgba(255,255,255,0.08)' : disabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.18)',
-        borderBottom: secondary || disabled ? '3px solid rgba(0,0,0,0.3)' : p ? '1px solid #1e3a8a' : '4px solid #1e3a8a',
-        boxShadow: !secondary && !disabled && !p ? '0 3px 0 rgba(0,0,0,0.4),0 6px 20px rgba(59,130,246,0.3),inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
-        transform: p ? 'translateY(3px) scale(0.98)' : 'translateY(0) scale(1)',
-        transition: p ? 'transform 0.06s' : 'transform 0.28s cubic-bezier(0.34,1.5,0.64,1)',
-        cursor: disabled ? 'default' : 'pointer',
-      }}>{children}</button>
+      style={{flex:1,padding:'11px 0',borderRadius:12,fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",color:disabled?'rgba(148,163,184,0.4)':'#fff',background:disabled?'rgba(255,255,255,0.04)':p?'linear-gradient(180deg,#ea580c,#c2410c)':'linear-gradient(180deg,#f97316 0%,#ea580c 60%,#c2410c 100%)',border:disabled?'1px solid rgba(255,255,255,0.06)':'1px solid rgba(255,255,255,0.15)',borderBottom:disabled?'2px solid rgba(0,0,0,0.2)':p?'1px solid #7c2d12':'3px solid #7c2d12',boxShadow:!disabled&&!p?'0 4px 20px rgba(251,146,60,0.3),inset 0 1px 0 rgba(255,255,255,0.18)':'none',transform:p?'translateY(2px) scale(0.99)':'translateY(0) scale(1)',transition:p?'all 0.06s':'all 0.24s cubic-bezier(0.34,1.4,0.64,1)',cursor:disabled?'default':'pointer',letterSpacing:'-0.01em'}}>
+      {children}
+    </button>
   );
 }
 
-// Wrap MobileSelect to match dark theme
-function DarkSelect({ value, onValueChange, placeholder, options }) {
+function SecondaryBtn({ onClick, children }) {
   return (
-    <div style={{ position:'relative' }}>
-      <MobileSelect
-        value={value}
-        onValueChange={onValueChange}
-        placeholder={placeholder}
-        triggerClassName="w-full h-10 rounded-[11px] text-[13px] font-semibold"
-        style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.09)', color:'#fff' }}
-        options={options}
-      />
-    </div>
+    <button onClick={onClick} style={{flex:1,padding:'11px 0',borderRadius:12,fontSize:13,fontWeight:700,fontFamily:"'DM Sans',sans-serif",color:'rgba(148,163,184,0.7)',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderBottom:'2px solid rgba(0,0,0,0.2)',cursor:'pointer',letterSpacing:'-0.01em'}}>
+      {children}
+    </button>
   );
 }
 
-export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLoading }) {
-  const [formData, setFormData] = useState({
-    title: '', description: '', type: 'individual', category: 'lifting',
-    gym_id: '', gym_name: '', competing_gym_id: '', competing_gym_name: '',
-    exercise: 'bench_press', goal_type: 'total_weight', target_value: 0,
-    start_date: new Date().toISOString().split('T')[0], end_date: '',
-    status: 'upcoming', reward: '', auto_start: true, send_reminders: true
+export default function CreateChallengeModal({ open, onClose, gyms = [], onSave, isLoading }) {
+  const [form, setForm] = useState({
+    title:'', description:'', type:'individual', category:'lifting',
+    gym_id:'', gym_name:'', competing_gym_id:'', competing_gym_name:'',
+    exercise:'bench_press', goal_type:'total_weight', target_value:0,
+    start_date: new Date().toISOString().split('T')[0], end_date:'',
+    status:'upcoming', reward:'', auto_start:true, send_reminders:true,
   });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.end_date) { toast.error('Please fill in Title and End Date'); return; }
-    if (formData.type === 'gym_vs_gym' && (!formData.gym_id || !formData.competing_gym_id)) { toast.error('Please select both gyms'); return; }
-    onSave(formData);
+    if (!form.title || !form.end_date) { toast?.error('Please fill in Title and End Date'); return; }
+    if (form.type === 'gym_vs_gym' && (!form.gym_id || !form.competing_gym_id)) { toast?.error('Please select both gyms'); return; }
+    onSave(form);
   };
 
   if (!open) return null;
@@ -79,130 +78,132 @@ export default function CreateChallengeModal({ open, onClose, gyms, onSave, isLo
       <div className="ch-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="ch-modal">
 
-          {/* Header */}
-          <div style={{ flexShrink:0,padding:'20px 20px 16px',borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between' }}>
-              <div style={{ display:'flex',alignItems:'center',gap:10 }}>
-                <div style={{ width:36,height:36,borderRadius:11,background:'linear-gradient(135deg,rgba(251,146,60,0.25),rgba(194,65,12,0.15))',border:'1px solid rgba(251,146,60,0.3)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-                  <Trophy style={{ width:17,height:17,color:'#fb923c' }}/>
-                </div>
-                <div>
-                  <h2 style={{ fontSize:17,fontWeight:900,color:'#fff',letterSpacing:'-0.03em',margin:0 }}>Create Challenge</h2>
-                  <p style={{ fontSize:11,color:'rgba(148,163,184,0.5)',margin:0,fontWeight:600 }}>Set up a new challenge for your members</p>
-                </div>
+          <div className="ch-header">
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:38,height:38,borderRadius:12,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,rgba(251,146,60,0.22),rgba(194,65,12,0.12))',border:'1px solid rgba(251,146,60,0.28)'}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="11"/><path d="M7 4H5a2 2 0 00-2 2v3a8 8 0 005.6 7.6"/><path d="M17 4h2a2 2 0 012 2v3a8 8 0 01-5.6 7.6"/><rect x="7" y="2" width="10" height="5" rx="1"/></svg>
               </div>
-              <button onClick={onClose} style={{ width:32,height:32,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',cursor:'pointer' }}>
-                <X style={{ width:15,height:15,color:'rgba(255,255,255,0.6)' }}/>
-              </button>
+              <div>
+                <p style={{fontSize:16,fontWeight:900,color:'#f1f5f9',letterSpacing:'-0.03em',margin:0}}>Create Challenge</p>
+                <p style={{fontSize:11,color:'rgba(148,163,184,0.5)',margin:0,fontWeight:600,marginTop:1}}>Set up a competition for your members</p>
+              </div>
             </div>
+            <CloseBtn onClick={onClose} />
           </div>
 
-          {/* Body */}
-          <form onSubmit={handleSubmit} style={{ flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',padding:'16px 20px',display:'flex',flexDirection:'column',gap:14 }}>
+          <form onSubmit={handleSubmit} className="ch-body">
 
             <div>
-              <span className="ch-label">Challenge Title *</span>
-              <input className="ch-inp" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Summer Squat Challenge" required/>
+              <p className="ch-label">Challenge Title *</p>
+              <input className="ch-inp" value={form.title} onChange={e=>set('title',e.target.value)} placeholder="e.g. Summer Squat Challenge" required/>
             </div>
 
             <div>
-              <span className="ch-label">Description</span>
-              <textarea className="ch-ta" rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Who can squat the most total weight this month?"/>
+              <p className="ch-label">Description</p>
+              <textarea className="ch-ta" rows={2} value={form.description} onChange={e=>set('description',e.target.value)} placeholder="Who can squat the most total weight this month?"/>
             </div>
 
-            <div>
-              <span className="ch-label">Category *</span>
-              <DarkSelect value={formData.category} placeholder="Select category" onValueChange={value => {
-                const updates = { category: value };
-                if (value === 'lifting') updates.goal_type = 'total_weight';
-                else if (value === 'attendance') updates.goal_type = 'most_check_ins';
-                else if (value === 'streak') updates.goal_type = 'longest_streak';
-                setFormData({ ...formData, ...updates });
-              }} options={[
-                { value: 'lifting', label: '💪 Lifting (Weight/Reps)' },
-                { value: 'attendance', label: '📍 Attendance (Check-ins)' },
-                { value: 'streak', label: '🔥 Streak (Consecutive Days)' }
-              ]}/>
-            </div>
-
-            <div className="ch-grid-2" style={{ gap:10 }}>
+            <div className="ch-g2">
               <div>
-                <span className="ch-label">Type *</span>
-                <DarkSelect value={formData.type} placeholder="Select type" onValueChange={v => setFormData({ ...formData, type: v })} options={[
-                  { value: 'individual', label: 'Individual' },
-                  { value: 'team', label: 'Team' },
-                  { value: 'gym_vs_gym', label: 'Gym vs Gym' },
-                  { value: 'community', label: 'Community' }
-                ]}/>
+                <p className="ch-label">Category *</p>
+                <select className="ch-sel" value={form.category} onChange={e=>{
+                  const updates = {category:e.target.value};
+                  if(e.target.value==='lifting') updates.goal_type='total_weight';
+                  else if(e.target.value==='attendance') updates.goal_type='most_check_ins';
+                  else if(e.target.value==='streak') updates.goal_type='longest_streak';
+                  setForm(f=>({...f,...updates}));
+                }}>
+                  <option value="lifting">💪 Lifting</option>
+                  <option value="attendance">📍 Attendance</option>
+                  <option value="streak">🔥 Streak</option>
+                </select>
               </div>
-              {formData.category === 'lifting' && (
-                <div>
-                  <span className="ch-label">Exercise *</span>
-                  <DarkSelect value={formData.exercise} placeholder="Select exercise" onValueChange={v => setFormData({ ...formData, exercise: v })} options={[
-                    { value: 'bench_press', label: 'Bench Press' },
-                    { value: 'squat', label: 'Squat' },
-                    { value: 'deadlift', label: 'Deadlift' },
-                    { value: 'overhead_press', label: 'Overhead Press' },
-                    { value: 'barbell_row', label: 'Barbell Row' },
-                    { value: 'power_clean', label: 'Power Clean' }
-                  ]}/>
-                </div>
-              )}
+              <div>
+                <p className="ch-label">Type *</p>
+                <select className="ch-sel" value={form.type} onChange={e=>set('type',e.target.value)}>
+                  <option value="individual">Individual</option>
+                  <option value="team">Team</option>
+                  <option value="gym_vs_gym">Gym vs Gym</option>
+                  <option value="community">Community</option>
+                </select>
+              </div>
             </div>
 
-            {formData.type === 'gym_vs_gym' && (
-              <div className="ch-grid-2" style={{ gap:10 }}>
+            {form.category === 'lifting' && (
+              <div className="ch-g2">
                 <div>
-                  <span className="ch-label">Home Gym *</span>
-                  <DarkSelect value={formData.gym_id} placeholder="Select gym" onValueChange={v => { const g = gyms.find(x => x.id === v); setFormData({ ...formData, gym_id: v, gym_name: g?.name || '' }); }} options={gyms.map(g => ({ value: g.id, label: g.name }))}/>
+                  <p className="ch-label">Exercise *</p>
+                  <select className="ch-sel" value={form.exercise} onChange={e=>set('exercise',e.target.value)}>
+                    <option value="bench_press">Bench Press</option>
+                    <option value="squat">Squat</option>
+                    <option value="deadlift">Deadlift</option>
+                    <option value="overhead_press">Overhead Press</option>
+                    <option value="barbell_row">Barbell Row</option>
+                    <option value="power_clean">Power Clean</option>
+                  </select>
                 </div>
                 <div>
-                  <span className="ch-label">Competing Gym *</span>
-                  <DarkSelect value={formData.competing_gym_id} placeholder="Select gym" onValueChange={v => { const g = gyms.find(x => x.id === v); setFormData({ ...formData, competing_gym_id: v, competing_gym_name: g?.name || '' }); }} options={gyms.map(g => ({ value: g.id, label: g.name }))}/>
+                  <p className="ch-label">Goal Type *</p>
+                  <select className="ch-sel" value={form.goal_type} onChange={e=>set('goal_type',e.target.value)}>
+                    <option value="total_weight">Total Weight</option>
+                    <option value="total_reps">Total Reps</option>
+                    <option value="max_weight">Max Weight</option>
+                  </select>
                 </div>
               </div>
             )}
 
-            <div>
-              <span className="ch-label">Goal Type *</span>
-              <DarkSelect value={formData.goal_type} placeholder="Select goal type" onValueChange={v => setFormData({ ...formData, goal_type: v })} options={[
-                ...(formData.category === 'lifting' ? [
-                  { value: 'total_weight', label: 'Total Weight Lifted' },
-                  { value: 'total_reps', label: 'Total Reps' },
-                  { value: 'max_weight', label: 'Max Weight' }
-                ] : []),
-                ...(formData.category === 'attendance' ? [{ value: 'most_check_ins', label: 'Most Check-ins' }] : []),
-                ...(formData.category === 'streak' ? [{ value: 'longest_streak', label: 'Longest Streak' }] : []),
-                { value: 'participation', label: 'Most Participants' }
-              ]}/>
-            </div>
-
-            {(formData.category === 'attendance' || formData.category === 'streak') && (
-              <div>
-                <span className="ch-label">Target {formData.category === 'attendance' ? 'Check-ins' : 'Streak (days)'}</span>
-                <input type="number" className="ch-inp" value={formData.target_value} onChange={e => setFormData({ ...formData, target_value: parseInt(e.target.value) || 0 })} placeholder={formData.category === 'attendance' ? '20' : '30'}/>
+            {form.type === 'gym_vs_gym' && (
+              <div className="ch-g2">
+                <div>
+                  <p className="ch-label">Home Gym *</p>
+                  <select className="ch-sel" value={form.gym_id} onChange={e=>{const g=gyms.find(x=>x.id===e.target.value);set('gym_id',e.target.value);set('gym_name',g?.name||'');}}>
+                    <option value="">Select gym</option>
+                    {gyms.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <p className="ch-label">vs. Gym *</p>
+                  <select className="ch-sel" value={form.competing_gym_id} onChange={e=>{const g=gyms.find(x=>x.id===e.target.value);set('competing_gym_id',e.target.value);set('competing_gym_name',g?.name||'');}}>
+                    <option value="">Select gym</option>
+                    {gyms.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+                  </select>
+                </div>
               </div>
             )}
 
-            <div className="ch-grid-2" style={{ gap:10 }}>
+            {(form.category === 'attendance' || form.category === 'streak') && (
               <div>
-                <span className="ch-label">Start Date *</span>
-                <input type="date" className="ch-inp" value={formData.start_date} onChange={e => setFormData({ ...formData, start_date: e.target.value })}/>
+                <p className="ch-label">Target {form.category==='attendance'?'Check-ins':'Streak (days)'}</p>
+                <input type="number" className="ch-inp" value={form.target_value} onChange={e=>set('target_value',parseInt(e.target.value)||0)} placeholder={form.category==='attendance'?'20':'30'}/>
+              </div>
+            )}
+
+            <div className="ch-g2">
+              <div>
+                <p className="ch-label">Start Date *</p>
+                <input type="date" className="ch-inp" value={form.start_date} onChange={e=>set('start_date',e.target.value)}/>
               </div>
               <div>
-                <span className="ch-label">End Date *</span>
-                <input type="date" className="ch-inp" value={formData.end_date} onChange={e => setFormData({ ...formData, end_date: e.target.value })} required/>
+                <p className="ch-label">End Date *</p>
+                <input type="date" className="ch-inp" value={form.end_date} onChange={e=>set('end_date',e.target.value)} required/>
               </div>
             </div>
 
             <div>
-              <span className="ch-label" style={{ display:'flex',alignItems:'center',gap:5 }}><Gift style={{ width:11,height:11,color:'#fb923c' }}/>Reward (Optional)</span>
-              <input className="ch-inp" value={formData.reward} onChange={e => setFormData({ ...formData, reward: e.target.value })} placeholder="e.g. Free protein shake, £10 gift card"/>
+              <p className="ch-label">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fb923c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+                Reward (Optional)
+              </p>
+              <input className="ch-inp" value={form.reward} onChange={e=>set('reward',e.target.value)} placeholder="e.g. Free protein shake, £10 gift card"/>
+              <p className="ch-hint">Winner receives this reward at the end of the challenge</p>
             </div>
 
-            <div style={{ display:'flex',gap:10,paddingTop:4 }}>
-              <Btn onClick={onClose} secondary>Cancel</Btn>
-              <Btn type="submit" disabled={isLoading}>{isLoading ? 'Creating...' : 'Create Challenge'}</Btn>
+            <div className="ch-footer" style={{padding:0,paddingTop:4,border:'none'}}>
+              <SecondaryBtn onClick={onClose}>Cancel</SecondaryBtn>
+              <PrimaryBtn type="submit" disabled={isLoading || !form.title || !form.end_date}>
+                {isLoading ? 'Creating...' : 'Create Challenge'}
+              </PrimaryBtn>
             </div>
 
           </form>
