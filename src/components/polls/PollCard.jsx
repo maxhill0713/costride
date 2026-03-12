@@ -10,12 +10,15 @@ export default function PollCard({ poll, onVote, userVoted, isLoading }) {
     return Math.round((votes / totalVotes) * 100);
   };
 
+  const showResults = !!userVoted || isClosed;
+
   return (
     <div className="bg-slate-800/60 rounded-2xl p-4 space-y-3">
 
       {/* Title */}
       <div>
         <p className="text-white font-semibold text-sm">{poll.title}</p>
+
         {poll.description && (
           <p className="text-slate-400 text-xs mt-1">{poll.description}</p>
         )}
@@ -26,27 +29,39 @@ export default function PollCard({ poll, onVote, userVoted, isLoading }) {
         {poll.options.map((option) => {
           const percentage = getPercentage(option.votes);
           const voted = userVoted === option.id;
-          const showResults = !!userVoted || isClosed;
 
           return (
             <button
               key={option.id}
-              disabled={!!userVoted || isClosed || isLoading}
-              onClick={() => onVote?.(option.id)}
-              className={`w-full relative overflow-hidden rounded-xl 
-              bg-slate-700/40 hover:bg-slate-700/60 transition-all`}
+              disabled={isClosed || isLoading}
+              onClick={() => {
+                if (!isClosed && !isLoading) {
+                  onVote?.(option.id); // vote OR change vote
+                }
+              }}
+              className={`
+                w-full relative overflow-hidden rounded-xl
+                bg-slate-700/40 hover:bg-slate-700/60
+                active:scale-[0.98]
+                transition-all
+              `}
             >
+
               {/* Result Fill */}
               {showResults && (
                 <div
-                  className={`absolute inset-y-0 left-0 rounded-xl transition-all duration-700
-                  ${voted ? "bg-gradient-to-r from-blue-500/60 to-cyan-500/40" : "bg-gradient-to-r from-indigo-500/25 to-blue-500/20"}`}
+                  className={`
+                    absolute inset-y-0 left-0 rounded-xl
+                    transition-all duration-500
+                    ${voted ? "bg-blue-500/40" : "bg-white/10"}
+                  `}
                   style={{ width: `${percentage}%` }}
                 />
               )}
 
               {/* Content */}
               <div className="relative flex items-center justify-between px-4 py-2.5">
+
                 <span
                   className={`text-sm ${
                     voted ? "text-white font-semibold" : "text-slate-200"
@@ -57,6 +72,7 @@ export default function PollCard({ poll, onVote, userVoted, isLoading }) {
 
                 {showResults && (
                   <div className="flex items-center gap-2">
+
                     <span className="text-xs text-slate-300 font-semibold">
                       {percentage}%
                     </span>
@@ -73,13 +89,22 @@ export default function PollCard({ poll, onVote, userVoted, isLoading }) {
       </div>
 
       {/* Footer */}
-      <div className="text-xs text-slate-400 flex items-center justify-between">
+      <div className="flex items-center justify-between text-xs text-slate-400">
+
         <span>
           {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
         </span>
 
+        {userVoted && !isClosed && (
+          <span className="text-blue-400 font-medium">
+            Tap another option to change your vote
+          </span>
+        )}
+
         {isClosed && (
-          <span className="text-slate-500">Closed</span>
+          <span className="text-slate-500">
+            Closed
+          </span>
         )}
       </div>
     </div>
