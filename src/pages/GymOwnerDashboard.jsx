@@ -561,19 +561,7 @@ export default function GymOwnerDashboard() {
     monthChangePct < 0 && { icon: TrendingDown, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', label: 'Attendance Down', action: 'View Insight', fn: () => setTab('analytics') },
   ].filter(Boolean).slice(0, 4);
 
-  const sendNotification = async () => {
-    if (!notifMsg.trim() || notifSending) return;
-    setNotifSending(true);
-    try {
-      const targetMembers = notifTarget === 'atRisk' ? allMemberships.filter(m => { const last = memberLastCheckIn[m.user_id]; return !last || Math.floor((now - new Date(last)) / 86400000) >= 14; }) : allMemberships;
-      const memberIds = targetMembers.map(m => m.user_id);
-      await base44.functions.invoke('sendPushNotification', { gym_id: selectedGym.id, gym_name: selectedGym.name, target: notifTarget, message: notifMsg.trim(), member_ids: memberIds });
-      setNotifSent({ count: memberIds.length, target: notifTarget });
-      setNotifMsg(''); setNotifTemplate(null);
-      setTimeout(() => setNotifSent(null), 5000);
-    } catch(e) { console.error(e); }
-    setNotifSending(false);
-  };
+
 
   // ═══════════════════════════════════════════════════════════════════════════
   // OVERVIEW TAB
