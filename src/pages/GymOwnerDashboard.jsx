@@ -722,7 +722,7 @@ export default function GymOwnerDashboard() {
             </div>
           </Card>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Card style={{ padding: 20 }}>
             <SectionTitle>Top Streaks</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
