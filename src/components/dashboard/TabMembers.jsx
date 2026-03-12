@@ -355,6 +355,6 @@ export default function TabMembers({
           memberLastCheckIn={memberLastCheckIn}
         />
       </div>
-    </div>{/* closes outer flex column */}
+    </div>
   );
 }
