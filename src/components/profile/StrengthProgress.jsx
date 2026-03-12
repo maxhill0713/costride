@@ -141,8 +141,30 @@ export default function StrengthProgress({ currentUser }) {
     return unsubscribe;
   }, [currentUser?.id, queryClient]);
 
-  // Derive all unique exercises from workout logs
-  const availableExercises = useMemo(() => {
+  // Derive split days from user profile
+  const splitDays = useMemo(() => {
+    const split = currentUser?.custom_workout_types || currentUser?.workout_split;
+    if (!split || typeof split !== 'object') return [];
+    return Object.keys(split).filter(k => split[k]);
+  }, [currentUser]);
+
+  // Map split day → exercise names logged on days with that label
+  const exercisesByDay = useMemo(() => {
+    const map = {};
+    workoutLogs.forEach(log => {
+      const day = log.workout_type || log.split_day;
+      if (!day) return;
+      if (!map[day]) map[day] = new Set();
+      (log.exercises || []).forEach(ex => {
+        const name = ex.exercise || ex.name;
+        if (name) map[day].add(name);
+      });
+    });
+    return map;
+  }, [workoutLogs]);
+
+  // All unique exercise names across all logs
+  const allExerciseNames = useMemo(() => {
     const names = new Set();
     workoutLogs.forEach(log => {
       (log.exercises || []).forEach(ex => {
@@ -150,21 +172,38 @@ export default function StrengthProgress({ currentUser }) {
         if (name) names.add(name);
       });
     });
-    return Array.from(names).map((name, i) => ({
+    return Array.from(names);
+  }, [workoutLogs]);
+
+  // Exercises visible given selected day filter
+  const availableExercises = useMemo(() => {
+    const names = selectedDay && exercisesByDay[selectedDay]
+      ? Array.from(exercisesByDay[selectedDay])
+      : allExerciseNames;
+    return names.map((name, i) => ({
       key: name,
       label: name,
       color: EXERCISE_COLORS[i % EXERCISE_COLORS.length],
       glow: EXERCISE_GLOWS[i % EXERCISE_GLOWS.length],
     }));
-  }, [workoutLogs]);
+  }, [selectedDay, exercisesByDay, allExerciseNames]);
 
-  // Auto-select first exercise when logs load
+  // Auto-select first day and first exercise when data loads
   useEffect(() => {
-    if (availableExercises.length > 0 && !exercise) {
+    if (splitDays.length > 0 && !selectedDay) {
+      setSelectedDay(splitDays[0]);
+    }
+  }, [splitDays]);
+
+  // Auto-select first exercise when filtered list changes
+  useEffect(() => {
+    if (availableExercises.length > 0) {
       setExercise(availableExercises[0].key);
       setChartKey(k => k + 1);
+    } else {
+      setExercise(null);
     }
-  }, [availableExercises]);
+  }, [selectedDay, availableExercises.map(e => e.key).join(',')]); // eslint-disable-line
 
   const handleExerciseChange = (key) => {
     setExercise(key);
