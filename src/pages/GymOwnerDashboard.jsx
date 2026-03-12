@@ -41,6 +41,7 @@ import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
 import GymJoinPoster from '../components/dashboard/GymJoinPoster';
 import LeaderboardSection from '../components/leaderboard/LeaderboardSection';
 import PushNotificationPanel from '../components/dashboard/PushNotificationPanel';
+import { HabitTracker, CultureRadar, StreakCelebrations, GymSetupChecklist, SmartNudges, InviteToClasses } from '../components/dashboard/OverviewWidgets';
 
 // ─── Injected global styles ──────────────────────────────────────────────────
 const STYLE = `
