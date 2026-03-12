@@ -772,7 +772,7 @@ export default function Home() {
 
           {memberGym?.id && (
             <div whileTap={{ scale: 0.97, y: 2 }}>
-              <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
+              <Link to={createPageUrl('CommunityRank') + `?id=${memberGym.id}`} className="block">
                 <Card className="rounded-xl text-card-foreground bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-blue-500/30 transition-all duration-200 cursor-pointer shadow-2xl shadow-black/20 relative h-40 overflow-hidden group">
                   {memberGym?.image_url ? (
                     <img src={memberGym.image_url} alt={memberGym.name} className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-100 transition-opacity" loading="eager" fetchpriority="high" />
