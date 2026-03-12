@@ -7,6 +7,11 @@
   --foreground: 213 31% 91%;
 }
 
+/* Force dark background — overrides index.css @layer base :root reset */
+html {
+  background: hsl(222, 47%, 11%);
+}
+
 @layer base {
   * {
     @apply border-border;
