@@ -1273,6 +1273,14 @@ export default function GymOwnerDashboard() {
               </div>
             )}
           </Card>
+
+          {/* Push Notifications */}
+          <PushNotificationPanel
+            atRiskMembers={atRiskMembersList}
+            allMembers={allMemberships}
+            selectedGym={selectedGym}
+            memberLastCheckIn={memberLastCheckIn}
+          />
         </div>
       </div>
     );
