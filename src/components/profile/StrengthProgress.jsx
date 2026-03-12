@@ -341,7 +341,7 @@ export default function StrengthProgress({ currentUser }) {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold" style={{ color: '#475569' }}>
-                {!exercise ? 'No exercises for this day' : `No ${selectedExercise?.label} logs yet`}
+                {!exercise ? 'Select an exercise' : `No weight data for ${selectedExercise?.label}`}
               </p>
               <p className="text-xs mt-0.5" style={{ color: '#334155' }}>Log a lift to start tracking progress</p>
             </div>
