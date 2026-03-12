@@ -324,14 +324,14 @@ export default function StrengthProgress({ currentUser }) {
         )}
 
         {/* ── Empty states */}
-        {!selectedDay ? (
+        {!isLoading && availableExercises.length === 0 ? (
           <div className="h-52 flex flex-col items-center justify-center gap-3">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <Dumbbell className="w-6 h-6" style={{ color: '#334155' }} />
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold" style={{ color: '#475569' }}>No workout split configured</p>
-              <p className="text-xs mt-0.5" style={{ color: '#334155' }}>Set up a split to track your progress</p>
+              <p className="text-sm font-semibold" style={{ color: '#475569' }}>No workout logs yet</p>
+              <p className="text-xs mt-0.5" style={{ color: '#334155' }}>Log a workout to start tracking progress</p>
             </div>
           </div>
         ) : !exercise || chartData.length === 0 ? (
