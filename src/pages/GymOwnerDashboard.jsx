@@ -503,7 +503,7 @@ export default function GymOwnerDashboard() {
   }, [checkIns]);
 
   const recentActivity = useMemo(() => {
-    return [...checkIns].slice(0, 8).map(c => ({ name: c.user_name || 'Member', action: 'checked in', time: c.check_in_date, color: '#10b981' }));
+    return [...checkIns].slice(0, 8).map(c => ({ name: c.user_name || 'Member', user_id: c.user_id, action: 'checked in', time: c.check_in_date, color: '#10b981' }));
   }, [checkIns]);
 
   const Splash = ({ children }) => (
