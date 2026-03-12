@@ -70,7 +70,10 @@ export default function TabMembers({
   const handleSearch = (v) => { setMemberSearch(v); setMemberPage(1); };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* ── TOP: Table + Sidebar ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
 
       {/* ── LEFT: Table ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
