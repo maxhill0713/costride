@@ -343,7 +343,7 @@ export default function TabMembers({
         </Card>
 
       </div>
-      </div>
+      </div>{/* closes grid */}
 
       {/* ── BOTTOM: Habit Tracker + Push Notifications side by side ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
