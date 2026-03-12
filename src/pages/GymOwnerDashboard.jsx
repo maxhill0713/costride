@@ -761,7 +761,7 @@ export default function GymOwnerDashboard() {
                 const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.floor(minsAgo/60)}h ago` : `${Math.floor(minsAgo/1440)}d ago`;
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Avatar name={a.name} size={30}/>
+                    <Avatar name={a.name} size={30} src={avatarMap[a.user_id] || null}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, color: 'var(--text1)', lineHeight: 1.35 }}>
                         <span style={{ fontWeight: 700 }}>{a.name}</span>
