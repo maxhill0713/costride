@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
 import PushNotificationPanel from './PushNotificationPanel';
+import { HabitTracker } from './OverviewWidgets';
 
 export default function TabMembers({
   allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
