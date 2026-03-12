@@ -118,8 +118,7 @@ function AnimatedNumber({ value, decimals = 0 }) {
 export default function StrengthProgress({ currentUser }) {
   const [exercise, setExercise]   = useState(null);
   const [period, setPeriod]       = useState('6m');
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [chartKey, setChartKey]   = useState(0); // force remount on exercise change for animation
+  const [chartKey, setChartKey]   = useState(0);
   const queryClient = useQueryClient();
 
   const { data: workoutLogs = [], isLoading } = useQuery({
@@ -140,39 +139,37 @@ export default function StrengthProgress({ currentUser }) {
     return unsubscribe;
   }, [currentUser?.id, queryClient]);
 
-  const split = useMemo(() => {
-    const s = currentUser?.custom_workout_types || currentUser?.workout_split;
-    if (!s || typeof s !== 'object') return {};
-    return s;
-  }, [currentUser?.custom_workout_types, currentUser?.workout_split]);
-
-  const splitDays = useMemo(() => Object.keys(split).filter(k => split[k]), [split]);
-
+  // Derive all unique exercises from workout logs
   const availableExercises = useMemo(() => {
-    if (!selectedDay || !split[selectedDay]) return [];
-    const dayExercises = split[selectedDay];
-    if (Array.isArray(dayExercises)) return dayExercises.map(ex => EXERCISES.find(e => e.key === ex)).filter(Boolean);
-    if (typeof dayExercises === 'string') return EXERCISES.filter(e => e.key === dayExercises);
-    return [];
-  }, [selectedDay, split]);
+    const names = new Set();
+    workoutLogs.forEach(log => {
+      (log.exercises || []).forEach(ex => {
+        const name = ex.exercise || ex.name;
+        if (name) names.add(name);
+      });
+    });
+    return Array.from(names).map((name, i) => ({
+      key: name,
+      label: name,
+      color: EXERCISE_COLORS[i % EXERCISE_COLORS.length],
+      glow: EXERCISE_GLOWS[i % EXERCISE_GLOWS.length],
+    }));
+  }, [workoutLogs]);
 
-  React.useEffect(() => {
-    if (availableExercises.length > 0) {
+  // Auto-select first exercise when logs load
+  useEffect(() => {
+    if (availableExercises.length > 0 && !exercise) {
       setExercise(availableExercises[0].key);
       setChartKey(k => k + 1);
-    } else setExercise(null);
+    }
   }, [availableExercises]);
-
-  React.useEffect(() => {
-    if (!selectedDay && splitDays.length > 0) setSelectedDay(splitDays[0]);
-  }, [splitDays, selectedDay]);
 
   const handleExerciseChange = (key) => {
     setExercise(key);
     setChartKey(k => k + 1);
   };
 
-  const selectedExercise = EXERCISES.find(e => e.key === exercise);
+  const selectedExercise = availableExercises.find(e => e.key === exercise);
   const color = selectedExercise?.color ?? '#a78bfa';
   const glow  = selectedExercise?.glow  ?? 'rgba(167,139,250,0.35)';
 
@@ -181,8 +178,9 @@ export default function StrengthProgress({ currentUser }) {
     const map = {};
     for (const ex of availableExercises) {
       map[ex.key] = workoutLogs
-        .flatMap(log => log.exercises?.filter(e => (e.name || e.exercise) === ex.key) || [])
+        .flatMap(log => log.exercises?.filter(e => (e.exercise || e.name) === ex.key) || [])
         .map(e => ({ weight: parseFloat(e.weight) || 0 }))
+        .filter(e => e.weight > 0)
         .sort((a, b) => a.weight - b.weight);
     }
     return map;
@@ -194,20 +192,25 @@ export default function StrengthProgress({ currentUser }) {
       : null;
     const data = [];
     workoutLogs.forEach(log => {
-      const logDate = new Date(log.created_date);
+      const logDate = new Date(log.created_date || log.completed_date);
       if (cutoff && logDate < cutoff) return;
-      log.exercises?.forEach(ex => {
-        if ((ex.name || ex.exercise) === exercise) {
-          data.push({
-            date: format(logDate, 'MMM d'),
-            weight: parseFloat(ex.weight) || 0,
-            reps: parseInt(ex.setsReps?.split('x')[1]) || 1,
-            is_pr: ex.is_pr || false,
-          });
+      (log.exercises || []).forEach(ex => {
+        const exName = ex.exercise || ex.name;
+        if (exName === exercise) {
+          const w = parseFloat(ex.weight) || 0;
+          if (w > 0) {
+            data.push({
+              date: format(logDate, 'MMM d'),
+              rawDate: logDate,
+              weight: w,
+              reps: parseInt(ex.setsReps?.split('x')[1] || ex.reps) || 1,
+              is_pr: ex.is_pr || false,
+            });
+          }
         }
       });
     });
-    return data.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return data.sort((a, b) => a.rawDate - b.rawDate);
   }, [workoutLogs, exercise, period]);
 
   const stats = useMemo(() => {
