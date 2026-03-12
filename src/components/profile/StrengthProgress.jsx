@@ -352,6 +352,8 @@ export default function StrengthProgress({ currentUser }) {
               <ChevronDown className="w-3.5 h-3.5 flex-shrink-0 transition-transform" style={{ color: '#475569', transform: dayDropdownOpen ? 'rotate(180deg)' : 'none' }} />
             </button>
             {dayDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setDayDropdownOpen(false)} />
               <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-xl overflow-hidden"
                 style={{ background: 'rgba(12,16,32,0.98)', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(20px)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}>
                 <button
