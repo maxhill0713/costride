@@ -354,25 +354,25 @@ export default function StrengthProgress({ currentUser }) {
             {dayDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setDayDropdownOpen(false)} />
-              <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-xl overflow-hidden"
-                style={{ background: 'rgba(12,16,32,0.98)', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(20px)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}>
-                <button
-                  onClick={() => { setSelectedDay(null); setDayDropdownOpen(false); }}
-                  className="w-full text-left px-4 py-2.5 text-[12px] font-semibold transition-colors"
-                  style={{ color: !selectedDay ? color : '#64748b', background: !selectedDay ? `${color}12` : 'transparent' }}
-                >
-                  All Days
-                </button>
-                {splitDays.map(day => (
-                  <button key={day}
-                    onClick={() => { setSelectedDay(day); setDayDropdownOpen(false); }}
-                    className="w-full text-left px-4 py-2.5 text-[12px] font-semibold capitalize transition-colors"
-                    style={{ color: selectedDay === day ? color : '#64748b', background: selectedDay === day ? `${color}12` : 'transparent' }}
+                <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-xl overflow-hidden"
+                  style={{ background: 'rgba(12,16,32,0.98)', border: '1px solid rgba(255,255,255,0.10)', backdropFilter: 'blur(20px)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}>
+                  <button
+                    onClick={() => { setSelectedDay(null); setDayDropdownOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-[12px] font-semibold transition-colors"
+                    style={{ color: !selectedDay ? color : '#64748b', background: !selectedDay ? `${color}12` : 'transparent' }}
                   >
-                    {day}
+                    All Days
                   </button>
-                ))}
-              </div>
+                  {splitDays.map(day => (
+                    <button key={day}
+                      onClick={() => { setSelectedDay(day); setDayDropdownOpen(false); }}
+                      className="w-full text-left px-4 py-2.5 text-[12px] font-semibold capitalize transition-colors"
+                      style={{ color: selectedDay === day ? color : '#64748b', background: selectedDay === day ? `${color}12` : 'transparent' }}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
               </>
             )}
           </div>
