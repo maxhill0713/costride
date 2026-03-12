@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Star, Dumbbell, Zap, Award } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Star, Dumbbell, Zap, Award, ChevronDown } from 'lucide-react';
 import { format, subMonths } from 'date-fns';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
