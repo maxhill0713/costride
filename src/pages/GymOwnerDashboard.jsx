@@ -40,6 +40,7 @@ import QRCode from 'react-qr-code';
 import TabAnalyticsComponent from '../components/dashboard/TabAnalytics';
 import GymJoinPoster from '../components/dashboard/GymJoinPoster';
 import LeaderboardSection from '../components/leaderboard/LeaderboardSection';
+import PushNotificationPanel from '../components/dashboard/PushNotificationPanel';
 
 // ─── Injected global styles ──────────────────────────────────────────────────
 const STYLE = `
