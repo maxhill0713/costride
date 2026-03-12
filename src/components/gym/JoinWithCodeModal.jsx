@@ -166,15 +166,8 @@ export default function JoinWithCodeModal({ open, onClose, currentUser, gymCount
       if (gyms.length === 0) throw new Error('Invalid gym code');
       const gym = gyms[0];
 
-      const userMemberships = await base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' });
-      // Only count memberships where the gym still exists and is accessible
-      const validMemberships = (await Promise.all(
-        userMemberships.map(async (m) => {
-          try { const g = await base44.entities.Gym.filter({ id: m.gym_id }); return g.length > 0 ? m : null; }
-          catch { return null; }
-        })
-      )).filter(Boolean);
-      if (validMemberships.length >= 3)
+      // Use the count from the My Gyms page (already filtered to valid gyms)
+      if (gymCount >= 3)
         throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
 
       if (gym.banned_members?.includes(currentUser.id))
