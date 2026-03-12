@@ -342,8 +342,8 @@ export default function TabMembers({
           )}
         </Card>
 
-      </div>
-      </div>{/* closes grid */}
+      </div>{/* closes right sidebar */}
+      </div>{/* closes top grid */}
 
       {/* ── BOTTOM: Habit Tracker + Push Notifications side by side ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -355,6 +355,6 @@ export default function TabMembers({
           memberLastCheckIn={memberLastCheckIn}
         />
       </div>
-    </div>
+    </div>{/* closes outer flex column */}
   );
 }
