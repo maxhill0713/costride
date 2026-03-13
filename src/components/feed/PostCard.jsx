@@ -267,7 +267,34 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       return kept.join('\n').trim() || null;
     })();
 
-    // ── Inline exercise summary JSX ──────────────────────────────────────
+  const [showWorkoutShare, setShowWorkoutShare] = useState(false);
+
+  const handleWorkoutShare = async () => {
+    const text = [
+      `💪 ${post.workout_name}`,
+      post.workout_duration ? `⏱ ${post.workout_duration}` : null,
+      exercises.length > 0 ? `🏋️ ${exercises.length} exercises` : null,
+      post.workout_volume ? `⚡ ${post.workout_volume}` : null,
+      userComment ? `\n"${userComment}"` : null,
+      `\n— shared from my workout app`,
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post.workout_name || 'My Workout', text });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return; // user cancelled — do nothing
+      }
+    }
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Workout copied to clipboard!');
+    } catch {
+      toast.error('Could not share');
+    }
+  };
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden">
         <div className="px-2 pt-2 pb-1 flex-1 min-h-0 flex flex-col">
@@ -473,23 +500,34 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         {/* ── BOTTOM BAR ── */}
         <div className="flex items-center justify-between px-3 py-1"
           style={{ background: 'linear-gradient(180deg, rgba(14,20,40,0.95) 0%, rgba(10,15,28,0.98) 100%)', minHeight: 44 }}>
-          {currentUser && (
-            <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
-              className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-              {userStreakVariant === 'sunglasses'
-                ? <div className="relative w-11 h-11 flex items-center justify-center">
-                    <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+          {/* Left side: react + share */}
+          <div className="flex items-center gap-1">
+            {currentUser && (
+              <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
+                className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                {userStreakVariant === 'sunglasses'
+                  ? <div className="relative w-11 h-11 flex items-center justify-center">
+                      <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                      </svg>
+                    </div>
+                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+              </motion.button>
+            )}
+            <motion.button
+              onClick={handleWorkoutShare}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
+              <Send className="w-4 h-4" />
+              <span className="text-[11px] font-semibold">Share</span>
             </motion.button>
-          )}
+          </div>
+          {/* Right side: reactions */}
           {totalReactions > 0 && (
-            <button onClick={() => setShowReactionsModal(true)} className="flex items-center ml-auto hover:opacity-80 transition-opacity">
+            <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
               <div className="flex items-center" style={{ gap: 0 }}>
                 {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
                   <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
