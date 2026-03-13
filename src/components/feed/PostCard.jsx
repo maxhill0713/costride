@@ -321,7 +321,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         animate={{ opacity: 1, y: 0 }}
         className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
         style={{
-          background: 'linear-gradient(135deg, rgba(40,48,80,0.88) 0%, rgba(18,22,42,0.93) 100%)',
+          background: 'linear-gradient(135deg, rgba(28,34,60,0.92) 0%, rgba(18,22,42,0.93) 100%)',
           border: '1px solid rgba(255,255,255,0.07)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -569,7 +569,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       animate={{ opacity: 1, y: 0 }}
       className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
       style={{
-        background: 'linear-gradient(135deg, rgba(40,48,80,0.88) 0%, rgba(18,22,42,0.93) 100%)',
+        background: 'linear-gradient(135deg, rgba(28,34,60,0.92) 0%, rgba(18,22,42,0.93) 100%)',
         border: '1px solid rgba(255,255,255,0.07)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
