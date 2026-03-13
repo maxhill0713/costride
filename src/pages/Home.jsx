@@ -1449,8 +1449,8 @@ export default function Home() {
                 <Input placeholder="Add Friends..." value={friendSearchQuery} onChange={e => setFriendSearchQuery(e.target.value)}
                   className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
               </div>
-              <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white flex-shrink-0">
-                <X className="w-5 h-5" />
+              <button onClick={() => { setShowAddFriendModal(false); setShowFriendsModal(true); setFriendSearchQuery(''); }} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
