@@ -216,7 +216,7 @@ function LiftLeaderboard({ leaderboard, liftMeta, currentUserId, open, onOpen, o
       <div style={{
         position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,
         display:'flex',flexDirection:'column',
-        background:'linear-gradient(135deg, #020817 0%, #0f1729 35%, #0c1a3a 65%, #020817 100%)',
+        background:'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
         animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
         overflow:'hidden',
       }}>
@@ -411,7 +411,7 @@ export default function Community(){
       <style>{LBOARD_CSS}</style>
       <div style={{
         minHeight:'100vh',
-        background:'linear-gradient(135deg, #020817 0%, #0f1729 35%, #0c1a3a 65%, #020817 100%)',
+        background:'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
         fontFamily:"'Outfit',system-ui,sans-serif",
         color:'#e2e8f0',
       }}>
