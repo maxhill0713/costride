@@ -306,23 +306,15 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Post.delete(post.id),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['posts'] });
-      const previousPosts = queryClient.getQueryData(['posts']) || [];
-      queryClient.setQueryData(['posts'], (old = []) => old.filter((p) => p.id !== post.id));
-      if (onDelete) onDelete(post.id);
-      return { previousPosts };
-    },
-    onError: (err, vars, context) => {
-      if (context?.previousPosts) {
-        queryClient.setQueryData(['posts'], context.previousPosts);
-      }
-      toast.error('Failed to delete post');
-    },
     onSuccess: () => {
-      toast.success('Post deleted');
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-    }
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+      if (post.gym_id) queryClient.invalidateQueries({ queryKey: ['posts', post.gym_id] });
+      toast.success('Post deleted');
+      if (onDelete) onDelete(post.id);
+    },
+    onError: () => toast.error('Failed to delete post')
   });
 
   const updatePostMutation = useMutation({
