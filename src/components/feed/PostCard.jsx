@@ -215,14 +215,24 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   // ── WORKOUT POST — Strava-style ──────────────────────────────────────────
   if (isWorkoutPost) {
     const exercises = post.workout_exercises || [];
-    const userComment = post.content && !post.content.startsWith('💪 Just finished') ? post.content : null;
+    // Strip auto-generated prefix, keep only what the user typed
+    const userComment = (() => {
+      if (!post.content) return null;
+      const lines = post.content.split('\n');
+      const kept = lines.filter(line => {
+        if (line.startsWith('💪 Just finished')) return false;
+        if (/\d+x\d+/.test(line)) return false;
+        return true;
+      });
+      return kept.join('\n').trim() || null;
+    })();
     const totalReactions = Object.keys(post.reactions || {}).length;
 
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden shadow-2xl shadow-black/20 rounded-xl"
+        className="mb-4 overflow-hidden shadow-2xl shadow-black/20 rounded-xl -mx-2"
         style={{
           background: 'linear-gradient(160deg, rgba(15,23,42,0.97) 0%, rgba(10,15,30,0.99) 100%)',
           border: '1px solid rgba(255,255,255,0.07)',
