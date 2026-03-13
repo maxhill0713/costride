@@ -258,33 +258,31 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       return kept.join('\n').trim() || null;
     })();
 
-  const [showWorkoutShare, setShowWorkoutShare] = useState(false);
+    const handleWorkoutShare = async () => {
+      const text = [
+        `💪 ${post.workout_name}`,
+        post.workout_duration ? `⏱ ${post.workout_duration}` : null,
+        exercises.length > 0 ? `🏋️ ${exercises.length} exercises` : null,
+        post.workout_volume ? `⚡ ${post.workout_volume}` : null,
+        userComment ? `\n"${userComment}"` : null,
+        `\n— shared from my workout app`,
+      ].filter(Boolean).join('\n');
 
-  const handleWorkoutShare = async () => {
-    const text = [
-      `💪 ${post.workout_name}`,
-      post.workout_duration ? `⏱ ${post.workout_duration}` : null,
-      exercises.length > 0 ? `🏋️ ${exercises.length} exercises` : null,
-      post.workout_volume ? `⚡ ${post.workout_volume}` : null,
-      userComment ? `\n"${userComment}"` : null,
-      `\n— shared from my workout app`,
-    ].filter(Boolean).join('\n');
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: post.workout_name || 'My Workout', text });
-        return;
-      } catch (e) {
-        if (e.name === 'AbortError') return;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: post.workout_name || 'My Workout', text });
+          return;
+        } catch (e) {
+          if (e.name === 'AbortError') return;
+        }
       }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Workout copied to clipboard!');
-    } catch {
-      toast.error('Could not share');
-    }
-  };
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success('Workout copied to clipboard!');
+      } catch {
+        toast.error('Could not share');
+      }
+    };
 
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden">
@@ -475,16 +473,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             {currentUser && (
               <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
                 className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                {userStreakVariant === 'sunglasses'
-                  ? <div className="relative w-11 h-11 flex items-center justify-center">
-                      <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                      </svg>
-                    </div>
-                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+                <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
               </motion.button>
             )}
             <motion.button
@@ -499,16 +488,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               <div className="flex items-center" style={{ gap: 0 }}>
                 {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
                   <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                    {variant === 'sunglasses'
-                      ? <div className="relative w-full h-full flex items-center justify-center">
-                          <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                          </svg>
-                        </div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                    <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />
                   </div>
                 ))}
                 {Object.keys(post.reactions || {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(post.reactions || {}).length - 3}</span></div>}
@@ -537,8 +517,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   }
 
   // ── STANDARD POST ─────────────────────────────────────────────────────────
-  // Restyled to match the workout post card aesthetic:
-  // header → caption (optional) → media (optional) → reaction/share bar
   const totalReactions = Object.keys(post.reactions || {}).length;
 
   const handleShare = async () => {
@@ -671,16 +649,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               className="flex items-center gap-1 flex-shrink-0"
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}>
-              {userStreakVariant === 'sunglasses'
-                ? <div className="relative w-11 h-11 flex items-center justify-center">
-                    <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+              <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
             </motion.button>
           )}
           <motion.button
@@ -698,16 +667,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             <div className="flex items-center" style={{ gap: 0 }}>
               {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
                 <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                  {variant === 'sunglasses'
-                    ? <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-                    : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                  <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />
                 </div>
               ))}
               {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
@@ -767,16 +727,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               return (
                 <div key={user.id} className="flex items-center gap-10 p-4 rounded-lg hover:bg-slate-800/50 transition-colors -mt-3">
                   <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                    {variant === 'sunglasses'
-                      ? <div className="relative w-full h-full flex items-center justify-center">
-                          <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                          </svg>
-                        </div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />}
+                    <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />
                   </div>
                   <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
                 </div>
