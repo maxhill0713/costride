@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { format, subDays, isWithinInterval } from 'date-fns';
 import {
-  Plus, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-  Users, AlertTriangle, CreditCard, CheckCircle, TrendingUp,
-  ArrowUpRight, UserPlus, QrCode, Trophy, Send
+Plus, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
+Users, AlertTriangle, CreditCard, CheckCircle, TrendingUp,
+ArrowUpRight, UserPlus, QrCode, Trophy, Send
 } from 'lucide-react';
 import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
 import PushNotificationPanel from './PushNotificationPanel';
@@ -57,26 +57,29 @@ export default function TabMembers({
   const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
   const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
   const gymHealthScore = Math.min(100, Math.max(0, Math.round(retentionRate * 0.6 + (100 - Math.min(100, (atRisk / Math.max(totalMembers, 1)) * 100)) * 0.4)));
+
   const filterCounts = {
-    all: memberRows.length,
-    active: memberRows.filter(m => m.daysSince < 7).length,
+    all:      memberRows.length,
+    active:   memberRows.filter(m => m.daysSince < 7).length,
     inactive: memberRows.filter(m => m.daysSince >= 14).length,
-    atRisk: memberRows.filter(m => m.risk !== 'Low').length,
-    new: memberRows.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now })).length,
+    atRisk:   memberRows.filter(m => m.risk !== 'Low').length,
+    new:      memberRows.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now })).length,
   };
-  const toggleRow = (id) => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); };
-  const toggleAll = () => { if (selectedRows.size === paginated.length) setSelectedRows(new Set()); else setSelectedRows(new Set(paginated.map(m => m.id))); };
+
+  const toggleRow          = (id) => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); };
+  const toggleAll          = () => { if (selectedRows.size === paginated.length) setSelectedRows(new Set()); else setSelectedRows(new Set(paginated.map(m => m.id))); };
   const handleFilterChange = (f) => { setMemberFilter(f); setMemberPage(1); };
-  const handleSearch = (v) => { setMemberSearch(v); setMemberPage(1); };
+  const handleSearch       = (v) => { setMemberSearch(v); setMemberPage(1); };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* ── TOP: Table + Sidebar ── */}
+      {/* ═══════════════════════════════════════════════════════
+          TOP ROW — Members table (1fr)  |  Sidebar (268px)
+      ═══════════════════════════════════════════════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
 
-      {/* ── LEFT: Table ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {/* ── Members Table ── */}
         <Card style={{ overflow: 'hidden' }}>
           {/* Filter bar */}
           <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -85,11 +88,11 @@ export default function TabMembers({
             </button>
             <div style={{ display: 'flex', gap: 2 }}>
               {[
-                { id: 'all',      label: 'All Members',  count: filterCounts.all },
-                { id: 'active',   label: 'Active',        count: filterCounts.active },
-                { id: 'inactive', label: 'Inactive',      count: filterCounts.inactive },
-                { id: 'atRisk',   label: 'At Risk',       count: filterCounts.atRisk, danger: true },
-                { id: 'new',      label: 'New',           count: filterCounts.new },
+                { id: 'all',      label: 'All Members', count: filterCounts.all },
+                { id: 'active',   label: 'Active',       count: filterCounts.active },
+                { id: 'inactive', label: 'Inactive',     count: filterCounts.inactive },
+                { id: 'atRisk',   label: 'At Risk',      count: filterCounts.atRisk, danger: true },
+                { id: 'new',      label: 'New',          count: filterCounts.new },
               ].map(f => (
                 <button key={f.id} className={`filter-tab ${memberFilter === f.id ? (f.danger ? 'active-red' : 'active') : ''}`} onClick={() => handleFilterChange(f.id)}>
                   {f.label}
@@ -105,7 +108,6 @@ export default function TabMembers({
               <input className="search-input" placeholder="Search members…" value={memberSearch} onChange={e => handleSearch(e.target.value)}/>
             </div>
           </div>
-
           {/* Sort row */}
           <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -125,7 +127,6 @@ export default function TabMembers({
               <option value="name">Name A–Z</option>
             </select>
           </div>
-
           {/* Table header */}
           <div className="member-row" style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', borderRadius: 0, cursor: 'default' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -138,7 +139,6 @@ export default function TabMembers({
               </div>
             ))}
           </div>
-
           {/* Table body */}
           <div style={{ minHeight: 300 }}>
             {paginated.length === 0 ? (
@@ -181,7 +181,6 @@ export default function TabMembers({
               ))
             )}
           </div>
-
           {/* Pagination */}
           <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -216,137 +215,137 @@ export default function TabMembers({
             <span style={{ fontSize: 11, color: 'var(--text3)' }}>of {sorted.length}</span>
           </div>
         </Card>
-      </div>
 
-      {/* ── RIGHT: Sidebar ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {/* Alerts */}
-        <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
-          {atRisk > 0 && (
-            <div className="alert-card" style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(239,68,68,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                  <AlertTriangle style={{ width: 11, height: 11, color: '#f87171' }}/>
+        {/* ── Right Sidebar ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Alerts */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
+            {atRisk > 0 && (
+              <div className="alert-card" style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(239,68,68,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <AlertTriangle style={{ width: 11, height: 11, color: '#f87171' }}/>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{atRisk} Members At Risk</div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>Haven't visited in 10+ days</div>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{atRisk} Members At Risk</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>Haven't visited in 10+ days</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => handleFilterChange('atRisk')} style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'rgba(255,255,255,0.06)', color: 'var(--text1)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>View List</button>
+                  <button onClick={() => openModal('post')} style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Send Message</button>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => handleFilterChange('atRisk')} style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'rgba(255,255,255,0.06)', color: 'var(--text1)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>View List</button>
-                <button onClick={() => openModal('post')} style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Send Message</button>
-              </div>
-            </div>
-          )}
-          {memberRows.filter(m => m.risk === 'High').length > 0 && (
-            <div className="alert-card" style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)', marginBottom: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(245,158,11,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                  <CreditCard style={{ width: 11, height: 11, color: '#fbbf24' }}/>
+            )}
+            {memberRows.filter(m => m.risk === 'High').length > 0 && (
+              <div className="alert-card" style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(245,158,11,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <CreditCard style={{ width: 11, height: 11, color: '#fbbf24' }}/>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{memberRows.filter(m => m.risk === 'High').length} High-Risk Members</div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
+                      {memberRows.filter(m => m.risk === 'High').slice(0, 2).map(m => m.name).join(', ')} · 21+ days inactive
+                    </div>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{memberRows.filter(m => m.risk === 'High').length} High-Risk Members</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
-                    {memberRows.filter(m => m.risk === 'High').slice(0, 2).map(m => m.name).join(', ')} · 21+ days inactive
+                <button onClick={() => { handleFilterChange('atRisk'); setMemberSort('highRisk'); }} style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: 'rgba(245,158,11,0.16)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Resolve</button>
+              </div>
+            )}
+            {atRisk === 0 && memberRows.filter(m => m.risk === 'High').length === 0 && (
+              <div style={{ padding: '12px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CheckCircle style={{ width: 13, height: 13, color: '#10b981' }}/>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#34d399' }}>All members are active!</span>
+              </div>
+            )}
+          </Card>
+
+          {/* Growth Insights */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Growth Insights</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                  <TrendingUp style={{ width: 12, height: 12, color: '#34d399' }}/>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: '#34d399', letterSpacing: '-0.02em' }}>{retentionRate}%</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>Retention</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <ArrowUpRight style={{ width: 10, height: 10, color: '#34d399' }}/>
+                  <span style={{ fontSize: 10, color: 'var(--text3)' }}>{weeklyChangePct >= 0 ? '+' : ''}{weeklyChangePct}% improvement</span>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {[
+                      { label: 'Active', val: activeThisWeek, color: '#0ea5e9' },
+                      { label: 'New',    val: newSignUps,     color: '#10b981' },
+                    ].map((s, i) => (
+                      <div key={i} style={{ padding: '6px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: s.color }}>{s.val}</div>
+                        <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, textTransform: 'uppercase', marginTop: 1 }}>{s.label}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              <button onClick={() => { handleFilterChange('atRisk'); setMemberSort('highRisk'); }} style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: 'rgba(245,158,11,0.16)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Resolve</button>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Great progress!' : gymHealthScore >= 50 ? 'Keep going!' : 'Needs work'}/>
+              </div>
             </div>
-          )}
-          {atRisk === 0 && memberRows.filter(m => m.risk === 'High').length === 0 && (
-            <div style={{ padding: '12px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CheckCircle style={{ width: 13, height: 13, color: '#10b981' }}/>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#34d399' }}>All members are active!</span>
-            </div>
-          )}
-        </Card>
+          </Card>
 
-        {/* Growth Insights */}
-        <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Growth Insights</div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
-                <TrendingUp style={{ width: 12, height: 12, color: '#34d399' }}/>
-                <span style={{ fontSize: 18, fontWeight: 800, color: '#34d399', letterSpacing: '-0.02em' }}>{retentionRate}%</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>Retention</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <ArrowUpRight style={{ width: 10, height: 10, color: '#34d399' }}/>
-                <span style={{ fontSize: 10, color: 'var(--text3)' }}>{weeklyChangePct >= 0 ? '+' : ''}{weeklyChangePct}% improvement</span>
-              </div>
-              <div style={{ marginTop: 10 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  {[
-                    { label: 'Active', val: activeThisWeek, color: '#0ea5e9' },
-                    { label: 'New', val: newSignUps, color: '#10b981' },
-                  ].map((s, i) => (
-                    <div key={i} style={{ padding: '6px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: s.color }}>{s.val}</div>
-                      <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, textTransform: 'uppercase', marginTop: 1 }}>{s.label}</div>
-                    </div>
-                  ))}
+          {/* Quick Actions */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Quick Actions</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              {[
+                { icon: UserPlus, label: 'Add Member',       color: '#0ea5e9', fn: () => openModal('members') },
+                { icon: QrCode,   label: 'Scan Check in',    color: '#10b981', fn: () => openModal('qrScanner') },
+                { icon: Trophy,   label: 'Create Challenge', color: '#f59e0b', fn: () => openModal('challenge') },
+                { icon: Send,     label: 'Send Message',     color: '#a78bfa', fn: () => openModal('post') },
+              ].map(({ icon: Icon, label, color, fn }, i) => (
+                <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'all 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)' }}>
+                  <Plus style={{ width: 10, height: 10, color, flexShrink: 0 }}/>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Smart Suggestions */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Smart Suggestions</div>
+            {atRisk > 0 ? (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', lineHeight: 1.4, marginBottom: 4 }}>
+                  <span style={{ color: '#fbbf24', fontWeight: 800 }}>{atRisk} members</span> haven't been in lately
                 </div>
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.4 }}>Send a personalised re-engagement nudge.</div>
+                <button onClick={() => openModal('post')} style={{ width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  Send Nudge
+                </button>
               </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Great progress!' : gymHealthScore >= 50 ? 'Keep going!' : 'Needs work'}/>
-            </div>
-          </div>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Quick Actions</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-            {[
-              { icon: UserPlus, label: 'Add Member',      color: '#0ea5e9', fn: () => openModal('members') },
-              { icon: QrCode,   label: 'Scan Check in',   color: '#10b981', fn: () => openModal('qrScanner') },
-              { icon: Trophy,   label: 'Create Challenge',color: '#f59e0b', fn: () => openModal('challenge') },
-              { icon: Send,     label: 'Send Message',    color: '#a78bfa', fn: () => openModal('post') },
-            ].map(({ icon: Icon, label, color, fn }, i) => (
-              <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'all 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)' }}>
-                <Plus style={{ width: 10, height: 10, color, flexShrink: 0 }}/>
-                {label}
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        {/* Smart Suggestions */}
-        <Card style={{ padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Smart Suggestions</div>
-          {/* monthChangePct not in scope here — pass it in if needed, for now static */}
-          {atRisk > 0 && (
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', lineHeight: 1.4, marginBottom: 4 }}>
-                <span style={{ color: '#fbbf24', fontWeight: 800 }}>{atRisk} members</span> haven't been in lately
+            ) : (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#34d399', lineHeight: 1.4, marginBottom: 4 }}>Everything looks great! 🎉</div>
+                <div style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.4 }}>Attendance is up and members are engaged. Keep up the momentum!</div>
+                <button onClick={() => openModal('challenge')} style={{ marginTop: 10, width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <Trophy style={{ width: 12, height: 12 }}/> Create a Challenge
+                </button>
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.4 }}>Send a personalised re-engagement nudge.</div>
-              <button onClick={() => openModal('post')} style={{ width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                Send Nudge
-              </button>
-            </div>
-          )}
-          {atRisk === 0 && (
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#34d399', lineHeight: 1.4, marginBottom: 4 }}>Everything looks great! 🎉</div>
-              <div style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.4 }}>Attendance is up and members are engaged. Keep up the momentum!</div>
-              <button onClick={() => openModal('challenge')} style={{ marginTop: 10, width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <Trophy style={{ width: 12, height: 12 }}/> Create a Challenge
-              </button>
-            </div>
-          )}
-        </Card>
+            )}
+          </Card>
+        </div>{/* end right sidebar */}
+      </div>{/* end top grid */}
 
-      </div>{/* closes right sidebar */}
-      </div>{/* closes top grid */}
-
-      {/* ── BOTTOM: Habit Tracker + Push Notifications side by side ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      {/* ═══════════════════════════════════════════════════════
+          BOTTOM ROW — exact same grid: 1fr | 268px
+          HabitTracker lines up under the table
+          PushNotificationPanel lines up under the sidebar
+      ═══════════════════════════════════════════════════════ */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
         <HabitTracker checkIns={checkIns} allMemberships={allMemberships} now={now}/>
         <PushNotificationPanel
           atRiskMembers={atRiskMembersList}
@@ -355,6 +354,7 @@ export default function TabMembers({
           memberLastCheckIn={memberLastCheckIn}
         />
       </div>
+
     </div>
   );
 }
