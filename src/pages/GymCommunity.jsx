@@ -260,7 +260,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
       <div style={{
         position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:9999,
         display:'flex',flexDirection:'column',
-        background:'linear-gradient(175deg,#020918 0%,#050e28 35%,#030c22 65%,#010510 100%)',
+        background:'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)',
         animation:'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both',
         overflow:'hidden',
       }}>
