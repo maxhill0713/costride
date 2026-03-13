@@ -199,7 +199,8 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   const getData = () => {
     if (view==='checkins') return { list:checkInLeaderboard, getVal:m=>m.count,    fmt:v=>`${v}`,    unit:'check-ins'  };
     if (view==='streaks')  return { list:streakLeaderboard,  getVal:m=>m.streak,   fmt:v=>`${v}d`,   unit:'day streak' };
-    return                        { list:progressLeaderboard,getVal:m=>m.increase, fmt:v=>`+${v}kg`, unit:'kg gained'  };
+    const progressList = timeframe==='week' ? progressLeaderboardWeek : timeframe==='month' ? progressLeaderboardMonth : progressLeaderboardAllTime;
+    return                        { list:progressList, getVal:m=>m.increase, fmt:v=>`+${v}kg`, unit:'kg gained'  };
   };
   const { list, getVal, fmt, unit } = getData();
   const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
