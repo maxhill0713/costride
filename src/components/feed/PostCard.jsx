@@ -735,41 +735,41 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
             )}
           </div>
 
-          {/* ── Reactions Modal (Workout Post) ── */}
-          {showReactionsModal && (
-            <>
-              <div className="fixed inset-0 z-[10005] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReactionsModal(false)} />
-              <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
-                <div className="px-5 pt-5 pb-3">
-                  <h3 className="text-lg font-semibold leading-none tracking-tight text-white">Reactions</h3>
-                </div>
-                <div className="overflow-y-auto max-h-80 px-3 pb-4">
-                  {reactedUsers.map((user) => {
-                    const variant = post.reactions[user.id];
-                    return (
-                      <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
-                        <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
-                          {variant === 'sunglasses'
-                            ? <div className="relative w-full h-full flex items-center justify-center">
-                                <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
-                                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                                </svg>
-                              </div>
-                            : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
-                        </div>
-                        <span className="text-sm text-slate-200 font-semibold">{user.full_name || user.username || 'Unknown'}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-
         </motion.div>
+
+        {/* ── Reactions Modal (Workout Post) — outside card so fixed positioning covers full screen ── */}
+        {showReactionsModal && (
+          <>
+            <div className="fixed inset-0 z-[10005] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReactionsModal(false)} />
+            <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+              <div className="px-5 pt-5 pb-3">
+                <h3 className="text-lg font-semibold leading-none tracking-tight text-white">Reactions</h3>
+              </div>
+              <div className="overflow-y-auto max-h-80 px-3 pb-4">
+                {reactedUsers.map((user) => {
+                  const variant = post.reactions[user.id];
+                  return (
+                    <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                      <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
+                        {variant === 'sunglasses'
+                          ? <div className="relative w-full h-full flex items-center justify-center">
+                              <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
+                              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                                <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                                <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                                <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                              </svg>
+                            </div>
+                          : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
+                      </div>
+                      <span className="text-sm text-slate-200 font-semibold">{user.full_name || user.username || 'Unknown'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
         <ConfirmDialog
           open={showDeleteConfirm}
@@ -955,41 +955,41 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
         <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
 
-        {/* ── Reactions Modal (Standard Post) ── */}
-        {showReactionsModal && (
-          <>
-            <div className="fixed inset-0 z-[10005] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReactionsModal(false)} />
-            <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
-              <div className="px-5 pt-5 pb-3">
-                <h3 className="text-lg font-semibold leading-none tracking-tight text-white">Reactions</h3>
-              </div>
-              <div className="overflow-y-auto max-h-80 px-3 pb-4">
-                {reactedUsers.map((user) => {
-                  const variant = post.reactions[user.id];
-                  return (
-                    <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
-                      <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
-                        {variant === 'sunglasses'
-                          ? <div className="relative w-full h-full flex items-center justify-center">
-                              <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
-                              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                                <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                                <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                                <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                              </svg>
-                            </div>
-                          : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
-                      </div>
-                      <span className="text-sm text-slate-200 font-semibold">{user.full_name || user.username || 'Unknown'}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-
       </motion.div>
+
+      {/* ── Reactions Modal (Standard Post) — outside card so fixed positioning covers full screen ── */}
+      {showReactionsModal && (
+        <>
+          <div className="fixed inset-0 z-[10005] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowReactionsModal(false)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+            <div className="px-5 pt-5 pb-3">
+              <h3 className="text-lg font-semibold leading-none tracking-tight text-white">Reactions</h3>
+            </div>
+            <div className="overflow-y-auto max-h-80 px-3 pb-4">
+              {reactedUsers.map((user) => {
+                const variant = post.reactions[user.id];
+                return (
+                  <div key={user.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                    <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 40, height: 40, marginLeft: -4 }}>
+                      {variant === 'sunglasses'
+                        ? <div className="relative w-full h-full flex items-center justify-center">
+                            <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                              <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                              <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                              <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                            </svg>
+                          </div>
+                        : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
+                    </div>
+                    <span className="text-sm text-slate-200 font-semibold">{user.full_name || user.username || 'Unknown'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       <ConfirmDialog
         open={showDeleteConfirm}
