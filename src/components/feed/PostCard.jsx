@@ -429,7 +429,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               style={{
                 left: '3%',
                 width: '87%',
-                borderRadius: '12px',
+                borderRadius: '8px',
                 transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
                 transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 willChange: 'transform',
@@ -643,12 +643,10 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
 
       {/* ── MEDIA ── */}
       {hasMedia && (
-        <div className="relative overflow-hidden px-3 pb-1">
-          <div className="overflow-hidden rounded-xl">
-            {post.video_url
-              ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
-              : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
-          </div>
+        <div className="relative w-full overflow-hidden">
+          {post.video_url
+            ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
+            : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
         </div>
       )}
 
