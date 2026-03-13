@@ -844,14 +844,14 @@ export default function Home() {
     <div className={`max-w-4xl mx-auto flex items-center justify-center relative px-4 ${compact ? 'py-0' : ''}`}>
       <button
         onClick={() => setShowStreakVariants(true)}
-        className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2 p-2 -ml-2 translate-y-2">
+        className="flex items-center hover:opacity-80 transition-opacity absolute left-0 top-1/2 -translate-y-1/2 p-2 -ml-2" style={{ marginTop: '2px' }}>
         <img
           src={POSE_1_URL}
           alt="streak"
           className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} animate-[breathe_3s_ease-in-out_infinite]`}
           style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 1px rgba(255,150,0,0.3))' }} />
         <span
-          className={`font-black ${compact ? 'text-lg -ml-1.5 mt-3' : 'text-xl -ml-2 mt-4'} select-none`}
+          className={`font-black ${compact ? 'text-lg -ml-1.5 mt-2' : 'text-xl -ml-2 mt-3'} select-none`}
           style={{
             color: '#ffffff',
             textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
