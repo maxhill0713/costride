@@ -1,311 +1,358 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { format, subDays, isWithinInterval } from 'date-fns';
+import {
+Plus, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
+Users, AlertTriangle, CreditCard, CheckCircle, TrendingUp,
+ArrowUpRight, UserPlus, QrCode, Trophy, Send
+} from 'lucide-react';
+import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
+import PushNotificationPanel from './PushNotificationPanel';
 
-// ─── Habit Formation Tracker ──────────────────────────────────────────────────
-export const HabitTracker = ({ checkIns = [], allMemberships = [], now = new Date() }) => {
-  const memberHabits = React.useMemo(() => {
-    return allMemberships.slice(0, 8).map((m) => {
-      const name = m.user_name || 'Member';
-      const weekCounts = Array.from({ length: 4 }, (_, wi) => {
-        const weekStart = new Date(now); weekStart.setDate(now.getDate() - (wi + 1) * 7);
-        const weekEnd   = new Date(now); weekEnd.setDate(now.getDate() - wi * 7);
-        return checkIns.filter(c => c.user_id === m.user_id && new Date(c.check_in_date) >= weekStart && new Date(c.check_in_date) < weekEnd).length;
-      }).reverse();
-      const avg   = weekCounts.reduce((a, b) => a + b, 0) / 4;
-      const trend = weekCounts[3] - weekCounts[0];
-      return { name, weekCounts, avg: Math.round(avg * 10) / 10, trend, user_id: m.user_id };
-    }).sort((a, b) => b.avg - a.avg);
-  }, [checkIns, allMemberships, now]);
 
-  const getCell = (v) => {
-    if (!v) return 'rgba(255,255,255,0.05)';
-    if (v <= 1) return 'rgba(14,165,233,0.2)';
-    if (v <= 2) return 'rgba(14,165,233,0.45)';
-    if (v <= 3) return 'rgba(14,165,233,0.7)';
-    return 'rgba(14,165,233,0.95)';
+export default function TabMembers({
+  allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
+  atRisk, atRiskMembersList, retentionRate, totalMembers, activeThisWeek, newSignUps, weeklyChangePct,
+  avatarMap,
+  memberFilter, setMemberFilter, memberSearch, setMemberSearch, memberSort, setMemberSort,
+  memberPage, setMemberPage, memberPageSize, selectedRows, setSelectedRows,
+  openModal, now,
+}) {
+  const memberRows = useMemo(() => allMemberships.map(m => {
+    const userCheckIns = checkIns.filter(c => c.user_id === m.user_id);
+    const visits30 = ci30.filter(c => c.user_id === m.user_id).length;
+    const lastVisit = memberLastCheckIn[m.user_id];
+    const daysSince = lastVisit ? Math.floor((now - new Date(lastVisit)) / 86400000) : 999;
+    const isBanned = (selectedGym?.banned_members || []).includes(m.user_id);
+    const name = userCheckIns[0]?.user_name || m.user_name || 'Member';
+    let tier = 'New';
+    if (visits30 >= 15) tier = 'Super Active'; else if (visits30 >= 8) tier = 'Active'; else if (visits30 >= 1) tier = 'Casual';
+    let risk = 'Low';
+    if (daysSince >= 21) risk = 'High'; else if (daysSince >= 14) risk = 'Medium';
+    let statusTag = tier === 'Super Active' || tier === 'Active' ? 'Engaged' : tier === 'New' ? 'New' : 'Casual';
+    if (daysSince >= 14) statusTag = 'At Risk';
+    if (isBanned) statusTag = 'Banned';
+    let lastVisitDisplay = 'Never';
+    if (lastVisit) { if (daysSince === 0) lastVisitDisplay = 'Today'; else if (daysSince === 1) lastVisitDisplay = '1 day ago'; else if (daysSince < 7) lastVisitDisplay = `${daysSince} days ago`; else if (daysSince < 14) lastVisitDisplay = '1 week ago'; else if (daysSince < 30) lastVisitDisplay = `${Math.floor(daysSince/7)} weeks ago`; else lastVisitDisplay = format(new Date(lastVisit), 'd MMM'); }
+    const plan = m.plan || m.membership_type || m.type || 'Standard';
+    return { ...m, name, visits30, visitsTotal: userCheckIns.length, lastVisit, daysSince, tier, risk, statusTag, lastVisitDisplay, plan, isBanned, avatar_url: avatarMap[m.user_id] || null };
+  }), [allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym?.banned_members, avatarMap]);
+
+  const filtered = useMemo(() => memberRows.filter(m => {
+    if (memberFilter === 'active')   return m.daysSince < 7;
+    if (memberFilter === 'inactive') return m.daysSince >= 14;
+    if (memberFilter === 'atRisk')   return m.risk !== 'Low';
+    if (memberFilter === 'new')      return isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now });
+    return true;
+  }).filter(m => !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase())), [memberRows, memberFilter, memberSearch]);
+
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
+    if (memberSort === 'recentlyActive') return a.daysSince - b.daysSince;
+    if (memberSort === 'mostVisits')     return b.visits30 - a.visits30;
+    if (memberSort === 'newest')         return new Date(b.join_date || b.created_date || 0) - new Date(a.join_date || a.created_date || 0);
+    if (memberSort === 'highRisk')       { const r = { High: 0, Medium: 1, Low: 2 }; return r[a.risk] - r[b.risk]; }
+    if (memberSort === 'name')           return a.name.localeCompare(b.name);
+    return 0;
+  }), [filtered, memberSort]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / memberPageSize));
+  const paginated  = sorted.slice((memberPage - 1) * memberPageSize, memberPage * memberPageSize);
+  const gymHealthScore = Math.min(100, Math.max(0, Math.round(retentionRate * 0.6 + (100 - Math.min(100, (atRisk / Math.max(totalMembers, 1)) * 100)) * 0.4)));
+
+  const filterCounts = {
+    all:      memberRows.length,
+    active:   memberRows.filter(m => m.daysSince < 7).length,
+    inactive: memberRows.filter(m => m.daysSince >= 14).length,
+    atRisk:   memberRows.filter(m => m.risk !== 'Low').length,
+    new:      memberRows.filter(m => isWithinInterval(new Date(m.join_date || m.created_date || now), { start: subDays(now, 30), end: now })).length,
   };
 
+  const toggleRow          = (id) => { const s = new Set(selectedRows); s.has(id) ? s.delete(id) : s.add(id); setSelectedRows(s); };
+  const toggleAll          = () => { if (selectedRows.size === paginated.length) setSelectedRows(new Set()); else setSelectedRows(new Set(paginated.map(m => m.id))); };
+  const handleFilterChange = (f) => { setMemberFilter(f); setMemberPage(1); };
+  const handleSearch       = (v) => { setMemberSearch(v); setMemberPage(1); };
+
   return (
-    <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:18 }}>
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14 }}>
-        <div>
-          <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',letterSpacing:'-0.01em' }}>Habit Formation</div>
-          <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>Weekly check-in frequency per member</div>
-        </div>
-        <div style={{ display:'flex',gap:4,alignItems:'center' }}>
-          {[0.2,0.55,0.9].map((o,i) => <div key={i} style={{ width:8,height:8,borderRadius:2,background:`rgba(14,165,233,${o})` }}/>)}
-          <span style={{ fontSize:9,color:'var(--text3)',marginLeft:2 }}>Low → High</span>
-        </div>
-      </div>
-      <div style={{ display:'grid',gridTemplateColumns:'86px 1fr',gap:6,marginBottom:5 }}>
-        <div/>
-        <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:3 }}>
-          {['3w ago','2w ago','Last w','This w'].map((l,i) => (
-            <div key={l} style={{ fontSize:9,color:i===3?'#38bdf8':'var(--text3)',textAlign:'center',fontWeight:i===3?700:600 }}>{l}</div>
-          ))}
-        </div>
-      </div>
-      <div style={{ display:'flex',flexDirection:'column',gap:5 }}>
-        {memberHabits.length === 0
-          ? <div style={{ padding:12,textAlign:'center',fontSize:12,color:'var(--text3)' }}>No member data yet</div>
-          : memberHabits.map((m, i) => (
-            <div key={m.user_id||i} style={{ display:'grid',gridTemplateColumns:'86px 1fr',gap:6,alignItems:'center' }}>
-              <div style={{ display:'flex',alignItems:'center',gap:6,minWidth:0 }}>
-                <div style={{ width:22,height:22,borderRadius:'50%',background:m.trend>0?'rgba(16,185,129,0.18)':m.trend<0?'rgba(239,68,68,0.15)':'rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:800,color:m.trend>0?'#34d399':m.trend<0?'#f87171':'var(--text3)',flexShrink:0 }}>
-                  {m.trend > 0 ? '↑' : m.trend < 0 ? '↓' : '→'}
-                </div>
-                <span style={{ fontSize:11,fontWeight:600,color:'var(--text2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{m.name.split(' ')[0]}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* ═══════════════════════════════════════════════════════
+          TOP ROW — Members table (1fr)  |  Sidebar (268px)
+      ═══════════════════════════════════════════════════════ */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
+
+        {/* ── Members Table ── */}
+        <Card style={{ overflow: 'hidden' }}>
+          {/* Filter bar */}
+          <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <button onClick={() => openModal('members')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, background: 'linear-gradient(135deg,rgba(14,165,233,0.9),rgba(6,182,212,0.85))', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+              <Plus style={{ width: 13, height: 13 }}/> Add Member
+            </button>
+            <div style={{ display: 'flex', gap: 2 }}>
+              {[
+                { id: 'all',      label: 'All Members', count: filterCounts.all },
+                { id: 'active',   label: 'Active',       count: filterCounts.active },
+                { id: 'inactive', label: 'Inactive',     count: filterCounts.inactive },
+                { id: 'atRisk',   label: 'At Risk',      count: filterCounts.atRisk, danger: true },
+                { id: 'new',      label: 'New',          count: filterCounts.new },
+              ].map(f => (
+                <button key={f.id} className={`filter-tab ${memberFilter === f.id ? (f.danger ? 'active-red' : 'active') : ''}`} onClick={() => handleFilterChange(f.id)}>
+                  {f.label}
+                  {f.danger && f.count > 0 && (
+                    <span style={{ marginLeft: 4, background: '#ef4444', color: '#fff', borderRadius: 99, padding: '0 5px', fontSize: 9, fontWeight: 800 }}>{f.count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div style={{ flex: 1 }}/>
+            <div style={{ position: 'relative' }}>
+              <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: 'var(--text3)' }}/>
+              <input className="search-input" placeholder="Search members…" value={memberSearch} onChange={e => handleSearch(e.target.value)}/>
+            </div>
+          </div>
+          {/* Sort row */}
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['Engaged','Active','At Risk','New','Beginner'].map(tag => (
+                <button key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text3)', cursor: 'pointer' }}>
+                  {tag} <ChevronDown style={{ width: 9, height: 9 }}/>
+                </button>
+              ))}
+            </div>
+            <div style={{ flex: 1 }}/>
+            <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>Sort by</span>
+            <select className="sort-select" value={memberSort} onChange={e => setMemberSort(e.target.value)}>
+              <option value="recentlyActive">Recently Active</option>
+              <option value="mostVisits">Most Visits</option>
+              <option value="newest">Newest First</option>
+              <option value="highRisk">High Risk First</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </div>
+          {/* Table header */}
+          <div className="member-row" style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', borderRadius: 0, cursor: 'default' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <input type="checkbox" checked={paginated.length > 0 && selectedRows.size === paginated.length} onChange={toggleAll} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
+            </div>
+            {[{ label: 'Member', icon: ChevronUp }, { label: 'Status' }, { label: 'Last Visit', icon: ChevronUp }, { label: 'Membership' }, { label: 'Risk Level' }].map((col, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{col.label}</span>
+                {col.icon && <col.icon style={{ width: 9, height: 9, color: 'var(--text3)' }}/>}
               </div>
-              <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:3 }}>
-                {m.weekCounts.map((v, wi) => (
-                  <div key={wi} title={`${v} check-in${v!==1?'s':''}`} style={{ height:16,borderRadius:3,background:getCell(v),display:'flex',alignItems:'center',justifyContent:'center' }}>
-                    {v > 0 && <span style={{ fontSize:8,fontWeight:800,color:v>=3?'#fff':'rgba(255,255,255,0.6)' }}>{v}</span>}
+            ))}
+          </div>
+          {/* Table body */}
+          <div style={{ minHeight: 300 }}>
+            {paginated.length === 0 ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <Empty icon={Users} label={memberSearch ? 'No members match your search' : 'No members in this filter'}/>
+              </div>
+            ) : (
+              paginated.map((m, idx) => (
+                <div key={m.id || idx}
+                  className={`member-row ${selectedRows.has(m.id) ? 'member-row-selected' : ''}`}
+                  style={{ borderBottom: idx < paginated.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', borderRadius: 0 }}
+                  onClick={() => toggleRow(m.id)}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
+                    <input type="checkbox" checked={selectedRows.has(m.id)} onChange={() => toggleRow(m.id)} style={{ width: 14, height: 14, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
                   </div>
-                ))}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <Avatar name={m.name} size={34} src={m.avatar_url || m.member_avatar}/>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {m.visits30 > 0 ? <span style={{ color: m.tier === 'Super Active' ? '#34d399' : m.tier === 'Active' ? '#38bdf8' : 'var(--text3)' }}>{m.tier}</span> : 'Member'}
+                      </div>
+                    </div>
+                  </div>
+                  <div><StatusChip status={m.statusTag}/></div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: m.daysSince === 0 ? '#34d399' : m.daysSince <= 3 ? 'var(--text1)' : m.daysSince >= 14 ? '#f87171' : 'var(--text2)' }}>
+                      {m.visits30 > 0 ? <><span style={{ fontWeight: 800 }}>{m.visits30}</span> <span style={{ fontWeight: 500, fontSize: 11, color: 'var(--text3)' }}>visits</span></> : '—'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{m.lastVisitDisplay}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.plan}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>
+                      {m.join_date ? `Joined ${format(new Date(m.join_date), 'MMM d, yyyy')}` : m.created_date ? `Joined ${format(new Date(m.created_date), 'MMM d, yyyy')}` : 'Active member'}
+                    </div>
+                  </div>
+                  <div><RiskBadge risk={m.risk}/></div>
+                </div>
+              ))
+            )}
+          </div>
+          {/* Pagination */}
+          <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input type="checkbox" style={{ width: 13, height: 13, accentColor: '#0ea5e9', cursor: 'pointer' }}/>
+              <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>+ {sorted.length} of {totalMembers}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button className="page-btn" disabled={memberPage <= 1} onClick={() => setMemberPage(p => Math.max(1, p - 1))}>
+                <ChevronLeft style={{ width: 12, height: 12 }}/>
+              </button>
+              <button className="page-btn" disabled={memberPage >= totalPages} onClick={() => setMemberPage(p => Math.min(totalPages, p + 1))}>
+                <ChevronRight style={{ width: 12, height: 12 }}/>
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 3 }}>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let page = i + 1;
+                if (totalPages > 5) {
+                  if (memberPage <= 3) page = i + 1;
+                  else if (memberPage >= totalPages - 2) page = totalPages - 4 + i;
+                  else page = memberPage - 2 + i;
+                }
+                return <button key={page} className={`page-btn ${memberPage === page ? 'active' : ''}`} onClick={() => setMemberPage(page)}>{page}</button>;
+              })}
+            </div>
+            <div style={{ flex: 1 }}/>
+            <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>Display</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>{memberPageSize}</span>
+              <ChevronDown style={{ width: 10, height: 10, color: 'var(--text3)' }}/>
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text3)' }}>of {sorted.length}</span>
+          </div>
+        </Card>
+
+        {/* ── Right Sidebar ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Alerts */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Alerts & Actions</div>
+            {atRisk > 0 && (
+              <div className="alert-card" style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(239,68,68,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <AlertTriangle style={{ width: 11, height: 11, color: '#f87171' }}/>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{atRisk} Members At Risk</div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>Haven't visited in 10+ days</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => handleFilterChange('atRisk')} style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'rgba(255,255,255,0.06)', color: 'var(--text1)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>View List</button>
+                  <button onClick={() => openModal('post')} style={{ flex: 1, padding: '6px 0', borderRadius: 7, background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Send Message</button>
+                </div>
+              </div>
+            )}
+            {memberRows.filter(m => m.risk === 'High').length > 0 && (
+              <div className="alert-card" style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(245,158,11,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <CreditCard style={{ width: 11, height: 11, color: '#fbbf24' }}/>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text1)' }}>{memberRows.filter(m => m.risk === 'High').length} High-Risk Members</div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
+                      {memberRows.filter(m => m.risk === 'High').slice(0, 2).map(m => m.name).join(', ')} · 21+ days inactive
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => { handleFilterChange('atRisk'); setMemberSort('highRisk'); }} style={{ width: '100%', padding: '6px 0', borderRadius: 7, background: 'rgba(245,158,11,0.16)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Resolve</button>
+              </div>
+            )}
+            {atRisk === 0 && memberRows.filter(m => m.risk === 'High').length === 0 && (
+              <div style={{ padding: '12px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CheckCircle style={{ width: 13, height: 13, color: '#10b981' }}/>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#34d399' }}>All members are active!</span>
+              </div>
+            )}
+          </Card>
+
+          {/* Growth Insights */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Growth Insights</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                  <TrendingUp style={{ width: 12, height: 12, color: '#34d399' }}/>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: '#34d399', letterSpacing: '-0.02em' }}>{retentionRate}%</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)' }}>Retention</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <ArrowUpRight style={{ width: 10, height: 10, color: '#34d399' }}/>
+                  <span style={{ fontSize: 10, color: 'var(--text3)' }}>{weeklyChangePct >= 0 ? '+' : ''}{weeklyChangePct}% improvement</span>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {[
+                      { label: 'Active', val: activeThisWeek, color: '#0ea5e9' },
+                      { label: 'New',    val: newSignUps,     color: '#10b981' },
+                    ].map((s, i) => (
+                      <div key={i} style={{ padding: '6px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: s.color }}>{s.val}</div>
+                        <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, textTransform: 'uppercase', marginTop: 1 }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <HealthScore score={gymHealthScore} label="Gym Health" sub={gymHealthScore >= 75 ? 'Great progress!' : gymHealthScore >= 50 ? 'Keep going!' : 'Needs work'}/>
               </div>
             </div>
-          ))
-        }
-      </div>
-      <div style={{ marginTop:12,paddingTop:10,borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',justifyContent:'space-between' }}>
-        <span style={{ fontSize:10,color:'var(--text3)' }}>{memberHabits.filter(m=>m.avg>=3).length} members training 3×/week+</span>
-        <span style={{ fontSize:10,color:'var(--text3)',fontWeight:600 }}>4-week window</span>
-      </div>
-    </div>
-  );
-};
+          </Card>
 
-// ─── Gym Culture Radar ────────────────────────────────────────────────────────
-export const CultureRadar = ({ checkIns = [], allMemberships = [], challenges = [], posts = [], polls = [], now = new Date() }) => {
-  const scores = React.useMemo(() => {
-    const total  = allMemberships.length || 1;
-    const ci30   = checkIns.filter(c => now - new Date(c.check_in_date) < 30 * 86400000);
-    const active = new Set(ci30.map(c => c.user_id));
-    const consistency  = Math.min(100, Math.round((active.size / total) * 100));
-    const community    = Math.min(100, Math.round((posts.length / Math.max(total,1)) * 300));
-    const chalPart     = challenges.reduce((s,c) => s + (c.participants?.length||0), 0);
-    const motivation   = Math.min(100, Math.round((chalPart / Math.max(total,1)) * 150));
-    const voteCount    = polls.reduce((s,p) => s + (p.voters?.length||0), 0);
-    const social       = Math.min(100, Math.round((voteCount / Math.max(total,1)) * 200 + polls.length * 8));
-    const ci7          = checkIns.filter(c => now - new Date(c.check_in_date) < 7 * 86400000).length;
-    const ci7prev      = checkIns.filter(c => { const age = now - new Date(c.check_in_date); return age >= 7*86400000 && age < 14*86400000; }).length;
-    const energy       = Math.min(100, Math.max(20, ci7prev > 0 ? Math.round((ci7/ci7prev)*60) : ci7>0?70:30));
-    return { consistency, community, motivation, social, energy };
-  }, [checkIns, allMemberships, challenges, posts, polls, now]);
-
-  const dims = [
-    { key:'consistency', label:'Consistency', color:'#0ea5e9' },
-    { key:'community',   label:'Community',   color:'#10b981' },
-    { key:'motivation',  label:'Motivation',  color:'#f59e0b' },
-    { key:'social',      label:'Social',      color:'#a78bfa' },
-    { key:'energy',      label:'Energy',      color:'#f87171' },
-  ];
-  const cx=88, cy=88, maxR=68, n=dims.length;
-  const toXY  = (i,pct) => { const a=(i/n)*Math.PI*2-Math.PI/2, r=(pct/100)*maxR; return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}; };
-  const lblXY = (i)     => { const a=(i/n)*Math.PI*2-Math.PI/2, r=maxR+19;        return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}; };
-  const webPts = dims.map((d,i) => toXY(i, scores[d.key]));
-  const webPath = webPts.map((p,i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
-  const overall = Math.round(Object.values(scores).reduce((a,b)=>a+b,0) / dims.length);
-
-  return (
-    <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:18 }}>
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12 }}>
-        <div>
-          <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',letterSpacing:'-0.01em' }}>Gym Culture Radar</div>
-          <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>Community health · 5 dimensions</div>
-        </div>
-        <div style={{ fontSize:18,fontWeight:900,color:overall>=70?'#10b981':overall>=45?'#f59e0b':'#f87171',letterSpacing:'-0.03em' }}>
-          {overall}<span style={{ fontSize:10,fontWeight:600,color:'var(--text3)',marginLeft:2 }}>/100</span>
-        </div>
-      </div>
-      <div style={{ display:'flex',justifyContent:'center' }}>
-        <svg width={176} height={176} style={{ overflow:'visible' }}>
-          {[25,50,75,100].map(ring =>
-            dims.map((_,i) => toXY(i,ring)).map((pt,i,pts) => i<pts.length-1 ? (
-              <line key={`r${ring}-${i}`} x1={pt.x} y1={pt.y} x2={pts[(i+1)%pts.length].x} y2={pts[(i+1)%pts.length].y} stroke="rgba(255,255,255,0.06)" strokeWidth={0.8}/>
-            ) : null)
-          )}
-          {dims.map((_,i) => { const end=toXY(i,100); return <line key={`ax${i}`} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="rgba(255,255,255,0.08)" strokeWidth={0.8}/>; })}
-          <path d={webPath} fill="rgba(14,165,233,0.1)" stroke="rgba(14,165,233,0.55)" strokeWidth={1.5}/>
-          {webPts.map((p,i) => <circle key={i} cx={p.x} cy={p.y} r={3} fill={dims[i].color}/>)}
-          {dims.map((d,i) => { const {x,y}=lblXY(i); return <text key={d.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill={d.color} fontSize={9} fontWeight={700} style={{fontFamily:'Outfit,sans-serif'}}>{d.label}</text>; })}
-        </svg>
-      </div>
-      <div style={{ display:'flex',flexDirection:'column',gap:6,marginTop:4 }}>
-        {dims.map(d => (
-          <div key={d.key}>
-            <div style={{ display:'flex',justifyContent:'space-between',marginBottom:3 }}>
-              <span style={{ fontSize:10,fontWeight:600,color:'var(--text2)' }}>{d.label}</span>
-              <span style={{ fontSize:10,fontWeight:800,color:d.color }}>{scores[d.key]}</span>
+          {/* Quick Actions */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Quick Actions</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              {[
+                { icon: UserPlus, label: 'Add Member',       color: '#0ea5e9', fn: () => openModal('members') },
+                { icon: QrCode,   label: 'Scan Check in',    color: '#10b981', fn: () => openModal('qrScanner') },
+                { icon: Trophy,   label: 'Create Challenge', color: '#f59e0b', fn: () => openModal('challenge') },
+                { icon: Send,     label: 'Send Message',     color: '#a78bfa', fn: () => openModal('post') },
+              ].map(({ icon: Icon, label, color, fn }, i) => (
+                <button key={i} onClick={fn} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'all 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)' }}>
+                  <Plus style={{ width: 10, height: 10, color, flexShrink: 0 }}/>
+                  {label}
+                </button>
+              ))}
             </div>
-            <div style={{ height:3,borderRadius:99,background:'rgba(255,255,255,0.06)' }}>
-              <div style={{ height:'100%',width:`${scores[d.key]}%`,borderRadius:99,background:d.color,opacity:0.8,transition:'width 1s cubic-bezier(0.22,1,0.36,1)' }}/>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+          </Card>
 
-// ─── Streak Celebrations ──────────────────────────────────────────────────────
-export const StreakCelebrations = ({ checkIns = [], openModal, now = new Date() }) => {
-  const milestones = React.useMemo(() => {
-    const acc = {}, userIdMap = {};
-    checkIns.forEach(c => {
-      if (!acc[c.user_name]) acc[c.user_name] = new Set();
-      acc[c.user_name].add(new Date(c.check_in_date).toISOString().split('T')[0]);
-      if (c.user_id) userIdMap[c.user_name] = c.user_id;
-    });
-    const MILESTONES = [5,10,15,20,30,50,100];
-    const results = [];
-    Object.entries(acc).forEach(([name,days]) => {
-      const count = days.size;
-      MILESTONES.forEach(m => { if (count >= m && count < m + 3) results.push({ name, count, milestone: m, user_id: userIdMap[name] }); });
-    });
-    return results.slice(0, 4);
-  }, [checkIns]);
-
-  const icons = { 5:'🔥',10:'💪',15:'⚡',20:'🏆',30:'👑',50:'🌟',100:'🎯' };
-  if (milestones.length === 0) return null;
-
-  return (
-    <div style={{ background:'var(--card)',border:'1px solid rgba(245,158,11,0.15)',borderRadius:16,padding:18 }}>
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12 }}>
-        <div>
-          <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',letterSpacing:'-0.01em' }}>🎉 Milestone Moments</div>
-          <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>Members worth celebrating</div>
-        </div>
-      </div>
-      <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-        {milestones.map((m,i) => (
-          <div key={i} style={{ padding:'10px 12px',borderRadius:10,background:'rgba(245,158,11,0.06)',border:'1px solid rgba(245,158,11,0.15)',display:'flex',alignItems:'center',gap:10 }}>
-            <div style={{ width:32,height:32,borderRadius:10,background:'rgba(245,158,11,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0 }}>
-              {icons[m.milestone]||'🎯'}
-            </div>
-            <div style={{ flex:1,minWidth:0 }}>
-              <div style={{ fontSize:12,fontWeight:700,color:'var(--text1)' }}>
-                {m.name.split(' ')[0]} hit a <span style={{ color:'#fbbf24' }}>{m.milestone}-day streak!</span>
+          {/* Smart Suggestions */}
+          <Card style={{ padding: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 10, letterSpacing: '-0.01em' }}>Smart Suggestions</div>
+            {atRisk > 0 ? (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text1)', lineHeight: 1.4, marginBottom: 4 }}>
+                  <span style={{ color: '#fbbf24', fontWeight: 800 }}>{atRisk} members</span> haven't been in lately
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.4 }}>Send a personalised re-engagement nudge.</div>
+                <button onClick={() => openModal('post')} style={{ width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  Send Nudge
+                </button>
               </div>
-              <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>{m.count} total visits · Celebrate in the community</div>
-            </div>
-            <button onClick={() => openModal('post')} style={{ padding:'5px 10px',borderRadius:8,background:'rgba(245,158,11,0.15)',color:'#fbbf24',border:'1px solid rgba(245,158,11,0.3)',fontSize:10,fontWeight:700,cursor:'pointer',flexShrink:0,whiteSpace:'nowrap' }}>
-              Post 🎉
-            </button>
-          </div>
-        ))}
+            ) : (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#34d399', lineHeight: 1.4, marginBottom: 4 }}>Everything looks great! 🎉</div>
+                <div style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.4 }}>Attendance is up and members are engaged. Keep up the momentum!</div>
+                <button onClick={() => openModal('challenge')} style={{ marginTop: 10, width: '100%', padding: '9px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <Trophy style={{ width: 12, height: 12 }}/> Create a Challenge
+                </button>
+              </div>
+            )}
+          </Card>
+        </div>{/* end right sidebar */}
+      </div>{/* end top grid */}
+
+      {/* ═══════════════════════════════════════════════════════
+          BOTTOM ROW — PushNotificationPanel under sidebar
+      ═══════════════════════════════════════════════════════ */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
+        <div />
+        <PushNotificationPanel
+          atRiskMembers={atRiskMembersList}
+          allMembers={allMemberships}
+          selectedGym={selectedGym}
+          memberLastCheckIn={memberLastCheckIn}
+        />
       </div>
+
     </div>
   );
-};
-
-// ─── Gym Setup Checklist ──────────────────────────────────────────────────────
-export const GymSetupChecklist = ({ selectedGym, classes = [], coaches = [], openModal }) => {
-  const items = [
-    { done:(selectedGym?.equipment?.length||0)>0,  icon:'🏋️', label:'Add your equipment',     sub:'Attracts members searching by kit',         action:'Add',    fn:()=>openModal('equipment') },
-    { done:(selectedGym?.amenities?.length||0)>0,  icon:'⭐',  label:'List your amenities',    sub:'Showers, parking — boosts your listing',    action:'Add',    fn:()=>openModal('amenities') },
-    { done:classes.length>0,                       icon:'📅',  label:'Create a class schedule', sub:'Members can book directly in-app',          action:'Add',    fn:()=>openModal('classes') },
-    { done:coaches.length>0,                       icon:'👥',  label:'Add your coaches',        sub:'Builds trust with prospective members',      action:'Add',    fn:()=>openModal('coaches') },
-    { done:(selectedGym?.gallery?.length||0)>=3,   icon:'📸',  label:'Upload 3+ gym photos',   sub:'3× more profile views with photos',         action:'Upload', fn:()=>openModal('photos') },
-  ];
-  const done      = items.filter(i => i.done).length;
-  const pct       = Math.round((done / items.length) * 100);
-  const remaining = items.filter(i => !i.done);
-  if (remaining.length === 0) return null;
-
-  return (
-    <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:18 }}>
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12 }}>
-        <div>
-          <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',letterSpacing:'-0.01em' }}>Gym Profile</div>
-          <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>{done}/{items.length} complete · make your gym stand out</div>
-        </div>
-        <div style={{ fontSize:15,fontWeight:900,color:pct===100?'#10b981':pct>=60?'#f59e0b':'#f87171',letterSpacing:'-0.02em' }}>{pct}%</div>
-      </div>
-      <div style={{ height:4,borderRadius:99,background:'rgba(255,255,255,0.07)',marginBottom:14,overflow:'hidden' }}>
-        <div style={{ height:'100%',width:`${pct}%`,borderRadius:99,background:'linear-gradient(90deg,#0ea5e9,#10b981)',transition:'width 1s cubic-bezier(0.22,1,0.36,1)' }}/>
-      </div>
-      <div style={{ display:'flex',flexDirection:'column',gap:7 }}>
-        {remaining.slice(0,3).map((item,i) => (
-          <div key={i} onClick={item.fn} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',cursor:'pointer',transition:'background 0.15s' }}
-            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
-            onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.02)'}>
-            <span style={{ fontSize:18,flexShrink:0 }}>{item.icon}</span>
-            <div style={{ flex:1,minWidth:0 }}>
-              <div style={{ fontSize:12,fontWeight:700,color:'var(--text1)' }}>{item.label}</div>
-              <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>{item.sub}</div>
-            </div>
-            <button style={{ padding:'4px 10px',borderRadius:7,background:'rgba(14,165,233,0.12)',color:'#38bdf8',border:'1px solid rgba(14,165,233,0.25)',fontSize:10,fontWeight:700,cursor:'pointer',flexShrink:0 }}>
-              {item.action}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ─── Smart Action Nudges ──────────────────────────────────────────────────────
-export const SmartNudges = ({ atRisk, challenges, polls, monthChangePct, openModal, setTab, checkIns, allMemberships, now }) => {
-  const nudges = React.useMemo(() => {
-    const list = [];
-    if (atRisk > 0) list.push({ icon:'💬', title:`${atRisk} members haven't visited`, sub:'Send a personalised re-engagement message', color:'#f87171', bg:'rgba(239,68,68,0.08)', border:'rgba(239,68,68,0.2)', cta:'Message them', fn:()=>openModal('post') });
-    if (!challenges.some(c=>c.status==='active')) list.push({ icon:'🏆', title:'Launch a community challenge', sub:'Active challenges boost check-ins by ~40%', color:'#fbbf24', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)', cta:'Create challenge', fn:()=>openModal('challenge') });
-    if (polls.length === 0) list.push({ icon:'📊', title:'Ask your members a question', sub:'Polls drive engagement and show you care', color:'#a78bfa', bg:'rgba(139,92,246,0.08)', border:'rgba(139,92,246,0.2)', cta:'Create poll', fn:()=>openModal('poll') });
-    const classGoers = new Set(checkIns.filter(c=>now-new Date(c.check_in_date)<7*86400000).map(c=>c.user_id));
-    const notThisWeek = allMemberships.filter(m=>!classGoers.has(m.user_id));
-    if (notThisWeek.length > 0) list.push({ icon:'📅', title:`Invite ${Math.min(notThisWeek.length,12)} members to a class`, sub:"Haven't been in this week — a nudge helps", color:'#34d399', bg:'rgba(16,185,129,0.08)', border:'rgba(16,185,129,0.2)', cta:'Post invite', fn:()=>openModal('post') });
-    if (monthChangePct < -10) list.push({ icon:'⚠️', title:`Attendance down ${Math.abs(monthChangePct)}% this month`, sub:'A 7-day challenge can reverse the trend', color:'#f59e0b', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)', cta:'Fix it', fn:()=>openModal('challenge') });
-    return list.slice(0, 4);
-  }, [atRisk, challenges, polls, monthChangePct, checkIns, allMemberships, now]);
-
-  if (nudges.length === 0) return null;
-
-  return (
-    <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:18 }}>
-      <div style={{ fontSize:13,fontWeight:800,color:'var(--text1)',marginBottom:12,letterSpacing:'-0.01em' }}>Action Items</div>
-      <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-        {nudges.map((n,i) => (
-          <div key={i} onClick={n.fn} style={{ display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,background:n.bg,border:`1px solid ${n.border}`,cursor:'pointer',transition:'filter 0.15s' }}
-            onMouseEnter={e=>e.currentTarget.style.filter='brightness(1.12)'}
-            onMouseLeave={e=>e.currentTarget.style.filter=''}>
-            <span style={{ fontSize:18,flexShrink:0 }}>{n.icon}</span>
-            <div style={{ flex:1,minWidth:0 }}>
-              <div style={{ fontSize:11,fontWeight:700,color:'var(--text1)',lineHeight:1.3 }}>{n.title}</div>
-              <div style={{ fontSize:10,color:'var(--text3)',marginTop:2 }}>{n.sub}</div>
-            </div>
-            <span style={{ fontSize:10,fontWeight:700,color:n.color,whiteSpace:'nowrap',flexShrink:0 }}>{n.cta} →</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ─── Invite to Classes card ───────────────────────────────────────────────────
-export const InviteToClasses = ({ classes = [], openModal }) => (
-  <div style={{ background:'var(--card)',border:'1px solid var(--border)',borderRadius:16,padding:20 }}>
-    <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14 }}>
-      <span style={{ fontSize:14,fontWeight:700,color:'var(--text1)' }}>Invite to Classes</span>
-      <button onClick={() => openModal('classes')} style={{ fontSize:11,fontWeight:600,color:'var(--cyan)',background:'none',border:'none',cursor:'pointer' }}>Manage →</button>
-    </div>
-    <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-      {classes.length === 0
-        ? <div style={{ padding:'20px',textAlign:'center',fontSize:12,color:'var(--text3)' }}>Add classes to invite members</div>
-        : classes.slice(0,3).map((cls,i) => (
-          <div key={cls.id||i} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ width:32,height:32,borderRadius:9,background:'rgba(14,165,233,0.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
-              📅
-            </div>
-            <div style={{ flex:1,minWidth:0 }}>
-              <div style={{ fontSize:12,fontWeight:700,color:'var(--text1)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{cls.name}</div>
-              <div style={{ fontSize:10,color:'var(--text3)',marginTop:1 }}>{cls.schedule?.[0]?.day || 'See schedule'}</div>
-            </div>
-            <button onClick={() => openModal('post')} style={{ padding:'4px 9px',borderRadius:7,background:'rgba(14,165,233,0.12)',color:'#38bdf8',border:'1px solid rgba(14,165,233,0.25)',fontSize:10,fontWeight:700,cursor:'pointer',flexShrink:0 }}>
-              Invite
-            </button>
-          </div>
-        ))
-      }
-    </div>
-  </div>
-);
+}
