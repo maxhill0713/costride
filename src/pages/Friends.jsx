@@ -353,40 +353,7 @@ export default function Friends() {
       });
     }
 
-    friendsWithActivity.forEach((friend) => {
-      const streak = friend.activity.streak;
-      if (streak >= 30) {
-        cards.push({
-          id: `milestone-${friend.friend_id}-30`,
-          type: 'friend-milestone',
-          title: `${friend.friend_name} is a Beast!`,
-          message: `${friend.friend_name} is on a ${streak}-day streak! That's legendary! 🏆`,
-          emoji: '🏆',
-          color: 'from-purple-500 to-pink-500',
-          borderColor: 'border-purple-500/30'
-        });
-      } else if (streak >= 14) {
-        cards.push({
-          id: `milestone-${friend.friend_id}-14`,
-          type: 'friend-milestone',
-          title: `${friend.friend_name} is On Fire!`,
-          message: `${friend.friend_name} is on a ${streak}-day streak! ⚡`,
-          emoji: '⚡',
-          color: 'from-yellow-500 to-orange-500',
-          borderColor: 'border-yellow-500/30'
-        });
-      } else if (streak >= 7) {
-        cards.push({
-          id: `milestone-${friend.friend_id}-7`,
-          type: 'friend-milestone',
-          title: `${friend.friend_name} Hit a Streak!`,
-          message: `${friend.friend_name} is on a ${streak}-day check-in streak! 🔥`,
-          emoji: '🔥',
-          color: 'from-red-500 to-orange-500',
-          borderColor: 'border-red-500/30'
-        });
-      }
-    });
+
 
     friendsWithActivity.forEach((friend) => {
       if (friend.activity.daysSinceCheckIn >= 7) {
