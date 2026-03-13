@@ -1171,7 +1171,7 @@ export default function Home() {
                         onMouseDown={(e) => { e.preventDefault(); setPressedDay(day); }}
                         onMouseUp={() => setPressedDay(null)}
                         onMouseLeave={() => setPressedDay(null)}
-                        onTouchStart={(e) => { e.preventDefault(); setPressedDay(day); }}
+                        onTouchStart={() => { setPressedDay(day); }}
                         onTouchEnd={() => setPressedDay(null)}>
 
                         {isRestDay ? (
