@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { subDays, format, isWithinInterval } from 'date-fns';
 import { Activity, TrendingUp, Users, Zap, ArrowUpRight, TrendingDown, Calendar, Clock } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
