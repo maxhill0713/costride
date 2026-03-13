@@ -1072,12 +1072,12 @@ export default function Home() {
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
             return (
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible' }}>
-                {/* Transparent full-screen overlay to catch outside taps and dismiss bubble */}
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, padding: '12px 0', height: 88, overflow: 'visible', zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+                {/* Transparent full-screen overlay behind everything to catch outside taps */}
                 {activeCircleDay !== null && (
                   <div
                     onClick={() => setActiveCircleDay(null)}
-                    style={{ position: 'fixed', inset: 0, zIndex: 199 }}
+                    style={{ position: 'fixed', inset: 0, zIndex: 198 }}
                   />
                 )}
                 {allDays.map((day, i) => {
@@ -1144,7 +1144,7 @@ export default function Home() {
                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || DAY_LABELS[i];
                   };
                   return (
-                    <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 200 }}>
+                    <div key={day} style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 11 + verticalOffset - (isTodayCircle ? 4 : 0), overflow: 'visible', zIndex: 1 }}>
                       {isTodayCircle && (
                         <div style={{ position: 'absolute', width: size + 14, height: size + 14, borderRadius: '50%', border: '3px solid rgba(148,163,184,0.45)', background: 'rgba(148,163,184,0.08)', animation: 'todayRingPulse 2s ease-in-out infinite', pointerEvents: 'none' }} />
                       )}
