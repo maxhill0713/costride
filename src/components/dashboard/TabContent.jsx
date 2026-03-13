@@ -34,9 +34,9 @@ export default function TabContent({
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 268px', gap: 16, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
 
-      {/* ── LEFT ── */}
+      {/* ── LEFT: FEED ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Hero action cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
@@ -60,103 +60,97 @@ export default function TabContent({
           ))}
         </div>
 
-        {/* Recent Posts */}
-        <Card style={{ padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Recent Posts</div>
-            </div>
-            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-              <Plus style={{ width: 11, height: 11 }}/> New Post
-            </button>
-          </div>
-          {posts.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {posts.slice(0, 5).map((post, idx) => (
-                <div key={post.id} style={{ display: 'flex', gap: 13, padding: '12px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}
-                  onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
-                  <div style={{ width: 90, height: 70, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: postGradients[idx % postGradients.length], position: 'relative' }}>
-                    {post.image_url
-                      ? <img src={post.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-                      : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImageIcon style={{ width: 22, height: 22, color: 'rgba(255,255,255,0.3)' }}/></div>
-                    }
+        {/* Posts Feed */}
+        {posts.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {posts.map((post, idx) => (
+              <div key={post.id} style={{ display: 'flex', gap: 13, padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                <div style={{ width: 100, height: 80, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: postGradients[idx % postGradients.length], position: 'relative' }}>
+                  {post.image_url
+                    ? <img src={post.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImageIcon style={{ width: 24, height: 24, color: 'rgba(255,255,255,0.3)' }}/></div>
+                  }
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', marginBottom: 4, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {post.content?.split('\n')[0] || post.title || 'Post'}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', marginBottom: 4, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {post.content?.split('\n')[0] || post.title || 'Post'}
+                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
+                    {post.member_name} · {post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                      <Avatar name={post.member_name || '?'} size={14}/>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text2)' }}>{post.member_name}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
-                      {post.member_name} · {post.created_date ? format(new Date(post.created_date), 'EEEE, MMM d') : ''}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
-                        <Avatar name={post.member_name || '?'} size={16}/>
-                        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text2)' }}>{post.member_name}</span>
+                    {post.likes > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#f87171' }}>❤ {post.likes}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>
-                        <MessageCircle style={{ width: 10, height: 10, color: '#a78bfa' }}/>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa' }}>{post.comments?.length || 0} comments</span>
-                      </div>
-                      {post.likes > 0 && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#f87171' }}>❤ {post.likes}</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <Empty icon={MessageSquarePlus} label="No posts yet — create the first one!"/>
-          )}
-        </Card>
-
-        {/* Upcoming Events */}
-        <Card style={{ padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.02em' }}>Upcoming Events</div>
-            <button onClick={() => openModal('event')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 13px', borderRadius: 9, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-              <Plus style={{ width: 11, height: 11 }}/> New Event
-            </button>
+              </div>
+            ))}
           </div>
-          {upcomingEvents.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {upcomingEvents.slice(0, 4).map((ev) => {
-                const evDate = new Date(ev.event_date);
-                const diffDays = Math.floor((evDate - now) / 86400000);
-                const whenStr = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : format(evDate, 'EEE, MMM d');
-                return (
-                  <div key={ev.id} style={{ display: 'flex', gap: 13, padding: '12px', borderRadius: 12, background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.12)', cursor: 'pointer', transition: 'background 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.background='rgba(16,185,129,0.08)'}
-                    onMouseLeave={e => e.currentTarget.style.background='rgba(16,185,129,0.04)'}>
-                    <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,rgba(16,185,129,0.25),rgba(6,182,212,0.25))', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: '#34d399', lineHeight: 1 }}>{format(evDate, 'd')}</span>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{format(evDate, 'MMM')}</span>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', marginBottom: 3 }}>{ev.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {ev.location || ev.description || 'No location set'}
-                      </div>
-                    </div>
-                    <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: diffDays <= 1 ? '#34d399' : 'var(--text2)' }}>{whenStr}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>at {format(evDate, 'h:mm a')}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <Empty icon={Calendar} label="No upcoming events — schedule one!"/>
-          )}
-        </Card>
+        ) : (
+          <Card style={{ padding: 20, textAlign: 'center' }}>
+            <Empty icon={MessageSquarePlus} label="No posts yet"/>
+          </Card>
+        )}
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 22 }}>
+        {/* Recent Posts */}
+        <Card style={{ padding: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Recent Posts</div>
+            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+              <Plus style={{ width: 10, height: 10 }}/>
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '220px', overflowY: 'auto' }}>
+            {posts.length > 0 ? posts.slice(0, 3).map((post) => (
+              <div key={post.id} style={{ padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
+                {post.content?.split('\n')[0] || post.title || 'Post'}
+              </div>
+            )) : (
+              <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No posts yet</div>
+            )}
+          </div>
+        </Card>
+
+        {/* Upcoming Events */}
+        <Card style={{ padding: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', letterSpacing: '-0.01em' }}>Upcoming Events</div>
+            <button onClick={() => openModal('event')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+              <Plus style={{ width: 10, height: 10 }}/>
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '220px', overflowY: 'auto' }}>
+            {upcomingEvents.length > 0 ? upcomingEvents.slice(0, 3).map((ev) => {
+              const evDate = new Date(ev.event_date);
+              const diffDays = Math.floor((evDate - now) / 86400000);
+              return (
+                <div key={ev.id} style={{ padding: '8px', borderRadius: 8, background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.12)', cursor: 'pointer', transition: 'background 0.15s', fontSize: 11, fontWeight: 600, color: 'var(--text2)', lineHeight: 1.4 }}
+                  onMouseEnter={e => e.currentTarget.style.background='rgba(16,185,129,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.background='rgba(16,185,129,0.04)'}>
+                  <div style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{ev.title}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>{format(evDate, 'MMM d, h:mm a')}</div>
+                </div>
+              );
+            }) : (
+              <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>No events</div>
+            )}
+          </div>
+        </Card>
+
         <Card style={{ padding: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text1)', marginBottom: 12, letterSpacing: '-0.01em' }}>Content Stats</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
