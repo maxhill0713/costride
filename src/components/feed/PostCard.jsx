@@ -53,9 +53,27 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const [showFullContent, setShowFullContent] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
+  const [slide, setSlide] = useState(0); // 0 = photo, 1 = summary (workout posts)
+  const touchStartX = React.useRef(null);
+  const touchStartY = React.useRef(null);
+  const swipePanelRef = React.useRef(null);
   const queryClient = useQueryClient();
   const contentRef = React.useRef(null);
   const PREVIEW_COUNT = 3;
+
+  // Non-passive touchmove for swipeable workout post panel
+  useEffect(() => {
+    const el = swipePanelRef.current;
+    if (!el) return;
+    const onMove = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+      const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+      if (dx > dy && dx > 5) e.preventDefault();
+    };
+    el.addEventListener('touchmove', onMove, { passive: false });
+    return () => el.removeEventListener('touchmove', onMove);
+  });
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -215,31 +233,27 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   // ── WORKOUT POST — Strava-style with swipeable photo/summary ───────────────
   if (isWorkoutPost) {
     const exercises = post.workout_exercises || [];
-    const userComment = post.content?.trim() || null;
+    const userComment = (() => {
+      if (!post.content) return null;
+      const clean = post.content
+        .split('\n')
+        .filter(l => {
+          const t = l.trim();
+          if (!t) return false;
+          if (t.startsWith('Just finished') || t.includes('Just finished')) return false;
+          if (t.charCodeAt(0) > 127 && t.charCodeAt(0) < 130000 && t.length < 4) return false;
+          if (/[0-9]+x[0-9]+/i.test(t)) return false;
+          if (/^[^a-zA-Z0-9]/.test(t) && t.length < 50 && /[0-9]/.test(t)) return false;
+          return true;
+        })
+        .join('\n')
+        .trim();
+      return clean || null;
+    })();
     const totalReactions = Object.keys(post.reactions || {}).length;
     const hasPhoto = !!post.image_url;
     const PANEL_HEIGHT = 'min(72vw, 320px)';
 
-    // Swipe state — only relevant when there's a photo
-    const touchStartX = React.useRef(null);
-    const [slide, setSlide] = React.useState(0); // 0 = photo, 1 = summary
-    const swipePanelRef = React.useRef(null);
-
-    // Attach non-passive touchmove so we can preventDefault and block page scroll
-    React.useEffect(() => {
-      const el = swipePanelRef.current;
-      if (!el) return;
-      const onMove = (e) => {
-        if (touchStartX.current === null) return;
-        const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
-        const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
-        if (dx > dy && dx > 5) e.preventDefault();
-      };
-      el.addEventListener('touchmove', onMove, { passive: false });
-      return () => el.removeEventListener('touchmove', onMove);
-    }, [hasPhoto]);
-
-    const touchStartY = React.useRef(null);
     const handleTouchStart = (e) => {
       touchStartX.current = e.touches[0].clientX;
       touchStartY.current = e.touches[0].clientY;
@@ -411,7 +425,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
               </div>
             )}
           </div>
-          {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed italic">"{userComment}"</p>}
+          {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
         </div>
 
         {/* ── SWIPEABLE PANEL: photo ↔ summary (only when photo exists) ── */}
