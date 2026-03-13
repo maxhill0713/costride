@@ -460,7 +460,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
       {/* Illustration — top right corner, inset from edge */}
-      <div className="absolute top-0 right-2 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
+      <div className="absolute top-3 right-2 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
         <Illustration />
       </div>
       {/* Content */}
@@ -473,7 +473,7 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
         )}
       </div>
       {/* Arrow bottom-right — bare chevron, no circle */}
-      <div className="absolute bottom-3 right-3">
+      <div className="absolute bottom-5 right-3">
         <ChevronRight className="w-3.5 h-3.5" style={{ color: iconColor }} />
       </div>
     </div>
