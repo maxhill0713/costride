@@ -540,8 +540,8 @@ export default function Home() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', friendSearchQuery],
-    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 10 }).then(res => res.data.users || []),
-    enabled: friendSearchQuery.length >= 1,
+    queryFn: () => base44.functions.invoke('searchUsers', { query: friendSearchQuery, limit: 5 }).then(res => res.data.users || []),
+    enabled: friendSearchQuery.length >= 2,
     staleTime: 30000,
   });
 
@@ -1231,7 +1231,7 @@ export default function Home() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 pt-1">
                 <FriendsIcon className="w-4 h-4 text-cyan-400" />
-                <h2 className="text-sm font-black text-white tracking-tight">Friend Activity</h2>
+                <h2 className="text-sm font-black text-white tracking-tight">Social Feed</h2>
               </div>
 
               {filteredActivityCards.length > 0 && (
@@ -1454,7 +1454,7 @@ export default function Home() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {friendSearchQuery.length >= 1 && (
+              {friendSearchQuery.length >= 2 && (
                 filteredSearchResults.length === 0
                   ? <p className="text-center text-slate-400 text-sm py-8">No users found</p>
                   : filteredSearchResults.map(user => (
