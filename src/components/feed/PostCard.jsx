@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2, Flag, ChevronRight, Check } from 'lucide-react';
 
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 import { format } from 'date-fns';
@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 
-// ── Shared confirm dialog — same style as remove-friends confirmation ─────────
+// ── Shared confirm dialog ────────────────────────────────────────────────────
 function ConfirmDialog({ open, onClose, title, description, confirmLabel, confirmClass, onConfirm, isPending }) {
   if (!open) return null;
   return (
@@ -42,7 +42,181 @@ function ConfirmDialog({ open, onClose, title, description, confirmLabel, confir
   );
 }
 
-// ── Exercise row — compact version fitting 8 on screen ───────────────────────
+// ── Report categories ────────────────────────────────────────────────────────
+const REPORT_CATEGORIES = [
+  {
+    id: 'dislike',
+    label: "I just don't like it",
+    definition: "This post isn't for you — it might be annoying, uninteresting, or just not your thing. You won't see more like it.",
+  },
+  {
+    id: 'violence',
+    label: 'Violence or abuse',
+    definition: "Content that depicts, promotes, or glorifies physical violence, self-harm, abuse, or threatening behaviour toward people or animals.",
+  },
+  {
+    id: 'hate',
+    label: 'Hate and harassment',
+    definition: "Content that targets someone based on race, ethnicity, religion, gender, sexual orientation, disability, or similar characteristics, or that is intended to bully or harass an individual.",
+  },
+  {
+    id: 'sexual',
+    label: 'Sexual content',
+    definition: "Explicit or suggestive sexual content, nudity, or content that sexualises individuals without consent.",
+  },
+  {
+    id: 'false_info',
+    label: 'False information',
+    definition: "Content that spreads demonstrably false or misleading information that could deceive others or cause real-world harm.",
+  },
+  {
+    id: 'other',
+    label: 'Other',
+    definition: "Something else not covered above. Please submit and our team will review the post.",
+  },
+];
+
+// ── Report Modal ─────────────────────────────────────────────────────────────
+function ReportModal({ open, onClose, postId }) {
+  const [selected, setSelected] = useState(null);
+  const [expanded, setExpanded] = useState(null);
+
+  const handleClose = () => {
+    setSelected(null);
+    setExpanded(null);
+    onClose();
+  };
+
+  const handleSubmit = () => {
+    const category = REPORT_CATEGORIES.find(c => c.id === selected);
+    console.log('Report submitted:', { postId, category: category?.label });
+    // TODO: wire up submit action
+    handleClose();
+    toast.success('Report submitted. Thank you.');
+  };
+
+  const toggleExpand = (id) => {
+    setExpanded(prev => (prev === id ? null : id));
+  };
+
+  if (!open) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-[10005] bg-slate-950/70 backdrop-blur-sm"
+        onClick={handleClose}
+      />
+
+      {/* Modal */}
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/90 backdrop-blur-xl border border-slate-700/40 rounded-3xl shadow-2xl shadow-black/60 text-white overflow-hidden">
+
+        {/* Header */}
+        <div className="px-5 pt-5 pb-3 border-b border-slate-700/40">
+          <h3 className="text-xl font-black text-white tracking-tight">Report</h3>
+          <p className="text-slate-400 text-xs mt-1 font-medium">Your report is anonymous</p>
+        </div>
+
+        {/* Categories */}
+        <div className="px-3 py-2 space-y-1.5 max-h-[60vh] overflow-y-auto">
+          {REPORT_CATEGORIES.map((cat) => {
+            const isSelected = selected === cat.id;
+            const isExpanded = expanded === cat.id;
+
+            return (
+              <div
+                key={cat.id}
+                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                  isSelected
+                    ? 'border-blue-500/60 bg-blue-500/10'
+                    : 'border-slate-700/40 bg-slate-800/50'
+                }`}>
+
+                {/* Row */}
+                <div className="flex items-center gap-3 px-3 py-2.5">
+                  {/* Checkbox */}
+                  <button
+                    onClick={() => setSelected(isSelected ? null : cat.id)}
+                    className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150 ${
+                      isSelected
+                        ? 'bg-blue-500 border-blue-500 shadow-sm shadow-blue-500/40'
+                        : 'border-slate-600 bg-slate-700/50'
+                    }`}>
+                    {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                  </button>
+
+                  {/* Label */}
+                  <span className={`flex-1 text-sm font-semibold ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                    {cat.label}
+                  </span>
+
+                  {/* Expand toggle */}
+                  <button
+                    onClick={() => toggleExpand(cat.id)}
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-150 ${
+                      isExpanded
+                        ? 'bg-slate-600 text-white'
+                        : 'bg-slate-700/60 text-slate-400 hover:text-slate-200'
+                    }`}>
+                    <ChevronDown
+                      className="w-4 h-4 transition-transform duration-200"
+                      style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    />
+                  </button>
+                </div>
+
+                {/* Expanded definition */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeInOut' }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3 pt-0">
+                        <div className="h-px bg-slate-700/50 mb-2.5" />
+                        <p className="text-xs text-slate-400 leading-relaxed">{cat.definition}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 py-3 border-t border-slate-700/40">
+          <AnimatePresence>
+            {selected && (
+              <motion.button
+                key="submit"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.18 }}
+                onClick={handleSubmit}
+                className="w-full py-3 rounded-2xl font-black text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                Submit Report
+              </motion.button>
+            )}
+          </AnimatePresence>
+          {!selected && (
+            <button
+              onClick={handleClose}
+              className="w-full py-2.5 rounded-2xl font-bold text-sm text-slate-400 hover:text-slate-200 transition-colors">
+              Cancel
+            </button>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Exercise row ─────────────────────────────────────────────────────────────
 function ExerciseRow({ ex, idx }) {
   const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || '';
   const displayName = exName
@@ -81,6 +255,7 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFavouriteConfirm, setShowFavouriteConfirm] = useState(false);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
@@ -238,6 +413,43 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     onError: () => toast.error('Failed to nudge friends')
   });
 
+  // ── Shared 3-dot menu renderer ───────────────────────────────────────────
+  const renderMenu = (extraMenuItems = null) => (
+    <div className="relative flex items-center gap-2">
+      {!isOwner ? null : post.is_favourite && <Star className="w-4 h-4 fill-amber-400 text-amber-400" />}
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        className="text-slate-400 hover:text-slate-200 p-1 transition-colors">
+        <MoreHorizontal className="w-5 h-5" />
+      </button>
+      {showMenu && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+          <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] z-20 overflow-hidden min-w-[140px]">
+            {isOwner ? (
+              <>
+                {/* Workout post doesn't show favourite option — only standard does */}
+                {extraMenuItems}
+                <button
+                  onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
+                  disabled={deleteMutation.isPending}
+                  className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
+                  <Trash2 className="w-4 h-4" /> Delete
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { setShowReportModal(true); setShowMenu(false); }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-orange-400 hover:text-orange-300 hover:bg-slate-700 text-sm font-semibold transition-colors">
+                <Flag className="w-4 h-4" /> Report
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
   // ── Gym join post ────────────────────────────────────────────────────────
   if (isGymJoinPost) {
     return (
@@ -285,33 +497,33 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
       return kept.join('\n').trim() || null;
     })();
 
-  const [showWorkoutShare, setShowWorkoutShare] = useState(false);
+    const [showWorkoutShare, setShowWorkoutShare] = useState(false);
 
-  const handleWorkoutShare = async () => {
-    const text = [
-      `💪 ${post.workout_name}`,
-      post.workout_duration ? `⏱ ${post.workout_duration}` : null,
-      exercises.length > 0 ? `🏋️ ${exercises.length} exercises` : null,
-      post.workout_volume ? `⚡ ${post.workout_volume}` : null,
-      userComment ? `\n"${userComment}"` : null,
-      `\n— shared from my workout app`,
-    ].filter(Boolean).join('\n');
+    const handleWorkoutShare = async () => {
+      const text = [
+        `💪 ${post.workout_name}`,
+        post.workout_duration ? `⏱ ${post.workout_duration}` : null,
+        exercises.length > 0 ? `🏋️ ${exercises.length} exercises` : null,
+        post.workout_volume ? `⚡ ${post.workout_volume}` : null,
+        userComment ? `\n"${userComment}"` : null,
+        `\n— shared from my workout app`,
+      ].filter(Boolean).join('\n');
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: post.workout_name || 'My Workout', text });
-        return;
-      } catch (e) {
-        if (e.name === 'AbortError') return;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: post.workout_name || 'My Workout', text });
+          return;
+        } catch (e) {
+          if (e.name === 'AbortError') return;
+        }
       }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Workout copied to clipboard!');
-    } catch {
-      toast.error('Could not share');
-    }
-  };
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success('Workout copied to clipboard!');
+      } catch {
+        toast.error('Could not share');
+      }
+    };
 
     const exerciseSummaryJSX = (
       <div className="w-full h-full flex flex-col overflow-hidden">
@@ -343,227 +555,216 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     );
 
     return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
-        style={{
-          background: 'linear-gradient(135deg, rgba(28,34,60,0.92) 0%, rgba(18,22,42,0.93) 100%)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-        }}>
+      <>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
+          style={{
+            background: 'linear-gradient(135deg, rgba(28,34,60,0.92) 0%, rgba(18,22,42,0.93) 100%)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+          }}>
 
-        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
-        <div className="absolute inset-0 pointer-events-none rounded-xl"
-          style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
+          <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+            style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+          <div className="absolute inset-0 pointer-events-none rounded-xl"
+            style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
 
-        <div className="relative z-10 px-4 pt-3.5 pb-3">
-          <div className="flex items-center justify-between mb-4">
-            <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                {post.member_avatar
-                  ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-                  : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
-              </div>
-              <div>
-                <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-                <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
-              </div>
-            </Link>
-            {isOwner && (
-              <div className="relative">
-                <button onClick={() => setShowMenu(!showMenu)} className="text-slate-600 hover:text-slate-300 p-1 transition-colors">
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
-                {showMenu && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] z-20 overflow-hidden min-w-[110px]">
-                      <button onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }} className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-slate-700 text-sm font-semibold transition-colors">
-                        <Trash2 className="w-4 h-4" /> Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-          <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{post.workout_name}</p>
+          <div className="relative z-10 px-4 pt-3.5 pb-3">
+            <div className="flex items-center justify-between mb-4">
+              <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
+                  {post.member_avatar
+                    ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+                    : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
+                  <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+                </div>
+              </Link>
+              {/* Always-visible 3-dot menu — owner gets delete, others get report */}
+              {renderMenu(null)}
+            </div>
+            <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{post.workout_name}</p>
 
-          <div className="flex items-center">
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-sm font-black text-white leading-tight">{exercises.length > 0 ? exercises.length : '—'}</span>
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Exercises</span>
+            <div className="flex items-center">
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-sm font-black text-white leading-tight">{exercises.length > 0 ? exercises.length : '—'}</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Exercises</span>
+              </div>
+              <div className="w-px self-stretch bg-white/10" />
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-sm font-black text-white leading-tight">{post.workout_duration || '—'}</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
+              </div>
+              <div className="w-px self-stretch bg-white/10" />
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-sm font-black text-white leading-tight">{post.workout_volume || '—'}</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
+              </div>
             </div>
-            <div className="w-px self-stretch bg-white/10" />
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-sm font-black text-white leading-tight">{post.workout_duration || '—'}</span>
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Duration</span>
-            </div>
-            <div className="w-px self-stretch bg-white/10" />
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-sm font-black text-white leading-tight">{post.workout_volume || '—'}</span>
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
-            </div>
+
+            {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
           </div>
 
-          {userComment && <p className="mt-2.5 text-sm text-slate-300 leading-relaxed">{userComment}</p>}
-        </div>
-
-        {hasPhoto ? (
-          <div
-            ref={swipePanelRef}
-            className="relative overflow-hidden"
-            style={{ height: PANEL_HEIGHT }}
-            onTouchStart={(e) => {
-              touchStartX.current = e.touches[0].clientX;
-              touchStartY.current = e.touches[0].clientY;
-              touchCurrentX.current = e.touches[0].clientX;
-              setIsDragging(false);
-              setDragOffset(0);
-            }}
-            onTouchMove={(e) => {
-              if (touchStartX.current === null) return;
-              const dx = e.touches[0].clientX - touchStartX.current;
-              const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
-              if (Math.abs(dx) > dy) {
-                setIsDragging(true);
+          {hasPhoto ? (
+            <div
+              ref={swipePanelRef}
+              className="relative overflow-hidden"
+              style={{ height: PANEL_HEIGHT }}
+              onTouchStart={(e) => {
+                touchStartX.current = e.touches[0].clientX;
+                touchStartY.current = e.touches[0].clientY;
                 touchCurrentX.current = e.touches[0].clientX;
-                const rawOffset = dx;
-                const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.9;
-                const minDrag = slide === 0 ? -window.innerWidth * 0.9 : 0;
-                setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset)));
-              }
-            }}
-            onTouchEnd={(e) => {
-              if (touchStartX.current === null) return;
-              const dx = e.changedTouches[0].clientX - touchStartX.current;
-              const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0));
-              if (Math.abs(dx) > 40 && Math.abs(dx) > dy) {
-                setSlide(dx < 0 ? 1 : 0);
-              }
-              touchStartX.current = null;
-              touchStartY.current = null;
-              touchCurrentX.current = null;
-              setIsDragging(false);
-              setDragOffset(0);
-            }}
-          >
-            <div
-              className="absolute top-0 h-full overflow-hidden"
-              style={{
-                left: '3%',
-                width: '87%',
-                borderRadius: '8px',
-                transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
-                transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                willChange: 'transform',
+                setIsDragging(false);
+                setDragOffset(0);
+              }}
+              onTouchMove={(e) => {
+                if (touchStartX.current === null) return;
+                const dx = e.touches[0].clientX - touchStartX.current;
+                const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+                if (Math.abs(dx) > dy) {
+                  setIsDragging(true);
+                  touchCurrentX.current = e.touches[0].clientX;
+                  const rawOffset = dx;
+                  const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.9;
+                  const minDrag = slide === 0 ? -window.innerWidth * 0.9 : 0;
+                  setDragOffset(Math.max(minDrag, Math.min(maxDrag, rawOffset)));
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (touchStartX.current === null) return;
+                const dx = e.changedTouches[0].clientX - touchStartX.current;
+                const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0));
+                if (Math.abs(dx) > 40 && Math.abs(dx) > dy) {
+                  setSlide(dx < 0 ? 1 : 0);
+                }
+                touchStartX.current = null;
+                touchStartY.current = null;
+                touchCurrentX.current = null;
+                setIsDragging(false);
+                setDragOffset(0);
               }}
             >
-              <img
-                src={post.image_url}
-                alt="workout"
+              <div
+                className="absolute top-0 h-full overflow-hidden"
                 style={{
-                  position: 'absolute',
-                  left: 0, right: 0,
-                  width: '100%',
-                  height: '130%',
-                  top: '-15%',
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
+                  left: '3%',
+                  width: '87%',
+                  borderRadius: '8px',
+                  transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
+                  transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  willChange: 'transform',
                 }}
-              />
-            </div>
-            <div
-              className="absolute top-0 h-full overflow-hidden"
-              style={{
-                width: SUMMARY_WIDTH,
-                left: '10%',
-                transform: `translateX(${isDragging ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)` : slide === 0 ? '100%' : '0%'})`,
-                transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                willChange: 'transform',
-              }}
-            >
-              {exerciseSummaryJSX}
-            </div>
-          </div>
-        ) : (
-          exercises.length > 0 && (
-            <div style={{ width: SUMMARY_WIDTH }}>
-              {exerciseSummaryJSX}
-            </div>
-          )
-        )}
-
-        <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
-          <div className="flex items-center gap-1">
-            {currentUser && (
-              <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
-                className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                {userStreakVariant === 'sunglasses'
-                  ? <div className="relative w-11 h-11 flex items-center justify-center">
-                      <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                      </svg>
-                    </div>
-                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
-              </motion.button>
-            )}
-            <motion.button
-              onClick={handleWorkoutShare}
-              className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
-              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
-              <Send className="w-5 h-5" />
-            </motion.button>
-          </div>
-          {Object.keys(post.reactions || {}).length > 0 && (
-            <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
-              <div className="flex items-center" style={{ gap: 0 }}>
-                {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
-                  <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                    {variant === 'sunglasses'
-                      ? <div className="relative w-full h-full flex items-center justify-center">
-                          <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                          </svg>
-                        </div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
-                  </div>
-                ))}
-                {Object.keys(post.reactions || {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(post.reactions || {}).length - 3}</span></div>}
+              >
+                <img
+                  src={post.image_url}
+                  alt="workout"
+                  style={{
+                    position: 'absolute',
+                    left: 0, right: 0,
+                    width: '100%',
+                    height: '130%',
+                    top: '-15%',
+                    objectFit: 'cover',
+                    objectPosition: 'center center',
+                  }}
+                />
               </div>
-            </button>
+              <div
+                className="absolute top-0 h-full overflow-hidden"
+                style={{
+                  width: SUMMARY_WIDTH,
+                  left: '10%',
+                  transform: `translateX(${isDragging ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)` : slide === 0 ? '100%' : '0%'})`,
+                  transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  willChange: 'transform',
+                }}
+              >
+                {exerciseSummaryJSX}
+              </div>
+            </div>
+          ) : (
+            exercises.length > 0 && (
+              <div style={{ width: SUMMARY_WIDTH }}>
+                {exerciseSummaryJSX}
+              </div>
+            )
           )}
-        </div>
 
-      </motion.div>
+          <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
+            <div className="flex items-center gap-1">
+              {currentUser && (
+                <motion.button onClick={() => reactMutation.mutate(!hasReacted)} disabled={reactMutation.isPending}
+                  className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                  {userStreakVariant === 'sunglasses'
+                    ? <div className="relative w-11 h-11 flex items-center justify-center">
+                        <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                        </svg>
+                      </div>
+                    : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+                </motion.button>
+              )}
+              <motion.button
+                onClick={handleWorkoutShare}
+                className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
+                <Send className="w-5 h-5" />
+              </motion.button>
+            </div>
+            {Object.keys(post.reactions || {}).length > 0 && (
+              <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
+                <div className="flex items-center" style={{ gap: 0 }}>
+                  {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                    <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
+                      {variant === 'sunglasses'
+                        ? <div className="relative w-full h-full flex items-center justify-center">
+                            <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                              <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                              <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                              <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                            </svg>
+                          </div>
+                        : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                    </div>
+                  ))}
+                  {Object.keys(post.reactions || {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(post.reactions || {}).length - 3}</span></div>}
+                </div>
+              </button>
+            )}
+          </div>
 
-      <ConfirmDialog
-        open={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        title="Delete Post?"
-        description="This action cannot be undone."
-        confirmLabel="Delete"
-        confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
-        onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }}
-        isPending={deleteMutation.isPending}
-      />
-    </>
+        </motion.div>
+
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          title="Delete Post?"
+          description="This action cannot be undone."
+          confirmLabel="Delete"
+          confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
+          onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }}
+          isPending={deleteMutation.isPending}
+        />
+
+        <ReportModal
+          open={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          postId={post.id}
+        />
+      </>
     );
   }
 
   // ── STANDARD POST ─────────────────────────────────────────────────────────
-  // Restyled to match the workout post card aesthetic:
-  // header → caption (optional) → media (optional) → reaction/share bar
   const totalReactions = Object.keys(post.reactions || {}).length;
 
   const handleShare = async () => {
@@ -588,175 +789,124 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
     }
   };
 
+  // Owner's extra menu items for standard post (favourite option)
+  const standardOwnerExtras = (
+    <button
+      onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }}
+      disabled={updatePostMutation.isPending}
+      className="flex items-center gap-2 w-full px-4 py-2.5 text-amber-400 hover:text-amber-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
+      <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
+      {post.is_favourite ? 'Unfavourite' : 'Favourite'}
+    </button>
+  );
+
   return (
     <>
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
-      style={{
-        background: 'linear-gradient(135deg, rgba(28,34,60,0.92) 0%, rgba(18,22,42,0.93) 100%)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-      }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl -mx-2 relative"
+        style={{
+          background: 'linear-gradient(135deg, rgba(28,34,60,0.92) 0%, rgba(18,22,42,0.93) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}>
 
-      {/* Top shine line */}
-      <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-        style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+        <div className="absolute inset-0 pointer-events-none rounded-xl"
+          style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
 
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none rounded-xl"
-        style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
+        {/* ── HEADER ── */}
+        <div className="relative z-10 px-4 pt-3.5 pb-3">
+          <div className="flex items-center justify-between">
+            <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
+                {post.member_avatar
+                  ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
+                  : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
+                <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
+              </div>
+            </Link>
 
-      {/* ── HEADER ── */}
-      <div className="relative z-10 px-4 pt-3.5 pb-3">
-        <div className="flex items-center justify-between">
-          <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-              {post.member_avatar
-                ? <img src={post.member_avatar} alt={post.member_name} className="w-full h-full object-cover" />
-                : <span className="text-sm font-bold text-white">{post.member_name?.charAt(0)?.toUpperCase() || '?'}</span>}
-            </div>
-            <div>
-              <p className="text-sm font-bold text-white leading-tight">{post.member_name}</p>
-              <p className="text-[11px] text-white/70 font-medium">{format(new Date(post.created_date), 'MMM d · h:mm a')}</p>
-            </div>
-          </Link>
+            {/* Always-visible 3-dot: owner gets favourite+delete, others get report */}
+            {isOwner
+              ? renderMenu(standardOwnerExtras)
+              : renderMenu(null)}
+          </div>
 
-          {isOwner && (
-            <div className="relative flex items-center gap-2">
-              {post.is_favourite && <Star className="w-4 h-4 fill-amber-400 text-amber-400" />}
-              <button onClick={() => setShowMenu(!showMenu)} className="text-slate-600 hover:text-slate-300 p-1 transition-colors">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-              {showMenu && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] z-20 overflow-hidden min-w-[130px]">
-                    <button
-                      onClick={() => { setShowFavouriteConfirm(true); setShowMenu(false); }}
-                      disabled={updatePostMutation.isPending}
-                      className="flex items-center gap-2 w-full px-4 py-2.5 text-amber-400 hover:text-amber-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
-                      <Star className={`w-4 h-4 ${post.is_favourite ? 'fill-amber-400' : ''}`} />
-                      {post.is_favourite ? 'Unfavourite' : 'Favourite'}
-                    </button>
-                    <button
-                      onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
-                      disabled={deleteMutation.isPending}
-                      className="flex items-center gap-2 w-full px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-slate-700 text-sm font-semibold transition-colors disabled:opacity-50">
-                      <Trash2 className="w-4 h-4" /> Delete
-                    </button>
-                  </div>
-                </>
-              )}
+          {/* ── CAPTION ── */}
+          {post.content && (
+            <div className="mt-3">
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {post.content.length > 120 && !showFullContent
+                  ? <>{post.content.substring(0, 120)}...{' '}<button onClick={() => setShowFullContent(true)} className="text-blue-400 hover:text-blue-300 font-semibold">more</button></>
+                  : post.content}
+              </p>
+              {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
             </div>
           )}
         </div>
 
-        {/* ── CAPTION ── */}
-        {post.content && (
-          <div className="mt-3">
-            <p className="text-sm text-slate-300 leading-relaxed">
-              {post.content.length > 120 && !showFullContent
-                ? <>{post.content.substring(0, 120)}...{' '}<button onClick={() => setShowFullContent(true)} className="text-blue-400 hover:text-blue-300 font-semibold">more</button></>
-                : post.content}
-            </p>
-            {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
+        {/* ── MEDIA ── */}
+        {hasMedia && (
+          <div className="relative w-full overflow-hidden">
+            {post.video_url
+              ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
+              : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
           </div>
         )}
-      </div>
 
-      {/* ── MEDIA ── */}
-      {hasMedia && (
-        <div className="relative w-full overflow-hidden">
-          {post.video_url
-            ? <video src={post.video_url} className="w-full object-cover" style={{ maxHeight: '400px' }} controls playsInline preload="metadata" />
-            : <img src={post.image_url} alt="Post" className="w-full object-cover" style={{ maxHeight: '400px' }} />}
-        </div>
-      )}
-
-      {/* ── NUDGE BUTTON ── */}
-      {isNudgePost && isOwner && (
-        <div className="px-4 pt-2">
-          <button onClick={() => nudgeMutation.mutate()} disabled={nudgeMutation.isPending}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
-            {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
-          </button>
-        </div>
-      )}
-
-      {/* ── BOTTOM BAR ── */}
-      <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
-        {/* Left: react + share */}
-        <div className="flex items-center gap-1">
-          {currentUser && (
-            <motion.button
-              onClick={() => reactMutation.mutate(!hasReacted)}
-              disabled={reactMutation.isPending}
-              className="flex items-center gap-1 flex-shrink-0"
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}>
-              {userStreakVariant === 'sunglasses'
-                ? <div className="relative w-11 h-11 flex items-center justify-center">
-                    <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
-            </motion.button>
-          )}
-          <motion.button
-            onClick={handleShare}
-            className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.93 }}>
-            <Send className="w-5 h-5" />
-          </motion.button>
-        </div>
-
-        {/* Right: reaction avatars */}
-        {totalReactions > 0 && (
-          <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
-            <div className="flex items-center" style={{ gap: 0 }}>
-              {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
-                <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                  {variant === 'sunglasses'
-                    ? <div className="relative w-full h-full flex items-center justify-center">
-                        <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-                    : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
-                </div>
-              ))}
-              {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
-            </div>
-          </button>
+        {/* ── NUDGE BUTTON ── */}
+        {isNudgePost && isOwner && (
+          <div className="px-4 pt-2">
+            <button onClick={() => nudgeMutation.mutate()} disabled={nudgeMutation.isPending}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+              {nudgeMutation.isPending ? 'Nudging...' : 'Nudge'}
+            </button>
+          </div>
         )}
-      </div>
 
-      {/* Modals */}
-      <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
-      <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
+        {/* ── BOTTOM BAR ── */}
+        <div className="relative z-10 flex items-center justify-between px-3 py-1" style={{ minHeight: 44 }}>
+          <div className="flex items-center gap-1">
+            {currentUser && (
+              <motion.button
+                onClick={() => reactMutation.mutate(!hasReacted)}
+                disabled={reactMutation.isPending}
+                className="flex items-center gap-1 flex-shrink-0"
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9 }}>
+                {userStreakVariant === 'sunglasses'
+                  ? <div className="relative w-11 h-11 flex items-center justify-center">
+                      <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                      </svg>
+                    </div>
+                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+              </motion.button>
+            )}
+            <motion.button
+              onClick={handleShare}
+              className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.93 }}>
+              <Send className="w-5 h-5" />
+            </motion.button>
+          </div>
 
-      <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
-        <DialogContent className="max-w-lg fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold leading-none tracking-tight text-white -mt-16">Reactions</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2 overflow-y-auto max-h-80">
-            {reactedUsers.map((user) => {
-              const variant = post.reactions[user.id];
-              return (
-                <div key={user.id} className="flex items-center gap-10 p-4 rounded-lg hover:bg-slate-800/50 transition-colors -mt-3">
-                  <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
+          {totalReactions > 0 && (
+            <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
+              <div className="flex items-center" style={{ gap: 0 }}>
+                {Object.entries(post.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                  <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
                     {variant === 'sunglasses'
                       ? <div className="relative w-full h-full flex items-center justify-center">
                           <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
@@ -766,18 +916,49 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
                             <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
                           </svg>
                         </div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />}
+                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
                   </div>
-                  <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
-                </div>
-              );
-            })}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </motion.div>
+                ))}
+                {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
+              </div>
+            </button>
+          )}
+        </div>
 
-      {/* ── Delete confirm (standard post) ── */}
+        <CommentModal open={showComments} onClose={() => setShowComments(false)} post={post} onAddComment={(commentText) => onComment(post.id, commentText)} />
+        <ShareModal open={showShare} onClose={() => setShowShare(false)} post={post} />
+
+        <Dialog open={showReactionsModal} onOpenChange={setShowReactionsModal}>
+          <DialogContent className="max-w-lg fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-20 duration-200 sm:rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl shadow-black/20">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold leading-none tracking-tight text-white -mt-16">Reactions</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 overflow-y-auto max-h-80">
+              {reactedUsers.map((user) => {
+                const variant = post.reactions[user.id];
+                return (
+                  <div key={user.id} className="flex items-center gap-10 p-4 rounded-lg hover:bg-slate-800/50 transition-colors -mt-3">
+                    <div className="relative w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                      {variant === 'sunglasses'
+                        ? <div className="relative w-full h-full flex items-center justify-center">
+                            <img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} />
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                              <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                              <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                              <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                            </svg>
+                          </div>
+                        : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20" style={{ objectFit: 'contain' }} />}
+                    </div>
+                    <span className="text-sm text-slate-200 font-large">{user.full_name || user.username || 'Unknown'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </motion.div>
+
       <ConfirmDialog
         open={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
@@ -789,7 +970,6 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         isPending={deleteMutation.isPending}
       />
 
-      {/* ── Favourite confirm (standard post) ── */}
       <ConfirmDialog
         open={showFavouriteConfirm}
         onClose={() => setShowFavouriteConfirm(false)}
@@ -801,6 +981,12 @@ export default function PostCard({ post, onLike, onComment, onSave, onDelete, fu
         confirmClass="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(180,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
         onConfirm={() => { updatePostMutation.mutate({ id: post.id, data: { is_favourite: !post.is_favourite } }); setShowFavouriteConfirm(false); }}
         isPending={updatePostMutation.isPending}
+      />
+
+      <ReportModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        postId={post.id}
       />
     </>
   );
