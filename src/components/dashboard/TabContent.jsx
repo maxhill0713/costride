@@ -2,10 +2,11 @@ import React, { useMemo } from 'react';
 import { format } from 'date-fns';
 import { Plus, Image as ImageIcon, Trophy, BarChart2, MessageSquarePlus, Calendar, MessageCircle, ChevronRight } from 'lucide-react';
 import { Card, SectionTitle, Empty, Avatar } from './DashboardPrimitives';
+import PostCard from '../feed/PostCard';
 
 export default function TabContent({
   events, challenges, polls, posts, checkIns, ci30, avatarMap,
-  openModal, now,
+  openModal, now, leaderboardView, setLeaderboardView,
 }) {
   const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
   const activeChallenges = challenges.filter(c => c.status === 'active');
@@ -63,36 +64,8 @@ export default function TabContent({
         {/* Posts Feed */}
         {posts.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {posts.map((post, idx) => (
-              <div key={post.id} style={{ display: 'flex', gap: 13, padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.05)'}
-                onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.03)'}>
-                <div style={{ width: 100, height: 80, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: postGradients[idx % postGradients.length], position: 'relative' }}>
-                  {post.image_url
-                    ? <img src={post.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImageIcon style={{ width: 24, height: 24, color: 'rgba(255,255,255,0.3)' }}/></div>
-                  }
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text1)', marginBottom: 4, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {post.content?.split('\n')[0] || post.title || 'Post'}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
-                    {post.member_name} · {post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
-                      <Avatar name={post.member_name || '?'} size={14}/>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text2)' }}>{post.member_name}</span>
-                    </div>
-                    {post.likes > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#f87171' }}>❤ {post.likes}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} fullWidth={true} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => {}}/>
             ))}
           </div>
         ) : (
