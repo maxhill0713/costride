@@ -733,7 +733,6 @@ export default function GymCommunity() {
             <div className="relative z-10 pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <TabsList className="w-full flex justify-around bg-transparent px-3 py-2 h-auto gap-1.5">
                 <TabsTrigger value="home" className={tabTriggerClass}><Home className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
-                <TabsTrigger value="feed" className={tabTriggerClass}><MessageCircle className="w-3.5 h-3.5" /><span>Feed</span></TabsTrigger>
                 <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
                 <TabsTrigger value="events" className={tabTriggerClass}><Calendar className="w-3.5 h-3.5" /><span>Events</span></TabsTrigger>
               </TabsList>
