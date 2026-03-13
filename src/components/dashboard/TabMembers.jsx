@@ -8,6 +8,7 @@ ArrowUpRight, UserPlus, QrCode, Trophy, Send
 import { Card, Avatar, StatusChip, RiskBadge, HealthScore, Empty } from './DashboardPrimitives';
 import PushNotificationPanel from './PushNotificationPanel';
 import { HabitTracker } from './OverviewWidgets';
+import LeaderboardSection from '../leaderboard/LeaderboardSection';
 
 export default function TabMembers({
   allMemberships, checkIns, ci30, memberLastCheckIn, selectedGym,
