@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 // ─── Habit Formation Tracker ──────────────────────────────────────────────────
 export const HabitTracker = ({ checkIns = [], allMemberships = [], now = new Date() }) => {
-  const memberHabits = React.useMemo(() => {
+  const memberHabits = useMemo(() => {
     return allMemberships.slice(0, 8).map((m) => {
       const name = m.user_name || 'Member';
       const weekCounts = Array.from({ length: 4 }, (_, wi) => {
@@ -76,7 +76,7 @@ export const HabitTracker = ({ checkIns = [], allMemberships = [], now = new Dat
 
 // ─── Streak Celebrations ──────────────────────────────────────────────────────
 export const StreakCelebrations = ({ checkIns = [], openModal, now = new Date() }) => {
-  const milestones = React.useMemo(() => {
+  const milestones = useMemo(() => {
     const acc = {}, userIdMap = {};
     checkIns.forEach(c => {
       if (!acc[c.user_name]) acc[c.user_name] = new Set();
@@ -173,7 +173,7 @@ export const GymSetupChecklist = ({ selectedGym, classes = [], coaches = [], ope
 
 // ─── Smart Action Nudges ──────────────────────────────────────────────────────
 export const SmartNudges = ({ atRisk, challenges, polls, monthChangePct, openModal, setTab, checkIns, allMemberships, now }) => {
-  const nudges = React.useMemo(() => {
+  const nudges = useMemo(() => {
     const list = [];
     if (atRisk > 0) list.push({ icon:'💬', title:`${atRisk} members haven't visited`, sub:'Send a personalised re-engagement message', color:'#f87171', bg:'rgba(239,68,68,0.08)', border:'rgba(239,68,68,0.2)', cta:'Message them', fn:()=>openModal('post') });
     if (!challenges.some(c=>c.status==='active')) list.push({ icon:'🏆', title:'Launch a community challenge', sub:'Active challenges boost check-ins by ~40%', color:'#fbbf24', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)', cta:'Create challenge', fn:()=>openModal('challenge') });
