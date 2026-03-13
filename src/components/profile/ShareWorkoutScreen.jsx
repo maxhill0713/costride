@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Camera, X, ChevronDown } from 'lucide-react';
+import { Camera, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -124,83 +124,126 @@ function ExRow({ ex, prevEx, animating, animDelay }) {
   );
 }
 
-// ─── Swipeable photo/summary panels (mirrors PostCard layout) ───────────────
-function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exercises, PANEL_HEIGHT, PREVIEW_COUNT_POST, exercisesExpanded, setExercisesExpanded, hasMore }) {
-  const [panel, setPanel] = useState('photo'); // 'photo' | 'summary'
+// ─── Swipeable photo/summary panels (mirrors PostCard layout exactly) ─────────
+function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exercises, PANEL_HEIGHT, PREVIEW_COUNT_POST, exercisesExpanded, setExercisesExpanded }) {
+  const [slide, setSlide] = useState(0); // 0 = photo, 1 = summary
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
   const touchCurrentX = useRef(null);
 
-  const PHOTO_STYLE = { left: '3%', width: '87%', borderRadius: '8px' };
   const SUMMARY_WIDTH = '85%';
 
-  const photoOffset = panel === 'photo'
-    ? dragOffset
-    : dragOffset - (isDragging ? 0 : 0);
-  const summaryOffset = panel === 'summary' ? dragOffset : 0;
-
-  const slideX = panel === 'photo' ? dragOffset : `calc(-100% + ${dragOffset}px)`;
-  const summarySlideX = panel === 'summary' ? dragOffset : `calc(100% + ${dragOffset}px)`;
-
-  const onTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchCurrentX.current = e.touches[0].clientX;
-    setIsDragging(true);
-    setDragOffset(0);
-  };
-  const onTouchMove = (e) => {
-    if (touchStartX.current === null) return;
-    const dx = e.touches[0].clientX - touchStartX.current;
-    touchCurrentX.current = e.touches[0].clientX;
-    setDragOffset(dx);
-  };
-  const onTouchEnd = () => {
-    const dx = touchCurrentX.current - touchStartX.current;
-    setIsDragging(false);
-    setDragOffset(0);
-    touchStartX.current = null;
-    if (Math.abs(dx) > 40) {
-      if (dx < 0 && panel === 'photo') setPanel('summary');
-      if (dx > 0 && panel === 'summary') setPanel('photo');
-    }
-  };
-
   const exRows = exercises ? (exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT_POST)) : [];
+  const hasMore = exercises && exercises.length > PREVIEW_COUNT_POST;
+
+  const exerciseSummaryJSX = (
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <div className="px-2 pt-2 pb-1 flex-1 min-h-0 flex flex-col">
+        <div className="grid gap-0.5 mb-1 items-end px-1 flex-shrink-0"
+          style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
+          <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
+          <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: -20 }}>Sets</div>
+          <div />
+          <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center" style={{ marginLeft: -22 }}>Reps</div>
+          <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest" style={{ paddingLeft: 6 }}>Weight</div>
+        </div>
+        <div className="space-y-1 flex-1 overflow-hidden">
+          {exRows.map((ex, idx) => {
+            const exName = (ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || '')
+              .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || `Exercise ${idx + 1}`;
+            const sets = ex.sets || ex.set_count || ex.setsReps?.split('x')?.[0] || '-';
+            const reps = ex.reps || ex.rep_count || ex.setsReps?.split('x')?.[1] || '-';
+            const weight = ex.weight ?? ex.weight_kg ?? ex.weight_lbs ?? '-';
+            return (
+              <div key={idx} className="bg-white/5 py-1 pl-1.5 rounded-lg border border-white/10 grid gap-0.5 items-center"
+                style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
+                <div className="text-[11px] font-bold text-white leading-tight ml-0.5 truncate">{exName}</div>
+                <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center ml-0.5 py-0.5" style={{ width: 28 }}>{sets}</div>
+                <div className="text-slate-400 text-[10px] font-bold flex items-center justify-center">×</div>
+                <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center py-0.5" style={{ width: 28 }}>{reps}</div>
+                <div className="ml-1.5 pr-2">
+                  <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-0.5 px-1 text-[11px] font-black text-center rounded-xl shadow-sm shadow-blue-900/20 min-w-[42px]">
+                    {weight}<span className="text-[9px] font-bold">kg</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {hasMore && (
+          <button onClick={() => setExercisesExpanded(v => !v)}
+            className="mt-1 w-full flex items-center justify-center gap-1 py-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
+            {exercisesExpanded
+              ? <><ChevronUp className="w-3 h-3" /> Show less</>
+              : <><ChevronDown className="w-3 h-3" /> +{exercises.length - PREVIEW_COUNT_POST} more</>}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div
       className="relative overflow-hidden"
       style={{ height: PANEL_HEIGHT }}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}>
+      onTouchStart={(e) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        touchCurrentX.current = e.touches[0].clientX;
+        setIsDragging(false);
+        setDragOffset(0);
+      }}
+      onTouchMove={(e) => {
+        if (touchStartX.current === null) return;
+        const dx = e.touches[0].clientX - touchStartX.current;
+        const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+        if (Math.abs(dx) > dy) {
+          setIsDragging(true);
+          touchCurrentX.current = e.touches[0].clientX;
+          const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.9;
+          const minDrag = slide === 0 ? -window.innerWidth * 0.9 : 0;
+          setDragOffset(Math.max(minDrag, Math.min(maxDrag, dx)));
+        }
+      }}
+      onTouchEnd={(e) => {
+        if (touchStartX.current === null) return;
+        const dx = e.changedTouches[0].clientX - touchStartX.current;
+        const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0));
+        if (Math.abs(dx) > 40 && Math.abs(dx) > dy) {
+          setSlide(dx < 0 ? 1 : 0);
+        }
+        touchStartX.current = null;
+        touchStartY.current = null;
+        touchCurrentX.current = null;
+        setIsDragging(false);
+        setDragOffset(0);
+      }}>
 
       {/* ── PHOTO PANEL ── */}
       <div
-        className="absolute top-0 bottom-0"
+        className="absolute top-0 h-full overflow-hidden"
         style={{
-          ...PHOTO_STYLE,
-          overflow: 'hidden',
-          transform: `translateX(${panel === 'photo' ? dragOffset : `calc(-110% + ${dragOffset}px)`})`,
-          transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25,0.46,0.45,0.94)',
+          left: '3%', width: '87%', borderRadius: '8px',
+          transform: `translateX(${isDragging ? `calc(${slide === 0 ? '0%' : '-100%'} + ${dragOffset}px)` : slide === 0 ? '0%' : '-100%'})`,
+          transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         }}>
         {photoUrl ? (
           <>
             <img src={photoUrl} alt="workout"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              style={{ position: 'absolute', left: 0, right: 0, width: '100%', height: '143%', top: '-21.5%', objectFit: 'cover', objectPosition: 'center center' }} />
             <button onClick={onRemovePhoto}
               className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white z-10">
               <X className="w-4 h-4" />
             </button>
           </>
         ) : (
-          /* Add photo slot */
           <button
             onClick={onPhotoClick}
             disabled={uploading}
             className="absolute inset-0 flex flex-col items-center justify-center gap-2 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)' }}>
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.14)' }}>
             {uploading
               ? <span className="text-slate-400 text-sm font-medium">Uploading...</span>
               : <>
@@ -211,45 +254,15 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
         )}
       </div>
 
-      {/* ── SUMMARY PANEL ── */}
+      {/* ── SUMMARY PANEL — peeking from right ── */}
       <div
-        className="absolute top-0 bottom-0 overflow-y-auto"
+        className="absolute top-0 h-full overflow-hidden"
         style={{
-          left: '10%',
-          width: SUMMARY_WIDTH,
-          transform: `translateX(${panel === 'summary' ? dragOffset : `calc(110% + ${dragOffset}px)`})`,
-          transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25,0.46,0.45,0.94)',
-          paddingTop: 4,
-          paddingBottom: 4,
+          width: SUMMARY_WIDTH, left: '10%',
+          transform: `translateX(${isDragging ? `calc(${slide === 0 ? '100%' : '0%'} + ${dragOffset}px)` : slide === 0 ? '92%' : '0%'})`,
+          transition: isDragging ? 'none' : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         }}>
-        <div className="space-y-1 pr-1">
-          {exRows.map((ex, idx) => {
-            const exName = (ex.name || ex.exercise_name || ex.exercise || ex.title || '')
-              .replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || `Exercise ${idx + 1}`;
-            const { sets, reps, weight } = parseEx(ex);
-            return (
-              <div key={idx} className="bg-white/5 py-1 pl-1.5 rounded-lg border border-white/10 grid gap-0.5 items-center"
-                style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
-                <div className="text-[11px] font-bold text-white leading-tight ml-0.5 truncate">{exName}</div>
-                <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md py-0.5">{sets}</div>
-                <div className="text-slate-500 text-[10px] font-bold text-center">×</div>
-                <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md py-0.5">{reps}</div>
-                <div className="ml-1 mr-1">
-                  <div className="text-white text-[11px] font-black text-center rounded-lg py-0.5 px-1 min-w-[40px]"
-                    style={{ background: 'linear-gradient(to right, rgba(29,78,216,0.9), rgba(30,58,138,0.9))' }}>
-                    {weight}<span className="text-[8px]">kg</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          {hasMore && (
-            <button onClick={() => setExercisesExpanded(v => !v)}
-              className="mt-1 w-full flex items-center justify-center py-0.5 text-slate-500 hover:text-slate-300 transition-colors">
-              <ChevronDown className={`w-4 h-4 transition-transform ${exercisesExpanded ? 'rotate-180' : ''}`} />
-            </button>
-          )}
-        </div>
+        {exerciseSummaryJSX}
       </div>
     </div>
   );
@@ -505,22 +518,39 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
 
                   {/* ── TOP BAR: workout name + stat row ── */}
                   <div className="relative z-10 px-4 pt-3.5 pb-3">
-                    <p className="text-[15px] font-black text-white leading-tight mb-3" style={{ letterSpacing: '-0.01em' }}>{workoutName}</p>
+                    <p className="text-lg font-black text-white tracking-tight leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>{workoutName}</p>
 
-                    {/* Stat row — 3 columns */}
-                    <div className="flex" style={{ borderRadius: 8, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      {[
-                        { label: 'Exercises', value: exercises?.length > 0 ? exercises.length : '—' },
-                        { label: 'Sets', value: totalSets > 0 ? totalSets : '—' },
-                        { label: 'Volume', value: volumeStr },
-                      ].map((stat, i, arr) => (
-                        <div key={stat.label} className="flex-1 flex flex-col items-center py-2" style={{
-                          borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.10)' : 'none'
-                        }}>
-                          <span className="text-[13px] font-black text-white leading-none">{stat.value}</span>
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">{stat.label}</span>
-                        </div>
-                      ))}
+                    {/* Stat row — matches PostCard exactly */}
+                    <div className="flex items-center mb-3">
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="text-sm font-black text-white leading-tight">{exercises?.length > 0 ? exercises.length : '—'}</span>
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Exercises</span>
+                      </div>
+                      <div className="w-px self-stretch bg-white/10" />
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="text-sm font-black text-white leading-tight">{totalSets > 0 ? totalSets : '—'}</span>
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Sets</span>
+                      </div>
+                      <div className="w-px self-stretch bg-white/10" />
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="text-sm font-black text-white leading-tight">{volumeStr}</span>
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
+                      </div>
+                    </div>
+
+                    {/* Caption — above the photo/summary panels */}
+                    <div className="relative">
+                      <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value.slice(0, 200))}
+                        placeholder="Add a caption… (optional)"
+                        rows={2}
+                        maxLength={200}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
+                      />
+                      <span className={`absolute bottom-2 right-3 text-[10px] font-medium ${comment.length >= 180 ? 'text-orange-400' : 'text-slate-600'}`}>
+                        {comment.length}/200
+                      </span>
                     </div>
                   </div>
 
@@ -535,19 +565,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
                     PREVIEW_COUNT_POST={PREVIEW_COUNT_POST}
                     exercisesExpanded={exercisesExpanded}
                     setExercisesExpanded={setExercisesExpanded}
-                    hasMore={hasMore}
                   />
-
-                  {/* ── COMMENT INPUT ── */}
-                  <div className="relative z-10 px-4 pt-3 pb-3">
-                    <textarea
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="Add a caption… (optional)"
-                      rows={2}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-blue-400/50 transition-colors"
-                    />
-                  </div>
                 </motion.div>
 
                 <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
