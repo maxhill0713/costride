@@ -243,7 +243,7 @@ export default function TabOverview({
               )}
             </div>
           </Card>
-          <InviteToClasses classes={classes} openModal={openModal}/>
+
         </div>
 
       </div>
