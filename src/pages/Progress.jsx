@@ -456,9 +456,9 @@ function TallCard({ label, subtitle, description, icon: Icon, iconColor, iconBg,
       <div className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor} 0%, transparent 60%)`, opacity: pressed ? 0.22 : 0.09, transition: 'opacity 0.1s ease' }} />
       {/* Illustration — top right corner */}
-      <div className="absolute top-0 right-0 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16 }}>
-        <Illustration />
-      </div>
+      <div className="absolute top-0 right-0 pointer-events-none overflow-hidden" style={{ borderTopRightRadius: 16, transform: 'scale(0.78)', transformOrigin: 'top right' }}>
+  <Illustration />
+</div>
       {/* Content */}
       <div className="relative flex flex-col gap-1.5" style={{ maxWidth: '62%' }}>
         <span className="text-[15px] font-black text-white tracking-tight">{label}</span>
