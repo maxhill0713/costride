@@ -1,15 +1,11 @@
 import React, { useState, useRef } from 'react';
 import {
-  TrendingUp, Flame, Zap, Bell, BellOff, Trash2,
+  TrendingUp, Flame, Zap, Bell, BellOff,
   Plus, Minus, Edit3, Check, CheckCircle2, X, Clock,
-  Dumbbell, Calendar,
+  Dumbbell, MoreHorizontal,
 } from 'lucide-react';
 import { differenceInDays, format } from 'date-fns';
 import confetti from 'canvas-confetti';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GOAL TYPE CONFIG  (mirrors AddGoalModal palette)
-// ─────────────────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
   numerical: {
@@ -38,25 +34,16 @@ const TYPE_CONFIG = {
 const COMPLETED_RGB = '74,222,128';
 const COMPLETED_HEX = '#4ade80';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COLOUR HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-
-const a   = (rgb, o) => `rgba(${rgb},${o})`;
+const a = (rgb, o) => `rgba(${rgb},${o})`;
 const hex2 = (hex, opacity) => `${hex}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ARC RING  — 270° sweep SVG
-// ─────────────────────────────────────────────────────────────────────────────
 
 function ArcRing({ pct, rgb, hex, size = 120, stroke = 9 }) {
   const r    = (size - stroke * 2) / 2;
   const c    = size / 2;
   const circ = 2 * Math.PI * r;
-  const arc  = circ * 0.75;          // 270° of the circle
+  const arc  = circ * 0.75;
   const off  = arc * (1 - Math.min(pct, 100) / 100);
 
-  // milestone ticks at 25 / 50 / 75 %
   const ticks = [25, 50, 75].map(p => {
     const angle = (135 + (270 * p) / 100) * (Math.PI / 180);
     const inner = r - stroke / 2 - 1;
@@ -78,61 +65,32 @@ function ArcRing({ pct, rgb, hex, size = 120, stroke = 9 }) {
           <stop offset="100%" stopColor={hex} />
         </linearGradient>
       </defs>
-
-      {/* Track */}
-      <circle
-        cx={c} cy={c} r={r}
-        fill="none"
-        stroke={a(rgb, 0.1)}
-        strokeWidth={stroke}
-        strokeDasharray={`${arc} ${circ}`}
-        strokeLinecap="round"
-        transform={`rotate(135 ${c} ${c})`}
-      />
-
-      {/* Progress arc */}
+      <circle cx={c} cy={c} r={r} fill="none" stroke={a(rgb, 0.1)} strokeWidth={stroke}
+        strokeDasharray={`${arc} ${circ}`} strokeLinecap="round"
+        transform={`rotate(135 ${c} ${c})`} />
       {pct > 0 && (
-        <circle
-          cx={c} cy={c} r={r}
-          fill="none"
+        <circle cx={c} cy={c} r={r} fill="none"
           stroke={`url(#arc-grad-${rgb.replace(/,/g, '')})`}
-          strokeWidth={stroke}
-          strokeDasharray={`${arc} ${circ}`}
-          strokeDashoffset={off}
-          strokeLinecap="round"
-          transform={`rotate(135 ${c} ${c})`}
+          strokeWidth={stroke} strokeDasharray={`${arc} ${circ}`} strokeDashoffset={off}
+          strokeLinecap="round" transform={`rotate(135 ${c} ${c})`}
           style={{
-            filter: `drop-shadow(0 0 7px ${a(rgb, 0.55)})`,
+            filter: `drop-shadow(0 0 4px ${a(rgb, 0.4)})`,
             transition: 'stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1)',
-          }}
-        />
+          }} />
       )}
-
-      {/* Milestone ticks */}
       {ticks.map((t, i) => (
-        <line
-          key={i}
-          x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
-          stroke={t.reached ? hex : a(rgb, 0.25)}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          style={{ transition: 'stroke 0.4s ease' }}
-        />
+        <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
+          stroke={t.reached ? hex : a(rgb, 0.25)} strokeWidth={1.5} strokeLinecap="round"
+          style={{ transition: 'stroke 0.4s ease' }} />
       ))}
     </svg>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PRESS BUTTON  — tactile press mechanic used throughout
-// ─────────────────────────────────────────────────────────────────────────────
-
 function PressBtn({ onClick, disabled, className, style, children }) {
   const [pressed, setPressed] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
+    <button onClick={onClick} disabled={disabled}
       onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)}
       onMouseLeave={() => setPressed(false)} onTouchStart={() => setPressed(true)}
       onTouchEnd={() => setPressed(false)} onTouchCancel={() => setPressed(false)}
@@ -141,20 +99,88 @@ function PressBtn({ onClick, disabled, className, style, children }) {
         ...style,
         transform: pressed && !disabled ? 'scale(0.94) translateY(1px)' : 'scale(1)',
         transition: pressed ? 'transform 0.07s ease' : 'transform 0.18s cubic-bezier(0.34,1.3,0.64,1)',
-      }}
-    >
+      }}>
       {children}
     </button>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── 3-dot context menu ───────────────────────────────────────────────────────
+function DotMenu({ goal, onDelete, onToggleReminder }) {
+  const [open, setOpen] = useState(false);
 
+  return (
+    <div className="relative flex-shrink-0">
+      <button
+        onClick={() => setOpen(p => !p)}
+        className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
+        style={{
+          background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          color: 'rgba(255,255,255,0.4)',
+        }}
+      >
+        <MoreHorizontal className="w-4 h-4" />
+      </button>
+
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+
+          {/* Dropdown */}
+          <div
+            className="absolute right-0 top-9 z-20 rounded-2xl overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(28,32,56,0.98) 0%, rgba(8,10,22,0.99) 100%)',
+              border: '1px solid rgba(255,255,255,0.09)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              minWidth: 160,
+            }}
+          >
+            {/* Top shine */}
+            <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+              style={{ background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.07) 50%,transparent 90%)' }} />
+
+            <button
+              onClick={() => { onToggleReminder(goal); setOpen(false); }}
+              className="w-full px-4 py-2.5 text-left flex items-center gap-2.5 transition-colors"
+              style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, fontWeight: 700 }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {goal.reminder_enabled
+                ? <BellOff className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                : <Bell className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }} />
+              }
+              {goal.reminder_enabled ? 'Mute reminder' : 'Set reminder'}
+            </button>
+
+            <div className="mx-3 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+            <button
+              onClick={() => { onDelete(goal.id); setOpen(false); }}
+              className="w-full px-4 py-2.5 text-left flex items-center gap-2.5 transition-colors"
+              style={{ color: '#f87171', fontSize: 12, fontWeight: 700 }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.07)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <span className="text-[13px]">🗑️</span>
+              Delete goal
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder }) {
-  const [isEditing,   setIsEditing]   = useState(false);
-  const [editVal,     setEditVal]     = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editVal,   setEditVal]   = useState('');
   const inputRef = useRef(null);
 
   const cfg         = TYPE_CONFIG[goal.goal_type] || TYPE_CONFIG.numerical;
@@ -168,19 +194,16 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
   const hex = isCompleted ? COMPLETED_HEX : cfg.hex;
   const { Icon } = cfg;
 
-  // Deadline
-  const daysLeft   = goal.deadline ? differenceInDays(new Date(goal.deadline), new Date()) : null;
-  const isOverdue  = daysLeft !== null && daysLeft < 0;
-  const isUrgent   = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+  const daysLeft  = goal.deadline ? differenceInDays(new Date(goal.deadline), new Date()) : null;
+  const isOverdue = daysLeft !== null && daysLeft < 0;
+  const isUrgent  = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
 
-  // Smart increment
   const increment = (() => {
     if (goal.goal_type !== 'numerical') return 1;
     if (goal.unit === 'kg' || goal.unit === 'lbs') return goal.target_value > 100 ? 5 : 2.5;
     return 1;
   })();
 
-  // Display text under ring
   const valueDisplay = (() => {
     const cur = goal.current_value ?? 0;
     const tgt = goal.target_value ?? 0;
@@ -225,28 +248,26 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
 
   return (
     <div
-      className="relative overflow-hidden rounded-[24px] select-none"
+      className="relative overflow-hidden rounded-[22px] select-none"
       style={{
         background: isCompleted
-          ? 'linear-gradient(160deg,rgba(10,30,18,0.97),rgba(5,20,12,0.99))'
-          : 'linear-gradient(160deg,rgba(10,14,32,0.97),rgba(5,8,20,0.99))',
-        border: `1.5px solid ${isCompleted ? a(COMPLETED_RGB, 0.18) : a(cfg.rgb, 0.14)}`,
+          ? 'linear-gradient(135deg, rgba(24,38,28,0.80) 0%, rgba(8,14,10,0.94) 100%)'
+          : 'linear-gradient(135deg, rgba(30,35,60,0.78) 0%, rgba(8,10,20,0.94) 100%)',
+        border: `1px solid ${isCompleted ? a(COMPLETED_RGB, 0.16) : 'rgba(255,255,255,0.07)'}`,
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
         boxShadow: isCompleted
-          ? `0 4px 32px rgba(0,0,0,0.5), 0 0 40px ${a(COMPLETED_RGB, 0.08)}`
-          : `0 4px 32px rgba(0,0,0,0.5), 0 0 40px ${a(cfg.rgb, 0.06)}`,
+          ? `0 2px 20px rgba(0,0,0,0.4), 0 0 28px ${a(COMPLETED_RGB, 0.05)}`
+          : '0 2px 20px rgba(0,0,0,0.4)',
         transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
       }}
     >
-      {/* Ambient glow blob */}
-      <div className="absolute -top-12 -left-8 w-48 h-48 rounded-full pointer-events-none"
+      {/* Top accent bar — thinner, more subtle */}
+      <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
         style={{
-          background: `radial-gradient(circle, ${a(rgb, 0.10)} 0%, transparent 70%)`,
-          transition: 'background 0.4s ease',
+          background: `linear-gradient(90deg, transparent 5%, ${hex} 35%, ${hex} 65%, transparent 95%)`,
+          opacity: 0.45,
         }} />
-
-      {/* Top accent bar */}
-      <div className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ background: `linear-gradient(90deg, transparent 0%, ${hex} 40%, ${hex} 60%, transparent 100%)`, opacity: 0.7 }} />
 
       {/* Top shine */}
       <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
@@ -257,32 +278,27 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
         {/* ── HEADER ── */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            {/* Icon */}
             <div
               className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${isCompleted ? 'from-green-500 to-emerald-600' : cfg.grad} flex items-center justify-center flex-shrink-0`}
-              style={{ boxShadow: `0 4px 14px ${a(rgb, 0.35)}` }}
+              style={{ boxShadow: `0 3px 10px ${a(rgb, 0.25)}` }}
             >
               {isCompleted
                 ? <CheckCircle2 className="w-5 h-5 text-white" strokeWidth={2.5} />
                 : <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
               }
             </div>
-
-            {/* Title + badges */}
             <div className="flex-1 min-w-0 pt-0.5">
-              <p className="text-[16px] font-black text-white leading-tight truncate">{goal.title}</p>
+              <p className="text-[15px] font-black text-white leading-tight truncate">{goal.title}</p>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                {/* Goal type pill */}
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
-                  style={{ background: a(rgb, 0.12), color: hex, border: `1px solid ${a(rgb, 0.25)}` }}
+                  style={{ background: a(rgb, 0.10), color: hex, border: `1px solid ${a(rgb, 0.2)}` }}
                 >
                   {cfg.label}
                 </span>
-                {/* Exercise badge */}
                 {goal.exercise && (
                   <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <Dumbbell className="w-2.5 h-2.5" />
                     {goal.exercise}
                   </span>
@@ -291,41 +307,17 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button
-              onClick={() => onToggleReminder(goal)}
-              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90"
-              style={{
-                background: goal.reminder_enabled ? a(rgb, 0.12) : 'rgba(255,255,255,0.04)',
-                color: goal.reminder_enabled ? hex : 'rgba(255,255,255,0.25)',
-                border: `1px solid ${goal.reminder_enabled ? a(rgb, 0.22) : 'rgba(255,255,255,0.06)'}`,
-              }}
-            >
-              {goal.reminder_enabled
-                ? <Bell className="w-3.5 h-3.5" />
-                : <BellOff className="w-3.5 h-3.5" />
-              }
-            </button>
-            <button
-              onClick={() => onDelete(goal.id)}
-              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90"
-              style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.5)', border: '1px solid rgba(239,68,68,0.1)' }}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {/* 3-dot menu replaces bell + trash */}
+          <DotMenu goal={goal} onDelete={onDelete} onToggleReminder={onToggleReminder} />
         </div>
 
         {/* ── PROGRESS SECTION ── */}
         <div
           className="rounded-2xl p-4 flex items-center gap-4"
-          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
         >
-          {/* Arc ring */}
           <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 108, height: 108 }}>
             <ArcRing pct={progress} rgb={rgb} hex={hex} size={108} stroke={8} />
-            {/* Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-[22px] font-black leading-none" style={{ color: hex }}>
                 {Math.round(progress)}
@@ -337,22 +329,18 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
             </div>
           </div>
 
-          {/* Stats */}
           <div className="flex-1 min-w-0 space-y-3">
-            {/* Value display */}
             <div>
               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Progress</p>
               <p className="text-[20px] font-black text-white leading-none">{valueDisplay.value}</p>
-              <p className="text-[11px] font-semibold mt-0.5" style={{ color: hex, opacity: 0.65 }}>{valueDisplay.unit}</p>
+              <p className="text-[11px] font-semibold mt-0.5" style={{ color: hex, opacity: 0.6 }}>{valueDisplay.unit}</p>
             </div>
-
-            {/* Deadline */}
             {goal.deadline && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3 flex-shrink-0"
-                  style={{ color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.3)' }} />
+                  style={{ color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.25)' }} />
                 <span className="text-[11px] font-bold"
-                  style={{ color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.35)' }}>
+                  style={{ color: isOverdue ? '#f87171' : isUrgent ? '#fb923c' : 'rgba(255,255,255,0.3)' }}>
                   {isOverdue
                     ? `${Math.abs(daysLeft)}d overdue`
                     : daysLeft === 0
@@ -362,14 +350,15 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
                 </span>
               </div>
             )}
-
-            {/* Milestone progress pips */}
             <div className="flex items-center gap-1.5">
               {[25, 50, 75, 100].map(m => (
                 <div key={m} className="flex-1 flex flex-col items-center gap-1">
                   <div className="w-full h-1 rounded-full transition-all duration-500"
-                    style={{ background: progress >= m ? hex : a(rgb, 0.15), boxShadow: progress >= m ? `0 0 5px ${a(rgb, 0.5)}` : 'none' }} />
-                  <span className="text-[8px] font-bold" style={{ color: progress >= m ? hex : 'rgba(255,255,255,0.15)' }}>{m}%</span>
+                    style={{
+                      background: progress >= m ? hex : a(rgb, 0.12),
+                      boxShadow: progress >= m ? `0 0 4px ${a(rgb, 0.35)}` : 'none',
+                    }} />
+                  <span className="text-[8px] font-bold" style={{ color: progress >= m ? hex : 'rgba(255,255,255,0.13)' }}>{m}%</span>
                 </div>
               ))}
             </div>
@@ -379,19 +368,17 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
         {/* ── UPDATE CONTROLS ── */}
         {!isCompleted && (
           isAutoTracked ? (
-            /* Auto-tracked badge */
             <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl"
-              style={{ background: a(rgb, 0.07), border: `1px solid ${a(rgb, 0.15)}` }}>
+              style={{ background: a(rgb, 0.06), border: `1px solid ${a(rgb, 0.12)}` }}>
               <Zap className="w-3.5 h-3.5" style={{ color: hex }} />
-              <span className="text-[11px] font-bold" style={{ color: hex, opacity: 0.75 }}>
+              <span className="text-[11px] font-bold" style={{ color: hex, opacity: 0.7 }}>
                 Auto-tracked from your check-ins
               </span>
             </div>
           ) : isEditing ? (
-            /* Manual edit input */
             <div className="rounded-xl overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${a(rgb, 0.3)}` }}>
-              <div className="flex items-center gap-0">
+              style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${a(rgb, 0.25)}` }}>
+              <div className="flex items-center">
                 <input
                   ref={inputRef}
                   type="number"
@@ -414,32 +401,26 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
               </div>
             </div>
           ) : (
-            /* Quick step controls */
             <div className="flex items-center gap-2">
-              {/* Minus */}
               <PressBtn
                 onClick={() => handleStep(-increment)}
                 disabled={(goal.current_value ?? 0) <= 0}
                 className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 disabled:opacity-25"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.5)' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)' }}
               >
                 <Minus className="w-4 h-4" strokeWidth={2.5} />
               </PressBtn>
-
-              {/* Center: current + unit */}
               <button onClick={openEdit}
                 className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 group transition-all active:scale-[0.97]"
-                style={{ background: a(rgb, 0.09), border: `1px solid ${a(rgb, 0.22)}` }}>
+                style={{ background: a(rgb, 0.08), border: `1px solid ${a(rgb, 0.18)}` }}>
                 <span className="text-[15px] font-black text-white">{goal.current_value ?? 0}</span>
-                <span className="text-[11px] font-bold" style={{ color: hex, opacity: 0.65 }}>{goal.unit || ''}</span>
-                <Edit3 className="w-3 h-3 opacity-30 group-hover:opacity-60 transition-opacity" style={{ color: hex }} />
+                <span className="text-[11px] font-bold" style={{ color: hex, opacity: 0.6 }}>{goal.unit || ''}</span>
+                <Edit3 className="w-3 h-3 opacity-25 group-hover:opacity-50 transition-opacity" style={{ color: hex }} />
               </button>
-
-              {/* Plus */}
               <PressBtn
                 onClick={() => handleStep(+increment)}
                 className="flex items-center justify-center gap-1.5 h-11 px-4 rounded-xl font-black text-[13px] text-white flex-shrink-0"
-                style={{ background: hex, boxShadow: `0 3px 0 0 ${hex2(hex, 0.35)}, 0 4px 16px ${a(rgb, 0.3)}` }}
+                style={{ background: hex, boxShadow: `0 3px 0 0 ${hex2(hex, 0.3)}, 0 4px 12px ${a(rgb, 0.22)}` }}
               >
                 <Plus className="w-4 h-4" strokeWidth={2.5} />
                 <span>+{increment}{goal.unit && goal.unit !== 'reps' ? ` ${goal.unit}` : ''}</span>
@@ -448,25 +429,23 @@ export default function GoalCard({ goal, onUpdate, onDelete, onToggleReminder })
           )
         )}
 
-        {/* ── MARK COMPLETE ── (shown when 100% but not yet marked done) */}
         {isReady && (
           <PressBtn
             onClick={handleComplete}
             className="w-full h-11 rounded-xl font-black text-[14px] text-white flex items-center justify-center gap-2"
             style={{
               background: 'linear-gradient(135deg, #22c55e, #10b981)',
-              boxShadow: '0 3px 0 0 rgba(16,185,129,0.35), 0 6px 20px rgba(34,197,94,0.25)',
+              boxShadow: '0 3px 0 0 rgba(16,185,129,0.3), 0 5px 16px rgba(34,197,94,0.18)',
             }}
           >
-            <CheckCircle2 className="w-4.5 h-4.5" strokeWidth={2.5} />
+            <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
             Mark as Complete
           </PressBtn>
         )}
 
-        {/* ── COMPLETED STATE ── */}
         {isCompleted && (
           <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl"
-            style={{ background: a(COMPLETED_RGB, 0.08), border: `1px solid ${a(COMPLETED_RGB, 0.2)}` }}>
+            style={{ background: a(COMPLETED_RGB, 0.07), border: `1px solid ${a(COMPLETED_RGB, 0.15)}` }}>
             <CheckCircle2 className="w-3.5 h-3.5" style={{ color: COMPLETED_HEX }} />
             <span className="text-[12px] font-black" style={{ color: COMPLETED_HEX }}>Goal achieved</span>
           </div>
