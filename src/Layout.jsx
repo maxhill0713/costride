@@ -107,10 +107,13 @@ export default function Layout({ children, currentPageName }) {
     return tabHistory[item.page] || createPageUrl(item.page) + (item.params || '');
   };
 
-  // Handle tab click - do nothing if already on that tab
+  // Handle tab click - do nothing if already on that tab; scroll to top if already on Home
   const handleTabClick = (item, e) => {
     if (currentPageName === item.page) {
       e.preventDefault();
+      if (item.page === 'Home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
