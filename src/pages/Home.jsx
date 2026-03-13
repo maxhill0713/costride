@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, TrendingUp, Calendar, ChevronRight, UserPlus, Search, UserMinus, X, CheckCircle } from 'lucide-react';
+import { Dumbbell, TrendingUp, Calendar, ChevronRight, UserPlus, Users, Search, UserMinus, X, CheckCircle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import FriendsIcon from '../components/FriendsIcon';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
@@ -825,8 +825,8 @@ export default function Home() {
             {/* ── Friends icon button (top right) ── */}
             <button
               onClick={() => setShowFriendsModal(true)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[calc(-50%+3px)] active:scale-95 transition-all duration-100 transform-gpu -mr-2">
-              <UserPlus className="w-4 h-4" />
+              className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
+              <Users className="w-6 h-6" />
             </button>
           </div>
         </div>
