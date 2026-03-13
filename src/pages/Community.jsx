@@ -322,8 +322,9 @@ function LiftLeaderboard({ leaderboard, liftMeta, currentUserId, open, onOpen, o
                     }}>
                       <div style={{width:28,height:28,borderRadius:9,flexShrink:0,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,color:`rgba(255,255,255,${R.rankO*0.7})`}}>{globalRank}</div>
                       <div style={{width:36,height:36,borderRadius:'50%',flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:900,background:isMe?'rgba(56,189,248,0.2)':'rgba(255,255,255,0.06)',border:`2px solid ${isMe?'#38bdf8':'rgba(255,255,255,0.1)'}`,color:isMe?'#38bdf8':'rgba(255,255,255,0.6)'}}>
-                        {initials(entry.user_name)}
-                      </div>
+                         {userAvatarMap[entry.user_id]?<img src={userAvatarMap[entry.user_id]} alt={entry.user_name} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex'}}/>:null}
+                         <span style={{display:userAvatarMap[entry.user_id]?'none':'flex',width:'100%',height:'100%',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:12}}>{initials(entry.user_name)}</span>
+                       </div>
                       <div style={{flex:1,minWidth:0}}>
                         <p style={{fontSize:13,fontWeight:700,color:isMe?'#fff':`rgba(255,255,255,${R.nameO})`,margin:'0 0 5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                           {isMe?'You':entry.user_name||'—'}
