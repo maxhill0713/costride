@@ -423,6 +423,9 @@ export default function Home() {
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
+  // ── Track whether a circle button just opened a bubble (to block the dismiss) ──
+  const justOpenedCircle = useRef(false);
+
   // ── Sticky header scroll logic ───────────────────────────────────────────
   const [stickyHeaderVisible, setStickyHeaderVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -438,19 +441,16 @@ export default function Home() {
       scrollTicking.current = true;
       requestAnimationFrame(() => {
         const currentY = window.scrollY;
-        const delta = lastScrollY.current - currentY; // positive = scrolling up
+        const delta = lastScrollY.current - currentY;
 
         const atTop = currentY <= INLINE_HEADER_HEIGHT;
         setIsAtTop(atTop);
 
         if (atTop) {
-          // At/near the top — keep sticky visible so it sits flush over the inline header
           setStickyHeaderVisible(true);
         } else if (delta > SCROLL_UP_TRIGGER) {
-          // Scrolling UP — show
           setStickyHeaderVisible(true);
         } else if (delta < -4) {
-          // Scrolling DOWN — hide
           setStickyHeaderVisible(false);
         }
 
@@ -459,7 +459,6 @@ export default function Home() {
       });
     };
 
-    // Start visible — we're at the top on mount
     setStickyHeaderVisible(true);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -475,12 +474,20 @@ export default function Home() {
     return () => { celebTimers.current.forEach(clearTimeout); };
   }, []);
 
+  // ── Dismiss bubble on outside tap — but NOT on the same event that opened it ──
   useEffect(() => {
     if (activeCircleDay === null) return;
+
     const dismiss = (e) => {
+      // If this event was the one that just opened the bubble, skip it
+      if (justOpenedCircle.current) {
+        justOpenedCircle.current = false;
+        return;
+      }
       if (e.target.closest('[data-circle-btn]') || e.target.closest('[data-bubble]')) return;
       setActiveCircleDay(null);
     };
+
     document.addEventListener('pointerdown', dismiss);
     return () => document.removeEventListener('pointerdown', dismiss);
   }, [activeCircleDay]);
@@ -683,7 +690,6 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
 
-  // ── Streak icon fill logic: outline until workout logged, resets at 3 AM ──
   const effectiveToday = (() => {
     const now = new Date();
     if (now.getHours() < 3) {
@@ -852,7 +858,6 @@ export default function Home() {
   };
   const modalPanelClass = "w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto";
 
-  // ── Shared header content (used in both inline and sticky) ───────────────
   const HeaderContent = ({ compact = false }) => (
     <div className={`max-w-4xl mx-auto flex items-center justify-center relative px-4 ${compact ? 'py-0' : ''}`}>
       <button
@@ -895,7 +900,7 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries(); }}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
 
-        {/* ── Sticky header — slides down when scrolling up ── */}
+        {/* ── Sticky header ── */}
         <div
           className="fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out"
           style={{
@@ -914,7 +919,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Inline header placeholder — keeps layout spacing; hidden behind sticky ── */}
+        {/* ── Inline header placeholder ── */}
         <div className="px-4 py-3 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={false} />
         </div>
@@ -1155,7 +1160,17 @@ export default function Home() {
                       )}
                       <button
                         data-circle-btn="true"
-                        onClick={() => setActiveCircleDay((prev) => prev === day ? null : day)}
+                        onPointerDown={(e) => {
+                          // Mark that this pointerdown opened (or toggled) a bubble
+                          // so the dismiss listener skips this exact event
+                          justOpenedCircle.current = true;
+                          setPressedDay(day);
+                        }}
+                        onPointerUp={() => setPressedDay(null)}
+                        onPointerLeave={() => setPressedDay(null)}
+                        onClick={() => {
+                          setActiveCircleDay((prev) => prev === day ? null : day);
+                        }}
                         style={{
                           width: size, height: size, borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1167,12 +1182,8 @@ export default function Home() {
                           transform: pressedDay === day ? 'scale(0.84) translateY(4px)' : 'scale(1) translateY(0px)',
                           willChange: 'transform', cursor: 'pointer', padding: 0, outline: 'none',
                           WebkitTapHighlightColor: 'transparent', userSelect: 'none',
-                        }}
-                        onMouseDown={(e) => { e.preventDefault(); setPressedDay(day); }}
-                        onMouseUp={() => setPressedDay(null)}
-                        onMouseLeave={() => setPressedDay(null)}
-                        onTouchStart={() => { setPressedDay(day); }}
-                        onTouchEnd={() => setPressedDay(null)}>
+                          touchAction: 'manipulation',
+                        }}>
 
                         {isRestDay ? (
                           isPastOrTodayRestDay ? (
