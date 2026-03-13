@@ -7,12 +7,12 @@ import {
 import {
   TrendingUp, TrendingDown, ArrowUpRight, ArrowRight, Zap, Star,
   CheckCircle, Trophy, BarChart2, UserPlus, QrCode, MessageSquarePlus,
-  Pencil, Calendar, Flame, Activity, Sparkles, MoreHorizontal
+  Pencil, Calendar, Activity, Sparkles, MoreHorizontal
 } from 'lucide-react';
 import {
-  Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip, AttendanceHeatmap
+  Card, SectionTitle, Empty, Avatar, RingChart, Sparkline, ChartTip
 } from './DashboardPrimitives';
-import { StreakCelebrations, GymSetupChecklist, SmartNudges, InviteToClasses } from './OverviewWidgets';
+import { StreakCelebrations, GymSetupChecklist, SmartNudges } from './OverviewWidgets';
 
 export default function TabOverview({
   // stats
