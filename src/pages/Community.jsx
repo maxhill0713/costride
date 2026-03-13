@@ -409,7 +409,7 @@ export default function Community(){
   return (
     <>
       <style>{LBOARD_CSS}</style>
-      <div style={{minHeight:'100vh',background:'linear-gradient(160deg,#06090f 0%,#0b1a35 45%,#06090f 100%)',fontFamily:"'Outfit',system-ui,sans-serif",color:'#e2e8f0'}}>
+      <div style={{minHeight:'100vh',background:'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',fontFamily:"'Outfit',system-ui,sans-serif",color:'#e2e8f0'}}>
         <div style={{maxWidth:480,margin:'0 auto',padding:'0 0 32px'}}>
 
           {/* HEADER */}
