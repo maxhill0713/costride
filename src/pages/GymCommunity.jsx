@@ -186,7 +186,7 @@ const NAV_ROW = [
   { rankOpacity: 0.38, nameOpacity: 0.36, barOpacity: 0.18, pillOpacity: 0.38 },
 ];
 
-function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboard }) {
+function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
 
