@@ -280,34 +280,7 @@ export default function Friends() {
       return daysSince <= 7 && friendIds.includes(checkIn.user_id);
     });
 
-    friendIds.forEach((friendId) => {
-      const friendCheckIns = allCheckIns.filter((c) => c.user_id === friendId);
-      const streak = calculateStreak(friendCheckIns);
-      const friend = friends.find((f) => f.friend_id === friendId);
 
-      const milestones = [7, 14, 30, 50, 100];
-      milestones.forEach((milestone) => {
-        if (streak >= milestone) {
-          const milestoneDate = friendCheckIns[Math.min(milestone - 1, friendCheckIns.length - 1)]?.check_in_date;
-          if (milestoneDate) {
-            const daysSinceMilestone = differenceInDays(new Date(), new Date(milestoneDate));
-            if (daysSinceMilestone <= 7) {
-              activities.push({
-                id: `milestone-${friendId}-${milestone}`,
-                type: 'milestone',
-                friendId,
-                friendName: friend?.friend_name,
-                friendAvatar: friend?.friend_avatar,
-                message: `reached a ${milestone}-day streak!`,
-                timestamp: new Date(milestoneDate),
-                emoji: milestone >= 50 ? '🔥' : milestone >= 30 ? '⚡' : '🎯',
-                milestone
-              });
-            }
-          }
-        }
-      });
-    });
 
     const friendPRs = allLifts.filter((lift) =>
       lift.is_pr && friendIds.includes(lift.member_id)
@@ -346,7 +319,8 @@ export default function Friends() {
       const daysSince = differenceInDays(new Date(), new Date(notification.created_date));
       const text = (notification.message || notification.title || '').toLowerCase();
       const isFriendRequestNotif = text.includes('accepted') || text.includes('friend request');
-      if (daysSince <= 7 && !isFriendRequestNotif) {
+      const isGymRequestNotif = text.includes('official') || text.includes('gym request');
+      if (daysSince <= 7 && !isFriendRequestNotif && !isGymRequestNotif) {
         activities.push({
           id: `notification-${notification.id}`,
           type: 'notification',
